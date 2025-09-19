@@ -1,0 +1,140 @@
+{
+  "_meta": {
+    "name": "Spanish",
+    "native_name": "Español",
+    "direction": "ltr",
+    "completion": 100
+  },
+  "app": {
+    "name": "Deep Cleaner",
+    "description": "Una utilidad segura, potente y multiplataforma para encontrar y eliminar archivos y carpetas vacías"
+  },
+  "menu": {
+    "file": {
+      "title": "Archivo",
+      "new": "Nuevo",
+      "open": "Abrir",
+      "save": "Guardar",
+      "exit": "Salir"
+    },
+    "edit": {
+      "title": "Editar",
+      "preferences": "Preferencias",
+      "settings": "Configuración"
+    },
+    "view": {
+      "title": "Ver",
+      "refresh": "Actualizar",
+      "zoom_in": "Acercar",
+      "zoom_out": "Alejar"
+    },
+    "tools": {
+      "title": "Herramientas",
+      "scan": "Escanear",
+      "clean": "Limpiar",
+      "analyze": "Analizar"
+    },
+    "help": {
+      "title": "Ayuda",
+      "about": "Acerca de",
+      "documentation": "Documentación",
+      "keyboard_shortcuts": "Atajos de Teclado"
+    }
+  },
+  "buttons": {
+    "ok": "Aceptar",
+    "cancel": "Cancelar",
+    "apply": "Aplicar",
+    "close": "Cerrar",
+    "yes": "Sí",
+    "no": "No",
+    "browse": "Examinar",
+    "select": "Seleccionar",
+    "start": "Iniciar",
+    "stop": "Detener",
+    "pause": "Pausar",
+    "resume": "Reanudar",
+    "delete": "Eliminar",
+    "restore": "Restaurar",
+    "backup": "Respaldar"
+  },
+  "tabs": {
+    "scanner": "Escáner",
+    "duplicates": "Duplicados",
+    "large_files": "Archivos Grandes",
+    "temp_files": "Archivos Temporales",
+    "cache": "Caché",
+    "old_files": "Archivos Antiguos",
+    "disk_analyzer": "Analizador de Disco",
+    "docker": "Docker",
+    "system_tools": "Herramientas del Sistema",
+    "scheduler": "Programador",
+    "reports": "Informes",
+    "settings": "Configuración"
+  },
+  "scanner": {
+    "title": "Escáner de Archivos",
+    "scan_path": "Ruta de Escaneo",
+    "select_path": "Seleccionar ruta para escanear",
+    "scanning": "Escaneando...",
+    "scan_complete": "Escaneo Completo",
+    "files_found": "Archivos encontrados: {count}",
+    "folders_found": "Carpetas encontradas: {count}",
+    "total_size": "Tamaño total: {size}",
+    "progress": "Progreso: {percent}%"
+  },
+  "duplicates": {
+    "title": "Archivos Duplicados",
+    "find_duplicates": "Buscar Duplicados",
+    "duplicates_found": "Duplicados encontrados: {count}",
+    "space_wasted": "Espacio desperdiciado: {size}",
+    "select_all": "Seleccionar Todo",
+    "select_none": "No Seleccionar Nada"
+  },
+  "settings": {
+    "title": "Configuración",
+    "general": "General",
+    "language": "Idioma",
+    "theme": "Tema",
+    "accessibility": "Accesibilidad",
+    "performance": "Rendimiento",
+    "advanced": "Avanzado",
+    "high_contrast": "Modo de Alto Contraste",
+    "keyboard_navigation": "Navegación por Teclado",
+    "screen_reader": "Soporte para Lector de Pantalla",
+    "font_size": "Tamaño de Fuente",
+    "language_selection": "Seleccionar Idioma"
+  },
+  "messages": {
+    "error": "Error",
+    "warning": "Advertencia",
+    "info": "Información",
+    "success": "Éxito",
+    "confirm_delete": "¿Está seguro de que desea eliminar {count} elementos?",
+    "operation_complete": "Operación completada exitosamente",
+    "operation_failed": "Operación falló: {error}",
+    "no_items_selected": "No hay elementos seleccionados",
+    "scanning_in_progress": "Escaneo en progreso...",
+    "cleaning_in_progress": "Limpieza en progreso..."
+  },
+  "accessibility": {
+    "main_window": "Ventana Principal de Deep Cleaner",
+    "tab_panel": "Panel de Pestañas",
+    "file_list": "Lista de Archivos",
+    "progress_bar": "Barra de Progreso",
+    "scan_button": "Botón de Escaneo - Presione para iniciar el escaneo",
+    "clean_button": "Botón de Limpieza - Presione para limpiar elementos seleccionados",
+    "path_input": "Entrada de Ruta - Ingrese o seleccione la ruta para escanear",
+    "settings_button": "Botón de Configuración - Abrir configuración de la aplicación"
+  },
+  "keyboard_shortcuts": {
+    "title": "Atajos de Teclado",
+    "scan": "Ctrl+S - Iniciar Escaneo",
+    "clean": "Ctrl+D - Limpiar Seleccionados",
+    "settings": "Ctrl+, - Abrir Configuración",
+    "refresh": "F5 - Actualizar",
+    "select_all": "Ctrl+A - Seleccionar Todo",
+    "help": "F1 - Mostrar Ayuda",
+    "quit": "Ctrl+Q - Salir de la Aplicación"
+  }
+}

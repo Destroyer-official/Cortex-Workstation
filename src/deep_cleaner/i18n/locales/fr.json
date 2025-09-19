@@ -1,0 +1,140 @@
+{
+  "_meta": {
+    "name": "French",
+    "native_name": "Français",
+    "direction": "ltr",
+    "completion": 100
+  },
+  "app": {
+    "name": "Deep Cleaner",
+    "description": "Un utilitaire sûr, puissant et multiplateforme pour trouver et supprimer les fichiers et dossiers vides"
+  },
+  "menu": {
+    "file": {
+      "title": "Fichier",
+      "new": "Nouveau",
+      "open": "Ouvrir",
+      "save": "Enregistrer",
+      "exit": "Quitter"
+    },
+    "edit": {
+      "title": "Édition",
+      "preferences": "Préférences",
+      "settings": "Paramètres"
+    },
+    "view": {
+      "title": "Affichage",
+      "refresh": "Actualiser",
+      "zoom_in": "Zoom Avant",
+      "zoom_out": "Zoom Arrière"
+    },
+    "tools": {
+      "title": "Outils",
+      "scan": "Scanner",
+      "clean": "Nettoyer",
+      "analyze": "Analyser"
+    },
+    "help": {
+      "title": "Aide",
+      "about": "À propos",
+      "documentation": "Documentation",
+      "keyboard_shortcuts": "Raccourcis Clavier"
+    }
+  },
+  "buttons": {
+    "ok": "OK",
+    "cancel": "Annuler",
+    "apply": "Appliquer",
+    "close": "Fermer",
+    "yes": "Oui",
+    "no": "Non",
+    "browse": "Parcourir",
+    "select": "Sélectionner",
+    "start": "Démarrer",
+    "stop": "Arrêter",
+    "pause": "Pause",
+    "resume": "Reprendre",
+    "delete": "Supprimer",
+    "restore": "Restaurer",
+    "backup": "Sauvegarder"
+  },
+  "tabs": {
+    "scanner": "Scanner",
+    "duplicates": "Doublons",
+    "large_files": "Gros Fichiers",
+    "temp_files": "Fichiers Temporaires",
+    "cache": "Cache",
+    "old_files": "Anciens Fichiers",
+    "disk_analyzer": "Analyseur de Disque",
+    "docker": "Docker",
+    "system_tools": "Outils Système",
+    "scheduler": "Planificateur",
+    "reports": "Rapports",
+    "settings": "Paramètres"
+  },
+  "scanner": {
+    "title": "Scanner de Fichiers",
+    "scan_path": "Chemin de Scan",
+    "select_path": "Sélectionner le chemin à scanner",
+    "scanning": "Scan en cours...",
+    "scan_complete": "Scan Terminé",
+    "files_found": "Fichiers trouvés : {count}",
+    "folders_found": "Dossiers trouvés : {count}",
+    "total_size": "Taille totale : {size}",
+    "progress": "Progression : {percent}%"
+  },
+  "duplicates": {
+    "title": "Fichiers Dupliqués",
+    "find_duplicates": "Trouver les Doublons",
+    "duplicates_found": "Doublons trouvés : {count}",
+    "space_wasted": "Espace gaspillé : {size}",
+    "select_all": "Tout Sélectionner",
+    "select_none": "Ne Rien Sélectionner"
+  },
+  "settings": {
+    "title": "Paramètres",
+    "general": "Général",
+    "language": "Langue",
+    "theme": "Thème",
+    "accessibility": "Accessibilité",
+    "performance": "Performance",
+    "advanced": "Avancé",
+    "high_contrast": "Mode Contraste Élevé",
+    "keyboard_navigation": "Navigation au Clavier",
+    "screen_reader": "Support Lecteur d'Écran",
+    "font_size": "Taille de Police",
+    "language_selection": "Sélectionner la Langue"
+  },
+  "messages": {
+    "error": "Erreur",
+    "warning": "Avertissement",
+    "info": "Information",
+    "success": "Succès",
+    "confirm_delete": "Êtes-vous sûr de vouloir supprimer {count} éléments ?",
+    "operation_complete": "Opération terminée avec succès",
+    "operation_failed": "Opération échouée : {error}",
+    "no_items_selected": "Aucun élément sélectionné",
+    "scanning_in_progress": "Scan en cours...",
+    "cleaning_in_progress": "Nettoyage en cours..."
+  },
+  "accessibility": {
+    "main_window": "Fenêtre Principale de Deep Cleaner",
+    "tab_panel": "Panneau d'Onglets",
+    "file_list": "Liste de Fichiers",
+    "progress_bar": "Barre de Progression",
+    "scan_button": "Bouton Scanner - Appuyez pour démarrer le scan",
+    "clean_button": "Bouton Nettoyer - Appuyez pour nettoyer les éléments sélectionnés",
+    "path_input": "Saisie de Chemin - Entrez ou sélectionnez le chemin à scanner",
+    "settings_button": "Bouton Paramètres - Ouvrir les paramètres de l'application"
+  },
+  "keyboard_shortcuts": {
+    "title": "Raccourcis Clavier",
+    "scan": "Ctrl+S - Démarrer le Scan",
+    "clean": "Ctrl+D - Nettoyer la Sélection",
+    "settings": "Ctrl+, - Ouvrir les Paramètres",
+    "refresh": "F5 - Actualiser",
+    "select_all": "Ctrl+A - Tout Sélectionner",
+    "help": "F1 - Afficher l'Aide",
+    "quit": "Ctrl+Q - Quitter l'Application"
+  }
+}

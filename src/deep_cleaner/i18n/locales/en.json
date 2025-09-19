@@ -1,0 +1,140 @@
+{
+  "_meta": {
+    "name": "English",
+    "native_name": "English",
+    "direction": "ltr",
+    "completion": 100
+  },
+  "app": {
+    "name": "Deep Cleaner",
+    "description": "A safe, powerful, cross-platform utility to find and remove empty files and empty folders"
+  },
+  "menu": {
+    "file": {
+      "title": "File",
+      "new": "New",
+      "open": "Open",
+      "save": "Save",
+      "exit": "Exit"
+    },
+    "edit": {
+      "title": "Edit",
+      "preferences": "Preferences",
+      "settings": "Settings"
+    },
+    "view": {
+      "title": "View",
+      "refresh": "Refresh",
+      "zoom_in": "Zoom In",
+      "zoom_out": "Zoom Out"
+    },
+    "tools": {
+      "title": "Tools",
+      "scan": "Scan",
+      "clean": "Clean",
+      "analyze": "Analyze"
+    },
+    "help": {
+      "title": "Help",
+      "about": "About",
+      "documentation": "Documentation",
+      "keyboard_shortcuts": "Keyboard Shortcuts"
+    }
+  },
+  "buttons": {
+    "ok": "OK",
+    "cancel": "Cancel",
+    "apply": "Apply",
+    "close": "Close",
+    "yes": "Yes",
+    "no": "No",
+    "browse": "Browse",
+    "select": "Select",
+    "start": "Start",
+    "stop": "Stop",
+    "pause": "Pause",
+    "resume": "Resume",
+    "delete": "Delete",
+    "restore": "Restore",
+    "backup": "Backup"
+  },
+  "tabs": {
+    "scanner": "Scanner",
+    "duplicates": "Duplicates",
+    "large_files": "Large Files",
+    "temp_files": "Temp Files",
+    "cache": "Cache",
+    "old_files": "Old Files",
+    "disk_analyzer": "Disk Analyzer",
+    "docker": "Docker",
+    "system_tools": "System Tools",
+    "scheduler": "Scheduler",
+    "reports": "Reports",
+    "settings": "Settings"
+  },
+  "scanner": {
+    "title": "File Scanner",
+    "scan_path": "Scan Path",
+    "select_path": "Select path to scan",
+    "scanning": "Scanning...",
+    "scan_complete": "Scan Complete",
+    "files_found": "Files found: {count}",
+    "folders_found": "Folders found: {count}",
+    "total_size": "Total size: {size}",
+    "progress": "Progress: {percent}%"
+  },
+  "duplicates": {
+    "title": "Duplicate Files",
+    "find_duplicates": "Find Duplicates",
+    "duplicates_found": "Duplicates found: {count}",
+    "space_wasted": "Space wasted: {size}",
+    "select_all": "Select All",
+    "select_none": "Select None"
+  },
+  "settings": {
+    "title": "Settings",
+    "general": "General",
+    "language": "Language",
+    "theme": "Theme",
+    "accessibility": "Accessibility",
+    "performance": "Performance",
+    "advanced": "Advanced",
+    "high_contrast": "High Contrast Mode",
+    "keyboard_navigation": "Keyboard Navigation",
+    "screen_reader": "Screen Reader Support",
+    "font_size": "Font Size",
+    "language_selection": "Select Language"
+  },
+  "messages": {
+    "error": "Error",
+    "warning": "Warning",
+    "info": "Information",
+    "success": "Success",
+    "confirm_delete": "Are you sure you want to delete {count} items?",
+    "operation_complete": "Operation completed successfully",
+    "operation_failed": "Operation failed: {error}",
+    "no_items_selected": "No items selected",
+    "scanning_in_progress": "Scanning in progress...",
+    "cleaning_in_progress": "Cleaning in progress..."
+  },
+  "accessibility": {
+    "main_window": "Deep Cleaner Main Window",
+    "tab_panel": "Tab Panel",
+    "file_list": "File List",
+    "progress_bar": "Progress Bar",
+    "scan_button": "Scan Button - Press to start scanning",
+    "clean_button": "Clean Button - Press to clean selected items",
+    "path_input": "Path Input - Enter or select path to scan",
+    "settings_button": "Settings Button - Open application settings"
+  },
+  "keyboard_shortcuts": {
+    "title": "Keyboard Shortcuts",
+    "scan": "Ctrl+S - Start Scan",
+    "clean": "Ctrl+D - Clean Selected",
+    "settings": "Ctrl+, - Open Settings",
+    "refresh": "F5 - Refresh",
+    "select_all": "Ctrl+A - Select All",
+    "help": "F1 - Show Help",
+    "quit": "Ctrl+Q - Quit Application"
+  }
+}

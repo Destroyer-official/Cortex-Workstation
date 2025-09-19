@@ -1,0 +1,140 @@
+{
+  "_meta": {
+    "name": "Chinese",
+    "native_name": "中文",
+    "direction": "ltr",
+    "completion": 100
+  },
+  "app": {
+    "name": "Deep Cleaner",
+    "description": "一个安全、强大、跨平台的实用程序，用于查找和删除空文件和空文件夹"
+  },
+  "menu": {
+    "file": {
+      "title": "文件",
+      "new": "新建",
+      "open": "打开",
+      "save": "保存",
+      "exit": "退出"
+    },
+    "edit": {
+      "title": "编辑",
+      "preferences": "首选项",
+      "settings": "设置"
+    },
+    "view": {
+      "title": "查看",
+      "refresh": "刷新",
+      "zoom_in": "放大",
+      "zoom_out": "缩小"
+    },
+    "tools": {
+      "title": "工具",
+      "scan": "扫描",
+      "clean": "清理",
+      "analyze": "分析"
+    },
+    "help": {
+      "title": "帮助",
+      "about": "关于",
+      "documentation": "文档",
+      "keyboard_shortcuts": "键盘快捷键"
+    }
+  },
+  "buttons": {
+    "ok": "确定",
+    "cancel": "取消",
+    "apply": "应用",
+    "close": "关闭",
+    "yes": "是",
+    "no": "否",
+    "browse": "浏览",
+    "select": "选择",
+    "start": "开始",
+    "stop": "停止",
+    "pause": "暂停",
+    "resume": "继续",
+    "delete": "删除",
+    "restore": "恢复",
+    "backup": "备份"
+  },
+  "tabs": {
+    "scanner": "扫描器",
+    "duplicates": "重复文件",
+    "large_files": "大文件",
+    "temp_files": "临时文件",
+    "cache": "缓存",
+    "old_files": "旧文件",
+    "disk_analyzer": "磁盘分析器",
+    "docker": "Docker",
+    "system_tools": "系统工具",
+    "scheduler": "调度器",
+    "reports": "报告",
+    "settings": "设置"
+  },
+  "scanner": {
+    "title": "文件扫描器",
+    "scan_path": "扫描路径",
+    "select_path": "选择要扫描的路径",
+    "scanning": "扫描中...",
+    "scan_complete": "扫描完成",
+    "files_found": "找到文件：{count}",
+    "folders_found": "找到文件夹：{count}",
+    "total_size": "总大小：{size}",
+    "progress": "进度：{percent}%"
+  },
+  "duplicates": {
+    "title": "重复文件",
+    "find_duplicates": "查找重复文件",
+    "duplicates_found": "找到重复文件：{count}",
+    "space_wasted": "浪费空间：{size}",
+    "select_all": "全选",
+    "select_none": "全不选"
+  },
+  "settings": {
+    "title": "设置",
+    "general": "常规",
+    "language": "语言",
+    "theme": "主题",
+    "accessibility": "辅助功能",
+    "performance": "性能",
+    "advanced": "高级",
+    "high_contrast": "高对比度模式",
+    "keyboard_navigation": "键盘导航",
+    "screen_reader": "屏幕阅读器支持",
+    "font_size": "字体大小",
+    "language_selection": "选择语言"
+  },
+  "messages": {
+    "error": "错误",
+    "warning": "警告",
+    "info": "信息",
+    "success": "成功",
+    "confirm_delete": "您确定要删除 {count} 个项目吗？",
+    "operation_complete": "操作成功完成",
+    "operation_failed": "操作失败：{error}",
+    "no_items_selected": "未选择任何项目",
+    "scanning_in_progress": "扫描进行中...",
+    "cleaning_in_progress": "清理进行中..."
+  },
+  "accessibility": {
+    "main_window": "Deep Cleaner 主窗口",
+    "tab_panel": "选项卡面板",
+    "file_list": "文件列表",
+    "progress_bar": "进度条",
+    "scan_button": "扫描按钮 - 按下开始扫描",
+    "clean_button": "清理按钮 - 按下清理选定项目",
+    "path_input": "路径输入 - 输入或选择要扫描的路径",
+    "settings_button": "设置按钮 - 打开应用程序设置"
+  },
+  "keyboard_shortcuts": {
+    "title": "键盘快捷键",
+    "scan": "Ctrl+S - 开始扫描",
+    "clean": "Ctrl+D - 清理选定项",
+    "settings": "Ctrl+, - 打开设置",
+    "refresh": "F5 - 刷新",
+    "select_all": "Ctrl+A - 全选",
+    "help": "F1 - 显示帮助",
+    "quit": "Ctrl+Q - 退出应用程序"
+  }
+}

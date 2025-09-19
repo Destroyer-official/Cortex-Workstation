@@ -1,0 +1,26 @@
+# Core dependencies
+PySide6>=6.5.0
+click>=8.0.0
+psutil>=5.9.0
+
+# Optional dependencies for enhanced features
+plotly>=5.15.0  # For visualization features
+docker>=6.0.0   # For Docker cleanup features
+requests>=2.28.0  # For network operations
+
+# Development dependencies (optional)
+pytest>=7.0.0
+pytest-qt>=4.0.0
+black>=22.0.0
+flake8>=5.0.0
+mypy>=1.0.0
+
+# Platform-specific dependencies
+# Windows
+pywin32>=306; sys_platform == "win32"
+
+# macOS
+pyobjc>=9.0; sys_platform == "darwin"
+
+# Linux
+python-xlib>=0.33; sys_platform == "linux"
