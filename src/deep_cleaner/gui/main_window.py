@@ -40,6 +40,10 @@ try:
     from ..reports.restore_manager import RestoreManager
     from ..reports.reports import ReportsGenerator
     
+    # Import Navigation and Safety
+    from .navigation.navigation_controller import NavigationController
+    from .safety.safety_manager import SafetyManager
+    
     from PySide6.QtWidgets import (
         QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
         QPushButton, QLabel, QLineEdit, QTextEdit, QCheckBox, QComboBox,
@@ -86,6 +90,10 @@ except ImportError:
     from deep_cleaner.scheduler.auto_clean_rules import AutoCleanRules
     from deep_cleaner.reports.restore_manager import RestoreManager
     from deep_cleaner.reports.reports import ReportsGenerator
+    
+    # Import Navigation and Safety
+    from deep_cleaner.gui.navigation.navigation_controller import NavigationController
+    from deep_cleaner.gui.safety.safety_manager import SafetyManager
     
     from PySide6.QtWidgets import (
         QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
@@ -402,7 +410,13 @@ class DeepCleanerGUI(QMainWindow):
         
         self.logger = logging.getLogger("deep_cleaner.gui")
         
-
+        # Initialize SafetyManager
+        try:
+            self.safety_manager = SafetyManager(self.config, self.logger)
+        except Exception as e:
+            self.logger.error(f"Failed to initialize SafetyManager: {e}")
+            self.safety_manager = None
+        
         # Load settings
         self.settings = QSettings("DeepCleaner", "DeepCleanerGUI")
         
@@ -425,62 +439,61 @@ class DeepCleanerGUI(QMainWindow):
         main_layout.setSpacing(10)
         main_layout.setContentsMargins(10, 10, 10, 10)
         
-        # Create tab widget
-        self.tab_widget = QTabWidget()
-        self.tab_widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        main_layout.addWidget(self.tab_widget)
+        # Create Navigation Controller instead of QTabWidget
+        self.navigation_controller = NavigationController()
+        main_layout.addWidget(self.navigation_controller)
         
         # Create dashboard tab
         dashboard_tab = self.create_dashboard_tab()
-        self.tab_widget.addTab(dashboard_tab, "Dashboard")
+        self.navigation_controller.add_tab_with_default_icon(dashboard_tab, "Dashboard")
         
         # Create cleaner tab
         cleaner_tab = self.create_cleaner_tab()
-        self.tab_widget.addTab(cleaner_tab, "Cleaner")
+        self.navigation_controller.add_tab_with_default_icon(cleaner_tab, "Cleaner")
         
         # Create duplicates tab
         duplicates_tab = self.create_duplicates_tab()
-        self.tab_widget.addTab(duplicates_tab, "Duplicates")
+        self.navigation_controller.add_tab_with_default_icon(duplicates_tab, "Duplicates")
         
         # Create temp cleaner tab
         temp_cleaner_tab = self.create_temp_cleaner_tab()
-        self.tab_widget.addTab(temp_cleaner_tab, "Temp Files")
+        self.navigation_controller.add_tab_with_default_icon(temp_cleaner_tab, "Temp Files")
         
         # Create large files tab
         large_files_tab = self.create_large_files_tab()
-        self.tab_widget.addTab(large_files_tab, "Large Files")
+        self.navigation_controller.add_tab_with_default_icon(large_files_tab, "Large Files")
         
         # Create disk analyzer tab
         disk_analyzer_tab = self.create_disk_analyzer_tab()
-        self.tab_widget.addTab(disk_analyzer_tab, "Disk Analyzer")
+        self.navigation_controller.add_tab_with_default_icon(disk_analyzer_tab, "Disk Analyzer")
         
         # Create system tools tab
         system_tools_tab = self.create_system_tools_tab()
-        self.tab_widget.addTab(system_tools_tab, "System Tools")
+        self.navigation_controller.add_tab_with_default_icon(system_tools_tab, "System Tools")
         
         # Create Docker tab
         docker_tab = self.create_docker_tab()
-        self.tab_widget.addTab(docker_tab, "Docker")
+        self.navigation_controller.add_tab_with_default_icon(docker_tab, "Docker")
         
         # Create package manager tab
         package_manager_tab = self.create_package_manager_tab()
-        self.tab_widget.addTab(package_manager_tab, "Package Managers")
+        self.navigation_controller.add_tab_with_default_icon(package_manager_tab, "Package Managers")
         
         # Create heuristics tab
         heuristics_tab = self.create_heuristics_tab()
-        self.tab_widget.addTab(heuristics_tab, "Heuristics")
+        self.navigation_controller.add_tab_with_default_icon(heuristics_tab, "Heuristics")
         
         # Create broken links tab
         broken_links_tab = self.create_broken_links_tab()
-        self.tab_widget.addTab(broken_links_tab, "Broken Links")
+        self.navigation_controller.add_tab_with_default_icon(broken_links_tab, "Broken Links")
         
         # Create restore tab
         restore_tab = self.create_restore_tab()
-        self.tab_widget.addTab(restore_tab, "Restore")
+        self.navigation_controller.add_tab_with_default_icon(restore_tab, "Restore")
         
         # Create settings tab
         settings_tab = self.create_settings_tab()
-        self.tab_widget.addTab(settings_tab, "Settings")
+        self.navigation_controller.add_tab_with_default_icon(settings_tab, "Settings")
         
         # TODO: Add advanced tabs after all methods are defined
         # Advanced tabs will be added in a separate method called after __init__
@@ -499,16 +512,16 @@ class DeepCleanerGUI(QMainWindow):
         try:
             # Create advanced tabs
             file_shredder_tab = self.create_file_shredder_tab()
-            self.tab_widget.addTab(file_shredder_tab, "File Shredder")
+            self.navigation_controller.add_tab_with_default_icon(file_shredder_tab, "File Shredder")
             
             scheduler_tab = self.create_scheduler_tab()
-            self.tab_widget.addTab(scheduler_tab, "Scheduler")
+            self.navigation_controller.add_tab_with_default_icon(scheduler_tab, "Scheduler")
             
             reports_tab = self.create_reports_tab()
-            self.tab_widget.addTab(reports_tab, "Reports")
+            self.navigation_controller.add_tab_with_default_icon(reports_tab, "Reports")
             
             resource_monitor_tab = self.create_resource_monitor_tab()
-            self.tab_widget.addTab(resource_monitor_tab, "Resource Monitor")
+            self.navigation_controller.add_tab_with_default_icon(resource_monitor_tab, "Resource Monitor")
             
             self.logger.info("Advanced tabs added successfully")
         except Exception as e:
