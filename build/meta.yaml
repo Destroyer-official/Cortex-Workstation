@@ -1,0 +1,25 @@
+package:
+  name: myapp
+  version: "1.2.3"
+
+source:
+  path: .
+
+build:
+  number: 0
+  script: python -m pip install . --no-deps -vv
+
+requirements:
+  host:
+    - python >=3.11,<3.13
+    - pip
+    - setuptools
+    - cmake # if you run cmake at build time
+  run:
+    - python >=3.11,<3.13
+    - pyside6
+    - numpy # example
+
+about:
+  home: https://example.com
+  license: MIT

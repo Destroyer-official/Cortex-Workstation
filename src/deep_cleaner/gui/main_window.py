@@ -270,39 +270,20 @@ class DiskAnalyzerWorker(QObject):
         self.logger = logging.getLogger("deep_cleaner.disk_analyzer")
     
     def run(self):
-        """Run the disk analysis process with dubbing logs for debugging."""
+        """Run the disk analysis process."""
         try:
-            # Add dubbing log
-            self.logger.info("=== STARTING DISK ANALYSIS PROCESS (DUBBING LOG) ===")
-            self.logger.info("Analyzing path: {}".format(self.path))
-            
             analyzer = DiskAnalyzer(self.config, self.path)
             disk_usage = analyzer.analyze_disk_usage()
             
-            # Add dubbing log
-            self.logger.info("Disk usage analysis completed, analyzing directory tree")
-            
             analyzer.analyze_directory_tree()  # Add this for visualization
-            
-            # Add dubbing log
-            self.logger.info("Directory tree analysis completed, analyzing file types")
             
             file_types = analyzer.analyze_file_types()
             
-            # Add dubbing log
-            self.logger.info("File types analysis completed, finding largest directories")
-            
             largest_dirs = analyzer.find_largest_directories()
-            
-            # Add dubbing log
-            self.logger.info("Largest directories analysis completed, formatting results")
             
             # Use the analyzer's get_stats method to properly format disk usage
             stats = analyzer.get_stats()
             formatted_disk_usage = stats.get("disk_usage", disk_usage)
-            
-            # Add dubbing log
-            self.logger.info("Results formatted, emitting finished signal")
             
             self.finished.emit({
                 "disk_usage": formatted_disk_usage,
@@ -310,12 +291,8 @@ class DiskAnalyzerWorker(QObject):
                 "largest_dirs": largest_dirs,
                 "analyzer": analyzer  # Include the analyzer object
             })
-            
-            # Add dubbing log
-            self.logger.info("=== DISK ANALYSIS PROCESS COMPLETED (DUBBING LOG) ===")
                 
         except Exception as e:
-            # Add dubbing log
             self.logger.error("Error in disk analysis: {}".format(str(e)))
             self.error.emit(str(e))
 
@@ -425,9 +402,7 @@ class DeepCleanerGUI(QMainWindow):
         
         self.logger = logging.getLogger("deep_cleaner.gui")
         
-        # Add dubbing log handler to see logs in the GUI
-        self.setup_dubbing_logs()
-        
+
         # Load settings
         self.settings = QSettings("DeepCleaner", "DeepCleanerGUI")
         
@@ -438,39 +413,7 @@ class DeepCleanerGUI(QMainWindow):
         from PySide6.QtCore import QTimer
         QTimer.singleShot(100, self.add_advanced_tabs)
     
-    def setup_dubbing_logs(self):
-        """Set up dubbing logs to help debug issues in the program."""
-        # Create a custom handler to display logs in the GUI
-        class DubbingLogHandler(logging.Handler):
-            def __init__(self, gui_instance):
-                super().__init__()
-                self.gui = gui_instance
-            
-            def emit(self, record):
-                try:
-                    msg = self.format(record)
-                    # Add log message to results text with a special marker
-                    if hasattr(self.gui, 'results_text') and self.gui.results_text:
-                        current_text = self.gui.results_text.toPlainText()
-                        if "=== Dubbing Log ===" not in current_text:
-                            self.gui.results_text.append(f"\n=== Dubbing Log ===\n{msg}\n")
-                        else:
-                            self.gui.results_text.append(f"{msg}\n")
-                except Exception:
-                    pass  # Ignore errors in the logging handler
-        
-        # Add the handler to the logger
-        dubbing_handler = DubbingLogHandler(self)
-        dubbing_handler.setLevel(logging.DEBUG)
-        formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-        dubbing_handler.setFormatter(formatter)
-        self.logger.addHandler(dubbing_handler)
-        
-        # Log initialization
-        self.logger.info("=== Deep Cleaner GUI Initialized with Dubbing Logs ===")
-        self.logger.info(f"Platform: {sys.platform}")
-        self.logger.info(f"Working directory: {os.getcwd()}")
-    
+
     def init_ui(self):
         """Initialize the user interface."""
         # Create central widget

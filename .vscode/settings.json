@@ -1,0 +1,9 @@
+{
+  "python.defaultInterpreterPath": "D:\\program_software\\conda\\python.exe",
+  "python.terminal.activateEnvironment": false,
+  "python.linting.enabled": true,
+  "python.linting.flake8Enabled": true,
+  "python.linting.mypyEnabled": true,
+  "python.formatting.provider": "black",
+  "python.formatting.blackPath": "D:\\program_software\\conda\\Scripts\\black.exe"
+}

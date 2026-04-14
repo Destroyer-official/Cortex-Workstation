@@ -24,7 +24,7 @@ setup(
     description="A comprehensive utility to find and remove unnecessary files and folders",
     long_description=read_readme(),
     long_description_content_type="text/markdown",
-    url="https://github.com/deepcleaner/deep-cleaner",
+    url="https://github.com/Destroyer-official/deep-cleaner",
     packages=find_packages(where="src"),
     package_dir={"": "src"},
     classifiers=[
@@ -73,8 +73,8 @@ setup(
     },
     keywords="cleaner, disk, files, duplicates, temp, system, maintenance",
     project_urls={
-        "Bug Reports": "https://github.com/deepcleaner/deep-cleaner/issues",
-        "Source": "https://github.com/deepcleaner/deep-cleaner",
-        "Documentation": "https://deepcleaner.readthedocs.io/",
+        "Bug Reports": "https://github.com/Destroyer-official/deep-cleaner/issues",
+        "Source": "https://github.com/Destroyer-official/deep-cleaner",
+        "Documentation": "https://github.com/Destroyer-official/deep-cleaner/blob/main/docs/usage.md",
     },
 )

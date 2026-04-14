@@ -344,7 +344,7 @@ def handle_error(logger: logging.Logger, error: Exception, operation: str = None
                 extra=error_context, exc_info=True)
     
     if reraise:
-        raise
+        raise error
 
 
 def safe_execute(func, logger: logging.Logger, operation: str = None, 

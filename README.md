@@ -23,26 +23,16 @@ A safe, powerful, cross-platform utility to find and remove unnecessary files an
 - **Temporary file cleaner**: Remove temporary files from system and application caches
 - **Cache and log cleaner**: Clean application cache and log files
 - **Old file cleaner**: Remove files not accessed for specified periods
-- **Secure file shredder**: Permanently delete files with multiple overwrite passes
-- **Disk space analyzer**: Analyze disk usage and identify space-hogging files/folders
-- **Duplicate folder finder**: Find folders with identical content
-- **System startup manager**: Manage system startup items
-- **Process and service analyzer**: Analyze running processes and system services
-- **Windows registry cleaner**: Clean orphaned registry entries (Windows only)
-- **Task scheduler integration**: Schedule cleaning tasks using native system schedulers
-- **Auto-clean rules**: Define rules for automatic cleaning
-- **Backup and restore**: Restore files from backup manifests
-- **Comprehensive reporting**: Generate reports in multiple formats
-- **Graphical user interface**: Full-featured GUI with tabbed interface
-- **Cross-platform packaging**: Native executables for Windows, macOS, and Linux
+- **Heuristic Scanning:** Identify orphaned application leftovers, broken shortcuts, and temp files with confidence scores.
+- **Docker Cleanup:** Clean dangling images, stopped containers, and unused volumes.
+- **Broken Link Detection:** Find and optionally repair broken symlinks and Windows registry references.
+- **Safety First:** Defaults to `dry-run` and moves items to the Recycle Bin/Trash natively instead of permanently deleting them.
+- **Performance Optimized:** Multi-threaded execution (`ResourceThrottler`) with checkpoints.
+- **Cross-Platform Interface:** Refined Click-based CLI and a comprehensive PySide6 native GUI.
 
 ## Installation
 
-```bash
-pip install deep-cleaner
-```
-
-Or for development:
+### From Source
 
 ```bash
 git clone https://github.com/Destroyer-official/deep-cleaner.git
@@ -50,87 +40,72 @@ cd deep-cleaner
 pip install -e .
 ```
 
-## Usage
-
-### Command Line Interface
+### With GUI Support
 
 ```bash
-# Dry run (default) - shows what would be deleted without actually deleting
-deep-cleaner
-
-# Actually delete empty files and folders
-deep-cleaner --delete
-
-# Delete and move to trash (requires send2trash)
-deep-cleaner --trash
-
-# Filter by pattern
-deep-cleaner --pattern "*.tmp"
-
-# Only delete files older than 30 days
-deep-cleaner --older-than 30
-
-# Non-interactive mode (useful for scripts/CIs)
-deep-cleaner --yes
-
-# Custom configuration file
-deep-cleaner --config ~/.my-deepcleaner.yaml
-
-# Find duplicate files
-deep-cleaner find-duplicates /path/to/scan
-
-# Find large files (>100MB)
-deep-cleaner find-large-files --min-size 100 /path/to/scan
-
-# Clean temporary files
-deep-cleaner clean-temp --clean
-
-# Analyze disk usage
-deep-cleaner analyze-disk /path/to/analyze
+pip install -e .[gui]
 ```
 
-### Graphical User Interface
+## Quick Start (CLI)
+
+Deep Cleaner defaults to dry-run mode. To perform an actual deletion, you must specify options like `--delete` or `--trash`.
+
+Scan for empty files:
+```bash
+deep-cleaner clean-empty "C:\Path\To\Scan"
+```
+
+Find duplicate files:
+```bash
+deep-cleaner find-duplicates "C:\Path\To\Scan"
+```
+
+Analyze Disk Usage:
+```bash
+deep-cleaner analyze-disk "C:\Path\To\Scan"
+```
+
+Clean System Temp Files:
+```bash
+deep-cleaner clean-temp
+```
+
+Docker Cleanup (Dry Run vs Force):
+```bash
+# Preview what will be cleaned
+deep-cleaner docker-cleanup --all
+
+# Actually clean
+deep-cleaner docker-cleanup --all --force
+```
+
+Get comprehensive help for any command:
+```bash
+deep-cleaner --help
+deep-cleaner scan-enhanced --help
+```
+
+## GUI Application
+
+To launch the graphical interface, ensure you have installed the optional `[gui]` dependencies, then run:
 
 ```bash
-# Launch the GUI
-deep-cleaner-gui
+python run_gui.py
 ```
+Or use the provided batch scripts (`run_with_conda.bat` or `run_with_conda.ps1`).
 
 ## Configuration
 
-Create a `~/.deepcleaner.yaml` file to customize behavior:
+Settings are persistently stored in `~/.deepcleaner.yaml` and can be overridden via CLI flags. You can specify exclusions, thread pools, memory limits, and logging preferences.
 
-```yaml
-# Exclude patterns (glob patterns)
-exclude_patterns:
-  - "*.log"
-  - "node_modules"
-  - ".git"
-  - "__pycache__"
+## Safety & Recovery
 
-# Exclude directories by name
-exclude_dirs:
-  - "System Volume Information"
-  - "$RECYCLE.BIN"
+- Deep Cleaner always creates backup manifest files in `~/.deepcleaner/manifests/` before deleting content.
+- Use the `deep-cleaner restore` command to recover mistakenly deleted files from a specific manifest.
 
-# Minimum age in days (0 = all files)
-min_age_days: 0
+## License
 
-# Default action (dry_run, delete, trash)
-default_action: dry_run
-
-# Log file location
-log_file: "~/.deepcleaner.log"
-
-# Enable JSON logging
-json_logging: false
-```
-
-## Safety
-
-By default, Deep Cleaner runs in dry-run mode and will not delete anything. System directories are excluded by default on all platforms.
-
-To actually delete files, you must explicitly use `--delete` or `--trash` flags.
+MIT License. See `LICENSE` for details.
 
 ## Testing
 

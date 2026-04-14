@@ -117,6 +117,22 @@
     "scanning_in_progress": "Scanning in progress...",
     "cleaning_in_progress": "Cleaning in progress..."
   },
+  "error": {
+    "operation_creation_failed": "Failed to create operation: {error}",
+    "operation_rejected": "Operation was rejected by safety validation",
+    "operation_handling_failed": "Failed to handle operation: {error}",
+    "operation_execution_failed": "Failed to execute operation: {error}",
+    "operation_confirmation_failed": "Failed to confirm operation: {error}",
+    "operation_still_rejected_after_confirmation": "Operation is still rejected after confirmation"
+  },
+  "warning": {
+    "operation_requires_confirmation": "This operation requires user confirmation before proceeding"
+  },
+  "status": {
+    "executing_operation": "Executing {operation_type} operation...",
+    "operation_completed_successfully": "Operation completed successfully. Processed {processed_items} items.",
+    "operation_completed_with_errors": "Operation completed with {error_count} errors"
+  },
   "accessibility": {
     "main_window": "Deep Cleaner Main Window",
     "tab_panel": "Tab Panel",

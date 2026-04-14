@@ -9,7 +9,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import QThread, Signal
 
-from .base_tab import BaseTab
+from .tabs.base_tab import BaseTab
 from ..scanner import Scanner
 from ..deleter import Deleter
 
