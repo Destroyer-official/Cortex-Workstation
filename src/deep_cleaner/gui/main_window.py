@@ -43,6 +43,9 @@ try:
     # Import Navigation and Safety
     from .navigation.navigation_controller import NavigationController
     from .safety.safety_manager import SafetyManager
+    from .tabs.dashboard_tab import DashboardTab
+    from .tabs.empty_files_tab import EmptyFilesTab
+    from .tabs.temp_cleaner_tab import TempCleanerTab
     
     from PySide6.QtWidgets import (
         QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
@@ -94,6 +97,9 @@ except ImportError:
     # Import Navigation and Safety
     from deep_cleaner.gui.navigation.navigation_controller import NavigationController
     from deep_cleaner.gui.safety.safety_manager import SafetyManager
+    from deep_cleaner.gui.tabs.dashboard_tab import DashboardTab
+    from deep_cleaner.gui.tabs.empty_files_tab import EmptyFilesTab
+    from deep_cleaner.gui.tabs.temp_cleaner_tab import TempCleanerTab
     
     from PySide6.QtWidgets import (
         QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
@@ -106,11 +112,7 @@ except ImportError:
     )
     from PySide6.QtCore import Qt, QThread, Signal, QObject, QSettings
     from PySide6.QtGui import QTextCursor
-
-
-# Worker classes for background operations
 class ScanWorker(QObject):
-    """Worker class for scanning files in a separate thread."""
     finished = Signal(list, list)
     error = Signal(str)
     progress_updated = Signal(object)  # ScanProgress object
@@ -181,7 +183,6 @@ class ScanWorker(QObject):
 
 
 class DeleteWorker(QObject):
-    """Worker class for deleting files in a separate thread."""
     finished = Signal(dict)
     error = Signal(str)
     
@@ -201,7 +202,6 @@ class DeleteWorker(QObject):
 
 
 class DuplicateFinderWorker(QObject):
-    """Worker class for finding duplicates in a separate thread."""
     finished = Signal(dict)
     error = Signal(str)
     
@@ -225,7 +225,6 @@ class DuplicateFinderWorker(QObject):
 
 
 class LargeFileFinderWorker(QObject):
-    """Worker class for finding large files in a separate thread."""
     finished = Signal(list)
     error = Signal(str)
     
@@ -247,7 +246,6 @@ class LargeFileFinderWorker(QObject):
 
 
 class TempCleanerWorker(QObject):
-    """Worker class for finding temp files in a separate thread."""
     finished = Signal(list)
     error = Signal(str)
     
@@ -267,7 +265,6 @@ class TempCleanerWorker(QObject):
 
 
 class DiskAnalyzerWorker(QObject):
-    """Worker class for disk analysis in a separate thread."""
     finished = Signal(dict)
     error = Signal(str)
     
@@ -306,7 +303,6 @@ class DiskAnalyzerWorker(QObject):
 
 
 class DockerScanWorker(QObject):
-    """Worker class for scanning Docker resources in a separate thread."""
     finished = Signal(dict)
     error = Signal(str)
     
@@ -355,7 +351,6 @@ class DockerScanWorker(QObject):
 
 
 class DockerCleanupWorker(QObject):
-    """Worker class for cleaning Docker resources in a separate thread."""
     finished = Signal(object)
     error = Signal(str)
     
@@ -444,11 +439,11 @@ class DeepCleanerGUI(QMainWindow):
         main_layout.addWidget(self.navigation_controller)
         
         # Create dashboard tab
-        dashboard_tab = self.create_dashboard_tab()
+        dashboard_tab = DashboardTab(self.config, self.logger, self)
         self.navigation_controller.add_tab_with_default_icon(dashboard_tab, "Dashboard")
         
         # Create cleaner tab
-        cleaner_tab = self.create_cleaner_tab()
+        cleaner_tab = EmptyFilesTab(self.config, self.logger, self.safety_manager)
         self.navigation_controller.add_tab_with_default_icon(cleaner_tab, "Cleaner")
         
         # Create duplicates tab
@@ -456,42 +451,25 @@ class DeepCleanerGUI(QMainWindow):
         self.navigation_controller.add_tab_with_default_icon(duplicates_tab, "Duplicates")
         
         # Create temp cleaner tab
-        temp_cleaner_tab = self.create_temp_cleaner_tab()
+        temp_cleaner_tab = TempCleanerTab(self.config, self.logger, self.safety_manager)
         self.navigation_controller.add_tab_with_default_icon(temp_cleaner_tab, "Temp Files")
         
-        # Create large files tab
         large_files_tab = self.create_large_files_tab()
         self.navigation_controller.add_tab_with_default_icon(large_files_tab, "Large Files")
-        
-        # Create disk analyzer tab
         disk_analyzer_tab = self.create_disk_analyzer_tab()
         self.navigation_controller.add_tab_with_default_icon(disk_analyzer_tab, "Disk Analyzer")
-        
-        # Create system tools tab
         system_tools_tab = self.create_system_tools_tab()
         self.navigation_controller.add_tab_with_default_icon(system_tools_tab, "System Tools")
-        
-        # Create Docker tab
         docker_tab = self.create_docker_tab()
         self.navigation_controller.add_tab_with_default_icon(docker_tab, "Docker")
-        
-        # Create package manager tab
         package_manager_tab = self.create_package_manager_tab()
         self.navigation_controller.add_tab_with_default_icon(package_manager_tab, "Package Managers")
-        
-        # Create heuristics tab
         heuristics_tab = self.create_heuristics_tab()
         self.navigation_controller.add_tab_with_default_icon(heuristics_tab, "Heuristics")
-        
-        # Create broken links tab
         broken_links_tab = self.create_broken_links_tab()
         self.navigation_controller.add_tab_with_default_icon(broken_links_tab, "Broken Links")
-        
-        # Create restore tab
         restore_tab = self.create_restore_tab()
         self.navigation_controller.add_tab_with_default_icon(restore_tab, "Restore")
-        
-        # Create settings tab
         settings_tab = self.create_settings_tab()
         self.navigation_controller.add_tab_with_default_icon(settings_tab, "Settings")
         
@@ -527,289 +505,7 @@ class DeepCleanerGUI(QMainWindow):
         except Exception as e:
             self.logger.warning(f"Could not add advanced tabs: {e}")
     
-    def create_dashboard_tab(self) -> QWidget:
-        """Create the dashboard tab."""
-        dashboard_tab = QWidget()
-        layout = QVBoxLayout(dashboard_tab)
-        layout.setSpacing(15)
-        
-        # Welcome message
-        welcome_label = QLabel("Welcome to Deep Cleaner")
-        welcome_label.setStyleSheet("QLabel { font-size: 18px; font-weight: bold; margin: 10px; }")
-        layout.addWidget(welcome_label)
-        
-        # Quick actions
-        quick_actions_group = QGroupBox("Quick Actions")
-        quick_actions_layout = QHBoxLayout(quick_actions_group)
-        quick_actions_layout.setSpacing(10)
-        
-        scan_button = QPushButton("Scan Empty Files")
-        scan_button.clicked.connect(self.quick_scan)
-        scan_button.setMinimumHeight(40)
-        quick_actions_layout.addWidget(scan_button)
-        
-        temp_clean_button = QPushButton("Clean Temp Files")
-        temp_clean_button.clicked.connect(self.quick_temp_clean)
-        temp_clean_button.setMinimumHeight(40)
-        quick_actions_layout.addWidget(temp_clean_button)
-        
-        disk_analysis_button = QPushButton("Analyze Disk")
-        disk_analysis_button.clicked.connect(self.quick_disk_analysis)
-        disk_analysis_button.setMinimumHeight(40)
-        quick_actions_layout.addWidget(disk_analysis_button)
-        
-        layout.addWidget(quick_actions_group)
-        
-        # Recent activity
-        activity_group = QGroupBox("Recent Activity")
-        activity_layout = QVBoxLayout(activity_group)
-        
-        self.activity_list = QListWidget()
-        self.activity_list.setMaximumHeight(200)
-        activity_layout.addWidget(self.activity_list)
-        
-        layout.addWidget(activity_group)
-        
-        # System info
-        system_info_group = QGroupBox("System Information")
-        system_info_layout = QVBoxLayout(system_info_group)
-        
-        self.system_info_label = QLabel("Loading system information...")
-        system_info_layout.addWidget(self.system_info_label)
-        
-        layout.addWidget(system_info_group)
-        layout.addStretch()
-        
-        return dashboard_tab
     
-    def create_cleaner_tab(self) -> QWidget:
-        """Create the cleaner tab."""
-        cleaner_tab = QWidget()
-        layout = QVBoxLayout(cleaner_tab)
-        layout.setSpacing(10)
-        
-        # Path selection group with multi-drive support
-        path_group = QGroupBox("Target Paths")
-        path_layout = QVBoxLayout(path_group)
-        path_layout.setContentsMargins(10, 10, 10, 10)
-        
-        # Single path mode
-        single_path_layout = QHBoxLayout()
-        
-        self.single_path_radio = QRadioButton("Single Path")
-        self.single_path_radio.setChecked(True)
-        single_path_layout.addWidget(self.single_path_radio)
-        
-        self.path_input = QLineEdit()
-        self.path_input.setPlaceholderText("Select directory to scan...")
-        self.path_input.setMinimumHeight(30)
-        single_path_layout.addWidget(self.path_input)
-        
-        browse_button = QPushButton("Browse")
-        browse_button.clicked.connect(self.browse_path)
-        browse_button.setMinimumHeight(30)
-        browse_button.setStyleSheet("QPushButton { padding: 5px 15px; }")
-        single_path_layout.addWidget(browse_button)
-        
-        path_layout.addLayout(single_path_layout)
-        
-        # Multi-drive mode
-        multi_drive_layout = QVBoxLayout()
-        
-        self.multi_drive_radio = QRadioButton("Multiple Drives/Paths")
-        multi_drive_layout.addWidget(self.multi_drive_radio)
-        
-        # Drive selection
-        drives_layout = QHBoxLayout()
-        
-        self.drives_list = QListWidget()
-        self.drives_list.setMaximumHeight(100)
-        self.drives_list.setSelectionMode(QListWidget.SelectionMode.ExtendedSelection)
-        drives_layout.addWidget(self.drives_list)
-        
-        drives_buttons_layout = QVBoxLayout()
-        
-        self.detect_drives_button = QPushButton("Detect Drives")
-        self.detect_drives_button.clicked.connect(self.detect_available_drives)
-        drives_buttons_layout.addWidget(self.detect_drives_button)
-        
-        self.add_network_drive_button = QPushButton("Add Network Drive")
-        self.add_network_drive_button.clicked.connect(self.add_network_drive)
-        drives_buttons_layout.addWidget(self.add_network_drive_button)
-        
-        self.remove_drive_button = QPushButton("Remove Selected")
-        self.remove_drive_button.clicked.connect(self.remove_selected_drives)
-        drives_buttons_layout.addWidget(self.remove_drive_button)
-        
-        drives_buttons_layout.addStretch()
-        drives_layout.addLayout(drives_buttons_layout)
-        
-        multi_drive_layout.addLayout(drives_layout)
-        path_layout.addLayout(multi_drive_layout)
-        
-        # Connect radio buttons
-        self.single_path_radio.toggled.connect(self.on_path_mode_changed)
-        self.multi_drive_radio.toggled.connect(self.on_path_mode_changed)
-        
-        # Initially disable multi-drive controls
-        self.drives_list.setEnabled(False)
-        self.detect_drives_button.setEnabled(False)
-        self.add_network_drive_button.setEnabled(False)
-        self.remove_drive_button.setEnabled(False)
-        
-        layout.addWidget(path_group)
-        
-        # Scan options group
-        options_group = QGroupBox("Scan Options")
-        options_layout = QFormLayout(options_group)
-        options_layout.setContentsMargins(10, 10, 10, 10)
-        options_layout.setSpacing(10)
-        
-        self.dry_run_checkbox = QCheckBox("Dry Run (Preview only)")
-        self.dry_run_checkbox.setChecked(True)
-        options_layout.addRow(self.dry_run_checkbox)
-        
-        self.trash_checkbox = QCheckBox("Move to Trash (instead of permanent delete)")
-        options_layout.addRow(self.trash_checkbox)
-        
-        self.pattern_input = QLineEdit()
-        self.pattern_input.setPlaceholderText("e.g., *.tmp, *.log")
-        options_layout.addRow("Pattern Filter:", self.pattern_input)
-        
-        self.age_spinbox = QSpinBox()
-        self.age_spinbox.setRange(0, 365)
-        self.age_spinbox.setSuffix(" days")
-        self.age_spinbox.setValue(0)
-        options_layout.addRow("Minimum Age:", self.age_spinbox)
-        
-        layout.addWidget(options_group)
-        
-        # Performance options group
-        performance_group = QGroupBox("Performance Options")
-        performance_layout = QFormLayout(performance_group)
-        performance_layout.setContentsMargins(10, 10, 10, 10)
-        performance_layout.setSpacing(10)
-        
-        self.enable_checkpoints_checkbox = QCheckBox("Enable Checkpoints (allows pause/resume)")
-        performance_layout.addRow(self.enable_checkpoints_checkbox)
-        
-        self.enable_throttling_checkbox = QCheckBox("Enable Resource Throttling")
-        performance_layout.addRow(self.enable_throttling_checkbox)
-        
-        self.cpu_limit_spinbox = QSpinBox()
-        self.cpu_limit_spinbox.setRange(10, 100)
-        self.cpu_limit_spinbox.setSuffix("%")
-        self.cpu_limit_spinbox.setValue(80)
-        performance_layout.addRow("CPU Limit:", self.cpu_limit_spinbox)
-        
-        self.memory_limit_spinbox = QSpinBox()
-        self.memory_limit_spinbox.setRange(10, 100)
-        self.memory_limit_spinbox.setSuffix("%")
-        self.memory_limit_spinbox.setValue(85)
-        performance_layout.addRow("Memory Limit:", self.memory_limit_spinbox)
-        
-        layout.addWidget(performance_group)
-        
-        # Checkpoint management group
-        checkpoint_group = QGroupBox("Checkpoint Management")
-        checkpoint_layout = QVBoxLayout(checkpoint_group)
-        checkpoint_layout.setContentsMargins(10, 10, 10, 10)
-        
-        # Checkpoint controls
-        checkpoint_controls_layout = QHBoxLayout()
-        
-        self.list_checkpoints_button = QPushButton("List Checkpoints")
-        self.list_checkpoints_button.clicked.connect(self.list_checkpoints)
-        checkpoint_controls_layout.addWidget(self.list_checkpoints_button)
-        
-        self.resume_checkpoint_button = QPushButton("Resume from Checkpoint")
-        self.resume_checkpoint_button.clicked.connect(self.resume_from_checkpoint)
-        self.resume_checkpoint_button.setEnabled(False)
-        checkpoint_controls_layout.addWidget(self.resume_checkpoint_button)
-        
-        self.delete_checkpoint_button = QPushButton("Delete Checkpoint")
-        self.delete_checkpoint_button.clicked.connect(self.delete_checkpoint)
-        self.delete_checkpoint_button.setEnabled(False)
-        checkpoint_controls_layout.addWidget(self.delete_checkpoint_button)
-        
-        self.cleanup_checkpoints_button = QPushButton("Cleanup Old")
-        self.cleanup_checkpoints_button.clicked.connect(self.cleanup_old_checkpoints)
-        checkpoint_controls_layout.addWidget(self.cleanup_checkpoints_button)
-        
-        checkpoint_layout.addLayout(checkpoint_controls_layout)
-        
-        # Checkpoints list
-        self.checkpoints_list = QListWidget()
-        self.checkpoints_list.setMaximumHeight(80)
-        self.checkpoints_list.itemSelectionChanged.connect(self.on_checkpoint_selection_changed)
-        checkpoint_layout.addWidget(self.checkpoints_list)
-        
-        layout.addWidget(checkpoint_group)
-        
-        # Action buttons
-        buttons_layout = QHBoxLayout()
-        buttons_layout.setSpacing(10)
-        
-        self.scan_button = QPushButton("Scan")
-        self.scan_button.clicked.connect(self.start_scan)
-        self.scan_button.setMinimumHeight(35)
-        self.scan_button.setStyleSheet("QPushButton { font-weight: bold; padding: 5px 20px; }")
-        buttons_layout.addWidget(self.scan_button)
-        
-        self.pause_button = QPushButton("Pause")
-        self.pause_button.clicked.connect(self.pause_scan)
-        self.pause_button.setEnabled(False)
-        self.pause_button.setMinimumHeight(35)
-        self.pause_button.setStyleSheet("QPushButton { font-weight: bold; padding: 5px 20px; }")
-        buttons_layout.addWidget(self.pause_button)
-        
-        self.resume_button = QPushButton("Resume")
-        self.resume_button.clicked.connect(self.resume_scan)
-        self.resume_button.setEnabled(False)
-        self.resume_button.setMinimumHeight(35)
-        self.resume_button.setStyleSheet("QPushButton { font-weight: bold; padding: 5px 20px; }")
-        buttons_layout.addWidget(self.resume_button)
-        
-        self.delete_button = QPushButton("Delete")
-        self.delete_button.clicked.connect(self.start_delete)
-        self.delete_button.setEnabled(False)
-        self.delete_button.setMinimumHeight(35)
-        self.delete_button.setStyleSheet("QPushButton { font-weight: bold; padding: 5px 20px; }")
-        buttons_layout.addWidget(self.delete_button)
-        
-        buttons_layout.addStretch()
-        layout.addLayout(buttons_layout)
-        
-        # Progress area
-        progress_group = QGroupBox("Progress")
-        progress_layout = QVBoxLayout(progress_group)
-        progress_layout.setContentsMargins(10, 10, 10, 10)
-        progress_layout.setSpacing(5)
-        
-        self.progress_bar = QProgressBar()
-        self.progress_bar.setVisible(False)
-        self.progress_bar.setMinimumHeight(25)
-        progress_layout.addWidget(self.progress_bar)
-        
-        self.progress_label = QLabel("Ready to scan")
-        self.progress_label.setStyleSheet("QLabel { color: #666; }")
-        progress_layout.addWidget(self.progress_label)
-        
-        self.scan_stats_label = QLabel("")
-        self.scan_stats_label.setStyleSheet("QLabel { color: #666; font-size: 11px; }")
-        progress_layout.addWidget(self.scan_stats_label)
-        
-        progress_group.setVisible(False)
-        layout.addWidget(progress_group)
-        self.progress_group = progress_group
-        
-        # Results area
-        self.results_text = QTextEdit()
-        self.results_text.setReadOnly(True)
-        self.results_text.setStyleSheet("QTextEdit { font-family: Consolas, Monaco, monospace; }")
-        layout.addWidget(self.results_text)
-        
-        return cleaner_tab
     
     def create_duplicates_tab(self) -> QWidget:
         """Create the duplicates tab."""
@@ -1170,8 +866,6 @@ class DeepCleanerGUI(QMainWindow):
         system_tools_tab = QWidget()
         layout = QVBoxLayout(system_tools_tab)
         layout.setSpacing(10)
-        
-        # Create tab widget for system tools
         tools_tab_widget = QTabWidget()
         layout.addWidget(tools_tab_widget)
         
@@ -1376,8 +1070,6 @@ class DeepCleanerGUI(QMainWindow):
         layout = QVBoxLayout(settings_tab)
         layout.setSpacing(15)
         layout.setContentsMargins(15, 15, 15, 15)
-        
-        # Create tab widget for settings categories
         settings_tab_widget = QTabWidget()
         layout.addWidget(settings_tab_widget)
         
@@ -2311,8 +2003,6 @@ class DeepCleanerGUI(QMainWindow):
         self.temp_cleaner_thread = QThread()
         self.temp_cleaner_worker = TempCleanerWorker(self.config)
         self.temp_cleaner_worker.moveToThread(self.temp_cleaner_thread)
-        
-        # Connect signals
         self.temp_cleaner_thread.started.connect(self.temp_cleaner_worker.run)
         self.temp_cleaner_worker.finished.connect(self.temp_scan_finished)
         self.temp_cleaner_worker.error.connect(self.temp_scan_error)
@@ -4770,7 +4460,6 @@ class MultiDriveScanWorker(QObject):
 
 
 class BrokenLinksWorker(QThread):
-    """Worker class for scanning broken links in a separate thread."""
     finished = Signal(list)
     error = Signal(str)
     
@@ -5045,8 +4734,6 @@ class BrokenLinksWorker(QThread):
         """Create the task scheduler tab."""
         scheduler_tab = QWidget()
         layout = QVBoxLayout(scheduler_tab)
-        
-        # Create tab widget for scheduler features
         scheduler_tab_widget = QTabWidget()
         layout.addWidget(scheduler_tab_widget)
         

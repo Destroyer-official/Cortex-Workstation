@@ -241,8 +241,6 @@ class TreeMapGenerator:
         
         # Flatten nodes for Plotly
         plotly_data = self._flatten_nodes_for_plotly(nodes)
-        
-        # Create treemap
         fig = go.Figure(go.Treemap(
             ids=plotly_data['ids'],
             labels=plotly_data['labels'],

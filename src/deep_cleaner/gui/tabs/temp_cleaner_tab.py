@@ -10,8 +10,9 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import QThread, Signal, Qt
 
-from ..analyzers.temp_cleaner import TempCleaner
-from ..deleter import Deleter
+from ...analyzers.temp_cleaner import TempCleaner
+from .base_tab import BaseTab
+from ...deleter import Deleter
 
 
 class TempCleanerWorker(QThread):
@@ -51,13 +52,11 @@ class TempCleanerWorker(QThread):
             self.error_occurred.emit(str(e))
 
 
-class TempCleanerTab(QWidget):
+class TempCleanerTab(BaseTab):
     """Tab for temporary files cleaning functionality."""
     
-    def __init__(self, config, logger):
-        super().__init__()
-        self.config = config
-        self.logger = logger
+    def __init__(self, config, logger, safety_manager):
+        super().__init__(config, logger, safety_manager)
         self.temp_files = []
         self.worker_thread = None
         

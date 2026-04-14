@@ -79,8 +79,6 @@ class I18nSettingsWidget(QWidget):
         a11y_layout.addRow(_("settings.font_size"), self.font_size_spin)
         
         layout.addWidget(a11y_group)
-        
-        # Connect signals
         self.language_combo.currentTextChanged.connect(self.on_language_changed)
         self.theme_combo.currentTextChanged.connect(self.on_theme_changed)
         self.high_contrast_cb.toggled.connect(self.on_accessibility_changed)

@@ -13,7 +13,7 @@ from ...i18n.translator import get_translator
 from ..safety import SafetyManager, Operation, OperationType, ValidationResult, OperationResult
 
 
-class BaseTab(QWidget, ABC):
+class BaseTab(QWidget):
     """Base class for all GUI tabs with safety manager integration and internationalization support."""
     
     # Signals for operation requests and status updates

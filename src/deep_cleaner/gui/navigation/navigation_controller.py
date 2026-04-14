@@ -44,8 +44,6 @@ class NavigationController(QWidget):
         self.content_stack = QStackedWidget()
         self.content_stack.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         main_layout.addWidget(self.content_stack)
-        
-        # Set layout proportions (navigation panel should be fixed width)
         main_layout.setStretch(0, 0)  # Navigation panel - fixed
         main_layout.setStretch(1, 1)  # Content area - expandable
         

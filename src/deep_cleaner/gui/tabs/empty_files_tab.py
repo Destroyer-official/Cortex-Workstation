@@ -9,9 +9,9 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import QThread, Signal
 
-from .tabs.base_tab import BaseTab
-from ..scanner import Scanner
-from ..deleter import Deleter
+from .base_tab import BaseTab
+from ...scanner import Scanner
+from ...deleter import Deleter
 
 
 class EmptyFilesWorker(QThread):
@@ -54,8 +54,8 @@ class EmptyFilesWorker(QThread):
 class EmptyFilesTab(BaseTab):
     """Tab for empty files cleaning functionality."""
     
-    def __init__(self, config, logger):
-        super().__init__(config, logger)
+    def __init__(self, config, logger, safety_manager):
+        super().__init__(config, logger, safety_manager)
         self.empty_files = []
         self.empty_dirs = []
     
