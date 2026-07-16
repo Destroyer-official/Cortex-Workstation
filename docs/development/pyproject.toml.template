@@ -1,0 +1,231 @@
+# Copy this file to the project root as pyproject.toml
+# Location: d:\desktop\desktop\Main_projects\Cortex_Cleaner\pyproject.toml
+
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cortex-cleaner"
+version = "1.0.0"
+description = "A comprehensive utility to find and remove unnecessary files and folders"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+    {name = "Cortex Cleaner Team", email = "team@deepcleaner.com"}
+]
+keywords = [
+    "disk-cleaner",
+    "file-cleanup",
+    "duplicate-finder",
+    "system-optimization",
+    "storage-management"
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: End Users/Desktop",
+    "Intended Audience :: System Administrators",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: System :: Filesystems",
+    "Topic :: Utilities",
+]
+
+# Core dependencies
+dependencies = [
+    # UI Framework
+    "PySide6>=6.6.0",
+    
+    # CLI Framework
+    "click>=8.1.0",
+    
+    # System utilities
+    "psutil>=5.9.0",
+    "send2trash>=1.8.0",
+    
+    # Configuration & Data
+    "pyyaml>=6.0.0",
+    "pydantic>=2.5.0",
+    "pydantic-settings>=2.1.0",
+    
+    # Database
+    "sqlalchemy>=2.0.0",
+    
+    # Logging
+    "structlog>=23.2.0",
+    
+    # Performance
+    "xxhash>=3.4.0",
+    
+    # Console output
+    "rich>=13.0.0",
+]
+
+[project.optional-dependencies]
+# Development dependencies
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-benchmark>=4.0.0",
+    "hypothesis>=6.92.0",
+    "ruff>=0.1.0",
+    "mypy>=1.7.0",
+    "black>=23.12.0",
+    "ipython>=8.18.0",
+    "ipdb>=0.13.0",
+]
+
+# Performance enhancements
+performance = [
+    "anyio>=4.1.0",
+    "watchdog>=3.0.0",
+    "pybloom-live>=4.0.0",
+]
+
+# AI features
+ai = [
+    "Pillow>=10.1.0",
+    "imagehash>=4.3.1",
+    "onnxruntime>=1.16.0",
+    "numpy>=1.24.0",
+    "anthropic>=0.8.0",
+]
+
+# API server
+api = [
+    "fastapi>=0.108.0",
+    "uvicorn[standard]>=0.25.0",
+    "python-jose[cryptography]>=3.3.0",
+    "python-multipart>=0.0.6",
+    "httpx>=0.25.0",
+]
+
+# Monitoring
+monitoring = [
+    "prometheus-client>=0.19.0",
+]
+
+# Security
+security = [
+    "cryptography>=41.0.0",
+]
+
+# Database migrations
+migrations = [
+    "alembic>=1.13.0",
+]
+
+# Documentation
+docs = [
+    "mkdocs>=1.5.0",
+    "mkdocs-material>=9.5.0",
+]
+
+# All optional dependencies
+all = [
+    "cortex-cleaner[dev,performance,ai,api,monitoring,security,migrations,docs]",
+]
+
+[project.scripts]
+cortex-cleaner = "cortex_unified.__main__:main"
+cortex-cleaner-gui = "cortex_unified.ui.main:main"
+
+[project.urls]
+Homepage = "https://github.com/cortex-cleaner/cortex-cleaner"
+Documentation = "https://cortex-cleaner.readthedocs.io"
+Repository = "https://github.com/cortex-cleaner/cortex-cleaner"
+"Bug Tracker" = "https://github.com/cortex-cleaner/cortex-cleaner/issues"
+Changelog = "https://github.com/cortex-cleaner/cortex-cleaner/blob/main/CHANGELOG.md"
+
+[tool.setuptools]
+zip-safe = false
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["cortex_unified*"]
+namespaces = false
+
+[tool.setuptools.package-data]
+cortex_unified = [
+    "i18n/locales/*.json",
+    "ui/assets/*",
+    "ui/icons/*",
+    "*.yaml",
+    "*.json",
+]
+
+# ============================================================================
+# Tool Configuration
+# ============================================================================
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "-ra",
+    "--strict-markers",
+    "--strict-config",
+    "--showlocals",
+    "--tb=short",
+]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests",
+    "safety: marks tests as safety-critical tests",
+    "performance: marks tests as performance benchmarks",
+]
+
+[tool.coverage.run]
+source = ["cortex_unified"]
+branch = true
+parallel = true
+
+[tool.coverage.report]
+precision = 2
+show_missing = true
+skip_covered = false
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "@abstractmethod",
+]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+select = ["E", "W", "F", "I", "B", "C4", "UP", "ARG", "SIM"]
+ignore = ["E501", "B008", "C901", "W191"]
+
+[tool.ruff.per-file-ignores]
+"__init__.py" = ["F401"]
+"tests/*" = ["ARG", "S101"]
+
+[tool.black]
+line-length = 100
+target-version = ["py310", "py311", "py312"]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+check_untyped_defs = true
+ignore_missing_imports = true
+pretty = true
+show_error_codes = true

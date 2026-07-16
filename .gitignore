@@ -1,0 +1,57 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# --- Packaging / build artifacts ---
+build/
+dist/
+*.egg-info/
+*.egg
+wheels/
+CortexCleaner.spec.bak
+
+# --- Test / coverage ---
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.hypothesis/
+.mypy_cache/
+.ruff_cache/
+
+# --- Virtual environments ---
+venv/
+.venv/
+env/
+ENV/
+
+# --- IDE ---
+.vscode/
+.idea/
+*.swp
+
+# --- OS cruft ---
+.DS_Store
+Thumbs.db
+
+# --- App runtime data (backups, DB, logs, checkpoints created at runtime) ---
+*.db
+*.log
+CortexCleanerBackups/
+.cortex_cleaner/
+.deepcleaner/
+
+# --- Misc scratch files that shouldn't be tracked ---
+_archive/
+
+# --- SEPARATE PROJECT: never ship with Cortex ---
+# NetStress is an unrelated offensive network tool that must NOT be committed,
+# packaged, or published as part of Cortex Cleaner. Keeping it ignored ensures
+# it can never be swept into the git repo, the sdist (setuptools_scm), or a
+# release. It should ideally live outside this workspace entirely.
+NetStress/
+Destroyer-DoS/
+attack.log

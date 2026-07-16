@@ -1,7 +1,7 @@
-import os
+﻿import os
 import yaml
 import pytest
-from deep_cleaner.config import Config, DEFAULT_CONFIG
+from cortex_unified.core.config import Config, DEFAULT_CONFIG
 
 def test_config_initialization_defaults():
     """Test that Config initializes with defaults when no file is present."""

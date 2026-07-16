@@ -1,1 +1,1 @@
-"""Tests for Deep Cleaner."""
+"""Tests for Cortex Cleaner."""

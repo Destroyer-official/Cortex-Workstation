@@ -1,12 +1,12 @@
 from click.testing import CliRunner
-from deep_cleaner.cli import main
+from cortex_unified.cli.cli import main
 
 def test_cli_help():
     """Test that the CLI root command displays help output."""
     runner = CliRunner()
     result = runner.invoke(main, ['--help'])
     assert result.exit_code == 0
-    assert 'Deep Cleaner' in result.output
+    assert 'Cortex Cleaner' in result.output
 
 def test_cli_version():
     """Test that the CLI version command works."""

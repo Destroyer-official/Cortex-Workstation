@@ -1,8 +1,8 @@
-import os
+﻿import os
 import shutil
 import pytest
 from pathlib import Path
-from deep_cleaner.config import Config
+from cortex_unified.core.config import Config
 
 @pytest.fixture
 def temp_dir(tmp_path):

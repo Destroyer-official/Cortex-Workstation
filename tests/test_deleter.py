@@ -1,7 +1,7 @@
-import os
+﻿import os
 import pytest
 from pathlib import Path
-from deep_cleaner.deleter import Deleter
+from cortex_unified.core.deleter import Deleter
 
 def test_deleter_dry_run(test_env):
     """Test that Deleter does not remove files in dry-run mode."""

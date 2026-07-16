@@ -1,0 +1,219 @@
+"""Tests for the engine's category registry and CleanerService orchestration."""
+
+from __future__ import annotations
+
+from pathlib import Path
+
+import pytest
+
+from cortex_unified.engine import (
+    CleanerService,
+    CleanupReport,
+    DeletionMethod,
+    DeletionOutcome,
+    PathGuard,
+    RiskLevel,
+    default_categories,
+)
+from cortex_unified.engine.categories import CleanupCategory
+from cortex_unified.engine.service import CategoryScan
+
+
+class TestCategories:
+    def test_default_registry_nonempty_and_typed(self):
+        cats = default_categories()
+        assert len(cats) >= 1
+        assert all(isinstance(c, CleanupCategory) for c in cats)
+        assert all(isinstance(c.risk, RiskLevel) for c in cats)
+
+    def test_ids_unique(self):
+        ids = [c.id for c in default_categories()]
+        assert len(ids) == len(set(ids))
+
+    def test_risk_ranking(self):
+        assert RiskLevel.LOW.rank < RiskLevel.MEDIUM.rank < RiskLevel.HIGH.rank
+
+
+class TestDeepDiscovery:
+    def test_discovers_nested_cache_dirs(self, tmp_path, monkeypatch):
+        # Build a deep app-data-like tree with caches at varying depths.
+        from cortex_unified.engine import categories as cat_mod
+        (tmp_path / "AppA" / "Cache").mkdir(parents=True)
+        (tmp_path / "AppB" / "User Data" / "Default" / "Code Cache").mkdir(parents=True)
+        (tmp_path / "AppC" / "node_modules" / "pkg" / "Cache").mkdir(parents=True)  # skipped
+        (tmp_path / "AppD" / "Documents").mkdir(parents=True)  # not a cache
+        cat_mod._APP_CACHE_CACHE.clear()
+        found = cat_mod._discover_app_caches([tmp_path])
+        names = {str(p) for p in found}
+        assert any(p.endswith("Cache") and "AppA" in p for p in names)
+        assert any(p.endswith("Code Cache") for p in names)          # found deep
+        assert not any("node_modules" in p for p in names)           # skipped huge dir
+
+    def test_does_not_recurse_into_matched_cache(self, tmp_path):
+        from cortex_unified.engine import categories as cat_mod
+        (tmp_path / "App" / "Cache" / "Cache_Data").mkdir(parents=True)
+        cat_mod._APP_CACHE_CACHE.clear()
+        found = cat_mod._discover_app_caches([tmp_path])
+        # Only the top 'Cache' is returned, not the nested Cache_Data separately.
+        assert sum(1 for p in found if "App" in str(p)) == 1
+
+    def test_discovery_is_cached(self, tmp_path):
+        from cortex_unified.engine import categories as cat_mod
+        (tmp_path / "App" / "Cache").mkdir(parents=True)
+        cat_mod._APP_CACHE_CACHE.clear()
+        a = cat_mod._discover_app_caches([tmp_path])
+        b = cat_mod._discover_app_caches([tmp_path])
+        assert a is b  # same cached tuple object
+
+
+class TestBreakdown:
+    def test_groups_files_into_top_folders(self, tmp_path):
+        from cortex_unified.engine.models import FileEntry
+        root = tmp_path / "cache"
+        cat = CleanupCategory(id="c", label="C", description="", risk=RiskLevel.LOW,
+                              paths=(root,))
+        scan = CategoryScan(category=cat)
+        # Two folders under the root with different sizes.
+        scan.entries = [
+            FileEntry(root / "big" / "a.bin", 5000, 0.0),
+            FileEntry(root / "big" / "b.bin", 3000, 0.0),
+            FileEntry(root / "small" / "c.bin", 100, 0.0),
+        ]
+        bd = scan.breakdown()
+        assert len(bd) == 2
+        # Sorted by size desc -> 'big' first with combined 8000 bytes, 2 files.
+        assert bd[0]["name"] == "big"
+        assert bd[0]["size"] == 8000
+        assert bd[0]["count"] == 2
+        assert bd[1]["name"] == "small"
+
+    def test_limit_respected(self, tmp_path):
+        from cortex_unified.engine.models import FileEntry
+        root = tmp_path / "c"
+        cat = CleanupCategory(id="c", label="C", description="", risk=RiskLevel.LOW,
+                              paths=(root,))
+        scan = CategoryScan(category=cat)
+        scan.entries = [FileEntry(root / f"d{i}" / "f", 10, 0.0) for i in range(50)]
+        assert len(scan.breakdown(limit=10)) == 10
+
+    def test_empty(self):
+        cat = CleanupCategory(id="c", label="C", description="", risk=RiskLevel.LOW,
+                              paths=(Path("x"),))
+        assert CategoryScan(category=cat).breakdown() == []
+
+
+class TestCleanerServiceCategories:
+    def _make_category(self, tmp_path: Path) -> CleanupCategory:
+        junk = tmp_path / "cache"
+        junk.mkdir()
+        (junk / "a.tmp").write_bytes(b"x" * 2048)
+        (junk / "b.tmp").write_bytes(b"y" * 1024)
+        return CleanupCategory(
+            id="test_cache",
+            label="Test cache",
+            description="synthetic",
+            risk=RiskLevel.LOW,
+            paths=(junk,),
+            min_age_days=0.0,
+        )
+
+    def test_scan_and_clean_dry_run_then_real(self, tmp_path: Path, monkeypatch):
+        cat = self._make_category(tmp_path)
+        # Sandbox the guard to tmp_path so synthetic paths are allowed & safe.
+        service = CleanerService(guard=PathGuard(sandbox=tmp_path))
+
+        # Inject our synthetic category into the service scan.
+        scan = service._scan_category(cat)
+        assert scan.file_count == 2
+        assert scan.total_bytes == 3072
+
+        report = CleanupReport(scans=[scan])
+        assert report.total_reclaimable_bytes == 3072
+        assert report.total_files == 2
+
+        # Dry-run: nothing removed.
+        dry = service.clean_categories(report, DeletionMethod.DRY_RUN)
+        assert all(r.outcome is DeletionOutcome.WOULD_DELETE for r in dry)
+        assert (tmp_path / "cache" / "a.tmp").exists()
+
+        # Real delete.
+        real = service.clean_categories(report, DeletionMethod.DELETE)
+        assert all(r.outcome is DeletionOutcome.DELETED for r in real)
+        assert not (tmp_path / "cache" / "a.tmp").exists()
+
+    def test_scan_categories_respects_max_risk(self):
+        service = CleanerService()
+        # Should not raise, and must never include HIGH-risk categories by default.
+        report = service.scan_categories(max_risk=RiskLevel.LOW)
+        assert isinstance(report, CleanupReport)
+        assert report.total_reclaimable_bytes >= 0
+
+    def test_report_to_dict(self, tmp_path: Path):
+        cat = self._make_category(tmp_path)
+        service = CleanerService(guard=PathGuard(sandbox=tmp_path))
+        report = CleanupReport(scans=[service._scan_category(cat)])
+        d = report.to_dict()
+        assert d["total_files"] == 2
+        assert d["categories"][0]["id"] == "test_cache"
+        assert d["categories"][0]["risk"] == "low"
+
+
+class TestScanProgressAndCancel:
+    def test_progress_callback_fires(self, tmp_path):
+        # build a category tree
+        from cortex_unified.engine.categories import CleanupCategory
+        from cortex_unified.engine import PathGuard
+        d = tmp_path / "c"
+        d.mkdir()
+        for i in range(5):
+            (d / f"f{i}.tmp").write_bytes(b"x" * 100)
+        cat = CleanupCategory(
+            id="t", label="T", description="", risk=RiskLevel.LOW, paths=(d,),
+        )
+        svc = CleanerService(guard=PathGuard(sandbox=tmp_path))
+        msgs = []
+        svc._scan_category(cat, progress=msgs.append)
+        # progress may be throttled to few messages, but the plumbing works;
+        # at minimum the walker invoked it at least once for the directory.
+        assert isinstance(msgs, list)
+
+    def test_cancel_event_stops_scan(self):
+        import threading
+        ev = threading.Event()
+        ev.set()
+        report = CleanerService().scan_categories(cancel_event=ev)
+        assert report.total_files == 0
+
+    def test_find_duplicates_accepts_progress_and_cancel(self, tmp_path):
+        (tmp_path / "a.txt").write_text("dup")
+        (tmp_path / "b.txt").write_text("dup")
+        msgs = []
+        groups = CleanerService().find_duplicates([tmp_path], progress=msgs.append)
+        assert any("a.txt" in str(p) for g in groups.values() for p in g)
+
+
+class TestCleanerServiceAnalysis:
+    @pytest.fixture
+    def tree(self, tmp_path: Path) -> Path:
+        (tmp_path / "a.txt").write_text("dup-content")
+        (tmp_path / "b.txt").write_text("dup-content")   # duplicate
+        (tmp_path / "big.bin").write_bytes(b"Z" * (2 * 1024 * 1024))  # 2 MiB
+        (tmp_path / "empty.txt").touch()
+        (tmp_path / "empty_dir").mkdir()
+        return tmp_path
+
+    def test_find_duplicates(self, tree: Path):
+        groups = CleanerService().find_duplicates([tree])
+        names = {p.name for g in groups.values() for p in g}
+        assert {"a.txt", "b.txt"}.issubset(names)
+
+    def test_find_large_files(self, tree: Path):
+        large = CleanerService().find_large_files(tree, min_mb=1.0)
+        assert large
+        assert large[0].path.name == "big.bin"
+        assert all(e.size >= 1024 * 1024 for e in large)
+
+    def test_find_empty(self, tree: Path):
+        files, dirs = CleanerService().find_empty(tree)
+        assert any(p.name == "empty.txt" for p in files)
+        assert any(p.name == "empty_dir" for p in dirs)

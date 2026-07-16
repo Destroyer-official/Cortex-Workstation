@@ -1,6 +1,6 @@
-# Contributing to Deep Cleaner
+# Contributing to Cortex Cleaner
 
-Thank you for your interest in contributing to Deep Cleaner! This document provides guidelines and information to help make the contribution process smooth and effective.
+Thank you for your interest in contributing to Cortex Cleaner! This document provides guidelines and information to help make the contribution process smooth and effective.
 
 ## Getting Started
 

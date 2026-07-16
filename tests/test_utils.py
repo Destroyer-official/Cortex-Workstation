@@ -1,6 +1,6 @@
-import os
+﻿import os
 from pathlib import Path
-from deep_cleaner.utils import normalize_path
+from cortex_unified.core.utils import normalize_path
 
 def test_normalize_path():
     """Test path normalization."""

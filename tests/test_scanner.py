@@ -1,6 +1,6 @@
-import os
+﻿import os
 from pathlib import Path
-from deep_cleaner.scanner import Scanner
+from cortex_unified.core.scanner import Scanner
 
 def test_scanner_finds_empty_files(test_env, clean_config):
     """Test that scanner identifies empty files correctly."""

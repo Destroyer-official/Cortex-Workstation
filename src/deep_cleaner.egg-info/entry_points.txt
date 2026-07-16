@@ -1,3 +1,0 @@
-[console_scripts]
-deep-cleaner = deep_cleaner.cli:main
-deep-cleaner-gui = deep_cleaner.gui_app:main
