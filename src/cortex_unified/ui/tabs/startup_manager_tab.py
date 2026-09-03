@@ -12,41 +12,43 @@ from .base_tab import BaseTab
 from cortex_unified.system_tools.startup_manager import StartupManager
 
 class StartupScanWorker(QThread):
-    """StartupScanWorker."""
+    """Worker that enumerates startup items off the UI thread.
+
+    Emits ``finished(list)`` with StartupManager.list_startup_items()
+    results, or ``error(str)`` on failure.
+    """
     finished = Signal(list)
     error = Signal(str)
-    
+
     def __init__(self, config):
-        """__init__."""
+        """Create the StartupManager backend used for listing items."""
         super().__init__()
         self.manager = StartupManager(config)
-        """__init__."""
-        """__init__."""
-        
+
     def run(self):
-        """run."""
+        """List startup items via StartupManager, emitting results or errors."""
         try:
             items = self.manager.list_startup_items()
             self.finished.emit(items)
         except Exception as e:
             self.error.emit(str(e))
-        """run."""
-    """StartupScanWorker class."""
-    """StartupScanWorker class."""
 
 class StartupManagerTab(BaseTab):
     """Tab for startup manager tab functionality."""
 
     def __init__(self, config, logger, safety_manager):
-        """__init__."""
+        """Create the StartupManager backend and a null worker reference."""
         super().__init__(config, logger, safety_manager)
         self.manager = StartupManager(config)
         self.worker = None
-        """__init__."""
-        """__init__."""
 
     def setup_ui(self):
-        """Create the startup manager tab."""
+        """Create the startup manager tab.
+
+        Builds a Refresh / Disable Selected button row (disable starts
+        disabled), an indeterminate progress bar, and a four-column
+        Name/Location/Status/Type table with row selection.
+        """
         layout = QVBoxLayout(self)
         layout.setSpacing(10)
         
@@ -80,13 +82,15 @@ class StartupManagerTab(BaseTab):
         layout.addWidget(self.startup_table)
 
     def _on_selection(self):
-        """_on_selection."""
+        """Enable the Disable button only when a table row is selected."""
         self.disable_startup_button.setEnabled(len(self.startup_table.selectedItems()) > 0)
-        """_on_selection."""
-        """_on_selection."""
 
     def refresh_startup_items(self):
-        """refresh_startup_items."""
+        """Reload startup items on a background StartupScanWorker.
+
+        Skips if a scan is already running; otherwise shows the busy bar,
+        disables the buttons, clears the table, and starts the worker.
+        """
         if self.worker and self.worker.isRunning():
             return
             
@@ -99,11 +103,13 @@ class StartupManagerTab(BaseTab):
         self.worker.finished.connect(self._on_scan_finished)
         self.worker.error.connect(self._on_scan_error)
         self.worker.start()
-        """refresh_startup_items."""
-        """refresh_startup_items."""
 
     def _on_scan_finished(self, items: List[Dict]):
-        """_on_scan_finished."""
+        """Fill the table with the scanned startup items.
+
+        Each row shows name, location, Enabled/Disabled status, and the
+        startup entry type.
+        """
         self.startup_progress_bar.setVisible(False)
         self.refresh_startup_button.setEnabled(True)
         
@@ -113,20 +119,20 @@ class StartupManagerTab(BaseTab):
             self.startup_table.setItem(row, 1, QTableWidgetItem(item.get("location", "")))
             self.startup_table.setItem(row, 2, QTableWidgetItem("Enabled" if item.get("enabled", True) else "Disabled"))
             self.startup_table.setItem(row, 3, QTableWidgetItem(item.get("type", "")))
-        """_on_scan_finished."""
-        """_on_scan_finished."""
 
     def _on_scan_error(self, err_msg):
-        """_on_scan_error."""
+        """Log and show a critical dialog when the startup scan fails."""
         self.startup_progress_bar.setVisible(False)
         self.refresh_startup_button.setEnabled(True)
         self.logger.error(f"Startup manager scan failed: {err_msg}")
         QMessageBox.critical(self, "Scan Failed", f"Failed to list startup items:\n{err_msg}")
-        """_on_scan_error."""
-        """_on_scan_error."""
 
     def disable_selected_startup_items(self):
-        """disable_selected_startup_items."""
+        """Disable the selected startup item after confirmation.
+
+        Calls StartupManager.disable_startup_item by name and type, then
+        refreshes the list on success or reports an elevation failure.
+        """
         row = self.startup_table.currentRow()
         if row < 0: return
         
@@ -144,5 +150,3 @@ class StartupManagerTab(BaseTab):
                 self.refresh_startup_items()
             else:
                 QMessageBox.critical(self, "Failed", "Could not modify registry/folder access directly. Elevate privileges.")
-        """disable_selected_startup_items."""
-        """disable_selected_startup_items."""

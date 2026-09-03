@@ -24,9 +24,9 @@ from cortex_unified.scheduler.scheduler import TaskScheduler
 from cortex_unified.scheduler.auto_clean_rules import AutoCleanRules
 
 class AddTaskDialog(QDialog):
-    """AddTaskDialog."""
+    """Dialog collecting a task name, frequency (daily/weekly/monthly/once), and time."""
     def __init__(self, parent=None):
-        """__init__."""
+        """Build the schedule form with name, frequency combo, time edit, and Ok/Cancel."""
         super().__init__(parent)
         self.setWindowTitle("Schedule New Task")
         self.setMinimumWidth(350)
@@ -53,23 +53,22 @@ class AddTaskDialog(QDialog):
         btns.accepted.connect(self.accept)
         btns.rejected.connect(self.reject)
         layout.addWidget(btns)
-        """__init__."""
-    """AddTaskDialog class."""
-    """AddTaskDialog class."""
 
 class SchedulerTab(BaseTab):
     """Tab for scheduler tab functionality."""
 
     def __init__(self, config, logger, safety_manager):
-        """__init__."""
+        """Create the TaskScheduler and AutoCleanRules backends."""
         super().__init__(config, logger, safety_manager)
         self.task_scheduler = TaskScheduler(config)
         self.auto_rules = AutoCleanRules(config)
-        """__init__."""
-        """__init__."""
 
     def setup_ui(self):
-        """Create the task scheduler tab."""
+        """Create the task scheduler tab.
+
+        Builds an inner QTabWidget hosting a Scheduled Tasks sub-tab and
+        an Auto-Clean Rules sub-tab.
+        """
         layout = QVBoxLayout(self)
         
         title_label = QLabel('Scheduler System Configuration')
@@ -86,7 +85,12 @@ class SchedulerTab(BaseTab):
         scheduler_tab_widget.addTab(rules_tab, 'Auto-Clean Rules')
 
     def create_tasks_subtab(self) -> QWidget:
-        """create_tasks_subtab."""
+        """Build the Scheduled Tasks sub-tab.
+
+        Creates Add/Remove/Refresh task buttons, a four-column task table
+        (with the raw-object column hidden), and schedules an initial
+        refresh shortly after construction.
+        """
         tab = QWidget()
         layout = QVBoxLayout(tab)
         
@@ -118,11 +122,14 @@ class SchedulerTab(BaseTab):
         # Populate immediately
         QTimer.singleShot(100, self._refresh_tasks)
         return tab
-        """create_tasks_subtab."""
-        """create_tasks_subtab."""
 
     def _refresh_tasks(self):
-        """_refresh_tasks."""
+        """Reload the task table from TaskScheduler.list_scheduled_tasks.
+
+        Tolerates OS-specific payload shapes (name/label, next_run_time or
+        schedule, status or last_exit_code) and stores the raw task dict in
+        the hidden column.
+        """
         tasks = self.task_scheduler.list_scheduled_tasks()
         self.tasks_table.setRowCount(len(tasks))
         
@@ -136,11 +143,15 @@ class SchedulerTab(BaseTab):
             self.tasks_table.setItem(i, 1, QTableWidgetItem(trigger))
             self.tasks_table.setItem(i, 2, QTableWidgetItem(status))
             self.tasks_table.setItem(i, 3, QTableWidgetItem(str(task)))
-        """_refresh_tasks."""
-        """_refresh_tasks."""
 
     def _add_task(self):
-        """_add_task."""
+        """Register a new scheduled cleanup task from the AddTaskDialog.
+
+        Builds a CLI command (run_cli.py --temp --cache --auto-approve)
+        with the chosen name, frequency, and time, registers it via
+        TaskScheduler, and refreshes the table; failure prompts for admin
+        privileges.
+        """
         dialog = AddTaskDialog(self)
         if dialog.exec() == QDialog.Accepted:
             name = dialog.name_input.text().strip()
@@ -168,11 +179,13 @@ class SchedulerTab(BaseTab):
                 self._refresh_tasks()
             else:
                 QMessageBox.critical(self, "Error", "Failed to register OS Task. Ensure you have administrator/root privileges.")
-        """_add_task."""
-        """_add_task."""
 
     def _remove_task(self):
-        """_remove_task."""
+        """Delete the selected scheduled task after confirmation.
+
+        Calls TaskScheduler.delete_scheduled_task by name and refreshes the
+        table; failure suggests elevated privileges are required.
+        """
         row = self.tasks_table.currentRow()
         if row < 0:
             QMessageBox.information(self, "Selection", "Select a task to remove.")
@@ -187,11 +200,14 @@ class SchedulerTab(BaseTab):
                 self._refresh_tasks()
             else:
                 QMessageBox.critical(self, "Error", "Failed to delete task. Root privileges may be required.")
-        """_remove_task."""
-        """_remove_task."""
 
     def create_auto_clean_rules_subtab(self) -> QWidget:
-        """create_auto_clean_rules_subtab."""
+        """Build the Auto-Clean Rules sub-tab.
+
+        Creates a disk-usage threshold spinner, a startup deep-clean
+        checkbox, an Apply button, and a daemon status label for the
+        background monitoring rules.
+        """
         tab = QWidget()
         layout = QVBoxLayout(tab)
         
@@ -226,11 +242,14 @@ class SchedulerTab(BaseTab):
         layout.addStretch()
         
         return tab
-        """create_auto_clean_rules_subtab."""
-        """create_auto_clean_rules_subtab."""
 
     def _apply_rules(self):
-        """_apply_rules."""
+        """Apply the auto-clean rules and start the monitoring daemon.
+
+        Resets existing rules, adds a disk-usage threshold rule (purge temp
+        above the chosen percentage) and optionally a startup deep-clean
+        rule, then starts hourly monitoring via AutoCleanRules.
+        """
         self.auto_rules.rules.clear()
         
         # Drive percentage
@@ -244,5 +263,3 @@ class SchedulerTab(BaseTab):
         self.auto_rules.start_monitoring(interval_seconds=3600) # hourly checks
         self.daemon_status_lbl.setText("Daemon: ACTIVE (Rule Enforced)")
         QMessageBox.information(self, "Rules Applied", f"System will now passively flush temp boundaries crossing {limit}% disk usage.")
-        """_apply_rules."""
-        """_apply_rules."""

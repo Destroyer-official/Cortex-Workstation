@@ -33,13 +33,18 @@ class SettingsTab(BaseTab):
     """Tab for settings tab functionality."""
 
     def __init__(self, config, logger, safety_manager):
-        """__init__."""
+        """Initialize the settings tab via the base class."""
         super().__init__(config, logger, safety_manager)
-        """__init__."""
-        """__init__."""
 
     def setup_ui(self):
-        """Create the settings tab natively hooking I18n modules."""
+        """Create the settings tab natively hooking I18n modules.
+
+        Builds a QTabWidget with a General form (log file, verbose output),
+        a Performance tab embedding the performance manager's settings
+        widget (or an import error label), and a Language & Accessibility
+        tab embedding the I18n manager's widget, plus a Save button at the
+        bottom.
+        """
         layout = QVBoxLayout(self)
         layout.setSpacing(15)
         layout.setContentsMargins(15, 15, 15, 15)

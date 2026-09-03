@@ -59,13 +59,11 @@ class BaseTab(QWidget):
                 raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
                 
             def lazy_call(*args, **kwargs):
-                """lazy_call."""
+                """Defer the proxied call to the main window attribute, logging any failure."""
                 try:
                     return getattr(top_window, name)(*args, **kwargs)
                 except Exception as e:
                     self.logger.error(f"Error in lazy proxy {name}: {e}")
-                """lazy_call."""
-                """lazy_call."""
             return lazy_call
         finally:
             self._in_getattr = False

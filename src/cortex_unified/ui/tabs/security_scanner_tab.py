@@ -25,17 +25,21 @@ class SentinelScanWorker(QThread):
 
     def __init__(self, directory: str, scan_archives: bool = False,
                  scan_git: bool = False, max_workers: int = 8):
-        """__init__."""
+        """Store the scan target, archive/git options, and thread budget."""
         super().__init__()
         self.directory = directory
         self.scan_archives = scan_archives
         self.scan_git = scan_git
         self.max_workers = max_workers
-        """__init__."""
-        """__init__."""
 
     def run(self):
-        """run."""
+        """Run the secrets scan via system_tools.secrets_scanner.
+
+        Performs run_scan on the directory, optionally appends archive and
+        git-history findings, and re-sorts everything by severity. Emits
+        ``progress`` with status text, ``finished`` with the merged
+        ScanStats, or ``error`` with the failure message.
+        """
         try:
             from cortex_unified.system_tools.secrets_scanner import (
                 run_scan, scan_archives, scan_git_history
@@ -60,8 +64,6 @@ class SentinelScanWorker(QThread):
             self.finished.emit(stats)
         except Exception as e:
             self.error.emit(str(e))
-        """run."""
-        """run."""
 
 
 SEVERITY_COLORS = {
@@ -77,14 +79,19 @@ class SecurityScannerTab(BaseTab):
     """Tab for Sentinel Pro security & secrets scanner."""
 
     def __init__(self, config, logger, safety_manager):
-        """__init__."""
+        """Initialize with a null scan-stats holder before UI setup."""
         self.scan_stats = None
         super().__init__(config, logger, safety_manager)
-        """__init__."""
-        """__init__."""
 
     def setup_ui(self):
-        """Set up the security scanner UI."""
+        """Set up the security scanner UI.
+
+        Creates a scan-target row (path input + Browse), an options group
+        (archive/git checkboxes and a thread spinbox), Start Scan and
+        Export JSON buttons, a busy progress bar with label, a summary
+        banner, a seven-column findings table with severity coloring, and a
+        read-only detail pane showing the selected finding's metadata.
+        """
         layout = QVBoxLayout(self)
         layout.setSpacing(10)
 
@@ -181,15 +188,18 @@ class SecurityScannerTab(BaseTab):
         layout.addWidget(detail_group)
 
     def _browse_path(self):
-        """_browse_path."""
+        """Choose a scan directory and put it in the path input."""
         path = QFileDialog.getExistingDirectory(self, "Select Directory to Scan")
         if path:
             self.scan_path_input.setText(path)
-        """_browse_path."""
-        """_browse_path."""
 
     def start_scan(self):
-        """start_scan."""
+        """Validate the path and run SentinelScanWorker on a background thread.
+
+        Disables the scan/export buttons, clears previous results, and
+        wires worker progress/finished/error signals to the UI; the worker
+        is tracked for cleanup.
+        """
         path = self.scan_path_input.text().strip()
         if not path or not os.path.isdir(path):
             QMessageBox.warning(self, "Invalid Path", "Please select a valid directory.")
@@ -216,18 +226,19 @@ class SecurityScannerTab(BaseTab):
         worker.finished.connect(lambda: self._cleanup_worker(worker))
         worker.error.connect(lambda: self._cleanup_worker(worker))
         worker.start()
-        """start_scan."""
-        """start_scan."""
 
     def _cleanup_worker(self, worker):
-        """_cleanup_worker."""
+        """Untrack and schedule deletion of the finished scan worker."""
         self.remove_worker_thread(worker)
         worker.deleteLater()
-        """_cleanup_worker."""
-        """_cleanup_worker."""
 
     def _scan_complete(self, stats):
-        """_scan_complete."""
+        """Render the finished ScanStats.
+
+        Stores the stats, shows the risk-score/severity summary banner,
+        fills the findings table with severity-colored rows (relative file
+        paths, confidence, compliance), and enables the export button.
+        """
         self.scan_stats = stats
         self.scan_button.setEnabled(True)
         self.export_button.setEnabled(True)
@@ -274,20 +285,21 @@ class SecurityScannerTab(BaseTab):
 
         self.findings_table.resizeColumnsToContents()
         self.set_status(f"Security scan complete: {len(findings)} findings (Risk: {stats.risk_score}/100)")
-        """_scan_complete."""
-        """_scan_complete."""
 
     def _scan_error(self, error_msg):
-        """_scan_error."""
+        """Re-enable the scan button and show the scan failure dialog."""
         self.scan_button.setEnabled(True)
         self.progress_bar.setVisible(False)
         self.progress_label.setText("")
         QMessageBox.critical(self, "Scan Error", f"Security scan failed:\n{error_msg}")
-        """_scan_error."""
-        """_scan_error."""
 
     def _on_finding_selected(self, row, col, prev_row, prev_col):
-        """_on_finding_selected."""
+        """Show the selected finding's full details in the detail pane.
+
+        Displays pattern name, file/line, severity, category, confidence,
+        entropy, compliance frameworks, line preview, match preview, and
+        remediation guidance.
+        """
         if not self.scan_stats or row < 0 or row >= len(self.scan_stats.findings):
             return
         f = self.scan_stats.findings[row]
@@ -306,11 +318,9 @@ class SecurityScannerTab(BaseTab):
             f"Remediation:\n{f.remediation}\n"
         )
         self.detail_text.setPlainText(detail)
-        """_on_finding_selected."""
-        """_on_finding_selected."""
 
     def export_report(self):
-        """export_report."""
+        """Export the last scan's stats to a JSON file via a save dialog."""
         if not self.scan_stats:
             return
         file_path, _ = QFileDialog.getSaveFileName(
@@ -325,5 +335,3 @@ class SecurityScannerTab(BaseTab):
             QMessageBox.information(self, "Export Complete", f"Report saved to:\n{file_path}")
         except Exception as e:
             QMessageBox.critical(self, "Export Error", f"Failed to export report:\n{str(e)}")
-        """export_report."""
-        """export_report."""

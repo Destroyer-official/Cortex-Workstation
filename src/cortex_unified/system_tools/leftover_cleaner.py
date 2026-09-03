@@ -228,17 +228,20 @@ class SafetyPolicy:
     own_paths: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
-        """__post_init__."""
+        """Normalize stored paths to case-folded absolute form for matching."""
         self.protected_paths = frozenset(
             os.path.normcase(os.path.abspath(p)) for p in self.protected_paths)
         self.own_paths = tuple(
             os.path.normcase(os.path.abspath(p)) for p in self.own_paths)
-        """__post_init__."""
-        """__post_init__."""
 
     @classmethod
     def build(cls, extra_protected: Iterable[str] = ()) -> "SafetyPolicy":
-        """Build."""
+        """Build a policy protecting known-folder roots plus *extra_protected*.
+
+        Protects the directories named by _KNOWN_FOLDER_ENVS (SystemRoot,
+        Program Files, ProgramData, APPDATA, TEMP, ...), any caller-supplied
+        extra paths, and this module's own directory (self-protection).
+        """
         protected: set[str] = set()
         for env in _KNOWN_FOLDER_ENVS:
             value = os.environ.get(env)
@@ -320,7 +323,7 @@ class InstalledApp:
     tokens: tuple[str, ...] = ()
 
     def to_dict(self) -> dict:
-        """To dict."""
+        """Return a plain-dict view of this app entry (for journals/reports)."""
         return {
             "name": self.name, "publisher": self.publisher,
             "version": self.version, "install_location": self.install_location,
@@ -377,7 +380,12 @@ def read_installed_apps() -> list[InstalledApp]:
 
 def _read_uninstall_entry(hive, hive_name: str, branch: str,
                           subkey: str) -> InstalledApp | None:
-    """_read_uninstall_entry."""
+    """Read one Uninstall subkey (DisplayName, Publisher, ...) via winreg.
+
+    Returns None for entries that cannot be opened or that have no
+    DisplayName (system-component entries are skipped). Uses read-only
+    access with the 64-bit view; nothing is written.
+    """
     path = f"{branch}\\{subkey}"
     try:
         key = winreg.OpenKey(hive, path, 0,
@@ -408,8 +416,6 @@ def _read_uninstall_entry(hive, hive_name: str, branch: str,
         display_icon=values.get("DisplayIcon", ""),
         installer_type=detect_installer_type(subkey, values.get("UninstallString", "")),
     )
-    """_read_uninstall_entry."""
-    """_read_uninstall_entry."""
 
 
 def _clean_registry_path(value: str) -> str:
@@ -442,7 +448,7 @@ class LeftoverFinding:
     app_name: str = ""
 
     def to_dict(self) -> dict:
-        """To dict."""
+        """Return a plain-dict view of this finding (for journals/reports)."""
         return {
             "kind": self.kind, "path": self.path,
             "size_bytes": self.size_bytes, "score": self.score,
@@ -452,12 +458,10 @@ class LeftoverFinding:
 
 
 def _add(f: LeftoverFinding, points: int, reason: str) -> None:
-    """_add."""
+    """Add *points* for *reason* to a finding and refresh its confidence level."""
     f.score += points
     f.reasons.append(f"{points:+d} {reason}")
     f.level = confidence_level(f.score)
-    """_add."""
-    """_add."""
 
 
 # =====================================================================
@@ -475,7 +479,8 @@ class ExclusionsStore:
     """
 
     def __init__(self, path: str | Path | None = None):
-        """Initialize Exclusions Store."""
+        """Initialize the store, loading from *path* (default
+        ``~/.cortex_cleaner/exclusions.json``)."""
         self._path = Path(path) if path else (
             Path.home() / ".cortex_cleaner" / "exclusions.json")
         self._paths: set[str] = set()
@@ -484,7 +489,7 @@ class ExclusionsStore:
     # -- persistence ------------------------------------------------------
 
     def _load(self) -> None:
-        """_load."""
+        """Load the JSON exclusion list; unreadable/corrupt file means empty."""
         try:
             if self._path.exists():
                 raw = json.loads(self._path.read_text(encoding="utf-8"))
@@ -497,11 +502,13 @@ class ExclusionsStore:
             logger.debug("exclusions unreadable; starting empty",
                          exc_info=True)
             self._paths = set()
-        """_load."""
-        """_load."""
 
     def save(self) -> bool:
-        """Save."""
+        """Atomically persist the exclusion list (tmp file + replace).
+
+        Returns True on success; an OSError is logged and False is returned
+        rather than raised.
+        """
         try:
             self._path.parent.mkdir(parents=True, exist_ok=True)
             payload = sorted(self._paths)
@@ -517,13 +524,11 @@ class ExclusionsStore:
 
     @staticmethod
     def _norm(path: str | Path) -> str:
-        """_norm."""
+        """Normalize a path (case + separators) for exclusion matching."""
         try:
             return os.path.normcase(os.path.normpath(str(path)))
         except OSError:  # pragma: no cover - defensive
             return str(path).lower()
-        """_norm."""
-        """_norm."""
 
     def add(self, path: str | Path) -> bool:
         """Exclude *path* (and everything beneath it). Persists immediately."""
@@ -534,7 +539,7 @@ class ExclusionsStore:
         return True
 
     def discard(self, path: str | Path) -> bool:
-        """Discard."""
+        """Remove *path* from the exclusions and persist immediately."""
         norm = self._norm(path)
         if norm in self._paths:
             self._paths.discard(norm)
@@ -542,14 +547,12 @@ class ExclusionsStore:
         return True
 
     def paths(self) -> tuple[str, ...]:
-        """Paths."""
+        """Sorted tuple of all excluded (normalized) paths."""
         return tuple(sorted(self._paths))
 
     def __len__(self) -> int:
-        """__len__."""
+        """Number of excluded paths."""
         return len(self._paths)
-        """__len__."""
-        """__len__."""
 
     def is_excluded(self, path: str | Path) -> bool:
         """True when *path* IS an excluded entry or lives beneath one."""
@@ -603,7 +606,7 @@ class LeftoverScanner:
                  policy: SafetyPolicy | None = None,
                  exclusions: ExclusionsStore | None = None,
                  cancel_event=None):
-        """Initialize Leftover Scanner."""
+        """Initialize the scanner; the app inventory loads lazily on first scan."""
         self.policy = policy or SafetyPolicy.build()
         self.exclusions = exclusions
         self.cancel_event = cancel_event
@@ -614,21 +617,17 @@ class LeftoverScanner:
         self._inventory_loaded = False
 
     def _cancelled(self) -> bool:
-        """_cancelled."""
+        """True when the caller's cancel_event (if any) has been set."""
         return self.cancel_event is not None and self.cancel_event.is_set()
-        """_cancelled."""
-        """_cancelled."""
 
     def _allowed(self, f: LeftoverFinding) -> bool:
-        """_allowed."""
+        """True when the finding is not under a user exclusion."""
         return self.exclusions is None or not self.exclusions.is_excluded(f.path)
-        """_allowed."""
-        """_allowed."""
 
     # -- inventory ------------------------------------------------------
 
     def _ensure_inventory(self) -> None:
-        """_ensure_inventory."""
+        """Lazily load installed apps and build name/publisher/location sets."""
         if self._inventory_loaded:
             return
         if self._installed is None:
@@ -642,16 +641,12 @@ class LeftoverScanner:
                 self._live_locations.append(
                     os.path.normcase(os.path.abspath(app.install_location)))
         self._inventory_loaded = True
-        """_ensure_inventory."""
-        """_ensure_inventory."""
 
     def _load_live_inventory(self) -> list[InstalledApp]:
-        """_load_live_inventory."""
+        """Return a copy of the installed-app list (loading it if needed)."""
         self._ensure_inventory()
         assert self._installed is not None
         return list(self._installed)
-        """_load_live_inventory."""
-        """_load_live_inventory."""
 
     # -- public API -------------------------------------------------------
 
@@ -748,7 +743,11 @@ class LeftoverScanner:
     # -- filesystem sweep -------------------------------------------------
 
     def _sweep_roots(self) -> list[str]:
-        """_sweep_roots."""
+        """Sweep roots: Program Files (both), ProgramData, AppData variants.
+
+        Includes LocalLow, VirtualStore and the per-user Programs folders;
+        duplicates and non-existent roots are filtered out.
+        """
         roots = []
         for env in ("PROGRAMFILES", "ProgramFiles(x86)", "ProgramData",
                     "APPDATA", "LOCALAPPDATA"):
@@ -770,11 +769,9 @@ class LeftoverScanner:
                 seen.add(n)
                 out.append(r)
         return out
-        """_sweep_roots."""
-        """_sweep_roots."""
 
     def _program_dir_roots(self) -> list[str]:
-        """_program_dir_roots."""
+        """Program-directories only (Program Files x2, LocalAppData\\Programs)."""
         roots = []
         for env in ("PROGRAMFILES", "ProgramFiles(x86)"):
             v = os.environ.get(env)
@@ -784,21 +781,24 @@ class LeftoverScanner:
         if local:
             roots.append(os.path.join(local, "Programs"))
         return [r for r in roots if os.path.isdir(r)]
-        """_program_dir_roots."""
-        """_program_dir_roots."""
 
     def _sweep_filesystem(self, app: InstalledApp, tokens: tuple[str, ...],
                           findings: dict[str, LeftoverFinding]) -> None:
-        """_sweep_filesystem."""
+        """Walk every sweep root (max 2 levels) matching folder names to tokens."""
         for root in self._sweep_roots():
             self._walk_fs_level(app, tokens, root, depth=0, findings=findings)
-        """_sweep_filesystem."""
-        """_sweep_filesystem."""
 
     def _walk_fs_level(self, app: InstalledApp, tokens: tuple[str, ...],
                        directory: str, depth: int,
                        findings: dict[str, LeftoverFinding]) -> None:
-        """_walk_fs_level."""
+        """Depth-limited directory walk collecting token-matching folders.
+
+        Skips blacklisted names, prohibited paths, reparse points and
+        system-attributed folders; matches folders by cleaned-name
+        containment or product-name distance, scores content, and descends
+        regardless of match (vendor\\App\\Cache nesting), but never past
+        _MAX_FS_DEPTH. Loose files at the root level are ignored.
+        """
         if depth > _MAX_FS_DEPTH:
             return
         try:
@@ -834,12 +834,16 @@ class LeftoverScanner:
                     self._walk_fs_level(app, tokens, path, depth + 1, findings)
             elif depth == 0:
                 continue  # loose files directly in a root are never candidates
-        """_walk_fs_level."""
-        """_walk_fs_level."""
 
     def _score_folder_content(self, path: str, f: LeftoverFinding,
                               app: InstalledApp) -> None:
-        """_score_folder_content."""
+        """Score a matched folder by walking its contents (read-only).
+
+        Counts files and total size (reparse points are not descended),
+        awards points for empty/leaf/publisher-parent folders, and penalizes
+        executables present, >100 files, and folders named after the publisher
+        (shared vendor-folder risk).
+        """
         file_count = 0
         has_executable = False
         empty = True
@@ -878,11 +882,9 @@ class LeftoverScanner:
         pub_only = re.sub(r"[^a-z0-9]", "", app.publisher.lower())
         if pub_only and name_clean == pub_only:
             _add(f, _NAME_EQUALS_COMPANY, "folder name equals publisher (shared vendor folder)")
-        """_score_folder_content."""
-        """_score_folder_content."""
 
     def _score_orphan_folder(self, path: str, f: LeftoverFinding) -> None:
-        """_score_orphan_folder."""
+        """Score an orphan folder: emptiness, executables, file count, name."""
         file_count = 0
         has_executable = False
         empty = True
@@ -913,8 +915,6 @@ class LeftoverScanner:
         base = os.path.basename(path).lower()
         if base in QUESTIONABLE_NAMES:
             _add(f, _QUESTIONABLE_NAME, "generic directory name")
-        """_score_orphan_folder."""
-        """_score_orphan_folder."""
 
     def _claimed_by_live_app(self, path: str, name_lower: str) -> bool:
         """True when a currently-installed app claims this name/location."""
@@ -929,10 +929,8 @@ class LeftoverScanner:
         return False
 
     def _folder_identity(self, name: str) -> str:
-        """_folder_identity."""
+        """Strip trailing version numbers/decorations from a folder name."""
         return re.sub(r"\d+(\.\d+)+.*$", "", name).strip("_-. ") or name
-        """_folder_identity."""
-        """_folder_identity."""
 
     # -- registry sweep ----------------------------------------------------
 
@@ -946,7 +944,12 @@ class LeftoverScanner:
 
     def _sweep_registry(self, app: InstalledApp, tokens: tuple[str, ...],
                         findings: dict[str, LeftoverFinding]) -> None:
-        """_sweep_registry."""
+        """Walk HKLM/HKCU SOFTWARE branches (read-only) matching keys to tokens.
+
+        Covers SOFTWARE, Wow6432Node and VirtualStore MACHINE\\SOFTWARE in
+        both hives, blacklisting system subtrees and stopping at
+        _MAX_REG_DEPTH levels.
+        """
         if not HAS_WINREG:
             return
         hive_map = {"HKLM": winreg.HKEY_LOCAL_MACHINE, "HKCU": winreg.HKEY_CURRENT_USER}
@@ -963,13 +966,16 @@ class LeftoverScanner:
                                      full_root, depth=0, findings=findings)
             finally:
                 winreg.CloseKey(key)
-        """_sweep_registry."""
-        """_sweep_registry."""
 
     def _walk_reg_level(self, app: InstalledApp, tokens: tuple[str, ...],
                         hive, hive_name: str, key, display_path: str,
                         depth: int, findings: dict[str, LeftoverFinding]) -> None:
-        """_walk_reg_level."""
+        """Recursive registry walk: matches subkey names or explicit pointers.
+
+        Skips blacklisted subkeys; scores token matches by depth and adds a
+        strong bonus when a value in the key points into the app's install
+        location; recurses up to _MAX_REG_DEPTH levels (read-only access).
+        """
         if depth > _MAX_REG_DEPTH:
             return
         try:
@@ -1008,8 +1014,6 @@ class LeftoverScanner:
                                          child_display, depth + 1, findings)
             finally:
                 winreg.CloseKey(child)
-        """_walk_reg_level."""
-        """_walk_reg_level."""
 
     def _explicit_pointer(self, key, app: InstalledApp) -> bool:
         """True when a value under *key* references the app's install dir."""
@@ -1062,7 +1066,11 @@ class LeftoverScanner:
 
     @staticmethod
     def _same_product(a: InstalledApp, b: InstalledApp) -> bool:
-        """_same_product."""
+        """True when two uninstall entries denote the same product.
+
+        Matches on identical name, identical install location, or a
+        near-perfect name distance.
+        """
         if a.name.lower() == b.name.lower():
             return True
         if b.install_location and a.install_location:
@@ -1071,13 +1079,11 @@ class LeftoverScanner:
             if na == nb:
                 return True
         return match_string_to_product(a.name, b.name) in (0, 1)
-        """_same_product."""
-        """_same_product."""
 
     # -- shortcuts ------------------------------------------------------------
 
     def _start_menu_dirs(self) -> list[str]:
-        """_start_menu_dirs."""
+        """Existing user and common Start Menu directories, if present."""
         dirs = []
         appdata = os.environ.get("APPDATA")
         programdata = os.environ.get("ProgramData")
@@ -1086,8 +1092,6 @@ class LeftoverScanner:
         if programdata:
             dirs.append(os.path.join(programdata, r"Microsoft\Windows\Start Menu"))
         return [d for d in dirs if os.path.isdir(d)]
-        """_start_menu_dirs."""
-        """_start_menu_dirs."""
 
     def _sweep_shortcuts(self, app: InstalledApp,
                          findings: dict[str, LeftoverFinding]) -> None:
@@ -1127,7 +1131,7 @@ class LeftoverScanner:
     _MAX_COM_KEYS = 5000          # hard cap so a huge Classes hive can't stall
 
     def _com_branches(self) -> list[tuple[str, str]]:
-        """_com_branches."""
+        """Registry branches searched for orphaned COM registrations."""
         return [
             ("HKLM", r"SOFTWARE\Classes\CLSID"),
             ("HKCU", r"SOFTWARE\Classes\CLSID"),
@@ -1135,8 +1139,6 @@ class LeftoverScanner:
             ("HKLM", r"SOFTWARE\Classes\TypeLib"),
             ("HKCU", r"SOFTWARE\Classes\TypeLib"),
         ]
-        """_com_branches."""
-        """_com_branches."""
 
     def _sweep_com(self, app: InstalledApp,
                    findings: dict[str, LeftoverFinding]) -> None:
@@ -1405,7 +1407,7 @@ class CleanOutcome:
     detail: str = ""
 
     def to_dict(self) -> dict:
-        """To dict."""
+        """Return a plain-dict view of this outcome (for journals)."""
         return {"path": self.path, "kind": self.kind, "ok": self.ok,
                 "disposition": self.disposition, "detail": self.detail}
 
@@ -1431,7 +1433,8 @@ class LeftoverCleaner:
 
     def __init__(self, backup_root: str | Path | None = None,
                  policy: SafetyPolicy | None = None):
-        """Initialize Leftover Cleaner."""
+        """Initialize with a safety policy and session-backup root
+        (default ``~/CortexCleanerBackups/leftovers``)."""
         self.policy = policy or SafetyPolicy.build()
         self.backup_root = Path(backup_root) if backup_root else (
             Path.home() / "CortexCleanerBackups" / "leftovers")
@@ -1440,7 +1443,16 @@ class LeftoverCleaner:
               create_restore_point: bool = False,
               exclusions: ExclusionsStore | None = None,
               cancel_event=None) -> list[CleanOutcome]:
-        """Clean."""
+        """Remove reviewed findings, one per disposition, with undo layers.
+
+        Dispatches by kind: registry keys and services via ``reg`` (backed
+        up first), tasks via ``schtasks`` (XML backed up), and
+        folders/files/shortcuts via send2trash (Recycle Bin). Honors
+        protected paths and user exclusions as defense in depth, supports
+        cooperative cancellation between items, optionally creates a System
+        Restore point, and always writes a JSON journal of outcomes to a
+        timestamped session folder under backup_root.
+        """
         outcomes: list[CleanOutcome] = []
         journal: list[dict] = []
         stamp = __import__("time").strftime("%Y%m%d_%H%M%S")
@@ -1494,7 +1506,11 @@ class LeftoverCleaner:
     # -- filesystem ---------------------------------------------------------
 
     def _recycle(self, f: LeftoverFinding) -> CleanOutcome:
-        """_recycle."""
+        """Move a file/folder/shortcut to the Recycle Bin via send2trash.
+
+        Returns a failed outcome when send2trash is not installed or the
+        bin rejects the item; never falls back to permanent deletion.
+        """
         try:
             from send2trash import send2trash
         except ImportError:
@@ -1505,14 +1521,17 @@ class LeftoverCleaner:
             return CleanOutcome(f.path, f.kind, True, "recycled")
         except Exception as exc:  # noqa: BLE001 - surfaced, never silent
             return CleanOutcome(f.path, f.kind, False, "failed", str(exc))
-        """_recycle."""
-        """_recycle."""
 
     # -- registry -----------------------------------------------------------
 
     def _clean_registry(self, f: LeftoverFinding,
                         session: Path | None) -> CleanOutcome:
-        """_clean_registry."""
+        """Export a registry key with ``reg export``, then delete it.
+
+        The .reg backup is written into the session folder so a double-click
+        restores the key; both commands run with a 30s timeout and
+        shell=False. Requires admin rights for HKLM keys.
+        """
         import subprocess
         if session is None:
             return CleanOutcome(f.path, f.kind, False, "failed", "no session")
@@ -1541,8 +1560,6 @@ class LeftoverCleaner:
                                 f"backup: {backup_file}")
         except OSError as exc:
             return CleanOutcome(f.path, f.kind, False, "failed", str(exc))
-        """_clean_registry."""
-        """_clean_registry."""
 
     # -- services / scheduled tasks -------------------------------------------
 
@@ -1622,7 +1639,11 @@ class LeftoverCleaner:
     def _write_journal(self, session: Path, journal: list[dict],
                        outcomes: list[CleanOutcome],
                        restore_note: str = "") -> None:
-        """_write_journal."""
+        """Write the session journal.json atomically (tmp file + os.replace).
+
+        Records the timestamp, restore-point note, per-item dispositions
+        and ok/fail counts; write failures are logged, never raised.
+        """
         try:
             session.mkdir(parents=True, exist_ok=True)
             payload = {
@@ -1638,12 +1659,10 @@ class LeftoverCleaner:
             os.replace(tmp_name, str(session / "journal.json"))
         except OSError:
             logger.debug("journal write failed", exc_info=True)
-        """_write_journal."""
-        """_write_journal."""
 
 
 def stamp_now() -> str:
-    """Stamp now."""
+    """Current local time as an ISO-like ``YYYY-MM-DDTHH:MM:SS`` string."""
     import time
     return time.strftime("%Y-%m-%dT%H:%M:%S")
 

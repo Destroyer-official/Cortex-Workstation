@@ -31,14 +31,14 @@ from cortex_unified.system_tools.leftover_cleaner import (
 # ──────────────────────────────────────────────────────────────────────
 
 class AppListWorker(QObject):
-    """AppListWorker."""
+    """Worker that enumerates installed applications off the UI thread.
+
+    Emits ``finished(list)`` with AppUninstaller.get_installed_apps() results.
+    """
     finished = Signal(list)
     def run(self):
-        """run."""
+        """Query AppUninstaller for installed apps and emit them as a list."""
         self.finished.emit(AppUninstaller().get_installed_apps())
-        """run."""
-    """AppListWorker class."""
-    """AppListWorker class."""
 
 
 class ResidualScanWorker(QObject):
@@ -48,16 +48,19 @@ class ResidualScanWorker(QObject):
     failed = Signal(str)
 
     def __init__(self, app_name: str, publisher: str, install_location: str = ""):
-        """__init__."""
+        """Store the app identity used to build the InstalledApp scan target."""
         super().__init__()
         self._app_name = app_name
         self._publisher = publisher
         self._install_location = install_location
-        """__init__."""
-        """__init__."""
 
     def run(self):
-        """run."""
+        """Scan for the app's leftovers via LeftoverScanner.
+
+        Builds an InstalledApp from the stored identity and emits ``finished``
+        with a list of finding dicts (path, kind, size, reasons, level), or
+        ``failed`` with the error message.
+        """
         try:
             app = InstalledApp(name=self._app_name,
                                publisher=self._publisher,
@@ -66,8 +69,6 @@ class ResidualScanWorker(QObject):
             self.finished.emit([f.to_dict() for f in findings])
         except Exception as exc:  # noqa: BLE001
             self.failed.emit(str(exc))
-        """run."""
-        """run."""
 
 
 class ResidualCleanWorker(QObject):
@@ -77,15 +78,18 @@ class ResidualCleanWorker(QObject):
     failed = Signal(str)
 
     def __init__(self, findings: list[dict], create_restore_point: bool = False):
-        """__init__."""
+        """Store the selected finding dicts and restore-point preference."""
         super().__init__()
         self._findings = findings
         self._create_restore_point = create_restore_point
-        """__init__."""
-        """__init__."""
 
     def run(self):
-        """run."""
+        """Clean the selected leftovers via LeftoverCleaner.
+
+        Converts finding dicts to LeftoverFinding models and emits
+        ``finished`` with per-item outcome dicts (ok, disposition, path,
+        detail), or ``failed`` with the error message.
+        """
         try:
             from cortex_unified.system_tools.leftover_cleaner import (
                 LeftoverCleaner,
@@ -99,8 +103,6 @@ class ResidualCleanWorker(QObject):
             self.finished.emit([o.to_dict() for o in outcomes])
         except Exception as exc:  # noqa: BLE001
             self.failed.emit(str(exc))
-        """run."""
-        """run."""
 
 
 # ──────────────────────────────────────────────────────────────────────
@@ -111,7 +113,7 @@ class UninstallerTab(BaseTab):
     """Deep Uninstaller with residual hunting."""
 
     def __init__(self, config, logger, safety_manager, parent=None):
-        """__init__."""
+        """Create the AppUninstaller backend and thread/worker refs before UI setup."""
         self.uninstaller = AppUninstaller()
         self.all_apps = []
         self._app_thread = None
@@ -119,11 +121,18 @@ class UninstallerTab(BaseTab):
         self._res_thread = None
         self._res_worker = None
         super().__init__(config, logger, safety_manager)
-        """__init__."""
-        """__init__."""
 
     def setup_ui(self):
-        """setup_ui."""
+        """Build the uninstaller layout.
+
+        Creates a search box with live filtering and Refresh button, an
+        indeterminate load progress bar, and a splitter pairing the
+        four-column app table (Name/Publisher/Version/Size) with a details
+        panel showing the selected app's metadata, an official-uninstaller
+        button, a threaded leftover scan with its own three-column results
+        table (Path/Size/Confidence), a recycle-bin cleanup button, and a
+        restore-point checkbox. Ends by kicking off an initial app load.
+        """
         main_layout = QVBoxLayout(self)
 
         # Header
@@ -237,20 +246,21 @@ class UninstallerTab(BaseTab):
 
         # Kick off initial load
         self._load_apps()
-        """setup_ui."""
-        """setup_ui."""
 
     def setup_tooltips(self):
-        """setup_tooltips."""
+        """Set tooltips for the uninstall and leftover-scan buttons."""
         self.btn_uninstall.setToolTip("Launch the application's official uninstaller")
         self.btn_residuals.setToolTip("Search for orphaned folders left behind by this application")
-        """setup_tooltips."""
-        """setup_tooltips."""
 
     # ── App Loading ───────────────────────────────────────────────────
 
     def _load_apps(self):
-        """_load_apps."""
+        """Load installed apps on a background thread via AppListWorker.
+
+        Disables refresh, clears the table/search, shows the busy bar, and
+        wires the worker's finished signal to repopulate the table and quit
+        the thread.
+        """
         self.refresh_btn.setEnabled(False)
         self.app_table.setRowCount(0)
         self.search_input.clear()
@@ -267,21 +277,21 @@ class UninstallerTab(BaseTab):
         self._app_thread.finished.connect(self._app_thread.deleteLater)
 
         self._app_thread.start()
-        """_load_apps."""
-        """_load_apps."""
 
     def _on_apps_loaded(self, apps):
-        """_on_apps_loaded."""
+        """Cache the full app list, repopulate the table, and reset the controls."""
         self.all_apps = apps
         self._populate_table(apps)
         self.refresh_btn.setEnabled(True)
         self.load_progress.setVisible(False)
         self.lbl_count.setText(f"{len(apps)} apps found")
-        """_on_apps_loaded."""
-        """_on_apps_loaded."""
 
     def _populate_table(self, apps):
-        """_populate_table."""
+        """Fill the app table rows, storing the full app dict on each name item.
+
+        Converts estimated_size_kb to MB/GB display text and leaves the size
+        cell blank when no estimate exists.
+        """
         self.app_table.setRowCount(len(apps))
         for row, app in enumerate(apps):
             name_item = QTableWidgetItem(app.get("name", "Unknown"))
@@ -305,11 +315,9 @@ class UninstallerTab(BaseTab):
             self.app_table.setItem(row, 1, pub_item)
             self.app_table.setItem(row, 2, ver_item)
             self.app_table.setItem(row, 3, size_item)
-        """_populate_table."""
-        """_populate_table."""
 
     def _filter_apps(self, text):
-        """_filter_apps."""
+        """Repopulate the table with apps matching the text in name or publisher."""
         text = text.lower()
         filtered = [
             a for a in self.all_apps
@@ -317,13 +325,15 @@ class UninstallerTab(BaseTab):
             or text in a.get("publisher", "").lower()
         ]
         self._populate_table(filtered)
-        """_filter_apps."""
-        """_filter_apps."""
 
     # ── App Selection ─────────────────────────────────────────────────
 
     def _on_app_selected(self):
-        """_on_app_selected."""
+        """Show the selected app's details and reset the residual panel.
+
+        Enables the uninstall/scan buttons, fills the detail labels, and
+        clears any previous leftover results.
+        """
         sel = self.app_table.selectedItems()
         if not sel:
             self.btn_uninstall.setEnabled(False)
@@ -341,13 +351,15 @@ class UninstallerTab(BaseTab):
         self.btn_residuals.setEnabled(True)
         self.res_table.setRowCount(0)
         self.btn_clean.setEnabled(False)
-        """_on_app_selected."""
-        """_on_app_selected."""
 
     # ── Uninstall ─────────────────────────────────────────────────────
 
     def _run_uninstall(self):
-        """_run_uninstall."""
+        """Confirm, then launch the selected app's official uninstaller.
+
+        Uses AppUninstaller.uninstall_app and reports whether the
+        uninstaller started or failed (e.g. needs elevation).
+        """
         sel = self.app_table.selectedItems()
         if not sel:
             return
@@ -373,13 +385,15 @@ class UninstallerTab(BaseTab):
                     "Failed to launch the uninstaller.\n"
                     "It may require elevated privileges.",
                 )
-        """_run_uninstall."""
-        """_run_uninstall."""
 
     # ── Residual Scan (threaded) ──────────────────────────────────────
 
     def _scan_residuals(self):
-        """_scan_residuals."""
+        """Run ResidualScanWorker on a background thread for the selected app.
+
+        Disables the scan/clean buttons and shows the busy bar while the
+        scanner looks for leftovers.
+        """
         sel = self.app_table.selectedItems()
         if not sel:
             return
@@ -404,28 +418,27 @@ class UninstallerTab(BaseTab):
         self._res_thread.finished.connect(self._res_thread.deleteLater)
 
         self._res_thread.start()
-        """_scan_residuals."""
-        """_scan_residuals."""
 
     def _on_residuals_failed(self, message: str):
-        """_on_residuals_failed."""
+        """Re-enable the scan button and warn about the failed scan."""
         self.btn_residuals.setEnabled(True)
         self.residual_progress.setVisible(False)
         QMessageBox.warning(self, "Scan failed", message)
-        """_on_residuals_failed."""
-        """_on_residuals_failed."""
 
     @staticmethod
     def _confidence_label(level: str) -> str:
-        """_confidence_label."""
+        """Map a scanner confidence level to a human-friendly label."""
         return {"VeryGood": "Very good", "Good": "Good",
                 "Questionable": "Questionable", "Bad": "Poor"}.get(
                     level, level or "?")
-        """_confidence_label."""
-        """_confidence_label."""
 
     def _on_residuals_done(self, leftovers):
-        """_on_residuals_done."""
+        """Populate the residual table from scan results.
+
+        Each row shows the leftover path (with reasons as tooltip), size in
+        MB, and a confidence/kind label; enables the clean button when
+        findings exist or reports a clean result.
+        """
         self.btn_residuals.setEnabled(True)
         self.residual_progress.setVisible(False)
 
@@ -452,13 +465,16 @@ class UninstallerTab(BaseTab):
         else:
             QMessageBox.information(self, "Clean",
                                     "No leftovers found for this application.")
-        """_on_residuals_done."""
-        """_on_residuals_done."""
 
     # ── Residual Cleanup ──────────────────────────────────────────────
 
     def _clean_residuals(self):
-        """_clean_residuals."""
+        """Clean the selected leftovers on a background ResidualCleanWorker.
+
+        Confirms the action (files → Recycle Bin, registry keys → .reg
+        backup first), honoring the restore-point checkbox, then runs the
+        worker while showing the busy bar.
+        """
         rows = sorted({i.row() for i in self.res_table.selectedIndexes()})
         findings = []
         for row in rows:
@@ -497,19 +513,20 @@ class UninstallerTab(BaseTab):
         self._clean_thread.finished.connect(self._clean_thread.deleteLater)
 
         self._clean_thread.start()
-        """_clean_residuals."""
-        """_clean_residuals."""
 
     def _on_clean_failed(self, message: str):
-        """_on_clean_failed."""
+        """Re-enable the clean button and warn about the failed cleanup."""
         self.residual_progress.setVisible(False)
         self.btn_clean.setEnabled(True)
         QMessageBox.warning(self, "Cleanup failed", message)
-        """_on_clean_failed."""
-        """_on_clean_failed."""
 
     def _on_clean_done(self, outcomes):
-        """_on_clean_done."""
+        """Summarize cleanup outcomes and keep failed items for review.
+
+        Reports recycled vs. registry-deleted counts (with the backup
+        location), then rebuilds the table keeping only rows whose cleanup
+        failed.
+        """
         self.residual_progress.setVisible(False)
         ok = [o for o in outcomes if o.get("ok")]
         failed = [o for o in outcomes if not o.get("ok")]
@@ -537,5 +554,3 @@ class UninstallerTab(BaseTab):
         self.res_table.setRowCount(0)
         self._on_residuals_done(kept) if kept else None
         self.btn_clean.setEnabled(bool(kept))
-        """_on_clean_done."""
-        """_on_clean_done."""

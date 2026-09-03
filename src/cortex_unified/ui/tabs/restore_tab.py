@@ -23,42 +23,46 @@ from cortex_unified.reports.restore_manager import RestoreManager
 
 
 class RestoreWorker(QThread):
-    """RestoreWorker."""
+    """Worker that restores a backup manifest off the UI thread.
+
+    Emits ``finished_restore(dict)`` with the result of
+    RestoreManager.restore_from_manifest (dry_run=False), or
+    ``error_occurred(str)`` on failure.
+    """
     finished_restore = Signal(dict)
     error_occurred = Signal(str)
 
     def __init__(self, manager: RestoreManager, target_path: str):
-        """__init__."""
+        """Store the RestoreManager and the manifest path to restore from."""
         super().__init__()
         self.manager = manager
         self.target_path = target_path
-        """__init__."""
-        """__init__."""
 
     def run(self):
-        """run."""
+        """Restore files from the manifest, emitting results or errors."""
         try:
             res = self.manager.restore_from_manifest(self.target_path, dry_run=False)
             self.finished_restore.emit(res)
         except Exception as e:
             self.error_occurred.emit(str(e))
-        """run."""
-    """RestoreWorker class."""
-    """RestoreWorker class."""
 
 
 class RestoreTab(BaseTab):
     """Tab for restore functionality and recovery."""
 
     def __init__(self, config, logger, safety_manager):
-        """__init__."""
+        """Create the RestoreManager backend used for manifest operations."""
         super().__init__(config, logger, safety_manager)
         self.restore_manager = RestoreManager(config)
-        """__init__."""
-        """__init__."""
 
     def setup_ui(self):
-        """Create the restore tab."""
+        """Create the restore tab.
+
+        Builds a backup-overview stats label, Refresh/Restore/Delete
+        buttons (restore/delete start disabled), an indeterminate progress
+        bar, and a four-column snapshot table; an initial refresh is
+        scheduled shortly after construction.
+        """
         layout = QVBoxLayout(self)
         
         title = QLabel('System Restore & Recovery Hub')
@@ -116,15 +120,18 @@ class RestoreTab(BaseTab):
         QTimer.singleShot(100, self.refresh_manifests)
 
     def _on_table_selection(self):
-        """_on_table_selection."""
+        """Enable the Restore and Delete buttons when a snapshot is selected."""
         has_sel = len(self.manifests_table.selectedItems()) > 0
         self.restore_button.setEnabled(has_sel)
         self.delete_manifest_button.setEnabled(has_sel)
-        """_on_table_selection."""
-        """_on_table_selection."""
 
     def refresh_manifests(self):
-        """Update items in the lists dynamically using the backend."""
+        """Update items in the lists dynamically using the backend.
+
+        Loads manifests via RestoreManager.list_manifests, fills the table
+        with backup name, file count, formatted timestamp, and path, and
+        updates the overview stats label.
+        """
         self.restore_progress_bar.setVisible(True)
         manifests = self.restore_manager.list_manifests()
         
@@ -162,7 +169,12 @@ class RestoreTab(BaseTab):
         self._on_table_selection() # Resync button limits
 
     def start_restore(self):
-        """Pass the targeted manifest to the restore procedure logic!"""
+        """Pass the targeted manifest to the restore procedure logic!
+
+        Confirms the restore of the selected snapshot's files, disables
+        the buttons, shows the busy bar, and runs a RestoreWorker thread
+        that calls restore_from_manifest.
+        """
         row = self.manifests_table.currentRow()
         if row < 0: return
         
@@ -194,7 +206,7 @@ class RestoreTab(BaseTab):
         worker.start()
 
     def _on_restore_completed(self, results):
-        """_on_restore_completed."""
+        """Report the restore outcome (restored count, warnings) and refresh."""
         restored = results.get("restored", 0)
         errors = results.get("error_details", [])
         
@@ -205,27 +217,25 @@ class RestoreTab(BaseTab):
             QMessageBox.information(self, "Restore Completed", f"Successfully extracted and recovered {restored} files safely.")
             
         self.refresh_manifests()
-        """_on_restore_completed."""
-        """_on_restore_completed."""
 
     def _on_restore_error(self, err_string):
-        """_on_restore_error."""
+        """Log and show a fatal error dialog when the restore worker crashes."""
         self.logger.error(f"Restore Tab Thread Event Crash: {err_string}")
         QMessageBox.critical(self, "Snapshot Error", f"The operation aborted fatally: {err_string}")
-        """_on_restore_error."""
-        """_on_restore_error."""
         
     def _on_worker_finished(self, worker):
-        """_on_worker_finished."""
+        """Hide the busy bar, re-enable refresh, and dispose the worker."""
         self.restore_progress_bar.setVisible(False)
         self.refresh_manifests_button.setEnabled(True)
         self.remove_worker_thread(worker)
         worker.deleteLater()
-        """_on_worker_finished."""
-        """_on_worker_finished."""
 
     def delete_snapshot(self):
-        """delete_snapshot."""
+        """Permanently delete the selected backup after confirmation.
+
+        Calls RestoreManager.delete_backup by name; reports success or
+        failure (e.g. already removed).
+        """
         row = self.manifests_table.currentRow()
         if row < 0: return
         
@@ -245,5 +255,3 @@ class RestoreTab(BaseTab):
             self.refresh_manifests()
         else:
             QMessageBox.warning(self, "Error", f"Failed to unlink {target_name}. It might already be gone!")
-        """delete_snapshot."""
-        """delete_snapshot."""

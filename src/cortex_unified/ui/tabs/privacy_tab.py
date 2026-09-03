@@ -29,13 +29,15 @@ class BrowserScanWorker(QObject):
     finished = Signal(dict, dict)  # browser_data, system_traces
 
     def run(self):
-        """run."""
+        """Scan browsers and system traces via PrivacyCleaner.
+
+        Runs scan_browsers() and scan_system_traces() off the UI thread
+        and emits ``finished(browser_data, system_traces)``.
+        """
         cleaner = PrivacyCleaner()
         browsers = cleaner.scan_browsers()
         traces = cleaner.scan_system_traces()
         self.finished.emit(browsers, traces)
-        """run."""
-        """run."""
 
 
 # ──────────────────────────────────────────────────────────────────────
@@ -46,18 +48,22 @@ class PrivacyTab(BaseTab):
     """Privacy Shield — telemetry blocking and browser data management."""
 
     def __init__(self, config, logger, safety_manager, parent=None):
-        """__init__."""
+        """Create the PrivacyCleaner/TelemetryBlocker backends and scan state."""
         self.cleaner = PrivacyCleaner()
         self.telemetry = TelemetryBlocker()
         self._scan_thread = None
         self._scan_worker = None
         self._last_browser_results = {}
         super().__init__(config, logger, safety_manager)
-        """__init__."""
-        """__init__."""
 
     def setup_ui(self):
-        """setup_ui."""
+        """Build the Privacy Shield layout.
+
+        Creates a telemetry group with block/restore buttons and a
+        per-rule status tree, plus a browser data group with a scan
+        button, busy bar, a checkable browser/traces tree, and a Sweep
+        button. Ends by checking the current telemetry status.
+        """
         main_layout = QVBoxLayout(self)
         main_layout.setSpacing(15)
 
@@ -130,20 +136,20 @@ class PrivacyTab(BaseTab):
 
         # Initial telemetry check
         self._refresh_telemetry()
-        """setup_ui."""
-        """setup_ui."""
 
     def setup_tooltips(self):
-        """setup_tooltips."""
+        """Set tooltips for the telemetry block/restore buttons."""
         self.btn_block.setToolTip("Modify registry to disable Windows telemetry (Admin required)")
         self.btn_restore.setToolTip("Remove custom telemetry blocks and restore Windows defaults")
-        """setup_tooltips."""
-        """setup_tooltips."""
 
     # ── Telemetry ─────────────────────────────────────────────────────
 
     def _refresh_telemetry(self):
-        """_refresh_telemetry."""
+        """Reload the per-rule telemetry tree from TelemetryBlocker status.
+
+        Marks each feature Blocked/Active and updates the summary label
+        and Block button state (all blocked, partial, or none).
+        """
         status = self.telemetry.check_status()
         blocked = sum(1 for v in status.values() if v)
         total = len(status)
@@ -171,11 +177,13 @@ class PrivacyTab(BaseTab):
             self.lbl_telemetry.setText(f"🔴 All {total} telemetry features are active.")
             self.lbl_telemetry.setStyleSheet("color: #F44336; font-weight: bold;")
             self.btn_block.setEnabled(True)
-        """_refresh_telemetry."""
-        """_refresh_telemetry."""
 
     def _apply_block(self):
-        """_apply_block."""
+        """Confirm, then apply all telemetry blocks via TelemetryBlocker.
+
+        Warns about partial success (admin privileges may be required) and
+        refreshes the status tree afterwards.
+        """
         reply = QMessageBox.question(
             self, "Block Telemetry",
             "This will modify Windows Registry settings to disable diagnostic "
@@ -194,11 +202,12 @@ class PrivacyTab(BaseTab):
                     "Ensure the app is running as Administrator.",
                 )
             self._refresh_telemetry()
-        """_apply_block."""
-        """_apply_block."""
 
     def _restore_telemetry(self):
-        """_restore_telemetry."""
+        """Confirm, then restore default telemetry settings via TelemetryBlocker.
+
+        Reports full or partial restoration and refreshes the status tree.
+        """
         reply = QMessageBox.question(
             self, "Restore Defaults",
             "This will remove all custom telemetry blocks and restore "
@@ -212,13 +221,16 @@ class PrivacyTab(BaseTab):
             else:
                 QMessageBox.warning(self, "Warning", "Some defaults could not be restored.")
             self._refresh_telemetry()
-        """_restore_telemetry."""
-        """_restore_telemetry."""
 
     # ── Browser Scan ──────────────────────────────────────────────────
 
     def _scan_browsers(self):
-        """_scan_browsers."""
+        """Run BrowserScanWorker on a background thread.
+
+        Clears the results tree, disables the scan/sweep buttons, shows
+        the busy bar, and wires the worker's finished signal back to the
+        UI while quitting/deleting the thread afterwards.
+        """
         self.browser_tree.clear()
         self.btn_scan.setEnabled(False)
         self.btn_sweep.setEnabled(False)
@@ -234,11 +246,14 @@ class PrivacyTab(BaseTab):
         self._scan_thread.finished.connect(self._scan_thread.deleteLater)
 
         self._scan_thread.start()
-        """_scan_browsers."""
-        """_scan_browsers."""
 
     def _on_scan_done(self, browser_results: dict, system_traces: dict):
-        """_on_scan_done."""
+        """Build the checkable results tree from the scan.
+
+        Adds per-browser parents with checked category children (each
+        sized in MB), a System Traces group, and a grand total; enables
+        the Sweep button sized to the total or reports a clean result.
+        """
         self._last_browser_results = browser_results
         self.browser_tree.clear()
         self.scan_progress.setVisible(False)
@@ -296,14 +311,18 @@ class PrivacyTab(BaseTab):
             )
         else:
             QMessageBox.information(self, "Clean", "No privacy traces found!")
-        """_on_scan_done."""
-        """_on_scan_done."""
 
     # ── Browser Clean ─────────────────────────────────────────────────
 
     def _clean_browsers(self):
+        """Delete the checked browser categories and system traces.
+
+        Gathers checked children per browser (stripping emoji prefixes),
+        confirms after warning that browsers must be closed, calls
+        PrivacyCleaner.clean_browser/clean_system_traces, reports full or
+        partial success, and rescans.
+        """
         # Gather checked items
-        """_clean_browsers."""
         to_clean = {}
         clean_system = False
 

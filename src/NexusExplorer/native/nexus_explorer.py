@@ -162,13 +162,17 @@ _dpi_scale = 1.0
 
 
 def _scaled(px: int) -> int:
-    """_scaled."""
+    """Scale a pixel value by the current DPI factor for HiDPI displays."""
     return int(px * _dpi_scale)
     """_scaled."""
 
 
 def _init_dpi():
-    """_init_dpi."""
+    """Detect the primary monitor DPI and set the global scaling factor.
+
+    Reads LOGPIXELSX via Win32 GetDeviceCaps; the scale is clamped to at
+    least 1.0 and falls back to 1.0 on any OS/attribute error.
+    """
     global _dpi_scale
     try:
         hdc = ctypes.windll.user32.GetDC(0)
@@ -792,7 +796,7 @@ class DebugOverlay(QWidget):
     """F12 debug panel: FPS, memory, keyboard log, engine log, feature matrix."""
 
     def __init__(self, parent=None):
-        """__init__."""
+        """Build the frameless overlay window and zero the FPS counters."""
         super().__init__(parent)
         self.setObjectName("DebugOverlay")
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.Tool)
@@ -807,7 +811,10 @@ class DebugOverlay(QWidget):
         """__init__."""
 
     def log_event(self, text: str):
-        """log_event."""
+        """Append a timestamped line to the debug log and repaint.
+
+        The log is capped at ``_max_lines`` entries; oldest lines are dropped.
+        """
         ts = time.strftime("%H:%M:%S")
         self._lines.append(f"[{ts}] {text}")
         if len(self._lines) > self._max_lines:
@@ -816,7 +823,7 @@ class DebugOverlay(QWidget):
         """log_event."""
 
     def tick_fps(self):
-        """tick_fps."""
+        """Count a rendered frame; recompute FPS once per elapsed second."""
         self._frame_count += 1
         now = time.monotonic()
         dt = now - self._last_time
@@ -828,7 +835,7 @@ class DebugOverlay(QWidget):
         """tick_fps."""
 
     def paintEvent(self, ev):  # noqa: N802
-        """paintEvent."""
+        """Paint the overlay: dark backdrop, FPS header, and the last 22 log lines."""
         p = QPainter(self)
         try:
             p.setRenderHint(QPainter.RenderHint.Antialiasing)
@@ -866,8 +873,9 @@ class CrumbBar(QWidget):
     editRequested = Signal()
 
     def __init__(self, parent=None):
-        """__init__."""
+        """Initialize the bar with empty path and no hit zones; enable mouse tracking."""
         super().__init__(parent)
+        self._path = path = ""
         self._path = ""
         self._hits: list[tuple[int, int, str]] = []
         self.setFixedHeight(32)
@@ -881,14 +889,18 @@ class CrumbBar(QWidget):
         """__init__."""
 
     def setPath(self, path: str) -> None:
-        """setPath."""
+        """Set the displayed path and clear cached segment hit zones."""
         self._path = path
         self._hits = []
         self.update()
         """setPath."""
 
     def _segments(self):
-        """_segments."""
+        """Split ``_path`` into (label, absolute-path) breadcrumb segments.
+
+        Handles both drive letters ("C:") and UNC-style components, building
+        each cumulative target path as it walks the parts.
+        """
         parts = [p for p in self._path.replace("/", "\\").split("\\") if p]
         out, cum = [], ""
         for i, p in enumerate(parts):
@@ -901,17 +913,22 @@ class CrumbBar(QWidget):
         """_segments."""
 
     def mouseMoveEvent(self, ev):  # noqa: N802
-        """mouseMoveEvent."""
+        """Repaint on any mouse move so hover highlighting tracks the cursor."""
         self.update()
         """mouseMoveEvent."""
 
     def leaveEvent(self, ev):  # noqa: N802
-        """leaveEvent."""
+        """Repaint when the cursor leaves to clear hover highlighting."""
         self.update()
         """leaveEvent."""
 
     def paintEvent(self, ev):  # noqa: N802
-        """paintEvent."""
+        """Paint breadcrumb segments with hover highlight and ellipsis collapsing.
+
+        Paths longer than 6 segments are collapsed to drive + "…" + last 3
+        segments. Records clickable hit rectangles in ``_hits`` for
+        :meth:`mouseReleaseEvent`.
+        """
         p = QPainter(self)
         try:
             p.setRenderHint(QPainter.RenderHint.Antialiasing)
@@ -954,7 +971,11 @@ class CrumbBar(QWidget):
         """paintEvent."""
 
     def mouseReleaseEvent(self, ev):
-        """mouseReleaseEvent."""
+        """Navigate to the clicked segment, or start path editing on empty space.
+
+        Emits ``navigate`` with the segment's absolute path when the release
+        lands inside a recorded hit zone; otherwise emits ``editRequested``.
+        """
         x = ev.position().x()
         for x0, x1, target in self._hits:
             if x0 <= x <= x1:
@@ -964,7 +985,7 @@ class CrumbBar(QWidget):
         """mouseReleaseEvent."""
 
     def mouseDoubleClickEvent(self, ev):  # noqa: N802
-        """mouseDoubleClickEvent."""
+        """Switch the bar into path-editing mode on double-click."""
         self.editRequested.emit()
         """mouseDoubleClickEvent."""
 
@@ -976,7 +997,7 @@ class QuickLookPopup(QWidget):
     """Large floating preview window, toggled by Space bar."""
 
     def __init__(self, icons: IconThumbs, parent=None):
-        """__init__."""
+        """Build the frameless 480x400 popup with icon, name, and metadata labels."""
         super().__init__(parent)
         self.setWindowTitle("Quick Look")
         self.setWindowFlags(Qt.WindowType.Popup | Qt.WindowType.FramelessWindowHint)
@@ -1005,10 +1026,18 @@ class QuickLookPopup(QWidget):
         lay.addWidget(self.icon_lbl)
         lay.addWidget(self.name_lbl)
         lay.addWidget(self.meta_lbl)
-        """__init__."""
 
     def show_file(self, row: dict, pos=None):
-        """show_file."""
+        """Populate and show the popup for a file row.
+
+        Args:
+            row: engine row dict (path, name, isDir, size, ext, modifiedMs).
+            pos: optional cursor position to anchor the popup near.
+
+        Renders image files (up to 50MB, common raster formats) as a scaled
+        preview via QImageReader; everything else falls back to a large
+        file-type icon from the shared IconThumbs cache.
+        """
         from PySide6.QtGui import QImageReader, QPixmap
 
         path = row.get("path", "")
@@ -1058,10 +1087,13 @@ class QuickLookPopup(QWidget):
         ico = self._icons.icon_for(row)
         self.icon_lbl.setPixmap(ico.pixmap(128, 128))
         self._show_at(pos)
-        """show_file."""
 
     def _show_at(self, pos=None):
-        """_show_at."""
+        """Show the popup, flipping its anchor to stay on-screen.
+
+        Positions at ``pos`` + 12px offset by default; flips left/up when the
+        popup would overflow the current screen's available geometry.
+        """
         if pos:
             x = pos.x() + 12
             y = pos.y() + 12
@@ -1075,7 +1107,6 @@ class QuickLookPopup(QWidget):
             self.move(x, y)
         self.show()
         self.raise_()
-        """_show_at."""
 
 
 # ═════════════════════════════════════════════════════════════════════════════
@@ -1093,7 +1124,13 @@ class BulkRenameDialog(QDialog):
     ]
 
     def __init__(self, paths: list[str], parent=None):
-        """__init__."""
+        """Build the dialog with mode combo, stacked input pages, and preview table.
+
+        Args:
+            paths: absolute file paths to rename (all assumed in one folder).
+            parent: parent widget; when it is an ExplorerWidget its undo
+                stack is used to record each rename.
+        """
         super().__init__(parent)
         self.setWindowTitle("Bulk Rename")
         self.setMinimumSize(700, 540)
@@ -1232,18 +1269,28 @@ class BulkRenameDialog(QDialog):
         lay.addLayout(btn_row)
 
         self._update_preview()
-        """__init__."""
 
     def _on_mode_changed(self, idx: int):
-        """_on_mode_changed."""
+        """Switch the stacked input page to the newly selected mode and refresh preview."""
         self._stack.setCurrentIndex(idx)
         self._update_preview()
-        """_on_mode_changed."""
 
     # ── preview / apply per mode ───────────────────────────────────────────
 
     def _rename_for_mode(self, name: str, index: int) -> str:
-        """_rename_for_mode."""
+        """Compute the new filename for one entry under the current mode.
+
+        Args:
+            name: current filename (with extension).
+            index: position in the original list, used for sequential
+                numbering start offsets and date lookups.
+
+        Returns the transformed name, or the original on invalid regex /
+        unmet prefix-suffix conditions. Modes: 0 regex find/replace,
+        1 sequential numbering (prefix + zero-padded counter + ext),
+        2 date prefix from mtime/ctime, 3 case transform, 4 add/remove
+        prefix or suffix.
+        """
         mode = self.mode_combo.currentIndex()
 
         if mode == 0:
@@ -1311,10 +1358,9 @@ class BulkRenameDialog(QDialog):
                 return name
 
         return name
-        """_rename_for_mode."""
 
     def _update_preview(self):
-        """_update_preview."""
+        """Recompute (original, renamed) pairs for all files and reload the preview table."""
         self._previews = []
         for i, p in enumerate(self._originals):
             name = Path(p).name
@@ -1323,10 +1369,14 @@ class BulkRenameDialog(QDialog):
                 new_name = name
             self._previews.append((name, new_name))
         self._preview_model.set_data(self._previews)
-        """_update_preview."""
 
     def _apply(self):
-        """_apply."""
+        """Rename all files per the current mode, recording undo entries.
+
+        Skips targets that already exist (collected as errors) and keeps
+        going on per-file OSError. Shows a warning summarizing errors when
+        any occurred, then closes the dialog.
+        """
         from PySide6.QtWidgets import QMessageBox
         folder = Path(self._originals[0]).parent if self._originals else None
         if not folder:
@@ -1358,14 +1408,19 @@ class BulkRenameDialog(QDialog):
                 + "\n".join(errors[:20]),
             )
         self.close()
-        """_apply."""
 
 
 class SearchDialog(QWidget):
     """Full-featured search dialog with real-time streaming results."""
 
     def __init__(self, engine: Engine, start_path: str, parent=None):
-        """__init__."""
+        """Build the search window: pattern input, scope combo, results table.
+
+        Args:
+            engine: shared Engine used to spawn the search process.
+            start_path: directory the search is rooted at for the
+                "Current folder" scopes.
+        """
         super().__init__(parent)
         self.setWindowTitle("Search Files")
         self.setMinimumSize(680, 520)
@@ -1434,10 +1489,14 @@ class SearchDialog(QWidget):
         close_btn.clicked.connect(self.close)
         btn_row.addWidget(close_btn)
         lay.addLayout(btn_row)
-        """__init__."""
 
     def _start_search(self):
-        """_start_search."""
+        """Launch an engine search for the typed pattern, honoring the scope combo.
+
+        Scope 0 searches only the start folder (non-recursive), 1 recurses
+        from it, 2 joins every existing drive root into one search. Cancels
+        any in-flight search first and disables the input while running.
+        """
         query = self.input.text().strip()
         if not query:
             return
@@ -1464,19 +1523,21 @@ class SearchDialog(QWidget):
             recursive = True
 
         self._proc = self._engine.search(root, query, self._on_search_done)
-        """_start_search."""
 
     def _cancel_search(self):
-        """_cancel_search."""
+        """Kill a running search process, if any, and re-enable the input field."""
         if self._proc and self._proc.state() == QProcess.ProcessState.Running:
             self._proc.kill()
         self._proc = None
         self.cancel_btn.setEnabled(False)
         self.input.setEnabled(True)
-        """_cancel_search."""
 
     def _on_search_done(self, code, rows):
-        """_on_search_done."""
+        """Replace the results table with the completed search's rows.
+
+        Each row dict is stored on the first item's UserRole so it can be
+        retrieved when opened. Updates the status label with the result count.
+        """
         self._results = rows
         self.model.removeRows(0, self.model.rowCount())
         for row in rows:
@@ -1494,10 +1555,12 @@ class SearchDialog(QWidget):
         self.cancel_btn.setEnabled(False)
         self.input.setEnabled(True)
         self.table.resizeColumnsToContents()
-        """_on_search_done."""
 
     def _open_result(self, idx):
-        """_open_result."""
+        """Open one result row: navigate for folders, os.startfile for files.
+
+        Retrieve the row dict from UserRole; closes the dialog after opening.
+        """
         row = self.model.itemFromIndex(idx.sibling(idx.row(), 0))
         if row:
             data = row.data(Qt.ItemDataRole.UserRole)
@@ -1508,13 +1571,11 @@ class SearchDialog(QWidget):
                 else:
                     os.startfile(path)
                 self.close()
-        """_open_result."""
 
     def _open_selected(self):
-        """_open_selected."""
+        """Open every currently selected result row (see :meth:`_open_result`)."""
         for idx in self.table.selectionModel().selectedRows():
             self._open_result(idx)
-        """_open_selected."""
 
 
 class GoToPathDialog(QDialog):
@@ -1535,7 +1596,7 @@ class GoToPathDialog(QDialog):
     }
 
     def __init__(self, current_path: str, parent=None):
-        """__init__."""
+        """Build the dialog with the path input pre-filled with ``current_path``."""
         super().__init__(parent)
         self.setWindowTitle("Go to Path")
         self.setWindowFlags(Qt.WindowType.Dialog | Qt.WindowType.WindowCloseButtonHint)
@@ -1572,10 +1633,13 @@ class GoToPathDialog(QDialog):
 
         self.path_input.setFocus()
         self.path_input.selectAll()
-        """__init__."""
 
     def _go(self):
-        """_go."""
+        """Resolve the typed text and accept the dialog if it points somewhere.
+
+        Accepts directories directly; for files, accepts with the file's
+        parent directory. On failure, highlights the input border in red.
+        """
         raw = self.path_input.text().strip()
         if not raw:
             return
@@ -1592,7 +1656,12 @@ class GoToPathDialog(QDialog):
         """_go."""
 
     def _resolve(self, text: str) -> str:
-        """_resolve."""
+        """Resolve shell-folder names, env vars, and ~ into an absolute path.
+
+        Shell folders (e.g. shell:Downloads) are looked up in the user's
+        registry Shell Folders key; otherwise the text is passed through
+        ``os.path.expandvars`` + ``expanduser`` + ``normpath``.
+        """
         lower = text.lower().strip()
         if lower in self._SHELL_FOLDERS:
             special = self._SHELL_FOLDERS[lower]
@@ -1610,43 +1679,37 @@ class GoToPathDialog(QDialog):
         expanded = os.path.expandvars(text)
         expanded = os.path.expanduser(expanded)
         return os.path.normpath(expanded)
-        """_resolve."""
 
     def result_path(self) -> str:
-        """result_path."""
+        """Return the accepted destination directory (empty if rejected)."""
         return self._result_path
-        """result_path."""
 
 
 class _RenamePreviewModel(QAbstractTableModel):
-    """_RenamePreviewModel."""
+    """Two-column table model (Original / Renamed) for the rename preview."""
     HEADERS = ["Original", "Renamed"]
 
     def __init__(self):
-        """__init__."""
+        """Create the model with an empty preview list."""
         super().__init__()
         self._data: list[tuple[str, str]] = []
-        """__init__."""
 
     def set_data(self, data):
-        """set_data."""
+        """Replace the preview rows (original, renamed) with a full model reset."""
         self.beginResetModel()
         self._data = data
         self.endResetModel()
-        """set_data."""
 
     def rowCount(self, parent=QModelIndex()):
-        """rowCount."""
+        """Return the number of preview rows (0 for index parents)."""
         return 0 if parent.isValid() else len(self._data)
-        """rowCount."""
 
     def columnCount(self, parent=QModelIndex()):
-        """columnCount."""
+        """Return 2: the Original and Renamed columns."""
         return 2
-        """columnCount."""
 
     def data(self, idx, role=Qt.ItemDataRole.DisplayRole):
-        """data."""
+        """Return the cell text; renamed values that differ are tinted cyan."""
         if not idx.isValid():
             return None
         if role == Qt.ItemDataRole.DisplayRole:
@@ -1655,15 +1718,12 @@ class _RenamePreviewModel(QAbstractTableModel):
             if idx.column() == 1 and self._data[idx.row()][0] != self._data[idx.row()][1]:
                 return QColor("#22d3ee")
         return None
-        """data."""
 
     def headerData(self, sec, orient, role=Qt.ItemDataRole.DisplayRole):
-        """headerData."""
+        """Return the horizontal header labels ("Original" / "Renamed")."""
         if role == Qt.ItemDataRole.DisplayRole and orient == Qt.Orientation.Horizontal:
             return self.HEADERS[sec]
         return None
-        """headerData."""
-    """_RenamePreviewModel class."""
 
 
 # ═════════════════════════════════════════════════════════════════════════════
@@ -1674,13 +1734,17 @@ class _FolderSizeWorker(QThread):
     sizes_done = Signal(str, object)
 
     def __init__(self, path: str):
-        """__init__."""
+        """Store the directory path whose total size will be computed."""
         super().__init__()
         self._path = path
-        """__init__."""
 
     def run(self):
-        """run."""
+        """Walk the tree iteratively and emit sizes_done(path, total_bytes).
+
+        Uses an explicit stack with os.scandir (symlinks not followed) so
+        deep trees cannot recurse; unreadable entries are skipped. Emit
+        failures during shutdown are logged, not raised.
+        """
         total = 0
         stack = [self._path]
         try:
@@ -1704,7 +1768,6 @@ class _FolderSizeWorker(QThread):
         except RuntimeError:
             if not _SHUTTING_DOWN.is_set():
                 log.warning("sizes_done emit failed for %s", self._path)
-        """run."""
 
 
 class _TextPreviewReader(QThread):
@@ -1712,14 +1775,18 @@ class _TextPreviewReader(QThread):
     text_ready = Signal(str)
 
     def __init__(self, path: str, max_lines: int = 60):
-        """__init__."""
+        """Store the file path and the line cap for the preview read."""
         super().__init__()
         self._path = path
         self._max_lines = max_lines
-        """__init__."""
 
     def run(self):
-        """run."""
+        """Read up to ``_max_lines`` lines (8MB files max) and emit them as text.
+
+        Files larger than 8MB or with read/decode errors emit an empty
+        string; decode errors are replaced rather than fatal (UTF-8 with
+        errors="replace").
+        """
         text = ""
         try:
             if os.path.getsize(self._path) <= 8 * 1024 * 1024:
@@ -1740,7 +1807,6 @@ class _TextPreviewReader(QThread):
         except RuntimeError:
             if not _SHUTTING_DOWN.is_set():
                 log.warning("text_ready emit failed for %s", self._path)
-        """run."""
 
 
 class _ExtractArchiveWorker(QThread):
@@ -1749,13 +1815,19 @@ class _ExtractArchiveWorker(QThread):
     finished_with_result = Signal(bool, str)
 
     def __init__(self, tasks):
-        """__init__."""
+        """Store the list of (archive_path, dest_dir) extraction tasks."""
         super().__init__()
         self._tasks = tasks
-        """__init__."""
 
     def run(self):
-        """run."""
+        """Extract each archive with 7z, parsing stdout for live progress.
+
+        Runs ``7z x <archive> -o<dest> -aoa -mmt=on -bsp1 -bso0`` and reads
+        stdout byte-by-byte, parsing percent lines into progress_update
+        signals. Stops at the first failure (non-zero/one exit code) and
+        emits finished_with_result(False, stderr/exception snippet);
+        otherwise emits (True, "N files extracted") after all tasks.
+        """
         from nexus_archive import _find_7z
         import re
         progress_re = re.compile(r"^\s*(\d+)%")
@@ -1808,7 +1880,6 @@ class _ExtractArchiveWorker(QThread):
                 return
 
         self.finished_with_result.emit(True, f"{file_count} files extracted")
-        """run."""
 
 
 class _ExtractEntryWorker(QThread):
@@ -1817,16 +1888,21 @@ class _ExtractEntryWorker(QThread):
     finished_with_result = Signal(bool, str)
 
     def __init__(self, archive_path, entries, dest_dir, password):
-        """__init__."""
+        """Store archive path, entry names, destination, and optional password."""
         super().__init__()
         self._archive_path = archive_path
         self._entries = entries
         self._dest_dir = dest_dir
         self._password = password
-        """__init__."""
 
     def run(self):
-        """run."""
+        """Extract each named entry with 7z, reporting overall progress.
+
+        Spawns one 7z process per entry (with ``-p<password>`` when set) and
+        combines each entry's parsed percent into an overall percent across
+        all entries. Emits finished_with_result(False, ...) and stops on the
+        first error; otherwise (True, "N entries extracted").
+        """
         from nexus_archive import _find_7z
         import re
         progress_re = re.compile(r"^\s*(\d+)%")
@@ -1872,7 +1948,6 @@ class _ExtractEntryWorker(QThread):
                 return
 
         self.finished_with_result.emit(True, f"{done} entries extracted")
-        """run."""
 
 
 class _CompressWorker(QThread):
@@ -1881,14 +1956,18 @@ class _CompressWorker(QThread):
     finished_with_result = Signal(bool, str)
 
     def __init__(self, cmd, name):
-        """__init__."""
+        """Store the fully-built 7z command line and the archive display name."""
         super().__init__()
         self._cmd = cmd
         self._name = name
-        """__init__."""
 
     def run(self):
-        """run."""
+        """Run the 7z command, parsing stdout percents into progress signals.
+
+        Splits "pct% + filename" lines to report each added file. Emits
+        finished_with_result with (True, "Created <name>") on exit codes
+        0/1, else a failure message; exceptions emit (False, error text).
+        """
         import re
         progress_re = re.compile(r"^\s*(\d+)%")
         try:
@@ -1921,7 +2000,6 @@ class _CompressWorker(QThread):
                 ok, f"Created {self._name}" if ok else "Compression failed")
         except Exception as e:
             self.finished_with_result.emit(False, str(e)[:200])
-        """run."""
 
 
 # ═════════════════════════════════════════════════════════════════════════════
@@ -1931,20 +2009,22 @@ class FolderSizeCalculator:
     """Background folder size calculation with a single worker thread + queue."""
 
     def __init__(self):
-        """__init__."""
+        """Create an empty size cache and work queue; no worker thread yet."""
         self._cache: dict[str, int] = {}
         self._queue: deque = deque()
         self._thread = None
         self._pending = 0
-        """__init__."""
 
     def get_size(self, path: str) -> int | None:
-        """get_size."""
+        """Return the cached total bytes for a path (None if unknown yet)."""
         return self._cache.get(path)
-        """get_size."""
 
     def calculate(self, path: str, callback):
-        """calculate."""
+        """Request a folder size, invoking callback(path, size) when ready.
+
+        Cached paths fire the callback synchronously; otherwise the request
+        is queued and a _FolderSizeWorker is started if none is running.
+        """
         if path in self._cache:
             callback(path, self._cache[path])
             return
@@ -1952,10 +2032,13 @@ class FolderSizeCalculator:
         self._pending += 1
         if self._thread is None or not self._thread.isRunning():
             self._process_next()
-        """calculate."""
 
     def _process_next(self):
-        """_process_next."""
+        """Pop the next queued request and start a worker for it.
+
+        Cached entries are answered immediately and the queue keeps
+        draining; only one worker thread runs at a time.
+        """
         if not self._queue:
             return
         path, cb = self._queue.popleft()
@@ -1968,22 +2051,19 @@ class FolderSizeCalculator:
         self._thread.sizes_done.connect(lambda p, s: self._on_done(p, s, cb))
         self._thread.finished.connect(self._on_thread_done)
         self._thread.start()
-        """_process_next."""
 
     def _on_done(self, path, size, callback):
-        """_on_done."""
+        """Cache a computed size and deliver it to the waiting callback."""
         self._cache[path] = size
         callback(path, size)
-        """_on_done."""
 
     def _on_thread_done(self):
-        """_on_thread_done."""
+        """Discard the finished worker thread and kick off the next queued request."""
         if self._thread is not None:
             self._thread.deleteLater()
             self._thread = None
         if self._queue:
             self._process_next()
-        """_on_thread_done."""
 
     def clear_queue(self):
         """Cancel pending calculations (e.g. on navigate away)."""
@@ -2012,37 +2092,32 @@ class ColorTagManager:
     }
 
     def __init__(self):
-        """__init__."""
+        """Load previously saved tags from the NexusExplorer QSettings scope."""
         self._settings = QSettings("Nexus", "NexusExplorer")
         self._tags: dict[str, str] = {}
         saved = self._settings.value("colorTags", {})
         if saved and isinstance(saved, dict):
             self._tags = saved
-        """__init__."""
 
     def get_tag(self, path: str) -> str | None:
-        """get_tag."""
+        """Return the color name tagged on a path, or None."""
         return self._tags.get(path)
-        """get_tag."""
 
     def set_tag(self, path: str, color: str | None):
-        """set_tag."""
+        """Assign (or remove, when color is None) a tag and persist immediately."""
         if color:
             self._tags[path] = color
         else:
             self._tags.pop(path, None)
         self._save()
-        """set_tag."""
 
     def get_all_tags(self) -> dict[str, str]:
-        """get_all_tags."""
+        """Return a copy of the path -> color-name mapping."""
         return dict(self._tags)
-        """get_all_tags."""
 
     def _save(self):
-        """_save."""
+        """Write the tag map to QSettings ("colorTags")."""
         self._settings.setValue("colorTags", self._tags)
-        """_save."""
 
 
 # ═════════════════════════════════════════════════════════════════════════════
@@ -2052,39 +2127,34 @@ class SmartFolderManager:
     """Persistent smart folders (saved searches)."""
 
     def __init__(self):
-        """__init__."""
+        """Load previously saved smart folders from QSettings."""
         self._settings = QSettings("Nexus", "NexusExplorer")
         self._folders: list[dict] = []
         saved = self._settings.value("smartFolders", [])
         if saved and isinstance(saved, list):
             self._folders = saved
-        """__init__."""
 
     def add(self, name: str, root: str, pattern: str, ext_filter: str = ""):
-        """add."""
+        """Append a new smart folder definition and persist it."""
         self._folders.append({
             "name": name, "root": root,
             "pattern": pattern, "ext": ext_filter,
         })
         self._save()
-        """add."""
 
     def remove(self, index: int):
-        """remove."""
+        """Remove the smart folder at index, if in range, and persist."""
         if 0 <= index < len(self._folders):
             self._folders.pop(index)
             self._save()
-        """remove."""
 
     def list_all(self) -> list[dict]:
-        """list_all."""
+        """Return a copy of all saved smart-folder definitions."""
         return list(self._folders)
-        """list_all."""
 
     def _save(self):
-        """_save."""
+        """Write the smart-folder list to QSettings ("smartFolders")."""
         self._settings.setValue("smartFolders", self._folders)
-        """_save."""
 
 
 # ═════════════════════════════════════════════════════════════════════════════
@@ -2097,19 +2167,21 @@ class _DupScanWorker(QThread):
     scan_done = Signal(list)
 
     def __init__(self, root: str):
-        """__init__."""
+        """Store the scan root directory and mark the worker as running."""
         super().__init__()
         self._root = root
         self._running = True
-        """__init__."""
 
     def stop(self):
-        """stop."""
+        """Request a cooperative cancel; the scan loop exits at its next check."""
         self._running = False
-        """stop."""
 
     def run(self):
-        """run."""
+        """Run the scan and emit scan_done with the duplicate groups.
+
+        Failures log an exception and emit whatever groups (if any) were
+        collected; emit RuntimeErrors during shutdown are swallowed.
+    """
         groups: list = []
         try:
             groups = self._scan()
@@ -2120,10 +2192,16 @@ class _DupScanWorker(QThread):
         except RuntimeError:
             if not _SHUTTING_DOWN.is_set():
                 log.warning("scan_done emit failed for %s", self._root)
-        """run."""
 
     def _scan(self) -> list:
-        """_scan."""
+        """Find duplicate files: size pre-filter, then MD5 hashing.
+
+        Returns a list of groups (lists of file dicts sharing one hash),
+        sorted by recoverable size (total minus the oldest file in each
+        group) descending. Emits progress(percent, filename) while
+        hashing. Returns None if stopped mid-scan; empty files are skipped
+        and unreadable entries ignored.
+        """
         size_map: dict[int, list[dict]] = {}
         file_count = 0
 
@@ -2178,7 +2256,6 @@ class _DupScanWorker(QThread):
         groups = [g for g in hash_map.values() if len(g) > 1]
         groups.sort(key=lambda g: sum(f["size"] for f in g[1:]), reverse=True)
         return groups
-        """_scan."""
 
 
 class _DuplicateModel(QAbstractTableModel):
@@ -2187,13 +2264,16 @@ class _DuplicateModel(QAbstractTableModel):
     HEADERS = ["", "Filename", "Size", "Path"]
 
     def __init__(self):
-        """__init__."""
+        """Create the model with no result rows yet."""
         super().__init__()
         self._rows: list[dict] = []
-        """__init__."""
 
     def set_groups(self, groups: list[list[dict]]):
-        """set_groups."""
+        """Load duplicate groups as flat, checkable rows (model reset).
+
+        Within each group files are sorted oldest-first so the first row
+        is the "original" candidate for auto-select.
+        """
         self.beginResetModel()
         self._rows = []
         for gi, group in enumerate(groups):
@@ -2210,20 +2290,22 @@ class _DuplicateModel(QAbstractTableModel):
                     "selected": False,
                 })
         self.endResetModel()
-        """set_groups."""
 
     def rowCount(self, parent=QModelIndex()):
-        """rowCount."""
+        """Return the number of result rows (0 for index parents)."""
         return 0 if parent.isValid() else len(self._rows)
-        """rowCount."""
 
     def columnCount(self, parent=QModelIndex()):
-        """columnCount."""
+        """Return 4: checkbox, filename, size, path."""
         return 4
-        """columnCount."""
 
     def data(self, idx, role=Qt.ItemDataRole.DisplayRole):
-        """data."""
+        """Provide per-cell data for all table roles.
+
+        Renders 30px rows, alternating group background colors, red text
+        for selected rows, a checkbox in column 0, filename/size/path text,
+        and a hash+path tooltip.
+        """
         row = self._rows[idx.row()]
         col = idx.column()
 
@@ -2254,36 +2336,36 @@ class _DuplicateModel(QAbstractTableModel):
             return f"Hash: {row['hash']}\n{row['path']}"
 
         return None
-        """data."""
 
     def headerData(self, sec, orient, role=Qt.ItemDataRole.DisplayRole):
-        """headerData."""
+        """Return the horizontal header labels for the four columns."""
         if (role == Qt.ItemDataRole.DisplayRole
                 and orient == Qt.Orientation.Horizontal):
             return self.HEADERS[sec]
         return None
-        """headerData."""
 
     def flags(self, idx):
-        """flags."""
+        """Make column 0 user-checkable; other columns selectable."""
         if idx.column() == 0:
             return (Qt.ItemFlag.ItemIsEnabled
                     | Qt.ItemFlag.ItemIsUserCheckable)
         return Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable
-        """flags."""
 
     def toggle_selected(self, idx):
-        """toggle_selected."""
+        """Flip one row's deletion checkbox and notify check-state changed."""
         row = self._rows[idx.row()]
         row["selected"] = not row["selected"]
         self.dataChanged.emit(
             idx, idx,
             [Qt.ItemDataRole.CheckStateRole, Qt.ItemDataRole.ForegroundRole],
         )
-        """toggle_selected."""
 
     def auto_select_duplicates(self):
-        """auto_select_duplicates."""
+        """Check every duplicate except the oldest file in each group.
+
+        Relies on set_groups having sorted each group oldest-first, so the
+        first row per group is kept. Notifies a full-model data change.
+        """
         groups: dict[int, list[dict]] = {}
         for row in self._rows:
             groups.setdefault(row["group"], []).append(row)
@@ -2299,24 +2381,25 @@ class _DuplicateModel(QAbstractTableModel):
                 self.index(len(self._rows) - 1, self.columnCount() - 1),
                 [Qt.ItemDataRole.CheckStateRole, Qt.ItemDataRole.ForegroundRole],
             )
-        """auto_select_duplicates."""
 
     def get_selected_rows(self) -> list[dict]:
-        """get_selected_rows."""
+        """Return the row dicts currently checked for deletion."""
         return [r for r in self._rows if r["selected"]]
-        """get_selected_rows."""
 
     def total_recoverable(self) -> int:
-        """total_recoverable."""
+        """Return total bytes across all checked rows."""
         return sum(r["size"] for r in self._rows if r["selected"])
-        """total_recoverable."""
 
 
 class DuplicateFinderDialog(QDialog):
     """Scan a directory for duplicate files (size pre-filter + MD5)."""
 
     def __init__(self, initial_path: str = "", parent=None):
-        """__init__."""
+        """Build the dialog: directory picker, progress bar, results table.
+
+        Args:
+            initial_path: directory pre-filled into the scan input.
+        """
         super().__init__(parent)
         self.setObjectName("DuplicateFinder")
         self.setWindowTitle("Duplicate Finder")
@@ -2401,23 +2484,25 @@ class DuplicateFinderDialog(QDialog):
         brow.addWidget(self.btn_delete)
 
         lay.addLayout(brow)
-        """__init__."""
 
     def set_directory(self, path: str):
-        """set_directory."""
+        """Pre-fill the scan directory input."""
         self.dir_input.setText(path)
-        """set_directory."""
 
     def _browse(self):
-        """_browse."""
+        """Open a directory picker and copy the choice into the input field."""
         d = QFileDialog.getExistingDirectory(
             self, "Scan for duplicates", self.dir_input.text())
         if d:
             self.dir_input.setText(d)
-        """_browse."""
 
     def _start_scan(self):
-        """_start_scan."""
+        """Validate the directory and launch a _DupScanWorker.
+
+        Disables all action buttons and resets the progress bar/table for
+        the run. Any previous worker is stopped and awaited (up to 2s)
+        first. Invalid paths only update the status label.
+        """
         path = self.dir_input.text().strip()
         if not path or not os.path.isdir(path):
             self.status_label.setText("Please select a valid directory.")
@@ -2439,17 +2524,20 @@ class DuplicateFinderDialog(QDialog):
         self._thread.progress.connect(self._on_progress)
         self._thread.scan_done.connect(self._on_done)
         self._thread.start()
-        """_start_scan."""
 
     def _on_progress(self, pct: int, name: str):
-        """_on_progress."""
+        """Mirror worker hashing progress into the bar and status label."""
         self.progress_bar.setValue(pct)
         self.progress_bar.setFormat(f"Hashing\u2026 {pct}%")
         self.status_label.setText(f"Hashing: {name}")
-        """_on_progress."""
 
     def _on_done(self, groups: list):
-        """_on_done."""
+        """Handle scan completion: summarize results and populate the table.
+
+        Reports group count, total duplicate files, and recoverable bytes
+        (all but the first file of each group); enables Select/Delete only
+        when duplicates were found.
+        """
         self.btn_scan.setEnabled(True)
         self.progress_bar.setValue(100)
         self.progress_bar.setFormat("Done")
@@ -2468,30 +2556,30 @@ class DuplicateFinderDialog(QDialog):
         self._model.set_groups(groups)
         self.btn_select.setEnabled(n_groups > 0)
         self._update_space()
-        """_on_done."""
 
     def _auto_select(self):
-        """_auto_select."""
+        """Check all duplicates (keeping the oldest of each group) via the model."""
         self._model.auto_select_duplicates()
         self._update_space()
-        """_auto_select."""
 
     def _update_space(self):
-        """_update_space."""
+        """Refresh the recoverable-space label and the Delete button's enabled state."""
         rec = self._model.total_recoverable()
         self.space_label.setText(f"{human(rec)} recoverable" if rec else "")
         self.btn_delete.setEnabled(rec > 0)
-        """_update_space."""
 
     def _on_click(self, idx):
-        """_on_click."""
+        """Toggle a row's checkbox when column 0 is clicked."""
         if idx.column() == 0:
             self._model.toggle_selected(idx)
             self._update_space()
-        """_on_click."""
 
     def _delete_selected(self):
-        """_delete_selected."""
+        """Permanently delete all checked duplicates, then rescan.
+
+        Asks for confirmation first; individual os.remove failures are
+        silently skipped, and the reported count reflects actual deletions.
+        """
         rows = self._model.get_selected_rows()
         if not rows:
             return
@@ -2514,15 +2602,13 @@ class DuplicateFinderDialog(QDialog):
         self.status_label.setText(
             f"Deleted {deleted} file(s). Re-scanning\u2026")
         self._start_scan()
-        """_delete_selected."""
 
     def closeEvent(self, ev):
-        """closeEvent."""
+        """Stop and await any running scan worker before closing."""
         if self._thread and self._thread.isRunning():
             self._thread.stop()
             self._thread.wait(2000)
         super().closeEvent(ev)
-        """closeEvent."""
 
 
 # ═════════════════════════════════════════════════════════════════════════════
@@ -2537,7 +2623,11 @@ class NexusClipboard(QObject):
     MODE_COPY = "copy"
 
     def __init__(self, parent=None):
-        """__init__."""
+        """Initialize empty clipboard state and a 150ms debounce timer.
+
+        Also hooks the system clipboard's dataChanged signal (lazily, on
+        first successful QApplication access) for two-way sync.
+        """
         super().__init__(parent)
         self._mode: str | None = None
         self._paths: list[str] = []
@@ -2548,10 +2638,13 @@ class NexusClipboard(QObject):
         self._debounce_timer.setInterval(150)
         self._debounce_timer.timeout.connect(self._do_external_change)
         self._get_clipboard()
-        """__init__."""
 
     def _get_clipboard(self):
-        """_get_clipboard."""
+        """Return the system clipboard, connecting dataChanged once.
+
+        Returns None (never raises) if QApplication is unavailable; the
+        dataChanged hook is only connected the first time.
+        """
         try:
             app = QApplication.instance()
             if app is None:
@@ -2563,46 +2656,44 @@ class NexusClipboard(QObject):
             return clip
         except Exception:
             return None
-        """_get_clipboard."""
 
     def cut(self, paths: list[str]):
-        """cut."""
+        """Set clipboard mode to cut and sync paths to the system clipboard."""
         self._mode = self.MODE_CUT
         self._paths = list(paths)
         self._sync_to_system_clipboard()
         self.changed.emit(self._mode, list(self._paths))
-        """cut."""
 
     def copy(self, paths: list[str]):
-        """copy."""
+        """Set clipboard mode to copy and sync paths to the system clipboard."""
         self._mode = self.MODE_COPY
         self._paths = list(paths)
         self._sync_to_system_clipboard()
         self.changed.emit(self._mode, list(self._paths))
-        """copy."""
 
     def paste(self) -> tuple[str, list[str]] | None:
-        """paste."""
+        """Return (mode, paths) if the clipboard holds data, else None."""
         if not self._mode or not self._paths:
             return None
         return (self._mode, list(self._paths))
-        """paste."""
 
     def clear(self):
-        """clear."""
+        """Empty the clipboard and notify listeners with ("", [])."""
         self._mode = None
         self._paths = []
         self.changed.emit("", [])
-        """clear."""
 
     @property
     def has_data(self) -> bool:
-        """has_data."""
+        """Return True when a mode and at least one path are set."""
         return bool(self._mode and self._paths)
-        """has_data."""
 
     def _sync_to_system_clipboard(self):
-        """_sync_to_system_clipboard."""
+        """Mirror the current cut/copy set into the system clipboard.
+
+        Guards against feedback loops with ``_syncing`` and is skipped when
+        no QApplication exists.
+        """
         if self._syncing:
             return
         self._syncing = True
@@ -2618,17 +2709,20 @@ class NexusClipboard(QObject):
             pass
         finally:
             self._syncing = False
-        """_sync_to_system_clipboard."""
 
     def _on_data_changed(self):
-        """_on_data_changed."""
+        """Debounce system-clipboard changes (150ms) before importing them."""
         if self._syncing:
             return
         self._debounce_timer.start()
-        """_on_data_changed."""
 
     def _do_external_change(self):
-        """_do_external_change."""
+        """Import an externally-copied file set from the system clipboard.
+
+        Accepts URL lists directly, or newline-separated text whose lines
+        are existing paths. Imported data always becomes MODE_COPY and
+        emits changed() only when the path list actually differs.
+        """
         if self._syncing:
             return
         try:

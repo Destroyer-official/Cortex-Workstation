@@ -19,13 +19,15 @@ class SystemToolsTab(BaseTab):
     """Container Tab mapping System Tools sub-tabs dynamically."""
 
     def __init__(self, config, logger, safety_manager):
-        """__init__."""
+        """Initialize the container tab via the base class."""
         super().__init__(config, logger, safety_manager)
-        """__init__."""
-        """__init__."""
 
     def setup_ui(self):
-        """Create the system tools tab natively injecting components."""
+        """Create the system tools tab natively injecting components.
+
+        Fills an inner QTabWidget with StartupManagerTab, ProcessAnalyzerTab,
+        and (if importable) RegistryCleanerTab as sub-tabs.
+        """
         layout = QVBoxLayout(self)
         layout.setSpacing(10)
         
