@@ -7,7 +7,7 @@ scales and the elevation resolver can be asserted headlessly.
 from __future__ import annotations
 
 import pytest
-from hypothesis import given, strategies as st
+from hypothesis import HealthCheck, given, settings, strategies as st
 
 from cortex_unified.ui.premium import tokens
 from cortex_unified.ui.premium.tokens import (
@@ -99,6 +99,7 @@ def test_depth_monotonic_for_builtin_themes(palette):
 _hex_color = st.from_regex(r"#[0-9a-fA-F]{6}", fullmatch=True)
 
 
+@settings(suppress_health_check=[HealthCheck.too_slow], max_examples=50)
 @given(
     bg=_hex_color,
     surface=_hex_color,

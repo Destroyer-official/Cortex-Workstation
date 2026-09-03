@@ -132,12 +132,15 @@ def _secure_delete(key: str) -> None:
 
 
 def retry_on_rate_limit(max_retries: int = 4):
-    """Decorator that retries a call with exponential backoff on HTTP 429."""
+    """Decorator factory: retry the wrapped call up to max_retries times
+    with exponential backoff (1s, 2s, 4s, ...) on HTTP 429 / rate-limit /
+    throttling errors; re-raises the last exception otherwise."""
     def decorator(func):
-        """decorator."""
+        """Inner decorator capturing func."""
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
-            """wrapper."""
+            """Call func, catching 429-shaped exceptions (code/status attr
+            or 'rate'/'throttl' text) and retrying with 2^attempt sleeps."""
             last_exc: Exception | None = None
             for attempt in range(max_retries):
                 try:
@@ -165,10 +168,14 @@ def retry_on_rate_limit(max_retries: int = 4):
                         continue
                     raise
             raise last_exc or RuntimeError(f"Rate limit exceeded after {max_retries} retries")
-            """wrapper."""
+            """Call func, catching 429-shaped exceptions (code/status attr
+            or 'rate'/'throttl' text) and retrying with 2^attempt sleeps."""
         return wrapper
-        """decorator."""
+        """Inner decorator capturing func."""
     return decorator
+    """Decorator factory: retry the wrapped call up to max_retries times
+    with exponential backoff (1s, 2s, 4s, ...) on HTTP 429 / rate-limit /
+    throttling errors; re-raises the last exception otherwise."""
 
 
 # ---------------------------------------------------------------------------
@@ -184,14 +191,14 @@ class CloudProviderType(Enum):
 
 
 class SyncStatus(Enum):
-    """SyncStatus."""
+    """Local-vs-cloud synchronization states of a cloud file."""
     SYNCED = "synced"
     SYNCING = "syncing"
     LOCAL_ONLY = "local_only"
     CLOUD_ONLY = "cloud_only"
     CONFLICT = "conflict"
     ERROR = "error"
-    """SyncStatus class."""
+    """Local-vs-cloud synchronization states of a cloud file."""
 
 
 @dataclass
@@ -231,9 +238,9 @@ class CloudProvider(ABC):
     @property
     @abstractmethod
     def provider_type(self) -> CloudProviderType:
-        """provider_type."""
+        """Return the provider this implementation handles."""
         ...
-        """provider_type."""
+        """Return the provider this implementation handles."""
 
     @abstractmethod
     def authenticate(self) -> bool:
@@ -242,9 +249,9 @@ class CloudProvider(ABC):
 
     @abstractmethod
     def is_authenticated(self) -> bool:
-        """is_authenticated."""
+        """Return True when the provider holds valid credentials."""
         ...
-        """is_authenticated."""
+        """Return True when the provider holds valid credentials."""
 
     @abstractmethod
     def disconnect(self) -> None:
@@ -253,9 +260,9 @@ class CloudProvider(ABC):
 
     @abstractmethod
     def get_account_info(self) -> CloudAccount | None:
-        """get_account_info."""
+        """Fetch account identity and quota; None when unavailable."""
         ...
-        """get_account_info."""
+        """Fetch account identity and quota; None when unavailable."""
 
     @abstractmethod
     def list_files(self, path: str = "/", max_results: int = 1000) -> list[CloudFile]:
@@ -300,7 +307,9 @@ class OneDriveProvider(CloudProvider):
     """Microsoft OneDrive integration via MSAL + Graph API."""
 
     def __init__(self, client_id: str = ""):
-        """__init__."""
+        """Set the app client id (arg or ONEDRIVE_CLIENT_ID env) and load
+        the persisted MSAL token cache from secure storage when msal is
+        installed."""
         self._client_id = client_id or os.environ.get("ONEDRIVE_CLIENT_ID", "")
         self._app: msal.PublicClientApplication | None = None
         self._token_cache: msal.SerializableTokenCache | None = None
@@ -311,19 +320,23 @@ class OneDriveProvider(CloudProvider):
         if HAS_MSAL:
             cache_data = _secure_load("onedrive_cache")
             self._token_cache = msal.SerializableTokenCache(cache_data) if cache_data else msal.SerializableTokenCache()
-        """__init__."""
+        """Set the app client id (arg or ONEDRIVE_CLIENT_ID env) and load
+        the persisted MSAL token cache from secure storage when msal is
+        installed."""
 
     @property
     def provider_type(self) -> CloudProviderType:
-        """provider_type."""
+        """Return ONEDRIVE as this provider's type."""
         return CloudProviderType.ONEDRIVE
-        """provider_type."""
+        """Return ONEDRIVE as this provider's type."""
 
     def _persist_cache(self) -> None:
-        """_persist_cache."""
+        """Serialize the MSAL token cache back to secure storage when it
+        has changed."""
         if self._token_cache and self._token_cache.has_state_changed:
             _secure_store("onedrive_cache", self._token_cache.serialize())
-        """_persist_cache."""
+        """Serialize the MSAL token cache back to secure storage when it
+        has changed."""
 
     def _ensure_token(self) -> bool:
         """Attempt silent token acquisition. Returns True if a valid token is held."""
@@ -341,7 +354,10 @@ class OneDriveProvider(CloudProvider):
 
     @retry_on_rate_limit()
     def authenticate(self) -> bool:
-        """authenticate."""
+        """Authenticate via MSAL: build the PublicClientApplication, try
+        silent token acquisition from the cache, then fall back to the
+        interactive browser flow (port 8080) — recording the account name
+        and persisting the token cache on success."""
         if not HAS_MSAL:
             log.warning("msal is not installed – OneDrive unavailable")
             return False
@@ -378,24 +394,28 @@ class OneDriveProvider(CloudProvider):
         except Exception as exc:
             log.warning("OneDrive interactive auth failed: %s", exc)
             return False
-        """authenticate."""
+        """Authenticate via MSAL: build the PublicClientApplication, try
+        silent token acquisition from the cache, then fall back to the
+        interactive browser flow (port 8080) — recording the account name
+        and persisting the token cache on success."""
 
     def is_authenticated(self) -> bool:
-        """is_authenticated."""
+        """True when a token is held, else attempt a silent refresh."""
         if self._connected and self._token:
             return True
         return self._ensure_token()
-        """is_authenticated."""
+        """True when a token is held, else attempt a silent refresh."""
 
     def disconnect(self) -> None:
-        """disconnect."""
+        """Drop the token/connection and delete the persisted MSAL cache."""
         self._token = ""
         self._connected = False
         _secure_delete("onedrive_cache")
-        """disconnect."""
+        """Drop the token/connection and delete the persisted MSAL cache."""
 
     def _graph_get(self, url: str) -> dict:
-        """_graph_get."""
+        """GET a Microsoft Graph URL with the bearer token (30 s timeout)
+        and return the parsed JSON body."""
         if not self._ensure_token():
             raise RuntimeError("OneDrive: not authenticated")
         import urllib.request
@@ -403,11 +423,12 @@ class OneDriveProvider(CloudProvider):
         req = urllib.request.Request(url, headers={"Authorization": f"Bearer {self._token}"})
         with urllib.request.urlopen(req, timeout=30) as resp:
             return json.loads(resp.read().decode("utf-8"))
-        """_graph_get."""
+        """GET a Microsoft Graph URL with the bearer token (30 s timeout)
+        and return the parsed JSON body."""
 
     @retry_on_rate_limit()
     def get_account_info(self) -> CloudAccount | None:
-        """get_account_info."""
+        """Fetch /me/drive quota plus /me profile into a CloudAccount."""
         try:
             data = self._graph_get(f"{_ONEDRIVE_GRAPH}/me/drive")
             quota = data.get("quota", {})
@@ -423,11 +444,12 @@ class OneDriveProvider(CloudProvider):
         except Exception as exc:
             log.warning("OneDrive account info failed: %s", exc)
             return None
-        """get_account_info."""
+        """Fetch /me/drive quota plus /me profile into a CloudAccount."""
 
     @retry_on_rate_limit()
     def list_files(self, path: str = "/", max_results: int = 1000) -> list[CloudFile]:
-        """list_files."""
+        """List children of a OneDrive path via Graph, following
+        @odata.nextLink pages up to max_results (page size capped at 200)."""
         try:
             graph_path = path.strip("/") or "root"
             url = f"{_ONEDRIVE_GRAPH}/me/drive/{graph_path}/children?$top={min(max_results, 200)}"

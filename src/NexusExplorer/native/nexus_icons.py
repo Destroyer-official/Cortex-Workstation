@@ -558,30 +558,34 @@ _MATERIAL_DIR = next((p for p in _CANDIDATE_ICON_DIRS if p.is_dir()), _CANDIDATE
 
 
 class _LRUCache:
-    """_LRUCache."""
+    """Ordered-dict LRU cache mapping string keys to rendered QIcons,
+    evicting the least recently used entry beyond maxsize."""
     def __init__(self, maxsize: int = 1000):
-        """__init__."""
+        """Create the OrderedDict store with the given capacity."""
         self._data: OrderedDict[str, QIcon] = OrderedDict()
         self._maxsize = maxsize
-        """__init__."""
+        """Create the OrderedDict store with the given capacity."""
 
     def get(self, key: str) -> QIcon | None:
-        """get."""
+        """Return the cached icon (refreshing LRU position) or None."""
         if key in self._data:
             self._data.move_to_end(key)
             return self._data[key]
         return None
-        """get."""
+        """Return the cached icon (refreshing LRU position) or None."""
 
     def set(self, key: str, value: QIcon) -> None:
-        """set."""
+        """Insert/refresh an entry, evicting the oldest when the cache
+        exceeds maxsize."""
         if key in self._data:
             self._data.move_to_end(key)
         self._data[key] = value
         while len(self._data) > self._maxsize:
             self._data.popitem(last=False)
-        """set."""
-    """_LRUCache class."""
+        """Insert/refresh an entry, evicting the oldest when the cache
+        exceeds maxsize."""
+    """Ordered-dict LRU cache mapping string keys to rendered QIcons,
+    evicting the least recently used entry beyond maxsize."""
 
 _SVG_CACHE = _LRUCache(1000)
 
@@ -590,7 +594,9 @@ _RENDERER_CACHE: dict[str, QSvgRenderer] = {}
 
 def _render_svg(path_d: str, size: int, color: str,
                 fill: str | None = None) -> QPixmap:
-    """_render_svg."""
+    """Render an inline SVG (20×20 viewBox, 1.5 px stroke, round joins)
+    built from path_d into a transparent antialiased QPixmap of the
+    requested size; renderers are cached per (path, colors) up to 200."""
     cache_key = f"{path_d}:{color}:{fill}"
     renderer = _RENDERER_CACHE.get(cache_key)
     if renderer is None:
@@ -614,7 +620,9 @@ def _render_svg(path_d: str, size: int, color: str,
     renderer.render(painter)
     painter.end()
     return pixmap
-    """_render_svg."""
+    """Render an inline SVG (20×20 viewBox, 1.5 px stroke, round joins)
+    built from path_d into a transparent antialiased QPixmap of the
+    requested size; renderers are cached per (path, colors) up to 200."""
 
 
 def _render_svg_file(svg_content: str, size: int, default_color: str = "#FFB900") -> QPixmap:
@@ -640,7 +648,9 @@ _ICON_CACHE_MAX = 512
 
 def icon(name: str, size: int = 20, color: str = _CLR_DEFAULT,
          fill: str | None = None) -> QIcon:
-    """icon."""
+    """Return a Fluent icon by name at the requested size/color/fill,
+    served from a bounded icon cache; unknown names fall back to
+    file_unknown (ValueError when even that is missing)."""
     cache_key = (name, size, color, fill)
     cached = _ICON_CACHE.get(cache_key)
     if cached is not None:
@@ -655,7 +665,9 @@ def icon(name: str, size: int = 20, color: str = _CLR_DEFAULT,
         _ICON_CACHE.pop(next(iter(_ICON_CACHE)))
     _ICON_CACHE[cache_key] = ico
     return ico
-    """icon."""
+    """Return a Fluent icon by name at the requested size/color/fill,
+    served from a bounded icon cache; unknown names fall back to
+    file_unknown (ValueError when even that is missing)."""
 
 
 def _material_icon(material_name: str, size: int = 32, default_color: str = "#FFB900") -> QIcon:
