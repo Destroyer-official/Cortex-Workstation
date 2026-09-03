@@ -94,12 +94,12 @@ class Column:
     searchable: bool = True
 
     def display(self, record: Any) -> str:
-        """display."""
+        """Format a record's raw value as display text (empty string when None)."""
         raw = self.value(record) if callable(self.value) else _read(record, self.value)
         return "" if raw is None else str(raw)
 
     def sort_value(self, record: Any) -> Any:
-        """sort_value."""
+        """Typed sort key for a record: sort_key if given, else the raw value."""
         if self.sort_key is not None:
             return self.sort_key(record)
         raw = self.value(record) if callable(self.value) else _read(record, self.value)
@@ -114,7 +114,7 @@ class RecordTableModel(QAbstractTableModel):
     """
 
     def __init__(self, columns: Sequence[Column], parent: QObject | None = None):
-        """__init__."""
+        """Store the column definitions and start with zero records."""
         super().__init__(parent)
         self._columns: tuple[Column, ...] = tuple(columns)
         self._records: list[Any] = []
@@ -128,12 +128,12 @@ class RecordTableModel(QAbstractTableModel):
         self.endResetModel()
 
     def clear(self) -> None:
-        """clear."""
+        """Remove all rows via a model reset."""
         self.set_records([])
 
     @property
     def records(self) -> tuple[Any, ...]:
-        """records."""
+        """Snapshot of the current row records as a tuple."""
         return tuple(self._records)
 
     def record_at(self, row: int) -> Any | None:
@@ -144,19 +144,19 @@ class RecordTableModel(QAbstractTableModel):
 
     @property
     def columns(self) -> tuple[Column, ...]:
-        """columns."""
+        """The model's column definitions."""
         return self._columns
 
     # -- QAbstractTableModel ------------------------------------------------
 
     def rowCount(self, parent: QModelIndex | None = None) -> int:  # noqa: N802
-        """rowCount."""
+        """Number of rows; 0 for any valid parent index (flat model)."""
         if parent is not None and parent.isValid():
             return 0
         return len(self._records)
 
     def columnCount(self, parent: QModelIndex | None = None) -> int:  # noqa: N802
-        """columnCount."""
+        """Number of columns; 0 for any valid parent index (flat model)."""
         if parent is not None and parent.isValid():
             return 0
         return len(self._columns)
@@ -175,7 +175,7 @@ class RecordTableModel(QAbstractTableModel):
         return None
 
     def data(self, index: QModelIndex, role: int = Qt.ItemDataRole.DisplayRole) -> Any:
-        """data."""
+        """Serve display, sort, record, icon, tooltip, alignment and foreground roles per column."""
         if not index.isValid():
             return None
         record = self.record_at(index.row())
@@ -209,7 +209,7 @@ class RecordTableModel(QAbstractTableModel):
         return None
 
     def flags(self, index: QModelIndex) -> Qt.ItemFlag:
-        """flags."""
+        """Read-only enabled+selectable flags for valid indexes."""
         if not index.isValid():
             return Qt.ItemFlag.NoItemFlags
         # Read-only: these tables report system state; edits happen through
@@ -225,14 +225,14 @@ class RecordFilterProxy(QSortFilterProxyModel):
     """
 
     def __init__(self, parent: QObject | None = None):
-        """__init__."""
+        """Sort on SORT_ROLE with dynamic sort/filter and an empty filter term."""
         super().__init__(parent)
         self.setSortRole(SORT_ROLE)
         self.setDynamicSortFilter(True)
         self._term = ""
 
     def set_filter_text(self, text: str) -> None:
-        """set_filter_text."""
+        """Set the case-folded filter term, keeping selection stable across the change."""
         term = (text or "").strip().casefold()
         if term == self._term:
             return
@@ -252,7 +252,7 @@ class RecordFilterProxy(QSortFilterProxyModel):
 
     @property
     def filter_text(self) -> str:
-        """filter_text."""
+        """The active case-folded filter term."""
         return self._term
 
     def filterAcceptsRow(  # noqa: N802
@@ -277,7 +277,7 @@ class RecordFilterProxy(QSortFilterProxyModel):
         return False
 
     def lessThan(self, left: QModelIndex, right: QModelIndex) -> bool:  # noqa: N802
-        """lessThan."""
+        """Compare typed sort-role values, falling back to string comparison on TypeError."""
         model = self.sourceModel()
         if not isinstance(model, RecordTableModel):
             return super().lessThan(left, right)
@@ -309,11 +309,11 @@ class TableBinding:
     columns: tuple[Column, ...] = field(default_factory=tuple)
 
     def set_records(self, records: Sequence[Any]) -> None:
-        """set_records."""
+        """Replace the underlying model's rows."""
         self.model.set_records(records)
 
     def set_filter_text(self, text: str) -> None:
-        """set_filter_text."""
+        """Apply filter text to the proxy."""
         self.proxy.set_filter_text(text)
 
     @property

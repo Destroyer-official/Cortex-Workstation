@@ -20,14 +20,14 @@ from cortex_unified.core.deleter import Deleter
 from cortex_unified.analyzers.deep_cleaner import DeepCleaner
 
 class DeepCleanerWorker(QThread):
-    """DeepCleanerWorker."""
+    """Runs the deep junk scan (temp/cache/logs/orphans) off the GUI thread."""
     finished_scan = Signal(list)
     error_occurred = Signal(str)
     status_updated = Signal(str)
     progress_updated = Signal(int)
 
     def __init__(self, config: Config):
-        """__init__."""
+        """Store the config and the run flag for the progress poller."""
         super().__init__()
         self.config = config
         self._is_running = True
@@ -35,13 +35,13 @@ class DeepCleanerWorker(QThread):
         """__init__."""
 
     def run(self):
-        """run."""
+        """Find junk and emit finished_scan with [items, stats] (or error_occurred)."""
         try:
             self.status_updated.emit("Deep scanning disk...")
             cleaner = DeepCleaner(self.config)
             
             def poll_progress():
-                """poll_progress."""
+                """Pulse the indeterminate progress bar every 0.1s while scanning."""
                 while self._is_running:
                     self.progress_updated.emit(0)
                     time.sleep(0.1)
@@ -52,7 +52,7 @@ class DeepCleanerWorker(QThread):
             t.start()
             
             def update_status(msg):
-                """update_status."""
+                """Relay the cleaner's status text via status_updated."""
                 self.status_updated.emit(msg)
                 """update_status."""
                 """update_status."""
@@ -73,13 +73,13 @@ class DeepCleanerTab(BaseTab):
     """Tab for deep cleaner functionality (Temp, Cache, Logs, Orphans)."""
 
     def __init__(self, config, logger, safety_manager):
-        """__init__."""
+        """Initialize the tab and call setup_ui."""
         super().__init__(config, logger, safety_manager)
         """__init__."""
         """__init__."""
 
     def setup_ui(self):
-        """setup_ui."""
+        """Build the tab: action buttons, progress bar, and the 4-column junk tree."""
         layout = QVBoxLayout(self)
         
         title = QLabel('🧹 Deep Disk Cleaner')
@@ -151,7 +151,7 @@ class DeepCleanerTab(BaseTab):
         """setup_ui."""
 
     def start_scan(self):
-        """start_scan."""
+        """Disable actions and launch the DeepCleanerWorker."""
         self.scan_btn.setEnabled(False)
         self.clean_btn.setEnabled(False)
         self.progress_bar.setVisible(True)
@@ -171,7 +171,7 @@ class DeepCleanerTab(BaseTab):
         """start_scan."""
 
     def format_bytes(self, bytes_count: int) -> str:
-        """format_bytes."""
+        """Format a byte count with the largest fitting binary unit."""
         for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
             if bytes_count < 1024.0:
                 return f"{bytes_count:.1f} {unit}"
@@ -181,7 +181,7 @@ class DeepCleanerTab(BaseTab):
         """format_bytes."""
 
     def scan_finished(self, result):
-        """scan_finished."""
+        """Fill the tree with categorized junk items (orphans highlighted) and stats."""
         items, stats = result
         self.tree.blockSignals(True)
         
@@ -264,7 +264,7 @@ class DeepCleanerTab(BaseTab):
             self.update_selection_summary()
 
     def update_selection_summary(self):
-        """update_selection_summary."""
+        """Update the Clean button label with the checked item count."""
         checked_count = 0
         total_size = 0
         
@@ -281,14 +281,14 @@ class DeepCleanerTab(BaseTab):
         """update_selection_summary."""
 
     def scan_error(self, error):
-        """scan_error."""
+        """Show the scan error in the status label and a dialog."""
         self.lbl_status.setText(f'Error: {error}')
         QMessageBox.critical(self, 'Scan Error', f'An error occurred:\\n{error}')
         """scan_error."""
         """scan_error."""
 
     def start_clean(self):
-        """start_clean."""
+        """Confirm, then recycle the checked items via Deleter and rescan."""
         selected_paths = []
         
         root = self.tree.invisibleRootItem()
@@ -345,19 +345,19 @@ class DeepCleanerTab(BaseTab):
         """start_clean."""
 
     def select_all(self):
-        """select_all."""
+        """Check every item in the tree."""
         self._toggle_checkboxes(Qt.CheckState.Checked)
         """select_all."""
         """select_all."""
 
     def deselect_all(self):
-        """deselect_all."""
+        """Uncheck every item in the tree."""
         self._toggle_checkboxes(Qt.CheckState.Unchecked)
         """deselect_all."""
         """deselect_all."""
 
     def _toggle_checkboxes(self, state):
-        """_toggle_checkboxes."""
+        """Set all parent and child check states without firing change signals."""
         self.tree.blockSignals(True)
         root = self.tree.invisibleRootItem()
         for i in range(root.childCount()):
@@ -371,7 +371,7 @@ class DeepCleanerTab(BaseTab):
         """_toggle_checkboxes."""
 
     def operation_finished(self, worker):
-        """operation_finished."""
+        """Hide progress, re-enable scanning, and reap the finished worker."""
         self.progress_bar.setVisible(False)
         self.scan_btn.setEnabled(True)
         self.remove_worker_thread(worker)

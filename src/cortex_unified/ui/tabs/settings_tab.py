@@ -17,7 +17,7 @@ from PySide6.QtWidgets import (
 from .base_tab import BaseTab
 
 try:
-    from cortex_unified.i18n.settings_integration import get_i18n_manager
+    from cortex_unified.translations.settings_integration import get_i18n_manager
     HAS_I18N = True
 except ImportError:
     HAS_I18N = False

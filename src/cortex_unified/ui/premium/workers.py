@@ -35,18 +35,18 @@ class ScanWorker(QObject):
     failed = Signal(str)
 
     def __init__(self, max_risk: str = "medium", include_disabled: bool = False):
-        """__init__."""
+        """Store the risk ceiling, disabled-category flag and a shared cancel event."""
         super().__init__()
         self._max_risk = max_risk
         self._include_disabled = include_disabled
         self._cancel = threading.Event()
 
     def cancel(self) -> None:
-        """cancel."""
+        """Signal the engine to abort the in-flight scan via the shared event."""
         self._cancel.set()
 
     def run(self) -> None:
-        """run."""
+        """Run the category scan (emits finished with the CleanupReport, or failed)."""
         try:
             report = CleanerService().scan_categories(
                 max_risk=RiskLevel(self._max_risk),
@@ -67,23 +67,23 @@ class CleanWorker(QObject):
     failed = Signal(str)
 
     def __init__(self, report: CleanupReport, method: str):
-        """__init__."""
+        """Hold the report to clean, the deletion method, and a cancel event."""
         super().__init__()
         self._report = report
         self._method = method
         self._cancel = threading.Event()
 
     def cancel(self) -> None:
-        """cancel."""
+        """Signal the engine to abort the in-flight clean via the shared event."""
         self._cancel.set()
 
     def run(self) -> None:
-        """run."""
+        """Clean the report's categories, emitting finished (freed, cleaned, skipped) or failed."""
         try:
             svc = CleanerService()
 
             def _prog(done: int, total: int) -> None:
-                """_prog."""
+                """Forward (done, total) counts as a human-readable progress message."""
                 self.progress.emit(f"Cleaning\u2026 {done:,} / {total:,}")
 
             results = svc.clean_categories(
@@ -100,23 +100,23 @@ class CleanWorker(QObject):
 
 
 class DuplicateWorker(QObject):
-    """DuplicateWorker class."""
+    """Finds byte-identical duplicate files under the given roots."""
     finished = Signal(dict)       # {hash: [Path, ...]}
     progress = Signal(str)
     failed = Signal(str)
 
     def __init__(self, roots: list[str]):
-        """__init__."""
+        """Store the root folders to scan and a cancel event."""
         super().__init__()
         self._roots = roots
         self._cancel = threading.Event()
 
     def cancel(self) -> None:
-        """cancel."""
+        """Signal the engine to abort the duplicate scan via the shared event."""
         self._cancel.set()
 
     def run(self) -> None:
-        """run."""
+        """Find duplicates (emits finished with {hash: [Path, ...]} groups, or failed)."""
         try:
             groups = CleanerService().find_duplicates(
                 [Path(r) for r in self._roots],
@@ -129,7 +129,7 @@ class DuplicateWorker(QObject):
 
 
 def _norm(p) -> str:
-    """_norm."""
+    """Normalize a path to Windows backslash form for prefix matching."""
     return str(p).replace("/", "\\")
 
 
@@ -246,7 +246,7 @@ class DirPreviewWorker(QObject):
         self._prefix = prefix
 
     def run(self) -> None:
-        """run."""
+        """Compute the node's children per mode, emitting finished (node_id, up to 400 children) or failed."""
         try:
             if self._mode == "appwise":
                 children = group_by_app(self._entries, self._roots)
@@ -272,17 +272,17 @@ class DuplicatePhotosWorker(QObject):
     }
 
     def __init__(self, roots: list[str]):
-        """__init__."""
+        """Store the root folders to scan and a cancel event."""
         super().__init__()
         self._roots = roots
         self._cancel = threading.Event()
 
     def cancel(self) -> None:
-        """cancel."""
+        """Signal the engine to abort the photo-duplicate scan via the shared event."""
         self._cancel.set()
 
     def run(self) -> None:
-        """run."""
+        """Find duplicate images (emits finished with {hash: [Path, ...]} groups, or failed)."""
         try:
             groups = CleanerService().find_duplicates(
                 [Path(r) for r in self._roots],
@@ -296,24 +296,24 @@ class DuplicatePhotosWorker(QObject):
 
 
 class LargeFilesWorker(QObject):
-    """LargeFilesWorker class."""
+    """Finds the largest files under a root path."""
     finished = Signal(list)       # [FileEntry, ...]
     progress = Signal(str)
     failed = Signal(str)
 
     def __init__(self, root: str, min_mb: float):
-        """__init__."""
+        """Store the scan root, minimum size in MB, and a cancel event."""
         super().__init__()
         self._root = root
         self._min_mb = min_mb
         self._cancel = threading.Event()
 
     def cancel(self) -> None:
-        """cancel."""
+        """Signal the engine to abort the large-file scan via the shared event."""
         self._cancel.set()
 
     def run(self) -> None:
-        """run."""
+        """Find up to 200 large files (emits finished with FileEntry list, or failed)."""
         try:
             entries = CleanerService().find_large_files(
                 self._root, min_mb=self._min_mb, limit=200,
@@ -325,23 +325,23 @@ class LargeFilesWorker(QObject):
 
 
 class EmptyWorker(QObject):
-    """EmptyWorker class."""
+    """Finds empty files and empty directories under a root path."""
     finished = Signal(list, list)  # (empty_files, empty_dirs)
     progress = Signal(str)
     failed = Signal(str)
 
     def __init__(self, root: str):
-        """__init__."""
+        """Store the scan root and a cancel event."""
         super().__init__()
         self._root = root
         self._cancel = threading.Event()
 
     def cancel(self) -> None:
-        """cancel."""
+        """Signal the engine to abort the empty-file scan via the shared event."""
         self._cancel.set()
 
     def run(self) -> None:
-        """run."""
+        """Find empty files/dirs (emits finished with both lists, or failed)."""
         try:
             files, dirs = CleanerService().find_empty(self._root, cancel_event=self._cancel)
             self.finished.emit(files, dirs)
@@ -356,13 +356,13 @@ class DeleteSelectedWorker(QObject):
     failed = Signal(str)
 
     def __init__(self, paths: list[str], method: str):
-        """__init__."""
+        """Store the paths to delete and the deletion method."""
         super().__init__()
         self._paths = paths
         self._method = method
 
     def run(self) -> None:
-        """run."""
+        """Delete the given paths (emits finished with (freed, succeeded, blocked), or failed)."""
         try:
             from cortex_unified.engine import SecureDeleter
 
@@ -384,12 +384,12 @@ class RestorePointWorker(QObject):
     failed = Signal(str)
 
     def __init__(self, description: str = "Cortex Cleaner"):
-        """__init__."""
+        """Store the restore-point description text."""
         super().__init__()
         self._description = description
 
     def run(self) -> None:
-        """run."""
+        """Create a restore point (emits finished with (status, message), or failed)."""
         try:
             from cortex_unified.system_tools.restore_point import RestorePointManager
             res = RestorePointManager().create(self._description)
@@ -405,7 +405,7 @@ class RestorePointListWorker(QObject):
     failed = Signal(str)
 
     def run(self) -> None:
-        """run."""
+        """List restore points (emits finished with the list, or failed)."""
         try:
             from cortex_unified.system_tools.restore_point import RestorePointManager
             self.finished.emit(RestorePointManager().list_points())
@@ -420,12 +420,12 @@ class StorageWorker(QObject):
     failed = Signal(str)
 
     def __init__(self, path: str):
-        """__init__."""
+        """Store the path whose storage medium to detect."""
         super().__init__()
         self._path = path
 
     def run(self) -> None:
-        """run."""
+        """Detect the storage kind (emits finished with (kind, overwrite_effective), or failed)."""
         try:
             from cortex_unified.engine import detect_storage
             info = detect_storage(self._path)
@@ -441,13 +441,13 @@ class FreeSpaceWipeWorker(QObject):
     failed = Signal(str)
 
     def __init__(self, drive_letter: str):
-        """__init__."""
+        """Store the drive letter to wipe and a cancel event."""
         super().__init__()
         self._letter = drive_letter
         self._cancel = threading.Event()
 
     def cancel(self) -> None:
-        """cancel."""
+        """Signal cancellation; kills the cipher /w process tree promptly."""
         # cipher /w can run up to an hour; this reaches all the way down to
         # core.proc.run(), which kills the process tree within one poll
         # interval instead of leaving it to finish or abandoning it as an
@@ -455,7 +455,7 @@ class FreeSpaceWipeWorker(QObject):
         self._cancel.set()
 
     def run(self) -> None:
-        """run."""
+        """Wipe the volume's free space (emits finished with (success, message), or failed)."""
         try:
             from cortex_unified.system_tools.free_space_wipe import FreeSpaceWiper
             res = FreeSpaceWiper().wipe(self._letter, cancel_event=self._cancel)
@@ -472,14 +472,14 @@ class ShredWorker(QObject):
     failed = Signal(str)
 
     def __init__(self, target: str, passes: int, force_flash: bool):
-        """__init__."""
+        """Store the target, overwrite pass count, and flash-overwrite override."""
         super().__init__()
         self._target = target
         self._passes = passes
         self._force_flash = force_flash
 
     def run(self) -> None:
-        """run."""
+        """Shred one target (emits finished (outcome, reason), refused, or failed)."""
         try:
             from cortex_unified.engine import SecureDeleter
             from cortex_unified.engine.secure_delete import OverwriteNotEffective
@@ -509,14 +509,14 @@ class AdaptiveShredWorker(QObject):
     failed = Signal(str)
 
     def __init__(self, target: str, level: str | None = None, verify: bool = True):
-        """__init__."""
+        """Store the target, privacy level (None/auto or pl0-pl3), and verify flag."""
         super().__init__()
         self._target = target
         self._level = level  # None = auto, else "pl0"/"pl1"/"pl2"/"pl3"
         self._verify = verify
 
     def run(self) -> None:
-        """run."""
+        """Adaptive shred (emits finished with (outcome, message, detail), or failed)."""
         try:
             from cortex_unified.system_tools.adaptive_sanitizer import AdaptiveSanitizer
             from pathlib import Path
@@ -550,16 +550,16 @@ class VhdxListWorker(QObject):
     failed = Signal(str)
 
     def __init__(self):
-        """__init__."""
+        """Create the shared cancel event for the discovery run."""
         super().__init__()
         self._cancel = threading.Event()
 
     def cancel(self) -> None:
-        """cancel."""
+        """Signal cancellation of the virtual-disk discovery."""
         self._cancel.set()
 
     def run(self) -> None:
-        """run."""
+        """Discover virtual disks (emits finished with VirtualDisk list, or failed)."""
         try:
             from cortex_unified.system_tools.vhdx_manager import VhdxManager
             self.progress.emit("Looking for virtual disks\u2026")
@@ -581,7 +581,7 @@ class WslShutdownWorker(QObject):
     failed = Signal(str)
 
     def run(self) -> None:
-        """run."""
+        """Shut down WSL (emits finished with (ok, message), or failed)."""
         try:
             from cortex_unified.system_tools.vhdx_manager import VhdxManager
             self.progress.emit("Stopping WSL distributions\u2026")
@@ -604,17 +604,17 @@ class VhdxCompactWorker(QObject):
     failed = Signal(str)
 
     def __init__(self, disks: list):
-        """__init__."""
+        """Store the disks to compact and a cancel event."""
         super().__init__()
         self._disks = disks
         self._cancel = threading.Event()
 
     def cancel(self) -> None:
-        """cancel."""
+        """Signal cancellation; stops between disks, not mid-compaction."""
         self._cancel.set()
 
     def run(self) -> None:
-        """run."""
+        """Compact each disk (emits finished with CompactResult list, or failed)."""
         try:
             from cortex_unified.system_tools.vhdx_manager import VhdxManager
             mgr = VhdxManager()
@@ -640,13 +640,13 @@ class VhdxSparseWorker(QObject):
     failed = Signal(str)
 
     def __init__(self, disk, enabled: bool = True):
-        """__init__."""
+        """Store the disk and whether sparse mode should be enabled."""
         super().__init__()
         self._disk = disk
         self._enabled = enabled
 
     def run(self) -> None:
-        """run."""
+        """Toggle WSL sparse mode (emits finished with (ok, message), or failed)."""
         try:
             from cortex_unified.system_tools.vhdx_manager import VhdxManager
             self.progress.emit("Updating sparse mode\u2026")
@@ -672,16 +672,16 @@ class ComponentStoreAnalyzeWorker(QObject):
     failed = Signal(str)
 
     def __init__(self):
-        """__init__."""
+        """Create the cancel event for the analysis run."""
         super().__init__()
         self._cancel = threading.Event()
 
     def cancel(self) -> None:
-        """cancel."""
+        """Signal cancellation of the component-store analysis."""
         self._cancel.set()
 
     def run(self) -> None:
-        """run."""
+        """Analyze the component store (emits finished with (analysis, leftovers), or failed)."""
         try:
             from cortex_unified.system_tools.component_store import ComponentStore
             store = ComponentStore()
@@ -710,12 +710,12 @@ class ComponentStoreCleanWorker(QObject):
     failed = Signal(str)
 
     def __init__(self, reset_base: bool = False):
-        """__init__."""
+        """Store whether ResetBase should be included in the cleanup."""
         super().__init__()
         self._reset_base = reset_base
 
     def run(self) -> None:
-        """run."""
+        """Run component-store cleanup (emits finished with CleanupOutcome, or failed)."""
         try:
             from cortex_unified.system_tools.component_store import ComponentStore
             outcome = ComponentStore().cleanup(
@@ -733,7 +733,7 @@ class ServicingTaskWorker(QObject):
     failed = Signal(str)
 
     def run(self) -> None:
-        """run."""
+        """Trigger the servicing task (emits finished with (ok, message), or failed)."""
         try:
             from cortex_unified.system_tools.component_store import ComponentStore
             self.progress.emit("Starting Windows' cleanup task\u2026")
@@ -755,18 +755,18 @@ class LeftoverDeleteWorker(QObject):
     failed = Signal(str)
 
     def __init__(self, paths: list[str], sizes: dict[str, int] | None = None):
-        """__init__."""
+        """Store the leftover paths, optional size map, and a cancel event."""
         super().__init__()
         self._paths = paths
         self._sizes = sizes or {}
         self._cancel = threading.Event()
 
     def cancel(self) -> None:
-        """cancel."""
+        """Signal cancellation of the leftover deletion run."""
         self._cancel.set()
 
     def run(self) -> None:
-        """run."""
+        """Delete leftovers (emits finished with (freed, removed, blocked), or failed)."""
         try:
             from cortex_unified.engine.secure_delete import SecureDeleter
 
@@ -795,7 +795,7 @@ class ProjectCacheScanWorker(QObject):
     failed = Signal(str)
 
     def __init__(self, target_folders: list[str], keep_recent_days: int = 7, enabled_categories: list[str] | None = None):
-        """__init__."""
+        """Store target folders, retention days, categories, and a cancel event."""
         super().__init__()
         self._target_folders = target_folders
         self._keep_recent_days = keep_recent_days
@@ -803,11 +803,11 @@ class ProjectCacheScanWorker(QObject):
         self._cancel = threading.Event()
 
     def cancel(self) -> None:
-        """cancel."""
+        """Signal cancellation of the project-cache scan."""
         self._cancel.set()
 
     def run(self) -> None:
-        """run."""
+        """Scan project caches (emits finished with resources, or failed)."""
         try:
             from cortex_unified.analyzers.package_manager_cleaner import PackageManagerCleaner
             from cortex_unified.core.config import Config
@@ -815,7 +815,7 @@ class ProjectCacheScanWorker(QObject):
             cleaner = PackageManagerCleaner(Config())
             
             def _prog(status: str, items: int, size: int) -> None:
-                """_prog."""
+                """Relay the scanner's (status, items, bytes) progress to the signal."""
                 self.progress.emit(status, items, size)
 
             resources = cleaner.scan_caches(
@@ -838,18 +838,18 @@ class ProjectCacheCleanWorker(QObject):
     failed = Signal(str)
 
     def __init__(self, resources: list[dict], dry_run: bool = True):
-        """__init__."""
+        """Store the resources to clean, the dry-run flag, and a cancel event."""
         super().__init__()
         self._resources = resources
         self._dry_run = dry_run
         self._cancel = threading.Event()
 
     def cancel(self) -> None:
-        """cancel."""
+        """Signal cancellation of the cache cleanup run."""
         self._cancel.set()
 
     def run(self) -> None:
-        """run."""
+        """Clean project caches (emits finished with a results dict, or failed)."""
         try:
             from cortex_unified.analyzers.package_manager_cleaner import PackageManagerCleaner
             from cortex_unified.core.config import Config
@@ -857,7 +857,7 @@ class ProjectCacheCleanWorker(QObject):
             cleaner = PackageManagerCleaner(Config())
 
             def _prog(done: int, total: int, freed: int) -> None:
-                """_prog."""
+                """Relay (done, total, freed) cleanup progress to the signal."""
                 self.progress.emit(done, total, freed)
 
             results = cleaner.cleanup_caches(
@@ -883,25 +883,25 @@ class AutoProjectCacheWorker(QObject):
     failed = Signal(str)
 
     def __init__(self, enabled_categories: list[str] | None = None, keep_recent_days: int = 7):
-        """__init__."""
+        """Store enabled categories, retention days, and a cancel event."""
         super().__init__()
         self._enabled = enabled_categories
         self._keep = keep_recent_days
         self._cancel = threading.Event()
 
     def cancel(self) -> None:
-        """cancel."""
+        """Signal cancellation of the auto-discovery scan."""
         self._cancel.set()
 
     def run(self) -> None:
-        """run."""
+        """Auto-discover project caches (emits finished with resources, or failed)."""
         try:
             from cortex_unified.analyzers.package_manager_cleaner import PackageManagerCleaner
             from cortex_unified.core.config import Config
             cleaner = PackageManagerCleaner(Config())
 
             def _prog(msg: str, items: int, size: int) -> None:
-                """_prog."""
+                """Relay the discovery progress (message, items, bytes) to the signal."""
                 self.progress.emit(msg, items, size)
 
             resources = cleaner.auto_discover_project_caches(
@@ -923,18 +923,18 @@ class CacheLogSweepWorker(QObject):
     failed = Signal(str)
 
     def __init__(self, roots: list[str], min_size_mb: float = 100.0):
-        """__init__."""
+        """Store the roots to sweep, minimum log size, and a cancel event."""
         super().__init__()
         self._roots = roots
         self._min = min_size_mb
         self._cancel = threading.Event()
 
     def cancel(self) -> None:
-        """cancel."""
+        """Signal cancellation of the log sweep."""
         self._cancel.set()
 
     def run(self) -> None:
-        """run."""
+        """Find large logs (emits finished with (Path, size) pairs, or failed)."""
         try:
             from cortex_unified.analyzers.cache_cleaner import CacheCleaner
             cc = CacheCleaner()
@@ -953,7 +953,7 @@ class DockerFsCacheWorker(QObject):
     failed = Signal(str)
 
     def run(self) -> None:
-        """run."""
+        """Measure Docker's filesystem cache (emits finished with a size dict, or failed)."""
         try:
             from cortex_unified.analyzers.docker_cleaner import DockerCleaner
             self.finished.emit(DockerCleaner().get_filesystem_cache_size())
@@ -968,7 +968,7 @@ class WslListWorker(QObject):
     failed = Signal(str)
 
     def run(self) -> None:
-        """run."""
+        """List WSL distros (emits finished with distro dicts, or failed)."""
         try:
             from cortex_unified.system_tools.wsl_cleaner import WslCleaner
             self.finished.emit([d.to_dict() for d in WslCleaner().list_distros()])
@@ -984,18 +984,18 @@ class LargeFileAiWorker(QObject):
     failed = Signal(str)
 
     def __init__(self, root: str, min_mb: float = 100.0):
-        """__init__."""
+        """Store the scan root, minimum size in MB, and a cancel event."""
         super().__init__()
         self._root = root
         self._min_mb = min_mb
         self._cancel = threading.Event()
 
     def cancel(self) -> None:
-        """cancel."""
+        """Signal cancellation of the large-file scan."""
         self._cancel.set()
 
     def run(self) -> None:
-        """run."""
+        """Split large files into non-AI and AI-model lists, emitting finished with both."""
         try:
             from cortex_unified.analyzers.large_file_finder import LargeFileFinder, is_ai_model
             finder = LargeFileFinder(root_path=self._root)

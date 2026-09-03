@@ -9,7 +9,7 @@ from PySide6.QtWidgets import QWidget
 from PySide6.QtCore import QThread, Signal, QObject
 
 from cortex_unified.core.config import Config
-from cortex_unified.i18n.translator import get_translator
+from cortex_unified.translations.translator import get_translator
 from cortex_unified.ui.safety import SafetyManager, Operation, OperationType, ValidationResult, OperationResult
 
 

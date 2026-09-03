@@ -1,35 +1,17 @@
-"""
-Internationalization module for Cortex Cleaner.
+"""Backwards-compatibility alias for cortex_unified.translations."""
 
-This module provides internationalization and localization support including:
-- Translation management for multiple languages
-- Locale detection and switching
-- Text formatting for different regions
-"""
+from cortex_unified.translations import *  # noqa: F403
+from cortex_unified.translations.settings_integration import (
+    I18nManager,
+    I18nSettingsWidget,
+    get_i18n_manager,
+)
+from cortex_unified.translations.translator import Translator, get_translator
 
-from .translator import Translator, get_translator, set_global_locale, translate, _
-from .settings_integration import I18nManager, I18nSettingsWidget, get_i18n_manager
-
-__version__ = "1.0.0"
 __all__ = [
-    "Translator",
-    "get_translator", 
-    "set_global_locale",
-    "translate",
-    "_",
-    "get_available_locales",
-    "set_locale",
     "I18nManager",
-    "I18nSettingsWidget", 
-    "get_i18n_manager"
+    "I18nSettingsWidget",
+    "Translator",
+    "get_i18n_manager",
+    "get_translator",
 ]
-
-# Convenience functions
-def get_available_locales():
-    """Get available locales from default translator."""
-    translator = get_translator()
-    return translator.get_available_locales()
-
-def set_locale(locale: str):
-    """Set active locale."""
-    set_global_locale(locale)

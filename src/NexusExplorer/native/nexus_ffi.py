@@ -38,7 +38,8 @@ _LIB_NAME = "nexus_engine.dll"
 
 
 def _dll_candidates() -> list[Path]:
-    """_dll_candidates."""
+    """Return candidate nexus_engine.dll paths: release then debug builds
+    under the repo's target/ and src-tauri/target/ directories."""
     repo = Path(__file__).resolve().parent.parent
     return [
         repo / "target" / "release" / _LIB_NAME,
@@ -46,21 +47,28 @@ def _dll_candidates() -> list[Path]:
         repo / "src-tauri" / "target" / "release" / _LIB_NAME,
         repo / "src-tauri" / "target" / "debug" / _LIB_NAME,
     ]
-    """_dll_candidates."""
+    """Return candidate nexus_engine.dll paths: release then debug builds
+    under the repo's target/ and src-tauri/target/ directories."""
 
 
 def find_dll() -> Path:
-    """find_dll."""
+    """Return the first existing nexus_engine.dll candidate path.
+
+    Raises FileNotFoundError listing all searched locations otherwise."""
     for p in _dll_candidates():
         if p.is_file():
             return p
     searched = ", ".join(str(p) for p in _dll_candidates())
     raise FileNotFoundError(f"{_LIB_NAME} not found (searched: {searched})")
-    """find_dll."""
+    """Return the first existing nexus_engine.dll candidate path.
+
+    Raises FileNotFoundError listing all searched locations otherwise."""
 
 
 class _FileEntry(ctypes.Structure):
-    """_FileEntry."""
+    """Mirrors the Rust FFI FileEntry struct: one directory row with
+    name/path/parent/ext UTF-8 pointers plus size, timestamps, and
+    hidden/system/readonly flags."""
     _fields_ = [
         ("name", c_void_p),
         ("path", c_void_p),
@@ -74,11 +82,14 @@ class _FileEntry(ctypes.Structure):
         ("is_readonly", c_int),
         ("ext", c_void_p),
     ]
-    """_FileEntry class."""
+    """Mirrors the Rust FFI FileEntry struct: one directory row with
+    name/path/parent/ext UTF-8 pointers plus size, timestamps, and
+    hidden/system/readonly flags."""
 
 
 class _DriveInfo(ctypes.Structure):
-    """_DriveInfo."""
+    """Mirrors the Rust FFI DriveInfo struct: drive path/label/type/filesystem
+    strings, free/total bytes, and is_ready flag."""
     _fields_ = [
         ("path", c_void_p),
         ("label", c_void_p),
@@ -88,13 +99,16 @@ class _DriveInfo(ctypes.Structure):
         ("total_bytes", c_uint64),
         ("is_ready", c_int),
     ]
-    """_DriveInfo class."""
+    """Mirrors the Rust FFI DriveInfo struct: drive path/label/type/filesystem
+    strings, free/total bytes, and is_ready flag."""
 
 
 class _SearchOptions(ctypes.Structure):
-    """_SearchOptions."""
+    """Mirrors the Rust FFI SearchOptions struct: recursive and
+    include_hidden flags plus max_results bound."""
     _fields_ = [("recursive", c_int), ("max_results", c_uint), ("include_hidden", c_int)]
-    """_SearchOptions class."""
+    """Mirrors the Rust FFI SearchOptions struct: recursive and
+    include_hidden flags plus max_results bound."""
 
 
 SEARCH_CALLBACK = ctypes.CFUNCTYPE(
@@ -115,18 +129,21 @@ CONFLICT_CALLBACK = ctypes.CFUNCTYPE(
 
 
 def _decode(ptr: int | None) -> str:
-    """_decode."""
+    """Read a NUL-terminated UTF-8 string from a raw engine pointer,
+    lossily; returns '' for null pointers or read failures."""
     if not ptr:
         return ""
     try:
         return string_at(ptr).decode("utf-8", "replace")
     except (OSError, ValueError, UnicodeDecodeError):
         return ""
-    """_decode."""
+    """Read a NUL-terminated UTF-8 string from a raw engine pointer,
+    lossily; returns '' for null pointers or read failures."""
 
 
 def _row_from_entry(e: _FileEntry) -> dict:
-    """_row_from_entry."""
+    """Convert an FFI FileEntry into the UI row dict (name, path, isDir,
+    size, modifiedMs/createdMs, isHidden/isSystem/isReadonly, dotless ext)."""
     ext = _decode(e.ext).lstrip(".").lower()
     return {
         "name": _decode(e.name),
@@ -140,14 +157,17 @@ def _row_from_entry(e: _FileEntry) -> dict:
         "isReadonly": bool(e.is_readonly),
         "ext": ext,
     }
-    """_row_from_entry."""
+    """Convert an FFI FileEntry into the UI row dict (name, path, isDir,
+    size, modifiedMs/createdMs, isHidden/isSystem/isReadonly, dotless ext)."""
 
 
 class NexusFfi:
     """Owns the DLL context; one instance per process is enough."""
 
     def __init__(self) -> None:
-        """__init__."""
+        """Locate and load nexus_engine.dll, marshal all exports, acquire an
+        engine handle via nexus_init, and register with the atexit cleanup
+        weak-set."""
         self._dll_path = find_dll()
         self._lock = threading.Lock()
         self._handle: int | None = None
@@ -156,11 +176,18 @@ class NexusFfi:
         self._bind()
         self._handle = self._dll.nexus_init()
         _ffi_instances.add(self)
-        """__init__."""
+        """Locate and load nexus_engine.dll, marshal all exports, acquire an
+        engine handle via nexus_init, and register with the atexit cleanup
+        weak-set."""
 
     # ------------------------------------------------------------------ bind
     def _bind(self) -> None:
-        """_bind."""
+        """Declare restype/argtypes for every engine export: init/free,
+        version, read_dir (JSON + struct-array), free_entries, drives,
+        home_dir, free_string, search (+cancel/last-id), rename,
+        create_folder, read_text_file, orphans_json, copy/move/delete with
+        progress/completion/conflict callbacks, pause/resume/cancel job,
+        and free_job_handle."""
         d = self._dll
         d.nexus_init.restype = c_void_p
         d.nexus_init.argtypes = []
@@ -232,34 +259,45 @@ class NexusFfi:
             fn.argtypes = [c_void_p]
         d.nexus_free_job_handle.restype = None
         d.nexus_free_job_handle.argtypes = [c_void_p]
-        """_bind."""
+        """Declare restype/argtypes for every engine export: init/free,
+        version, read_dir (JSON + struct-array), free_entries, drives,
+        home_dir, free_string, search (+cancel/last-id), rename,
+        create_folder, read_text_file, orphans_json, copy/move/delete with
+        progress/completion/conflict callbacks, pause/resume/cancel job,
+        and free_job_handle."""
 
     # ------------------------------------------------------------- lifecycle
     @property
     def dll_path(self) -> Path:
-        """dll_path."""
+        """Return the resolved path of the loaded engine DLL."""
         return self._dll_path
-        """dll_path."""
+        """Return the resolved path of the loaded engine DLL."""
 
     def version(self) -> str:
         # NOTE: nexus_version returns a static string -- do NOT free it.
-        """version."""
+        """Return the engine version string from nexus_version (statically
+        allocated by the DLL — never freed)."""
         p = self._dll.nexus_version()
         return _decode(p)
-        """version."""
+        """Return the engine version string from nexus_version (statically
+        allocated by the DLL — never freed)."""
 
     def close(self) -> None:
-        """close."""
+        """Release the engine handle via nexus_free under the instance lock
+        (idempotent: no-op when already closed)."""
         with self._lock:
             if getattr(self, "_handle", None):
                 self._dll.nexus_free(self._handle)
                 self._handle = None
-        """close."""
+        """Release the engine handle via nexus_free under the instance lock
+        (idempotent: no-op when already closed)."""
 
     def set_timeout(self, timeout: float | None) -> None:
-        """set_timeout."""
+        """Set the transfer-job wait timeout in seconds (None restores the
+        1-hour default used by _run_job)."""
         self._timeout = timeout
-        """set_timeout."""
+        """Set the transfer-job wait timeout in seconds (None restores the
+        1-hour default used by _run_job)."""
 
     # NOTE: deliberately no __del__ — invoking into the DLL during
     # interpreter finalization risks use-after-free ordering crashes
@@ -296,7 +334,9 @@ class NexusFfi:
         return rows
 
     def get_drives(self) -> list[dict]:
-        """get_drives."""
+        """Fetch drive information via nexus_get_drives and marshal each
+        _DriveInfo into a dict (path, label, driveType, filesystem,
+        freeBytes, totalBytes, isReady); frees the engine array."""
         out = POINTER(_DriveInfo)()
         count = c_size_t(0)
         code = self._dll.nexus_get_drives(self._handle, byref(out), byref(count))
@@ -316,10 +356,13 @@ class NexusFfi:
             })
         self._dll.nexus_free_drives(out, count.value)
         return drives
-        """get_drives."""
+        """Fetch drive information via nexus_get_drives and marshal each
+        _DriveInfo into a dict (path, label, driveType, filesystem,
+        freeBytes, totalBytes, isReady); frees the engine array."""
 
     def home_dir(self) -> str:
-        """home_dir."""
+        """Return the user's home directory from nexus_home_dir,
+        freeing the engine-allocated string."""
         out = c_void_p(0)
         code = self._dll.nexus_home_dir(self._handle, byref(out))
         if code != 0 or not out:
@@ -327,7 +370,8 @@ class NexusFfi:
         s = _decode(out)
         self._dll.nexus_free_string(out)
         return s
-        """home_dir."""
+        """Return the user's home directory from nexus_home_dir,
+        freeing the engine-allocated string."""
 
     # --------------------------------------------------------------- search
     def search(
@@ -351,7 +395,9 @@ class NexusFfi:
         holder: list = []  # keeps callback trampoline alive during the call
 
         def on_batch(_ud, entries_ptr, count, done, err_ptr) -> None:
-            """on_batch."""
+            """Search callback: copy the entry batch to dicts, free the
+            engine array, record errors, and signal completion; always sets
+            'finished' so the waiter never hangs."""
             try:
                 if entries_ptr and count:
                     arr = cast(entries_ptr, POINTER(_FileEntry))
@@ -367,7 +413,9 @@ class NexusFfi:
                     finished.set()
             except Exception:
                 finished.set()
-            """on_batch."""
+            """Search callback: copy the entry batch to dicts, free the
+            engine array, record errors, and signal completion; always sets
+            'finished' so the waiter never hangs."""
 
         cb = SEARCH_CALLBACK(on_batch)
         holder.append(cb)
@@ -386,13 +434,16 @@ class NexusFfi:
         return sid or "", rows
 
     def cancel_search(self, search_id: str | None = None) -> bool:
-        """cancel_search."""
+        """Request engine cancellation of a search (by id, or the last one
+        when None); returns True on code 0."""
         raw = search_id.encode("utf-8") if search_id else None
         return self._dll.nexus_cancel_search(self._handle, raw) == 0
-        """cancel_search."""
+        """Request engine cancellation of a search (by id, or the last one
+        when None); returns True on code 0."""
 
     def last_search_id(self) -> str | None:
-        """last_search_id."""
+        """Return the id string of the most recent engine search, or None;
+        the engine string is freed after decoding."""
         out = c_void_p(0)
         code = self._dll.nexus_last_search_id(self._handle, byref(out))
         if code != 0 or not out:
@@ -400,25 +451,31 @@ class NexusFfi:
         s = _decode(out)
         self._dll.nexus_free_string(out)
         return s or None
-        """last_search_id."""
+        """Return the id string of the most recent engine search, or None;
+        the engine string is freed after decoding."""
 
     # -------------------------------------------------------------- helpers
     def rename(self, path: str, new_name: str) -> bool:
-        """rename."""
+        """Rename a file or directory via nexus_rename; True on code 0."""
         return self._dll.nexus_rename(
             self._handle, path.encode("utf-8"), new_name.encode("utf-8")
         ) == 0
-        """rename."""
+        """Rename a file or directory via nexus_rename; True on code 0."""
 
     def create_folder(self, parent: str, name: str) -> bool:
-        """create_folder."""
+        """Create a folder under parent via nexus_create_folder; True on
+        code 0."""
         return self._dll.nexus_create_folder(
             self._handle, parent.encode("utf-8"), name.encode("utf-8")
         ) == 0
-        """create_folder."""
+        """Create a folder under parent via nexus_create_folder; True on
+        code 0."""
 
     def read_text_file(self, path: str, max_bytes: int = 65536) -> tuple[str, bool, int]:
-        """read_text_file."""
+        """Read up to max_bytes of a text file via nexus_read_text_file.
+
+        Returns (content, truncated_flag, total_file_size); the engine
+        string is freed after decoding; non-zero codes raise OSError."""
         out = c_void_p(0)
         truncated = c_int(0)
         size = c_uint64(0)
@@ -436,16 +493,21 @@ class NexusFfi:
         if out:
             self._dll.nexus_free_string(out)
         return content, bool(truncated.value), int(size.value)
-        """read_text_file."""
+        """Read up to max_bytes of a text file via nexus_read_text_file.
+
+        Returns (content, truncated_flag, total_file_size); the engine
+        string is freed after decoding; non-zero codes raise OSError."""
 
 
     # ------------------------------------------------------------ transfers
     @staticmethod
     def _cstr_array(items: list[str]) -> ctypes.Array[c_char_p]:
-        """_cstr_array."""
+        """Build a NUL-terminated c_char_p array from Python strings
+        (keeps the encoded bytes alive for the duration of the call)."""
         encoded = [s.encode("utf-8") for s in items]
         return (ctypes.c_char_p * len(encoded))(*encoded)
-        """_cstr_array."""
+        """Build a NUL-terminated c_char_p array from Python strings
+        (keeps the encoded bytes alive for the duration of the call)."""
 
     def _run_job(self, starter: Any, keep_alive: list, hooks: dict | None = None,
                  control: dict | None = None) -> dict:
@@ -463,7 +525,8 @@ class NexusFfi:
         lock = threading.Lock()
 
         def on_progress(_ud, _jid, done_b, total_b, speed, eta, cur):
-            """on_progress."""
+            """Progress callback: store the latest (bytes, speed, ETA)
+            snapshot under lock and forward to the hooks['progress'] fn."""
             d_b, t_b = int(done_b), int(total_b)
             sp, et = float(speed), float(eta)
             with lock:
@@ -474,18 +537,23 @@ class NexusFfi:
                     h(d_b, t_b, sp, et)
                 except Exception:
                     pass
-            """on_progress."""
+            """Progress callback: store the latest (bytes, speed, ETA)
+            snapshot under lock and forward to the hooks['progress'] fn."""
 
         def on_complete(_ud, _jid, success, err_ptr):
-            """on_complete."""
+            """Completion callback: record ok/error and set the event that
+            unblocks _run_job's waiter."""
             result["ok"] = bool(success)
             if err_ptr:
                 result["error"] = err_ptr.decode("utf-8", "replace")
             done.set()
-            """on_complete."""
+            """Completion callback: record ok/error and set the event that
+            unblocks _run_job's waiter."""
 
         def on_conflict(_ud, _jid, cid, src, dst, ss, ds, sm, dm, is_dir):
-            """on_conflict."""
+            """Conflict callback: append a decoded info dict to the result
+            and return the policy from hooks['conflict'] clamped to 0..2;
+            defaults to 1 (overwrite) when no hook or hook failure."""
             dec = lambda p: p.decode("utf-8", "replace") if p else ""
             info = {"id": dec(cid), "source": dec(src),
                     "destination": dec(dst), "is_dir": bool(is_dir)}
@@ -498,7 +566,9 @@ class NexusFfi:
                 except Exception:
                     pass
             return 1  # overwrite
-            """on_conflict."""
+            """Conflict callback: append a decoded info dict to the result
+            and return the policy from hooks['conflict'] clamped to 0..2;
+            defaults to 1 (overwrite) when no hook or hook failure."""
 
         progress_cb = PROGRESS_CALLBACK(on_progress)
         complete_cb = COMPLETION_CALLBACK(on_complete)
@@ -532,7 +602,8 @@ class NexusFfi:
         hooks: dict | None = None,
         control: dict | None = None,
     ) -> dict:
-        """copy."""
+        """Copy sources into dest_dir via nexus_copy, reusing _run_job's
+        callback plumbing and timeout; returns the job result dict."""
         arr = self._cstr_array(sources)
         dest_b = dest_dir.encode("utf-8")
         keep = list(track or [])
@@ -542,7 +613,8 @@ class NexusFfi:
             ),
             keep, hooks, control,
         )
-        """copy."""
+        """Copy sources into dest_dir via nexus_copy, reusing _run_job's
+        callback plumbing and timeout; returns the job result dict."""
 
     def move(
         self,
@@ -552,7 +624,8 @@ class NexusFfi:
         hooks: dict | None = None,
         control: dict | None = None,
     ) -> dict:
-        """move."""
+        """Move sources into dest_dir via nexus_move, reusing _run_job's
+        callback plumbing and timeout; returns the job result dict."""
         arr = self._cstr_array(sources)
         dest_b = dest_dir.encode("utf-8")
         keep = list(track or [])
@@ -562,7 +635,8 @@ class NexusFfi:
             ),
             keep, hooks, control,
         )
-        """move."""
+        """Move sources into dest_dir via nexus_move, reusing _run_job's
+        callback plumbing and timeout; returns the job result dict."""
 
     def delete_paths(
         self,
@@ -572,7 +646,8 @@ class NexusFfi:
         hooks: dict | None = None,
         control: dict | None = None,
     ) -> dict:
-        """delete_paths."""
+        """Delete paths via nexus_delete (recycle bin when to_trash, else
+        permanent); runs through _run_job but passes no conflict callback."""
         arr = self._cstr_array(paths)
         keep = list(track or [])
         return self._run_job(
@@ -582,7 +657,8 @@ class NexusFfi:
             ),
             keep, hooks, control,
         )
-        """delete_paths."""
+        """Delete paths via nexus_delete (recycle bin when to_trash, else
+        permanent); runs through _run_job but passes no conflict callback."""
 
     def orphans(self) -> list[dict]:
         """Interrupted transfers (journal-driven .nexuspart leftovers)."""
@@ -597,31 +673,33 @@ class NexusFfi:
         return json.loads(raw.decode("utf-8", "replace"))
 
     def pause_job(self, handle: int) -> int:
-        """pause_job."""
+        """Request engine pause of a running job; returns the engine code."""
         return self._dll.nexus_pause_job(handle)
-        """pause_job."""
+        """Request engine pause of a running job; returns the engine code."""
 
     def resume_job(self, handle: int) -> int:
-        """resume_job."""
+        """Request engine resume of a paused job; returns the engine code."""
         return self._dll.nexus_resume_job(handle)
-        """resume_job."""
+        """Request engine resume of a paused job; returns the engine code."""
 
     def cancel_job(self, handle: int) -> int:
-        """cancel_job."""
+        """Request engine cancellation of a job; returns the engine code."""
         return self._dll.nexus_cancel_job(handle)
-        """cancel_job."""
+        """Request engine cancellation of a job; returns the engine code."""
 
 
 import weakref
 _ffi_instances: set = weakref.WeakSet()
 
 def _atexit_cleanup() -> None:
-    """_atexit_cleanup."""
+    """Close every still-alive NexusFfi instance at interpreter exit so
+    engine handles are released deterministically before the DLL unloads."""
     for inst in list(_ffi_instances):
         try:
             inst.close()
         except Exception:
             pass
-    """_atexit_cleanup."""
+    """Close every still-alive NexusFfi instance at interpreter exit so
+    engine handles are released deterministically before the DLL unloads."""
 
 atexit.register(_atexit_cleanup)

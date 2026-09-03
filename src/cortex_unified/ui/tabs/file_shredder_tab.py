@@ -31,7 +31,7 @@ class FileShredderWorker(QThread):
 
     def __init__(self, config: Config, target_paths: List[str], passes: int, method: str,
                  wipe_drive: Optional[str] = None):
-        """__init__."""
+        """Store config, target paths, passes/method, and optional wipe drive."""
         super().__init__()
         self.config = config
         self.target_paths = target_paths
@@ -42,7 +42,7 @@ class FileShredderWorker(QThread):
         """__init__."""
 
     def run(self):
-        """run."""
+        """Shred each path (file or directory) and optionally wipe free space, emitting progress and finished/error."""
         try:
             shredder = AdvancedShredder()
             results = {'successes': [], 'failures': []}
@@ -96,7 +96,7 @@ class FileShredderTab(BaseTab):
     """Tab for file shredder tab functionality."""
 
     def __init__(self, config, logger, safety_manager):
-        """__init__."""
+        """Initialize the tab and its empty shred-set."""
         super().__init__(config, logger, safety_manager)
         self.files_to_shred = set()
         """__init__."""
@@ -199,7 +199,7 @@ class FileShredderTab(BaseTab):
         layout.addWidget(self.shred_results)
 
     def _sync_list(self):
-        """_sync_list."""
+        """Rebuild the list widget from the shred set and toggle the start button."""
         self.shredder_file_list.clear()
         for f in self.files_to_shred:
             self.shredder_file_list.addItem(f)
@@ -208,7 +208,7 @@ class FileShredderTab(BaseTab):
         """_sync_list."""
 
     def add_files_to_shred(self):
-        """add_files_to_shred."""
+        """Add chosen files to the shred set and refresh the list."""
         files, _ = QFileDialog.getOpenFileNames(self, "Select Files to Shred")
         if files:
             for f in files:
@@ -218,7 +218,7 @@ class FileShredderTab(BaseTab):
         """add_files_to_shred."""
 
     def add_folder_to_shred(self):
-        """add_folder_to_shred."""
+        """Add a chosen folder to the shred set and refresh the list."""
         folder = QFileDialog.getExistingDirectory(self, "Select Directory to Shred")
         if folder:
             self.files_to_shred.add(folder)
@@ -227,7 +227,7 @@ class FileShredderTab(BaseTab):
         """add_folder_to_shred."""
 
     def remove_files_from_shred(self):
-        """remove_files_from_shred."""
+        """Discard the selected entries from the shred set."""
         items = self.shredder_file_list.selectedItems()
         for item in items:
             self.files_to_shred.discard(item.text())
@@ -236,7 +236,7 @@ class FileShredderTab(BaseTab):
         """remove_files_from_shred."""
 
     def clear_shred_list(self):
-        """clear_shred_list."""
+        """Empty the shred set and refresh the list."""
         self.files_to_shred.clear()
         self._sync_list()
         """clear_shred_list."""
@@ -261,7 +261,7 @@ class FileShredderTab(BaseTab):
         return anchor or None
 
     def start_file_shredding(self):
-        """start_file_shredding."""
+        """Confirm destructiveness, resolve passes/wipe drive, and launch the worker."""
         if not self.files_to_shred:
             return
             
@@ -319,21 +319,21 @@ class FileShredderTab(BaseTab):
         """start_file_shredding."""
 
     def _on_shred_progress(self, msg, pct):
-        """_on_shred_progress."""
+        """Show the current shredding message and percentage."""
         self.shred_status_label.setText(msg)
         self.shred_progress_bar.setValue(pct)
         """_on_shred_progress."""
         """_on_shred_progress."""
 
     def _on_worker_finished(self, worker):
-        """_on_worker_finished."""
+        """Unregister a finished worker thread and delete it."""
         self.remove_worker_thread(worker)
         worker.deleteLater()
         """_on_worker_finished."""
         """_on_worker_finished."""
 
     def _on_shred_complete(self, results):
-        """_on_shred_complete."""
+        """Report shredded/failed paths and the free-space wipe result, then clear the list."""
         self.start_shred_button.setEnabled(True)
         self.shred_progress_bar.setVisible(False)
         
@@ -362,7 +362,7 @@ class FileShredderTab(BaseTab):
         """_on_shred_complete."""
 
     def _on_shred_error(self, error):
-        """_on_shred_error."""
+        """Re-enable shredding and report the fatal error."""
         self.start_shred_button.setEnabled(True)
         self.shred_progress_bar.setVisible(False)
         self.shred_results.append(f"FATAL ERROR: {error}")

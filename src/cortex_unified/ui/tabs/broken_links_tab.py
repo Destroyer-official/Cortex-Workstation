@@ -23,12 +23,12 @@ from cortex_unified.core.config import Config
 from cortex_unified.analyzers.broken_link_detector import BrokenLinkDetector, repair
 
 class BrokenLinksWorker(QThread):
-    """BrokenLinksWorker."""
+    """Scans for broken symlinks/shortcuts/registry refs off the GUI thread."""
     finished = Signal(list)
     error = Signal(str)
 
     def __init__(self, scan_path, scan_symlinks, scan_shortcuts, scan_registry):
-        """__init__."""
+        """Store the scan path and the three scan-type flags."""
         super().__init__()
         self.scan_path = scan_path
         self.scan_symlinks = scan_symlinks
@@ -63,7 +63,7 @@ class LinkRepairWorker(QThread):
     error = Signal(str)
 
     def __init__(self, items, use_trash=True, dry_run=False, create_backups=False):
-        """__init__."""
+        """Store the link items plus trash/dry-run/backup options."""
         super().__init__()
         self.items = items
         self.use_trash = use_trash
@@ -73,7 +73,7 @@ class LinkRepairWorker(QThread):
         """__init__."""
 
     def run(self):
-        """run."""
+        """Back up shortcuts if asked, then repair (emits finished with outcomes, or error)."""
         try:
             if self.create_backups and not self.dry_run:
                 detector = BrokenLinkDetector()
@@ -95,7 +95,7 @@ class BrokenLinksTab(BaseTab):
     """Tab for broken links tab functionality."""
 
     def __init__(self, config, logger, safety_manager):
-        """__init__."""
+        """Initialize the tab and call setup_ui."""
         super().__init__(config, logger, safety_manager)
         """__init__."""
         """__init__."""
@@ -201,13 +201,13 @@ class BrokenLinksTab(BaseTab):
             self.scan_registry_checkbox.setChecked(False)
 
     def select_all(self):
-        """select_all."""
+        """Select every row in the broken-links table."""
         self.broken_links_table.selectAll()
         """select_all."""
         """select_all."""
         
     def deselect_all(self):
-        """deselect_all."""
+        """Clear the table's selection."""
         self.broken_links_table.clearSelection()
         """deselect_all."""
         """deselect_all."""
@@ -253,7 +253,7 @@ class BrokenLinksTab(BaseTab):
         worker.start()
 
     def _on_worker_finished(self, worker):
-        """_on_worker_finished."""
+        """Unregister a finished worker thread and delete it."""
         self.remove_worker_thread(worker)
         worker.deleteLater()
         """_on_worker_finished."""
@@ -303,7 +303,7 @@ class BrokenLinksTab(BaseTab):
         self.broken_links_table.resizeColumnsToContents()
 
     def on_broken_links_scan_error(self, error_message):
-        """on_broken_links_scan_error."""
+        """Reset the scan controls and report the scan error."""
         self.broken_links_scan_button.setEnabled(True)
         self.broken_links_progress_bar.setVisible(False)
         QMessageBox.critical(self, 'Scan Error', f'Error during broken links scan:\n{error_message}')
@@ -393,7 +393,7 @@ class BrokenLinksTab(BaseTab):
             f'{ok_count} of {len(outcomes)} item(s) processed.\n\n{detail}')
 
     def on_repair_error(self, error_message):
-        """on_repair_error."""
+        """Reset the repair controls and report the repair error."""
         self.broken_links_scan_button.setEnabled(True)
         self.broken_links_progress_bar.setVisible(False)
         QMessageBox.critical(self, 'Repair Error', f'Error during repair:\n{error_message}')
@@ -401,7 +401,7 @@ class BrokenLinksTab(BaseTab):
         """on_repair_error."""
 
     def export_broken_links_results(self):
-        """export_broken_links_results."""
+        """Export the last scan's broken links to a JSON file."""
         if not hasattr(self, 'broken_links_results') or not self.broken_links_results:
             QMessageBox.warning(self, 'No Results', 'No broken links results to export.')
             return

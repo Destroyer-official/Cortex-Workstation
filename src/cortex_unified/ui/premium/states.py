@@ -84,7 +84,7 @@ class StatePanel(QWidget):
     retryRequested = Signal()
 
     def __init__(self, palette: Palette, parent: QWidget | None = None) -> None:
-        """__init__."""
+        """Build the panel's widgets and start hidden."""
         super().__init__(parent)
         self.setObjectName("StatePanel")
         self._palette = palette
@@ -124,7 +124,7 @@ class StatePanel(QWidget):
 
     # ------------------------------------------------------------------ UI --
     def _build_ui(self) -> None:
-        """_build_ui."""
+        """Construct the glyph, kicker, message, progress bar and retry button."""
         p = self._palette
         cap_size, cap_weight, cap_ls = TYPE_ROLES["caption"]
         title_size, title_weight, _ = TYPE_ROLES["section_title"]
@@ -256,7 +256,7 @@ class StatePanel(QWidget):
 
     # ------------------------------------------------------------- private --
     def _handle_retry(self) -> None:
-        """_handle_retry."""
+        """Emit retryRequested and invoke the stored retry callback, swallowing callback errors."""
         cb = self._on_retry
         # Emit for any listeners first, then invoke the direct callback.
         self.retryRequested.emit()
@@ -353,7 +353,7 @@ class _HoverLift(QObject):
     """
 
     def __init__(self, widget: QWidget, dy: int, duration: int) -> None:
-        """__init__."""
+        """Store lift distance/duration and install the hover filter on the widget."""
         super().__init__(widget)
         self._widget = widget
         self._dy = int(dy)
@@ -363,7 +363,7 @@ class _HoverLift(QObject):
         widget.installEventFilter(self)
 
     def eventFilter(self, obj: QObject, event: QEvent) -> bool:  # noqa: N802 - Qt API
-        """eventFilter."""
+        """Animate upward on pointer enter and back down on leave; never consume the event."""
         try:
             et = event.type()
             if et == QEvent.Type.Enter:
@@ -376,7 +376,7 @@ class _HoverLift(QObject):
         return False
 
     def _animate_to(self, offset: int) -> None:
-        """_animate_to."""
+        """Animate the widget's pos to the given offset from its resting position (instant move on failure)."""
         w = self._widget
         # Capture the layout-assigned resting position lazily, the first time we
         # are hovered, so we always return exactly to where the layout put us.
@@ -410,7 +410,7 @@ class _FocusRing(QObject):
     """
 
     def __init__(self, widget: QWidget, accent: str) -> None:
-        """__init__."""
+        """Store the accent color and install the focus filter on the widget."""
         super().__init__(widget)
         self._widget = widget
         self._accent = accent
@@ -418,7 +418,7 @@ class _FocusRing(QObject):
         widget.installEventFilter(self)
 
     def eventFilter(self, obj: QObject, event: QEvent) -> bool:  # noqa: N802 - Qt API
-        """eventFilter."""
+        """Apply the glow on FocusIn and remove it on FocusOut; never consume the event."""
         try:
             et = event.type()
             if et == QEvent.Type.FocusIn:
@@ -430,7 +430,7 @@ class _FocusRing(QObject):
         return False
 
     def _apply(self, on: bool) -> None:
-        """_apply."""
+        """Set the focusRing property (repolishing styles) and add/remove the accent drop-shadow glow."""
         w = self._widget
         # Also expose focus as a dynamic property so QSS ``[focusRing="true"]``
         # rules (or a repolish of the standard ``:focus`` rules) can react.

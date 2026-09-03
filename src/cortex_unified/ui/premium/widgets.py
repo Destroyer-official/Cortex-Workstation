@@ -63,7 +63,7 @@ class Card(QFrame):
     """
 
     def __init__(self, palette: Palette, object_name: str = "Card", parent=None):
-        """__init__."""
+        """Resolve and store the token elevation treatment for the card's surface level."""
         super().__init__(parent)
         self.setObjectName(object_name)
         # Resolve the token elevation treatment (surface/border/shadow metrics)
@@ -84,7 +84,7 @@ class StatCard(Card):
     """A small metric tile: big number + caption."""
 
     def __init__(self, palette: Palette, label: str, value: str = "—", parent=None):
-        """__init__."""
+        """Build the tile: a big Metric value label above an uppercased caption."""
         super().__init__(palette, parent=parent)
         lay = QVBoxLayout(self)
         lay.setContentsMargins(16, 12, 16, 12)
@@ -101,7 +101,7 @@ class StatCard(Card):
         return self._value.text()
 
     def set_value(self, text: str, animate: bool = False) -> None:
-        """set_value."""
+        """Set the displayed value, optionally pulsing the fade-in animation on change."""
         changed = text != self._value.text()
         self._value.setText(text)
         if animate and changed:
@@ -151,7 +151,7 @@ class Badge(QLabel):
             return 110, 139, 255
 
     def __init__(self, palette: Palette, kind: str = "low", text: str | None = None, parent=None):
-        """__init__."""
+        """Build a pill styled from the palette's semantic color for ``kind``."""
         super().__init__(parent)
         color_attr, default_text = self._COLORS.get(kind, ("info", kind.upper()))
         color = getattr(palette, color_attr)
@@ -178,7 +178,7 @@ class CircularGauge(QWidget):
     """
 
     def __init__(self, palette: Palette, caption: str = "", parent=None):
-        """__init__."""
+        """Initialize value/caption/glow state and the shared-motion sweep animation."""
         super().__init__(parent)
         self._p = palette
         self._value = 0.0
@@ -198,18 +198,18 @@ class CircularGauge(QWidget):
 
     # animatable property -------------------------------------------------
     def _get_value(self) -> float:
-        """_get_value."""
+        """Return the current animated value (0..100)."""
         return self._value
 
     def _set_value(self, v: float) -> None:
-        """_set_value."""
+        """Set the animated value property and repaint."""
         self._value = v
         self.update()
 
     value = Property(float, _get_value, _set_value)
 
     def animate_to(self, target: float, display: str | None = None) -> None:
-        """animate_to."""
+        """Animate the ring to a clamped target, updating the center display text."""
         self._display = display if display is not None else f"{int(target)}"
         self._anim.stop()
         self._anim.setStartValue(self._value)
@@ -217,7 +217,7 @@ class CircularGauge(QWidget):
         self._anim.start()
 
     def set_center_text(self, text: str) -> None:
-        """set_center_text."""
+        """Replace the gauge's center readout text and repaint."""
         self._display = text
         self.update()
 
@@ -237,7 +237,7 @@ class CircularGauge(QWidget):
         self.update()
 
     def paintEvent(self, event) -> None:  # noqa: N802 (Qt signature)
-        """paintEvent."""
+        """Paint the track ring, glow, gradient progress arc, and centered text."""
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
 
@@ -325,7 +325,7 @@ class CoreBars(QWidget):
     """
 
     def __init__(self, palette: Palette, parent=None):
-        """__init__."""
+        """Initialize with an empty per-core value list and fixed minimum height."""
         super().__init__(parent)
         self._p = palette
         self._values: list[float] = []
@@ -333,12 +333,12 @@ class CoreBars(QWidget):
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
 
     def set_values(self, values: list[float]) -> None:
-        """set_values."""
+        """Store a clamped list of per-core percentages and repaint."""
         self._values = [max(0.0, min(100.0, float(v))) for v in values]
         self.update()
 
     def _bar_color(self, pct: float) -> QColor:
-        """_bar_color."""
+        """Return the load color: red at 80%+, amber at 50%+, accent below."""
         if pct >= 80:
             return QColor(getattr(self._p, "danger", "#FB7185"))
         if pct >= 50:
@@ -346,7 +346,7 @@ class CoreBars(QWidget):
         return QColor(self._p.accent)
 
     def paintEvent(self, event) -> None:  # noqa: N802
-        """paintEvent."""
+        """Paint the per-core track/fill bars and core-number labels."""
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         n = len(self._values)
@@ -387,7 +387,7 @@ class TrafficGraph(QWidget):
     """
 
     def __init__(self, palette: Palette, capacity: int = 120, parent=None):
-        """__init__."""
+        """Initialize empty rolling download/upload sample lists with the given capacity."""
         super().__init__(parent)
         self._p = palette
         self._cap = capacity
@@ -397,7 +397,7 @@ class TrafficGraph(QWidget):
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
     def add_sample(self, down_rate: float, up_rate: float) -> None:
-        """add_sample."""
+        """Append a (down, up) rate sample, trimming to the rolling window."""
         self._down.append(max(0.0, down_rate))
         self._up.append(max(0.0, up_rate))
         if len(self._down) > self._cap:
@@ -406,14 +406,14 @@ class TrafficGraph(QWidget):
         self.update()
 
     def clear(self) -> None:
-        """clear."""
+        """Drop all samples and repaint."""
         self._down.clear()
         self._up.clear()
         self.update()
 
     @staticmethod
     def _fmt_rate(bps: float) -> str:
-        """_fmt_rate."""
+        """Format a bytes/sec rate with the largest fitting unit."""
         v = float(bps)
         for unit in ("B/s", "KB/s", "MB/s", "GB/s"):
             if v < 1024 or unit == "GB/s":
@@ -422,7 +422,7 @@ class TrafficGraph(QWidget):
         return f"{bps} B/s"
 
     def paintEvent(self, event) -> None:  # noqa: N802
-        """paintEvent."""
+        """Paint the graph: grid lines, both filled series, and the peak label."""
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         w, h = self.width(), self.height()
@@ -440,7 +440,7 @@ class TrafficGraph(QWidget):
         peak = max([1.0] + self._down + self._up)
 
         def _draw(series: list[float], color: str):
-            """_draw."""
+            """Draw one filled+stroked series line scaled to the window peak."""
             if len(series) < 2:
                 return
             from PySide6.QtGui import QPainterPath

@@ -105,7 +105,9 @@ def fmt_ms(ms: int) -> str:
 
 
 def _parse_json(proc: QProcess) -> list[dict]:
-    """_parse_json."""
+    """Decode a finished CLI process's stdout as a JSON list of row dicts.
+
+    Returns [] when the payload isn't valid JSON or isn't a list."""
     raw = bytes(proc.readAllStandardOutput()).decode("utf-8", "replace")
     try:
         data = json.loads(raw)
@@ -113,11 +115,16 @@ def _parse_json(proc: QProcess) -> list[dict]:
     except json.JSONDecodeError as exc:
         log.warning("JSON decode error: %s", exc)
         return []
-    """_parse_json."""
+    """Decode a finished CLI process's stdout as a JSON list of row dicts.
+
+    Returns [] when the payload isn't valid JSON or isn't a list."""
 
 
 def _parse_search_chunk(proc: QProcess) -> list[dict]:
-    """_parse_search_chunk."""
+    """Parse tab-separated CLI search output lines ('DIR\\tpath' or '.\\tpath').
+
+    Derives name/extension from the path suffix; size and mtime are unknown
+    (0) since the CLI search protocol doesn't report them."""
     raw = bytes(proc.readAllStandardOutput()).decode("utf-8", "replace")
     rows = []
     for line in raw.splitlines():
@@ -133,19 +140,24 @@ def _parse_search_chunk(proc: QProcess) -> list[dict]:
                 "ext": ext, "size": 0, "modifiedMs": 0,
             })
     return rows
-    """_parse_search_chunk."""
+    """Parse tab-separated CLI search output lines ('DIR\\tpath' or '.\\tpath').
+
+    Derives name/extension from the path suffix; size and mtime are unknown
+    (0) since the CLI search protocol doesn't report them."""
 
 
 def _guarded(fn):
     """Wrap a QProcess callback so app-exit teardown never raises."""
     def run(*a):
-        """run."""
+        """Invoke the wrapped callback, swallowing RuntimeError raised by
+        destroyed Qt objects unless app shutdown is in progress."""
         try:
             fn(*a)
         except RuntimeError:
             if not _SHUTTING_DOWN.is_set():
                 raise
-        """run."""
+        """Invoke the wrapped callback, swallowing RuntimeError raised by
+        destroyed Qt objects unless app shutdown is in progress."""
     return run
 
 
@@ -162,7 +174,12 @@ _SHUTTING_DOWN = threading.Event()
 
 
 def _get_marshal() -> _CallMarshal | None:
-    """_get_marshal."""
+    """Lazily create the process-wide result-dispatch bridge.
+
+    Attaches a _CallMarshal to the running QApplication and wires its
+    signals: result_ready invokes a done callback with (code, rows),
+    dispatch runs a zero-arg callable. Returns None when no QApplication
+    exists or Qt is unavailable (headless/test contexts)."""
     global _marshal
     with _marshal_lock:
         if _marshal is None:
@@ -175,13 +192,18 @@ def _get_marshal() -> _CallMarshal | None:
             except (ImportError, RuntimeError):
                 return None
         return _marshal
-    """_get_marshal."""
+    """Lazily create the process-wide result-dispatch bridge.
+
+    Attaches a _CallMarshal to the running QApplication and wires its
+    signals: result_ready invokes a done callback with (code, rows),
+    dispatch runs a zero-arg callable. Returns None when no QApplication
+    exists or Qt is unavailable (headless/test contexts)."""
 
 
 def _mark_shutdown() -> None:
-    """_mark_shutdown."""
+    """Set the global shutdown flag so guarded callbacks stop re-raising."""
     _SHUTTING_DOWN.set()
-    """_mark_shutdown."""
+    """Set the global shutdown flag so guarded callbacks stop re-raising."""
 
 
 def marshal_call(fn) -> None:
@@ -206,16 +228,20 @@ def marshal_call(fn) -> None:
 
 
 class _FfiJob(QRunnable):
-    """_FfiJob."""
+    """Pool job running an FFI/backend callable; marshals its result back to
+    the Engine's home thread via the shared _CallMarshal signal bridge."""
     def __init__(self, fn, done) -> None:
-        """__init__."""
+        """Store the zero-arg job callable and its done(code, rows) callback."""
         super().__init__()
         self._fn = fn
         self._done = done
-        """__init__."""
+        """Store the zero-arg job callable and its done(code, rows) callback."""
 
     def run(self) -> None:  # runs on QThreadPool thread
-        """run."""
+        """Execute the job, then deliver (code, rows) to the home thread.
+
+        Exceptions become code=1/rows=[]; after shutdown began the result is
+        dropped; if the marshal bridge is gone, the callback runs inline."""
         try:
             code, rows = self._fn()
         except Exception as exc:
@@ -232,8 +258,12 @@ class _FfiJob(QRunnable):
         except Exception as exc:
             if not _SHUTTING_DOWN.is_set():
                 log.warning("ffi job callback failed: %s", exc)
-        """run."""
-    """_FfiJob class."""
+        """Execute the job, then deliver (code, rows) to the home thread.
+
+        Exceptions become code=1/rows=[]; after shutdown began the result is
+        dropped; if the marshal bridge is gone, the callback runs inline."""
+    """Pool job running an FFI/backend callable; marshals its result back to
+    the Engine's home thread via the shared _CallMarshal signal bridge."""
 
 
 class Engine:
@@ -253,7 +283,11 @@ class Engine:
             pass
 
     def __init__(self) -> None:
-        """__init__."""
+        """Select transport: in-process FFI DLL, CLI subprocess, or pure Python.
+
+        NEXUS_TRANSPORT=auto (default) tries NexusFfi first and falls back to
+        cli/python; NEXUS_TRANSPORT=ffi re-raises on failure. Records the CLI
+        binary path ("" when not found) for fallback wiring."""
         try:
             self.cli = str(find_cli())
         except FileNotFoundError as exc:
@@ -273,7 +307,11 @@ class Engine:
                 if mode == "ffi":
                     raise
                 log.debug("FFI transport unavailable (%s); fallback to %s", exc, self.transport)
-        """__init__."""
+        """Select transport: in-process FFI DLL, CLI subprocess, or pure Python.
+
+        NEXUS_TRANSPORT=auto (default) tries NexusFfi first and falls back to
+        cli/python; NEXUS_TRANSPORT=ffi re-raises on failure. Records the CLI
+        binary path ("" when not found) for fallback wiring."""
 
     def list_dir(self, path: str, done):
         """List directory contents asynchronously. Calls done(code, rows)."""
@@ -307,7 +345,10 @@ class Engine:
 
     @staticmethod
     def _python_list_dir(path: str) -> list[dict]:
-        """_python_list_dir."""
+        """Fallback directory listing via os.scandir without symlink following.
+
+        Per-entry OSError is skipped; a top-level OSError yields []. Rows
+        carry name/path/isDir/size/modifiedMs."""
         rows = []
         try:
             with os.scandir(path) as it:
@@ -327,7 +368,10 @@ class Engine:
         except OSError:
             pass
         return rows
-        """_python_list_dir."""
+        """Fallback directory listing via os.scandir without symlink following.
+
+        Per-entry OSError is skipped; a top-level OSError yields []. Rows
+        carry name/path/isDir/size/modifiedMs."""
 
     def list_flat_branch(self, path: str, done, max_results: int = 10000):
         """Recursively list all files under path in a single flat view (Total Commander Ctrl+B style)."""
@@ -335,7 +379,10 @@ class Engine:
 
     @staticmethod
     def _python_flat_branch(path: str, max_results: int = 10000) -> list[dict]:
-        """_python_flat_branch."""
+        """Recursively collect all files under path as flat rows (Ctrl+B view).
+
+        Rows include relPath relative to the branch root; traversal stops
+        once max_results files are gathered; unreadable entries are skipped."""
         rows = []
         try:
             for root, _, files in os.walk(path):
@@ -359,11 +406,18 @@ class Engine:
         except OSError:
             pass
         return rows
-        """_python_flat_branch."""
+        """Recursively collect all files under path as flat rows (Ctrl+B view).
+
+        Rows include relPath relative to the branch root; traversal stops
+        once max_results files are gathered; unreadable entries are skipped."""
 
     @staticmethod
     def _python_search(root: str, pattern: str, max_results: int = 5000) -> list[dict]:
-        """_python_search."""
+        """Fallback filename search using fnmatch over an os.walk of roots.
+
+        Accepts ';' separated roots; patterns without wildcards are wrapped
+        as '*pattern*'; matches both directories and files case-insensitively
+        and stops at max_results."""
         rows = []
         import fnmatch
         pat = f"*{pattern}*" if not any(c in pattern for c in "*?[]") else pattern
@@ -405,13 +459,19 @@ class Engine:
             except OSError:
                 pass
         return rows
-        """_python_search."""
+        """Fallback filename search using fnmatch over an os.walk of roots.
+
+        Accepts ';' separated roots; patterns without wildcards are wrapped
+        as '*pattern*'; matches both directories and files case-insensitively
+        and stops at max_results."""
 
     def _run_ffi(self, job, done):
-        """_run_ffi."""
+        """Schedule job() on the global QThreadPool, delivering its result to
+        done(code, rows) on the Engine's home thread."""
         QThreadPool.globalInstance().start(_FfiJob(job, done))
         return None
-        """_run_ffi."""
+        """Schedule job() on the global QThreadPool, delivering its result to
+        done(code, rows) on the Engine's home thread."""
 
     def transfer(self, kind: str, sources: list[str], dest: str, parent,
                  on_done) -> object:
@@ -421,7 +481,12 @@ class Engine:
         return self._transfer_cli(kind, sources, dest, parent, on_done)
 
     def _transfer_ffi(self, kind, sources, dest, parent, on_done):
-        """_transfer_ffi."""
+        """FFI-backed copy/move: modal progress dialog + Rust engine job.
+
+        Streams engine progress callbacks to the dialog bar via marshal_call,
+        auto-overwrites on conflicts (dialog port pending), and honors Cancel
+        by calling ffi.cancel_job on the started handle. Finishing cancels the
+        dialog and fires on_done(ok, error) on the GUI thread."""
         from PySide6.QtWidgets import QLabel, QProgressBar, QProgressDialog
 
         dlg = QProgressDialog(f"{kind}\u2026", "Cancel", 0, 100, parent)
@@ -440,41 +505,50 @@ class Engine:
 
         def on_progress(done_b: int, total_b: int, speed: float = 0.0,
                         eta: float = 0.0) -> None:
-            """on_progress."""
+            """Engine progress hook: update bar percentage and byte counters
+            on the GUI thread via marshal_call (RuntimeError-safe)."""
             def apply():
-                """apply."""
+                """Apply progress: compute percent from done/total and set bar
+                and label text ('kind: done / total')."""
                 if total_b > 0:
                     pct = min(100, int(done_b * 100 / total_b))
                     bar.setValue(pct)
                     label.setText(
                         f"{kind}: {human(done_b)} / {human(total_b)}"
                     )
-                """apply."""
+                """Apply progress: compute percent from done/total and set bar
+                and label text ('kind: done / total')."""
             try:
                 marshal_call(apply)
             except RuntimeError:
                 pass
-            """on_progress."""
+            """Engine progress hook: update bar percentage and byte counters
+            on the GUI thread via marshal_call (RuntimeError-safe)."""
 
         def hooks_conflict(info) -> int:
             # default policy until the conflict dialog port lands (Stage-2b UI):
             # overwrite, matching the CLI-era silent behavior users saw least.
-            """hooks_conflict."""
+            """Conflict hook stub: log and return 1 (overwrite) — the
+            interactive conflict dialog is not yet ported."""
             _log = logging.getLogger("nexus")
             dest = info.get("destination", "")
             _log.info("conflict during %s: overwriting %s", kind, dest)
             return 1
-            """hooks_conflict."""
+            """Conflict hook stub: log and return 1 (overwrite) — the
+            interactive conflict dialog is not yet ported."""
 
         def start(h):
-            """start."""
+            """Store the engine job handle; cancel it if Cancel was already
+            clicked before the handle arrived."""
             control["handle"] = h
             if state["cancelled"]:
                 self.ffi.cancel_job(h)
-            """start."""
+            """Store the engine job handle; cancel it if Cancel was already
+            clicked before the handle arrived."""
 
         def cancel_clicked():
-            """cancel_clicked."""
+            """Cancel handler: mark cancelled and request engine job
+            cancellation via the stored handle if the job already started."""
             state["cancelled"] = True
             h = control.get("handle")
             if h:
@@ -482,12 +556,15 @@ class Engine:
                     self.ffi.cancel_job(h)
                 except (RuntimeError, OSError) as exc:
                     log.warning("cancel_job (transfer) failed: %s", exc)
-            """cancel_clicked."""
+            """Cancel handler: mark cancelled and request engine job
+            cancellation via the stored handle if the job already started."""
 
         dlg.canceled.connect(cancel_clicked)
 
         def job():
-            """job."""
+            """Run ffi.copy/ffi.move with progress/conflict/started hooks on a
+            pool thread, then cancel the dialog and deliver on_done(ok, err)
+            on the GUI thread; unsupported kinds raise ValueError."""
             hooks = {"progress": on_progress, "conflict": hooks_conflict,
                      "started": start}
             fn = (self.ffi.move if kind == "move"
@@ -499,14 +576,24 @@ class Engine:
             err = r.get("error", "")
             marshal_call(lambda: (dlg.cancel(), on_done(ok, err)))
             return 0, []
-            """job."""
+            """Run ffi.copy/ffi.move with progress/conflict/started hooks on a
+            pool thread, then cancel the dialog and deliver on_done(ok, err)
+            on the GUI thread; unsupported kinds raise ValueError."""
 
         QThreadPool.globalInstance().start(_FfiJob(job, lambda *_: None))
         return dlg
-        """_transfer_ffi."""
+        """FFI-backed copy/move: modal progress dialog + Rust engine job.
+
+        Streams engine progress callbacks to the dialog bar via marshal_call,
+        auto-overwrites on conflicts (dialog port pending), and honors Cancel
+        by calling ffi.cancel_job on the started handle. Finishing cancels the
+        dialog and fires on_done(ok, error) on the GUI thread."""
 
     def _transfer_cli(self, kind, sources, dest, parent, on_done):
-        """_transfer_cli."""
+        """CLI-backed copy/move: launches 'nexus-cli <kind> <srcs> --to <dest>'
+        as a QProcess and parses its stderr progress ('[#+-+] N%', file
+        counts, 'ETA ...') into the progress dialog; falls back to the pure
+        Python path when the CLI binary is missing."""
         from PySide6.QtWidgets import QLabel, QProgressBar, QProgressDialog
 
         dlg = QProgressDialog(f"{kind}\u2026", "Cancel", 0, 100, parent)
@@ -523,7 +610,8 @@ class Engine:
         proc = QProcess()
 
         def on_ready():
-            """on_ready."""
+            """Parse stderr chunks for '[#+-+] N%' progress, 'N files (...) ->'
+            counts, and 'ETA x' text; update bar, label, and dialog text."""
             data = bytes(proc.readAllStandardError()).decode("utf-8", "replace")
             for chunk in data.split("\r"):
                 m = re.search(r"\[#+-+\]\s+(\d+)%", chunk)
@@ -535,14 +623,17 @@ class Engine:
                 cm = re.search(r"ETA (\S+)", chunk)
                 if cm:
                     dlg.setLabelText(f"{label.text()}    ETA {cm.group(1)}")
-            """on_ready."""
+            """Parse stderr chunks for '[#+-+] N%' progress, 'N files (...) ->'
+            counts, and 'ETA x' text; update bar, label, and dialog text."""
 
         def on_finished(code, _s):
-            """on_finished."""
+            """CLI exit handler: close the dialog and report success only when
+            exit code is 0 and stdout contains 'completed'."""
             dlg.cancel()
             out = bytes(proc.readAllStandardOutput()).decode("utf-8", "replace")
             on_done("completed" in out and code == 0, out.strip()[:800])
-            """on_finished."""
+            """CLI exit handler: close the dialog and report success only when
+            exit code is 0 and stdout contains 'completed'."""
 
         proc.readyReadStandardOutput.connect(on_ready)
         proc.finished.connect(_guarded(on_finished))
@@ -550,14 +641,20 @@ class Engine:
             return self._transfer_python(kind, sources, dest, dlg, on_done)
         proc.start(self.cli, [kind, *sources, "--to", dest])
         return proc
-        """_transfer_cli."""
+        """CLI-backed copy/move: launches 'nexus-cli <kind> <srcs> --to <dest>'
+        as a QProcess and parses its stderr progress ('[#+-+] N%', file
+        counts, 'ETA ...') into the progress dialog; falls back to the pure
+        Python path when the CLI binary is missing."""
 
     def _transfer_python(self, kind, sources, dest, dlg, on_done):
-        """_transfer_python."""
+        """Pure-Python fallback: shutil.copy2/copytree or move of each source
+        into a freshly created dest dir on a pool thread, then cancels the
+        dialog and reports on_done(ok, joined errors) on the GUI thread."""
         class _TransJob(QRunnable):
-            """_TransJob."""
+            """Pool worker performing the sequential Python transfers."""
             def run(self):
-                """run."""
+                """Create dest, move/copy each source (tree or file), collect
+                per-source errors, and marshal the final result to the GUI."""
                 dest_dir = Path(dest)
                 dest_dir.mkdir(parents=True, exist_ok=True)
                 errs = []
@@ -582,12 +679,15 @@ class Engine:
                 ok = len(errs) == 0
                 msg = "; ".join(errs) if errs else "completed"
                 marshal_call(lambda: (dlg.cancel(), on_done(ok, msg)))
-                """run."""
-            """_TransJob class."""
+                """Create dest, move/copy each source (tree or file), collect
+                per-source errors, and marshal the final result to the GUI."""
+            """Pool worker performing the sequential Python transfers."""
 
         QThreadPool.globalInstance().start(_TransJob())
         return dlg
-        """_transfer_python."""
+        """Pure-Python fallback: shutil.copy2/copytree or move of each source
+        into a freshly created dest dir on a pool thread, then cancels the
+        dialog and reports on_done(ok, joined errors) on the GUI thread."""
 
     def delete(self, paths: list[str], permanent: bool, parent, on_done) -> object:
         """Delete files (to trash or permanently). Returns a QProcess or dialog handle."""
@@ -598,11 +698,14 @@ class Engine:
         return self._delete_cli(paths, permanent, parent, on_done)
 
     def _delete_python(self, paths, permanent, on_done):
-        """_delete_python."""
+        """Pure-Python delete on a pool thread: send2trash when not permanent
+        (falling back to rmtree/remove), otherwise permanent removal; reports
+        on_done(ok, message) via marshal_call."""
         class _DelJob(QRunnable):
-            """_DelJob."""
+            """Pool worker performing the deletions."""
             def run(self):
-                """run."""
+                """Delete each path (trash or permanent), collect per-path
+                errors, and marshal on_done(ok, message) to the GUI thread."""
                 errs = []
                 for p in paths:
                     try:
@@ -625,15 +728,21 @@ class Engine:
                 ok = len(errs) == 0
                 msg = "; ".join(errs) if errs else f"Deleted {len(paths)} item(s)"
                 marshal_call(lambda: on_done(ok, msg))
-                """run."""
-            """_DelJob class."""
+                """Delete each path (trash or permanent), collect per-path
+                errors, and marshal on_done(ok, message) to the GUI thread."""
+            """Pool worker performing the deletions."""
 
         QThreadPool.globalInstance().start(_DelJob())
         return None
-        """_delete_python."""
+        """Pure-Python delete on a pool thread: send2trash when not permanent
+        (falling back to rmtree/remove), otherwise permanent removal; reports
+        on_done(ok, message) via marshal_call."""
 
     def _delete_ffi(self, paths, permanent, parent, on_done):
-        """_delete_ffi."""
+        """FFI-backed delete: indeterminate progress dialog plus engine job
+        via ffi.delete_paths (to_trash unless permanent); Cancel requests
+        cancel_job on the started handle; on_done(ok, err) fires on the GUI
+        thread when the job returns."""
         from PySide6.QtWidgets import QProgressDialog
 
         dlg = QProgressDialog("Deleting\u2026", "Cancel", 0, 0, parent)
@@ -643,7 +752,8 @@ class Engine:
         state = {"cancelled": False}
 
         def cancel_clicked():
-            """cancel_clicked."""
+            """Cancel handler: flag cancellation and call ffi.cancel_job on
+            the stored handle if the delete job already started."""
             state["cancelled"] = True
             h = control.get("handle")
             if h:
@@ -651,12 +761,14 @@ class Engine:
                     self.ffi.cancel_job(h)
                 except (RuntimeError, OSError) as exc:
                     log.warning("cancel_job (delete) failed: %s", exc)
-            """cancel_clicked."""
+            """Cancel handler: flag cancellation and call ffi.cancel_job on
+            the stored handle if the delete job already started."""
 
         dlg.canceled.connect(cancel_clicked)
 
         def job():
-            """job."""
+            """Run ffi.delete_paths on a pool thread, then cancel the dialog
+            and deliver on_done(ok, err) on the GUI thread."""
             r = self.ffi.delete_paths(
                 paths, to_trash=not permanent,
                 control=control,
@@ -665,14 +777,20 @@ class Engine:
             err = r.get("error", "")
             marshal_call(lambda: (dlg.cancel(), on_done(ok, err)))
             return 0, []
-            """job."""
+            """Run ffi.delete_paths on a pool thread, then cancel the dialog
+            and deliver on_done(ok, err) on the GUI thread."""
 
         QThreadPool.globalInstance().start(_FfiJob(job, lambda *_: None))
         return dlg
-        """_delete_ffi."""
+        """FFI-backed delete: indeterminate progress dialog plus engine job
+        via ffi.delete_paths (to_trash unless permanent); Cancel requests
+        cancel_job on the started handle; on_done(ok, err) fires on the GUI
+        thread when the job returns."""
 
     def _delete_cli(self, paths, permanent, parent, on_done):
-        """_delete_cli."""
+        """CLI-backed delete: runs 'nexus-cli delete [--permanent] <paths>'
+        as a QProcess with an indeterminate dialog; dialog Cancel kills the
+        process; on_done(ok, stdout) fires on process exit."""
         from PySide6.QtWidgets import QProgressDialog
 
         dlg = QProgressDialog("Deleting\u2026", "Cancel", 0, 0, parent)
@@ -681,11 +799,13 @@ class Engine:
         proc = QProcess()
 
         def fin(code, _s):
-            """fin."""
+            """CLI exit handler: close the dialog and report ok=exit code 0
+            with the CLI stdout as the message."""
             dlg.cancel()
             out = bytes(proc.readAllStandardOutput()).decode("utf-8", "replace")
             on_done(code == 0, out)
-            """fin."""
+            """CLI exit handler: close the dialog and report ok=exit code 0
+            with the CLI stdout as the message."""
 
         proc.finished.connect(_guarded(fin))
         proc.finished.connect(proc.deleteLater)
@@ -693,7 +813,9 @@ class Engine:
         args = ["delete"] + (["--permanent"] if permanent else []) + paths
         proc.start(self.cli, args)
         return proc
-        """_delete_cli."""
+        """CLI-backed delete: runs 'nexus-cli delete [--permanent] <paths>'
+        as a QProcess with an indeterminate dialog; dialog Cancel kills the
+        process; on_done(ok, stdout) fires on process exit."""
 
     def simple(self, args: list[str], on_done):
         """Run a simple CLI command and call on_done(ok, stdout, stderr)."""
@@ -711,7 +833,12 @@ class Engine:
 
     @staticmethod
     def _simple_python(args: list[str], on_done):
-        """_simple_python."""
+        """Pure-Python emulation of the simple CLI command set.
+
+        Handles 'rename' (existence check + os.rename), 'mkdir', 'delete'
+        (send2trash fallback / permanent), 'drives' (probe A:-Z: with
+        disk_usage), and 'hash' (SHA-256, 64 KB chunks); unknown commands
+        report success with empty output."""
         if not args:
             on_done(True, "", "")
             return None
@@ -796,23 +923,31 @@ class Engine:
         else:
             on_done(True, "", "")
         return None
-        """_simple_python."""
+        """Pure-Python emulation of the simple CLI command set.
+
+        Handles 'rename' (existence check + os.rename), 'mkdir', 'delete'
+        (send2trash fallback / permanent), 'drives' (probe A:-Z: with
+        disk_usage), and 'hash' (SHA-256, 64 KB chunks); unknown commands
+        report success with empty output."""
 
 
 # ---------------------------------------------------------------------------
 # Native Windows icons + image thumbnails
 # ---------------------------------------------------------------------------
 class _SHFILEINFO(ctypes.Structure):
-    """_SHFILEINFO."""
+    """Mirrors the Win32 SHFILEINFOW structure used with SHGetFileInfoW
+    (icon handle, attribute, display name, and type name buffers)."""
     _fields_ = [("hIcon", ctypes.c_void_p), ("iIcon", ctypes.c_int),
                 ("dwAttributes", ctypes.c_uint32),
                 ("szDisplayName", ctypes.c_wchar * 260),
                 ("szTypeName", ctypes.c_wchar * 80)]
-    """_SHFILEINFO class."""
+    """Mirrors the Win32 SHFILEINFOW structure used with SHGetFileInfoW
+    (icon handle, attribute, display name, and type name buffers)."""
 
 
 class _ICONINFO(ctypes.Structure):
-    """_ICONINFO."""
+    """Mirrors the Win32 ICONINFO structure returned by GetIconInfo
+    (icon/cursor flag, hotspot, and mask/color bitmap handles)."""
     _fields_ = [
         ("fIcon", wintypes.BOOL),
         ("xHotspot", wintypes.DWORD),
@@ -820,11 +955,13 @@ class _ICONINFO(ctypes.Structure):
         ("hbmMask", wintypes.HBITMAP),
         ("hbmColor", wintypes.HBITMAP),
     ]
-    """_ICONINFO class."""
+    """Mirrors the Win32 ICONINFO structure returned by GetIconInfo
+    (icon/cursor flag, hotspot, and mask/color bitmap handles)."""
 
 
 class _BMIH(ctypes.Structure):
-    """_BMIH."""
+    """Mirrors the Win32 BITMAPINFOHEADER structure used with GetDIBits
+    to request top-down 32-bit ARGB pixel conversion."""
     _fields_ = [
         ("biSize", wintypes.DWORD),
         ("biWidth", wintypes.LONG),
@@ -838,11 +975,16 @@ class _BMIH(ctypes.Structure):
         ("biClrUsed", wintypes.DWORD),
         ("biClrImportant", wintypes.DWORD),
     ]
-    """_BMIH class."""
+    """Mirrors the Win32 BITMAPINFOHEADER structure used with GetDIBits
+    to request top-down 32-bit ARGB pixel conversion."""
 
 
 def _hicon_to_qicon(hicon, size: int = 32) -> QIcon:
-    """_hicon_to_qicon."""
+    """Convert a Win32 HICON into a QIcon via GetDIBits pixel extraction.
+
+    Sets up a top-down 32-bit bitmap of the requested size, copies the
+    color plane through the screen DC, wraps it in a QImage/QIcon, and
+    releases the icon and its mask/color bitmaps."""
     info = _ICONINFO()
     if not ctypes.windll.user32.GetIconInfo(hicon, ctypes.byref(info)):
         return QIcon()
@@ -866,7 +1008,11 @@ def _hicon_to_qicon(hicon, size: int = 32) -> QIcon:
         if info.hbmColor:
             ctypes.windll.gdi32.DeleteObject(info.hbmColor)
         ctypes.windll.user32.DestroyIcon(info.hIcon)
-    """_hicon_to_qicon."""
+    """Convert a Win32 HICON into a QIcon via GetDIBits pixel extraction.
+
+    Sets up a top-down 32-bit bitmap of the requested size, copies the
+    color plane through the screen DC, wraps it in a QImage/QIcon, and
+    releases the icon and its mask/color bitmaps."""
 
 
 class IconThumbs:
@@ -877,21 +1023,24 @@ class IconThumbs:
     _SHGFI_SMALLICON = 0x1
 
     def __init__(self) -> None:
-        """__init__."""
+        """Set up the Qt fallback icon provider plus per-extension icon
+        cache and the LRU OrderedDict of image thumbnails."""
         self.provider = QFileIconProvider()
         self._dir: QIcon | None = None
         self._file: QIcon | None = None
         self._ext: dict[str, QIcon] = {}
         self._thumbs: OrderedDict[str, QIcon] = OrderedDict()
         self._fluent_ext_fn = None  # set by ExplorerWidget for Fluent icons
-        """__init__."""
+        """Set up the Qt fallback icon provider plus per-extension icon
+        cache and the LRU OrderedDict of image thumbnails."""
 
     def set_fluent_ext_icon(self, fn):
         """Set a callable ext -> QIcon for Fluent Design file-type icons."""
         self._fluent_ext_fn = fn
 
     def dir_icon(self, name: str = "") -> QIcon:
-        """dir_icon."""
+        """Return a folder icon: nexus_icons.folder_icon (vector) first, then
+        the cached OS shell folder icon via QFileIconProvider."""
         try:
             from nexus_icons import folder_icon
             ico = folder_icon(name, 32)
@@ -903,17 +1052,23 @@ class IconThumbs:
         if self._dir is None:
             self._dir = self.provider.icon(QFileIconProvider.IconType.Folder)
         return self._dir
-        """dir_icon."""
+        """Return a folder icon: nexus_icons.folder_icon (vector) first, then
+        the cached OS shell folder icon via QFileIconProvider."""
 
     def _file_icon(self) -> QIcon:
-        """_file_icon."""
+        """Return (and lazily cache) the generic Qt file icon."""
         if self._file is None:
             self._file = self.provider.icon(QFileIconProvider.IconType.File)
         return self._file
-        """_file_icon."""
+        """Return (and lazily cache) the generic Qt file icon."""
 
     def ext_icon(self, ext: str) -> QIcon:
-        """ext_icon."""
+        """Return an icon for a file extension with a per-ext cache.
+
+        Resolution order: nexus_icons.icon_for_ext, the Explorer-provided
+        Fluent ext hook, then a SHGetFileInfoW shell lookup on a synthetic
+        'a.<ext>' name (converted from HICON), and finally the generic Qt
+        file icon. Results are cached by normalized (dotless) extension."""
         key = ext.lower().lstrip(".")
         ico = self._ext.get(key)
         if ico is None:
@@ -942,10 +1097,18 @@ class IconThumbs:
                     ico = self._file_icon()
             self._ext[key] = ico
         return ico
-        """ext_icon."""
+        """Return an icon for a file extension with a per-ext cache.
+
+        Resolution order: nexus_icons.icon_for_ext, the Explorer-provided
+        Fluent ext hook, then a SHGetFileInfoW shell lookup on a synthetic
+        'a.<ext>' name (converted from HICON), and finally the generic Qt
+        file icon. Results are cached by normalized (dotless) extension."""
 
     def icon_for(self, row: dict) -> QIcon:
-        """icon_for."""
+        """Return the icon for a model row: folder icon for directories;
+        otherwise a cached image thumbnail (LRU-refreshed, decoded via
+        QImageReader at THUMB size for files under MAX_THUMB_SOURCE_BYTES);
+        non-image or failed loads fall back to ext_icon."""
         if row.get("isDir"):
             return self.dir_icon(row.get("name", ""))
         path = row.get("path", "")
@@ -981,16 +1144,21 @@ class IconThumbs:
             self._thumbs[norm_path] = ico
             return ico
         return self.ext_icon(ext)
-        """icon_for."""
+        """Return the icon for a model row: folder icon for directories;
+        otherwise a cached image thumbnail (LRU-refreshed, decoded via
+        QImageReader at THUMB size for files under MAX_THUMB_SOURCE_BYTES);
+        non-image or failed loads fall back to ext_icon."""
 
     @staticmethod
     def _thumb_source_ok(path: str) -> bool:
-        """_thumb_source_ok."""
+        """Allow thumbnailing only when the file exists and is at most
+        MAX_THUMB_SOURCE_BYTES (50 MB) in size."""
         try:
             return os.path.getsize(path) <= MAX_THUMB_SOURCE_BYTES
         except OSError:
             return False
-        """_thumb_source_ok."""
+        """Allow thumbnailing only when the file exists and is at most
+        MAX_THUMB_SOURCE_BYTES (50 MB) in size."""
 
 
 # ---------------------------------------------------------------------------
@@ -1009,12 +1177,14 @@ class FileTableModel(QAbstractTableModel):
     _ORIENT_HORIZONTAL = Qt.Orientation.Horizontal
 
     def __init__(self, icons: IconThumbs) -> None:
-        """__init__."""
+        """Store the row list, the shared IconThumbs provider, and the
+        optional ColorTagManager (set later by ExplorerWidget)."""
         super().__init__()
         self.rows: list[dict] = []
         self.icons = icons
         self._tags = None  # ColorTagManager set by ExplorerWidget
-        """__init__."""
+        """Store the row list, the shared IconThumbs provider, and the
+        optional ColorTagManager (set later by ExplorerWidget)."""
 
     def set_tags_manager(self, tags):
         """Set the ColorTagManager for color tag indicators."""
@@ -1022,19 +1192,23 @@ class FileTableModel(QAbstractTableModel):
 
     @staticmethod
     def _precompute(rows: list[dict]) -> None:
-        """_precompute."""
+        """Fill each row's display strings: modifiedStr from modifiedMs
+        and sizeStr from size (human-readable)."""
         for row in rows:
             row["modifiedStr"] = fmt_ms(int(row.get("modifiedMs", 0) or 0))
             row["sizeStr"] = human(row.get("size", 0))
-        """_precompute."""
+        """Fill each row's display strings: modifiedStr from modifiedMs
+        and sizeStr from size (human-readable)."""
 
     def set_rows(self, rows: list[dict]) -> None:
-        """set_rows."""
+        """Atomically replace all rows inside begin/endResetModel,
+        precomputing display strings first."""
         self.beginResetModel()
         self._precompute(rows)
         self.rows = rows
         self.endResetModel()
-        """set_rows."""
+        """Atomically replace all rows inside begin/endResetModel,
+        precomputing display strings first."""
 
     _DIFF_KEYS = ("name", "size", "modifiedMs", "isDir", "folderSize")
 
@@ -1075,41 +1249,48 @@ class FileTableModel(QAbstractTableModel):
         self.set_rows(rows)
 
     def _emit_changed(self, row_a: int, row_b: int) -> None:
-        """_emit_changed."""
+        """Emit dataChanged spanning the given row range across all columns."""
         top = self.index(min(row_a, row_b), 0)
         bottom = self.index(max(row_a, row_b), self.columnCount() - 1)
         self.dataChanged.emit(top, bottom)
-        """_emit_changed."""
+        """Emit dataChanged spanning the given row range across all columns."""
 
     def rowCount(self, parent=QModelIndex()):
-        """rowCount."""
+        """Return the number of rows; 0 for any valid (child) parent index
+        since this is a flat non-hierarchical table."""
         return 0 if parent.isValid() else len(self.rows)
-        """rowCount."""
+        """Return the number of rows; 0 for any valid (child) parent index
+        since this is a flat non-hierarchical table."""
 
     def columnCount(self, parent=QModelIndex()):
-        """columnCount."""
+        """Return the fixed column count: Name, Modified, Type, Size."""
         return 4
-        """columnCount."""
+        """Return the fixed column count: Name, Modified, Type, Size."""
 
     def headerData(self, section, orient, role=Qt.ItemDataRole.DisplayRole):
-        """headerData."""
+        """Return the horizontal header label for DisplayRole; None otherwise."""
         if role == self._ROLE_DISPLAY and orient == self._ORIENT_HORIZONTAL:
             return self.HEADERS[section]
         return None
-        """headerData."""
+        """Return the horizontal header label for DisplayRole; None otherwise."""
 
     def index(self, r, c, parent=QModelIndex()):
-        """index."""
+        """Create a model index for (r, c), ignoring the parent argument
+        (flat table, no hierarchy)."""
         return self.createIndex(r, c)
-        """index."""
+        """Create a model index for (r, c), ignoring the parent argument
+        (flat table, no hierarchy)."""
 
     def parent(self, _child=None):
-        """parent."""
+        """Return an invalid QModelIndex — flat table, no parent items."""
         return QModelIndex()
-        """parent."""
+        """Return an invalid QModelIndex — flat table, no parent items."""
 
     def data(self, idx, role=Qt.ItemDataRole.DisplayRole):
-        """data."""
+        """Return per-role cell data: DisplayRole text for the four columns
+        (name, modified, Folder/EXT type, human size or folderSize),
+        DecorationRole icon for column 0, UserRole raw row dict,
+        ForegroundRole color for a color tag, else None."""
         if not idx.isValid():
             return None
         row = self.rows[idx.row()]
@@ -1138,10 +1319,14 @@ class FileTableModel(QAbstractTableModel):
                 if tag:
                     return QColor(self._tags.TAG_COLORS.get(tag, "#ffffff"))
         return None
-        """data."""
+        """Return per-role cell data: DisplayRole text for the four columns
+        (name, modified, Folder/EXT type, human size or folderSize),
+        DecorationRole icon for column 0, UserRole raw row dict,
+        ForegroundRole color for a color tag, else None."""
 
     def flags(self, index):
-        """flags."""
+        """Return item flags: enabled, selectable, and drag-enabled for valid
+        indexes; NoItemFlags otherwise."""
         if not index.isValid():
             return Qt.ItemFlag.NoItemFlags
         return (
@@ -1149,15 +1334,17 @@ class FileTableModel(QAbstractTableModel):
             | Qt.ItemFlag.ItemIsSelectable
             | Qt.ItemFlag.ItemIsDragEnabled
         )
-        """flags."""
+        """Return item flags: enabled, selectable, and drag-enabled for valid
+        indexes; NoItemFlags otherwise."""
 
     def mimeTypes(self) -> list[str]:
-        """mimeTypes."""
+        """Return supported drag MIME types: URI list and plain text."""
         return ["text/uri-list", "text/plain"]
-        """mimeTypes."""
+        """Return supported drag MIME types: URI list and plain text."""
 
     def mimeData(self, indexes: list[QModelIndex]) -> QMimeData:
-        """mimeData."""
+        """Build drag payload: local-file QUrls plus newline-joined plain
+        text paths, deduplicating repeated source rows."""
         mime = QMimeData()
         urls = []
         paths = []
@@ -1174,25 +1361,27 @@ class FileTableModel(QAbstractTableModel):
         mime.setUrls(urls)
         mime.setText("\n".join(paths))
         return mime
-        """mimeData."""
+        """Build drag payload: local-file QUrls plus newline-joined plain
+        text paths, deduplicating repeated source rows."""
 
     def supportedDragActions(self) -> Qt.DropAction:
-        """supportedDragActions."""
+        """Allow both copy and move drag actions."""
         return Qt.DropAction.CopyAction | Qt.DropAction.MoveAction
-        """supportedDragActions."""
+        """Allow both copy and move drag actions."""
 
 
 class SortProxy(QSortFilterProxyModel):
     """Sort proxy that keeps directories first and sorts by column-specific logic."""
     def __init__(self) -> None:
-        """__init__."""
+        """Configure case-insensitive filtering on the Name column."""
         super().__init__()
         self.setFilterKeyColumn(0)
         self.setFilterCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
-        """__init__."""
+        """Configure case-insensitive filtering on the Name column."""
 
     def flags(self, index):
-        """flags."""
+        """Return item flags: enabled, selectable, and drag-enabled for valid
+        indexes; NoItemFlags otherwise."""
         if not index.isValid():
             return Qt.ItemFlag.NoItemFlags
         return (
@@ -1200,15 +1389,19 @@ class SortProxy(QSortFilterProxyModel):
             | Qt.ItemFlag.ItemIsSelectable
             | Qt.ItemFlag.ItemIsDragEnabled
         )
-        """flags."""
+        """Return item flags: enabled, selectable, and drag-enabled for valid
+        indexes; NoItemFlags otherwise."""
 
     def supportedDragActions(self) -> Qt.DropAction:
-        """supportedDragActions."""
+        """Allow both copy and move drag actions."""
         return Qt.DropAction.CopyAction | Qt.DropAction.MoveAction
-        """supportedDragActions."""
+        """Allow both copy and move drag actions."""
 
     def lessThan(self, left, right):
-        """lessThan."""
+        """Compare rows for sorting: directories always first, then by
+        column — Modified (modifiedMs), Size (folderSize for dirs else size),
+        and case-insensitive name for all other columns. Out-of-range rows
+        compare as False."""
         m: FileTableModel = self.sourceModel()  # type: ignore[assignment]
         lr, rr = left.row(), right.row()
         if lr >= len(m.rows) or rr >= len(m.rows) or lr < 0 or rr < 0:
@@ -1224,7 +1417,10 @@ class SortProxy(QSortFilterProxyModel):
             sb = b.get("folderSize") if b.get("isDir") else b.get("size", 0)
             return (sa or 0) < (sb or 0)
         return a.get("name", "").lower() < b.get("name", "").lower()
-        """lessThan."""
+        """Compare rows for sorting: directories always first, then by
+        column — Modified (modifiedMs), Size (folderSize for dirs else size),
+        and case-insensitive name for all other columns. Out-of-range rows
+        compare as False."""
 
 
 # ---------------------------------------------------------------------------

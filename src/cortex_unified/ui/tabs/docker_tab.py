@@ -31,12 +31,12 @@ except ImportError:
             return False
 
 class DockerScanWorker(QThread):
-    """DockerScanWorker."""
+    """Scans unused Docker images/containers/volumes/networks off the GUI thread."""
     finished = Signal(dict)
     error = Signal(str)
 
     def __init__(self, scan_images: bool, scan_containers: bool, scan_volumes: bool, scan_networks: bool):
-        """__init__."""
+        """Store the four resource-type scan flags."""
         super().__init__()
         self.scan_images = scan_images
         self.scan_containers = scan_containers
@@ -71,12 +71,12 @@ class DockerScanWorker(QThread):
     """DockerScanWorker class."""
 
 class DockerCleanupWorker(QThread):
-    """DockerCleanupWorker."""
+    """Cleans selected Docker resources (optionally dry-run) off the GUI thread."""
     finished = Signal(object)
     error = Signal(str)
 
     def __init__(self, resources: list, dry_run: bool):
-        """__init__."""
+        """Store the resources to clean and the dry-run flag."""
         super().__init__()
         self.resources = resources
         self.dry_run = dry_run
@@ -99,7 +99,7 @@ class DockerTab(BaseTab):
     """Tab for docker tab functionality."""
 
     def __init__(self, config, logger, safety_manager):
-        """__init__."""
+        """Initialize the tab and call setup_ui."""
         super().__init__(config, logger, safety_manager)
         """__init__."""
 
@@ -207,7 +207,7 @@ class DockerTab(BaseTab):
         worker.start()
 
     def _on_worker_finished(self, worker):
-        """_on_worker_finished."""
+        """Unregister a finished worker thread and delete it."""
         self.remove_worker_thread(worker)
         worker.deleteLater()
         """_on_worker_finished."""
@@ -253,7 +253,7 @@ class DockerTab(BaseTab):
             self.docker_cleanup_button.setEnabled(False)
 
     def docker_scan_error(self, error: str):
-        """docker_scan_error."""
+        """Reset the scan controls and report the Docker scan error."""
         self.logger.error(f'Docker scan error: {error}')
         self.docker_scan_button.setEnabled(True)
         self.docker_progress_bar.setVisible(False)
@@ -326,7 +326,7 @@ class DockerTab(BaseTab):
         self.docker_cleanup_button.setEnabled(False)
 
     def docker_cleanup_error(self, error: str):
-        """docker_cleanup_error."""
+        """Reset the cleanup controls and report the Docker cleanup error."""
         self.logger.error(f'Docker cleanup error: {error}')
         self.docker_scan_button.setEnabled(True)
         self.docker_cleanup_button.setEnabled(True)

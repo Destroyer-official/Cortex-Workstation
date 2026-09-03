@@ -29,12 +29,12 @@ from cortex_unified.visualization.sunburst_generator import SunburstGenerator
 from cortex_unified.visualization.interactive_dashboard import InteractiveDashboard
 
 class DiskAnalyzerWorker(QThread):
-    """DiskAnalyzerWorker."""
+    """Runs disk usage/type/largest-dir analysis off the GUI thread."""
     finished = Signal(dict)
     error = Signal(str)
 
     def __init__(self, config: Config, path: str):
-        """__init__."""
+        """Store the config and the target path to analyze."""
         super().__init__()
         self.config = config
         self.path = path
@@ -68,7 +68,7 @@ class DiskAnalyzerTab(BaseTab):
     """Tab for disk analyzer tab functionality."""
 
     def __init__(self, config, logger, safety_manager):
-        """__init__."""
+        """Initialize the tab and call setup_ui."""
         super().__init__(config, logger, safety_manager)
         """__init__."""
         """__init__."""
@@ -196,7 +196,7 @@ class DiskAnalyzerTab(BaseTab):
         worker.start()
 
     def _on_worker_finished(self, worker):
-        """_on_worker_finished."""
+        """Unregister a finished worker thread and delete it."""
         self.remove_worker_thread(worker)
         worker.deleteLater()
         """_on_worker_finished."""
@@ -244,7 +244,7 @@ class DiskAnalyzerTab(BaseTab):
             self.largest_dirs_table.setItem(i, 1, QTableWidgetItem(size_str))
 
     def disk_analysis_error(self, error: str):
-        """disk_analysis_error."""
+        """Reset the analyze button and report the analysis error."""
         self.logger.error(f'Disk analysis error: {error}')
         self.analyze_disk_button.setEnabled(True)
         self.disk_analyzer_progress_bar.setVisible(False)
@@ -255,7 +255,7 @@ class DiskAnalyzerTab(BaseTab):
         """disk_analysis_error."""
 
     def quick_disk_analysis(self):
-        """quick_disk_analysis."""
+        """Point the path input at the home folder and start analysis."""
         self.logger.info('=== Quick disk analysis initiated ===')
         home_dir = str(Path.home())
         self.disk_analyzer_path_input.setText(home_dir)
@@ -265,7 +265,7 @@ class DiskAnalyzerTab(BaseTab):
 
     # Methods for rendering visualizations natively inside PyQt layout maps
     def show_treemap_visualization(self):
-        """show_treemap_visualization."""
+        """Write the analysis as a Plotly treemap HTML file and open it in a browser."""
         if not hasattr(self, 'current_analyzer') or not self.current_analyzer:
             QMessageBox.warning(self, "Error", "No analysis data available. Run scan first.")
             return
@@ -279,7 +279,7 @@ class DiskAnalyzerTab(BaseTab):
         """show_treemap_visualization."""
 
     def show_sunburst_visualization(self):
-        """show_sunburst_visualization."""
+        """Write the analysis as a Plotly sunburst HTML file and open it in a browser."""
         if not hasattr(self, 'current_analyzer') or not self.current_analyzer:
             QMessageBox.warning(self, "Error", "No analysis data available. Run scan first.")
             return
@@ -293,7 +293,7 @@ class DiskAnalyzerTab(BaseTab):
         """show_sunburst_visualization."""
 
     def show_interactive_dashboard(self):
-        """show_interactive_dashboard."""
+        """Export the interactive dashboard HTML to a temp file and open it in a browser."""
         if not hasattr(self, 'current_analyzer') or not self.current_analyzer:
             QMessageBox.warning(self, "Error", "No analysis data available. Run scan first.")
             return
@@ -308,7 +308,7 @@ class DiskAnalyzerTab(BaseTab):
         """show_interactive_dashboard."""
 
     def export_visualization_dialog(self):
-        """export_visualization_dialog."""
+        """Choose a save path and export the dashboard as HTML/PNG/SVG."""
         if not hasattr(self, 'current_analyzer') or not self.current_analyzer:
             QMessageBox.warning(self, "Error", "No analysis data available. Run scan first.")
             return

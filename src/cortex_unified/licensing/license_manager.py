@@ -150,14 +150,10 @@ class LicenseState:
     def features(self) -> set[Feature]:
         """features."""
         return features_for_tier(self.tier)
-        """features."""
-        """features."""
 
     def allows(self, feature: Feature) -> bool:
         """allows."""
         return feature in self.features
-        """allows."""
-        """allows."""
 
     def to_dict(self) -> dict[str, Any]:
         """to_dict."""
