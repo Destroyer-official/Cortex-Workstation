@@ -78,7 +78,7 @@ Combining the **Cortex Unified Optimization Engine** with the high-performance *
 ```mermaid
 flowchart TB
     subgraph UI_Layer ["Presentation & Shell Layer (PySide6)"]
-        A[PremiumMainWindow] --> B[Sidebar Navigation & Search (Ctrl+K)]
+        A[PremiumMainWindow] --> B["Sidebar Navigation & Search (Ctrl+K)"]
         A --> C[PageRegistry & Lazy Page Loader]
         C --> D[132 Theme-Aware GUI Pages]
         D --> E[WorkerRuntime / QThreadPool]
@@ -86,8 +86,8 @@ flowchart TB
 
     subgraph Core_Engine ["Cortex Unified Orchestration Engine"]
         E --> F[SmartScanner & Engine Service]
-        E --> G[System Tools Suite (62 Specialized Modules)]
-        E --> H[Analyzers & Cleaners (Residual Hunter, Shredder, S3-FIFO)]
+        E --> G["System Tools Suite (62 Specialized Modules)"]
+        E --> H["Analyzers & Cleaners (Residual Hunter, Shredder, S3-FIFO)"]
         E --> I[Background Agent & Resource Tray Monitor]
     end
 
@@ -113,7 +113,7 @@ For comprehensive technical specifications on threading, Win32 interop, and desi
 
 ## 🖥️ Interactive Navigation & UI Pages
 
-Cortex Cleaner features **132 interactive GUI pages** organized into **10 intuitive sections**:
+Cortex Workstation features **132 interactive GUI pages** organized into **10 intuitive sections**:
 
 | Section ID | Section Title | Page Count | Primary Features |
 | :--- | :--- | :--- | :--- |
@@ -189,10 +189,10 @@ Every program file, tool, and page in the repository is backed by automated test
 
 | Test / Diagnostic Suite | Target Scope | Passed | Failures | Pass Rate |
 | :--- | :--- | :--- | :--- | :--- |
-| **Complete Unit Test Suite** (`pytest`) | Backend tools, VFS, hashing, and OS modules | **80 / 80** | **0** | **100%** |
-| **Page Registry & Factory Verification** | All 118 page factories dynamically resolve | **118 / 118** | **0** | **100%** |
-| **Vector SVG Icon Pipeline** | Crisp vector assets (no glyphs, no duplicates) | **118 / 118** | **0** | **100%** |
-| **One-by-One Program File Audit** | AST syntax, compilation, and package imports | **454 / 454** | **0** | **100%** |
+| **Complete Unit Test Suite** (`pytest`) | Backend tools, VFS, hashing, and OS modules | **86 / 86** | **0** | **100%** |
+| **Page Registry & Factory Verification** | All 132 page factories dynamically resolve | **132 / 132** | **0** | **100%** |
+| **Vector SVG Icon Pipeline** | Crisp vector assets (no glyphs, no duplicates) | **132 / 132** | **0** | **100%** |
+| **One-by-One Program File Audit** | AST syntax, compilation, and package imports | **471 / 471** | **0** | **100%** |
 
 ```powershell
 # Run the complete test suite

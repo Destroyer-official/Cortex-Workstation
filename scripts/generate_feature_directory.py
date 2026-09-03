@@ -45,7 +45,7 @@ for g in GROUPS:
         py_file = mod_part.replace(".", "/") + ".py"
         icon_link = f"`{p.icon}.svg`"
         lines.append(
-            f"| `{p.id}` | **{p.title}** | {icon_link} | [`{cls_part}`](file:///d:/code/Main_projects/Cortex_Cleaner/src/{py_file}) | Forensic execution via `{cls_part}` |"
+            f"| `{p.id}` | **{p.title}** | {icon_link} | [`{cls_part}`](../src/{py_file}) | Forensic execution via `{cls_part}` |"
         )
     lines.append("")
 

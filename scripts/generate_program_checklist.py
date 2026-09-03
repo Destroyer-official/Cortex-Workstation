@@ -104,7 +104,7 @@ for sec_title, sec_dirs in sections:
         info = parse_file(f)
         total_loc += info["lines"]
         abs_path = f.resolve().as_posix()
-        md_lines.append(f"- [ ] **{item_num:03d}. [`{rel}`](file:///{abs_path})** ({info['lines']} LOC)")
+        md_lines.append(f"- [ ] **{item_num:03d}. [`{rel}`]({rel})** ({info['lines']} LOC)")
         md_lines.append(f"  - **Purpose**: {info['doc']}")
         if info["classes"]:
             cls_items = []

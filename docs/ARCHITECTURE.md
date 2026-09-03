@@ -29,8 +29,8 @@ flowchart TB
 
     subgraph Core_Engine ["Cortex Unified Orchestration Engine"]
         E --> F[SmartScanner & Engine Service]
-        E --> G[System Tools Suite (62 Specialized Modules)]
-        E --> H[Analyzers & Cleaners (Residual Hunter, Shredder, S3-FIFO)]
+        E --> G["System Tools Suite (62 Specialized Modules)"]
+        E --> H["Analyzers & Cleaners (Residual Hunter, Shredder, S3-FIFO)"]
         E --> I[Background Agent & Resource Tray Monitor]
     end
 
@@ -54,7 +54,7 @@ flowchart TB
 
 ## 3. Presentation Layer & Page Registry Contract
 
-The user interface is built upon a dynamic, decoupled page registration architecture managed by [`src/cortex_unified/ui/premium/registry.py`](file:///d:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/registry.py).
+The user interface is built upon a dynamic, decoupled page registration architecture managed by [`src/cortex_unified/ui/premium/registry.py`](../src/cortex_unified/ui/premium/registry.py).
 
 ### The `PageSpec` Contract
 Pages are registered declaratively using `PageSpec` namedtuples:
@@ -100,7 +100,7 @@ def _run_task(win: PremiumMainWindow, work_fn, done_fn, err_fn=None):
 
 ## 4. Nexus Explorer VFS Engine Architecture
 
-[`NexusExplorer`](file:///d:/code/Main_projects/Cortex_Cleaner/src/NexusExplorer/) provides a dual-pane file management transport subsystem capable of high-throughput local and virtual storage operations.
+[`NexusExplorer`](../src/NexusExplorer/) provides a dual-pane file management transport subsystem capable of high-throughput local and virtual storage operations.
 
 ```text
 NexusExplorer/
@@ -154,7 +154,7 @@ User preferences and historical tracking baselines are stored persistently in th
 
 ## 7. Design System & HiDPI Icon Architecture
 
-The presentation layer utilizes a modern, cohesive design system defined in [`tokens.py`](file:///d:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/tokens.py):
+The presentation layer utilizes a modern, cohesive design system defined in [`tokens.py`](../src/cortex_unified/ui/premium/tokens.py):
 - **Dynamic Palette**: Tailored dark mode (`#0B0E14` background, `#121722` card surface, `#00D2FF` electric cyan accents).
 - **100% Vector SVG Icons**: All 118 UI pages use pure SVG vector assets located in `src/cortex_unified/resources/icons/`. No unicode glyphs or rasterized low-DPI PNGs are used in navigation.
 - **Dynamic Tinting**: Icons are dynamically recolored at runtime (`icon_provider.py`) based on theme active/inactive states and HiDPI device pixel ratios (100%, 125%, 150%, 200%).

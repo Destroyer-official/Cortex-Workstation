@@ -100,7 +100,7 @@ for p in sorted(sys_tools_dir.glob("*.py")):
     rel = p.as_posix()
     abs_p = p.resolve().as_posix()
     cls_str = f" • Classes: `{'`, `'.join(classes[:3])}`" if classes else ""
-    md.append(f"- [ ] **{item_count:03d}. [`{rel}`](file:///{abs_p})** ({loc} LOC)")
+    md.append(f"- [ ] **{item_count:03d}. [`{rel}`]({rel})** ({loc} LOC)")
     md.append(f"  - **Feature**: {doc}{cls_str}")
     item_count += 1
     md.append("")
@@ -121,7 +121,7 @@ for p in sorted(analyzers_dir.glob("*.py")):
     rel = p.as_posix()
     abs_p = p.resolve().as_posix()
     cls_str = f" • Classes: `{'`, `'.join(classes[:3])}`" if classes else ""
-    md.append(f"- [ ] **{item_count:03d}. [`{rel}`](file:///{abs_p})** ({loc} LOC)")
+    md.append(f"- [ ] **{item_count:03d}. [`{rel}`]({rel})** ({loc} LOC)")
     md.append(f"  - **Feature**: {doc}{cls_str}")
     item_count += 1
     md.append("")
@@ -142,7 +142,7 @@ for p in sorted(nexus_dir.glob("*.py")):
     rel = p.as_posix()
     abs_p = p.resolve().as_posix()
     cls_str = f" • Classes: `{'`, `'.join(classes[:3])}`" if classes else ""
-    md.append(f"- [ ] **{item_count:03d}. [`{rel}`](file:///{abs_p})** ({loc} LOC)")
+    md.append(f"- [ ] **{item_count:03d}. [`{rel}`]({rel})** ({loc} LOC)")
     md.append(f"  - **Feature**: {doc}{cls_str}")
     item_count += 1
     md.append("")
@@ -169,7 +169,7 @@ for cd in core_dirs:
         rel = p.as_posix()
         abs_p = p.resolve().as_posix()
         cls_str = f" • Classes: `{'`, `'.join(classes[:3])}`" if classes else ""
-        md.append(f"- [ ] **{item_count:03d}. [`{rel}`](file:///{abs_p})** ({loc} LOC)")
+        md.append(f"- [ ] **{item_count:03d}. [`{rel}`]({rel})** ({loc} LOC)")
         md.append(f"  - **Feature**: {doc}{cls_str}")
         item_count += 1
         md.append("")
@@ -199,7 +199,7 @@ for sd in sub_dirs:
         rel = p.as_posix()
         abs_p = p.resolve().as_posix()
         cls_str = f" • Classes: `{'`, `'.join(classes[:3])}`" if classes else ""
-        md.append(f"- [ ] **{item_count:03d}. [`{rel}`](file:///{abs_p})** ({loc} LOC)")
+        md.append(f"- [ ] **{item_count:03d}. [`{rel}`]({rel})** ({loc} LOC)")
         md.append(f"  - **Feature**: {doc}{cls_str}")
         item_count += 1
         md.append("")

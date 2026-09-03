@@ -145,7 +145,7 @@ def main():
 
     for idx, r in enumerate(results, 1):
         status_icon = "✓" if (r["syntax_ok"] and r["compile_ok"] and r["import_ok"]) else "✗"
-        report_lines.append(f"- [ ] **{idx:03d}. [`{r['path']}`](file:///{r['abs_path']})** — **{status_icon} PASS** ({r['loc']} LOC)")
+        report_lines.append(f"- [ ] **{idx:03d}. [`{r['path']}`]({r['path']})** — **{status_icon} PASS** ({r['loc']} LOC)")
         report_lines.append(f"  - **Syntax Check**: {'OK' if r['syntax_ok'] else 'FAIL'} | **Compilation**: {'OK' if r['compile_ok'] else 'FAIL'} | **Import**: {'OK' if r['import_ok'] else 'FAIL'}")
         if r["classes"]:
             cls_str = ", ".join(f"`{c[0]}` ({c[1]} methods)" for c in r["classes"][:4])
