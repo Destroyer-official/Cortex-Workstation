@@ -15,6 +15,7 @@ counts (see NetworkMonitor), which are real.
 
 from __future__ import annotations
 
+import threading
 import time
 from dataclasses import dataclass, field
 from typing import Any
@@ -22,6 +23,8 @@ from typing import Any
 
 @dataclass(slots=True)
 class NicSample:
+    """Counters and derived rates (bytes/sec) for one network interface."""
+
     name: str
     bytes_sent: int
     bytes_recv: int
@@ -29,6 +32,7 @@ class NicSample:
     recv_rate: float = 0.0   # bytes/sec
 
     def to_dict(self) -> dict[str, Any]:
+        """To dict."""
         return {
             "name": self.name,
             "bytes_sent": self.bytes_sent,
@@ -40,6 +44,8 @@ class NicSample:
 
 @dataclass(slots=True)
 class TrafficSample:
+    """System-wide rates plus per-NIC breakdown, sorted by total activity."""
+
     send_rate: float = 0.0
     recv_rate: float = 0.0
     total_sent: int = 0
@@ -49,6 +55,7 @@ class TrafficSample:
     per_nic: list[NicSample] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
+        """To dict."""
         return {
             "send_rate": self.send_rate,
             "recv_rate": self.recv_rate,
@@ -61,66 +68,83 @@ class TrafficSample:
 
 
 class TrafficMonitor:
-    """Stateful throughput sampler. Reuse ONE instance for correct rates."""
+    """Stateful throughput sampler. Reuse ONE instance for correct rates.
+
+    Rates come from the delta between successive samples, so a fresh monitor
+    reports zeros until its second :meth:`sample` call.
+    """
 
     _instance: "TrafficMonitor | None" = None
+    _instance_lock: threading.Lock = threading.Lock()
 
     @classmethod
     def instance(cls) -> "TrafficMonitor":
+        """Instance."""
         if cls._instance is None:
-            cls._instance = cls()
+            with cls._instance_lock:
+                if cls._instance is None:
+                    cls._instance = cls()
         return cls._instance
 
     def __init__(self) -> None:
+        """Initialize Traffic Monitor."""
         self._last_total: tuple[int, int] | None = None      # (sent, recv)
         self._last_nic: dict[str, tuple[int, int]] = {}
         self._last_t: float | None = None
         self._start_total: tuple[int, int] | None = None      # baseline at first sample
+        self._sample_lock = threading.Lock()
 
     def sample(self) -> TrafficSample:
-        try:
-            import psutil
-        except ImportError:
-            return TrafficSample()
+        """Read psutil I/O counters once and derive rates from the previous sample.
 
-        now = time.monotonic()
-        total = psutil.net_io_counters()
-        pernic = psutil.net_io_counters(pernic=True)
-        cur_total = (total.bytes_sent, total.bytes_recv)
+        The first call only establishes the baseline. Negative deltas (counter
+        reset, e.g. after a NIC restart) are clamped to 0 rather than reported
+        as negative throughput.
+        """
+        with self._sample_lock:
+            try:
+                import psutil
+            except ImportError:
+                return TrafficSample()
 
-        if self._start_total is None:
-            self._start_total = cur_total
+            now = time.monotonic()
+            total = psutil.net_io_counters()
+            pernic = psutil.net_io_counters(pernic=True)
+            cur_total = (total.bytes_sent, total.bytes_recv)
 
-        dt = (now - self._last_t) if self._last_t else 0.0
-        send_rate = recv_rate = 0.0
-        if self._last_total is not None and dt > 0:
-            send_rate = max(0.0, (cur_total[0] - self._last_total[0]) / dt)
-            recv_rate = max(0.0, (cur_total[1] - self._last_total[1]) / dt)
+            if self._start_total is None:
+                self._start_total = cur_total
 
-        nic_samples: list[NicSample] = []
-        for name, counters in pernic.items():
-            cur = (counters.bytes_sent, counters.bytes_recv)
-            s_rate = r_rate = 0.0
-            prev = self._last_nic.get(name)
-            if prev is not None and dt > 0:
-                s_rate = max(0.0, (cur[0] - prev[0]) / dt)
-                r_rate = max(0.0, (cur[1] - prev[1]) / dt)
-            nic_samples.append(NicSample(
-                name=name, bytes_sent=cur[0], bytes_recv=cur[1],
-                send_rate=s_rate, recv_rate=r_rate,
-            ))
-            self._last_nic[name] = cur
+            dt = (now - self._last_t) if self._last_t else 0.0
+            send_rate = recv_rate = 0.0
+            if self._last_total is not None and dt > 0:
+                send_rate = max(0.0, (cur_total[0] - self._last_total[0]) / dt)
+                recv_rate = max(0.0, (cur_total[1] - self._last_total[1]) / dt)
 
-        self._last_total = cur_total
-        self._last_t = now
+            nic_samples: list[NicSample] = []
+            for name, counters in pernic.items():
+                cur = (counters.bytes_sent, counters.bytes_recv)
+                s_rate = r_rate = 0.0
+                prev = self._last_nic.get(name)
+                if prev is not None and dt > 0:
+                    s_rate = max(0.0, (cur[0] - prev[0]) / dt)
+                    r_rate = max(0.0, (cur[1] - prev[1]) / dt)
+                nic_samples.append(NicSample(
+                    name=name, bytes_sent=cur[0], bytes_recv=cur[1],
+                    send_rate=s_rate, recv_rate=r_rate,
+                ))
+                self._last_nic[name] = cur
 
-        return TrafficSample(
-            send_rate=send_rate,
-            recv_rate=recv_rate,
-            total_sent=cur_total[0],
-            total_recv=cur_total[1],
-            sent_since_start=cur_total[0] - self._start_total[0],
-            recv_since_start=cur_total[1] - self._start_total[1],
-            per_nic=sorted(nic_samples,
-                           key=lambda n: n.recv_rate + n.send_rate, reverse=True),
-        )
+            self._last_total = cur_total
+            self._last_t = now
+
+            return TrafficSample(
+                send_rate=send_rate,
+                recv_rate=recv_rate,
+                total_sent=cur_total[0],
+                total_recv=cur_total[1],
+                sent_since_start=cur_total[0] - self._start_total[0],
+                recv_since_start=cur_total[1] - self._start_total[1],
+                per_nic=sorted(nic_samples,
+                               key=lambda n: n.recv_rate + n.send_rate, reverse=True),
+            )

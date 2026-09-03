@@ -19,19 +19,23 @@ confirms first and runs them on a worker thread. All require Administrator.
 from __future__ import annotations
 
 import logging
-import platform
+import sys
 import re
 import subprocess
+import threading
 from dataclasses import dataclass
 from typing import Any
 
+from cortex_unified.core import proc as _proc
+
 _LOG = logging.getLogger("cortex.system_tools.system_repair")
-_IS_WINDOWS = platform.system() == "Windows"
+_IS_WINDOWS = sys.platform == "win32"
 _NO_WINDOW = 0x08000000 if _IS_WINDOWS else 0
 
 
 @dataclass(slots=True)
 class RepairResult:
+    """Repair Result data container."""
     tool: str
     success: bool
     status: str          # short outcome label
@@ -40,6 +44,7 @@ class RepairResult:
     raw_tail: str = ""   # last lines of output for transparency
 
     def to_dict(self) -> dict[str, Any]:
+        """To dict."""
         return {
             "tool": self.tool, "success": self.success, "status": self.status,
             "message": self.message, "needs_reboot": self.needs_reboot,
@@ -52,10 +57,12 @@ class SystemRepair:
 
     @staticmethod
     def is_supported() -> bool:
+        """Is supported."""
         return _IS_WINDOWS
 
     @staticmethod
     def is_elevated() -> bool:
+        """Is elevated."""
         if not _IS_WINDOWS:
             return False
         try:
@@ -66,10 +73,11 @@ class SystemRepair:
 
     # -- SFC ----------------------------------------------------------------
 
-    def run_sfc(self) -> RepairResult:
+    def run_sfc(self, cancel_event: "threading.Event | None" = None) -> RepairResult:
+        """Run sfc."""
         if not _IS_WINDOWS:
             return RepairResult("SFC", False, "unsupported", "Windows only.")
-        out = self._run(["sfc", "/scannow"], timeout=60 * 30)
+        out = self._run(["sfc", "/scannow"], timeout=60 * 30, cancel_event=cancel_event)
         return self._parse_sfc(out)
 
     @staticmethod
@@ -95,16 +103,21 @@ class SystemRepair:
                                 "A system servicing operation is in progress; try again "
                                 "after it finishes.", raw_tail=tail)
         return RepairResult("SFC", True, "done", "SFC finished.", raw_tail=tail)
+        """_parse_sfc."""
+        """_parse_sfc."""
 
     # -- DISM ---------------------------------------------------------------
 
-    def run_dism(self, action: str = "CheckHealth") -> RepairResult:
+    def run_dism(self, action: str = "CheckHealth",
+                cancel_event: "threading.Event | None" = None) -> RepairResult:
+        """Run dism."""
         if not _IS_WINDOWS:
             return RepairResult("DISM", False, "unsupported", "Windows only.")
         action = action if action in ("CheckHealth", "ScanHealth", "RestoreHealth") \
             else "CheckHealth"
         timeout = 60 * 30 if action == "RestoreHealth" else 60 * 15
-        out = self._run(["dism", "/Online", "/Cleanup-Image", f"/{action}"], timeout=timeout)
+        out = self._run(["dism", "/Online", "/Cleanup-Image", f"/{action}"],
+                        timeout=timeout, cancel_event=cancel_event)
         return self._parse_dism(out, action)
 
     @staticmethod
@@ -134,16 +147,20 @@ class SystemRepair:
                                 "connection (RestoreHealth may fetch files from Windows "
                                 "Update).", raw_tail=tail)
         return RepairResult("DISM", True, "done", f"DISM {action} finished.", raw_tail=tail)
+        """_parse_dism."""
+        """_parse_dism."""
 
     # -- CHKDSK (read-only scan) -------------------------------------------
 
-    def run_chkdsk_scan(self, drive: str = "C") -> RepairResult:
+    def run_chkdsk_scan(self, drive: str = "C",
+                        cancel_event: "threading.Event | None" = None) -> RepairResult:
+        """Run chkdsk scan."""
         if not _IS_WINDOWS:
             return RepairResult("CHKDSK", False, "unsupported", "Windows only.")
         letter = (drive or "C").rstrip(":\\").strip()
         if not re.fullmatch(r"[A-Za-z]", letter):
             return RepairResult("CHKDSK", False, "error", "Invalid drive letter.")
-        out = self._run(["chkdsk", f"{letter}:"], timeout=60 * 20)
+        out = self._run(["chkdsk", f"{letter}:"], timeout=60 * 20, cancel_event=cancel_event)
         return self._parse_chkdsk(out, letter)
 
     @staticmethod
@@ -163,13 +180,20 @@ class SystemRepair:
                                 needs_reboot=True, raw_tail=tail)
         return RepairResult("CHKDSK", True, "done",
                             f"CHKDSK finished scanning {letter}:.", raw_tail=tail)
+        """_parse_chkdsk."""
+        """_parse_chkdsk."""
 
     # -- helper -------------------------------------------------------------
 
-    def _run(self, args: list[str], timeout: int) -> str | None:
+    def _run(self, args: list[str], timeout: int,
+            cancel_event: "threading.Event | None" = None) -> str | None:
         try:
-            proc = subprocess.run(
-                args, capture_output=True, timeout=timeout, creationflags=_NO_WINDOW,
+            # SFC/DISM/CHKDSK can run for many minutes; proc.run() polls the
+            # timeout and cancel_event instead of blocking uninterruptibly, and
+            # kills the whole process tree on either - never the calling thread
+            # (see core/proc.py for why that distinction matters).
+            proc = _proc.run(
+                args, timeout=timeout, cancel_event=cancel_event, creationflags=_NO_WINDOW,
             )
             # SFC/DISM emit UTF-16LE with embedded NULs on the Windows console;
             # decode robustly and strip NULs so parsing works.
@@ -178,12 +202,17 @@ class SystemRepair:
             if proc.stderr:
                 text += "\n" + self._decode(proc.stderr)
             return text
+        except _proc.ProcessCancelled:
+            _LOG.debug("%s cancelled", args[0] if args else "?")
+            return None
         except subprocess.TimeoutExpired:
             _LOG.debug("%s timed out", args[0] if args else "?")
             return None
         except (OSError, subprocess.SubprocessError) as exc:
             _LOG.debug("%s failed: %s", args[0] if args else "?", exc)
             return None
+        """_run."""
+        """_run."""
 
     @staticmethod
     def _decode(raw: bytes) -> str:
@@ -200,3 +229,5 @@ class SystemRepair:
             except Exception:  # noqa: BLE001
                 continue
         return raw.decode("utf-8", "replace")
+        """_decode."""
+        """_decode."""

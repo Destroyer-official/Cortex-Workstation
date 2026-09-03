@@ -14,19 +14,49 @@ Covers 15+ telemetry vectors including:
   - Clipboard sync
 """
 
+import json
 import logging
-from typing import Dict, List
+import platform
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Dict, List, Optional
+
+
+_BACKUP_DIR = Path.home() / ".cortex_cleaner" / "telemetry_backups"
+
+
+def _get_windows_build() -> Optional[int]:
+    try:
+        v = platform.version()
+        parts = v.split(".")
+        if len(parts) >= 3:
+            return int(parts[2])
+    except (ValueError, IndexError):
+        pass
+    return None
+    """_get_windows_build."""
+    """_get_windows_build."""
+
+
+def _is_win11_24h2_plus() -> bool:
+    build = _get_windows_build()
+    return build is not None and build >= 26100
+    """_is_win11_24h2_plus."""
+    """_is_win11_24h2_plus."""
 
 
 class TelemetryBlocker:
     """Disables OS telemetry and diagnostic tracking via Windows Registry."""
 
     def __init__(self):
+        """Initialize Telemetry Blocker."""
         self.logger = logging.getLogger("telemetry_blocker")
         self._rules = self._build_rules()
 
     @property
     def rules(self) -> List[dict]:
+        """Rules."""
         return self._rules
 
     @staticmethod
@@ -41,7 +71,7 @@ class TelemetryBlocker:
         HKCU = winreg.HKEY_CURRENT_USER
         DWORD = winreg.REG_DWORD
 
-        return [
+        rules = [
             # ── Data Collection ──────────────────────────────
             {
                 "label": "Diagnostic Data",
@@ -184,7 +214,120 @@ class TelemetryBlocker:
             },
         ]
 
+        if _is_win11_24h2_plus():
+            for rule in rules:
+                if rule["name"] == "AllowTelemetry":
+                    rule["value"] = 1
+                    break
+
+        return rules
+
     # ──────────────────────────────────────────────────────────────────
+
+    def _backup_key(self, rule: dict) -> Optional[dict]:
+        try:
+            import winreg
+        except ImportError:
+            return None
+        try:
+            key = winreg.OpenKey(rule["hkey"], rule["path"])
+            val, type_id = winreg.QueryValueEx(key, rule["name"])
+            winreg.CloseKey(key)
+            return {"value": val, "type": type_id}
+        except FileNotFoundError:
+            return {"value": None, "type": None, "missing": True}
+        except Exception as exc:
+            self.logger.debug("Backup read failed for %s: %s", rule["label"], exc)
+            return None
+        """_backup_key."""
+        """_backup_key."""
+
+    def _save_backup(self, entries: List[dict]) -> Path:
+        _BACKUP_DIR.mkdir(parents=True, exist_ok=True)
+        ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+        path = _BACKUP_DIR / f"backup_{ts}.json"
+        with open(path, "w", encoding="utf-8") as fh:
+            json.dump(entries, fh, indent=2)
+        return path
+        """_save_backup."""
+        """_save_backup."""
+
+    def backup_telemetry(self) -> Optional[Path]:
+        """Backup telemetry."""
+        try:
+            import winreg
+        except ImportError:
+            self.logger.error("winreg unavailable")
+            return None
+
+        entries = []
+        for rule in self._rules:
+            entry = {
+                "label": rule["label"],
+                "hkey": "HKLM" if rule["hkey"] == winreg.HKEY_LOCAL_MACHINE else "HKCU",
+                "path": rule["path"],
+                "name": rule["name"],
+            }
+            backup = self._backup_key(rule)
+            if backup:
+                entry.update(backup)
+            entries.append(entry)
+
+        path = self._save_backup(entries)
+        self.logger.info("Backup saved to %s", path)
+        return path
+
+    def restore_from_backup(self, backup_path: Optional[Path] = None) -> bool:
+        """Restore from backup."""
+        try:
+            import winreg
+        except ImportError:
+            self.logger.error("winreg unavailable")
+            return False
+
+        if backup_path is None:
+            backups = sorted(_BACKUP_DIR.glob("backup_*.json"), reverse=True)
+            if not backups:
+                self.logger.error("No backup files found in %s", _BACKUP_DIR)
+                return False
+            backup_path = backups[0]
+
+        try:
+            with open(backup_path, "r", encoding="utf-8") as fh:
+                entries = json.load(fh)
+        except (OSError, json.JSONDecodeError) as exc:
+            self.logger.error("Failed to read backup %s: %s", backup_path, exc)
+            return False
+
+        hkey_map = {
+            "HKLM": winreg.HKEY_LOCAL_MACHINE,
+            "HKCU": winreg.HKEY_CURRENT_USER,
+        }
+        all_ok = True
+        for entry in entries:
+            hkey = hkey_map.get(entry.get("hkey"))
+            if hkey is None:
+                continue
+            try:
+                if entry.get("missing"):
+                    try:
+                        key = winreg.OpenKey(hkey, entry["path"], 0, winreg.KEY_SET_VALUE)
+                        winreg.DeleteValue(key, entry["name"])
+                        winreg.CloseKey(key)
+                    except FileNotFoundError:
+                        pass
+                else:
+                    key = winreg.CreateKey(hkey, entry["path"])
+                    winreg.SetValueEx(key, entry["name"], 0, entry["type"], entry["value"])
+                    winreg.CloseKey(key)
+                self.logger.info("Restored: %s", entry.get("label", entry["name"]))
+            except PermissionError:
+                self.logger.error("Permission denied restoring %s", entry.get("label"))
+                all_ok = False
+            except Exception as exc:
+                self.logger.error("Failed to restore %s: %s", entry.get("label"), exc)
+                all_ok = False
+        return all_ok
 
     def check_status(self) -> Dict[str, bool]:
         """Return {label: is_blocked} for every rule."""
@@ -217,6 +360,23 @@ class TelemetryBlocker:
         except ImportError:
             self.logger.error("winreg unavailable")
             return False
+
+        backup_entries = []
+        for rule in self._rules:
+            backup = self._backup_key(rule)
+            entry = {
+                "label": rule["label"],
+                "hkey": "HKLM" if rule["hkey"] == winreg.HKEY_LOCAL_MACHINE else "HKCU",
+                "path": rule["path"],
+                "name": rule["name"],
+            }
+            if backup:
+                entry.update(backup)
+            backup_entries.append(entry)
+
+        if backup_entries:
+            bp = self._save_backup(backup_entries)
+            self.logger.info("Pre-apply backup saved to %s", bp)
 
         all_ok = True
         for rule in self._rules:

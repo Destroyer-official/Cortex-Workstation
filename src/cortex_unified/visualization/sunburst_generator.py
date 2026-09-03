@@ -1,12 +1,14 @@
 """
-Sunburst chart generator for hierarchical disk usage visualization.
+Plotly sunburst renderer for hierarchical disk usage trees.
+
+Accepts either an analyzer exposing .directory_tree or a raw tree
+dict/list, capped at max_depth rings. Falls back to import-time stubs
+when Plotly is unavailable.
 """
 
 import os
-import math
-from typing import List, Dict, Any, Optional, Union
+from typing import List, Dict, Any, Optional
 from dataclasses import dataclass
-from pathlib import Path
 try:
     import plotly.graph_objects as go
     import plotly.express as px
@@ -14,26 +16,39 @@ try:
     HAS_PLOTLY = True
 except ImportError:
     HAS_PLOTLY = False
-    # Create dummy classes for when plotly is not available
+    # No-op stand-ins keep method bodies runnable without Plotly
     class go:
         class Figure:
             def __init__(self, *args, **kwargs):
                 pass
+                """__init__."""
+                """__init__."""
             def add_trace(self, *args, **kwargs):
                 pass
+                """add_trace."""
+                """add_trace."""
             def update_layout(self, *args, **kwargs):
                 pass
+                """update_layout."""
+            """Figure class."""
+        """go class."""
+        """go class."""
     class px:
         @staticmethod
         def sunburst(*args, **kwargs):
             return go.Figure()
+            """sunburst."""
+        """px class."""
+        """px class."""
     def plot(*args, **kwargs):
         pass
+        """plot."""
+        """plot."""
 import colorsys
 
 @dataclass
 class SunburstSegment:
-    """Data structure for Sunburst chart segments."""
+    """One ring slice: hierarchy identity plus precomputed polar extents."""
     name: str
     size: int
     path: str
@@ -46,17 +61,16 @@ class SunburstSegment:
     file_type: Optional[str] = None
 
 class SunburstGenerator:
-    """Generates Sunburst chart visualizations for hierarchical data."""
+    """Builds sunburst figures colored by file type, shaded by size share."""
     
     def __init__(self, data: Any = None):
-        """Initialize Sunburst generator with disk analysis data."""
+        """Store data; ``segments`` stays empty on the Plotly path."""
         self.data = data
         self.segments = []
         self._setup_color_scheme()
     
     def _setup_color_scheme(self):
-        """Setup color scheme for different file types and directory levels."""
-        # Color palette for different levels
+        """Palette per hierarchy depth plus per-extension overrides."""
         self.level_colors = [
             '#3498db',  # Level 0 - Blue
             '#2ecc71',  # Level 1 - Green  
@@ -68,7 +82,6 @@ class SunburstGenerator:
             '#1abc9c',  # Level 7 - Turquoise
         ]
         
-        # File type specific colors
         self.file_type_colors = {
             '.txt': '#3498db',    # Blue
             '.py': '#2ecc71',     # Green
@@ -88,34 +101,40 @@ class SunburstGenerator:
         }
     
     def _get_file_type_from_path(self, path: str) -> str:
-        """Get file type from path."""
+        """Extension tag for a path; 'directory'/'unknown' sentinels."""
         if os.path.isdir(path):
             return 'directory'
         ext = os.path.splitext(path)[1].lower()
         return ext if ext else 'unknown'
     
     def _get_color_for_level_and_type(self, level: int, file_type: str, size_ratio: float = 0.5) -> str:
-        """Get color based on level, file type, and size."""
-        # Use file type color if available, otherwise use level color
+        """Base hue by extension (else depth ring), darkened for larger
+        shares; brightness floored at 0.3 so slices stay legible."""
         if file_type in self.file_type_colors:
             base_color = self.file_type_colors[file_type]
         else:
             base_color = self.level_colors[level % len(self.level_colors)]
         
-        # Adjust brightness based on size
         base_color = base_color.lstrip('#')
         r, g, b = tuple(int(base_color[i:i+2], 16) for i in (0, 2, 4))
         
-        # Convert to HSV and adjust brightness
         h, s, v = colorsys.rgb_to_hsv(r/255, g/255, b/255)
-        v = max(0.3, v * (0.4 + 0.6 * size_ratio))  # Ensure minimum brightness
+        v = max(0.3, v * (0.4 + 0.6 * size_ratio))  # legibility floor
         
-        # Convert back to RGB and hex
         r, g, b = colorsys.hsv_to_rgb(h, s, v)
         return f"#{int(r*255):02x}{int(g*255):02x}{int(b*255):02x}"
     
     def _convert_directory_tree_to_sunburst_data(self, tree_data: Dict, max_depth: int = 4) -> Dict[str, List]:
-        """Convert directory tree data to Plotly sunburst format."""
+        """Flatten a tree into parallel id/label/parent/value arrays.
+
+        Args:
+            tree_data: Rooted dict (with 'children'), dict of trees,
+                or list of trees.
+            max_depth: Rings to include below the root.
+
+        Returns:
+            Column lists ready for go.Sunburst(branchvalues="total").
+        """
         ids = []
         labels = []
         parents = []
@@ -123,7 +142,6 @@ class SunburstGenerator:
         colors = []
         hover_texts = []
         
-        # Calculate total size for percentage calculations
         total_size = 0
         if isinstance(tree_data, dict):
             if 'size_bytes' in tree_data:
@@ -139,24 +157,19 @@ class SunburstGenerator:
             node_size = node_data.get('size_bytes', 0)
             node_path = node_data.get('path', '')
             
-            # Create unique ID
             node_id = f"{parent_id}/{node_name}" if parent_id else node_name
             
-            # Calculate size ratio for color scaling
             size_ratio = node_size / total_size if total_size > 0 else 0
             
-            # Get file type and color
             file_type = self._get_file_type_from_path(node_path)
             color = self._get_color_for_level_and_type(level, file_type, size_ratio)
             
-            # Add to lists
             ids.append(node_id)
             labels.append(node_name)
             parents.append(parent_id)
             values.append(node_size)
             colors.append(color)
             
-            # Create hover text
             percentage = (node_size / total_size * 100) if total_size > 0 else 0
             hover_text = (f"{node_name}<br>"
                          f"Size: {self._format_bytes(node_size)}<br>"
@@ -164,24 +177,22 @@ class SunburstGenerator:
                          f"Path: {node_path}")
             hover_texts.append(hover_text)
             
-            # Process children
             children = node_data.get('children', [])
             for child in children:
                 if isinstance(child, dict):
                     add_node(child, node_id, level + 1)
+            """add_node."""
+            """add_node."""
         
-        # Process the tree data
+        # Accepted shapes: rooted tree, mapping of trees, list of trees
         if isinstance(tree_data, dict):
             if 'children' in tree_data:
-                # Single tree with children
                 add_node(tree_data)
             else:
-                # Dictionary of trees
                 for key, subtree in tree_data.items():
                     if isinstance(subtree, dict):
                         add_node(subtree)
         elif isinstance(tree_data, list):
-            # List of trees
             for subtree in tree_data:
                 if isinstance(subtree, dict):
                     add_node(subtree)
@@ -196,9 +207,12 @@ class SunburstGenerator:
         }
     
     def generate_sunburst(self, max_depth: int = 4) -> go.Figure:
-        """Generate Sunburst chart visualization data."""
+        """Render the sunburst figure, or a "No Data" empty state.
+
+        Args:
+            max_depth: Maximum ring depth passed through to Plotly.
+        """
         if not self.data:
-            # Create empty sunburst
             fig = go.Figure(go.Sunburst(
                 labels=["No Data"],
                 parents=[""],
@@ -207,7 +221,6 @@ class SunburstGenerator:
             fig.update_layout(title="No Data Available")
             return fig
         
-        # Convert data to sunburst format
         if hasattr(self.data, 'directory_tree') and self.data.directory_tree:
             sunburst_data = self._convert_directory_tree_to_sunburst_data(
                 self.data.directory_tree, max_depth
@@ -217,7 +230,6 @@ class SunburstGenerator:
                 self.data, max_depth
             )
         else:
-            # Create empty sunburst for unsupported data
             fig = go.Figure(go.Sunburst(
                 labels=["No Data"],
                 parents=[""],
@@ -227,7 +239,6 @@ class SunburstGenerator:
             return fig
         
         if not sunburst_data['ids']:
-            # Create empty sunburst
             fig = go.Figure(go.Sunburst(
                 labels=["No Data"],
                 parents=[""],
@@ -236,7 +247,6 @@ class SunburstGenerator:
             fig.update_layout(title="No Data Available")
             return fig
         
-        # Create sunburst chart
         fig = go.Figure(go.Sunburst(
             ids=sunburst_data['ids'],
             labels=sunburst_data['labels'],
@@ -252,7 +262,6 @@ class SunburstGenerator:
             maxdepth=max_depth,
         ))
         
-        # Update layout
         fig.update_layout(
             title={
                 'text': "Disk Usage Sunburst Chart",
@@ -268,11 +277,22 @@ class SunburstGenerator:
         return fig
     
     def export_as_image(self, format: str = "svg", width: int = 800, height: int = 800) -> bytes:
-        """Export Sunburst chart as image."""
+        """Rasterize via the kaleido engine.
+
+        Args:
+            format: Image format, e.g. "svg" or "png".
+            width: Output width in pixels.
+            height: Output height in pixels.
+
+        Returns:
+            Encoded image bytes.
+
+        Raises:
+            RuntimeError: If generation or rasterization fails.
+        """
         try:
             fig = self.generate_sunburst()
             
-            # Export as image
             img_bytes = fig.to_image(
                 format=format.lower(),
                 width=width,
@@ -285,18 +305,27 @@ class SunburstGenerator:
             raise RuntimeError(f"Failed to export sunburst as {format}: {str(e)}")
     
     def export_as_html(self, interactive: bool = True, include_plotlyjs: str = 'cdn') -> str:
-        """Export Sunburst chart as HTML."""
+        """Serialize to a standalone HTML <div>.
+
+        Args:
+            interactive: When False, strip pan/lasso/select mode-bar tools.
+            include_plotlyjs: Passed to plot(): 'cdn', True, False, etc.
+
+        Returns:
+            HTML fragment string.
+
+        Raises:
+            RuntimeError: On serialization failure.
+        """
         try:
             fig = self.generate_sunburst()
             
-            # Configure interactivity
             config = {
                 'displayModeBar': interactive,
                 'displaylogo': False,
                 'modeBarButtonsToRemove': ['pan2d', 'lasso2d', 'select2d'] if not interactive else []
             }
             
-            # Generate HTML
             html_str = plot(
                 fig,
                 output_type='div',
@@ -309,7 +338,7 @@ class SunburstGenerator:
             raise RuntimeError(f"Failed to export sunburst as HTML: {str(e)}")
     
     def _format_bytes(self, bytes_count: int) -> str:
-        """Format bytes into human-readable format."""
+        """Human-readable size using binary (1024-step) units."""
         if bytes_count == 0:
             return "0 B"
         

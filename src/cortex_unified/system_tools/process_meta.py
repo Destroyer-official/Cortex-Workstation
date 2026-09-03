@@ -17,10 +17,10 @@ description. All results are cached, so it stays lightweight on live refreshes.
 from __future__ import annotations
 
 import logging
-import platform
+import sys
 
 _LOG = logging.getLogger("cortex.system_tools.process_meta")
-_IS_WINDOWS = platform.system() == "Windows"
+_IS_WINDOWS = sys.platform == "win32"
 
 # Curated, trustworthy explanations for common Windows + app processes.
 # Keys are lower-case executable names.

@@ -3,8 +3,6 @@ Scan management with checkpoint and resume functionality.
 """
 
 import json
-import os
-import pickle
 import threading
 import time
 import uuid
@@ -33,9 +31,10 @@ class ScanCheckpoint:
     
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'ScanCheckpoint':
-        """Create checkpoint from dictionary."""
         data['timestamp'] = datetime.fromisoformat(data['timestamp'])
         return cls(**data)
+        """from_dict."""
+        """from_dict."""
 
 @dataclass
 class ScanProgress:
@@ -98,10 +97,10 @@ class ScanManager:
             with open(checkpoint_file, 'w', encoding='utf-8') as f:
                 json.dump(checkpoint.to_dict(), f, indent=2)
             
-            # Also save scan state as pickle for complex objects
-            state_file = self._checkpoint_dir / f"{checkpoint_id}_state.pkl"
-            with open(state_file, 'wb') as f:
-                pickle.dump(scan_state, f)
+            # Also save scan state as JSON
+            state_file = self._checkpoint_dir / f"{checkpoint_id}_state.json"
+            with open(state_file, 'w', encoding='utf-8') as f:
+                json.dump(scan_state, f, default=str)
                 
             self._current_checkpoint = checkpoint
             return checkpoint_id
@@ -112,7 +111,7 @@ class ScanManager:
     def load_checkpoint(self, checkpoint_id: str) -> Dict[str, Any]:
         """Load scan state from checkpoint."""
         checkpoint_file = self._checkpoint_dir / f"{checkpoint_id}.json"
-        state_file = self._checkpoint_dir / f"{checkpoint_id}_state.pkl"
+        state_file = self._checkpoint_dir / f"{checkpoint_id}_state.json"
         
         if not checkpoint_file.exists():
             raise FileNotFoundError(f"Checkpoint {checkpoint_id} not found")
@@ -127,8 +126,8 @@ class ScanManager:
             # Load scan state
             scan_state = {}
             if state_file.exists():
-                with open(state_file, 'rb') as f:
-                    scan_state = pickle.load(f)
+                with open(state_file, 'r', encoding='utf-8') as f:
+                    scan_state = json.load(f)
             
             # Restore progress tracking
             with self._progress_lock:
@@ -215,7 +214,7 @@ class ScanManager:
         checkpoints = []
         
         for checkpoint_file in self._checkpoint_dir.glob("*.json"):
-            if not checkpoint_file.name.endswith("_state.pkl"):
+            if not checkpoint_file.name.endswith("_state.json"):
                 try:
                     with open(checkpoint_file, 'r', encoding='utf-8') as f:
                         checkpoint_data = json.load(f)
@@ -231,7 +230,7 @@ class ScanManager:
     def delete_checkpoint(self, checkpoint_id: str) -> bool:
         """Delete a specific checkpoint."""
         checkpoint_file = self._checkpoint_dir / f"{checkpoint_id}.json"
-        state_file = self._checkpoint_dir / f"{checkpoint_id}_state.pkl"
+        state_file = self._checkpoint_dir / f"{checkpoint_id}_state.json"
         
         deleted = False
         

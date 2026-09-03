@@ -4,10 +4,9 @@ import os
 import sys
 import logging
 from pathlib import Path
-from typing import List, Dict, Optional, Tuple, Set
+from typing import List, Dict, Optional, Tuple
 from dataclasses import dataclass
 from datetime import datetime
-from concurrent.futures import ThreadPoolExecutor, as_completed
 import threading
 
 from cortex_unified.core.utils import normalize_path
@@ -33,6 +32,8 @@ class BrokenSymlink(BrokenLink):
     
     def __post_init__(self):
         self.link_type = "symlink"
+        """__post_init__."""
+        """__post_init__."""
 
 @dataclass
 class BrokenShortcut(BrokenLink):
@@ -43,6 +44,8 @@ class BrokenShortcut(BrokenLink):
     
     def __post_init__(self):
         self.link_type = "shortcut"
+        """__post_init__."""
+        """__post_init__."""
 
 @dataclass
 class BrokenRegistryRef(BrokenLink):
@@ -52,6 +55,8 @@ class BrokenRegistryRef(BrokenLink):
     
     def __post_init__(self):
         self.link_type = "registry_ref"
+        """__post_init__."""
+        """__post_init__."""
 
 @dataclass
 class RepairResult:
@@ -62,6 +67,144 @@ class RepairResult:
     backup_created: bool = False
     backup_path: Optional[Path] = None
     error_message: str = ""
+
+
+@dataclass
+class RepairOutcome:
+    """Per-item outcome of a :func:`repair` run."""
+    path: Path
+    action: str
+    ok: bool
+    detail: str = ""
+
+
+def _is_reparse_link(path: Path) -> bool:
+    """True when *path* is itself a link (symlink or Windows junction).
+
+    Never true for real files or directories, which lets callers remove the
+    link entry without ever touching the thing it points at.
+    """
+    try:
+        if path.is_symlink():
+            return True
+        if sys.platform.startswith("win"):
+            import stat as _stat
+            st = os.lstat(path)
+            return getattr(st, "st_reparse_tag", 0) == _stat.IO_REPARSE_TAG_MOUNT_POINT
+    except (OSError, ValueError):
+        return False
+    return False
+
+
+def _resolve_send2trash():
+    """Return ``send2trash`` or ``None`` when the package is unavailable."""
+    try:
+        from send2trash import send2trash  # noqa: PLC0415 - optional dependency
+        return send2trash
+    except ImportError:
+        return None
+
+
+def repair(items, use_trash=True, dry_run=True) -> List[RepairOutcome]:
+    """Safely clean up broken links found by a scan.
+
+    Only two safe actions are ever taken:
+
+    * broken ``.lnk`` shortcuts -> moved to the Recycle Bin (``send2trash``)
+      when ``use_trash`` is set; otherwise unlinked.
+    * dangling symlinks / junctions -> the LINK ONLY is removed
+      (``os.unlink``, or ``os.rmdir`` on junction/dir-link paths). Real
+      directories are never touched and ``shutil.rmtree`` is never used.
+
+    Registry-reference items are never modified; they are excluded with an
+    explanation because registry edits require manual review.
+
+    Args:
+        items: BrokenLink instances (or anything with ``path``/``link_type``).
+        use_trash: Route shortcut removal through the Recycle Bin.
+        dry_run: When True (the default) nothing is changed; each outcome
+            reports the action that would be taken.
+
+    Returns:
+        One :class:`RepairOutcome` per input item.
+    """
+    outcomes: List[RepairOutcome] = []
+    send2trash = _resolve_send2trash() if use_trash else None
+
+    for item in items:
+        path = Path(getattr(item, "path", item))
+        link_type = getattr(item, "link_type", "")
+
+        try:
+            # -- Registry references: hands off, always -------------------
+            if isinstance(item, BrokenRegistryRef) or link_type == "registry_ref":
+                outcomes.append(RepairOutcome(
+                    path=path, action="excluded", ok=False,
+                    detail="registry refs require manual review"))
+                continue
+
+            # -- Broken .lnk shortcuts ------------------------------------
+            if isinstance(item, BrokenShortcut) or link_type == "shortcut":
+                if not path.is_file() and not path.is_symlink():
+                    outcomes.append(RepairOutcome(
+                        path=path, action="skipped", ok=False,
+                        detail="shortcut file not found"))
+                    continue
+                if dry_run:
+                    outcomes.append(RepairOutcome(
+                        path=path, action="recycle shortcut", ok=True,
+                        detail="planned: move .lnk to Recycle Bin"))
+                    continue
+                if use_trash:
+                    if send2trash is None:
+                        outcomes.append(RepairOutcome(
+                            path=path, action="failed", ok=False,
+                            detail="send2trash not installed; cannot recycle"))
+                        continue
+                    send2trash(str(path))
+                    outcomes.append(RepairOutcome(
+                        path=path, action="recycle shortcut", ok=True,
+                        detail="moved to Recycle Bin"))
+                else:
+                    os.unlink(str(path))
+                    outcomes.append(RepairOutcome(
+                        path=path, action="delete shortcut", ok=True,
+                        detail="shortcut deleted"))
+                continue
+
+            # -- Dangling symlinks / junctions -----------------------------
+            if isinstance(item, BrokenSymlink) or link_type == "symlink" \
+                    or link_type in ("junction", "mount_point"):
+                if not _is_reparse_link(path):
+                    outcomes.append(RepairOutcome(
+                        path=path, action="skipped", ok=False,
+                        detail="not a link; refusing to touch real file or folder"))
+                    continue
+                if dry_run:
+                    action = "remove junction" if link_type == "junction" else "remove symlink"
+                    outcomes.append(RepairOutcome(
+                        path=path, action=action, ok=True,
+                        detail="planned: remove link only"))
+                    continue
+                try:
+                    os.unlink(str(path))          # file symlink / junction
+                except OSError:
+                    os.rmdir(str(path))           # dir symlink: removes link only
+                outcomes.append(RepairOutcome(
+                    path=path, action="remove symlink", ok=True,
+                    detail="link removed"))
+                continue
+
+            # -- Anything else: unsupported -------------------------------
+            outcomes.append(RepairOutcome(
+                path=path, action="skipped", ok=False,
+                detail=f"unsupported link type: {link_type or type(item).__name__}"))
+
+        except Exception as exc:  # noqa: BLE001 - one bad item must stop the rest
+            outcomes.append(RepairOutcome(
+                path=path, action="failed", ok=False, detail=str(exc)))
+
+    return outcomes
 
 class BrokenLinkDetector:
     """Detector for broken symlinks, shortcuts, and registry references."""
@@ -114,11 +257,9 @@ class BrokenLinkDetector:
     
     def _should_exclude_path(self, path: Path) -> bool:
         """Check if a path should be excluded based on patterns."""
-        # Check exclude directories by name
         if path.name in self.exclude_dirs:
             return True
         
-        # Check exclude patterns
         path_str = str(path)
         path_name = path.name
         
@@ -162,7 +303,6 @@ class BrokenLinkDetector:
                     break
                 root_path = Path(root)
                 
-                # Check if we should exclude this directory
                 if self._should_exclude_path(root_path):
                     dirs.clear()  # Don't recurse into excluded directories
                     continue
@@ -178,7 +318,6 @@ class BrokenLinkDetector:
                     
                     try:
                         if entry_path.is_symlink():
-                            # Get the target of the symlink
                             try:
                                 target = os.readlink(entry_path)
                                 is_absolute = os.path.isabs(target)
@@ -189,7 +328,6 @@ class BrokenLinkDetector:
                                 else:
                                     resolved_target = (entry_path.parent / target).resolve()
                                 
-                                # Check if target exists
                                 if not resolved_target.exists():
                                     size, created, accessed = self._get_file_stats(entry_path)
                                     
@@ -204,7 +342,6 @@ class BrokenLinkDetector:
                                         error_message=f"Target does not exist: {resolved_target}"
                                     )
                                     
-                                    # Calculate repairability and confidence
                                     broken_link.is_repairable = self._assess_symlink_repairability(broken_link)
                                     broken_link.confidence_score = self._calculate_confidence_score(broken_link)
                                     
@@ -241,7 +378,6 @@ class BrokenLinkDetector:
             return broken_shortcuts
         
         try:
-            # Find all .lnk files
             checked = 0
             for lnk_file in scan_path.rglob("*.lnk"):
                 if self._cancelled():
@@ -274,7 +410,6 @@ class BrokenLinkDetector:
                             error_message=f"Target does not exist: {shortcut_info.get('target', '')}"
                         )
                         
-                        # Calculate repairability and confidence
                         broken_shortcut.is_repairable = self._assess_shortcut_repairability(broken_shortcut)
                         broken_shortcut.confidence_score = self._calculate_confidence_score(broken_shortcut)
                         
@@ -299,10 +434,10 @@ class BrokenLinkDetector:
             return self._analyze_shortcut_basic(lnk_path)
         
         try:
-            # Initialize COM
+            # COM must be initialized on whichever thread creates the
+            # WScript.Shell object; MTA/STA state is per-thread.
             self.pythoncom.CoInitialize()
             
-            # Create shell object
             shell = self.win32com.client.Dispatch("WScript.Shell")
             shortcut = shell.CreateShortCut(str(lnk_path))
             
@@ -311,7 +446,6 @@ class BrokenLinkDetector:
             arguments = shortcut.Arguments
             icon_path = shortcut.IconLocation
             
-            # Check if target exists
             target_exists = False
             if target:
                 target_path = Path(target)
@@ -332,7 +466,7 @@ class BrokenLinkDetector:
         finally:
             try:
                 self.pythoncom.CoUninitialize()
-            except:
+            except Exception:
                 pass
     
     def _analyze_shortcut_basic(self, lnk_path: Path) -> Optional[Dict]:
@@ -404,7 +538,6 @@ class BrokenLinkDetector:
                         value_name, value_data, value_type = self.winreg.EnumValue(key, i)
                         i += 1
                         
-                        # Check if the value contains a file path
                         if isinstance(value_data, str) and ('\\' in value_data or '/' in value_data):
                             # Extract potential file paths from the value
                             potential_paths = self._extract_paths_from_string(value_data)
@@ -459,7 +592,6 @@ class BrokenLinkDetector:
             if re.match(r'^[A-Za-z]:\\', part):
                 # Clean up the path
                 path = part.strip('"').strip("'").strip()
-                # Remove trailing non-path characters
                 path = re.sub(r'[^\w\\\.:/-]+$', '', path)
                 if len(path) > 3 and '\\' in path and path not in paths:
                     paths.append(path)
@@ -475,14 +607,16 @@ class BrokenLinkDetector:
         return paths
     
     def _assess_symlink_repairability(self, broken_link: BrokenSymlink) -> bool:
-        """Assess if a broken symlink can potentially be repaired."""
-        # Check if we can find potential targets
+        """True when a plausible new target for the symlink exists.
+
+        A moved-but-present target means repair is just a retarget; with no
+        candidates there is nothing sane to point the link at.
+        """
         potential_targets = self.find_moved_targets(broken_link.target)
         return len(potential_targets) > 0
     
     def _assess_shortcut_repairability(self, broken_shortcut: BrokenShortcut) -> bool:
-        """Assess if a broken shortcut can potentially be repaired."""
-        # Check if we can find potential targets
+        """True when a plausible new target for the shortcut exists."""
         potential_targets = self.find_moved_targets(broken_shortcut.target)
         return len(potential_targets) > 0
     
@@ -578,13 +712,17 @@ class BrokenLinkDetector:
             if user_dir.exists():
                 search_locations.append(user_dir)
         
-        # 3. Program Files directories (Windows)
+        # 3. Program Files & AppData directories (Windows)
         if self.is_windows:
+            program_files = os.environ.get("ProgramFiles", r"C:\Program Files")
+            program_files_x86 = os.environ.get("ProgramFiles(x86)", r"C:\Program Files (x86)")
+            local_app_data = os.environ.get("LOCALAPPDATA", str(home / "AppData" / "Local"))
+            app_data = os.environ.get("APPDATA", str(home / "AppData" / "Roaming"))
             program_dirs = [
-                Path("C:/Program Files"),
-                Path("C:/Program Files (x86)"),
-                Path(f"C:/Users/{os.getenv('USERNAME', '')}/AppData/Local"),
-                Path(f"C:/Users/{os.getenv('USERNAME', '')}/AppData/Roaming")
+                Path(program_files),
+                Path(program_files_x86),
+                Path(local_app_data),
+                Path(app_data)
             ]
             
             for prog_dir in program_dirs:
@@ -607,10 +745,8 @@ class BrokenLinkDetector:
         return search_locations
     
     def attempt_repair(self, broken_link: BrokenLink) -> RepairResult:
-        """Attempt to repair a broken link."""
         self.logger.info(f"Attempting to repair broken link: {broken_link.path}")
         
-        # Find potential targets
         potential_targets = self.find_moved_targets(broken_link.target)
         
         if not potential_targets:
@@ -623,7 +759,6 @@ class BrokenLinkDetector:
         # Use the first (most likely) target
         new_target = potential_targets[0]
         
-        # Create backup before attempting repair
         backup_result = self._create_backup(broken_link.path)
         
         try:
@@ -649,6 +784,8 @@ class BrokenLinkDetector:
                 backup_path=backup_result.get('backup_path'),
                 error_message=str(e)
             )
+        """attempt_repair."""
+        """attempt_repair."""
     
     def _create_backup(self, original_path: Path) -> Dict:
         """Create a backup of the original link before repair."""
@@ -679,10 +816,8 @@ class BrokenLinkDetector:
     def _repair_symlink(self, broken_link: BrokenSymlink, new_target: str, backup_result: Dict) -> RepairResult:
         """Repair a broken symlink."""
         try:
-            # Remove the broken symlink
             broken_link.path.unlink()
             
-            # Create new symlink with updated target
             broken_link.path.symlink_to(new_target)
             
             return RepairResult(
@@ -714,14 +849,14 @@ class BrokenLinkDetector:
             )
         
         try:
-            # Initialize COM
+            # COM must be initialized on whichever thread creates the
+            # WScript.Shell object; MTA/STA state is per-thread.
             self.pythoncom.CoInitialize()
             
             # Create shell object and load shortcut
             shell = self.win32com.client.Dispatch("WScript.Shell")
             shortcut = shell.CreateShortCut(str(broken_shortcut.path))
             
-            # Update the target
             shortcut.Targetpath = new_target
             
             # Preserve other properties if they exist
@@ -732,7 +867,6 @@ class BrokenLinkDetector:
             if broken_shortcut.icon_path:
                 shortcut.IconLocation = broken_shortcut.icon_path
             
-            # Save the updated shortcut
             shortcut.save()
             
             return RepairResult(
@@ -755,7 +889,7 @@ class BrokenLinkDetector:
         finally:
             try:
                 self.pythoncom.CoUninitialize()
-            except:
+            except Exception:
                 pass
     
     def _repair_registry_ref(self, broken_ref: BrokenRegistryRef, new_target: str, backup_result: Dict) -> RepairResult:
@@ -822,7 +956,6 @@ class BrokenLinkDetector:
         """
         self.logger.info(f"Starting broken link scan in: {path}")
 
-        # Reset counters
         self.scan_count = 0
         self.error_count = 0
         self.broken_links.clear()
@@ -851,6 +984,8 @@ class BrokenLinkDetector:
     def _cancelled(self) -> bool:
         ev = getattr(self, "_cancel_event", None)
         return ev is not None and ev.is_set()
+        """_cancelled."""
+        """_cancelled."""
 
     def _emit(self, text: str) -> None:
         cb = getattr(self, "_progress", None)
@@ -859,6 +994,8 @@ class BrokenLinkDetector:
                 cb(text)
             except Exception:  # noqa: BLE001 - never let UI callback break the scan
                 pass
+        """_emit."""
+        """_emit."""
     
     def get_scan_statistics(self) -> Dict[str, int]:
         """Get statistics about the last scan."""

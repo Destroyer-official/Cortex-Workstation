@@ -2,7 +2,6 @@
 Settings integration for performance optimization and throttling logic.
 """
 
-from typing import Dict, Any, Optional
 import logging
 
 try:
@@ -30,6 +29,8 @@ class PerformanceSettingsWidget(QWidget):
         
         self.setup_ui()
         self.load_settings()
+        """__init__."""
+        """__init__."""
 
     def setup_ui(self):
         """Build the UI structure mirroring old properties natively."""
@@ -133,6 +134,8 @@ class PerformanceManager:
         self.throttler = ResourceThrottler()
         
         self.load_saved_settings()
+        """__init__."""
+        """__init__."""
 
     def load_saved_settings(self):
         if not self.settings: return
@@ -149,6 +152,8 @@ class PerformanceManager:
             self.apply_properties(properties)
         except Exception as e:
             self.logger.error(f"Error loading performance states: {e}")
+        """load_saved_settings."""
+        """load_saved_settings."""
 
     def apply_properties(self, properties: dict):
         """Translates basic dictionary states into core optimization classes natively."""
@@ -178,6 +183,8 @@ class PerformanceManager:
         if HAS_PYSIDE6:
             return PerformanceSettingsWidget(parent)
         return None
+        """create_settings_widget."""
+        """create_settings_widget."""
 
 _perf_manager = None
 def get_performance_manager() -> PerformanceManager:
@@ -185,3 +192,5 @@ def get_performance_manager() -> PerformanceManager:
     if _perf_manager is None:
         _perf_manager = PerformanceManager()
     return _perf_manager
+    """get_performance_manager."""
+    """get_performance_manager."""

@@ -6,7 +6,6 @@ and provides safe uninstallation + silent uninstall support.
 
 import subprocess
 import logging
-import os
 from typing import List, Dict, Any, Optional
 
 
@@ -21,6 +20,7 @@ class AppUninstaller:
     ]
 
     def __init__(self):
+        """Initialize App Uninstaller."""
         self.logger = logging.getLogger("app_uninstaller")
 
     # ------------------------------------------------------------------
@@ -141,6 +141,8 @@ class AppUninstaller:
                 return winreg.QueryValueEx(sk, name)[0]
             except (FileNotFoundError, OSError):
                 return default
+            """_val."""
+            """_val."""
 
         try:
             display_name = _val("DisplayName")

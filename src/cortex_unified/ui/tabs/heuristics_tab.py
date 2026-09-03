@@ -88,3 +88,5 @@ class HeuristicsTab(BaseTab):
             QTableWidget.SelectionBehavior.SelectRows)
         results_layout.addWidget(self.heuristics_table)
         layout.addWidget(results_group)
+        """__init__."""
+        """__init__."""

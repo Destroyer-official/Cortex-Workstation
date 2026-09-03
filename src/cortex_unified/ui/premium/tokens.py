@@ -142,6 +142,7 @@ def _rel_luminance(color: str) -> float:
         return 0.0
 
     def _lin(channel: int) -> float:
+        """_lin."""
         c = channel / 255.0
         return c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4
 

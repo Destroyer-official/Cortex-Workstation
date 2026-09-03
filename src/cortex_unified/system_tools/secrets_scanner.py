@@ -1,24 +1,21 @@
-#!/usr/bin/env python3
-"""
-╔═══════════════════════════════════════════════════════════════════════════════╗
-║  SENTINEL PRO v2.0  — Enterprise Data Security & Secrets Scanner             ║
-║  The only filesystem scanner that knows if the key STILL WORKS               ║
-╚═══════════════════════════════════════════════════════════════════════════════╝
+"""Filesystem secrets scanner with live credential validation.
 
-  ★ 90+ Detection Patterns  — secrets, PII, crypto, MCP configs, K8s, Terraform
-  ★ Live Credential Verification — AWS · GitHub · Stripe · Slack · OpenAI · npm
-  ★ Blast Radius Assessment     — what an attacker CAN DO with each key
-  ★ Archive Scanning            — zip · tar · tar.gz · tar.bz2 (git misses these)
-  ★ Baseline / Delta Mode       — show only NEW findings since last scan
-  ★ False Positive Management   — persistent suppression database
-  ★ Context-Aware Confidence    — test fixtures ≠ production keys
-  ★ Web Dashboard               — sentinel serve --port 8080 (CISO-ready UI)
-  ★ Jira / GitHub Issues        — auto-create tickets from findings
-  ★ Git History Scan            — walk all commits, not just working tree
-  ★ Self-Contained HTML Report  — send to auditor, no extra files
-  ★ GDPR · HIPAA · PCI-DSS · SOC2 compliance mapping
-  ★ CI/CD mode with severity-gated exit codes
-  ★ Air-gap ready — zero external calls at scan time (verify flag is opt-in)
+Detects hardcoded credentials and sensitive data (API keys, tokens,
+private keys, PII, infrastructure config) using 90+ regex patterns, then
+grades each finding by context-aware confidence -- a key in a test fixture
+is treated differently from the same key in production code.
+
+Capabilities:
+* Archive scanning: zip/tar/tar.gz/tar.bz2 trees that a plain git scan misses.
+* Optional live verification against provider APIs (AWS, GitHub, Stripe,
+  Slack, OpenAI, npm). Off by default so scanning stays air-gap safe; the
+  only network traffic happens when ``--verify`` is explicitly passed.
+* Blast-radius assessment: what an attacker could do with each exposed key.
+* Git history mode: walks all commits, not just the working tree.
+* Baseline/delta mode: report only findings newer than a saved baseline.
+* Persistent false-positive suppression database.
+* Self-contained HTML report plus Jira/GitHub issue export.
+* Compliance mapping (GDPR/HIPAA/PCI-DSS/SOC2) for audit workflows.
 
 Usage:
   sentinel_pro.py scan /path/to/scan
@@ -32,10 +29,8 @@ Usage:
   sentinel_pro.py serve --port 8080
   sentinel_pro.py fp add <finding-id>
   sentinel_pro.py fp list
-
-Markets: GDPR/HIPAA compliance · DevSecOps · IR forensics
-         M&A due diligence · air-gapped enterprise · penetration testing
 """
+
 
 from __future__ import annotations
 
@@ -46,18 +41,16 @@ import fnmatch
 import hashlib
 import hmac
 import http.server
-import io
 import json
 import math
 import mmap
 import os
 import re
-import sqlite3
 import subprocess
 import sys
 import csv
+import html as html_mod
 import tarfile
-import threading
 import time
 import urllib.request
 import urllib.error
@@ -65,7 +58,7 @@ import zipfile
 from dataclasses import dataclass, field, asdict
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Any, Set
+from typing import Dict, List, Optional, Tuple, Any
 
 # ─── Optional dependencies ────────────────────────────────────────────────────
 try:
@@ -125,6 +118,7 @@ FP_DB_FILENAME    = ".sentinel-fp.json"
 
 @dataclass
 class DetectionPattern:
+    """Detection Pattern data container."""
     name: str
     regex: re.Pattern
     severity: str
@@ -136,6 +130,7 @@ class DetectionPattern:
 
 @dataclass
 class Finding:
+    """Finding data container."""
     file_path: str
     line_number: int
     line_preview: str
@@ -153,20 +148,24 @@ class Finding:
     blast_radius: Optional[str] = None
 
     def to_dict(self) -> Dict[str, Any]:
+        """To dict."""
         return asdict(self)
 
     @property
     def severity_rank(self) -> int:
+        """Severity rank."""
         return SEVERITY_ORDER.get(self.severity, 0)
 
     @property
     def fingerprint(self) -> str:
+        """Fingerprint."""
         return hashlib.sha256(
             f"{self.file_path}|{self.pattern_name}|{self.match_preview}".encode()
         ).hexdigest()[:16]
 
 @dataclass
 class ScanStats:
+    """Scan Stats data container."""
     directory: str
     scan_time: str
     duration_seconds: float
@@ -183,19 +182,32 @@ class ScanStats:
     delta_resolved: int = 0
 
     @property
-    def critical(self)     -> List[Finding]: return [f for f in self.findings if f.severity == "CRITICAL"]
+    def critical(self)     -> List[Finding]:
+        """Critical."""
+        return [f for f in self.findings if f.severity == "CRITICAL"]
     @property
-    def high(self)         -> List[Finding]: return [f for f in self.findings if f.severity == "HIGH"]
+    def high(self)         -> List[Finding]:
+        """High."""
+        return [f for f in self.findings if f.severity == "HIGH"]
     @property
-    def medium(self)       -> List[Finding]: return [f for f in self.findings if f.severity == "MEDIUM"]
+    def medium(self)       -> List[Finding]:
+        """Medium."""
+        return [f for f in self.findings if f.severity == "MEDIUM"]
     @property
-    def low(self)          -> List[Finding]: return [f for f in self.findings if f.severity == "LOW"]
+    def low(self)          -> List[Finding]:
+        """Low."""
+        return [f for f in self.findings if f.severity == "LOW"]
     @property
-    def unique_files(self) -> int:           return len({f.file_path for f in self.findings})
+    def unique_files(self) -> int:
+        """Unique files."""
+        return len({f.file_path for f in self.findings})
     @property
-    def live_credentials(self) -> List[Finding]: return [f for f in self.findings if f.verified is True]
+    def live_credentials(self) -> List[Finding]:
+        """Live credentials."""
+        return [f for f in self.findings if f.verified is True]
 
     def to_dict(self) -> Dict[str, Any]:
+        """To dict."""
         d = asdict(self)
         d["summary"] = {
             "critical": len(self.critical), "high": len(self.high),
@@ -207,6 +219,7 @@ class ScanStats:
 
 @dataclass
 class VerificationResult:
+    """Verification Result data container."""
     finding_id: str
     pattern_name: str
     is_live: Optional[bool]
@@ -217,6 +230,7 @@ class VerificationResult:
 
     @property
     def status_emoji(self) -> str:
+        """Status emoji."""
         if self.is_live is True:  return "🔴 LIVE"
         if self.is_live is False: return "✅ REVOKED"
         return "❓ UNVERIFIED"
@@ -225,12 +239,14 @@ class VerificationResult:
 
 def _p(pattern: str, flags: int = 0) -> re.Pattern:
     return re.compile(pattern.encode(), flags | re.IGNORECASE)
+    """_p."""
+    """_p."""
 
 # ─── Detection Patterns — 90+ Precision Patterns ─────────────────────────────
 
 PATTERNS: List[DetectionPattern] = [
 
-    # ══ Cloud Provider Credentials ═══════════════════════════════════════════
+    # Cloud Provider Credentials ═══════════════════════════════════════════
 
     DetectionPattern(
         name="AWS Access Key ID",
@@ -476,7 +492,7 @@ PATTERNS: List[DetectionPattern] = [
         remediation="Rotate in Splunk Settings → Data Inputs → HTTP Event Collector.",
     ),
 
-    # ══ Production Database Credentials ══════════════════════════════════════
+    # Production Database Credentials ══════════════════════════════════════
 
     DetectionPattern(
         name="Production Database URL (with credentials)",
@@ -524,7 +540,7 @@ PATTERNS: List[DetectionPattern] = [
         ),
     ),
 
-    # ══ Private Key Material ══════════════════════════════════════════════════
+    # Private Key Material ══════════════════════════════════════════════════
 
     DetectionPattern(
         name="RSA Private Key",
@@ -571,7 +587,7 @@ PATTERNS: List[DetectionPattern] = [
         remediation="Revoke associated certificates/identities. Generate new key material.",
     ),
 
-    # ══ PII — Personally Identifiable Information ═════════════════════════════
+    # PII — Personally Identifiable Information ═════════════════════════════
 
     DetectionPattern(
         name="US Social Security Number (SSN)",
@@ -642,7 +658,7 @@ PATTERNS: List[DetectionPattern] = [
         remediation="Encrypt at rest. Assess data minimization — is DOB actually required for this use case?",
     ),
 
-    # ══ Configuration & Infrastructure Vulnerabilities ════════════════════════
+    # Configuration & Infrastructure Vulnerabilities ════════════════════════
 
     DetectionPattern(
         name="Debug Mode Enabled (Production Risk)",
@@ -705,7 +721,7 @@ PATTERNS: List[DetectionPattern] = [
         redact=False,
     ),
 
-    # ══ Infrastructure-as-Code Secrets ════════════════════════════════════════
+    # Infrastructure-as-Code Secrets ════════════════════════════════════════
 
     DetectionPattern(
         name="Kubernetes Secret Manifest (Base64 data)",
@@ -748,7 +764,7 @@ PATTERNS: List[DetectionPattern] = [
         remediation="Encrypt with `ansible-vault encrypt_string`. Never store Ansible passwords in plaintext.",
     ),
 
-    # ══ MCP / AI Tool Config Files — 2025 Attack Surface ═════════════════════
+    # MCP / AI Tool Config Files — 2025 Attack Surface ═════════════════════
 
     DetectionPattern(
         name="MCP Config — API Key in MCP Server Config",
@@ -767,7 +783,7 @@ PATTERNS: List[DetectionPattern] = [
         ),
     ),
 
-    # ══ Network Credentials ═══════════════════════════════════════════════════
+    # Network Credentials ═══════════════════════════════════════════════════
 
     DetectionPattern(
         name="FTP Credentials in URL",
@@ -791,9 +807,86 @@ PATTERNS: List[DetectionPattern] = [
         remediation="Verify bucket ACL with `aws s3api get-bucket-acl`. Disable public access unless intentional.",
         redact=False,
     ),
+    DetectionPattern(
+        name="Google Gemini / PaLM API Key",
+        regex=_p(r"AIza[0-9A-Za-z_\-]{30,}"),
+        severity="CRITICAL", category="SECRET", compliance=["SOC2"],
+        description="Google AI API key (Gemini/PaLM). Grants access to Gemini models with billing implications.",
+        remediation=(
+            "1. Revoke at console.cloud.google.com/apis/credentials.\n"
+            "2. Audit usage in Cloud Console.\n"
+            "3. Store in environment variables. Never commit."
+        ),
+    ),
+    DetectionPattern(
+        name="Groq API Key",
+        regex=_p(r"gsk_[A-Za-z0-9]{40,}"),
+        severity="CRITICAL", category="SECRET", compliance=["SOC2"],
+        description="Groq API key. Grants access to Groq inference with billing implications.",
+        remediation=(
+            "1. Rotate at console.groq.com/keys.\n"
+            "2. Review usage logs for unauthorized requests.\n"
+            "3. Store in environment variables. Never commit."
+        ),
+    ),
+    DetectionPattern(
+        name="Mistral API Key",
+        regex=_p(r"(?:mistral-)?[A-Za-z0-9]{40,}"),
+        severity="MEDIUM", category="SECRET", compliance=["SOC2"],
+        description="Possible Mistral API key. Verify at console.mistral.ai.",
+        remediation=(
+            "1. Check if this is a real Mistral key at console.mistral.ai/api-keys.\n"
+            "2. If valid, rotate immediately.\n"
+            "3. Store in environment variables. Never commit."
+        ),
+    ),
+    DetectionPattern(
+        name="Replicate API Token",
+        regex=_p(r"r8_[A-Za-z0-9]{40,}"),
+        severity="CRITICAL", category="SECRET", compliance=["SOC2"],
+        description="Replicate API token. Grants access to ML model inference with billing implications.",
+        remediation=(
+            "1. Rotate at replicate.com/account/api-tokens.\n"
+            "2. Review usage logs for unauthorized requests.\n"
+            "3. Store in environment variables. Never commit."
+        ),
+    ),
+    DetectionPattern(
+        name="Together AI API Key",
+        regex=_p(r"tok_[A-Za-z0-9]{40,}"),
+        severity="CRITICAL", category="SECRET", compliance=["SOC2"],
+        description="Together AI API key. Grants access to ML inference with billing implications.",
+        remediation=(
+            "1. Rotate at api.together.xyz/settings/api-keys.\n"
+            "2. Review usage logs for unauthorized requests.\n"
+            "3. Store in environment variables. Never commit."
+        ),
+    ),
+    DetectionPattern(
+        name="DeepSeek API Key",
+        regex=_p(r"sk-[a-f0-9]{32,}"),
+        severity="MEDIUM", category="SECRET", compliance=["SOC2"],
+        description="Possible DeepSeek API key. Verify at platform.deepseek.com.",
+        remediation=(
+            "1. Check if this is a real DeepSeek key at platform.deepseek.com.\n"
+            "2. If valid, rotate immediately.\n"
+            "3. Store in environment variables. Never commit."
+        ),
+    ),
+    DetectionPattern(
+        name="xAI / Grok API Key",
+        regex=_p(r"xai-[A-Za-z0-9]{40,}"),
+        severity="CRITICAL", category="SECRET", compliance=["SOC2"],
+        description="xAI (Grok) API key. Grants access to Grok models with billing implications.",
+        remediation=(
+            "1. Rotate at console.x.ai/api-keys.\n"
+            "2. Review usage logs for unauthorized requests.\n"
+            "3. Store in environment variables. Never commit."
+        ),
+    ),
 ]
 
-# ══ High-entropy secret detection (Shannon entropy) ═══════════════════════════
+# High-entropy secret detection (Shannon entropy) ═══════════════════════════
 
 def _shannon_entropy(data: bytes) -> float:
     if not data:
@@ -803,6 +896,8 @@ def _shannon_entropy(data: bytes) -> float:
         freq[b] = freq.get(b, 0) + 1
     length = len(data)
     return -sum((c / length) * math.log2(c / length) for c in freq.values() if c > 0)
+    """_shannon_entropy."""
+    """_shannon_entropy."""
 
 HIGH_ENTROPY_THRESHOLD = 4.5
 HIGH_ENTROPY_MIN_LEN   = 20
@@ -830,6 +925,7 @@ PLACEHOLDER_RE = re.compile(r'^(?:your[_\-]?(?:api[_\-]?key|secret|token|passwor
 COMMENT_LINE_RE = re.compile(r'^\s*(?:#|//|/\*|\*|--|;|rem\s)', re.IGNORECASE)
 
 def compute_confidence(file_path: str, match_preview: str, entropy: float, category: str, line_raw: str = "") -> float:
+    """Compute confidence."""
     confidence = 1.0
     if TEST_PATH_RE.search(file_path):
         confidence *= 0.15
@@ -858,14 +954,19 @@ def _luhn_valid(s: str) -> bool:
     for i, d in enumerate(reversed(digits)):
         total += d if i % 2 == 0 else (d * 2 - 9 if d * 2 > 9 else d * 2)
     return total % 10 == 0
+    """_luhn_valid."""
+    """_luhn_valid."""
 
 def _redact(match: bytes) -> str:
     s = match.decode("utf-8", errors="replace")
     if len(s) <= 8:
         return "***"
     return s[:4] + "***" + s[-4:]
+    """_redact."""
+    """_redact."""
 
 def scan_file_bytes(data: bytes, file_path: str, patterns: List[DetectionPattern]) -> List[Finding]:
+    """Scan file bytes."""
     findings = []
     lines = data.split(b"\n")
     for line_no, line in enumerate(lines, 1):
@@ -898,6 +999,7 @@ def scan_file_bytes(data: bytes, file_path: str, patterns: List[DetectionPattern
     return findings
 
 def scan_single_file(file_path: str, patterns: List[DetectionPattern]) -> Tuple[List[Finding], int]:
+    """Scan single file."""
     try:
         stat = os.stat(file_path)
         size = stat.st_size
@@ -955,6 +1057,7 @@ def walk_files(directory: str, ignores: List[str]) -> Tuple[List[str], int]:
     return files, skipped
 
 def compute_risk_score(findings: List[Finding]) -> int:
+    """Compute risk score."""
     if not findings:
         return 0
     weights = {"CRITICAL": 30, "HIGH": 15, "MEDIUM": 5, "LOW": 1}
@@ -964,6 +1067,7 @@ def compute_risk_score(findings: List[Finding]) -> int:
 
 def run_scan(directory: str, ignores: List[str] = None, max_workers: int = 8,
              severity_filter: List[str] = None, quiet: bool = False) -> ScanStats:
+    """Run scan."""
     ignores = ignores or []
     t0 = time.time()
     files, skipped = walk_files(directory, ignores)
@@ -1016,8 +1120,11 @@ def _scan_archive_member(data: bytes, virtual_path: str) -> List[Finding]:
     if b"\x00" in data[:512]:
         return []
     return scan_file_bytes(data, virtual_path, PATTERNS)
+    """_scan_archive_member."""
+    """_scan_archive_member."""
 
 def scan_zip(archive_path: str) -> List[Finding]:
+    """Scan zip."""
     findings = []
     try:
         with zipfile.ZipFile(archive_path, 'r') as zf:
@@ -1040,12 +1147,15 @@ def scan_zip(archive_path: str) -> List[Finding]:
     return findings
 
 def scan_tar(archive_path: str) -> List[Finding]:
+    """Scan tar."""
     findings = []
     try:
         with tarfile.open(archive_path, 'r:*') as tf:
             total = 0
             for member in tf.getmembers():
                 if not member.isfile():
+                    continue
+                if os.path.isabs(member.name) or '..' in member.name.split(os.sep):
                     continue
                 ext = Path(member.name).suffix.lower()
                 if ext in SKIP_EXTENSIONS or member.size > MAX_ARCHIVE_FILE_BYTES:
@@ -1067,6 +1177,7 @@ def scan_tar(archive_path: str) -> List[Finding]:
     return findings
 
 def scan_archives(directory: str, quiet: bool = False) -> Tuple[List[Finding], int]:
+    """Scan archives."""
     findings, count = [], 0
     for root, dirs, files in os.walk(directory):
         dirs[:] = [d for d in dirs if d not in {'.git','node_modules','__pycache__'}]
@@ -1144,14 +1255,19 @@ def _http(url: str, headers: dict, data: bytes = None, method: str = "GET", time
         return e.code, {}
     except Exception as e:
         return 0, {"error": str(e)}
+    """_http."""
+    """_http."""
 
 def _vr(finding_id: str, name: str, live: Optional[bool], identity: Optional[str], blast: str, err: Optional[str] = None) -> VerificationResult:
     return VerificationResult(finding_id=finding_id, pattern_name=name, is_live=live, identity=identity, blast_radius=blast, error=err)
+    """_vr."""
+    """_vr."""
 
 def verify_aws(key_id: str, secret: str) -> VerificationResult:
+    """Verify aws."""
     fid = hashlib.md5(f"AWS:{key_id}".encode()).hexdigest()[:8]
     try:
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         amz_date = now.strftime('%Y%m%dT%H%M%SZ')
         date_stamp = now.strftime('%Y%m%d')
         region, service = "us-east-1", "sts"
@@ -1163,7 +1279,9 @@ def verify_aws(key_id: str, secret: str) -> VerificationResult:
         canonical = f"POST\n/\n\n{canonical_headers}\n{signed_headers}\n{payload_hash}"
         scope = f"{date_stamp}/{region}/{service}/aws4_request"
         sts = (f"AWS4-HMAC-SHA256\n{amz_date}\n{scope}\n" + hashlib.sha256(canonical.encode()).hexdigest())
-        def sign(key, msg): return hmac.new(key, msg.encode(), hashlib.sha256).digest()
+        def sign(key, msg):
+            """Sign."""
+            return hmac.new(key, msg.encode(), hashlib.sha256).digest()
         sig_key = sign(sign(sign(sign(f"AWS4{secret}".encode(), date_stamp), region), service), "aws4_request")
         sig = hmac.new(sig_key, sts.encode(), hashlib.sha256).hexdigest()
         auth = f"AWS4-HMAC-SHA256 Credential={key_id}/{scope}, SignedHeaders={signed_headers}, Signature={sig}"
@@ -1186,6 +1304,7 @@ def verify_aws(key_id: str, secret: str) -> VerificationResult:
         return _vr(fid, "AWS Key", None, None, "Verification attempted but failed.", str(e))
 
 def verify_github(token: str) -> VerificationResult:
+    """Verify github."""
     fid = hashlib.md5(f"GH:{token[:10]}".encode()).hexdigest()[:8]
     status, data = _http("https://api.github.com/user", {"Authorization": f"token {token}", "User-Agent": "Sentinel/2.0"})
     if status == 200:
@@ -1197,6 +1316,7 @@ def verify_github(token: str) -> VerificationResult:
     return _vr(fid, "GitHub Token", None, None, "Could not verify.", f"HTTP {status}")
 
 def verify_stripe(key: str) -> VerificationResult:
+    """Verify stripe."""
     fid = hashlib.md5(f"STRIPE:{key[:10]}".encode()).hexdigest()[:8]
     auth = base64.b64encode(f"{key}:".encode()).decode()
     status, data = _http("https://api.stripe.com/v1/balance", {"Authorization": f"Basic {auth}", "User-Agent": "Sentinel/2.0"})
@@ -1211,6 +1331,7 @@ def verify_stripe(key: str) -> VerificationResult:
     return _vr(fid, "Stripe Key", None, None, "Could not verify.", f"HTTP {status}")
 
 def verify_slack(token: str) -> VerificationResult:
+    """Verify slack."""
     fid = hashlib.md5(f"SLACK:{token[:10]}".encode()).hexdigest()[:8]
     status, data = _http("https://slack.com/api/auth.test", {"Authorization": f"Bearer {token}", "User-Agent": "Sentinel/2.0"})
     if status == 200 and data.get("ok"):
@@ -1221,6 +1342,7 @@ def verify_slack(token: str) -> VerificationResult:
     return _vr(fid, "Slack Token", None, None, "Could not verify.", f"HTTP {status}")
 
 def verify_npm(token: str) -> VerificationResult:
+    """Verify npm."""
     fid = hashlib.md5(f"NPM:{token[:10]}".encode()).hexdigest()[:8]
     status, data = _http("https://registry.npmjs.org/-/whoami", {"Authorization": f"Bearer {token}", "User-Agent": "Sentinel/2.0"})
     if status == 200:
@@ -1232,6 +1354,7 @@ def verify_npm(token: str) -> VerificationResult:
     return _vr(fid, "npm Token", None, None, "Could not verify.", f"HTTP {status}")
 
 def verify_openai(key: str) -> VerificationResult:
+    """Verify openai."""
     fid = hashlib.md5(f"OPENAI:{key[:10]}".encode()).hexdigest()[:8]
     status, data = _http("https://api.openai.com/v1/models", {"Authorization": f"Bearer {key}", "User-Agent": "Sentinel/2.0"})
     if status == 200:
@@ -1254,6 +1377,7 @@ VERIFIER_DISPATCH = {
 }
 
 def verify_all_findings(findings: List[Finding], quiet: bool = False) -> Dict[str, VerificationResult]:
+    """Verify all findings."""
     verifiable = [f for f in findings if f.pattern_name in VERIFIER_DISPATCH]
     results = {}
     if not verifiable:
@@ -1278,20 +1402,29 @@ def verify_all_findings(findings: List[Finding], quiet: bool = False) -> Dict[st
         print(f"  ↳ {live} LIVE credential(s) confirmed out of {len(verifiable)} checked", file=sys.stderr)
     return results
 
+def _truncate_secret(value: str) -> str:
+    if len(value) <= 8:
+        return value
+    return value[:4] + '***' + value[-4:]
+    """_truncate_secret."""
+    """_truncate_secret."""
+
 # ─── Baseline / Delta Mode ────────────────────────────────────────────────────
 
 def save_baseline(findings: List[Finding], directory: str) -> str:
+    """Save baseline."""
     path = os.path.join(directory, BASELINE_FILENAME)
     with open(path, 'w') as f:
         json.dump({
             "created_at": datetime.now(timezone.utc).isoformat(),
             "directory": directory,
             "finding_count": len(findings),
-            "fingerprints": {f.fingerprint: f.to_dict() for f in findings},
+            "fingerprints": {f.fingerprint: {**f.to_dict(), "match_preview": _truncate_secret(f.match_preview)} for f in findings},
         }, f, indent=2)
     return path
 
 def load_baseline(directory: str) -> Optional[Dict]:
+    """Load baseline."""
     path = os.path.join(directory, BASELINE_FILENAME)
     if not os.path.exists(path):
         return None
@@ -1299,6 +1432,7 @@ def load_baseline(directory: str) -> Optional[Dict]:
         return json.load(f)
 
 def compute_delta(findings: List[Finding], baseline: Dict) -> Tuple[List[Finding], int]:
+    """Compute delta."""
     known = set(baseline.get("fingerprints", {}).keys())
     new = [f for f in findings if f.fingerprint not in known]
     resolved = len(known - {f.fingerprint for f in findings})
@@ -1308,8 +1442,11 @@ def compute_delta(findings: List[Finding], baseline: Dict) -> Tuple[List[Finding
 
 def _fp_path(directory: str) -> str:
     return os.path.join(directory, FP_DB_FILENAME)
+    """_fp_path."""
+    """_fp_path."""
 
 def load_fp_db(directory: str) -> Dict:
+    """Load fp db."""
     p = _fp_path(directory)
     if os.path.exists(p):
         with open(p) as f:
@@ -1317,16 +1454,19 @@ def load_fp_db(directory: str) -> Dict:
     return {"suppressions": {}}
 
 def save_fp_db(db: Dict, directory: str):
+    """Save fp db."""
     with open(_fp_path(directory), 'w') as f:
         json.dump(db, f, indent=2)
 
 def add_fp(fingerprint: str, directory: str, reason: str = ""):
+    """Add fp."""
     db = load_fp_db(directory)
     db["suppressions"][fingerprint] = {"suppressed_at": datetime.now(timezone.utc).isoformat(), "reason": reason}
     save_fp_db(db, directory)
     print(f"✅ Fingerprint {fingerprint} suppressed in {_fp_path(directory)}")
 
 def apply_fp_filter(findings: List[Finding], directory: str) -> Tuple[List[Finding], int]:
+    """Apply fp filter."""
     db = load_fp_db(directory)
     sups = db.get("suppressions", {})
     kept, suppressed = [], 0
@@ -1340,6 +1480,7 @@ def apply_fp_filter(findings: List[Finding], directory: str) -> Tuple[List[Findi
 # ─── Scan History ─────────────────────────────────────────────────────────────
 
 def save_to_history(stats: ScanStats, live_count: int = 0):
+    """Save to history."""
     os.makedirs(HISTORY_DIR, exist_ok=True)
     scan_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     record = {
@@ -1354,6 +1495,7 @@ def save_to_history(stats: ScanStats, live_count: int = 0):
         json.dump(record, f)
 
 def load_history(limit: int = 20) -> List[Dict]:
+    """Load history."""
     if not os.path.exists(HISTORY_DIR):
         return []
     records = []
@@ -1379,7 +1521,7 @@ def create_jira_ticket(finding: Finding, jira_url: str, jira_user: str, jira_tok
                 f"*Pattern:* {finding.pattern_name}\n"
                 f"*Severity:* {finding.severity}\n"
                 f"*File:* {finding.file_path}:{finding.line_number}\n"
-                f"*Match Preview:* {finding.match_preview}\n"
+                f"*Match Preview:* {_truncate_secret(finding.match_preview)}\n"
                 f"*Compliance:* {', '.join(finding.compliance)}\n\n"
                 f"*Remediation:*\n{finding.remediation}\n\n"
                 f"_Generated by Sentinel v{VERSION}_"
@@ -1414,7 +1556,7 @@ def create_github_issue(finding: Finding, github_token: str, repo: str) -> Optio
             f"| Pattern | `{finding.pattern_name}` |\n"
             f"| Severity | **{finding.severity}** |\n"
             f"| File | `{finding.file_path}:{finding.line_number}` |\n"
-            f"| Match | `{finding.match_preview}` |\n"
+            f"| Match | `{_truncate_secret(finding.match_preview)}` |\n"
             f"| Compliance | {', '.join(finding.compliance)} |\n\n"
             f"### Remediation\n\n```\n{finding.remediation}\n```\n\n"
             f"*Generated by [Sentinel v{VERSION}](https://github.com/sentinel-security/sentinel)*"
@@ -1438,10 +1580,12 @@ def create_github_issue(finding: Finding, github_token: str, repo: str) -> Optio
 # ─── Export Formats ───────────────────────────────────────────────────────────
 
 def export_json(stats: ScanStats, path: str):
+    """Export json."""
     with open(path, 'w') as f:
         json.dump(stats.to_dict(), f, indent=2, default=str)
 
 def export_csv(stats: ScanStats, path: str):
+    """Export csv."""
     fields = ["severity","category","pattern_name","file_path","line_number",
               "match_preview","compliance","remediation","confidence","entropy",
               "verified","identity","blast_radius"]
@@ -1454,6 +1598,7 @@ def export_csv(stats: ScanStats, path: str):
             w.writerow({k: row.get(k, '') for k in fields})
 
 def export_sarif(stats: ScanStats, path: str):
+    """Export sarif."""
     rules = {}
     for p in PATTERNS:
         if p.name not in rules:
@@ -1483,6 +1628,7 @@ def export_sarif(stats: ScanStats, path: str):
         json.dump(sarif, f, indent=2)
 
 def send_slack(stats: ScanStats, webhook_url: str) -> bool:
+    """Send slack."""
     risk_color = "#ef4444" if stats.risk_score >= 70 else "#f97316" if stats.risk_score >= 40 else "#22c55e"
     live = len(stats.live_credentials)
     payload = json.dumps({
@@ -1512,6 +1658,8 @@ def send_slack(stats: ScanStats, webhook_url: str) -> bool:
 # ─── HTML Report Generator ────────────────────────────────────────────────────
 
 def generate_html_report(stats: ScanStats, output_path: str):
+    """Generate html report."""
+    _e = html_mod.escape
     findings_js = json.dumps([f.to_dict() for f in stats.findings], indent=2, default=str)
     history_js = json.dumps(load_history(), indent=2)
     severity_counts = {s: len([f for f in stats.findings if f.severity == s]) for s in SEVERITY_ORDER}
@@ -1665,7 +1813,7 @@ def generate_html_report(stats: ScanStats, output_path: str):
     </div>
   </div>
   <div class="header-meta">
-    <div>Scan Target: <strong>{stats.directory}</strong></div>
+    <div>Scan Target: <strong>{_e(stats.directory)}</strong></div>
     <div>{stats.scan_time}</div>
     <div>{stats.files_scanned:,} files · {stats.duration_seconds}s · {stats.total_bytes_scanned/1024/1024:.1f} MB</div>
   </div>
@@ -1709,29 +1857,29 @@ def generate_html_report(stats: ScanStats, output_path: str):
     else:
         for i, f in enumerate(stats.findings):
             live_html = '<span class="live-badge">⚡ LIVE</span>' if f.verified is True else ''
-            blast_html = f'<div class="blast-block"><div class="blast-title">⚡ Blast Radius</div><div style="font-size:13px;color:var(--text)">{f.blast_radius or ""}</div></div>' if f.blast_radius else ''
-            identity_html = f'<div class="detail-block"><div class="detail-label">Verified Identity</div><div class="detail-value" style="color:var(--accent)">{f.identity or ""}</div></div>' if f.identity else ''
+            blast_html = f'<div class="blast-block"><div class="blast-title">⚡ Blast Radius</div><div style="font-size:13px;color:var(--text)">{_e(f.blast_radius or "")}</div></div>' if f.blast_radius else ''
+            identity_html = f'<div class="detail-block"><div class="detail-label">Verified Identity</div><div class="detail-value" style="color:var(--accent)">{_e(f.identity or "")}</div></div>' if f.identity else ''
             html += f"""
-      <div class="finding-card severity-{f.severity}" data-severity="{f.severity}" data-category="{f.category}" 
-           data-compliance="{','.join(f.compliance)}" data-text="{f.pattern_name} {f.file_path}">
+      <div class="finding-card severity-{_e(f.severity)}" data-severity="{_e(f.severity)}" data-category="{_e(f.category)}" 
+           data-compliance="{','.join(_e(c) for c in f.compliance)}" data-text="{_e(f.pattern_name)} {_e(f.file_path)}">
         <div class="finding-header" onclick="toggleBody({i})">
-          <span class="finding-badge badge-{f.severity}">{f.severity}</span>
+          <span class="finding-badge badge-{_e(f.severity)}">{_e(f.severity)}</span>
           {live_html}
-          <span class="finding-pattern">{f.pattern_name}</span>
-          <span class="finding-file">...{f.file_path[-50:]}:{f.line_number}</span>
+          <span class="finding-pattern">{_e(f.pattern_name)}</span>
+          <span class="finding-file">...{_e(f.file_path[-50:])}:{f.line_number}</span>
           <span class="finding-chevron" id="chevron-{i}">▼</span>
         </div>
         <div class="finding-body" id="body-{i}">
           <div class="finding-detail">
-            <div class="detail-block"><div class="detail-label">Match Preview</div><div class="detail-value">{f.match_preview}</div></div>
-            <div class="detail-block"><div class="detail-label">Category</div><div class="detail-value">{CATEGORY_EMOJI.get(f.category,'')} {f.category}</div></div>
-            <div class="detail-block"><div class="detail-label">File Path</div><div class="detail-value">{f.file_path}</div></div>
+            <div class="detail-block"><div class="detail-label">Match Preview</div><div class="detail-value">{_e(f.match_preview)}</div></div>
+            <div class="detail-block"><div class="detail-label">Category</div><div class="detail-value">{CATEGORY_EMOJI.get(f.category,'')} {_e(f.category)}</div></div>
+            <div class="detail-block"><div class="detail-label">File Path</div><div class="detail-value">{_e(f.file_path)}</div></div>
             <div class="detail-block"><div class="detail-label">Entropy / Confidence</div><div class="detail-value">{f.entropy:.2f} / {f.confidence:.0%}</div></div>
             {identity_html}
-            <div class="detail-block"><div class="detail-label">Compliance</div><div class="compliance-tags">{"".join(f'<span class="compliance-tag">{c}</span>' for c in f.compliance)}</div></div>
+            <div class="detail-block"><div class="detail-label">Compliance</div><div class="compliance-tags">{"".join(f'<span class="compliance-tag">{_e(c)}</span>' for c in f.compliance)}</div></div>
           </div>
-          <div class="code-preview">{f.line_preview or "(no preview)"}</div>
-          <div class="remediation-block"><div class="detail-label">📋 Remediation Steps</div><div style="font-size:13px;white-space:pre-wrap;margin-top:6px">{f.remediation}</div></div>
+          <div class="code-preview">{_e(f.line_preview or "(no preview)")}</div>
+          <div class="remediation-block"><div class="detail-label">📋 Remediation Steps</div><div style="font-size:13px;white-space:pre-wrap;margin-top:6px">{_e(f.remediation)}</div></div>
           {blast_html}
         </div>
       </div>"""
@@ -1818,6 +1966,7 @@ function downloadCSV() {{
 # ─── Terminal Report ──────────────────────────────────────────────────────────
 
 def print_terminal_report(stats: ScanStats):
+    """Print terminal report."""
     if RICH_AVAILABLE:
         console = Console()
         console.print()
@@ -1985,8 +2134,12 @@ function triggerScan() {
 </html>"""
 
 class DashboardHandler(http.server.BaseHTTPRequestHandler):
-    def log_message(self, format, *args): pass  # suppress logs
+    """Dashboard Handler."""
+    def log_message(self, format, *args):
+        """Log message."""
+        pass  # suppress logs
     def do_GET(self):
+        """Do GET."""
         if self.path == '/api/history':
             data = json.dumps(load_history()).encode()
             self.send_response(200)
@@ -2002,9 +2155,10 @@ class DashboardHandler(http.server.BaseHTTPRequestHandler):
             self.wfile.write(html)
 
 def serve_dashboard(port: int = 8080):
+    """Serve dashboard."""
     print(f"\n🌐 Sentinel Dashboard running at http://localhost:{port}")
     print(f"   Press Ctrl+C to stop.\n")
-    server = http.server.HTTPServer(('', port), DashboardHandler)
+    server = http.server.HTTPServer(('127.0.0.1', port), DashboardHandler)
     try:
         server.serve_forever()
     except KeyboardInterrupt:
@@ -2013,6 +2167,7 @@ def serve_dashboard(port: int = 8080):
 # ─── CLI ─────────────────────────────────────────────────────────────────────
 
 def cmd_scan(args):
+    """Cmd scan."""
     directory = os.path.abspath(args.directory)
     if not os.path.isdir(directory):
         print(f"Error: '{directory}' is not a directory.", file=sys.stderr)
@@ -2147,6 +2302,7 @@ def cmd_scan(args):
 
 
 def cmd_baseline(args):
+    """Cmd baseline."""
     directory = os.path.abspath(args.directory)
     if args.baseline_action == "save":
         stats = run_scan(directory=directory, quiet=True)
@@ -2174,6 +2330,7 @@ def cmd_baseline(args):
 
 
 def cmd_fp(args):
+    """Cmd fp."""
     if args.fp_action == "add":
         add_fp(args.fingerprint, os.getcwd(), getattr(args,"reason",""))
     elif args.fp_action == "list":
@@ -2195,6 +2352,7 @@ def cmd_fp(args):
 
 
 def cmd_verify(args):
+    """Cmd verify."""
     with open(args.file) as f:
         data = json.load(f)
     findings_raw = data.get("findings", data) if isinstance(data, dict) else data
@@ -2214,11 +2372,13 @@ def cmd_verify(args):
 
 
 def cmd_serve(args):
+    """Cmd serve."""
     serve_dashboard(getattr(args,"port",8080))
     return 0
 
 
 def cmd_patterns(args):
+    """Cmd patterns."""
     if RICH_AVAILABLE:
         console = Console()
         table = Table(title=f"Sentinel Pro — {len(PATTERNS)} Detection Patterns", box=box.SIMPLE)
@@ -2237,6 +2397,7 @@ def cmd_patterns(args):
 
 
 def build_parser():
+    """Build parser."""
     parser = argparse.ArgumentParser(
         prog="sentinel_pro",
         description=f"Sentinel Pro v{VERSION} — Enterprise Data Security Scanner",
@@ -2298,6 +2459,7 @@ def build_parser():
 
 
 def main() -> int:
+    """Main."""
     parser = build_parser()
     args = parser.parse_args()
 

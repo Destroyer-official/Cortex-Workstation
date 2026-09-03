@@ -141,7 +141,7 @@ class TestLocalRun:
                 assert auth.authorized
                 cfg = HttpLoadConfig(url=f"http://127.0.0.1:{port}/",
                                      concurrency=4, duration_s=2)
-                res = LoadTester().run_http(cfg, auth)
+                res = LoadTester().run_http(cfg, auth, confirm=True)
                 assert res.total > 0
                 assert res.succeeded > 0
                 assert res.rps > 0
@@ -157,6 +157,6 @@ class TestLocalRun:
         cancel.set()  # already cancelled -> should return almost immediately
         cfg = HttpLoadConfig(url="http://127.0.0.1:1/", concurrency=2, duration_s=30)
         t0 = time.monotonic()
-        res = LoadTester().run_http(cfg, auth, cancel_event=cancel)
+        res = LoadTester().run_http(cfg, auth, cancel_event=cancel, confirm=True)
         assert (time.monotonic() - t0) < 10
         assert isinstance(res, LoadResult)

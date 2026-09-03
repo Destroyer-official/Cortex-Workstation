@@ -25,13 +25,20 @@ def app():
 
 @pytest.fixture
 def window(app):
+    import gc
     from cortex_unified.ui.premium.theme import apply_theme
     from cortex_unified.ui.premium.window import PremiumMainWindow
-    apply_theme(app, "dark")
+    if not getattr(app, "_theme_applied", False):
+        apply_theme(app, "dark")
+        app._theme_applied = True
     win = PremiumMainWindow("dark")
     win.resize(1180, 760)
     yield win
+    win._force_quit = True
     win.close()
+    win.deleteLater()
+    app.processEvents()
+    gc.collect()
 
 
 def test_stylesheet_builds_for_both_themes(app):
@@ -43,14 +50,8 @@ def test_stylesheet_builds_for_both_themes(app):
 
 
 def test_all_pages_present(window):
-    assert set(window._pages) == {
-        "dashboard", "health", "duplicates", "photos", "dupfolders", "large", "empty",
-        "analyzer", "brokenlinks", "packages", "updater", "drives", "diskhealth",
-        "bootperf", "winupdate", "repair", "schedule", "performance", "privacy", "startup", "processes", "network",
-        "traffic", "netmap", "landevices", "nettools", "loadtest", "firewall",
-        "extensions", "drivers", "uninstaller", "telemetry", "registry", "security",
-        "storagesense", "secrets", "shred", "backups", "report", "sysinfo", "settings",
-    }
+    from cortex_unified.ui.premium import registry
+    assert set(window._pages) == {p.id for p in registry.PAGES}
 
 
 def test_navigate_every_page(window):
@@ -291,7 +292,7 @@ def test_stat_card_animate_value(app):
 
 def test_shred_page_present_and_wired(window):
     page = window._pages["shred"]
-    assert hasattr(page, "shred_btn") and hasattr(page, "passes")
+    assert hasattr(page, "shred_btn") and hasattr(page, "standard_combo")
     # No file selected yet -> shred action disabled.
     assert page.shred_btn.isEnabled() is False
 
@@ -349,3 +350,822 @@ def test_shred_worker_overwrites_and_removes(app, tmp_path):
     worker.run()
     assert captured.get("outcome") == "overwritten"
     assert not f.exists()
+
+
+# ---------------------------------------------------------------------------
+#  Worker-shutdown contract (crash-on-close regression: 0xC0000409 abort when
+#  a QThread outlived the old fixed 3s wait and was destroyed while running)
+# ---------------------------------------------------------------------------
+
+class _CoopWorker:
+    """QObject worker that honours cancel() promptly (duck-typed for run_worker)."""
+
+    def __new__(cls):
+        import threading
+        from PySide6.QtCore import QObject, Signal
+
+        class W(QObject):
+            finished = Signal(str)
+            failed = Signal(str)
+
+            def __init__(self):
+                super().__init__()
+                self._cancel = threading.Event()
+
+            def cancel(self):
+                self._cancel.set()
+
+            def run(self):
+                import time
+                for _ in range(300):
+                    if self._cancel.is_set():
+                        return
+                    time.sleep(0.05)
+
+        return W()
+
+
+def test_close_with_cooperative_worker_is_fast_and_clean(app, window):
+    """A cancellable worker must stop within the close grace, leave nothing
+    stuck, and not block closing."""
+    import time
+
+    window.run_worker(_CoopWorker(), lambda *a: None)
+    assert len(window._threads) == 1
+    t0 = time.monotonic()
+    window.close()
+    elapsed = time.monotonic() - t0
+    assert elapsed < 5.0                       # no multi-second freeze on close
+    assert window._workers_stuck == []         # everything stopped cooperatively
+    assert not any(t.isRunning() for t in window._threads)
+
+
+def test_close_with_unkillable_worker_detaches_instead_of_crashing(app, window):
+    """A worker that ignores cancel/quit/terminate must be detached + recorded
+    (never destroyed while running), and closeEvent must still return."""
+    import threading
+    import time
+    from PySide6.QtCore import QObject, Signal
+
+    class StuckWorker(QObject):
+        finished = Signal(str)
+        failed = Signal(str)
+
+        def run(self):
+            event = threading.Event()
+            event.wait(6)   # uninterruptible-ish; outlives the shortened grace
+
+    stuck = StuckWorker()
+    window._CLOSE_GRACE_S = 0.5                # keep the test fast
+    window.run_worker(stuck, lambda *a: None)
+    thread = window._threads[0]
+
+    t0 = time.monotonic()
+    window.close()
+    elapsed = time.monotonic() - t0
+
+    # Grace (0.5s) + terminate attempt + wait must bound the close, not hang.
+    assert elapsed < 6.0
+    # The still-running thread was detached and recorded for the app-level
+    # hard-exit path instead of being destroyed mid-run (which aborts).
+    assert thread in window._workers_stuck
+    assert thread not in window._threads
+    assert thread.parent() is None
+    # Let the worker finish naturally so teardown never deletes a live thread.
+    assert thread.wait(8000)
+
+
+def test_run_worker_refused_after_close(app, window):
+    """Once shutdown begins, no new worker may start (it would outlive the
+    shutdown sweep and crash teardown)."""
+    window.close()
+    n = len(window._threads)
+    ran = []
+
+    class Probe(_CoopWorker().__class__):
+        def run(self):
+            ran.append(True)
+
+    window.run_worker(Probe(), lambda *a: None)
+    import time
+    time.sleep(0.2)
+    assert len(window._threads) == n           # nothing started
+    assert ran == []                           # run() never invoked
+
+
+# ---------------------------------------------------------------------------
+#  Settings persistence (theme + close-to-tray) and the premium system tray
+# ---------------------------------------------------------------------------
+
+@pytest.fixture
+def temp_window(app, tmp_path):
+    """A real window backed by a throwaway settings file so persistence tests
+    never touch the user's real ~/.cortex_cleaner/settings.json."""
+    from cortex_unified.ui.premium.settings_store import SettingsStore
+    from cortex_unified.ui.premium.theme import apply_theme
+    from cortex_unified.ui.premium.window import PremiumMainWindow
+    apply_theme(app, "dark")
+    store = SettingsStore(tmp_path / "settings.json")
+    win = PremiumMainWindow("dark", settings=store)
+    yield win, store
+    win._force_quit = True
+    win.close()
+    win.deleteLater()
+    app.processEvents()
+
+
+def _fake_qobject_window(app):
+    """A minimal QObject that quacks like the window for tray-action tests."""
+    from PySide6.QtCore import QObject
+    from cortex_unified.ui.premium.theme import THEMES
+
+    class FakeWin(QObject):
+        def __init__(self):
+            super().__init__()
+            self.palette_tokens = THEMES["dark"]
+            self._force_quit = False
+            self._pages: dict = {}
+            self.calls: list = []
+
+        def isMinimized(self):  # noqa: N802
+            return False
+
+        def show(self):
+            self.calls.append("show")
+
+        def showNormal(self):  # noqa: N802
+            self.calls.append("showNormal")
+
+        def raise_(self):
+            self.calls.append("raise")
+
+        def activateWindow(self):  # noqa: N802
+            self.calls.append("activate")
+
+        def _select(self, pid):
+            self.calls.append(("select", pid))
+
+        def close(self):
+            self.calls.append("close")
+
+    return FakeWin()
+
+
+def test_settings_store_defaults_and_roundtrip(tmp_path):
+    from cortex_unified.ui.premium.settings_store import SettingsStore
+    p = tmp_path / "s.json"
+    s = SettingsStore(p)
+    assert s.theme == "dark"
+    assert s.close_to_tray is False
+    s.theme = "light"
+    s.close_to_tray = True
+    # A fresh store reading the same file sees the persisted values.
+    assert SettingsStore(p).theme == "light"
+    assert SettingsStore(p).close_to_tray is True
+
+
+def test_settings_store_tolerates_corrupt_file(tmp_path):
+    from cortex_unified.ui.premium.settings_store import SettingsStore
+    p = tmp_path / "s.json"
+    p.write_text("{ this is not valid json", encoding="utf-8")
+    s = SettingsStore(p)                 # must not raise
+    assert s.theme == "dark"             # falls back to defaults
+    assert s.close_to_tray is False
+
+
+def test_settings_store_sanitizes_bad_values(tmp_path):
+    import json
+    from cortex_unified.ui.premium.settings_store import SettingsStore
+    p = tmp_path / "s.json"
+    p.write_text(json.dumps(
+        {"version": 1, "settings": {"theme": "neon", "close_to_tray": "yes"}}),
+        encoding="utf-8")
+    s = SettingsStore(p)
+    assert s.theme == "dark"             # unknown theme -> default
+    assert s.close_to_tray is True       # truthy string coerced to bool
+
+
+def test_theme_choice_persists_across_restart(temp_window):
+    win, store = temp_window
+    win.set_theme("light")
+    assert store.theme == "light"
+    # Simulate a restart: a brand-new store reading the same file.
+    from cortex_unified.ui.premium.settings_store import SettingsStore
+    assert SettingsStore(store._path).theme == "light"
+
+
+def test_settings_page_marks_active_theme(temp_window):
+    win, store = temp_window
+    page = win._pages["settings"]
+    # Dark is active at construction, so its button carries the accent style.
+    assert page.dark_btn.objectName() == "Primary"
+    assert page.light_btn.objectName() == ""
+    page._choose_theme("light")
+    assert page.light_btn.objectName() == "Primary"
+    assert page.dark_btn.objectName() == ""
+    assert store.theme == "light"
+
+
+def test_tray_icon_renders_for_both_themes(app):
+    from cortex_unified.ui.premium.theme import THEMES
+    from cortex_unified.ui.premium.tray import _render_tray_icon
+    for palette in THEMES.values():
+        assert not _render_tray_icon(palette).isNull()
+
+
+def test_tray_is_inert_when_unavailable(app, tmp_path):
+    """Offscreen has no system tray, so PremiumTray must construct cleanly and
+    be a safe no-op rather than raising."""
+    from cortex_unified.ui.premium.settings_store import SettingsStore
+    from cortex_unified.ui.premium.tray import PremiumTray
+    fw = _fake_qobject_window(app)
+    tray = PremiumTray(fw, SettingsStore(tmp_path / "s.json"))
+    assert tray.available is False
+    tray.show_message("t", "m")          # no-op, must not raise
+    tray.refresh_theme(fw.palette_tokens)
+    tray.stop()                          # idempotent
+    tray.stop()
+
+
+def test_tray_menu_actions_drive_window(app, tmp_path):
+    from cortex_unified.ui.premium.settings_store import SettingsStore
+    from cortex_unified.ui.premium.tray import PremiumTray
+    fw = _fake_qobject_window(app)
+    tray = PremiumTray(fw, SettingsStore(tmp_path / "s.json"))
+    tray._restore_window()
+    assert "show" in fw.calls or "showNormal" in fw.calls
+    tray._run_health_check()
+    assert ("select", "health") in fw.calls
+    tray._quit_app()
+    assert fw._force_quit is True
+    assert "close" in fw.calls
+
+
+def test_close_to_tray_hides_instead_of_quitting(temp_window):
+    """With close-to-tray on and a tray available, closing the window hides it
+    (workers untouched); a tray Exit (_force_quit) performs the real quit."""
+    win, store = temp_window
+
+    class FakeTray:
+        def __init__(self):
+            self.available = True
+            self.msgs: list = []
+            self.stopped = False
+
+        def show_message(self, title, message, msecs=6000):
+            self.msgs.append((title, message))
+
+        def stop(self):
+            self.stopped = True
+
+        def refresh_theme(self, palette):
+            pass
+
+    win._tray = FakeTray()
+    store.close_to_tray = True
+    win.show()
+
+    win.close()                          # closeEvent should ignore + hide
+    assert win.isVisible() is False      # hidden to tray
+    assert win._closing is False         # not shutting down
+    assert win._tray.msgs                # one-time "still running" hint shown
+    assert win._tray.stopped is False    # background monitor left running
+
+    # A real quit via the tray Exit action bypasses the guard.
+    win._force_quit = True
+    win.close()
+    assert win._closing is True
+    assert win._tray.stopped is True     # monitor stopped on real quit
+
+
+def test_close_to_tray_only_hints_once(temp_window):
+    win, store = temp_window
+
+    class FakeTray:
+        def __init__(self):
+            self.available = True
+            self.msgs: list = []
+
+        def show_message(self, title, message, msecs=6000):
+            self.msgs.append((title, message))
+
+        def stop(self):
+            pass
+
+    win._tray = FakeTray()
+    store.close_to_tray = True
+    win.show()
+    win.close()
+    win.show()
+    win.close()
+    assert len(win._tray.msgs) == 1      # the hint is shown at most once
+
+
+# ---------------------------------------------------------------------------
+#  Focus-visible: clicked buttons must not show a boxy focus outline
+# ---------------------------------------------------------------------------
+
+def test_focus_ring_is_clean_border_not_boxy_outline(app):
+    """Both themes must draw focus as a clean border, never a boxy 'outline'
+    rectangle (that inner box is what made clicked buttons look unpolished),
+    and the button ring must be gated behind the keyboard-only focusVisible
+    property."""
+    from cortex_unified.ui.premium.theme import THEMES, build_stylesheet
+    for palette in THEMES.values():
+        qss = build_stylesheet(palette)
+        assert "outline: 2px" not in qss            # no boxy focus rectangles
+        assert '[focusVisible="true"]' in qss        # keyboard-only ring gate
+
+
+def test_focus_visible_ring_only_for_keyboard(app):
+    """The ring (focusVisible=true) appears when focus arrives via the keyboard
+    and never on a plain mouse click."""
+    from PySide6.QtCore import QEvent, Qt
+    from PySide6.QtGui import QFocusEvent, QKeyEvent
+    from PySide6.QtWidgets import QPushButton
+    from cortex_unified.ui.premium.focus import FocusVisibleFilter
+
+    flt = FocusVisibleFilter(app)
+    btn = QPushButton("x")
+
+    # A navigation key press switches the modality to keyboard.
+    flt.eventFilter(btn, QKeyEvent(QEvent.Type.KeyPress, Qt.Key.Key_Tab,
+                                   Qt.KeyboardModifier.NoModifier))
+    assert flt._keyboard is True
+    # Focus arriving now (keyboard) shows the ring.
+    flt.eventFilter(btn, QFocusEvent(QEvent.Type.FocusIn))
+    assert bool(btn.property("focusVisible")) is True
+
+    # Focus-out clears the ring.
+    flt.eventFilter(btn, QFocusEvent(QEvent.Type.FocusOut))
+    assert bool(btn.property("focusVisible")) is False
+
+    # Mouse modality (the default) means focus arriving shows NO ring.
+    flt._keyboard = False
+    flt.eventFilter(btn, QFocusEvent(QEvent.Type.FocusIn))
+    assert bool(btn.property("focusVisible")) is False
+
+
+def test_install_focus_visible_is_idempotent(app):
+    from cortex_unified.ui.premium.focus import install_focus_visible
+    install_focus_visible(app)
+    first = getattr(app, "_cortex_focus_filter", None)
+    assert first is not None
+    install_focus_visible(app)
+    assert getattr(app, "_cortex_focus_filter", None) is first  # not stacked
+
+
+# ---------------------------------------------------------------------------
+#  Smooth momentum scrolling (premium 'every scroll' feel)
+# ---------------------------------------------------------------------------
+
+def _scroll_area(app, rng: int = 1000):
+    """A scroll area with a deterministic vertical range for wheel tests."""
+    from PySide6.QtWidgets import QScrollArea, QWidget
+    area = QScrollArea()
+    area.setWidget(QWidget())
+    bar = area.verticalScrollBar()
+    bar.setRange(0, rng)
+    bar.setValue(0)
+    return area, bar
+
+
+def _wheel(down: bool = True, pixel: bool = False):
+    from PySide6.QtCore import QPoint, QPointF, Qt
+    from PySide6.QtGui import QWheelEvent
+    angle = QPoint(0, -120 if down else 120)
+    pdelta = QPoint(0, -30 if pixel else 0)  # non-null only for the touchpad case
+    return QWheelEvent(QPointF(10, 10), QPointF(10, 10), pdelta, angle,
+                       Qt.MouseButton.NoButton, Qt.KeyboardModifier.NoModifier,
+                       Qt.ScrollPhase.NoScrollPhase, False)
+
+
+def test_smooth_scroll_glides_on_mouse_wheel(app):
+    from cortex_unified.ui.premium.smoothscroll import install_smooth_scroll
+    area, bar = _scroll_area(app)
+    sc = install_smooth_scroll(area)
+    assert sc is not None
+    consumed = sc.eventFilter(area.viewport(), _wheel(down=True))
+    assert consumed is True            # we own the scroll (glide it)
+    assert sc._target > 0              # target advanced downward
+    assert sc._anim.endValue() == sc._target   # animation aims at the target
+
+
+def test_smooth_scroll_ignores_touchpad(app):
+    from cortex_unified.ui.premium.smoothscroll import install_smooth_scroll
+    area, bar = _scroll_area(app)
+    sc = install_smooth_scroll(area)
+    # A pixel-delta (touchpad) event is left to native smooth scrolling.
+    assert sc.eventFilter(area.viewport(), _wheel(down=True, pixel=True)) is False
+
+
+def test_smooth_scroll_hands_off_at_boundary(app):
+    from cortex_unified.ui.premium.smoothscroll import install_smooth_scroll
+    area, bar = _scroll_area(app)
+    bar.setValue(0)                    # already at the top
+    sc = install_smooth_scroll(area)
+    # Scrolling up at the top must NOT be consumed, so SingleScrollFilter can
+    # forward the gesture to the outer container.
+    assert sc.eventFilter(area.viewport(), _wheel(down=False)) is False
+
+
+def test_smooth_scroll_respects_reduced_motion(app):
+    from cortex_unified.ui.premium import motion
+    from cortex_unified.ui.premium.smoothscroll import install_smooth_scroll
+    area, bar = _scroll_area(app)
+    sc = install_smooth_scroll(area)
+    motion.set_reduced_motion(True)
+    try:
+        # Reduced motion -> don't animate; fall back to native scrolling.
+        assert sc.eventFilter(area.viewport(), _wheel(down=True)) is False
+    finally:
+        motion.set_reduced_motion(False)
+
+
+def test_install_smooth_scroll_is_idempotent(app):
+    from cortex_unified.ui.premium.smoothscroll import install_smooth_scroll
+    area, bar = _scroll_area(app)
+    a = install_smooth_scroll(area)
+    b = install_smooth_scroll(area)
+    assert a is b                      # not stacked on repeated install
+
+
+def test_pages_have_smooth_scroll_installed(window):
+    """Every page's outer scroll area gets the premium glide."""
+    dash = window._pages["dashboard"]
+    assert getattr(dash._scroll, "_cortex_smooth_scroller", None) is not None
+
+
+# ---------------------------------------------------------------------------
+#  Motion polish: reveal transition, reduced-motion setting, shimmer loading
+# ---------------------------------------------------------------------------
+
+def test_reveal_respects_reduced_motion(app):
+    from PySide6.QtWidgets import QWidget
+    from cortex_unified.ui.premium import motion
+    w = QWidget()
+    w.resize(120, 80)
+    called = []
+    motion.set_reduced_motion(True)
+    try:
+        result = motion.reveal(w, on_done=lambda: called.append(True))
+        assert result is None            # no animation under reduced motion
+        assert called == [True]          # ...but on_done still runs
+    finally:
+        motion.set_reduced_motion(False)
+    grp = motion.reveal(w)               # motion on -> an animation group
+    assert grp is not None
+    grp.stop()
+
+
+def test_settings_store_reduced_motion_roundtrip(tmp_path):
+    from cortex_unified.ui.premium.settings_store import SettingsStore
+    p = tmp_path / "s.json"
+    s = SettingsStore(p)
+    assert s.reduced_motion is False
+    s.reduced_motion = True
+    assert SettingsStore(p).reduced_motion is True
+
+
+def test_shimmer_skeleton_start_stop(app):
+    from cortex_unified.ui.premium import motion
+    from cortex_unified.ui.premium.skeleton import ShimmerSkeleton
+    from cortex_unified.ui.premium.theme import THEMES
+    sk = ShimmerSkeleton(THEMES["dark"], rows=4)
+    sk.resize(320, 140)
+    sk.start()
+    sk._set_phase(0.5)
+    assert sk.phase == 0.5
+    sk.stop()                            # safe to stop
+    motion.set_reduced_motion(True)
+    try:
+        sk.start()                       # reduced motion: no crash, no sweep
+    finally:
+        motion.set_reduced_motion(False)
+
+
+def test_settings_page_reduced_motion_toggle(temp_window):
+    from cortex_unified.ui.premium import motion
+    win, store = temp_window
+    page = win._pages["settings"]
+    assert hasattr(page, "motion_check")
+    try:
+        page._on_reduced_motion_toggled(True)
+        assert motion.prefers_reduced_motion() is True
+        assert store.reduced_motion is True
+    finally:
+        motion.set_reduced_motion(False)
+
+
+def test_health_page_has_shimmer_skeleton(window):
+    from cortex_unified.ui.premium.skeleton import ShimmerSkeleton
+    hp = window._pages["health"]
+    assert isinstance(getattr(hp, "skeleton", None), ShimmerSkeleton)
+
+
+# ---------------------------------------------------------------------------
+#  Tactile press feedback + bento dashboard
+# ---------------------------------------------------------------------------
+
+def test_press_feedback_sinks_and_restores(app):
+    from PySide6.QtCore import QPoint
+    from PySide6.QtWidgets import QPushButton
+    from cortex_unified.ui.premium import motion
+    b = QPushButton("x")
+    b.move(20, 20)
+    motion.press_feedback(b, sink=3)
+    b.pressed.emit()
+    assert b._press_active is True
+    assert b._press_anim.endValue() == QPoint(20, 23)   # sunk down by 3px
+    b.released.emit()
+    assert b._press_anim.endValue() == QPoint(20, 20)   # eased back home
+
+
+def test_press_feedback_respects_reduced_motion(app):
+    from PySide6.QtWidgets import QPushButton
+    from cortex_unified.ui.premium import motion
+    b = QPushButton("x")
+    motion.press_feedback(b)
+    motion.set_reduced_motion(True)
+    try:
+        b.pressed.emit()
+        assert getattr(b, "_press_active", False) is False   # no motion at all
+    finally:
+        motion.set_reduced_motion(False)
+
+
+def test_bento_tile_hover_in_stylesheet(app):
+    from cortex_unified.ui.premium.theme import THEMES, build_stylesheet
+    for palette in THEMES.values():
+        qss = build_stylesheet(palette)
+        assert "QFrame#BentoTile" in qss
+        assert "QFrame#BentoTile:hover" in qss
+
+
+def test_dashboard_uses_bento_tiles(window):
+    dash = window._pages["dashboard"]
+    for attr in ("card_space", "card_files", "card_cats"):
+        tile = getattr(dash, attr)
+        assert tile.objectName() == "BentoTile"
+    # The hero gauge and metric setters are preserved by the restructure.
+    assert hasattr(dash, "gauge")
+    dash.card_space.set_value("1.2 GB")
+    assert dash.card_space._value.text() == "1.2 GB"
+
+
+# ---------------------------------------------------------------------------
+#  Clarity / layout fixes: badge rendering, processes density, health columns
+# ---------------------------------------------------------------------------
+
+def test_badge_uses_rgba_not_ambiguous_hex(app):
+    """Badges must build their translucent fill from rgba() - an 8-digit
+    #RRGGBBAA hex is parsed unreliably by Qt QSS and made the pills look
+    muddy/distorted."""
+    from cortex_unified.ui.premium.theme import THEMES
+    from cortex_unified.ui.premium.widgets import Badge
+    for kind in ("low", "medium", "high"):
+        ss = Badge(THEMES["dark"], kind).styleSheet()
+        assert "rgba(" in ss                       # explicit, well-defined alpha
+        assert "background-color: rgba(" in ss
+
+
+def test_processes_memory_details_collapsed_by_default(window):
+    """The long memory explanation must be collapsed (progressive disclosure)
+    so it doesn't squeeze the process table; the toggle reveals it."""
+    pp = window._pages["processes"]
+    assert hasattr(pp, "why_btn") and hasattr(pp, "mem_summary")
+    assert pp.breakdown.isHidden() is True         # collapsed on load
+    pp._toggle_why(True)
+    assert pp.breakdown.isHidden() is False        # expands on demand
+    pp._toggle_why(False)
+    assert pp.breakdown.isHidden() is True
+
+
+def test_health_check_columns_size_to_content(window):
+    """The Check + Fix columns size to content so "Fix ->" is never clipped,
+    while Detail stretches to fill the remaining width."""
+    from PySide6.QtWidgets import QHeaderView
+    hp = window._pages["health"]
+    hdr = hp.tbl.horizontalHeader()
+    assert hdr.sectionResizeMode(1) == QHeaderView.ResizeMode.ResizeToContents
+    assert hdr.sectionResizeMode(2) == QHeaderView.ResizeMode.Stretch
+    assert hdr.sectionResizeMode(3) == QHeaderView.ResizeMode.ResizeToContents
+
+
+# ---------------------------------------------------------------------------
+#  Leftover scanner (post-uninstall residual cleanup) - dedicated page
+# ---------------------------------------------------------------------------
+
+def test_uninstaller_page_has_leftover_section(window):
+    lp = window._pages["leftovers"]
+    for attr in ("leftover_scan_btn", "orphan_scan_btn", "clean_leftover_btn",
+                 "leftover_tbl", "leftover_state"):
+        assert hasattr(lp, attr), attr
+    # Clean starts disabled: nothing reviewed yet.
+    assert lp.clean_leftover_btn.isEnabled() is False
+
+
+def test_leftover_findings_populate_table_and_status(window):
+    lp = window._pages["leftovers"]
+    findings = [
+        {"kind": "folder", "path": r"C:\x\AppData\Local\Zeta",
+         "size_bytes": 4096, "score": 8, "level": "VeryGood",
+         "reasons": ["+4 folder is completely empty"]},
+        {"kind": "registry", "path": r"HKCU\SOFTWARE\Zeta",
+         "size_bytes": 0, "score": 4, "level": "Good",
+         "reasons": ["+2 key name match at depth 0"]},
+    ]
+    lp._on_leftovers(findings)
+    assert lp.leftover_table.model.rowCount() == 2
+    assert lp.leftover_state.isHidden() or not lp.leftover_state.isVisible()
+
+
+def test_leftover_clean_button_needs_selection(window):
+    lp = window._pages["leftovers"]
+    lp._on_leftovers([
+        {"kind": "folder", "path": r"C:\x\Zeta", "size_bytes": 1,
+         "score": 6, "level": "VeryGood", "reasons": []},
+    ])
+    lp.clean_leftover_btn.setEnabled(False)
+    lp._on_leftover_select()
+    assert lp.clean_leftover_btn.isEnabled() is False
+
+
+def test_leftover_scan_without_pending_shows_hint(window, monkeypatch):
+    """Clicking Scan with no recorded uninstall must hint, never crash."""
+    from PySide6.QtWidgets import QMessageBox
+    lp = window._pages["leftovers"]
+    shown = []
+    monkeypatch.setattr(QMessageBox, "information",
+                        staticmethod(lambda *a, **k: shown.append(a)))
+    window._pending_leftover_apps.clear()      # the real handoff buffer
+    lp._scan_leftovers()
+    assert shown, "expected the 'nothing to scan' hint"
+
+
+def test_leftover_clean_worker_recycles_and_reports(tmp_path, monkeypatch):
+    """LeftoverCleanWorker routes findings through LeftoverCleaner."""
+    import cortex_unified.ui.premium.system_pages as sp
+    calls = {}
+
+    class FakeCleaner:
+        def __init__(self):
+            pass
+
+        def clean(self, models, create_restore_point=False,
+                  exclusions=None, cancel_event=None):
+            assert create_restore_point is False
+            assert exclusions is None
+            calls["paths"] = [m.path for m in models]
+            from cortex_unified.system_tools.leftover_cleaner import CleanOutcome
+            return [CleanOutcome(models[0].path, models[0].kind, True,
+                                 "recycled")]
+
+    from cortex_unified.system_tools import leftover_cleaner as lc
+    monkeypatch.setattr(lc, "LeftoverCleaner", FakeCleaner)
+    worker = sp.LeftoverCleanWorker([
+        {"kind": "folder", "path": str(tmp_path / "gone"),
+         "size_bytes": 10, "score": 8, "level": "VeryGood", "reasons": []},
+    ])
+    results = []
+    worker.finished.connect(lambda out: results.append(out))
+    worker.run()
+    assert results and results[0][0]["disposition"] == "recycled"
+    assert calls["paths"] == [str(tmp_path / "gone")]
+
+
+def test_leftover_clean_worker_requests_restore_point_when_asked(
+        tmp_path, monkeypatch):
+    """The checkbox's choice reaches the cleaner as create_restore_point."""
+    import cortex_unified.ui.premium.system_pages as sp
+    seen = {}
+
+    class FakeCleaner:
+        def __init__(self):
+            pass
+
+        def clean(self, models, create_restore_point=False,
+                  exclusions=None, cancel_event=None):
+            seen["restore"] = create_restore_point
+            from cortex_unified.system_tools.leftover_cleaner import CleanOutcome
+            return [CleanOutcome(models[0].path, models[0].kind, True,
+                                 "recycled")]
+
+    from cortex_unified.system_tools import leftover_cleaner as lc
+    monkeypatch.setattr(lc, "LeftoverCleaner", FakeCleaner)
+    worker = sp.LeftoverCleanWorker(
+        [{"kind": "registry", "path": r"HKCU\SOFTWARE\Z",
+          "size_bytes": 0, "score": 4, "level": "Good", "reasons": []}],
+        create_restore_point=True)
+    results = []
+    worker.finished.connect(results.append)
+    worker.run()
+    assert seen["restore"] is True
+    assert results[0][0]["ok"] is True
+
+
+def test_leftover_scan_worker_emits_sorted_findings(monkeypatch):
+    """Findings come back as plain dicts sorted by score descending."""
+    import cortex_unified.ui.premium.system_pages as sp
+    from cortex_unified.system_tools import leftover_cleaner as lc
+
+    class FakeScanner:
+        def __init__(self, installed_apps=None, exclusions=None,
+                     cancel_event=None, policy=None):
+            assert installed_apps == []
+            self._calls = 0
+
+        def scan_app(self, app):
+            assert app.name == "ZetaEditor"
+            return [
+                lc.LeftoverFinding(kind="folder", path=r"C:\low",
+                                   score=2, level="Good"),
+                lc.LeftoverFinding(kind="registry", path=r"HKCU\SOFTWARE\hi",
+                                   score=9, level="VeryGood"),
+            ]
+
+    monkeypatch.setattr(lc, "LeftoverScanner", FakeScanner)
+    worker = sp.LeftoverScanWorker([{"name": "ZetaEditor",
+                                     "publisher": "Zeta"}])
+    out = []
+    worker.finished.connect(out.append)
+    worker.run()
+    assert len(out) == 1
+    rows = out[0]
+    assert rows[0]["path"] == r"HKCU\SOFTWARE\hi"     # highest score first
+    assert all(isinstance(r, dict) for r in rows)
+
+
+def test_leftover_workers_support_cooperative_cancel():
+    """cancel() must exist on all three workers (window shutdown calls it)."""
+    from cortex_unified.ui.premium.system_pages import (
+        LeftoverScanWorker,
+        OrphanScanWorker,
+        LeftoverCleanWorker,
+    )
+    scan = LeftoverScanWorker([{"name": "X"}])
+    orphan = OrphanScanWorker()
+    clean = LeftoverCleanWorker([])
+    for w in (scan, orphan, clean):
+        assert callable(getattr(w, "cancel", None))
+        w.cancel()
+    assert scan._cancel.is_set() and orphan._cancel.is_set() \
+        and clean._cancel.is_set()
+
+
+def test_uninstall_hands_off_metadata_to_leftover_page(window, monkeypatch):
+    """Uninstaller page captures app metadata; Leftover Scanner consumes it.
+
+    This is the cross-page handoff: without it, 'Scan for Leftovers' on the
+    dedicated page would never have anything to scan.
+    """
+    import cortex_unified.ui.premium.system_pages as sp
+    from PySide6.QtWidgets import QMessageBox
+
+    shown: list = []
+    monkeypatch.setattr(QMessageBox, "question",
+                        staticmethod(lambda *a, **k: QMessageBox.StandardButton.Yes))
+    monkeypatch.setattr(QMessageBox, "information",
+                        staticmethod(lambda *a, **k: shown.append(a)))
+    # launched==0 path shows a warning modal - must never exec() in tests.
+    monkeypatch.setattr(QMessageBox, "warning",
+                        staticmethod(lambda *a, **k: None))
+
+    app_record = {"name": "ZetaEditor", "publisher": "ZetaSoft",
+                  "install_location": r"C:\Program Files\ZetaEditor"}
+    window._pending_leftover_apps.clear()
+
+    up = window._pages["uninstaller"]
+    monkeypatch.setattr(up, "_selected_apps", lambda: [app_record],
+                        raising=False)
+    up._uninstall()
+    assert window._pending_leftover_apps, "metadata not captured"
+    assert window._pending_leftover_apps[0]["name"] == "ZetaEditor"
+
+    # The Leftover Scanner page consumes the same buffer via its worker.
+    seen_apps: list = []
+
+    def fake_worker_init(self, apps, exclusions=None):
+        from PySide6.QtCore import QObject
+        QObject.__init__(self)                 # initialise the Qt shell first
+        self._apps = list(apps)
+        seen_apps.append(list(apps))
+        from threading import Event
+        self._cancel = Event()
+
+    def fake_worker_run(self):
+        self.finished.emit([{"kind": "folder", "path": r"C:\x\Zeta",
+                             "size_bytes": 1, "score": 8,
+                             "level": "VeryGood", "reasons": []}]
+                           if self._apps else [])
+
+    monkeypatch.setattr(sp.LeftoverScanWorker, "__init__", fake_worker_init)
+    monkeypatch.setattr(sp.LeftoverScanWorker, "run", fake_worker_run)
+
+    lp = window._pages["leftovers"]
+    lp._scan_leftovers()
+    assert seen_apps and seen_apps[0][0]["name"] == "ZetaEditor"
+    assert window._pending_leftover_apps == [], "buffer must be consumed"
+
+
+

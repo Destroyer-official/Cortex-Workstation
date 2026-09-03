@@ -14,30 +14,19 @@ security win. We clearly mark entries we can't identify rather than guessing.
 from __future__ import annotations
 
 import logging
-import platform
+import sys
 import re
 import subprocess
 from dataclasses import dataclass
 from typing import Any
 
+from cortex_unified.core import proc as _proc
+
 _LOG = logging.getLogger("cortex.system_tools.lan_scanner")
-_IS_WINDOWS = platform.system() == "Windows"
+_IS_WINDOWS = sys.platform == "win32"
 _NO_WINDOW = 0x08000000 if _IS_WINDOWS else 0
 
-# A small, honest set of common OUI prefixes -> vendor. Not exhaustive; unknown
-# prefixes are reported as "" rather than guessed.
-_OUI = {
-    "00:50:56": "VMware", "00:0c:29": "VMware", "00:05:69": "VMware",
-    "08:00:27": "VirtualBox", "00:15:5d": "Microsoft Hyper-V",
-    "b8:27:eb": "Raspberry Pi", "dc:a6:32": "Raspberry Pi", "e4:5f:01": "Raspberry Pi",
-    "fc:fb:fb": "Cisco", "00:1a:11": "Google", "3c:5a:b4": "Google",
-    "d8:eb:97": "TP-Link", "50:c7:bf": "TP-Link", "ac:84:c6": "TP-Link",
-    "00:1d:0f": "TP-Link", "f4:f2:6d": "TP-Link",
-    "00:1e:c2": "Apple", "a4:83:e7": "Apple", "f0:18:98": "Apple",
-    "3c:07:54": "Apple", "ac:bc:32": "Apple",
-    "00:12:fb": "Samsung", "5c:0a:5b": "Samsung", "e8:50:8b": "Samsung",
-    "00:24:e4": "Withings", "18:b4:30": "Nest",
-}
+from cortex_unified.system_tools import oui as _oui
 
 _ARP_RE = re.compile(
     r"(\d{1,3}(?:\.\d{1,3}){3})\s+([0-9a-fA-F]{2}(?:[-:][0-9a-fA-F]{2}){5})\s+(\w+)"
@@ -46,12 +35,14 @@ _ARP_RE = re.compile(
 
 @dataclass(slots=True)
 class LanDevice:
+    """Lan Device data container."""
     ip: str
     mac: str
     kind: str          # dynamic / static
     vendor: str = ""
 
     def to_dict(self) -> dict[str, Any]:
+        """To dict."""
         return {"ip": self.ip, "mac": self.mac, "kind": self.kind, "vendor": self.vendor}
 
 
@@ -59,13 +50,20 @@ class LanScanner:
     """Enumerate LAN devices from the OS ARP cache (read-only)."""
 
     def scan(self) -> list[LanDevice]:
+        """Scan."""
         out = self._run()
         return self._parse(out)
 
     @staticmethod
     def _vendor_for(mac: str) -> str:
-        norm = mac.replace("-", ":").lower()
-        return _OUI.get(norm[:8], "")
+        """Vendor from the authoritative IEEE registry (empty when unknown).
+
+        Previously this used a small hand-written table, which turned out to be
+        wrong for 13% of its entries - it reported ``d8:eb:97`` as TP-Link when
+        IEEE assigns it to TRENDnet. Vendor data now comes only from the IEEE
+        registry via :mod:`cortex_unified.system_tools.oui`.
+        """
+        return _oui.shorten(_oui.lookup(mac))
 
     @classmethod
     def _parse(cls, out: str | None) -> list[LanDevice]:
@@ -91,14 +89,17 @@ class LanScanner:
             ))
         devices.sort(key=lambda d: tuple(int(x) for x in d.ip.split(".")))
         return devices
+        """_parse."""
+        """_parse."""
 
     def _run(self) -> str | None:
         try:
-            proc = subprocess.run(
-                ["arp", "-a"], capture_output=True, text=True,
-                timeout=15, creationflags=_NO_WINDOW,
+            proc = _proc.run(
+                ["arp", "-a"], text=True, timeout=15, creationflags=_NO_WINDOW,
             )
             return proc.stdout if proc.returncode == 0 else None
-        except (OSError, subprocess.SubprocessError) as exc:
+        except (_proc.ProcessCancelled, OSError, subprocess.SubprocessError) as exc:
             _LOG.debug("arp failed: %s", exc)
             return None
+        """_run."""
+        """_run."""

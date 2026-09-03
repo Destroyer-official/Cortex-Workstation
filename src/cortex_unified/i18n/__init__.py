@@ -31,5 +31,5 @@ def get_available_locales():
     return translator.get_available_locales()
 
 def set_locale(locale: str):
-    """Set locale for default translator."""
+    """Set active locale."""
     set_global_locale(locale)

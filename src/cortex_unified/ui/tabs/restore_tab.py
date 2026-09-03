@@ -30,6 +30,8 @@ class RestoreWorker(QThread):
         super().__init__()
         self.manager = manager
         self.target_path = target_path
+        """__init__."""
+        """__init__."""
 
     def run(self):
         try:
@@ -37,6 +39,9 @@ class RestoreWorker(QThread):
             self.finished_restore.emit(res)
         except Exception as e:
             self.error_occurred.emit(str(e))
+        """run."""
+    """RestoreWorker class."""
+    """RestoreWorker class."""
 
 
 class RestoreTab(BaseTab):
@@ -45,6 +50,8 @@ class RestoreTab(BaseTab):
     def __init__(self, config, logger, safety_manager):
         super().__init__(config, logger, safety_manager)
         self.restore_manager = RestoreManager(config)
+        """__init__."""
+        """__init__."""
 
     def setup_ui(self):
         """Create the restore tab."""
@@ -108,6 +115,8 @@ class RestoreTab(BaseTab):
         has_sel = len(self.manifests_table.selectedItems()) > 0
         self.restore_button.setEnabled(has_sel)
         self.delete_manifest_button.setEnabled(has_sel)
+        """_on_table_selection."""
+        """_on_table_selection."""
 
     def refresh_manifests(self):
         """Update items in the lists dynamically using the backend."""
@@ -129,7 +138,7 @@ class RestoreTab(BaseTab):
             ts = manifest.get("timestamp", "")
             try:
                 dt_str = datetime.fromisoformat(ts).strftime("%Y-%m-%d %H:%M:%S")
-            except:
+            except (ValueError, KeyError):
                 dt_str = ts
             self.manifests_table.setItem(i, 2, QTableWidgetItem(dt_str))
             
@@ -190,16 +199,22 @@ class RestoreTab(BaseTab):
             QMessageBox.information(self, "Restore Completed", f"Successfully extracted and recovered {restored} files safely.")
             
         self.refresh_manifests()
+        """_on_restore_completed."""
+        """_on_restore_completed."""
 
     def _on_restore_error(self, err_string):
         self.logger.error(f"Restore Tab Thread Event Crash: {err_string}")
         QMessageBox.critical(self, "Snapshot Error", f"The operation aborted fatally: {err_string}")
+        """_on_restore_error."""
+        """_on_restore_error."""
         
     def _on_worker_finished(self, worker):
         self.restore_progress_bar.setVisible(False)
         self.refresh_manifests_button.setEnabled(True)
         self.remove_worker_thread(worker)
         worker.deleteLater()
+        """_on_worker_finished."""
+        """_on_worker_finished."""
 
     def delete_snapshot(self):
         row = self.manifests_table.currentRow()
@@ -221,3 +236,5 @@ class RestoreTab(BaseTab):
             self.refresh_manifests()
         else:
             QMessageBox.warning(self, "Error", f"Failed to unlink {target_name}. It might already be gone!")
+        """delete_snapshot."""
+        """delete_snapshot."""

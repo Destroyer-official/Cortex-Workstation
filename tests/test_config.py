@@ -1,4 +1,4 @@
-﻿import os
+import os
 import yaml
 import pytest
 from cortex_unified.core.config import Config, DEFAULT_CONFIG

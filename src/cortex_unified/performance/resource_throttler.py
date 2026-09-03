@@ -8,7 +8,7 @@ import psutil
 import threading
 import time
 from dataclasses import dataclass
-from typing import Dict, Any, Optional
+from typing import Optional
 
 @dataclass
 class SystemLoad:
@@ -88,6 +88,50 @@ class ResourceThrottler:
         except (psutil.AccessDenied, psutil.NoSuchProcess, OSError):
             # Ignore if we can't set priority (insufficient permissions)
             pass
+
+    def set_eco_qos(self, enable: bool = True) -> bool:
+        """Enable Windows 11 EcoQoS (Efficiency Mode) to schedule background
+        tasks on energy-efficient E-cores and prevent UI frame drops.
+        """
+        if platform.system().lower() != "windows":
+            return False
+        try:
+            import ctypes
+            from ctypes import wintypes
+
+            class PROCESS_POWER_THROTTLING_STATE(ctypes.Structure):
+                _fields_ = [
+                    ("Version", wintypes.ULONG),
+                    ("ControlMask", wintypes.ULONG),
+                    ("StateMask", wintypes.ULONG),
+                ]
+                """PROCESS_POWER_THROTTLING_STATE class."""
+
+            ProcessPowerThrottling = 4
+            PROCESS_POWER_THROTTLING_EXECUTION_SPEED = 0x1
+            PROCESS_POWER_THROTTLING_CURRENT_VERSION = 1
+
+            state = PROCESS_POWER_THROTTLING_STATE()
+            state.Version = PROCESS_POWER_THROTTLING_CURRENT_VERSION
+            state.ControlMask = PROCESS_POWER_THROTTLING_EXECUTION_SPEED
+            state.StateMask = PROCESS_POWER_THROTTLING_EXECUTION_SPEED if enable else 0
+
+            PROCESS_SET_INFORMATION = 0x0200
+            h_proc = ctypes.windll.kernel32.OpenProcess(PROCESS_SET_INFORMATION, False, os.getpid())
+            if not h_proc:
+                return False
+            try:
+                res = ctypes.windll.kernel32.SetProcessInformation(
+                    h_proc,
+                    ProcessPowerThrottling,
+                    ctypes.byref(state),
+                    ctypes.sizeof(state),
+                )
+                return bool(res)
+            finally:
+                ctypes.windll.kernel32.CloseHandle(h_proc)
+        except Exception:
+            return False
     
     def get_system_load(self) -> SystemLoad:
         """Get current system load information."""
@@ -145,7 +189,6 @@ class ResourceThrottler:
         """Apply throttling if system resources are constrained."""
         load = self.get_system_load()
         
-        # Check if throttling is needed
         should_throttle = (
             load.cpu_percent > self.cpu_limit or
             load.memory_percent > self.memory_limit
@@ -206,6 +249,7 @@ class ResourceThrottler:
                 except Exception:
                     # Continue monitoring even if individual checks fail
                     time.sleep(interval)
+            """monitor_loop."""
         
         self._monitor_thread = threading.Thread(target=monitor_loop, daemon=True)
         self._monitor_thread.start()

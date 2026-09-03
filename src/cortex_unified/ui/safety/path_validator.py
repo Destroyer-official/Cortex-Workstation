@@ -33,17 +33,33 @@ class PathValidator:
     def _get_critical_directories(self) -> Set[str]:
         """Get OS-specific critical directories that should never be deleted."""
         if sys.platform.startswith("win"):
-            return {
-                "C:\\Windows",
-                "C:\\Program Files", 
-                "C:\\Program Files (x86)",
-                "C:\\System Volume Information",
-                "C:\\$Recycle.Bin",
-                "C:\\ProgramData",
-                "C:\\Users\\All Users",
-                "C:\\Users\\Default",
-                "C:\\Users\\Public"
+            sys_drive = os.environ.get("SystemDrive", "C:").rstrip("\\/")
+            critical = {
+                f"{sys_drive}\\Windows",
+                f"{sys_drive}\\Program Files", 
+                f"{sys_drive}\\Program Files (x86)",
+                f"{sys_drive}\\System Volume Information",
+                f"{sys_drive}\\$Recycle.Bin",
+                f"{sys_drive}\\ProgramData",
+                f"{sys_drive}\\Users\\All Users",
+                f"{sys_drive}\\Users\\Default",
+                f"{sys_drive}\\Users\\Public",
             }
+            for env_k in ("SystemRoot", "WINDIR", "ProgramFiles", "ProgramFiles(x86)", "ProgramData", "PUBLIC"):
+                val = os.environ.get(env_k)
+                if val:
+                    critical.add(val)
+            try:
+                import psutil
+                for p in psutil.disk_partitions(all=False):
+                    m = p.mountpoint.rstrip("\\/")
+                    if m:
+                        critical.add(f"{m}\\$Recycle.Bin")
+                        critical.add(f"{m}\\System Volume Information")
+                        critical.add(f"{m}\\Recovery")
+            except Exception:
+                pass
+            return critical
         else:  # POSIX systems (Linux, macOS)
             return {
                 "/bin", "/sbin", "/usr/bin", "/usr/sbin",
@@ -96,12 +112,10 @@ class PathValidator:
                 self.logger.warning(f"Path blocked by blacklist: {path_str}")
                 return False
             
-            # Check if path is a critical system directory
             if self._is_critical_directory(resolved_path):
                 self.logger.warning(f"Path is critical system directory: {path_str}")
                 return False
             
-            # Check if path is under a critical directory
             if self._is_under_critical_directory(resolved_path):
                 self.logger.warning(f"Path is under critical directory: {path_str}")
                 return False
@@ -148,7 +162,8 @@ class PathValidator:
             for critical_dir in self._critical_directories:
                 critical_path = Path(critical_dir)
                 try:
-                    # Check if path is relative to critical directory
+                    # relative_to() raises ValueError when the path is
+                    # outside the critical tree.
                     path.relative_to(critical_path)
                     return True
                 except ValueError:
@@ -169,7 +184,6 @@ class PathValidator:
             True if safe, False otherwise
         """
         try:
-            # Check if path itself is a symlink
             if path.is_symlink():
                 target = path.readlink()
                 
@@ -177,7 +191,6 @@ class PathValidator:
                 try:
                     resolved_target = target.resolve()
                     
-                    # Check if symlink target is outside allowed areas
                     if self._is_critical_directory(resolved_target):
                         self.logger.warning(f"Symlink points to critical directory: {path} -> {resolved_target}")
                         return False
@@ -223,7 +236,6 @@ class PathValidator:
             True if user has permissions, False otherwise
         """
         try:
-            # Check if path exists
             if not path.exists():
                 # For non-existent paths, check parent directory permissions
                 parent = path.parent

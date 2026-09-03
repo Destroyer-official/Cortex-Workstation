@@ -1,22 +1,29 @@
-"""Task scheduler for Cortex Cleaner."""
+"""OS-native scheduling for cleanup jobs: schtasks, launchd, cron.
 
-import os
-import sys
+Jobs are registered with whatever scheduler the host OS provides, so they run
+without this process being alive and survive reboots.
+"""
+
+import csv
+import io
 import platform
-import subprocess
+import re
+import xml.sax.saxutils
 from pathlib import Path
-from typing import List, Dict, Optional
-from datetime import datetime, timedelta
-import json
+from typing import List, Dict
 
-from ..core.utils import normalize_path
+from ..core import proc as _proc
 from ..core.config import Config
 
 class TaskScheduler:
-    """Scheduler for automatic cleanup tasks."""
+    """Creates, lists, and removes cleanup jobs in the OS-native scheduler."""
     
     def __init__(self, config: Config = None):
-        """Initialize task scheduler."""
+        """Detect the host OS and prepare task tracking.
+
+        Args:
+            config: Application config; defaults are built when omitted.
+        """
         self.config = config or Config()
         self.system = platform.system().lower()
         self.scheduled_tasks = []
@@ -29,7 +36,7 @@ class TaskScheduler:
         schedule_type: str, 
         schedule_params: Dict = None
     ) -> bool:
-        """Create a scheduled task.
+        """Register ``command`` under ``name`` with the platform scheduler.
         
         Args:
             name: Name of the task
@@ -65,10 +72,12 @@ class TaskScheduler:
         try:
             schedule_params = schedule_params or {}
             
-            # Build schtasks command
+            if not re.match(r'^[A-Za-z0-9_\- ]+$', name):
+                self.error_count += 1
+                return False
+
             cmd = ["schtasks", "/create", "/tn", name, "/tr", command]
-            
-            # Add schedule parameters
+
             if schedule_type == "once":
                 run_time = schedule_params.get("time", "02:00")
                 cmd.extend(["/sc", "once", "/st", run_time])
@@ -87,8 +96,7 @@ class TaskScheduler:
                 self.error_count += 1
                 return False
             
-            # Run the command
-            result = subprocess.run(cmd, capture_output=True, text=True)
+            result = _proc.run(cmd, text=True, timeout=30)
             return result.returncode == 0
         except Exception:
             self.error_count += 1
@@ -103,20 +111,17 @@ class TaskScheduler:
     ) -> bool:
         """Create a macOS scheduled task using launchd."""
         try:
-            # Create a plist file for launchd
             plist_content = self._generate_launchd_plist(name, command, schedule_type, schedule_params)
-            
-            # Write plist to ~/Library/LaunchAgents
+
             plist_dir = Path.home() / "Library" / "LaunchAgents"
             plist_dir.mkdir(parents=True, exist_ok=True)
             
             plist_file = plist_dir / f"com.deepcleaner.{name}.plist"
-            with open(plist_file, 'w') as f:
+            with open(plist_file, 'w', encoding='utf-8') as f:
                 f.write(plist_content)
             
-            # Load the job
             cmd = ["launchctl", "load", str(plist_file)]
-            result = subprocess.run(cmd, capture_output=True, text=True)
+            result = _proc.run(cmd, text=True, timeout=30)
             return result.returncode == 0
         except Exception:
             self.error_count += 1
@@ -129,28 +134,29 @@ class TaskScheduler:
         schedule_type: str, 
         schedule_params: Dict = None
     ) -> str:
-        """Generate a launchd plist file."""
+        """Render schedule params as a launchd property-list string."""
         schedule_params = schedule_params or {}
         
-        # Start building the plist
+        escaped_name = xml.sax.saxutils.escape(name)
+        escaped_command = xml.sax.saxutils.escape(command)
+
         plist = f"""<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
     <key>Label</key>
-    <string>com.deepcleaner.{name}</string>
+    <string>com.deepcleaner.{escaped_name}</string>
     
     <key>ProgramArguments</key>
     <array>
         <string>/bin/bash</string>
         <string>-c</string>
-        <string>{command}</string>
+        <string>{escaped_command}</string>
     </array>
     
     <key>RunAtLoad</key>
     <false/>"""
         
-        # Add scheduling information
         if schedule_type == "daily":
             hour = schedule_params.get("hour", 2)
             minute = schedule_params.get("minute", 0)
@@ -194,7 +200,6 @@ class TaskScheduler:
         <integer>{day}</integer>
     </dict>"""
         
-        # End the plist
         plist += """
 </dict>
 </plist>"""
@@ -210,31 +215,29 @@ class TaskScheduler:
     ) -> bool:
         """Create a Linux scheduled task using cron."""
         try:
-            # Generate cron expression
+            command = command.replace('\n', '').replace('\r', '')
+
             cron_expression = self._generate_cron_expression(schedule_type, schedule_params)
-            
-            # Create the full cron entry
+
             cron_entry = f"{cron_expression} {command} # DeepCleaner task: {name}"
-            
-            # First, get current crontab
-            result = subprocess.run(["crontab", "-l"], capture_output=True, text=True)
-            
-            # Add our entry
+
+            # crontab installs wholesale, so start from the existing table
+            result = _proc.run(["crontab", "-l"], text=True, timeout=15)
+
             current_crontab = result.stdout if result.returncode == 0 else ""
             new_crontab = current_crontab + "\n" + cron_entry + "\n"
-            
-            # Write back to crontab
+
+            # "-" reads the replacement table from stdin
             cmd = ["crontab", "-"]
-            process = subprocess.Popen(cmd, stdin=subprocess.PIPE, text=True)
-            process.communicate(input=new_crontab)
+            result = _proc.run(cmd, text=True, timeout=15, input=new_crontab)
             
-            return process.returncode == 0
+            return result.returncode == 0
         except Exception:
             self.error_count += 1
             return False
     
     def _generate_cron_expression(self, schedule_type: str, schedule_params: Dict = None) -> str:
-        """Generate a cron expression."""
+        """Translate schedule type/params into five cron fields."""
         schedule_params = schedule_params or {}
         
         if schedule_type == "daily":
@@ -255,7 +258,7 @@ class TaskScheduler:
             return f"* * * * *"
     
     def list_scheduled_tasks(self) -> List[Dict]:
-        """List all scheduled tasks."""
+        """List tasks from the platform scheduler in normalized dicts."""
         try:
             if self.system == "windows":
                 return self._list_windows_tasks()
@@ -274,19 +277,20 @@ class TaskScheduler:
         """List Windows scheduled tasks."""
         try:
             cmd = ["schtasks", "/query", "/fo", "csv"]
-            result = subprocess.run(cmd, capture_output=True, text=True)
+            result = _proc.run(cmd, text=True, timeout=30)
             
             if result.returncode == 0:
                 lines = result.stdout.strip().split('\n')
                 if len(lines) > 1:
                     tasks = []
-                    for line in lines[1:]:  # Skip header
-                        parts = [part.strip('"') for part in line.split('","')]
-                        if len(parts) >= 3:
+                    reader = csv.reader(io.StringIO(result.stdout))
+                    next(reader)
+                    for row in reader:
+                        if len(row) >= 3:
                             tasks.append({
-                                "name": parts[0],
-                                "next_run_time": parts[1],
-                                "status": parts[2]
+                                "name": row[0],
+                                "next_run_time": row[1],
+                                "status": row[2]
                             })
                     return tasks
             return []
@@ -298,7 +302,7 @@ class TaskScheduler:
         """List macOS scheduled tasks."""
         try:
             cmd = ["launchctl", "list"]
-            result = subprocess.run(cmd, capture_output=True, text=True)
+            result = _proc.run(cmd, text=True, timeout=30)
             
             if result.returncode == 0:
                 lines = result.stdout.strip().split('\n')
@@ -322,14 +326,14 @@ class TaskScheduler:
         """List Linux scheduled tasks."""
         try:
             cmd = ["crontab", "-l"]
-            result = subprocess.run(cmd, capture_output=True, text=True)
+            result = _proc.run(cmd, text=True, timeout=30)
             
             if result.returncode == 0:
                 lines = result.stdout.strip().split('\n')
                 tasks = []
                 for line in lines:
                     if line.strip() and not line.startswith('#'):
-                        # This is a crude parsing - in reality, you'd want to parse the cron expression
+                        # Fields only; cron expressions are not interpreted
                         tasks.append({
                             "schedule": line.split(' ', 5)[0:5],
                             "command": line.split(' ', 5)[5] if len(line.split(' ', 5)) > 5 else line
@@ -341,32 +345,27 @@ class TaskScheduler:
             return []
     
     def delete_scheduled_task(self, name: str) -> bool:
-        """Delete a scheduled task."""
         try:
             if self.system == "windows":
                 cmd = ["schtasks", "/delete", "/tn", name, "/f"]
-                result = subprocess.run(cmd, capture_output=True, text=True)
+                result = _proc.run(cmd, text=True, timeout=30)
                 return result.returncode == 0
             elif self.system == "darwin":  # macOS
-                # Remove the plist file
                 plist_file = Path.home() / "Library" / "LaunchAgents" / f"com.deepcleaner.{name}.plist"
                 if plist_file.exists():
-                    plist_file.unlink()
-                    # Unload the job
                     cmd = ["launchctl", "unload", str(plist_file)]
-                    subprocess.run(cmd, capture_output=True, text=True)
+                    _proc.run(cmd, text=True, timeout=15)
+                    plist_file.unlink()
                 return True
             elif self.system == "linux":
-                # Remove from crontab
-                result = subprocess.run(["crontab", "-l"], capture_output=True, text=True)
+                result = _proc.run(["crontab", "-l"], text=True, timeout=15)
                 if result.returncode == 0:
                     lines = result.stdout.strip().split('\n')
                     new_lines = [line for line in lines if f"DeepCleaner task: {name}" not in line]
                     new_crontab = "\n".join(new_lines) + ("\n" if new_lines else "")
                     cmd = ["crontab", "-"]
-                    process = subprocess.Popen(cmd, stdin=subprocess.PIPE, text=True)
-                    process.communicate(input=new_crontab)
-                    return process.returncode == 0
+                    result = _proc.run(cmd, text=True, timeout=15, input=new_crontab)
+                    return result.returncode == 0
                 return False
             else:
                 self.error_count += 1
@@ -374,9 +373,10 @@ class TaskScheduler:
         except Exception:
             self.error_count += 1
             return False
+        """delete_scheduled_task."""
     
     def get_stats(self) -> dict:
-        """Get statistics about scheduled tasks."""
+        """Summarize task count, platform, and error total."""
         tasks = self.list_scheduled_tasks()
         
         return {

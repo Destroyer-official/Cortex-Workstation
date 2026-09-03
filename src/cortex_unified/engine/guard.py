@@ -31,6 +31,8 @@ class GuardVerdict:
 
     def __bool__(self) -> bool:  # allow ``if guard.check(p):``
         return self.safe
+        """__bool__."""
+        """__bool__."""
 
 
 def _windows_protected() -> set[Path]:
@@ -50,6 +52,8 @@ def _windows_protected() -> set[Path]:
     if win:
         roots.add(Path(win))
     return {p.resolve(strict=False) for p in roots}
+    """_windows_protected."""
+    """_windows_protected."""
 
 
 def _posix_protected() -> set[Path]:
@@ -60,6 +64,8 @@ def _posix_protected() -> set[Path]:
     if platform.system() == "Darwin":
         base |= {"/System", "/Library", "/Applications", "/private", "/cores"}
     return {Path(p).resolve(strict=False) for p in base}
+    """_posix_protected."""
+    """_posix_protected."""
 
 
 class PathGuard:
@@ -79,6 +85,8 @@ class PathGuard:
             self._home = Path.home().resolve(strict=False)
         except (OSError, RuntimeError):
             self._home = None
+        """__init__."""
+        """__init__."""
 
     def check(self, path: os.PathLike[str] | str) -> GuardVerdict:
         """Return a :class:`GuardVerdict` for *path*."""

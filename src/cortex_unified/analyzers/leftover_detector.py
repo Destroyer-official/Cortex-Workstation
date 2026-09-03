@@ -4,12 +4,10 @@ import os
 import sys
 import re
 import json
-import hashlib
 from pathlib import Path
-from typing import List, Dict, Set, Tuple, Optional, Any
+from typing import List, Dict, Optional, Any
 from dataclasses import dataclass, asdict
-from datetime import datetime, timedelta
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from datetime import datetime
 import threading
 import logging
 
@@ -35,11 +33,12 @@ class DetectedItem:
     metadata: Dict[str, Any]
     
     def to_dict(self) -> Dict[str, Any]:
-        """Convert to dictionary for serialization."""
         result = asdict(self)
         result['path'] = str(self.path)
         result['last_modified'] = self.last_modified.isoformat()
         return result
+        """to_dict."""
+        """to_dict."""
 
 @dataclass
 class OrphanedFolder(DetectedItem):
@@ -92,7 +91,6 @@ class LeftoverDetector:
     """Advanced heuristics and leftover detection system."""
     
     def __init__(self, config: Config = None):
-        """Initialize leftover detector."""
         self.config = config or Config()
         self.logger = logging.getLogger(__name__)
         
@@ -117,6 +115,8 @@ class LeftoverDetector:
         
         # Common installation paths by platform
         self._setup_installation_paths()
+        """__init__."""
+        """__init__."""
     
     def _setup_installation_paths(self):
         """Set up common installation paths for different platforms."""
@@ -219,7 +219,7 @@ class LeftoverDetector:
     def scan_orphaned_folders(self, paths: List[str] = None) -> List[OrphanedFolder]:
         """Scan for orphaned application folders in common installation paths."""
         if paths is None:
-            # Use default installation paths
+            # No InstallLocation recorded: fall back to the standard roots.
             scan_paths = []
             for path_type, path_list in self.installation_paths.items():
                 scan_paths.extend(path_list)
@@ -287,7 +287,6 @@ class LeftoverDetector:
         reasons = []
         
         try:
-            # Check folder name patterns
             folder_name = folder.name.lower()
             
             # Pattern matching
@@ -298,13 +297,12 @@ class LeftoverDetector:
                         reasons.append(f"Name matches {pattern_type} pattern")
                         break
             
-            # Check folder age
+            # Age is evidence, not proof: old alone never flags a folder.
             age_days = get_file_age_days(folder)
             if age_days > 30:  # Older than 30 days
                 score += 0.1
                 reasons.append("Folder is old")
             
-            # Check if folder is empty or contains only temp files
             if self._folder_appears_abandoned(folder):
                 score += 0.3
                 reasons.append("Folder appears abandoned")
@@ -363,7 +361,6 @@ class LeftoverDetector:
             contains_config_files = self._contains_config_files(folder)
             contains_data_files = self._contains_data_files(folder)
             
-            # Calculate folder size
             size_bytes = self._calculate_folder_size(folder)
             
             # Get last modified time
@@ -467,7 +464,6 @@ class LeftoverDetector:
         return name or folder_name
     
     def detect_installer_files(self, paths: List[str] = None) -> List[InstallerFile]:
-        """Detect installer files and duplicates."""
         if paths is None:
             # Scan common download and temp directories
             scan_paths = []
@@ -510,6 +506,8 @@ class LeftoverDetector:
                     self.scan_stats['errors'] += 1
         
         return self.installer_files
+        """detect_installer_files."""
+        """detect_installer_files."""
     
     def _scan_for_installer_files(self, directory: Path, installer_extensions: set):
         """Scan directory for installer files."""
@@ -521,7 +519,6 @@ class LeftoverDetector:
                 with self._lock:
                     self.scan_stats['files_scanned'] += 1
                 
-                # Check if file has installer extension
                 if item.suffix.lower() in installer_extensions:
                     installer_file = self._analyze_installer_file(item)
                     if installer_file:
@@ -546,13 +543,11 @@ class LeftoverDetector:
             # Determine installer type
             installer_type = file_path.suffix.lower().lstrip('.')
             
-            # Check if it's a duplicate (simplified check by name similarity)
             is_duplicate = self._check_installer_duplicate(file_path)
             
             # Extract version if possible
             version = self._extract_version_from_filename(file_path.name)
             
-            # Calculate confidence score
             confidence = self._calculate_installer_confidence(file_path, size_bytes)
             
             return InstallerFile(
@@ -682,7 +677,6 @@ class LeftoverDetector:
                             # Clean up the path
                             clean_path = value.strip('"').split(' ')[0]  # Remove arguments
                             
-                            # Check if referenced path exists
                             if not Path(clean_path).exists():
                                 orphan = self._create_registry_orphan(
                                     full_key_path, hive_name, clean_path, 'uninstall'
@@ -699,7 +693,8 @@ class LeftoverDetector:
     def _create_registry_orphan(self, registry_key: str, hive: str, referenced_path: str, key_type: str) -> Optional[RegistryOrphan]:
         """Create a RegistryOrphan object."""
         try:
-            # Calculate confidence based on path existence and key type
+            # Uninstall keys are strong evidence of an installed app, so they
+            # start at higher confidence than generic registry references.
             confidence = 0.7 if key_type == 'uninstall' else 0.5
             
             return RegistryOrphan(

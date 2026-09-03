@@ -1,19 +1,19 @@
 # Testing
-pytest>=7.0.0
-pytest-cov>=4.0.0
-pytest-qt>=4.0.0
-hypothesis>=6.0.0          # property-based tests (tests/test_config_v2.py)
+pytest>=9.1.1
+pytest-cov>=7.1.0
+pytest-qt>=4.5.0
+hypothesis>=6.165.5          # property-based tests (tests/test_config_v2.py)
 
 # Config/logging stack exercised by the test-suite
-pydantic>=2.0.0
-pydantic-settings>=2.0.0
-structlog>=23.0.0
+pydantic>=2.13.4
+pydantic-settings>=2.14.2
+structlog>=26.1.0
 
 # Fast hashing used by the engine (optional at runtime, required to test it)
-xxhash>=3.0.0
+xxhash>=3.7.0
 
 # Linting / typing / formatting
-black>=22.0.0
-flake8>=5.0.0
-mypy>=1.0.0
-pre-commit>=2.20.0
+black>=26.5.1
+flake8>=7.3.0
+mypy>=2.3.0
+pre-commit>=4.6.2

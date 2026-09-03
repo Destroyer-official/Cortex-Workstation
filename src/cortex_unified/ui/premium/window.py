@@ -3,16 +3,21 @@
 from __future__ import annotations
 
 import logging
+import time
+from collections.abc import Mapping
 from pathlib import Path
 
-from PySide6.QtCore import QEvent, QObject, Qt, QThread
+from PySide6.QtCore import QEvent, QObject, Qt, QThread, QPropertyAnimation, QEasingCurve, QSize, QTimer
 from PySide6.QtWidgets import (
     QApplication,
     QButtonGroup,
+    QCheckBox,
     QFileDialog,
+    QGridLayout,
     QHBoxLayout,
     QHeaderView,
     QLabel,
+    QLineEdit,
     QMainWindow,
     QMessageBox,
     QProgressBar,
@@ -28,14 +33,26 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from . import motion
+from cortex_unified.licensing import Feature
+from . import icons, motion, registry
+from .smoothscroll import install_smooth_scroll
 from .theme import THEMES, Palette, apply_theme
-from .widgets import Badge, Card, CircularGauge, StatCard, hline, title_block
+from .widgets import (
+    Badge,
+    Card,
+    CircularGauge,
+    StatCard,
+    hline,
+    require_feature,
+    status_note,
+    title_block,
+)
 
 _LOG = logging.getLogger("cortex.ui.premium")
 
 
 def fmt_bytes(n: int) -> str:
+    """fmt_bytes."""
     size = float(n)
     for unit in ("B", "KB", "MB", "GB", "TB", "PB"):
         if size < 1024 or unit == "PB":
@@ -44,123 +61,149 @@ def fmt_bytes(n: int) -> str:
     return f"{n} B"
 
 
-# Navigation definition: (page_id, label, icon-glyph)
-_NAV = [
-    ("dashboard", "Dashboard", "\u25C9"),
-    ("health", "Health Check", "\u2764"),
-    ("duplicates", "Duplicates", "\u29C9"),
-    ("photos", "Duplicate Photos", "\u25A3"),
-    ("dupfolders", "Duplicate Folders", "\u25A3"),
-    ("large", "Large Files", "\u25B0"),
-    ("empty", "Empty Items", "\u25CB"),
-    ("analyzer", "Disk Analyzer", "\u25F0"),
-    ("brokenlinks", "Broken Links", "\u26D3"),
-    ("packages", "Package Caches", "\u25A9"),
-    ("updater", "Software Updater", "\u21BB"),
-    ("drives", "Drive Optimizer", "\u25A4"),
-    ("diskhealth", "Disk Health", "\u2665"),
-    ("bootperf", "Boot Performance", "\u23F1"),
-    ("winupdate", "Windows Update", "\u2B73"),
-    ("repair", "System File Health", "\u2695"),
-    ("schedule", "Scheduled Tasks", "\u23F0"),
-    ("performance", "Performance", "\u26A1"),
-    ("privacy", "Privacy", "\u26E8"),
-    ("startup", "Startup", "\u25B6"),
-    ("processes", "Processes", "\u2637"),
-    ("network", "Network Monitor", "\u21C4"),
-    ("traffic", "Traffic Monitor", "\u2248"),
-    ("netmap", "Network Map", "\u26B8"),
-    ("landevices", "Network Devices", "\u2637"),
-    ("nettools", "Network Tools", "\u2692"),
-    ("loadtest", "Load Tester", "\u25F4"),
-    ("firewall", "Firewall", "\u26E8"),
-    ("extensions", "Browser Extensions", "\u2b50"),
-    ("drivers", "Driver Inventory", "\u2699"),
-    ("uninstaller", "Uninstaller", "\u2718"),
-    ("telemetry", "Telemetry", "\u25C8"),
-    ("registry", "Registry", "\u25A6"),
-    ("security", "Security", "\u26E8"),
-    ("storagesense", "Storage Sense", "\u267B"),
-    ("secrets", "Secrets Scanner", "\u26BF"),
-    ("shred", "Secure Shred", "\u2726"),
-    ("backups", "Backups & Restore", "\u21A9"),
-    ("report", "Health Report", "\u25A4"),
-    ("sysinfo", "System Info", "\u2139"),
-    ("settings", "Settings", "\u2699"),
-]
+# Navigation is *derived* from the single declarative registry in
+# ``registry.py`` - see that module to add or reorder a tool. These aliases
+# exist only so long-standing call sites and tests keep working; nothing here
+# is a second source of truth.
+#
+#: ``[(page_id, label, icon)]`` in sidebar order.
+_NAV = [(spec.id, spec.title, spec.icon) for spec in registry.ordered_specs()]
+
+#: ``[(group_id, group_title, (page_id, ...))]`` in sidebar order.
+_NAV_GROUPS = tuple(
+    (group.id, group.title, tuple(spec.id for spec in specs))
+    for group, specs in registry.grouped()
+)
 
 
-class _TitleBar(QWidget):
-    """Custom window chrome: brand + native window controls (frameless shell).
+#: Logical size of a sidebar icon, in device-independent pixels.
+_NAV_ICON_PX = 17
 
-    Dragging uses the platform's own ``startSystemMove`` so Windows aero-snap
-    (drag-to-top maximize, drag-to-side half-snap) keeps working. Double-click
-    toggles maximize.
+#: Title-bar brand mark and window-control icon sizes.
+_TITLE_GLYPH_PX = 19
+_WIN_BTN_PX = 13
+
+#: Sidebar brand mark size.
+_BRAND_MARK_PX = 20
+
+#: Backwards-compatible view of the registry: ``page_id -> (class, module)``.
+#: Derived, never maintained by hand.
+_PAGE_FACTORIES: dict[str, tuple[str, str]] = {
+    spec.id: (spec.factory.split(":")[1], spec.factory.split(":")[0])
+    for spec in registry.PAGES
+}
+
+
+class _TitleBarChrome:
+    """Read-only handle to the window's chrome: brand mark + window controls.
+
+    The individual widgets live on the window (``_brand_mark``,
+    ``_min_btn``, ...) because the title-bar row is wired up inline during
+    construction; this small namespace exposes them under the conventional
+    ``_brand``/``_min``/``_max``/``_close`` names so chrome code and tests
+    don't reach into the concrete attributes.
     """
 
-    def __init__(self, win: "PremiumMainWindow"):
-        super().__init__(win)
+    __slots__ = ("_brand", "_min", "_max", "_close")
+
+    def __init__(self, brand, min_btn, max_btn, close_btn):
+        """__init__."""
+        self._brand = brand
+        self._min = min_btn
+        self._max = max_btn
+        self._close = close_btn
+
+
+class _LazyPageRegistry(Mapping):
+    """A ``dict[str, QWidget]``-compatible view that builds pages on demand.
+
+    Reads like the eager dictionary it replaced - ``len()``, iteration,
+    ``in``, and ``registry["dashboard"]`` all behave identically and report all
+    43 pages - but a page widget is only constructed the first time it is
+    actually requested, and is then cached and added to the window's
+    ``QStackedWidget``.
+
+    This keeps every existing call site and test working (``set(win._pages)``,
+    ``win._pages["dashboard"]``) while removing ~2.6 s from window startup.
+    """
+
+    def __init__(self, win: "PremiumMainWindow") -> None:
+        """__init__."""
         self._win = win
-        self.setObjectName("TitleBar")
-        self.setFixedHeight(42)
+        self._built: dict[str, QWidget] = {}
 
-        lay = QHBoxLayout(self)
-        lay.setContentsMargins(14, 0, 8, 0)
-        lay.setSpacing(9)
+    # -- Mapping protocol ---------------------------------------------------
 
-        glyph = QLabel("\u26E8")
-        glyph.setObjectName("TitleGlyph")
-        title = QLabel("Cortex Cleaner")
-        title.setObjectName("TitleText")
-        lay.addWidget(glyph)
-        lay.addWidget(title)
-        lay.addStretch(1)
+    def __getitem__(self, page_id: str) -> QWidget:
+        """__getitem__."""
+        page = self._built.get(page_id)
+        if page is not None:
+            return page
+        try:
+            spec = registry.BY_ID[page_id]
+        except KeyError:
+            raise KeyError(page_id) from None
+        _LOG.debug("constructing page %s (%s)", page_id, spec.factory)
+        page = spec.load()(self._win)
+        self._built[page_id] = page
+        self._win._stack.addWidget(page)
+        return page
 
-        self._min = QPushButton("\uFF0D")
-        self._max = QPushButton("\u2610")
-        self._close = QPushButton("\u2715")
-        for b in (self._min, self._max):
-            b.setObjectName("WinBtn")
-        self._close.setObjectName("CloseBtn")
-        for b in (self._min, self._max, self._close):
-            b.setFixedSize(44, 30)
-            b.setCursor(Qt.CursorShape.PointingHandCursor)
-            b.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-            lay.addWidget(b)
+    def __iter__(self):
+        """__iter__."""
+        # Navigation order, so iteration matches what the user sees.
+        return iter(registry.ordered_ids())
 
-        self._min.clicked.connect(win.showMinimized)
-        self._max.clicked.connect(self._toggle_max)
-        self._close.clicked.connect(win.close)
+    def __len__(self) -> int:
+        """__len__."""
+        return len(registry.PAGES)
 
-    def _toggle_max(self):
-        if self._win.isMaximized():
-            self._win.showNormal()
-            self._max.setText("\u2610")
-        else:
-            self._win.showMaximized()
-            self._max.setText("\u2750")
+    def __contains__(self, page_id: object) -> bool:
+        """__contains__."""
+        return page_id in registry.BY_ID
 
-    def mousePressEvent(self, event):  # noqa: N802
-        if event.button() == Qt.MouseButton.LeftButton:
-            handle = self._win.windowHandle()
-            if handle is not None:
-                handle.startSystemMove()
+    # -- introspection ------------------------------------------------------
 
-    def mouseDoubleClickEvent(self, event):  # noqa: N802
-        if event.button() == Qt.MouseButton.LeftButton:
-            self._toggle_max()
+    def is_built(self, page_id: str) -> bool:
+        """True when *page_id* has actually been constructed."""
+        return page_id in self._built
+
+    @property
+    def built_ids(self) -> frozenset[str]:
+        """The pages constructed so far - useful for tests and diagnostics."""
+        return frozenset(self._built)
+
+
 
 
 class PremiumMainWindow(QMainWindow):
-    """Modern shell hosting all engine-backed pages."""
+    """Shell hosting all engine-backed pages."""
 
-    def __init__(self, theme: str = "dark"):
+    def __init__(self, theme: str = "dark", settings=None):
+        """__init__."""
         super().__init__()
+        # Durable user preferences (theme, close-to-tray). The store is shared
+        # with the entry point when provided so both read/write one file; a
+        # standalone construction (tests) gets its own default-backed store.
+        from .settings_store import SettingsStore
+        self.settings = settings if settings is not None else SettingsStore()
+        # Apps recently uninstalled on the Deep Uninstaller page, awaiting a
+        # leftover scan on the Leftover Scanner page (cross-page handoff).
+        self._pending_leftover_apps: list[dict] = []
         self.theme_name = theme
         self.palette_tokens: Palette = THEMES[theme]
         self._threads: list[QThread] = []
+        self._closing = False              # set in closeEvent; blocks new workers
+        self._force_quit = False           # set by the tray's Exit action
+        self._tray = None                  # PremiumTray, created after pages
+        self._tray_hint_shown = False      # one-time "still running in tray" hint
+        #: Threads that ignored every shutdown attempt. Detached from the
+        #: window (so Qt teardown can never destroy a live QThread) and kept
+        #: referenced here; the app entry point reads this to decide whether a
+        #: hard exit is needed (see app.main / _shutdown_workers).
+        self._workers_stuck: list[QThread] = []
 
-        self.setWindowTitle("Cortex Cleaner")
+        self.setWindowTitle("Cortex Workstation")
         self.resize(1180, 760)
         self.setMinimumSize(840, 560)
 
@@ -187,212 +230,628 @@ class PremiumMainWindow(QMainWindow):
         self.suggester = SmartSuggester()
 
         central = QWidget()
-        outer = QVBoxLayout(central)
+        outer = QHBoxLayout(central)
         outer.setContentsMargins(0, 0, 0, 0)
         outer.setSpacing(0)
 
-        self._titlebar = _TitleBar(self)
-        outer.addWidget(self._titlebar)
-
-        body = QWidget()
-        root = QHBoxLayout(body)
-        root.setContentsMargins(0, 0, 0, 0)
-        root.setSpacing(0)
-
         self._sidebar = self._build_sidebar()
-        root.addWidget(self._sidebar)
+        outer.addWidget(self._sidebar)
+
+        right_col = QWidget()
+        right_lay = QVBoxLayout(right_col)
+        right_lay.setContentsMargins(0, 0, 0, 0)
+        right_lay.setSpacing(0)
+
+        # Thin title bar at top with tab area and window controls on the right
+        title_row = QWidget()
+        title_row.setFixedHeight(36)
+        title_row.setObjectName("TitleBar")
+        title_lay = QHBoxLayout(title_row)
+        title_lay.setContentsMargins(4, 0, 4, 0)
+        title_lay.setSpacing(4)
+
+        # Tab bar host container (for Nexus File Manager tabs aligned with window buttons)
+        self._titlebar_tab_area = QWidget()
+        self._titlebar_tab_area.setObjectName("TitleBarTabArea")
+        self._titlebar_tab_layout = QHBoxLayout(self._titlebar_tab_area)
+        self._titlebar_tab_layout.setContentsMargins(0, 0, 0, 0)
+        self._titlebar_tab_layout.setSpacing(4)
+        title_lay.addWidget(self._titlebar_tab_area)
+        self._titlebar_tab_area.hide()
+
+        title_lay.addStretch(1)
+
+        muted = self.palette_tokens.text_muted
+        self._min_btn = QPushButton()
+        self._max_btn = QPushButton()
+        self._close_btn = QPushButton()
+        for b in (self._min_btn, self._max_btn):
+            b.setObjectName("WinBtn")
+        self._close_btn.setObjectName("CloseBtn")
+        for b, name in ((self._min_btn, "win-minimize"),
+                        (self._max_btn, "win-maximize"),
+                        (self._close_btn, "win-close")):
+            b.setIcon(icons.icon(name, _WIN_BTN_PX, muted))
+            b.setIconSize(icons.icon_size(_WIN_BTN_PX))
+            b.setFixedSize(36, 28)
+            b.setCursor(Qt.CursorShape.PointingHandCursor)
+            b.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+            title_lay.addWidget(b)
+        self._min_btn.setAccessibleName("Minimize")
+        self._max_btn.setAccessibleName("Maximize")
+        self._close_btn.setAccessibleName("Close")
+        self._min_btn.clicked.connect(self.showMinimized)
+        self._max_btn.clicked.connect(self._toggle_max)
+        self._close_btn.clicked.connect(self.close)
+
+        # Expose the window-control buttons + brand under the conventional
+        # ``_titlebar`` names for chrome code and accessibility tests.
+        self._titlebar = _TitleBarChrome(
+            self._brand_mark, self._min_btn, self._max_btn, self._close_btn)
+
+        right_lay.addWidget(title_row)
 
         self._stack = QStackedWidget()
         content_wrap = QWidget()
         content_wrap.setObjectName("ContentArea")
         cw = QVBoxLayout(content_wrap)
-        cw.setContentsMargins(28, 24, 28, 20)
+        cw.setContentsMargins(20, 8, 20, 16)
         cw.addWidget(self._stack)
         self._content_layout = cw
-        root.addWidget(content_wrap, 1)
+        right_lay.addWidget(content_wrap, 1)
 
-        outer.addWidget(body, 1)
+        outer.addWidget(right_col, 1)
         self.setCentralWidget(central)
 
         if self._frameless:
             QApplication.instance().installEventFilter(self)
 
-        # Pages (import lazily to keep this module cohesive)
-        self._pages: dict[str, QWidget] = {}
-        # System-tool pages live in a separate module; import lazily here (after
-        # this module is fully defined) to avoid a circular import.
-        from .system_pages import (
-            NetworkPage,
-            PrivacyPage,
-            ProcessesPage,
-            RegistryPage,
-            StartupPage,
-            TelemetryPage,
-            UninstallerPage,
-        )
-        from .more_pages import (
-            BrokenLinksPage,
-            DriveOptimizerPage,
-            DuplicateFoldersPage,
-            PackageCachePage,
-            SecretsScannerPage,
-            SoftwareUpdaterPage,
-            SystemInfoPage,
-        )
-        from .analysis_pages import (
-            BootPerformancePage,
-            DiskAnalyzerPage,
-            DiskHealthPage,
-            HealthCheckPage,
-            ScheduledTasksPage,
-            SecurityPage,
-            StorageSensePage,
-            SystemRepairPage,
-            WindowsUpdatePage,
-        )
-        from .report_pages import (
-            BackupsPage,
-            HealthReportPage,
-        )
-        from .tools_pages import (
-            BrowserExtensionsPage,
-            DriverInventoryPage,
-            PerformancePage,
-        )
-        from .network_pages import (
-            FirewallPage,
-            LanDevicesPage,
-            LoadTesterPage,
-            NetworkMapPage,
-            NetworkToolsPage,
-            TrafficMonitorPage,
-        )
-
-        self._pages["dashboard"] = DashboardPage(self)
-        self._pages["health"] = HealthCheckPage(self)
-        self._pages["duplicates"] = DuplicatesPage(self)
-        self._pages["photos"] = DuplicatePhotosPage(self)
-        self._pages["dupfolders"] = DuplicateFoldersPage(self)
-        self._pages["large"] = LargeFilesPage(self)
-        self._pages["empty"] = EmptyPage(self)
-        self._pages["analyzer"] = DiskAnalyzerPage(self)
-        self._pages["brokenlinks"] = BrokenLinksPage(self)
-        self._pages["packages"] = PackageCachePage(self)
-        self._pages["updater"] = SoftwareUpdaterPage(self)
-        self._pages["drives"] = DriveOptimizerPage(self)
-        self._pages["diskhealth"] = DiskHealthPage(self)
-        self._pages["bootperf"] = BootPerformancePage(self)
-        self._pages["winupdate"] = WindowsUpdatePage(self)
-        self._pages["repair"] = SystemRepairPage(self)
-        self._pages["schedule"] = ScheduledTasksPage(self)
-        self._pages["performance"] = PerformancePage(self)
-        self._pages["privacy"] = PrivacyPage(self)
-        self._pages["startup"] = StartupPage(self)
-        self._pages["processes"] = ProcessesPage(self)
-        self._pages["network"] = NetworkPage(self)
-        self._pages["traffic"] = TrafficMonitorPage(self)
-        self._pages["netmap"] = NetworkMapPage(self)
-        self._pages["landevices"] = LanDevicesPage(self)
-        self._pages["nettools"] = NetworkToolsPage(self)
-        self._pages["loadtest"] = LoadTesterPage(self)
-        self._pages["firewall"] = FirewallPage(self)
-        self._pages["extensions"] = BrowserExtensionsPage(self)
-        self._pages["drivers"] = DriverInventoryPage(self)
-        self._pages["uninstaller"] = UninstallerPage(self)
-        self._pages["telemetry"] = TelemetryPage(self)
-        self._pages["registry"] = RegistryPage(self)
-        self._pages["security"] = SecurityPage(self)
-        self._pages["storagesense"] = StorageSensePage(self)
-        self._pages["secrets"] = SecretsScannerPage(self)
-        self._pages["shred"] = ShredPage(self)
-        self._pages["backups"] = BackupsPage(self)
-        self._pages["report"] = HealthReportPage(self)
-        self._pages["sysinfo"] = SystemInfoPage(self)
-        self._pages["settings"] = SettingsPage(self)
-        for pid, _, _ in _NAV:
-            self._stack.addWidget(self._pages[pid])
+        # Pages are built on first view, not up front. Constructing all 43
+        # eagerly cost ~2.6 s before the window could appear, even though a
+        # session typically touches a handful of tools. ``_pages`` still behaves
+        # like the old ``dict[str, QWidget]`` (see :class:`_LazyPageRegistry`).
+        self._pages = _LazyPageRegistry(self)
 
         self.statusBar().showMessage("Ready")
-        self._select("dashboard")
+        self._select(registry.DEFAULT_PAGE_ID)
+
+        # Ctrl+H toggle sidebar
+        from PySide6.QtGui import QShortcut, QKeySequence
+        self._sidebar_shortcut = QShortcut(QKeySequence("Ctrl+H"), self)
+        self._sidebar_shortcut.activated.connect(self._toggle_sidebar)
+
+        # Collapse sidebar by default for full-screen file manager experience
+        self._toggle_sidebar()
+        self._menu_btn.setToolTip("Expand sidebar (Ctrl+H)")
+
+        # System-tray presence + background resource monitor. Created last so
+        # it can reference the fully-built pages/palette; availability-gated so
+        # it is inert on headless/offscreen hosts and never affects startup.
+        from .tray import PremiumTray
+        self._tray = PremiumTray(self, self.settings)
 
     # -- sidebar ------------------------------------------------------------
 
     def _build_sidebar(self) -> QWidget:
+        """_build_sidebar."""
         bar = QWidget()
         bar.setObjectName("Sidebar")
-        bar.setFixedWidth(214)
+        bar.setMinimumWidth(60)
+        bar.setMaximumWidth(220)
         lay = QVBoxLayout(bar)
-        lay.setContentsMargins(14, 20, 14, 16)
-        lay.setSpacing(6)
+        lay.setContentsMargins(10, 4, 10, 10)
+        lay.setSpacing(4)
 
-        brand = QLabel("\u26E8  Cortex")
+        # Top row: hamburger + window controls
+        top_row = QHBoxLayout()
+        top_row.setContentsMargins(0, 0, 0, 0)
+        top_row.setSpacing(2)
+
+        self._menu_btn = QPushButton()
+        self._menu_btn.setObjectName("MenuBtn")
+        self._menu_btn.setFixedSize(24, 24)
+        self._menu_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self._menu_btn.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        # Real SVG rather than the U+2630 hamburger: Qt 6 ships no fonts, so a
+        # codepoint glyph would fall through to system font fallback.
+        self._menu_btn.setIcon(icons.icon("menu", _NAV_ICON_PX, self.palette_tokens.text_muted))
+        self._menu_btn.setIconSize(icons.icon_size(_NAV_ICON_PX))
+        self._menu_btn.setToolTip("Collapse sidebar (Ctrl+H)")
+        self._menu_btn.setAccessibleName("Toggle sidebar")
+        self._menu_btn.clicked.connect(self._toggle_sidebar)
+        top_row.addWidget(self._menu_btn)
+
+        lay.addLayout(top_row)
+        lay.addSpacing(2)
+
+        # SVG mark + wordmark, not a codepoint prefix: U+25C8 rendered at a
+        # different weight and baseline depending on the system fallback font.
+        brand_row = QHBoxLayout()
+        brand_row.setContentsMargins(0, 0, 0, 0)
+        brand_row.setSpacing(9)
+        self._brand_mark = QLabel()
+        self._brand_mark.setPixmap(
+            icons.pixmap("brand", _BRAND_MARK_PX, self.palette_tokens.accent))
+        self._brand_mark.setFixedSize(icons.icon_size(_BRAND_MARK_PX))
+        brand_row.addWidget(self._brand_mark, 0, Qt.AlignmentFlag.AlignVCenter)
+        brand = QLabel("CORTEX")
         brand.setObjectName("Brand")
-        sub = QLabel("CLEANER SUITE")
+        brand_row.addWidget(brand, 1, Qt.AlignmentFlag.AlignVCenter)
+        lay.addLayout(brand_row)
+        sub = QLabel("SYSTEM CARE // CONSOLE")
         sub.setObjectName("BrandSub")
-        lay.addWidget(brand)
         lay.addWidget(sub)
-        lay.addSpacing(14)
+        lay.addSpacing(4)
 
-        # Scrollable nav area (there are many tools; never let them clip).
+        self._nav_search = QLineEdit()
+        self._nav_search.setObjectName("NavSearch")
+        self._nav_search.setPlaceholderText("Find a tool\u2026")
+        self._nav_search.setClearButtonEnabled(True)
+        self._nav_search.setAccessibleName("Search Cortex tools")
+        lay.addWidget(self._nav_search)
+        lay.addSpacing(2)
+
+        # One scroll container owns the hierarchical navigation. Sections use
+        # real focusable buttons so mouse, keyboard, and assistive technology
+        # all receive the same disclosure behavior.
         nav_scroll = QScrollArea()
+        nav_scroll.setObjectName("NavScroll")
         nav_scroll.setWidgetResizable(True)
         nav_scroll.setFrameShape(QScrollArea.Shape.NoFrame)
-        nav_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        nav_scroll.setHorizontalScrollBarPolicy(
+            Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         nav_holder = QWidget()
+        nav_holder.setObjectName("NavHolder")
         nav_lay = QVBoxLayout(nav_holder)
         nav_lay.setContentsMargins(0, 0, 0, 0)
-        nav_lay.setSpacing(4)
+        nav_lay.setSpacing(3)
 
         self._nav_group = QButtonGroup(self)
         self._nav_group.setExclusive(True)
-        for pid, label, glyph in _NAV:
-            btn = QPushButton(f"  {glyph}   {label}")
-            btn.setObjectName("NavItem")
-            btn.setCheckable(True)
-            btn.setCursor(Qt.CursorShape.PointingHandCursor)
-            btn.clicked.connect(lambda _=False, p=pid: self._select(p))
-            self._nav_group.addButton(btn)
-            btn._page_id = pid  # type: ignore[attr-defined]
-            nav_lay.addWidget(btn)
+        self._nav_sections: dict[str, dict] = {}
+        self._nav_sections_by_page: dict[str, str] = {}
+        self._nav_buttons_by_page: dict[str, QPushButton] = {}
+
+        # Built straight from the declarative registry: the sidebar cannot
+        # disagree with the page stack, because both read the same source.
+        for group, specs in registry.grouped():
+            group_id, title = group.id, group.title
+            header = QPushButton()
+            header.setObjectName("NavGroupHeader")
+            header.setCheckable(True)
+            header.setChecked(group_id == registry.group_of(
+                registry.DEFAULT_PAGE_ID))
+            header.setCursor(Qt.CursorShape.PointingHandCursor)
+            header.setAccessibleName(f"{title} navigation group")
+            header.setToolTip(f"Show or hide {title} tools")
+            header._group_title = title  # type: ignore[attr-defined]
+
+            body = QWidget()
+            body.setObjectName("NavGroupBody")
+            body_lay = QVBoxLayout(body)
+            body_lay.setContentsMargins(8, 0, 0, 3)
+            body_lay.setSpacing(2)
+
+            section = {
+                "title": title,
+                "header": header,
+                "body": body,
+                "pages": tuple(spec.id for spec in specs),
+            }
+            self._nav_sections[group_id] = section
+            nav_lay.addWidget(header)
+            nav_lay.addWidget(body)
+
+            for spec in specs:
+                button = QPushButton(f"  {spec.title}")
+                button.setObjectName("NavItem")
+                button.setCheckable(True)
+                button.setCursor(Qt.CursorShape.PointingHandCursor)
+                button.setAccessibleName(spec.title)
+                button.setToolTip(f"Open {spec.title}")
+                # Real SVG, rasterised at the screen's device pixel ratio, so
+                # it stays sharp at 125%/150% scaling instead of relying on
+                # system font fallback for a Unicode glyph.
+                button.setIcon(icons.icon(
+                    spec.icon, _NAV_ICON_PX, self.palette_tokens.text_muted))
+                button.setIconSize(icons.icon_size(_NAV_ICON_PX))
+                button.clicked.connect(
+                    lambda _checked=False, pid=spec.id: self._select(pid))
+                button._page_id = spec.id  # type: ignore[attr-defined]
+                button._nav_label = spec.title  # type: ignore[attr-defined]
+                self._nav_group.addButton(button)
+                self._nav_buttons_by_page[spec.id] = button
+                self._nav_sections_by_page[spec.id] = group_id
+                body_lay.addWidget(button)
+
+            expanded = header.isChecked()
+            body.setVisible(expanded)
+            self._update_nav_header(group_id, expanded)
+            header.toggled.connect(
+                lambda open_, gid=group_id: self._set_nav_section(
+                    gid, open_))
+
+        self._nav_empty = QLabel("NO TOOLS MATCH")
+        self._nav_empty.setObjectName("NavEmpty")
+        self._nav_empty.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._nav_empty.setVisible(False)
+        nav_lay.addWidget(self._nav_empty)
         nav_lay.addStretch(1)
         nav_scroll.setWidget(nav_holder)
+        install_smooth_scroll(nav_scroll)
         lay.addWidget(nav_scroll, 1)
 
-        version = QLabel("v2.1  \u2022  engine-backed")
-        version.setObjectName("Muted")
-        version.setStyleSheet("font-size: 11px;")
+        self._nav_search.textChanged.connect(self._filter_navigation)
+
+        signal = QLabel("\u25CF  SYSTEM READY")
+        signal.setObjectName("SidebarStatus")
+        version = QLabel("CORE v2.1  //  LOCAL ENGINE")
+        version.setObjectName("SidebarVersion")
+        lay.addWidget(signal)
         lay.addWidget(version)
+
+        # Store refs for collapse toggle
+        self._sidebar_brand_row = brand_row
+        self._sidebar_brand_label = brand
+        self._sidebar_sub = sub
+        self._sidebar_search = self._nav_search
+        self._sidebar_signal = signal
+        self._sidebar_version = version
+        self._sidebar_nav_scroll = nav_scroll
+        self._sidebar_expanded = True
+        self._sidebar_pinned = True  # pinned = stays open
+        self._sidebar_hover_expanded = False  # temporary hover expand
+        self._sidebar_collapsed_width = 60
+        self._sidebar_expanded_width = 220
+        self._sidebar_anim = None
+        self._sidebar_anim2 = None
+        self._sidebar_leave_timer = QTimer(self)
+        self._sidebar_leave_timer.setSingleShot(True)
+        self._sidebar_leave_timer.setInterval(350)
+        self._sidebar_leave_timer.timeout.connect(self._sidebar_hover_collapse)
+
+        # Install event filter for hover detection
+        bar.installEventFilter(self)
+
         return bar
 
+    def eventFilter(self, obj, event):
+        """Detect mouse enter/leave on sidebar for hover-expand."""
+        if obj is self._sidebar and not self._sidebar_pinned and not self._sidebar_expanded:
+            if event.type() == QEvent.Type.Enter:
+                self._sidebar_leave_timer.stop()
+                if not self._sidebar_hover_expanded:
+                    self._sidebar_hover_expand()
+            elif event.type() == QEvent.Type.Leave:
+                self._sidebar_leave_timer.start()
+        return super().eventFilter(obj, event)
+
+    def _sidebar_hover_expand(self) -> None:
+        """Temporarily expand sidebar on hover (when collapsed & not pinned)."""
+        self._sidebar_hover_expanded = True
+        bar = self._sidebar
+
+        # Show content immediately for smooth feel
+        self._sidebar_brand_label.show()
+        self._sidebar_sub.show()
+        self._sidebar_search.show()
+        self._sidebar_signal.show()
+        self._sidebar_version.show()
+        for btn in self._nav_buttons_by_page.values():
+            btn.setText(f"  {getattr(btn, '_nav_label', '')}")
+            btn.setProperty("collapsed", False)
+            btn.style().unpolish(btn)
+            btn.style().polish(btn)
+        for gid, sec in self._nav_sections.items():
+            sec["header"].setProperty("collapsed", False)
+            self._update_nav_header(gid, sec["header"].isChecked())
+
+        # Animate expand
+        self._stop_sidebar_anim()
+        w = bar.width()
+        self._sidebar_anim = QPropertyAnimation(bar, b"minimumWidth", bar)
+        self._sidebar_anim.setDuration(180)
+        self._sidebar_anim.setEasingCurve(QEasingCurve.Type.OutCubic)
+        self._sidebar_anim.setStartValue(w)
+        self._sidebar_anim.setEndValue(self._sidebar_expanded_width)
+        self._sidebar_anim2 = QPropertyAnimation(bar, b"maximumWidth", bar)
+        self._sidebar_anim2.setDuration(180)
+        self._sidebar_anim2.setEasingCurve(QEasingCurve.Type.OutCubic)
+        self._sidebar_anim2.setStartValue(w)
+        self._sidebar_anim2.setEndValue(self._sidebar_expanded_width)
+        self._sidebar_anim.start()
+        self._sidebar_anim2.start()
+
+    def _sidebar_hover_collapse(self) -> None:
+        """Collapse sidebar after mouse leaves (when not pinned)."""
+        if self._sidebar_pinned or self._sidebar_expanded:
+            self._sidebar_hover_expanded = False
+            return
+        self._sidebar_hover_expanded = False
+        self._collapse_sidebar_content()
+
+        # Animate collapse
+        bar = self._sidebar
+        self._stop_sidebar_anim()
+        w = bar.width()
+        self._sidebar_anim = QPropertyAnimation(bar, b"minimumWidth", bar)
+        self._sidebar_anim.setDuration(200)
+        self._sidebar_anim.setEasingCurve(QEasingCurve.Type.InOutCubic)
+        self._sidebar_anim.setStartValue(w)
+        self._sidebar_anim.setEndValue(self._sidebar_collapsed_width)
+        self._sidebar_anim2 = QPropertyAnimation(bar, b"maximumWidth", bar)
+        self._sidebar_anim2.setDuration(200)
+        self._sidebar_anim2.setEasingCurve(QEasingCurve.Type.InOutCubic)
+        self._sidebar_anim2.setStartValue(w)
+        self._sidebar_anim2.setEndValue(self._sidebar_collapsed_width)
+        self._sidebar_anim.start()
+        self._sidebar_anim2.start()
+
+    def _stop_sidebar_anim(self) -> None:
+        """Stop any running sidebar animations."""
+        for attr in ('_sidebar_anim', '_sidebar_anim2'):
+            anim = getattr(self, attr, None)
+            if anim is not None:
+                anim.stop()
+
+    def _toggle_max(self):
+        """_toggle_max."""
+        muted = self.palette_tokens.text_muted
+        if self.isMaximized():
+            self.showNormal()
+            self._max_btn.setIcon(icons.icon("win-maximize", _WIN_BTN_PX, muted))
+            self._max_btn.setAccessibleName("Maximize")
+        else:
+            self.showMaximized()
+            self._max_btn.setIcon(icons.icon("win-restore", _WIN_BTN_PX, muted))
+            self._max_btn.setAccessibleName("Restore")
+
+    def _toggle_sidebar(self) -> None:
+        """Toggle sidebar pin: pinned = always expanded, unpinned = collapsed + hover-expand."""
+        if self._sidebar_expanded and self._sidebar_pinned:
+            # Unpin and collapse
+            self._sidebar_pinned = False
+            self._sidebar_expanded = False
+            self._collapse_sidebar_content()
+            bar = self._sidebar
+            self._stop_sidebar_anim()
+            w = bar.width()
+            self._sidebar_anim = QPropertyAnimation(bar, b"minimumWidth", bar)
+            self._sidebar_anim.setDuration(220)
+            self._sidebar_anim.setEasingCurve(QEasingCurve.Type.InOutCubic)
+            self._sidebar_anim.setStartValue(w)
+            self._sidebar_anim.setEndValue(self._sidebar_collapsed_width)
+            self._sidebar_anim2 = QPropertyAnimation(bar, b"maximumWidth", bar)
+            self._sidebar_anim2.setDuration(220)
+            self._sidebar_anim2.setEasingCurve(QEasingCurve.Type.InOutCubic)
+            self._sidebar_anim2.setStartValue(w)
+            self._sidebar_anim2.setEndValue(self._sidebar_collapsed_width)
+            self._sidebar_anim.start()
+            self._sidebar_anim2.start()
+            self._menu_btn.setToolTip("Expand sidebar (Ctrl+H)")
+        else:
+            # Pin and expand
+            self._sidebar_pinned = True
+            self._sidebar_expanded = True
+            self._sidebar_hover_expanded = False
+            self._sidebar_leave_timer.stop()
+            bar = self._sidebar
+
+            # Show content
+            self._sidebar_brand_label.show()
+            self._sidebar_sub.show()
+            self._sidebar_search.show()
+            self._sidebar_signal.show()
+            self._sidebar_version.show()
+            self._sidebar_nav_scroll.setHorizontalScrollBarPolicy(
+                Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+            for btn in self._nav_buttons_by_page.values():
+                btn.setText(f"  {getattr(btn, '_nav_label', '')}")
+                btn.setToolTip("")
+                btn.setProperty("collapsed", False)
+                btn.style().unpolish(btn)
+                btn.style().polish(btn)
+            for gid, sec in self._nav_sections.items():
+                sec["header"].setProperty("collapsed", False)
+                self._update_nav_header(gid, sec["header"].isChecked())
+
+            # Animate expand
+            self._stop_sidebar_anim()
+            w = bar.width()
+            self._sidebar_anim = QPropertyAnimation(bar, b"minimumWidth", bar)
+            self._sidebar_anim.setDuration(220)
+            self._sidebar_anim.setEasingCurve(QEasingCurve.Type.InOutCubic)
+            self._sidebar_anim.setStartValue(w)
+            self._sidebar_anim.setEndValue(self._sidebar_expanded_width)
+            self._sidebar_anim2 = QPropertyAnimation(bar, b"maximumWidth", bar)
+            self._sidebar_anim2.setDuration(220)
+            self._sidebar_anim2.setEasingCurve(QEasingCurve.Type.InOutCubic)
+            self._sidebar_anim2.setStartValue(w)
+            self._sidebar_anim2.setEndValue(self._sidebar_expanded_width)
+            self._sidebar_anim.start()
+            self._sidebar_anim2.start()
+            self._menu_btn.setToolTip("Collapse sidebar (Ctrl+H)")
+
+    def _collapse_sidebar_content(self) -> None:
+        """Hide sidebar text content after collapse animation."""
+        if self._sidebar_expanded:
+            return  # User expanded during animation
+        self._sidebar_brand_label.hide()
+        self._sidebar_sub.hide()
+        self._sidebar_search.hide()
+        self._sidebar_signal.hide()
+        self._sidebar_version.hide()
+        self._sidebar_nav_scroll.setHorizontalScrollBarPolicy(
+            Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+
+        # Keep the icon-plus-title text so the button stays label-addressable,
+        # but mark it collapsed so the stylesheet hides the text (font-size: 0)
+        # while the sidebar shrinks to icon-width.
+        for page_id, btn in self._nav_buttons_by_page.items():
+            btn.setText(f"  {getattr(btn, '_nav_label', '')}")
+            btn.setToolTip(getattr(btn, '_nav_label', ''))
+            btn.setProperty("collapsed", True)
+            btn.style().unpolish(btn)
+            btn.style().polish(btn)
+
+        # Collapse all sections and set collapsed property on headers
+        for sec in self._nav_sections.values():
+            sec["header"].setIcon(icons.icon("chevron-right", 12, self.palette_tokens.text_muted))
+            sec["header"].setIconSize(icons.icon_size(12))
+            sec["header"].setText("")
+            sec["header"].setProperty("collapsed", True)
+            sec["header"].style().unpolish(sec["header"])
+            sec["header"].style().polish(sec["header"])
+            body = sec["body"]
+            if body.isVisible():
+                body.setVisible(False)
+
+    def _retint_nav_icons(self) -> None:
+        """Re-render sidebar icons for the active palette.
+
+        Icons are tinted at rasterisation time, so a theme switch has to
+        rebuild them - otherwise dark-theme strokes would persist on the light
+        palette. The pixmap cache is dropped first so stale colours cannot be
+        served back.
+        """
+        icons.clear_cache()
+        color = self.palette_tokens.text_muted
+        for page_id, button in getattr(self, "_nav_buttons_by_page", {}).items():
+            spec = registry.BY_ID.get(page_id)
+            if spec is None:
+                continue
+            button.setIcon(icons.icon(spec.icon, _NAV_ICON_PX, color))
+        mark = getattr(self, "_brand_mark", None)
+        if mark is not None:
+            mark.setPixmap(icons.pixmap(
+                "brand", _BRAND_MARK_PX, self.palette_tokens.accent))
+        muted = self.palette_tokens.text_muted
+        if hasattr(self, '_min_btn'):
+            for b, name in ((self._min_btn, "win-minimize"),
+                            (self._max_btn, "win-maximize" if not self.isMaximized() else "win-restore"),
+                            (self._close_btn, "win-close")):
+                b.setIcon(icons.icon(name, _WIN_BTN_PX, muted))
+        for gid, sec in getattr(self, "_nav_sections", {}).items():
+            self._update_nav_header(gid, sec["header"].isChecked())
+
+    def _update_nav_header(self, group_id: str, expanded: bool) -> None:
+        """_update_nav_header."""
+        section = self._nav_sections[group_id]
+        header = section["header"]
+        icon_name = "chevron-down" if expanded else "chevron-right"
+        chevron_color = self.palette_tokens.accent if expanded else self.palette_tokens.text_muted
+        header.setIcon(icons.icon(icon_name, 12, chevron_color))
+        header.setIconSize(icons.icon_size(12))
+        # Escape '&' as '&&' so Qt does not treat it as an underscore accelerator mnemonic
+        title_escaped = section["title"].replace("&", "&&").upper()
+        header.setText(f"  {title_escaped}")
+        header.setProperty("expanded", expanded)
+        header.style().unpolish(header)
+        header.style().polish(header)
+
+    def _set_nav_section(self, group_id: str, expanded: bool) -> None:
+        """_set_nav_section."""
+        section = self._nav_sections[group_id]
+        searching = bool(self._nav_search.text().strip())
+        if expanded and not searching:
+            for other_id, other in self._nav_sections.items():
+                if other_id == group_id or not other["header"].isChecked():
+                    continue
+                other["header"].blockSignals(True)
+                other["header"].setChecked(False)
+                other["header"].blockSignals(False)
+                other["body"].setVisible(False)
+                self._update_nav_header(other_id, False)
+        section["body"].setVisible(expanded)
+        self._update_nav_header(group_id, expanded)
+        if searching:
+            self._filter_navigation(self._nav_search.text())
+
+    def _filter_navigation(self, text: str) -> None:
+        """_filter_navigation."""
+        query = text.strip().casefold()
+        found_any = False
+        for group_id, section in self._nav_sections.items():
+            group_match = query in section["title"].casefold()
+            matched = False
+            for page_id in section["pages"]:
+                button = self._nav_buttons_by_page[page_id]
+                label = getattr(button, "_nav_label", "")
+                visible = not query or group_match or query in label.casefold()
+                button.setVisible(visible)
+                matched = matched or visible
+            section["header"].setVisible(not query or matched)
+            section["body"].setVisible(
+                matched if query else section["header"].isChecked())
+            found_any = found_any or matched
+        self._nav_empty.setVisible(bool(query) and not found_any)
+
+    def set_titlebar_tab_widget(self, widget: QWidget | None) -> None:
+        """Mount or unmount an external tab bar (e.g. NexusExplorer) in the top window title bar row."""
+        while self._titlebar_tab_layout.count():
+            item = self._titlebar_tab_layout.takeAt(0)
+            if item.widget():
+                item.widget().setParent(None)
+        if widget is not None:
+            self._titlebar_tab_layout.addWidget(widget)
+            self._titlebar_tab_area.show()
+        else:
+            self._titlebar_tab_area.hide()
+
     def _select(self, page_id: str) -> None:
-        for i, (pid, _, _) in enumerate(_NAV):
-            if pid == page_id:
-                self._stack.setCurrentIndex(i)
-        for btn in self._nav_group.buttons():
-            btn.setChecked(getattr(btn, "_page_id", None) == page_id)
+        """_select."""
+        if page_id not in self._nav_buttons_by_page:
+            return
+        self._current_page_id = page_id
+        button = self._nav_buttons_by_page[page_id]
+        if self._nav_search.text() and not button.isVisible():
+            self._nav_search.clear()
+        group_id = self._nav_sections_by_page[page_id]
+        header = self._nav_sections[group_id]["header"]
+        if not header.isChecked():
+            header.setChecked(True)
+
+        # Update titlebar tab visibility & content margins
+        if page_id == "nexus":
+            self._titlebar_tab_area.show()
+            self._content_layout.setContentsMargins(0, 0, 0, 0)
+        else:
+            self._titlebar_tab_area.hide()
+            w = self.width()
+            side = 16 if w < 1040 else (28 if w < 1400 else 44)
+            top = 14 if w < 1040 else (24 if w < 1400 else 30)
+            bot = 12 if w < 1040 else (20 if w < 1400 else 24)
+            self._content_layout.setContentsMargins(side, top, side, bot)
+
+        # Pages are added to the stack as they are built, so stack indices no
+        # longer match _NAV order; switch by widget identity instead.
+        page = self._pages[page_id]
+        self._stack.setCurrentWidget(page)
+        button.setChecked(True)
         self._fade_in(self._stack.currentWidget())
-        # Lazy-load: a page with an ``_autoload`` callable fetches its data the
-        # first time it's viewed, so the app doesn't spawn workers for every
-        # page at startup.
+
+        # Lazy-load a page only on its first visit, avoiding a startup burst of
+        # workers for tools the user may never open.
         page = self._pages.get(page_id)
-        if page is not None and getattr(page, "_autoload", None) and not getattr(page, "_loaded", False):
+        autoload = getattr(page, "_autoload", None) if page is not None else None
+        if callable(autoload) and not getattr(page, "_loaded", False):
             page._loaded = True
-            page._autoload()
+            autoload()
 
     def _fade_in(self, widget: QWidget | None) -> None:
-        """Subtle fade when a page becomes visible - a smooth, premium touch.
+        """Animated fade/rise when a page becomes visible.
 
-        Delegates to the shared :func:`motion.fade_in` so page appearances use
-        the Motion_System's single duration/easing language. The animation is
-        stored in a single ``_page_anim`` reference: starting a new transition
-        replaces any in-flight one, so at most one appearance animation runs per
-        page transition. The opacity effect is removed once the animation
-        finishes so it never interferes with drop-shadow effects on child cards.
+        Delegates to the shared :func:`motion.reveal` so every page appearance
+        uses one duration/easing language. The animation is stored in a single
+        ``_page_anim`` reference: starting a new transition replaces any
+        in-flight one, so at most one appearance animation runs per page
+        transition. The opacity effect is removed once the animation finishes
+        so it never interferes with drop-shadow effects on child cards.
         """
         if widget is None:
             return
         try:
-            self._page_anim = motion.fade_in(widget)  # single reference; supersedes prior
+            self._page_anim = motion.reveal(widget)  # fade + gentle rise; supersedes prior
         except Exception:  # noqa: BLE001 - animation is cosmetic, never fatal
             pass
 
@@ -401,20 +860,25 @@ class PremiumMainWindow(QMainWindow):
     def run_worker(self, worker, on_done, on_fail=None, on_progress=None) -> None:
         """Move *worker* to a fresh QThread and wire signals safely.
 
-        Crucially, the result callbacks (``on_done``/``on_fail``/``on_progress``)
+        The result callbacks (``on_done``/``on_fail``/``on_progress``)
         must be bound methods of main-thread QObjects so Qt uses *queued*
         connections and they run on the GUI thread - never in the worker
         thread. Thread teardown is driven by ``QThread.finished`` (never by
         calling ``wait()`` from inside a worker-thread slot, which deadlocks).
         """
         wname = type(worker).__name__
+        if self._closing:
+            # The window is shutting down its threads; starting new work now
+            # would outlive the shutdown sweep and crash process teardown.
+            _LOG.warning("refusing to start worker %s: window is closing", wname)
+            return
         _LOG.debug("starting worker: %s", wname)
         thread = QThread(self)
         thread.setObjectName(wname)
         worker.moveToThread(thread)
-        # CRITICAL: keep a strong Python reference to the worker. PySide6 does
-        # not keep worker objects alive via signal connections alone, so an
-        # inline `run_worker(SomeWorker(), ...)` call would let the worker be
+        # Keep a strong Python reference to the worker. PySide6 does not keep
+        # worker objects alive via signal connections alone, so an inline
+        # `run_worker(SomeWorker(), ...)` call would let the worker be
         # garbage-collected before it finishes - its `finished` signal would
         # never fire and the UI would hang forever. Anchoring it to the tracked
         # thread object keeps it alive until the thread is reaped.
@@ -455,14 +919,25 @@ class PremiumMainWindow(QMainWindow):
                 t.deleteLater()
 
     def _default_fail(self, msg: str) -> None:
+        """_default_fail."""
         self.statusBar().showMessage(f"Error: {msg}", 6000)
         QMessageBox.warning(self, "Operation failed", msg)
 
     def set_theme(self, theme: str) -> None:
+        """set_theme."""
         from PySide6.QtWidgets import QApplication
         self.theme_name = theme
         self.palette_tokens = THEMES[theme]
         apply_theme(QApplication.instance(), theme)
+        self._retint_nav_icons()
+        # Persist the choice so the next launch opens in the same theme, and
+        # re-render the tray glyph to match the new palette.
+        try:
+            self.settings.theme = theme
+        except Exception:  # noqa: BLE001 - a failed save must never break theming
+            _LOG.debug("could not persist theme", exc_info=True)
+        if self._tray is not None:
+            self._tray.refresh_theme(self.palette_tokens)
 
     # -- frameless edge resize ---------------------------------------------
 
@@ -471,26 +946,36 @@ class PremiumMainWindow(QMainWindow):
 
         Uses the platform's native ``startSystemResize`` so resizing feels
         exactly like a normal window (with live preview + snap)."""
-        if not self._frameless or self.isMaximized() or not self.isActiveWindow():
-            return super().eventFilter(obj, event)
-        et = event.type()
         try:
-            if et == QEvent.Type.MouseMove:
-                edges = self._edge_at(event.globalPosition().toPoint())
-                self._update_edge_cursor(edges)
-            elif et == QEvent.Type.MouseButtonPress and \
-                    event.button() == Qt.MouseButton.LeftButton:
-                edges = self._edge_at(event.globalPosition().toPoint())
-                if edges:
-                    handle = self.windowHandle()
-                    if handle is not None:
-                        handle.startSystemResize(edges)
-                        return True
-        except Exception:  # noqa: BLE001 - resize assist must never crash the app
-            pass
-        return super().eventFilter(obj, event)
+            if getattr(self, "_in_event_filter", False):
+                return super().eventFilter(obj, event)
+            if not self._frameless or self.isMaximized() or not self.isActiveWindow():
+                return super().eventFilter(obj, event)
+            self._in_event_filter = True
+            try:
+                et = event.type()
+                try:
+                    if et == QEvent.Type.MouseMove:
+                        edges = self._edge_at(event.globalPosition().toPoint())
+                        self._update_edge_cursor(edges)
+                    elif et == QEvent.Type.MouseButtonPress and \
+                            event.button() == Qt.MouseButton.LeftButton:
+                        edges = self._edge_at(event.globalPosition().toPoint())
+                        if edges:
+                            handle = self.windowHandle()
+                            if handle is not None:
+                                handle.startSystemResize(edges)
+                                return True
+                except Exception:  # noqa: BLE001 - resize assist must never crash the app
+                    pass
+            finally:
+                self._in_event_filter = False
+            return super().eventFilter(obj, event)
+        except KeyboardInterrupt:
+            return False
 
     def _edge_at(self, gpos):
+        """_edge_at."""
         r = self.frameGeometry()
         m = self._resize_margin
         left = abs(gpos.x() - r.left()) <= m
@@ -513,6 +998,7 @@ class PremiumMainWindow(QMainWindow):
         return edges
 
     def _update_edge_cursor(self, edges):
+        """_update_edge_cursor."""
         cursors = {
             Qt.Edge.LeftEdge: Qt.CursorShape.SizeHorCursor,
             Qt.Edge.RightEdge: Qt.CursorShape.SizeHorCursor,
@@ -538,6 +1024,9 @@ class PremiumMainWindow(QMainWindow):
         layout = getattr(self, "_content_layout", None)
         if layout is None:
             return
+        if getattr(self, "_current_page_id", None) == "nexus":
+            layout.setContentsMargins(0, 0, 0, 0)
+            return
         w = self.width()
         if w < 1040:
             side, top, bot = 16, 14, 12
@@ -547,24 +1036,137 @@ class PremiumMainWindow(QMainWindow):
             side, top, bot = 44, 30, 24
         layout.setContentsMargins(side, top, side, bot)
 
+    def mousePressEvent(self, event):  # noqa: N802
+        """mousePressEvent."""
+        if event.button() == Qt.MouseButton.LeftButton and self._frameless and not self.isMaximized():
+            if event.position().y() <= 40:
+                handle = self.windowHandle()
+                if handle is not None:
+                    handle.startSystemMove()
+                    return
+        super().mousePressEvent(event)
+
+    def mouseDoubleClickEvent(self, event):  # noqa: N802
+        """mouseDoubleClickEvent."""
+        if event.button() == Qt.MouseButton.LeftButton and event.position().y() <= 40:
+            self._toggle_max()
+            return
+        super().mouseDoubleClickEvent(event)
+
+    # Grace period (seconds) for workers to stop cooperatively on close. A
+    # worker that ignores this is detached (never force-killed - see
+    # _shutdown_workers for why). Generous enough for in-flight scans/cleans to
+    # honour their cancel event, bounded so the app always exits promptly.
+    _CLOSE_GRACE_S = 8.0
+
     def closeEvent(self, event):  # noqa: N802
+        """closeEvent."""
+        # Close-to-tray: when enabled and a tray is available, a window close
+        # (the X button) hides to the tray instead of quitting - unless a real
+        # quit was requested via the tray's Exit action (_force_quit). Workers
+        # keep running untouched, so an in-flight scan/clean is never aborted.
+        if (self.settings.close_to_tray and self._tray is not None
+                and self._tray.available and not self._force_quit):
+            event.ignore()
+            self.hide()
+            if not self._tray_hint_shown:
+                self._tray_hint_shown = True
+                self._tray.show_message(
+                    "Cortex Cleaner is still running",
+                    "Closed to the system tray. Right-click the tray icon to exit.",
+                )
+            return
+
+        self._closing = True
         if self._frameless:
             app = QApplication.instance()
             if app is not None:
                 app.removeEventFilter(self)
-        # Ask any running worker to stop cleanly (scan/clean/etc. honor cancel),
-        # so we don't tear down a thread mid-operation.
-        for t in list(self._threads):
+        # Stop the tray's background monitor before tearing workers down so no
+        # timer tick fires during shutdown.
+        if self._tray is not None:
+            self._tray.stop()
+        self._shutdown_workers()
+        super().closeEvent(event)
+
+    def _shutdown_workers(self) -> None:
+        """Stop every worker thread without ever destroying one mid-run.
+
+        Destroying a ``QThread`` that is still running aborts the process
+        (Qt fatal: "QThread: Destroyed while thread is still running" ->
+        0xC0000409). ``QThread.terminate()`` (Windows' ``TerminateThread``) is
+        not a safe alternative either: if it fires while the thread holds a
+        CRT/heap lock - exactly what happens when a worker is blocked inside
+        ``subprocess.communicate()`` reading a pipe, which most of this app's
+        workers do for minutes at a time - that lock is never released, and any
+        *other* thread that later needs it (even something as ordinary as
+        ``malloc``) hangs forever. That is a corrupted-process bug, not a slow
+        shutdown, and it can surface as an apparently unrelated hang much later
+        in the process's life. So this method never calls ``terminate()``.
+
+        The shutdown is staged instead:
+
+        1. **Cancel** every worker cooperatively. Workers backed by an external
+           tool (SFC, DISM, winget, diskpart...) route their
+           ``threading.Event`` down to :mod:`core.proc`, which polls the event
+           and kills the *process tree* - never the Python thread - so
+           cancellation is both prompt and always safe to call.
+        2. **Quit** all thread event loops, then wait on one shared deadline
+           while pumping the GUI event loop - queued ``finished``/``failed``
+           signals deliver, ``deleteLater`` teardown runs, and the window stays
+           responsive instead of blocking per-thread.
+        3. Anything STILL alive once the deadline passes (a worker with no
+           cancellation hook, or a bug that never checks the event) is
+           detached from the window and left running (recorded on
+           ``_workers_stuck``): a ``QThread`` must never be destroyed while
+           running, so the app entry point performs a hard ``os._exit`` for
+           this path instead, which ends the process without ever calling a
+           destructor on the dangling wrapper.
+        """
+        threads = list(self._threads)
+
+        def _running(t: QThread) -> bool:
+            """_running."""
+            # While we pump events below, finished threads are reaped
+            # (deleteLater) and their wrappers become dangling; a deleted
+            # QThread is finished by definition, so treat it as not running.
+            try:
+                return t.isRunning()
+            except RuntimeError:
+                return False
+
+        for t in threads:
             worker = getattr(t, "_cortex_worker", None)
             if worker is not None and hasattr(worker, "cancel"):
                 try:
                     worker.cancel()
-                except Exception:  # noqa: BLE001
+                except Exception:  # noqa: BLE001 - cancel is best-effort
                     pass
-        for t in list(self._threads):
-            t.quit()
-            t.wait(3000)
-        super().closeEvent(event)
+        for t in threads:
+            try:
+                t.quit()
+            except RuntimeError:  # noqa: BLE001 - already reaped; nothing to quit
+                pass
+
+        app = QApplication.instance()
+        deadline = time.monotonic() + self._CLOSE_GRACE_S
+        while time.monotonic() < deadline:
+            if not any(_running(t) for t in threads):
+                break
+            if app is not None:
+                # Deliver queued worker signals + deferred deletions so the
+                # shutdown path makes progress instead of deadlocking.
+                app.processEvents()
+            time.sleep(0.02)
+
+        self._workers_stuck = [t for t in threads if _running(t)]
+        for t in self._workers_stuck:
+            _LOG.error(
+                "worker thread %r could not be stopped; detaching it so "
+                "teardown never destroys a running thread", t.objectName())
+            t.setParent(None)
+            if t in self._threads:
+                self._threads.remove(t)
 
 
 # =====================================================================
@@ -595,11 +1197,13 @@ class SingleScrollFilter(QObject):
 
     def __init__(self, inner: QWidget, outer: QScrollArea | None = None,
                  parent: QObject | None = None):
+        """__init__."""
         super().__init__(parent)
         self._inner = inner
         self._outer = outer
 
     def eventFilter(self, obj, event):  # noqa: N802
+        """eventFilter."""
         if event.type() != QEvent.Type.Wheel:
             return super().eventFilter(obj, event)
         try:
@@ -738,6 +1342,7 @@ class _Page(QWidget):
     LIST_MIN_HEIGHT = 140
 
     def __init__(self, win: PremiumMainWindow):
+        """__init__."""
         super().__init__()
         self.win = win
         self.p = win.palette_tokens
@@ -758,6 +1363,10 @@ class _Page(QWidget):
         self.v.setSpacing(18)
         self._scroll.setWidget(_content)
         self._outer.addWidget(self._scroll, 1)
+        # Momentum scrolling: the page glides on the mouse wheel instead of
+        # jumping in coarse steps (touchpads stay native; suppressed when the
+        # reduce-motion setting is on).
+        install_smooth_scroll(self._scroll)
         # Keep strong references to installed wheel filters so they outlive this
         # method (an event filter is dropped the moment it is garbage-collected).
         self._scroll_filters: list[SingleScrollFilter] = []
@@ -817,6 +1426,7 @@ class DashboardPage(_Page):
     """1-click hero scan + reclaimable overview + category table."""
 
     def __init__(self, win: PremiumMainWindow):
+        """__init__."""
         super().__init__(win)
         self._report = None
         self._preview_targets: dict = {}
@@ -825,16 +1435,18 @@ class DashboardPage(_Page):
         self._updating = False                      # guard for programmatic check changes
 
         self.v.addWidget(title_block(
-            "Dashboard",
-            "One click to find safely-reclaimable space across your system.",
+            "System Overview Dashboard",
+            "One-click health analysis and safe storage reclamation across your entire PC.",
         ))
 
-        # Hero row: gauge card + stat cards
-        hero_row = QHBoxLayout()
-        hero_row.setSpacing(18)
+        # Hero: a modular bento grid - a tall gauge tile beside a cluster of
+        # metric tiles, laid out with uniform gaps and rounded tiles.
+        hero_grid = QGridLayout()
+        hero_grid.setHorizontalSpacing(16)
+        hero_grid.setVerticalSpacing(16)
 
         gauge_card = Card(self.p, "HeroCard")
-        gauge_card.setFixedWidth(268)
+        gauge_card.setMinimumWidth(248)
         gc = QVBoxLayout(gauge_card)
         gc.setContentsMargins(16, 14, 16, 14)
         gc.setSpacing(8)
@@ -846,7 +1458,9 @@ class DashboardPage(_Page):
         self.gauge.setMinimumSize(128, 128)
         self.gauge.setMaximumHeight(146)
         from .widgets import attach_glow
-        attach_glow(self.gauge, self.p.accent, 34, 55)
+        # Smaller glow (radius 20, alpha 40) so the halo stays inside the
+        # constrained gauge bounds and never clips into green lines at the top.
+        attach_glow(self.gauge, self.p.accent, 20, 40)
         gc.addWidget(self.gauge, alignment=Qt.AlignmentFlag.AlignCenter)
 
         self.scan_btn = QPushButton("Scan Now")
@@ -866,21 +1480,37 @@ class DashboardPage(_Page):
         self.scan_status.setWordWrap(True)
         gc.addWidget(self.scan_status)
 
+        # Explains cloud-only files that were deliberately left out of the total,
+        # so a large OneDrive folder not showing up reads as a decision rather
+        # than a missed scan.
+        self.cloud_note = QLabel("")
+        self.cloud_note.setObjectName("Muted")
+        self.cloud_note.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.cloud_note.setWordWrap(True)
+        self.cloud_note.setVisible(False)
+        gc.addWidget(self.cloud_note)
+
         self._scan_worker = None
         self._scanning = False
-        hero_row.addWidget(gauge_card, 0)
 
-        # stat column
-        stat_col = QVBoxLayout()
-        stat_col.setSpacing(14)
-        self.card_space = StatCard(self.p, "Total reclaimable", "—")
-        self.card_files = StatCard(self.p, "Files found", "—")
-        self.card_cats = StatCard(self.p, "Categories", "—")
+        # Metric tiles, styled as interactive bento tiles (accent border on
+        # hover) and set to expand so they fill the grid uniformly.
+        self.card_space = StatCard(self.p, "Total reclaimable", "\u2014")
+        self.card_files = StatCard(self.p, "Files found", "\u2014")
+        self.card_cats = StatCard(self.p, "Categories", "\u2014")
         for c in (self.card_space, self.card_files, self.card_cats):
-            stat_col.addWidget(c)
-        stat_col.addStretch(1)
-        hero_row.addLayout(stat_col, 1)
-        self.v.addLayout(hero_row)
+            c.setObjectName("BentoTile")
+            c.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+
+        # Bento arrangement: the gauge tile spans both rows on the left; two
+        # metric tiles sit top-right; a wide tile spans the bottom-right.
+        hero_grid.addWidget(gauge_card, 0, 0, 2, 1)
+        hero_grid.addWidget(self.card_space, 0, 1)
+        hero_grid.addWidget(self.card_files, 0, 2)
+        hero_grid.addWidget(self.card_cats, 1, 1, 1, 2)
+        hero_grid.setColumnStretch(1, 1)
+        hero_grid.setColumnStretch(2, 1)
+        self.v.addLayout(hero_grid)
 
         # category tree (expandable to preview contents before cleaning)
         section = QLabel("Cleanup categories  \u2014  expand any row to preview what's inside")
@@ -904,10 +1534,9 @@ class DashboardPage(_Page):
         # overflow, so the pinned Clean action below never gets pushed off.
         self.tree.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self.tree.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
-        # A generous minimum so the tree always shows a useful number of rows
-        # (well beyond the ~3 it used to reveal) even on smaller windows where
-        # the outer page has to scroll: the tree keeps this height and reveals
-        # 5+ categories, with its own scrollbar for the rest.
+        # ~5 visible category rows even when the outer page has to scroll; the
+        # tree's own scrollbar takes the rest. Mirrors the minimum_height
+        # passed to add_scrolling_list below.
         self.tree.setMinimumHeight(230)
         self.tree.itemExpanded.connect(self._expand_category)
         self.tree.itemChanged.connect(self._on_item_changed)
@@ -940,15 +1569,20 @@ class DashboardPage(_Page):
         from .widgets import attach_glow
         attach_glow(self.scan_btn, self.p.accent, 22, 80)
         attach_glow(self.recycle_btn, self.p.accent, 18, 70)
+        # Tactile press feedback (a subtle sink) on the hero actions.
+        motion.press_feedback(self.scan_btn)
+        motion.press_feedback(self.recycle_btn)
 
     # -- actions --
     def _toggle_scan(self):
+        """_toggle_scan."""
         if self._scanning:
             self._cancel_scan()
         else:
             self._scan()
 
     def _scan(self):
+        """_scan."""
         from .workers import ScanWorker
         self._scanning = True
         self.scan_btn.setText("Cancel")
@@ -962,15 +1596,18 @@ class DashboardPage(_Page):
         )
 
     def _cancel_scan(self):
+        """_cancel_scan."""
         if self._scan_worker is not None:
             self._scan_worker.cancel()
             self.scan_status.setText("Cancelling\u2026")
             self.scan_btn.setEnabled(False)
 
     def _on_progress(self, text: str):
+        """_on_progress."""
         self.scan_status.setText(text)
 
     def _on_scanned(self, report):
+        """_on_scanned."""
         self._report = report
         self._scanning = False
         self._scan_worker = None
@@ -978,6 +1615,9 @@ class DashboardPage(_Page):
         self.scan_status.setText("")
         self.scan_btn.setEnabled(True)
         self.scan_btn.setText("Scan Now")
+        note = getattr(report, "cloud_note", "")
+        self.cloud_note.setText(note)
+        self.cloud_note.setVisible(bool(note))
         total = report.total_reclaimable_bytes
         self.card_space.set_value(fmt_bytes(total), animate=True)
         self.card_files.set_value(str(report.total_files), animate=True)
@@ -1117,6 +1757,7 @@ class DashboardPage(_Page):
         self.win.run_worker(worker, self._apply_preview, self._preview_fail)
 
     def _apply_preview(self, nid: int, children: list):
+        """_apply_preview."""
         item = self._preview_targets.pop(nid, None)
         if item is None:
             return
@@ -1154,6 +1795,7 @@ class DashboardPage(_Page):
         self._updating = False
 
     def _preview_fail(self, msg: str):
+        """_preview_fail."""
         # Preview is non-critical; just log to the status bar.
         self.win.statusBar().showMessage(f"Preview failed: {msg}", 4000)
 
@@ -1179,10 +1821,10 @@ class DashboardPage(_Page):
         self._updating = True
         self._set_subtree_check(item, state)
         self._updating = False
-        # Reflect the new selection size live in the gauge + Clean button.
         self._update_selection()
 
     def _set_subtree_check(self, item: QTreeWidgetItem, state) -> None:
+        """_set_subtree_check."""
         for i in range(item.childCount()):
             child = item.child(i)
             if child.text(0) == "Loading\u2026":
@@ -1205,6 +1847,7 @@ class DashboardPage(_Page):
         return out
 
     def _clean(self, method: str):
+        """_clean."""
         if not self._report or not self._report.scans:
             return
         from cortex_unified.engine.service import CleanupReport
@@ -1262,9 +1905,11 @@ class DashboardPage(_Page):
                             on_progress=self._on_clean_progress)
 
     def _on_clean_progress(self, text: str):
+        """_on_clean_progress."""
         self.scan_status.setText(text)
 
     def _on_cleaned(self, freed: int, items: int, skipped: int):
+        """_on_cleaned."""
         self.progress.setVisible(False)
         self.scan_status.setText("")
         self._clean_worker = None
@@ -1277,6 +1922,7 @@ class DashboardPage(_Page):
         self._scan()  # refresh
 
     def _on_fail(self, msg: str):
+        """_on_fail."""
         self._scanning = False
         self._scan_worker = None
         self.progress.setVisible(False)
@@ -1288,55 +1934,117 @@ class DashboardPage(_Page):
 
 
 class _FolderScanPage(_Page):
-    """Shared scaffold for pages that pick a folder and list results."""
+    """Shared scaffold for pages that pick a folder and list results.
+
+    Premium redesign: Card-wrapped picker, StatCard metrics, styled table,
+    and a polished empty state.
+    """
 
     title = ""
     subtitle = ""
     action_label = "Scan folder"
 
     def __init__(self, win: PremiumMainWindow):
+        """__init__."""
         super().__init__(win)
         self.v.addWidget(title_block(self.title, self.subtitle))
 
-        picker = QHBoxLayout()
+        # ── folder picker card ────────────────────────────────────────────
+        picker_card = Card(self.p, "Card")
+        pc_lay = QVBoxLayout(picker_card)
+        pc_lay.setContentsMargins(16, 12, 16, 12)
+        pc_lay.setSpacing(10)
+
+        picker_row = QHBoxLayout()
+        picker_row.setSpacing(8)
+        pick_btn = QPushButton("Choose Folder\u2026")
+        pick_btn.setObjectName("Ghost")
+        pick_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        pick_btn.clicked.connect(self._pick)
         self.path_label = QLabel("No folder selected")
         self.path_label.setObjectName("Muted")
-        pick_btn = QPushButton("Choose Folder\u2026")
-        pick_btn.clicked.connect(self._pick)
         self.run_btn = QPushButton(self.action_label)
         self.run_btn.setObjectName("Primary")
+        self.run_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self.run_btn.setEnabled(False)
         self.run_btn.clicked.connect(self._toggle_run)
-        picker.addWidget(pick_btn)
-        picker.addWidget(self.path_label, 1)
-        picker.addWidget(self.run_btn)
-        self.v.addLayout(picker)
+        picker_row.addWidget(pick_btn)
+        picker_row.addWidget(self.path_label, 1)
+        picker_row.addWidget(self.run_btn)
+        pc_lay.addLayout(picker_row)
 
+        # ── progress + status ─────────────────────────────────────────────
         self.progress = QProgressBar()
         self.progress.setRange(0, 0)
         self.progress.setVisible(False)
-        self.v.addWidget(self.progress)
-
+        pc_lay.addWidget(self.progress)
         self.scan_status = QLabel("")
         self.scan_status.setObjectName("Muted")
-        self.v.addWidget(self.scan_status)
+        pc_lay.addWidget(self.scan_status)
+
+        self.v.addWidget(picker_card)
 
         self._worker = None
         self._running = False
 
+        # ── metric strip ──────────────────────────────────────────────────
+        metrics_row = QHBoxLayout()
+        metrics_row.setSpacing(12)
+        self.card_items = StatCard(self.p, "Items Found", "\u2014")
+        self.card_items.setObjectName("BentoTile")
+        self.card_items.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self.card_items.setMinimumHeight(64)
+        self.card_size = StatCard(self.p, "Total Size", "\u2014")
+        self.card_size.setObjectName("BentoTile")
+        self.card_size.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self.card_size.setMinimumHeight(64)
+        self.card_groups = StatCard(self.p, "Groups", "\u2014")
+        self.card_groups.setObjectName("BentoTile")
+        self.card_groups.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self.card_groups.setMinimumHeight(64)
+        metrics_row.addWidget(self.card_items)
+        metrics_row.addWidget(self.card_size)
+        metrics_row.addWidget(self.card_groups)
+        self.v.addLayout(metrics_row)
+
+        # ── results table (Card-wrapped) ──────────────────────────────────
+        table_card = Card(self.p, "Card")
+        tc_lay = QVBoxLayout(table_card)
+        tc_lay.setContentsMargins(0, 0, 0, 0)
+        tc_lay.setSpacing(0)
+
         # Subclasses assign self.results_table (path in column 0) here.
         self.results_table: QTableWidget | None = None
         self.result_area = self._build_results()
-        self.v.addWidget(self.result_area, 1)
+        if self.results_table is not None:
+            self.results_table.setShowGrid(False)
+            self.results_table.setAlternatingRowColors(True)
+            self.results_table.verticalHeader().setVisible(False)
+            self.results_table.setSelectionBehavior(
+                QTableWidget.SelectionBehavior.SelectRows)
+            self.results_table.setEditTriggers(
+                QTableWidget.EditTrigger.NoEditTriggers)
+            self.results_table.setSortingEnabled(True)
+            header = self.results_table.horizontalHeader()
+            header.setStretchLastSection(True)
+            header.setDefaultAlignment(
+                Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+        tc_lay.addWidget(self.result_area)
+        self.v.addWidget(table_card, 1)
 
         # Shared "reclaim selected" action row.
         action_row = QHBoxLayout()
+        action_row.setContentsMargins(0, 8, 0, 0)
         self.hint = QLabel("Select rows, then move them to the Recycle Bin.")
         self.hint.setObjectName("Muted")
         action_row.addWidget(self.hint)
         action_row.addStretch(1)
         self.del_btn = QPushButton("Move Selected to Recycle Bin")
         self.del_btn.setObjectName("Danger")
+        self.del_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self.del_btn.setEnabled(False)
         self.del_btn.clicked.connect(self._delete_selected)
         action_row.addWidget(self.del_btn)
@@ -1345,17 +2053,27 @@ class _FolderScanPage(_Page):
         self._folder: str | None = None
 
     def _build_results(self) -> QWidget:
-        raise NotImplementedError
+        """Subclasses construct and return their specific results widget."""
+        table = QTableWidget(0, 3)
+        table.setHorizontalHeaderLabels(["Path", "Size", "Details"])
+        return table
 
     def _pick(self):
-        folder = QFileDialog.getExistingDirectory(self, "Select a folder", str(Path.home()))
+        """_pick."""
+        folder = QFileDialog.getExistingDirectory(
+            self, "Select a folder", str(Path.home()))
         if folder:
             self._folder = folder
             self.path_label.setText(folder)
+            self.path_label.setObjectName("")
+            self.path_label.setStyleSheet("color: inherit;")
             self.run_btn.setEnabled(True)
 
     def _run(self):
-        raise NotImplementedError
+        """Subclasses launch their specific scan worker."""
+        if not self._folder:
+            return
+        self._finish()
 
     def _start(self, worker, on_done, on_fail):
         """Start a scan worker with live progress + cancel support.
@@ -1373,6 +2091,7 @@ class _FolderScanPage(_Page):
         self.win.run_worker(worker, on_done, on_fail, on_progress=self._on_progress)
 
     def _toggle_run(self):
+        """_toggle_run."""
         if self._running and self._worker is not None:
             if hasattr(self._worker, "cancel"):
                 self._worker.cancel()
@@ -1382,9 +2101,11 @@ class _FolderScanPage(_Page):
             self._run()
 
     def _on_progress(self, text: str):
+        """_on_progress."""
         self.scan_status.setText(text)
 
     def _finish(self):
+        """_finish."""
         self._running = False
         self._worker = None
         self.progress.setVisible(False)
@@ -1393,15 +2114,19 @@ class _FolderScanPage(_Page):
         self.run_btn.setEnabled(True)
 
     def _busy(self, on: bool):
+        """_busy."""
         self.progress.setVisible(on)
         self.run_btn.setEnabled(not on)
 
     def _enable_actions(self, has_rows: bool):
+        """_enable_actions."""
         if self.results_table is not None:
-            self.results_table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
+            self.results_table.setSelectionBehavior(
+                QTableWidget.SelectionBehavior.SelectRows)
         self.del_btn.setEnabled(has_rows)
 
     def _selected_paths(self) -> list[str]:
+        """_selected_paths."""
         if self.results_table is None:
             return []
         rows = {idx.row() for idx in self.results_table.selectedIndexes()}
@@ -1413,9 +2138,11 @@ class _FolderScanPage(_Page):
         return out
 
     def _delete_selected(self):
+        """_delete_selected."""
         paths = self._selected_paths()
         if not paths:
-            QMessageBox.information(self, "No selection", "Select one or more rows first.")
+            QMessageBox.information(
+                self, "No selection", "Select one or more rows first.")
             return
         confirm = QMessageBox.question(
             self, "Move to Recycle Bin",
@@ -1433,27 +2160,32 @@ class _FolderScanPage(_Page):
         self.win.run_worker(worker, self._on_deleted, self._del_fail)
 
     def _on_deleted(self, freed: int, ok: int, blocked: int):
+        """_on_deleted."""
         self._busy(False)
         msg = f"Recycled {ok} item(s), freeing {fmt_bytes(freed)}."
         if blocked:
-            msg += f" {blocked} blocked by the safety guard or unavailable Recycle Bin."
+            msg += (f" {blocked} blocked by the safety guard or"
+                    " unavailable Recycle Bin.")
         self.win.statusBar().showMessage(msg, 6000)
         QMessageBox.information(self, "Done", msg)
         if self._folder:
             self._run()  # refresh listing
 
     def _del_fail(self, msg: str):
+        """_del_fail."""
         self._busy(False)
         self.del_btn.setEnabled(True)
         self.win._default_fail(msg)
 
 
 class DuplicatesPage(_FolderScanPage):
-    title = "Duplicate Finder"
-    subtitle = "Byte-for-byte duplicate detection (size-prefiltered, xxHash/BLAKE3)."
+    """DuplicatesPage class."""
+    title = "Duplicate Files Finder"
+    subtitle = "Find and safely reclaim space from identical files using byte-for-byte checksum verification."
     action_label = "Find Duplicates"
 
     def _build_results(self) -> QWidget:
+        """_build_results."""
         self.tree = QTableWidget(0, 2)
         self.tree.setHorizontalHeaderLabels(["Duplicate file", "Group"])
         self.tree.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
@@ -1463,121 +2195,196 @@ class DuplicatesPage(_FolderScanPage):
         return self.tree
 
     def _run(self):
+        """_run."""
         from .workers import DuplicateWorker
         self._start(DuplicateWorker([self._folder]), self._done, self._fail)
 
     def _done(self, groups: dict):
+        """_done."""
         self._finish()
         rows = [(p, i) for i, (_, members) in enumerate(groups.items(), 1) for p in members]
         self.tree.setRowCount(len(rows))
         for r, (path, gid) in enumerate(rows):
             self.tree.setItem(r, 0, QTableWidgetItem(str(path)))
             self.tree.setItem(r, 1, QTableWidgetItem(f"#{gid}"))
+        total = sum(
+            Path(p).stat().st_size
+            for p, _ in rows
+            if Path(p).is_file()
+        )
+        self.card_items.set_value(f"{len(rows)}", animate=True)
+        self.card_size.set_value(fmt_bytes(total), animate=True)
+        self.card_groups.set_value(str(len(groups)), animate=True)
         self.hint.setText("Keep one copy per group; select the extras to recycle.")
         self._enable_actions(bool(rows))
-        self.win.statusBar().showMessage(f"{len(groups)} duplicate groups found", 5000)
+        self.win.statusBar().showMessage(
+            f"{len(groups)} duplicate groups found", 5000)
 
     def _fail(self, msg):
+        """_fail."""
         self._finish()
         self.win._default_fail(msg)
 
 
 class DuplicatePhotosPage(_FolderScanPage):
-    title = "Duplicate Photos"
-    subtitle = ("Find duplicate images (JPG, PNG, HEIC, RAW, ...) byte-for-byte. "
-                "Free up space taken by copied photos.")
+    """DuplicatePhotosPage class."""
+    title = "Similar & Duplicate Photos"
+    subtitle = ("Find duplicate and visually identical images (JPG, PNG, HEIC, RAW). "
+                "Review copies and free up storage.")
     action_label = "Find Duplicate Photos"
 
     def _build_results(self) -> QWidget:
+        """_build_results."""
         self.tree = QTableWidget(0, 2)
         self.tree.setHorizontalHeaderLabels(["Duplicate photo", "Group"])
-        self.tree.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
-        self.tree.verticalHeader().setVisible(False)
-        self.tree.setAlternatingRowColors(True)
+        self.tree.horizontalHeader().setSectionResizeMode(
+            0, QHeaderView.ResizeMode.Stretch)
         self.results_table = self.tree
         return self.tree
 
     def _run(self):
+        """_run."""
         from .workers import DuplicatePhotosWorker
-        self._start(DuplicatePhotosWorker([self._folder]), self._done, self._fail)
+        self._start(
+            DuplicatePhotosWorker([self._folder]), self._done, self._fail)
 
     def _done(self, groups: dict):
+        """_done."""
         self._finish()
-        rows = [(p, i) for i, (_, members) in enumerate(groups.items(), 1) for p in members]
+        rows = [
+            (p, i)
+            for i, (_, members) in enumerate(groups.items(), 1)
+            for p in members
+        ]
         self.tree.setRowCount(len(rows))
         for r, (path, gid) in enumerate(rows):
             self.tree.setItem(r, 0, QTableWidgetItem(str(path)))
             self.tree.setItem(r, 1, QTableWidgetItem(f"#{gid}"))
-        self.hint.setText("Keep one photo per group; select the extra copies to recycle.")
+        total = sum(
+            Path(p).stat().st_size
+            for p, _ in rows
+            if Path(p).is_file()
+        )
+        self.card_items.set_value(f"{len(rows)}", animate=True)
+        self.card_size.set_value(fmt_bytes(total), animate=True)
+        self.card_groups.set_value(str(len(groups)), animate=True)
+        self.hint.setText(
+            "Keep one photo per group; select the extra copies to recycle.")
         self._enable_actions(bool(rows))
-        self.win.statusBar().showMessage(f"{len(groups)} duplicate photo groups found", 5000)
+        self.win.statusBar().showMessage(
+            f"{len(groups)} duplicate photo groups found", 5000)
 
     def _fail(self, msg):
+        """_fail."""
         self._finish()
         self.win._default_fail(msg)
 
 
 class LargeFilesPage(_FolderScanPage):
-    title = "Large Files"
-    subtitle = "Find the biggest space hogs, largest first."
+    """LargeFilesPage class."""
+    title = "Large Files Finder"
+    subtitle = "Locate space-consuming files across your drives. Large AI models and installer archives are safely highlighted."
     action_label = "Find Large Files"
 
     def _build_results(self) -> QWidget:
-        self.tbl = QTableWidget(0, 2)
-        self.tbl.setHorizontalHeaderLabels(["File", "Size"])
+        """_build_results."""
+        self.tbl = QTableWidget(0, 3)
+        self.tbl.setHorizontalHeaderLabels(["File", "Size", "Tag"])
         self.tbl.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
+        self.tbl.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
         self.tbl.verticalHeader().setVisible(False)
         self.tbl.setAlternatingRowColors(True)
+        # Tag column surfaces the AI model surfacing: HIGH-risk, disabled by default
         self.results_table = self.tbl
         return self.tbl
 
     def _run(self):
+        """_run."""
         from .workers import LargeFilesWorker
         self._start(LargeFilesWorker(self._folder, 50.0), self._done, self._fail)
 
     def _done(self, entries: list):
+        """_done."""
         self._finish()
+        try:
+            from cortex_unified.analyzers.large_file_finder import AI_MODEL_EXTENSIONS
+        except Exception:
+            AI_MODEL_EXTENSIONS = {".gguf", ".safetensors", ".onnx", ".bin"}
         self.tbl.setRowCount(len(entries))
+        total = 0
+        ai_count = 0
+        ai_bytes = 0
+        from PySide6.QtGui import QColor
         for r, e in enumerate(entries):
-            self.tbl.setItem(r, 0, QTableWidgetItem(str(e.path)))
+            path_str = str(e.path)
+            self.tbl.setItem(r, 0, QTableWidgetItem(path_str))
             self.tbl.setItem(r, 1, QTableWidgetItem(fmt_bytes(e.size)))
+            ext = Path(path_str).suffix.lower()
+            tag = "AI model" if ext in AI_MODEL_EXTENSIONS else ""
+            tag_item = QTableWidgetItem(tag)
+            if tag:
+                tag_item.setForeground(QColor("#FB7185"))
+                tag_item.setToolTip("AI model — 1-2GB each, re-downloadable but HIGH risk (no auto-delete).")
+                ai_count += 1
+                ai_bytes += e.size
+            self.tbl.setItem(r, 2, tag_item)
+            total += e.size
+        self.card_items.set_value(f"{len(entries)}", animate=True)
+        self.card_size.set_value(fmt_bytes(total), animate=True)
+        self.card_groups.set_value(f"{ai_count} AI ({fmt_bytes(ai_bytes)})" if ai_count else "\u2014", animate=True)
+        if ai_count:
+            self.hint.setText(f"{ai_count} AI model(s) flagged HIGH — models re-download but are 1-2GB each. Deselect them unless you intend to re-fetch.")
+        else:
+            self.hint.setText("Select rows to move to Recycle Bin; AI models are flagged but deselected by default.")
         self._enable_actions(bool(entries))
-        self.win.statusBar().showMessage(f"{len(entries)} large files", 5000)
+        self.win.statusBar().showMessage(
+            f"{len(entries)} large files ({ai_count} AI models)", 5000)
 
     def _fail(self, msg):
+        """_fail."""
         self._finish()
         self.win._default_fail(msg)
 
 
 class EmptyPage(_FolderScanPage):
-    title = "Empty Items"
-    subtitle = "Locate empty files and directories."
+    """EmptyPage class."""
+    title = "Empty Files & Folders"
+    subtitle = "Locate and safely clean empty directories and 0-byte orphan files left behind by uninstalled software."
     action_label = "Find Empty Items"
 
     def _build_results(self) -> QWidget:
+        """_build_results."""
         self.tbl = QTableWidget(0, 2)
         self.tbl.setHorizontalHeaderLabels(["Path", "Type"])
-        self.tbl.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
-        self.tbl.verticalHeader().setVisible(False)
-        self.tbl.setAlternatingRowColors(True)
+        self.tbl.horizontalHeader().setSectionResizeMode(
+            0, QHeaderView.ResizeMode.Stretch)
         self.results_table = self.tbl
         return self.tbl
 
     def _run(self):
+        """_run."""
         from .workers import EmptyWorker
         self._start(EmptyWorker(self._folder), self._done, self._fail)
 
     def _done(self, files: list, dirs: list):
+        """_done."""
         self._finish()
-        rows = [(p, "File") for p in files] + [(p, "Directory") for p in dirs]
+        rows = [(p, "File") for p in files] + [
+            (p, "Directory") for p in dirs]
         self.tbl.setRowCount(len(rows))
         for r, (path, kind) in enumerate(rows):
             self.tbl.setItem(r, 0, QTableWidgetItem(str(path)))
             self.tbl.setItem(r, 1, QTableWidgetItem(kind))
+        self.card_items.set_value(f"{len(rows)}", animate=True)
+        self.card_size.set_value(
+            f"{len(files)} files, {len(dirs)} dirs", animate=True)
+        self.card_groups.set_value("\u2014", animate=True)
         self._enable_actions(bool(rows))
-        self.win.statusBar().showMessage(f"{len(files)} empty files, {len(dirs)} empty dirs", 5000)
+        self.win.statusBar().showMessage(
+            f"{len(files)} empty files, {len(dirs)} empty dirs", 5000)
 
     def _fail(self, msg):
+        """_fail."""
         self._finish()
         self.win._default_fail(msg)
 
@@ -1586,12 +2393,13 @@ class ShredPage(_Page):
     """Storage-aware secure deletion, honest about SSD limitations."""
 
     def __init__(self, win: PremiumMainWindow):
+        """__init__."""
         super().__init__(win)
         self._target: str | None = None
 
         self.v.addWidget(title_block(
-            "Secure Shred",
-            "Overwrite-then-delete. Honest: multi-pass overwrite is only reliable on HDDs.",
+            "Secure File Shredder",
+            "Permanently destroy confidential files beyond forensic recovery using NIST 800-88 sanitized overwriting.",
         ))
 
         card = Card(self.p)
@@ -1613,15 +2421,41 @@ class ShredPage(_Page):
 
         opts = QHBoxLayout()
         opts.addWidget(QLabel("Overwrite passes:"))
-        from PySide6.QtWidgets import QCheckBox, QSpinBox
+        from PySide6.QtWidgets import QCheckBox, QComboBox, QSpinBox
         self.passes = QSpinBox()
         self.passes.setRange(1, 35)
         self.passes.setValue(3)
         opts.addWidget(self.passes)
+        opts.addWidget(QLabel(" Privacy level:"))
+        self.pl_combo = QComboBox()
+        self.pl_combo.addItems([
+            "Auto (WAS/PULSE)",
+            "PL0 block erase (HDD)",
+            "PL1 page scrub (PULSE)",
+            "PL2 ECC crypto-erase",
+            "PL3 TRIM lockout",
+        ])
+        self.pl_combo.setToolTip(
+            "PL0 strongest (HDD 3-pass, SSD device-level) – heavy wear\n"
+            "PL1 PULSE 2-pulse scrub low-disturbance (RBER <0.57% FG)\n"
+            "PL2 header/ECC destroy + rename + TRIM (FlashFox)\n"
+            "PL3 logical unmap + TRIM (fastest, logical only)\n"
+            "Auto picks by storage kind & file hotness (WAS-Deletion)."
+        )
+        opts.addWidget(self.pl_combo)
         opts.addStretch(1)
         self.force_flash = QCheckBox("Overwrite on SSD anyway (best-effort)")
         opts.addWidget(self.force_flash)
         cl.addLayout(opts)
+        # Research note card
+        note = QLabel(
+            "Research: HolePunch TPM+PPRF crash-consistent, PULSE RBER 0.93% SLC→0.57%, "
+            "WAS-Deletion 1.2-12.9× overhead cut, FlashFox -15% wear. Auto PL avoids "
+            "false-secure overwrites on SSD/NVMe (wear-leveling)."
+        )
+        note.setObjectName("Muted")
+        note.setWordWrap(True)
+        cl.addWidget(note)
 
         cl.addWidget(hline(self.p))
         row = QHBoxLayout()
@@ -1640,7 +2474,7 @@ class ShredPage(_Page):
 
         self.v.addWidget(card)
 
-        # -- Free-space wipe (feature D) --
+        # -- Free-space wipe --
         import platform as _platform
         if _platform.system() == "Windows":
             wipe_card = Card(self.p)
@@ -1675,6 +2509,7 @@ class ShredPage(_Page):
         self.v.addStretch(1)
 
     def _populate_drives(self):
+        """_populate_drives."""
         import string
         from pathlib import Path as _P
         for letter in string.ascii_uppercase:
@@ -1682,6 +2517,9 @@ class ShredPage(_Page):
                 self.wipe_drive.addItem(f"{letter}:", letter)
 
     def _wipe_free_space(self):
+        """_wipe_free_space."""
+        if not require_feature(self, Feature.FREE_SPACE_WIPE):
+            return
         letter = self.wipe_drive.currentData()
         if not letter:
             return
@@ -1702,6 +2540,7 @@ class ShredPage(_Page):
         self.win.run_worker(FreeSpaceWipeWorker(letter), self._on_wiped, self._on_wipe_fail)
 
     def _on_wiped(self, success: bool, message: str):
+        """_on_wiped."""
         self.wipe_progress.setVisible(False)
         self.wipe_btn.setEnabled(True)
         if success:
@@ -1711,11 +2550,13 @@ class ShredPage(_Page):
         self.win.statusBar().showMessage(message, 6000)
 
     def _on_wipe_fail(self, msg: str):
+        """_on_wipe_fail."""
         self.wipe_progress.setVisible(False)
         self.wipe_btn.setEnabled(True)
         self.win._default_fail(msg)
 
     def _pick(self):
+        """_pick."""
         path, _ = QFileDialog.getOpenFileName(self, "Select a file to shred", str(Path.home()))
         if not path:
             return
@@ -1727,13 +2568,21 @@ class ShredPage(_Page):
         self.win.run_worker(StorageWorker(path), self._on_medium, self._fail)
 
     def _on_medium(self, kind: str, overwrite_effective: bool):
-        note = "" if overwrite_effective else "  \u2014 overwrite NOT reliable here"
+        """_on_medium."""
+        self._last_kind = kind
+        self._last_overwrite = overwrite_effective
+        note = "" if overwrite_effective else "  \u2014 overwrite NOT reliable here (PL2/PL3 recommended)"
         color = self.p.success if overwrite_effective else self.p.warning
         self.medium_label.setText(f"Medium: {kind}{note}")
         self.medium_label.setStyleSheet(f"color: {color}; font-weight: 600;")
 
     def _shred(self):
+        """_shred."""
         if not self._target:
+            return
+        # Single-pass delete stays Free; only multi-pass overwrite is premium.
+        if (self.passes.value() > 1
+                and not require_feature(self, Feature.SHRED_MULTIPASS)):
             return
         confirm = QMessageBox.warning(
             self, "Confirm secure shred",
@@ -1743,6 +2592,31 @@ class ShredPage(_Page):
         )
         if confirm != QMessageBox.StandardButton.Yes:
             return
+        # Adaptive PL selection (HolePunch/PULSE/WAS)
+        pl_text = self.pl_combo.currentText() if hasattr(self, "pl_combo") else "Auto"
+        pl_map = {
+            "Auto": None,
+            "PL0": "pl0",
+            "PL1": "pl1",
+            "PL2": "pl2",
+            "PL3": "pl3",
+        }
+        chosen = None
+        for k, v in pl_map.items():
+            if pl_text.startswith(k):
+                chosen = v
+                break
+        overwrite_ok = getattr(self, "_last_overwrite", True)
+        # If PL explicitly chosen (not Auto) or flash medium, use adaptive sanitizer
+        use_adaptive = (chosen is not None) or (not overwrite_ok)
+        if use_adaptive:
+            from .workers import AdaptiveShredWorker
+
+            self.shred_btn.setEnabled(False)
+            self.progress.setVisible(True)
+            worker = AdaptiveShredWorker(self._target, level=chosen, verify=True)
+            self.win.run_worker(worker, self._on_adaptive_done, self._fail)
+            return
         from .workers import ShredWorker
         self.shred_btn.setEnabled(False)
         self.progress.setVisible(True)
@@ -1751,7 +2625,19 @@ class ShredPage(_Page):
         worker.refused.connect(self._on_refused)
         self.win.run_worker(worker, self._on_done, self._fail)
 
+    def _on_adaptive_done(self, outcome: str, message: str, detail: str):
+        """_on_adaptive_done."""
+        self.progress.setVisible(False)
+        self.shred_btn.setEnabled(True)
+        msg = f"{outcome}: {message}\n{detail}"
+        self.win.statusBar().showMessage(f"Adaptive shred: {outcome}", 6000)
+        QMessageBox.information(self, "Adaptive shred complete", msg)
+        self._target = None
+        self.target_label.setText("No file selected")
+        self.shred_btn.setEnabled(False)
+
     def _on_done(self, outcome: str, reason: str):
+        """_on_done."""
         self.progress.setVisible(False)
         self.shred_btn.setEnabled(True)
         msg = f"{outcome}" + (f"  ({reason})" if reason else "")
@@ -1762,6 +2648,7 @@ class ShredPage(_Page):
         self.shred_btn.setEnabled(False)
 
     def _on_refused(self, kind: str, guidance: str):
+        """_on_refused."""
         self.progress.setVisible(False)
         self.shred_btn.setEnabled(True)
         QMessageBox.information(
@@ -1772,13 +2659,16 @@ class ShredPage(_Page):
         )
 
     def _fail(self, msg: str):
+        """_fail."""
         self.progress.setVisible(False)
         self.shred_btn.setEnabled(True)
         self.win._default_fail(msg)
 
 
 class SettingsPage(_Page):
+    """SettingsPage class."""
     def __init__(self, win: PremiumMainWindow):
+        """__init__."""
         super().__init__(win)
         self.v.addWidget(title_block("Settings", "Appearance and engine information."))
 
@@ -1792,11 +2682,50 @@ class SettingsPage(_Page):
         theme_row.addStretch(1)
         self.dark_btn = QPushButton("Dark")
         self.light_btn = QPushButton("Light")
-        self.dark_btn.clicked.connect(lambda: self.win.set_theme("dark"))
-        self.light_btn.clicked.connect(lambda: self.win.set_theme("light"))
+        self.dark_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.light_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.dark_btn.clicked.connect(lambda: self._choose_theme("dark"))
+        self.light_btn.clicked.connect(lambda: self._choose_theme("light"))
         theme_row.addWidget(self.dark_btn)
         theme_row.addWidget(self.light_btn)
         cl.addLayout(theme_row)
+        # Mark the active theme so the choice is visible at a glance.
+        self._sync_theme_buttons()
+
+        # Close-to-tray preference (keeps the app + monitor running in the
+        # background when the window is closed).
+        self.tray_check = QCheckBox(
+            "Close to system tray (keep running in the background)")
+        self.tray_check.setChecked(bool(self.win.settings.close_to_tray))
+        # The tray object is created after the pages, so query the platform
+        # capability directly rather than the not-yet-built window tray.
+        from PySide6.QtWidgets import QSystemTrayIcon
+        try:
+            tray_ok = bool(QSystemTrayIcon.isSystemTrayAvailable())
+        except Exception:  # noqa: BLE001
+            tray_ok = False
+        if not tray_ok:
+            self.tray_check.setEnabled(False)
+            self.tray_check.setToolTip(
+                "A system tray is not available on this system.")
+        self.tray_check.toggled.connect(self._on_close_to_tray_toggled)
+        cl.addWidget(self.tray_check)
+
+        # Reduce motion (accessibility): suppress non-essential animation - page
+        # reveals and the smooth-scroll glide fall back to instant.
+        self.motion_check = QCheckBox(
+            "Reduce motion (minimise animations and smooth scrolling)")
+        self.motion_check.setChecked(bool(self.win.settings.reduced_motion))
+        self.motion_check.toggled.connect(self._on_reduced_motion_toggled)
+        cl.addWidget(self.motion_check)
+
+        # Update check: strictly opt-in. When enabled, the app performs ONE
+        # informational release check per run - no downloads, no installs.
+        self.update_check_box = QCheckBox(
+            "Check for newer releases on startup (one request, informational only)")
+        self.update_check_box.setChecked(bool(self.win.settings.update_check))
+        self.update_check_box.toggled.connect(self._on_update_check_toggled)
+        cl.addWidget(self.update_check_box)
         cl.addWidget(hline(self.p))
 
         from cortex_unified.engine import HASH_ALGORITHM
@@ -1816,7 +2745,42 @@ class SettingsPage(_Page):
         self._build_safety_card()
         self.v.addStretch(1)
 
+    def _choose_theme(self, theme: str) -> None:
+        """_choose_theme."""
+        self.win.set_theme(theme)
+        self._sync_theme_buttons()
+
+    def _sync_theme_buttons(self) -> None:
+        """Give the active theme's button the accent (Primary) styling.
+
+        Uses the object-name/repolish mechanism so the highlight is driven by
+        the same token-based QSS as every other control, and updates live when
+        the theme is switched.
+        """
+        active = self.win.theme_name
+        for btn, name in ((self.dark_btn, "dark"), (self.light_btn, "light")):
+            btn.setObjectName("Primary" if name == active else "")
+            style = btn.style()
+            if style is not None:
+                style.unpolish(btn)
+                style.polish(btn)
+
+    def _on_close_to_tray_toggled(self, checked: bool) -> None:
+        """_on_close_to_tray_toggled."""
+        self.win.settings.close_to_tray = bool(checked)
+
+    def _on_reduced_motion_toggled(self, checked: bool) -> None:
+        """_on_reduced_motion_toggled."""
+        from . import motion
+        motion.set_reduced_motion(bool(checked))
+        self.win.settings.reduced_motion = bool(checked)
+
+    def _on_update_check_toggled(self, checked: bool) -> None:
+        """_on_update_check_toggled."""
+        self.win.settings.update_check = bool(checked)
+
     def _build_smart_card(self):
+        """_build_smart_card."""
         card = Card(self.p)
         cl = QVBoxLayout(card)
         cl.setContentsMargins(22, 20, 22, 20)
@@ -1842,6 +2806,7 @@ class SettingsPage(_Page):
         self.v.addWidget(card)
 
     def _reset_smart(self):
+        """_reset_smart."""
         confirm = QMessageBox.question(
             self, "Reset learning",
             "Forget everything Smart Suggestions has learned? This cannot be undone.",
@@ -1860,6 +2825,7 @@ class SettingsPage(_Page):
         )
 
     def _build_safety_card(self):
+        """_build_safety_card."""
         from cortex_unified.system_tools.restore_point import RestorePointManager
 
         card = Card(self.p)
@@ -1873,10 +2839,9 @@ class SettingsPage(_Page):
 
         mgr = RestorePointManager()
         if not mgr.is_supported():
-            note = QLabel("\u2139  System Restore points are a Windows-only feature.")
-            note.setObjectName("Muted")
-            note.setWordWrap(True)
-            cl.addWidget(note)
+            cl.addWidget(status_note(
+                self.p, "info",
+                "System Restore points are a Windows-only feature."))
             self.v.addWidget(card)
             return
 
@@ -1889,7 +2854,8 @@ class SettingsPage(_Page):
         desc.setWordWrap(True)
         cl.addWidget(desc)
 
-        elev = "\u2705 Administrator" if mgr.is_elevated() else "\u26A0 Not elevated (needed to create points)"
+        elev = ("Administrator" if mgr.is_elevated()
+                else "Not elevated (needed to create points)")
         self.rp_status = QLabel(f"Status: {elev}")
         cl.addWidget(self.rp_status)
 
@@ -1920,12 +2886,13 @@ class SettingsPage(_Page):
         # Load the (PowerShell-backed) restore-point list on first view via the
         # _autoload mechanism rather than eagerly in the constructor, so opening
         # the app never spawns a subprocess for a page the user hasn't visited
-        # yet (Req 1.5). The list still loads off the UI thread on the
-        # Worker_Runtime when Settings is first shown.
+        # yet (Req 1.5). The list still loads off the UI thread via the worker
+        # runtime when Settings is first shown.
         self._autoload = self._refresh_restore_points
         self._loaded = False
 
     def _create_restore_point(self):
+        """_create_restore_point."""
         from .workers import RestorePointWorker
         self.rp_create_btn.setEnabled(False)
         self.rp_progress.setVisible(True)
@@ -1934,6 +2901,7 @@ class SettingsPage(_Page):
                             self._on_rp_created, self._on_rp_fail)
 
     def _on_rp_created(self, status: str, message: str):
+        """_on_rp_created."""
         self.rp_progress.setVisible(False)
         self.rp_create_btn.setEnabled(True)
         if status == "created":
@@ -1950,15 +2918,18 @@ class SettingsPage(_Page):
         self._refresh_restore_points()
 
     def _on_rp_fail(self, msg: str):
+        """_on_rp_fail."""
         self.rp_progress.setVisible(False)
         self.rp_create_btn.setEnabled(True)
         self.win._default_fail(msg)
 
     def _refresh_restore_points(self):
+        """_refresh_restore_points."""
         from .workers import RestorePointListWorker
         self.win.run_worker(RestorePointListWorker(), self._on_rp_listed, self._on_rp_fail)
 
     def _on_rp_listed(self, points: list):
+        """_on_rp_listed."""
         self.rp_table.setRowCount(len(points))
         for r, p in enumerate(points):
             self.rp_table.setItem(r, 0, QTableWidgetItem(str(p.get("description", ""))))

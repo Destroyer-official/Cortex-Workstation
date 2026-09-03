@@ -43,6 +43,7 @@ def _sigmoid(z: float) -> float:
         return 1.0 / (1.0 + ez)
     ez = math.exp(z)
     return ez / (1.0 + ez)
+    """_sigmoid."""
 
 
 def _size_bucket(size_bytes: int) -> str:
@@ -58,6 +59,7 @@ def _size_bucket(size_bytes: int) -> str:
     if mb < 1024:
         return "sz:100mb-1gb"
     return "sz:>1gb"
+    """_size_bucket."""
 
 
 def _age_bucket(age_days: float) -> str:
@@ -70,6 +72,7 @@ def _age_bucket(age_days: float) -> str:
     if age_days < 180:
         return "age:30-180d"
     return "age:>180d"
+    """_age_bucket."""
 
 
 def featurize(context: dict[str, Any]) -> list[str]:
@@ -108,6 +111,7 @@ class SmartSuggester:
         self._updates = 0
         self._model_path = model_path or (Path.home() / ".cortex_cleaner" / "smart_model.json")
         self._load()
+        """__init__."""
 
     # -- inference ----------------------------------------------------------
 
@@ -150,6 +154,7 @@ class SmartSuggester:
     def observe_batch(self, items: list[dict[str, Any]], cleaned: bool) -> None:
         for it in items:
             self.observe(it, cleaned)
+        """observe_batch."""
 
     def _enforce_cap_locked(self) -> None:
         """Keep the model tiny: if over cap, drop the smallest-magnitude weights."""
@@ -171,6 +176,7 @@ class SmartSuggester:
             _LOG.debug("could not load smart model: %s", exc)
             self._weights = {}
             self._updates = 0
+        """_load."""
 
     def save(self) -> bool:
         """Persist the model atomically. Returns True on success."""
@@ -198,8 +204,10 @@ class SmartSuggester:
                 "trained": self._updates >= 10,
                 "model_path": str(self._model_path),
             }
+        """stats."""
 
     def reset(self) -> None:
         with self._lock:
             self._weights.clear()
             self._updates = 0
+        """reset."""

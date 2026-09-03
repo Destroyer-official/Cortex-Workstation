@@ -35,6 +35,8 @@ class OptimizerWorker(QObject):
         super().__init__()
         self.logger = logging.getLogger("optimizer")
         self._should_stop = False
+        """__init__."""
+        """__init__."""
 
     def run(self):
         cleaned = 0
@@ -105,9 +107,13 @@ class OptimizerWorker(QObject):
             "cleaned_mb": cleaned / (1024 * 1024),
             "errors": errors,
         })
+        """run."""
+        """run."""
 
     def stop(self):
         self._should_stop = True
+        """stop."""
+        """stop."""
 
 
 # ──────────────────────────────────────────────────────────────────────
@@ -125,6 +131,8 @@ class DashboardTab(BaseTab):
         self.opt_thread = None
         self.optimizer = None
         self.last_report: SmartScanReport = None
+        """__init__."""
+        """__init__."""
 
     # ── UI Setup ──────────────────────────────────────────────────────
 
@@ -230,9 +238,13 @@ class DashboardTab(BaseTab):
             ql.addWidget(btn)
         layout.addWidget(qg)
         layout.addStretch()
+        """setup_ui."""
+        """setup_ui."""
 
     def setup_tooltips(self):
         self.smart_scan_btn.setToolTip("Run a comprehensive system analysis")
+        """setup_tooltips."""
+        """setup_tooltips."""
 
     # ── Smart Scan ────────────────────────────────────────────────────
 
@@ -257,10 +269,14 @@ class DashboardTab(BaseTab):
         self.scan_thread.finished.connect(self.scan_thread.deleteLater)
 
         self.scan_thread.start()
+        """run_smart_scan."""
+        """run_smart_scan."""
 
     def _on_progress(self, msg, pct):
         self.status_label.setText(msg)
         self.progress_bar.setValue(pct)
+        """_on_progress."""
+        """_on_progress."""
 
     def _on_scan_finished(self, report: SmartScanReport):
         self.last_report = report
@@ -293,12 +309,16 @@ class DashboardTab(BaseTab):
 
         self.details_group.setVisible(True)
         self.optimize_btn.setEnabled(True)
+        """_on_scan_finished."""
+        """_on_scan_finished."""
 
     def _on_scan_error(self, msg):
         self.smart_scan_btn.setEnabled(True)
         self.progress_bar.setVisible(False)
         self.status_label.setText("Scan failed")
         QMessageBox.critical(self, "Error", f"Smart Scan failed:\n{msg}")
+        """_on_scan_error."""
+        """_on_scan_error."""
 
     # ── Optimize Now (REAL cleaning) ──────────────────────────────────
 
@@ -339,6 +359,8 @@ class DashboardTab(BaseTab):
         self.opt_thread.finished.connect(self.opt_thread.deleteLater)
 
         self.opt_thread.start()
+        """run_optimization."""
+        """run_optimization."""
 
     def _on_optimize_done(self, result: dict):
         mb = result.get("cleaned_mb", 0)
@@ -355,15 +377,21 @@ class DashboardTab(BaseTab):
             f"{errs} files could not be removed (locked by other programs).\n\n"
             f"Run Smart Scan again to see your new health score.",
         )
+        """_on_optimize_done."""
+        """_on_optimize_done."""
 
     def _on_optimize_error(self, msg):
         self.progress_bar.setVisible(False)
         self.optimize_btn.setText("OPTIMIZE NOW")
         self.optimize_btn.setEnabled(True)
         QMessageBox.critical(self, "Error", f"Optimization failed:\n{msg}")
+        """_on_optimize_error."""
+        """_on_optimize_error."""
 
     # ── Navigation ────────────────────────────────────────────────────
 
     def navigate_to(self, tab_name):
         if self.parent_window and hasattr(self.parent_window, "navigation_controller"):
             self.parent_window.navigation_controller.set_current_tab_by_name(tab_name)
+        """navigate_to."""
+        """navigate_to."""

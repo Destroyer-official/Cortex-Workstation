@@ -1,0 +1,2518 @@
+{
+  "total_files": 431,
+  "syntax_errors": [],
+  "empty_functions": [
+    [
+      "src\\cortex_unified\\analyzers\\advanced_disk_analyzer.py",
+      [
+        [
+          "scan",
+          197,
+          "... (ellipsis)"
+        ]
+      ]
+    ],
+    [
+      "src\\cortex_unified\\analyzers\\cloud_storage_analyzer.py",
+      [
+        [
+          "list_objects",
+          313,
+          "pass"
+        ]
+      ]
+    ],
+    [
+      "src\\cortex_unified\\cli\\cli.py",
+      [
+        [
+          "main",
+          68,
+          "pass"
+        ],
+        [
+          "checkpoint",
+          1567,
+          "only docstring/empty"
+        ]
+      ]
+    ],
+    [
+      "src\\cortex_unified\\engine\\cli.py",
+      [
+        [
+          "main",
+          135,
+          "only docstring/empty"
+        ],
+        [
+          "leftovers",
+          267,
+          "only docstring/empty"
+        ],
+        [
+          "license",
+          361,
+          "only docstring/empty"
+        ],
+        [
+          "boost",
+          435,
+          "only docstring/empty"
+        ]
+      ]
+    ],
+    [
+      "src\\cortex_unified\\system_tools\\secrets_scanner.py",
+      [
+        [
+          "log_message",
+          2066,
+          "pass"
+        ]
+      ]
+    ],
+    [
+      "src\\cortex_unified\\ui\\tabs\\base_tab.py",
+      [
+        [
+          "setup_ui",
+          99,
+          "pass"
+        ],
+        [
+          "setup_tooltips",
+          108,
+          "pass"
+        ],
+        [
+          "update_translations",
+          112,
+          "pass"
+        ]
+      ]
+    ],
+    [
+      "src\\cortex_unified\\ui\\tabs\\package_manager_tab.py",
+      [
+        [
+          "__init__",
+          27,
+          "pass"
+        ]
+      ]
+    ],
+    [
+      "src\\cortex_unified\\visualization\\interactive_dashboard.py",
+      [
+        [
+          "plot",
+          34,
+          "pass"
+        ],
+        [
+          "__init__",
+          19,
+          "pass"
+        ],
+        [
+          "add_trace",
+          21,
+          "pass"
+        ],
+        [
+          "update_layout",
+          23,
+          "pass"
+        ]
+      ]
+    ],
+    [
+      "src\\cortex_unified\\visualization\\sunburst_generator.py",
+      [
+        [
+          "plot",
+          32,
+          "pass"
+        ],
+        [
+          "__init__",
+          22,
+          "pass"
+        ],
+        [
+          "add_trace",
+          24,
+          "pass"
+        ],
+        [
+          "update_layout",
+          26,
+          "pass"
+        ]
+      ]
+    ],
+    [
+      "src\\cortex_unified\\visualization\\treemap_generator.py",
+      [
+        [
+          "plot",
+          28,
+          "pass"
+        ],
+        [
+          "__init__",
+          18,
+          "pass"
+        ],
+        [
+          "add_trace",
+          20,
+          "pass"
+        ],
+        [
+          "update_layout",
+          22,
+          "pass"
+        ]
+      ]
+    ],
+    [
+      "src\\NexusExplorer\\native\\nexus_cloud.py",
+      [
+        [
+          "provider_type",
+          226,
+          "... (ellipsis)"
+        ],
+        [
+          "authenticate",
+          230,
+          "... (ellipsis)"
+        ],
+        [
+          "is_authenticated",
+          235,
+          "... (ellipsis)"
+        ],
+        [
+          "disconnect",
+          239,
+          "... (ellipsis)"
+        ],
+        [
+          "get_account_info",
+          244,
+          "... (ellipsis)"
+        ],
+        [
+          "list_files",
+          248,
+          "... (ellipsis)"
+        ],
+        [
+          "search",
+          253,
+          "... (ellipsis)"
+        ],
+        [
+          "download",
+          258,
+          "... (ellipsis)"
+        ],
+        [
+          "upload",
+          263,
+          "... (ellipsis)"
+        ],
+        [
+          "delete",
+          268,
+          "... (ellipsis)"
+        ],
+        [
+          "get_quota",
+          273,
+          "... (ellipsis)"
+        ]
+      ]
+    ],
+    [
+      "src\\NexusExplorer\\native\\nexus_network.py",
+      [
+        [
+          "protocol",
+          127,
+          "... (ellipsis)"
+        ],
+        [
+          "connect",
+          131,
+          "... (ellipsis)"
+        ],
+        [
+          "disconnect",
+          135,
+          "... (ellipsis)"
+        ],
+        [
+          "is_connected",
+          139,
+          "... (ellipsis)"
+        ],
+        [
+          "list_files",
+          143,
+          "... (ellipsis)"
+        ],
+        [
+          "download",
+          147,
+          "... (ellipsis)"
+        ],
+        [
+          "upload",
+          151,
+          "... (ellipsis)"
+        ],
+        [
+          "delete",
+          155,
+          "... (ellipsis)"
+        ],
+        [
+          "mkdir",
+          159,
+          "... (ellipsis)"
+        ],
+        [
+          "exists",
+          163,
+          "... (ellipsis)"
+        ]
+      ]
+    ],
+    [
+      "src\\NexusExplorer\\native\\nexus_plugins.py",
+      [
+        [
+          "manifest",
+          274,
+          "... (ellipsis)"
+        ],
+        [
+          "on_load",
+          278,
+          "only docstring/empty"
+        ],
+        [
+          "on_unload",
+          281,
+          "only docstring/empty"
+        ]
+      ]
+    ],
+    [
+      "src\\NexusExplorer\\native\\nexus_undo.py",
+      [
+        [
+          "undo",
+          64,
+          "... (ellipsis)"
+        ],
+        [
+          "redo",
+          68,
+          "... (ellipsis)"
+        ]
+      ]
+    ],
+    [
+      "tests\\test_cli_leftovers.py",
+      [
+        [
+          "__init__",
+          25,
+          "pass"
+        ]
+      ]
+    ],
+    [
+      "tests\\test_leftover_cleaner.py",
+      [
+        [
+          "CloseKey",
+          345,
+          "pass"
+        ],
+        [
+          "CloseKey",
+          529,
+          "pass"
+        ]
+      ]
+    ],
+    [
+      "tests\\test_load_tester.py",
+      [
+        [
+          "log_message",
+          126,
+          "pass"
+        ]
+      ]
+    ],
+    [
+      "tests\\test_premium_gui.py",
+      [
+        [
+          "refresh_theme",
+          621,
+          "pass"
+        ],
+        [
+          "stop",
+          652,
+          "pass"
+        ],
+        [
+          "__init__",
+          1012,
+          "pass"
+        ],
+        [
+          "__init__",
+          1044,
+          "pass"
+        ]
+      ]
+    ],
+    [
+      "tests\\test_production_hardening.py",
+      [
+        [
+          "showMessage",
+          233,
+          "pass"
+        ]
+      ]
+    ],
+    [
+      "tests\\test_tabs_gating.py",
+      [
+        [
+          "__init__",
+          311,
+          "pass"
+        ],
+        [
+          "__init__",
+          348,
+          "pass"
+        ]
+      ]
+    ]
+  ],
+  "placeholders": [
+    [
+      "audit_report_full.json",
+      [
+        [
+          397,
+          "\"\\\"- **Cloud-placeholder safety in the scan engine:** OneDrive Files On-Demand and\\\"\""
+        ],
+        [
+          401,
+          "\"\\\"to overwrite a placeholder instead of triggering a download.\\\"\""
+        ],
+        [
+          405,
+          "\"\\\"\\\\\\\"raise NotImplementedError\\\\\\\",\\\"\""
+        ],
+        [
+          409,
+          "\"\\\"1. TODO / FIXME / HACK / MOCK / DUMMY / PLACEHOLDER / STUB comments or strings.\\\"\""
+        ],
+        [
+          413,
+          "\"\\\"2. Functions with only 'pass', '...', or 'raise NotImplementedError'.\\\"\""
+        ],
+        [
+          417,
+          "\"\\\"re.compile(r\\\\\\\"\\\\\\\\b(TODO|FIXME|XXX|HACK)\\\\\\\\b\\\\\\\", re.IGNORECASE),\\\"\""
+        ],
+        [
+          421,
+          "\"\\\"re.compile(r\\\\\\\"\\\\\\\\b(placeholder|dummy|fake|mock|stub)\\\\\\\\b\\\\\\\", re.IGNORECASE),\\\"\""
+        ],
+        [
+          425,
+          "\"\\\"re.compile(r\\\\\\\"NotImplementedError\\\\\\\"),\\\"\""
+        ],
+        [
+          429,
+          "\"\\\"# 1. Scan lines for placeholder keywords\\\"\""
+        ],
+        [
+          433,
+          "\"\\\"# Filter out intentional / benign uses (e.g., test mocks, comments explaining dummy)\\\"\""
+        ],
+        [
+          437,
+          "\"\\\"# Check if function body is just `pass` or `...` or `raise NotImplementedError`\\\"\""
+        ],
+        [
+          441,
+          "\"\\\"if isinstance(stmt.exc, ast.Call) and getattr(stmt.exc.func, \\\\\\\"id\\\\\\\", \\\\\\\"\\\\\\\") == \\\\\\\"NotImplementedError\\\\\\\":\\\"\""
+        ],
+        [
+          445,
+          "\"\\\"results[\\\\\\\"empty_functions\\\\\\\"].append((node.name, node.lineno, \\\\\\\"raise NotImplementedError\\\\\\\"))\\\"\""
+        ],
+        [
+          449,
+          "\"\\\"print(f\\\\\\\"  - Empty / Stub Functions: {len(all_empty_funcs)} files\\\\\\\")\\\"\""
+        ],
+        [
+          453,
+          "\"\\\"print(f\\\\\\\"  - Files with Placeholder / TODO / Mock mentions: {len(all_placeholders)} files\\\\\\\")\\\"\""
+        ],
+        [
+          457,
+          "\"\\\"print(\\\\\\\"\\\\\\\\n[!] EMPTY / STUB FUNCTIONS:\\\\\\\")\\\"\""
+        ],
+        [
+          461,
+          "\"\\\"'mock_fake_dummy': re.compile(r'\\\\\\\\b(mock|dummy|fake|sample_data|placeholder|simulated)\\\\\\\\b', re.I),\\\"\""
+        ],
+        [
+          465,
+          "\"\\\"'TODO_FIXME': re.compile(r'\\\\\\\\b(TODO|FIXME|XXX|HACK)\\\\\\\\b'),\\\"\""
+        ],
+        [
+          469,
+          "\"\\\"'stub_or_notimplemented': re.compile(r'raise NotImplementedError|pass  # stub', re.I),\\\"\""
+        ],
+        [
+          473,
+          "\"\\\"# Create small sandbox directory with dummy files for rapid scanning\\\"\""
+        ],
+        [
+          477,
+          "\"\\\"(sandbox_p / \\\\\\\"sub2\\\\\\\" / \\\\\\\"dummy.dat\\\\\\\").write_bytes(b\\\\\\\"DATA\\\\\\\" * 50)\\\"\""
+        ],
+        [
+          481,
+          "\"\\\"# Mock blocking dialogs to return the fast sandbox and never hang\\\"\""
+        ],
+        [
+          485,
+          "\"\\\"\\\\\\\"\\\\\\\"\\\\\\\"Stub; wire to the scan entry point.\\\\\\\"\\\\\\\"\\\\\\\"\\\"\""
+        ],
+        [
+          489,
+          "\"\\\"\\\\\\\"\\\\\\\"\\\\\\\"Stub; wire to the clean entry point.\\\\\\\"\\\\\\\"\\\\\\\"\\\"\""
+        ],
+        [
+          493,
+          "\"\\\"\\\\\\\"\\\\\\\"\\\\\\\"Stub; open the settings dialog here.\\\\\\\"\\\\\\\"\\\\\\\"\\\"\""
+        ],
+        [
+          497,
+          "\"\\\"\\\\\\\"\\\\\\\"\\\\\\\"Stub; refresh the active view.\\\\\\\"\\\\\\\"\\\\\\\"\\\"\""
+        ],
+        [
+          501,
+          "\"\\\"\\\\\\\"\\\\\\\"\\\\\\\"Stub; cancel any running operation.\\\\\\\"\\\\\\\"\\\\\\\"\\\"\""
+        ],
+        [
+          505,
+          "\"\\\"self.logger.info(\\\\\\\"macOS accessibility support (placeholder)\\\\\\\")\\\"\""
+        ],
+        [
+          509,
+          "\"\\\"self.logger.info(\\\\\\\"Linux accessibility support (placeholder)\\\\\\\")\\\"\""
+        ],
+        [
+          513,
+          "\"\\\"\\\\\\\"\\\\\\\"\\\\\\\"Placeholder; SAPI/UIA announcement not wired yet.\\\\\\\"\\\\\\\"\\\\\\\"\\\"\""
+        ],
+        [
+          517,
+          "\"\\\"raise NotImplementedError\\\"\""
+        ],
+        [
+          521,
+          "\"\\\"# Convert prev subfp to dummy prev_energies for raw fallback? Simpler: use None\\\"\""
+        ],
+        [
+          525,
+          "\"\\\"* Local sync clients (OneDrive, Dropbox) create placeholder files; actual\\\"\""
+        ],
+        [
+          529,
+          "\"\\\"FCDC_NORMALIZATION = 1  # placeholder for Gear table size\\\"\""
+        ],
+        [
+          533,
+          "\"\\\"and files_removed is a placeholder (npm reports no file count).\\\"\""
+        ],
+        [
+          537,
+          "\"\\\"\\\\\\\"\\\\\\\"\\\\\\\"Placeholder: fetches `npm ls --json` but performs no dependency\\\"\""
+        ],
+        [
+          541,
+          "\"\\\"\\\\\\\"\\\\\\\"\\\\\\\"Placeholder: runs `dnf leaves` (packages nothing depends on) but\\\"\""
+        ],
+        [
+          545,
+          "\"\\\"\\\\\\\"\\\\\\\"\\\\\\\"Placeholder: runs `brew leaves` (top-level formulas) but parsing is\\\"\""
+        ],
+        [
+          549,
+          "\"\\\"# Cloud placeholder: the bytes are not here. Deleting it\\\"\""
+        ],
+        [
+          553,
+          "\"\\\"# A cloud placeholder is not an empty file - its content\\\"\""
+        ],
+        [
+          557,
+          "\"\\\"NTFS-compressed and cloud-placeholder files that overstates the space a\\\"\""
+        ],
+        [
+          561,
+          "\"\\\"placeholder?\\\\\\\" without a second syscall.\\\"\""
+        ],
+        [
+          565,
+          "\"\\\"reason=\\\\\\\"cloud placeholder: the file's content is not stored on \\\\\\\"\\\"\""
+        ],
+        [
+          569,
+          "\"\\\"online-only placeholder returns 0). Elsewhere the value is derived from\\\"\""
+        ],
+        [
+          573,
+          "\"\\\"\\\\\\\"select_all\\\\\\\": \\\\\\\"Seleccionar Todo\\\\\\\",\\\"\""
+        ],
+        [
+          577,
+          "\"\\\"\\\\\\\"select_all\\\\\\\": \\\\\\\"Ctrl+A - Seleccionar Todo\\\\\\\",\\\"\""
+        ],
+        [
+          581,
+          "\"\\\"return datetime.now()  # Placeholder: date parsing unimplemented\\\"\""
+        ],
+        [
+          585,
+          "\"\\\"return datetime.now()  # Placeholder: timestamp parsing unimplemented\\\"\""
+        ],
+        [
+          589,
+          "\"\\\"* A check that can't gather data reports \\\\\\\"unknown\\\\\\\" (info), never a fake pass.\\\"\""
+        ],
+        [
+          593,
+          "\"\\\"as Administrator, which is heavy and fragile; we deliberately don't fake a\\\"\""
+        ],
+        [
+          597,
+          "\"\\\"# \\\\\\\"IEEE Registration Authority\\\\\\\" is the placeholder used for\\\"\""
+        ],
+        [
+          601,
+          "\"\\\"TEST_PATH_RE   = re.compile(r'(?:test|spec|fixture|mock|example|sample|demo|fake|stub|dummy|__test__|\\\\\\\\.test\\\\\\\\.|\\\\\\\\.spec\\\\\\\\.|_test\\\\\\\\.|_spec\\\\\\\\.)', re.IGNORECASE)\\\"\""
+        ],
+        [
+          605,
+          "\"\\\"PLACEHOLDER_RE = re.compile(r'^(?:your[_\\\\\\\\-]?(?:api[_\\\\\\\\-]?key|secret|token|password)|insert[_\\\\\\\\-]?(?:key|token)|xxx+|abc+123*|password123|changeme|replace[_\\\\\\\\-]?me|example[_\\\\\\\\-]?(?:key|token|secret)|<[^>]+>|\\\\\\\\$\\\\\\\\{[^}]+\\\\\\\\}|\\\\\\\\{\\\\\\\\{[^}]+\\\\\\\\}\\\\\\\\}|XXXXXXXX+)$', re.IGNORECASE)\\\"\""
+        ],
+        [
+          609,
+          "\"\\\"<input class=\\\\\\\"search-box\\\\\\\" type=\\\\\\\"text\\\\\\\" placeholder=\\\\\\\"Search findings...\\\\\\\" oninput=\\\\\\\"searchFindings(this.value)\\\\\\\" />\\\"\""
+        ],
+        [
+          613,
+          "\"\\\"\\\\\\\"\\\\\\\"\\\\\\\"Start a temp file scan (legacy stub).\\\\\\\"\\\\\\\"\\\\\\\"\\\"\""
+        ],
+        [
+          617,
+          "\"\\\"\\\\\\\"\\\\\\\"\\\\\\\"Minimal folder-pick + scan page (no fake Cancel affordance).\\\"\""
+        ],
+        [
+          621,
+          "\"\\\"raise NotImplementedError\\\"\""
+        ],
+        [
+          625,
+          "\"\\\"raise NotImplementedError\\\"\""
+        ],
+        [
+          629,
+          "\"\\\"# PageSpec(\\\\\\\"projcaches\\\\\\\", \\\\\\\"Project Folder Caches\\\\\\\", \\\\\\\"projcaches\\\\\\\", \\\\\\\"cleanup\\\\\\\", f\\\\\\\"{_MORE}:ProjectCachesPage\\\\\\\"),  # TODO: needs reimplementation\\\"\""
+        ],
+        [
+          633,
+          "\"\\\"\\\\\\\"\\\\\\\"\\\\\\\"Skeleton shimmer: a reassuring \\\\\\\"loading\\\\\\\" placeholder for premium feel.\\\"\""
+        ],
+        [
+          637,
+          "\"\\\"Premium apps show a *skeleton* - grey placeholder bars shaped like the content\\\"\""
+        ],
+        [
+          641,
+          "\"\\\"\\\\\\\"\\\\\\\"\\\\\\\"Animated placeholder bars used as a loading state.\\\"\""
+        ],
+        [
+          645,
+          "\"\\\"# Real native icon where available; a token placeholder glyph when\\\"\""
+        ],
+        [
+          649,
+          "\"\\\"\\\\\\\"\\\\\\\"\\\\\\\"Real native icon where available, else a token placeholder glyph, so\\\"\""
+        ],
+        [
+          653,
+          "\"\\\"# Token-styled placeholder glyphs, keyed by the palette colors + size they were\\\"\""
+        ],
+        [
+          657,
+          "\"\\\"token placeholder in that case (see :func:`placeholder_icon`, Req 8.3).\\\"\""
+        ],
+        [
+          661,
+          "\"\\\"except Exception:  # noqa: BLE001 - any failure degrades to the placeholder\\\"\""
+        ],
+        [
+          665,
+          "\"\\\"\\\\\\\"\\\\\\\"\\\\\\\"Return a token-styled placeholder glyph for items lacking a native icon.\\\"\""
+        ],
+        [
+          669,
+          "\"\\\"ratio, so a live list refresh reuses one shared placeholder per theme\\\"\""
+        ],
+        [
+          673,
+          "\"\\\"# placeholder child so the expand arrow shows; real contents load lazily\\\"\""
+        ],
+        [
+          677,
+          "\"\\\"placeholder = QTreeWidgetItem([\\\\\\\"Loading\\\\\\\\u2026\\\\\\\", \\\\\\\"\\\\\\\", \\\\\\\"\\\\\\\", \\\\\\\"\\\\\\\"])\\\"\""
+        ],
+        [
+          681,
+          "\"\\\"top.addChild(placeholder)\\\"\""
+        ],
+        [
+          685,
+          "\"\\\"# Show a lightweight \\\\\\\"loading\\\\\\\" placeholder while the worker runs.\\\"\""
+        ],
+        [
+          689,
+          "\"\\\"item.takeChildren()   # remove the \\\\\\\"Loading...\\\\\\\" placeholder\\\"\""
+        ],
+        [
+          693,
+          "\"\\\"child.addChild(ph)   # placeholder so the expand arrow appears\\\"\""
+        ],
+        [
+          697,
+          "\"\\\"raise NotImplementedError\\\"\""
+        ],
+        [
+          701,
+          "\"\\\"raise NotImplementedError\\\"\""
+        ],
+        [
+          705,
+          "\"\\\"\\\\\\\"\\\\\\\"\\\\\\\"Create mock data block for the target selection parameter requirements.\\\\\\\"\\\\\\\"\\\\\\\"\\\"\""
+        ],
+        [
+          709,
+          "\"\\\"QMessageBox.information(self, \\\\\\\"Placeholder\\\\\\\", \\\\\\\"Template saving not fully implemented\\\\\\\")\\\"\""
+        ],
+        [
+          713,
+          "\"\\\"\\\\\\\"\\\\\\\"\\\\\\\"Placeholder figure prompting the user to run an analysis.\\\\\\\"\\\\\\\"\\\\\\\"\\\"\""
+        ],
+        [
+          717,
+          "\"\\\"\\\\\\\"\\\\\\\"\\\\\\\"Render the sunburst figure, or a \\\\\\\"No Data\\\\\\\" placeholder.\\\"\""
+        ],
+        [
+          721,
+          "\"\\\"\\\\\\\"\\\\\\\"\\\\\\\"Render the treemap figure, or a \\\\\\\"No Data\\\\\\\" placeholder.\\\"\""
+        ],
+        [
+          725,
+          "\"\\\"S3 = auto()  # TODO: No implementation yet\\\"\""
+        ],
+        [
+          729,
+          "\"\\\"# TODO: empty_icon rendering varies across platforms/fonts \\\\u2014\\\"\""
+        ],
+        [
+          733,
+          "\"\\\"\\\\\\\"\\\\\\\"\\\\\\\"Add a dummy child to make the item expandable.\\\\\\\"\\\\\\\"\\\\\\\"\\\"\""
+        ],
+        [
+          737,
+          "\"\\\"dummy = QStandardItem(\\\\\\\"\\\\\\\")\\\"\""
+        ],
+        [
+          741,
+          "\"\\\"dummy.setData(\\\\\\\"\\\\\\\", Qt.ItemDataRole.UserRole)\\\"\""
+        ],
+        [
+          745,
+          "\"\\\"parent_item.appendRow(dummy)\\\"\""
+        ],
+        [
+          749,
+          "\"\\\"\\\\\\\".hack\\\\\\\": \\\\\\\"hack\\\\\\\", \\\\\\\".hh\\\\\\\": \\\\\\\"hack\\\\\\\", \\\\\\\".hhi\\\\\\\": \\\\\\\"hack\\\\\\\",\\\"\""
+        ],
+        [
+          753,
+          "\"\\\"\\\\\\\".todo\\\\\\\": \\\\\\\"markdown\\\\\\\",\\\"\""
+        ],
+        [
+          757,
+          "\"\\\"raise NotImplementedError\\\"\""
+        ],
+        [
+          761,
+          "\"\\\"raise NotImplementedError\\\"\""
+        ],
+        [
+          765,
+          "\"\\\"\\\\\\\"\\\\\\\"\\\\\\\"Create a test directory structure with mock files.\\\\\\\"\\\\\\\"\\\\\\\"\\\"\""
+        ],
+        [
+          769,
+          "\"\\\"p = tmp_path / \\\\\\\"fake.mp3\\\\\\\"\\\"\""
+        ],
+        [
+          773,
+          "\"\\\"We build a fake Chromium/Firefox profile tree under a temp home so the scan is\\\"\""
+        ],
+        [
+          777,
+          "\"\\\"\\\\\\\"\\\\\\\"\\\\\\\"Cloud-placeholder / reparse-point awareness in the scan engine.\\\"\""
+        ],
+        [
+          781,
+          "\"\\\"# A file is treated as a placeholder when its mtime matches this marker, which\\\"\""
+        ],
+        [
+          785,
+          "\"\\\"# A plain reparse point on its own is not a placeholder.\\\"\""
+        ],
+        [
+          789,
+          "\"\\\"assert \\\\\\\"cloud placeholder\\\\\\\" in res.reason\\\"\""
+        ],
+        [
+          793,
+          "\"\\\"p1 = Path(\\\\\\\"/mock/file1.bin\\\\\\\")\\\"\""
+        ],
+        [
+          797,
+          "\"\\\"p2 = Path(\\\\\\\"/mock/file2.bin\\\\\\\")\\\"\""
+        ],
+        [
+          801,
+          "\"\\\"p3 = Path(\\\\\\\"/mock/file3.bin\\\\\\\")\\\"\""
+        ],
+        [
+          805,
+          "\"\\\"except (OSError, NotImplementedError):\\\"\""
+        ],
+        [
+          809,
+          "\"\\\"\\\\\\\"\\\\\\\"\\\\\\\"Cloud-placeholder and reparse-point safety in the scan engine.\\\"\""
+        ],
+        [
+          813,
+          "\"\\\"* refuse to \\\\\\\"shred\\\\\\\" a placeholder instead of hydrating gigabytes to overwrite\\\"\""
+        ],
+        [
+          817,
+          "\"\\\"The placeholder is simulated with ``FILE_ATTRIBUTE_OFFLINE``, which is one of\\\"\""
+        ],
+        [
+          821,
+          "\"\\\"\\\\\\\"\\\\\\\"\\\\\\\"A folder with one local file, one simulated placeholder, one junction.\\\\\\\"\\\\\\\"\\\\\\\"\\\"\""
+        ],
+        [
+          825,
+          "\"\\\"stub = real / \\\\\\\"cloud_only.bin\\\\\\\"\\\"\""
+        ],
+        [
+          829,
+          "\"\\\"stub.write_bytes(b\\\\\\\"b\\\\\\\" * 100_000)\\\"\""
+        ],
+        [
+          833,
+          "\"\\\"if not _mark_offline(stub):\\\"\""
+        ],
+        [
+          837,
+          "\"\\\"return tmp_path, stub\\\"\""
+        ],
+        [
+          841,
+          "\"\\\"root, stub = cloud_tree\\\"\""
+        ],
+        [
+          845,
+          "\"\\\"assert names == [\\\\\\\"local.bin\\\\\\\"], \\\\\\\"the cloud placeholder must not be scanned\\\\\\\"\\\"\""
+        ],
+        [
+          849,
+          "\"\\\"\\\\\\\"\\\\\\\"\\\\\\\"find_empty must not offer a placeholder as a deletable empty file.\\\\\\\"\\\\\\\"\\\\\\\"\\\"\""
+        ],
+        [
+          853,
+          "\"\\\"\\\\\\\"\\\\\\\"\\\\\\\"Overwriting a placeholder would download it first - refuse instead.\\\\\\\"\\\\\\\"\\\\\\\"\\\"\""
+        ],
+        [
+          857,
+          "\"\\\"_, stub = cloud_tree\\\"\""
+        ],
+        [
+          861,
+          "\"\\\"# force_overwrite_on_flash=True proves the refusal is about the placeholder,\\\"\""
+        ],
+        [
+          865,
+          "\"\\\"stub, method=DeletionMethod.OVERWRITE, force_overwrite_on_flash=True)\\\"\""
+        ],
+        [
+          869,
+          "\"\\\"assert stub.exists(), \\\\\\\"the file must be left untouched\\\\\\\"\\\"\""
+        ],
+        [
+          873,
+          "\"\\\"# The summary cards must be populated (numbers, not the placeholder dash).\\\"\""
+        ],
+        [
+          877,
+          "\"\\\"\\\\\\\"\\\\\\\"\\\\\\\"Install a fake winreg module driving LeftoverScanner's registry walk.\\\"\""
+        ],
+        [
+          881,
+          "\"\\\"# The fake serves both HKLM and HKCU identically, so the mirrored\\\"\""
+        ],
+        [
+          885,
+          "\"\\\"# Build a fake unins000.dat: absolute paths as UTF-16LE runs.\\\"\""
+        ],
+        [
+          889,
+          "\"\\\"was offered), so a fake exec/clickedButton pair drives the accept path\\\"\""
+        ],
+        [
+          893,
+          "\"\\\"fake = _Socket()\\\"\""
+        ],
+        [
+          897,
+          "\"\\\"monkeypatch.setattr(wake_on_lan.socket, \\\\\\\"socket\\\\\\\", lambda *_args: fake)\\\"\""
+        ],
+        [
+          901,
+          "\"\\\"assert fake.timeout == 5.0\\\"\""
+        ],
+        [
+          905,
+          "\"\\\"assert fake.options == [\\\"\""
+        ],
+        [
+          909,
+          "\"\\\"assert fake.sent[0][1] == (\\\\\\\"192.168.50.255\\\\\\\", 9)\\\"\""
+        ],
+        [
+          913,
+          "\"\\\"assert fake.closed is True\\\"\""
+        ],
+        [
+          917,
+          "\"\\\"fake = _Socket()\\\"\""
+        ],
+        [
+          921,
+          "\"\\\"fake.sendto = fail_send\\\"\""
+        ],
+        [
+          925,
+          "\"\\\"monkeypatch.setattr(wake_on_lan.socket, \\\\\\\"socket\\\\\\\", lambda *_args: fake)\\\"\""
+        ],
+        [
+          929,
+          "\"\\\"assert fake.closed is True\\\"\""
+        ],
+        [
+          933,
+          "\"\\\"# Before expansion: a single placeholder child.\\\"\""
+        ],
+        [
+          937,
+          "\"\\\"# Plant an obvious fake AWS access key id (matches the AKIA... pattern).\\\"\""
+        ],
+        [
+          941,
+          "\"\\\"\\\\\\\"\\\\\\\"\\\\\\\"Regression tests for the shell-injection and no-op-stub fixes.\\\\\\\"\\\\\\\"\\\\\\\"\\\"\""
+        ],
+        [
+          945,
+          "\"\\\"# Fake engine without FFI and without CLI\\\"\""
+        ],
+        [
+          949,
+          "\"\\\"import unittest.mock as mock\\\"\""
+        ],
+        [
+          953,
+          "\"\\\"# Mock open so pagefile.sys raises PermissionError like Windows does\\\"\""
+        ],
+        [
+          957,
+          "\"\\\"with mock.patch(\\\\\\\"builtins.open\\\\\\\", side_effect=_mock_open):\\\"\""
+        ],
+        [
+          961,
+          "\"\\\"file_to_drag.write_text(\\\\\\\"dummy payload\\\\\\\", encoding=\\\\\\\"utf-8\\\\\\\")\\\"\""
+        ],
+        [
+          965,
+          "\"\\\"except (OSError, NotImplementedError, AttributeError):\\\"\""
+        ],
+        [
+          969,
+          "\"\\\"\\\\\\\"\\\\\\\"\\\\\\\"Two fake temp roots; TempCleaner.LOCATIONS is pointed at them.\\\\\\\"\\\\\\\"\\\\\\\"\\\"\""
+        ],
+        [
+          973,
+          "\"\\\"except (OSError, NotImplementedError):\\\"\""
+        ],
+        [
+          982,
+          "\"- **Cloud-placeholder safety in the scan engine:** OneDrive Files On-Demand and\""
+        ],
+        [
+          986,
+          "\"to overwrite a placeholder instead of triggering a download.\""
+        ],
+        [
+          995,
+          "\"\\\"raise NotImplementedError\\\",\""
+        ],
+        [
+          1004,
+          "\"1. TODO / FIXME / HACK / MOCK / DUMMY / PLACEHOLDER / STUB comments or strings.\""
+        ],
+        [
+          1008,
+          "\"2. Functions with only 'pass', '...', or 'raise NotImplementedError'.\""
+        ],
+        [
+          1012,
+          "\"re.compile(r\\\"\\\\b(TODO|FIXME|XXX|HACK)\\\\b\\\", re.IGNORECASE),\""
+        ],
+        [
+          1016,
+          "\"re.compile(r\\\"\\\\b(placeholder|dummy|fake|mock|stub)\\\\b\\\", re.IGNORECASE),\""
+        ],
+        [
+          1020,
+          "\"re.compile(r\\\"NotImplementedError\\\"),\""
+        ],
+        [
+          1024,
+          "\"# 1. Scan lines for placeholder keywords\""
+        ],
+        [
+          1028,
+          "\"# Filter out intentional / benign uses (e.g., test mocks, comments explaining dummy)\""
+        ],
+        [
+          1032,
+          "\"# Check if function body is just `pass` or `...` or `raise NotImplementedError`\""
+        ],
+        [
+          1036,
+          "\"if isinstance(stmt.exc, ast.Call) and getattr(stmt.exc.func, \\\"id\\\", \\\"\\\") == \\\"NotImplementedError\\\":\""
+        ],
+        [
+          1040,
+          "\"results[\\\"empty_functions\\\"].append((node.name, node.lineno, \\\"raise NotImplementedError\\\"))\""
+        ],
+        [
+          1044,
+          "\"print(f\\\"  - Empty / Stub Functions: {len(all_empty_funcs)} files\\\")\""
+        ],
+        [
+          1048,
+          "\"print(f\\\"  - Files with Placeholder / TODO / Mock mentions: {len(all_placeholders)} files\\\")\""
+        ],
+        [
+          1052,
+          "\"print(\\\"\\\\n[!] EMPTY / STUB FUNCTIONS:\\\")\""
+        ],
+        [
+          1061,
+          "\"'mock_fake_dummy': re.compile(r'\\\\b(mock|dummy|fake|sample_data|placeholder|simulated)\\\\b', re.I),\""
+        ],
+        [
+          1065,
+          "\"'TODO_FIXME': re.compile(r'\\\\b(TODO|FIXME|XXX|HACK)\\\\b'),\""
+        ],
+        [
+          1069,
+          "\"'stub_or_notimplemented': re.compile(r'raise NotImplementedError|pass  # stub', re.I),\""
+        ],
+        [
+          1078,
+          "\"# Create small sandbox directory with dummy files for rapid scanning\""
+        ],
+        [
+          1082,
+          "\"(sandbox_p / \\\"sub2\\\" / \\\"dummy.dat\\\").write_bytes(b\\\"DATA\\\" * 50)\""
+        ],
+        [
+          1086,
+          "\"# Mock blocking dialogs to return the fast sandbox and never hang\""
+        ],
+        [
+          1095,
+          "\"\\\"\\\"\\\"Stub; wire to the scan entry point.\\\"\\\"\\\"\""
+        ],
+        [
+          1099,
+          "\"\\\"\\\"\\\"Stub; wire to the clean entry point.\\\"\\\"\\\"\""
+        ],
+        [
+          1103,
+          "\"\\\"\\\"\\\"Stub; open the settings dialog here.\\\"\\\"\\\"\""
+        ],
+        [
+          1107,
+          "\"\\\"\\\"\\\"Stub; refresh the active view.\\\"\\\"\\\"\""
+        ],
+        [
+          1111,
+          "\"\\\"\\\"\\\"Stub; cancel any running operation.\\\"\\\"\\\"\""
+        ],
+        [
+          1120,
+          "\"self.logger.info(\\\"macOS accessibility support (placeholder)\\\")\""
+        ],
+        [
+          1124,
+          "\"self.logger.info(\\\"Linux accessibility support (placeholder)\\\")\""
+        ],
+        [
+          1128,
+          "\"\\\"\\\"\\\"Placeholder; SAPI/UIA announcement not wired yet.\\\"\\\"\\\"\""
+        ],
+        [
+          1137,
+          "\"raise NotImplementedError\""
+        ],
+        [
+          1146,
+          "\"# Convert prev subfp to dummy prev_energies for raw fallback? Simpler: use None\""
+        ],
+        [
+          1155,
+          "\"* Local sync clients (OneDrive, Dropbox) create placeholder files; actual\""
+        ],
+        [
+          1164,
+          "\"FCDC_NORMALIZATION = 1  # placeholder for Gear table size\""
+        ],
+        [
+          1173,
+          "\"and files_removed is a placeholder (npm reports no file count).\""
+        ],
+        [
+          1177,
+          "\"\\\"\\\"\\\"Placeholder: fetches `npm ls --json` but performs no dependency\""
+        ],
+        [
+          1181,
+          "\"\\\"\\\"\\\"Placeholder: runs `dnf leaves` (packages nothing depends on) but\""
+        ],
+        [
+          1185,
+          "\"\\\"\\\"\\\"Placeholder: runs `brew leaves` (top-level formulas) but parsing is\""
+        ],
+        [
+          1194,
+          "\"# Cloud placeholder: the bytes are not here. Deleting it\""
+        ],
+        [
+          1198,
+          "\"# A cloud placeholder is not an empty file - its content\""
+        ],
+        [
+          1207,
+          "\"NTFS-compressed and cloud-placeholder files that overstates the space a\""
+        ],
+        [
+          1211,
+          "\"placeholder?\\\" without a second syscall.\""
+        ],
+        [
+          1220,
+          "\"reason=\\\"cloud placeholder: the file's content is not stored on \\\"\""
+        ],
+        [
+          1229,
+          "\"online-only placeholder returns 0). Elsewhere the value is derived from\""
+        ],
+        [
+          1238,
+          "\"\\\"select_all\\\": \\\"Seleccionar Todo\\\",\""
+        ],
+        [
+          1242,
+          "\"\\\"select_all\\\": \\\"Ctrl+A - Seleccionar Todo\\\",\""
+        ],
+        [
+          1251,
+          "\"return datetime.now()  # Placeholder: date parsing unimplemented\""
+        ],
+        [
+          1255,
+          "\"return datetime.now()  # Placeholder: timestamp parsing unimplemented\""
+        ],
+        [
+          1264,
+          "\"* A check that can't gather data reports \\\"unknown\\\" (info), never a fake pass.\""
+        ],
+        [
+          1273,
+          "\"as Administrator, which is heavy and fragile; we deliberately don't fake a\""
+        ],
+        [
+          1282,
+          "\"# \\\"IEEE Registration Authority\\\" is the placeholder used for\""
+        ],
+        [
+          1291,
+          "\"TEST_PATH_RE   = re.compile(r'(?:test|spec|fixture|mock|example|sample|demo|fake|stub|dummy|__test__|\\\\.test\\\\.|\\\\.spec\\\\.|_test\\\\.|_spec\\\\.)', re.IGNORECASE)\""
+        ],
+        [
+          1295,
+          "\"PLACEHOLDER_RE = re.compile(r'^(?:your[_\\\\-]?(?:api[_\\\\-]?key|secret|token|password)|insert[_\\\\-]?(?:key|token)|xxx+|abc+123*|password123|changeme|replace[_\\\\-]?me|example[_\\\\-]?(?:key|token|secret)|<[^>]+>|\\\\$\\\\{[^}]+\\\\}|\\\\{\\\\{[^}]+\\\\}\\\\}|XXXXXXXX+)$', re.IGNORECASE)\""
+        ],
+        [
+          1299,
+          "\"<input class=\\\"search-box\\\" type=\\\"text\\\" placeholder=\\\"Search findings...\\\" oninput=\\\"searchFindings(this.value)\\\" />\""
+        ],
+        [
+          1308,
+          "\"\\\"\\\"\\\"Start a temp file scan (legacy stub).\\\"\\\"\\\"\""
+        ],
+        [
+          1317,
+          "\"\\\"\\\"\\\"Minimal folder-pick + scan page (no fake Cancel affordance).\""
+        ],
+        [
+          1321,
+          "\"raise NotImplementedError\""
+        ],
+        [
+          1325,
+          "\"raise NotImplementedError\""
+        ],
+        [
+          1334,
+          "\"# PageSpec(\\\"projcaches\\\", \\\"Project Folder Caches\\\", \\\"projcaches\\\", \\\"cleanup\\\", f\\\"{_MORE}:ProjectCachesPage\\\"),  # TODO: needs reimplementation\""
+        ],
+        [
+          1343,
+          "\"\\\"\\\"\\\"Skeleton shimmer: a reassuring \\\"loading\\\" placeholder for premium feel.\""
+        ],
+        [
+          1347,
+          "\"Premium apps show a *skeleton* - grey placeholder bars shaped like the content\""
+        ],
+        [
+          1351,
+          "\"\\\"\\\"\\\"Animated placeholder bars used as a loading state.\""
+        ],
+        [
+          1360,
+          "\"# Real native icon where available; a token placeholder glyph when\""
+        ],
+        [
+          1364,
+          "\"\\\"\\\"\\\"Real native icon where available, else a token placeholder glyph, so\""
+        ],
+        [
+          1373,
+          "\"# Token-styled placeholder glyphs, keyed by the palette colors + size they were\""
+        ],
+        [
+          1377,
+          "\"token placeholder in that case (see :func:`placeholder_icon`, Req 8.3).\""
+        ],
+        [
+          1381,
+          "\"except Exception:  # noqa: BLE001 - any failure degrades to the placeholder\""
+        ],
+        [
+          1385,
+          "\"\\\"\\\"\\\"Return a token-styled placeholder glyph for items lacking a native icon.\""
+        ],
+        [
+          1389,
+          "\"ratio, so a live list refresh reuses one shared placeholder per theme\""
+        ],
+        [
+          1398,
+          "\"# placeholder child so the expand arrow shows; real contents load lazily\""
+        ],
+        [
+          1402,
+          "\"placeholder = QTreeWidgetItem([\\\"Loading\\\\u2026\\\", \\\"\\\", \\\"\\\", \\\"\\\"])\""
+        ],
+        [
+          1406,
+          "\"top.addChild(placeholder)\""
+        ],
+        [
+          1410,
+          "\"# Show a lightweight \\\"loading\\\" placeholder while the worker runs.\""
+        ],
+        [
+          1414,
+          "\"item.takeChildren()   # remove the \\\"Loading...\\\" placeholder\""
+        ],
+        [
+          1418,
+          "\"child.addChild(ph)   # placeholder so the expand arrow appears\""
+        ],
+        [
+          1422,
+          "\"raise NotImplementedError\""
+        ],
+        [
+          1426,
+          "\"raise NotImplementedError\""
+        ],
+        [
+          1435,
+          "\"\\\"\\\"\\\"Create mock data block for the target selection parameter requirements.\\\"\\\"\\\"\""
+        ],
+        [
+          1439,
+          "\"QMessageBox.information(self, \\\"Placeholder\\\", \\\"Template saving not fully implemented\\\")\""
+        ],
+        [
+          1448,
+          "\"\\\"\\\"\\\"Placeholder figure prompting the user to run an analysis.\\\"\\\"\\\"\""
+        ],
+        [
+          1457,
+          "\"\\\"\\\"\\\"Render the sunburst figure, or a \\\"No Data\\\" placeholder.\""
+        ],
+        [
+          1466,
+          "\"\\\"\\\"\\\"Render the treemap figure, or a \\\"No Data\\\" placeholder.\""
+        ],
+        [
+          1475,
+          "\"S3 = auto()  # TODO: No implementation yet\""
+        ],
+        [
+          1484,
+          "\"# TODO: empty_icon rendering varies across platforms/fonts \\u2014\""
+        ],
+        [
+          1493,
+          "\"\\\"\\\"\\\"Add a dummy child to make the item expandable.\\\"\\\"\\\"\""
+        ],
+        [
+          1497,
+          "\"dummy = QStandardItem(\\\"\\\")\""
+        ],
+        [
+          1501,
+          "\"dummy.setData(\\\"\\\", Qt.ItemDataRole.UserRole)\""
+        ],
+        [
+          1505,
+          "\"parent_item.appendRow(dummy)\""
+        ],
+        [
+          1514,
+          "\"\\\".hack\\\": \\\"hack\\\", \\\".hh\\\": \\\"hack\\\", \\\".hhi\\\": \\\"hack\\\",\""
+        ],
+        [
+          1518,
+          "\"\\\".todo\\\": \\\"markdown\\\",\""
+        ],
+        [
+          1527,
+          "\"raise NotImplementedError\""
+        ],
+        [
+          1531,
+          "\"raise NotImplementedError\""
+        ],
+        [
+          1540,
+          "\"\\\"\\\"\\\"Create a test directory structure with mock files.\\\"\\\"\\\"\""
+        ],
+        [
+          1549,
+          "\"p = tmp_path / \\\"fake.mp3\\\"\""
+        ],
+        [
+          1558,
+          "\"We build a fake Chromium/Firefox profile tree under a temp home so the scan is\""
+        ],
+        [
+          1567,
+          "\"\\\"\\\"\\\"Cloud-placeholder / reparse-point awareness in the scan engine.\""
+        ],
+        [
+          1571,
+          "\"# A file is treated as a placeholder when its mtime matches this marker, which\""
+        ],
+        [
+          1575,
+          "\"# A plain reparse point on its own is not a placeholder.\""
+        ],
+        [
+          1579,
+          "\"assert \\\"cloud placeholder\\\" in res.reason\""
+        ],
+        [
+          1588,
+          "\"p1 = Path(\\\"/mock/file1.bin\\\")\""
+        ],
+        [
+          1592,
+          "\"p2 = Path(\\\"/mock/file2.bin\\\")\""
+        ],
+        [
+          1596,
+          "\"p3 = Path(\\\"/mock/file3.bin\\\")\""
+        ],
+        [
+          1605,
+          "\"except (OSError, NotImplementedError):\""
+        ],
+        [
+          1614,
+          "\"\\\"\\\"\\\"Cloud-placeholder and reparse-point safety in the scan engine.\""
+        ],
+        [
+          1618,
+          "\"* refuse to \\\"shred\\\" a placeholder instead of hydrating gigabytes to overwrite\""
+        ],
+        [
+          1622,
+          "\"The placeholder is simulated with ``FILE_ATTRIBUTE_OFFLINE``, which is one of\""
+        ],
+        [
+          1626,
+          "\"\\\"\\\"\\\"A folder with one local file, one simulated placeholder, one junction.\\\"\\\"\\\"\""
+        ],
+        [
+          1630,
+          "\"stub = real / \\\"cloud_only.bin\\\"\""
+        ],
+        [
+          1634,
+          "\"stub.write_bytes(b\\\"b\\\" * 100_000)\""
+        ],
+        [
+          1638,
+          "\"if not _mark_offline(stub):\""
+        ],
+        [
+          1642,
+          "\"return tmp_path, stub\""
+        ],
+        [
+          1646,
+          "\"root, stub = cloud_tree\""
+        ],
+        [
+          1650,
+          "\"assert names == [\\\"local.bin\\\"], \\\"the cloud placeholder must not be scanned\\\"\""
+        ],
+        [
+          1654,
+          "\"\\\"\\\"\\\"find_empty must not offer a placeholder as a deletable empty file.\\\"\\\"\\\"\""
+        ],
+        [
+          1658,
+          "\"\\\"\\\"\\\"Overwriting a placeholder would download it first - refuse instead.\\\"\\\"\\\"\""
+        ],
+        [
+          1662,
+          "\"_, stub = cloud_tree\""
+        ],
+        [
+          1666,
+          "\"# force_overwrite_on_flash=True proves the refusal is about the placeholder,\""
+        ],
+        [
+          1670,
+          "\"stub, method=DeletionMethod.OVERWRITE, force_overwrite_on_flash=True)\""
+        ],
+        [
+          1674,
+          "\"assert stub.exists(), \\\"the file must be left untouched\\\"\""
+        ],
+        [
+          1683,
+          "\"# The summary cards must be populated (numbers, not the placeholder dash).\""
+        ],
+        [
+          1692,
+          "\"\\\"\\\"\\\"Install a fake winreg module driving LeftoverScanner's registry walk.\""
+        ],
+        [
+          1696,
+          "\"# The fake serves both HKLM and HKCU identically, so the mirrored\""
+        ],
+        [
+          1700,
+          "\"# Build a fake unins000.dat: absolute paths as UTF-16LE runs.\""
+        ],
+        [
+          1709,
+          "\"was offered), so a fake exec/clickedButton pair drives the accept path\""
+        ],
+        [
+          1718,
+          "\"fake = _Socket()\""
+        ],
+        [
+          1722,
+          "\"monkeypatch.setattr(wake_on_lan.socket, \\\"socket\\\", lambda *_args: fake)\""
+        ],
+        [
+          1726,
+          "\"assert fake.timeout == 5.0\""
+        ],
+        [
+          1730,
+          "\"assert fake.options == [\""
+        ],
+        [
+          1734,
+          "\"assert fake.sent[0][1] == (\\\"192.168.50.255\\\", 9)\""
+        ],
+        [
+          1738,
+          "\"assert fake.closed is True\""
+        ],
+        [
+          1742,
+          "\"fake = _Socket()\""
+        ],
+        [
+          1746,
+          "\"fake.sendto = fail_send\""
+        ],
+        [
+          1750,
+          "\"monkeypatch.setattr(wake_on_lan.socket, \\\"socket\\\", lambda *_args: fake)\""
+        ],
+        [
+          1754,
+          "\"assert fake.closed is True\""
+        ],
+        [
+          1763,
+          "\"# Before expansion: a single placeholder child.\""
+        ],
+        [
+          1772,
+          "\"# Plant an obvious fake AWS access key id (matches the AKIA... pattern).\""
+        ],
+        [
+          1781,
+          "\"\\\"\\\"\\\"Regression tests for the shell-injection and no-op-stub fixes.\\\"\\\"\\\"\""
+        ],
+        [
+          1790,
+          "\"# Fake engine without FFI and without CLI\""
+        ],
+        [
+          1794,
+          "\"import unittest.mock as mock\""
+        ],
+        [
+          1798,
+          "\"# Mock open so pagefile.sys raises PermissionError like Windows does\""
+        ],
+        [
+          1802,
+          "\"with mock.patch(\\\"builtins.open\\\", side_effect=_mock_open):\""
+        ],
+        [
+          1806,
+          "\"file_to_drag.write_text(\\\"dummy payload\\\", encoding=\\\"utf-8\\\")\""
+        ],
+        [
+          1815,
+          "\"except (OSError, NotImplementedError, AttributeError):\""
+        ],
+        [
+          1824,
+          "\"\\\"\\\"\\\"Two fake temp roots; TempCleaner.LOCATIONS is pointed at them.\\\"\\\"\\\"\""
+        ],
+        [
+          1828,
+          "\"except (OSError, NotImplementedError):\""
+        ]
+      ]
+    ],
+    [
+      "CHANGELOG.md",
+      [
+        [
+          142,
+          "- **Cloud-placeholder safety in the scan engine:** OneDrive Files On-Demand and"
+        ],
+        [
+          146,
+          "to overwrite a placeholder instead of triggering a download."
+        ]
+      ]
+    ],
+    [
+      "pyproject.toml",
+      [
+        [
+          128,
+          "\"raise NotImplementedError\","
+        ]
+      ]
+    ],
+    [
+      "scripts\\deep_codebase_inspection.py",
+      [
+        [
+          3,
+          "1. TODO / FIXME / HACK / MOCK / DUMMY / PLACEHOLDER / STUB comments or strings."
+        ],
+        [
+          4,
+          "2. Functions with only 'pass', '...', or 'raise NotImplementedError'."
+        ],
+        [
+          23,
+          "re.compile(r\"\\b(TODO|FIXME|XXX|HACK)\\b\", re.IGNORECASE),"
+        ],
+        [
+          24,
+          "re.compile(r\"\\b(placeholder|dummy|fake|mock|stub)\\b\", re.IGNORECASE),"
+        ],
+        [
+          25,
+          "re.compile(r\"NotImplementedError\"),"
+        ],
+        [
+          48,
+          "# 1. Scan lines for placeholder keywords"
+        ],
+        [
+          52,
+          "# Filter out intentional / benign uses (e.g., test mocks, comments explaining dummy)"
+        ],
+        [
+          67,
+          "# Check if function body is just `pass` or `...` or `raise NotImplementedError`"
+        ],
+        [
+          84,
+          "if isinstance(stmt.exc, ast.Call) and getattr(stmt.exc.func, \"id\", \"\") == \"NotImplementedError\":"
+        ],
+        [
+          85,
+          "results[\"empty_functions\"].append((node.name, node.lineno, \"raise NotImplementedError\"))"
+        ],
+        [
+          128,
+          "print(f\"  - Empty / Stub Functions: {len(all_empty_funcs)} files\")"
+        ],
+        [
+          129,
+          "print(f\"  - Files with Placeholder / TODO / Mock mentions: {len(all_placeholders)} files\")"
+        ],
+        [
+          138,
+          "print(\"\\n[!] EMPTY / STUB FUNCTIONS:\")"
+        ]
+      ]
+    ],
+    [
+      "scripts\\deep_inspect_placeholders.py",
+      [
+        [
+          19,
+          "r'raise\\s+NotImplementedError',"
+        ]
+      ]
+    ],
+    [
+      "scripts\\placeholder_audit.json",
+      [
+        [
+          7,
+          "\"line\": \"self.logger.info(\\\"macOS accessibility support (placeholder)\\\")\","
+        ],
+        [
+          12,
+          "\"line\": \"self.logger.info(\\\"Linux accessibility support (placeholder)\\\")\","
+        ],
+        [
+          22,
+          "\"line\": \"# Convert prev subfp to dummy prev_energies for raw fallback? Simpler: use None\","
+        ],
+        [
+          32,
+          "\"line\": \"* Local sync clients (OneDrive, Dropbox) create placeholder files; actual\","
+        ],
+        [
+          42,
+          "\"line\": \"FCDC_NORMALIZATION = 1  # placeholder for Gear table size\","
+        ],
+        [
+          52,
+          "\"line\": \"and files_removed is a placeholder (npm reports no file count).\","
+        ],
+        [
+          57,
+          "\"line\": \"\\\"\\\"\\\"Placeholder: fetches `npm ls --json` but performs no dependency\","
+        ],
+        [
+          62,
+          "\"line\": \"\\\"\\\"\\\"Placeholder: runs `dnf leaves` (packages nothing depends on) but\","
+        ],
+        [
+          67,
+          "\"line\": \"\\\"\\\"\\\"Placeholder: runs `brew leaves` (top-level formulas) but parsing is\","
+        ],
+        [
+          77,
+          "\"line\": \"# Cloud placeholder: the bytes are not here. Deleting it\","
+        ],
+        [
+          82,
+          "\"line\": \"# A cloud placeholder is not an empty file - its content\","
+        ],
+        [
+          92,
+          "\"line\": \"NTFS-compressed and cloud-placeholder files that overstates the space a\","
+        ],
+        [
+          97,
+          "\"line\": \"placeholder?\\\" without a second syscall.\","
+        ],
+        [
+          107,
+          "\"line\": \"reason=\\\"cloud placeholder: the file's content is not stored on \\\"\","
+        ],
+        [
+          117,
+          "\"line\": \"online-only placeholder returns 0). Elsewhere the value is derived from\","
+        ],
+        [
+          127,
+          "\"line\": \"# \\\"IEEE Registration Authority\\\" is the placeholder used for\","
+        ],
+        [
+          137,
+          "\"line\": \"TEST_PATH_RE   = re.compile(r'(?:test|spec|fixture|mock|example|sample|demo|fake|stub|dummy|__test__|\\\\.test\\\\.|\\\\.spec\\\\.|_test\\\\.|_spec\\\\.)', re.IGNORECASE)\","
+        ],
+        [
+          142,
+          "\"line\": \"TEST_PATH_RE   = re.compile(r'(?:test|spec|fixture|mock|example|sample|demo|fake|stub|dummy|__test__|\\\\.test\\\\.|\\\\.spec\\\\.|_test\\\\.|_spec\\\\.)', re.IGNORECASE)\","
+        ],
+        [
+          147,
+          "\"line\": \"TEST_PATH_RE   = re.compile(r'(?:test|spec|fixture|mock|example|sample|demo|fake|stub|dummy|__test__|\\\\.test\\\\.|\\\\.spec\\\\.|_test\\\\.|_spec\\\\.)', re.IGNORECASE)\","
+        ],
+        [
+          152,
+          "\"line\": \"PLACEHOLDER_RE = re.compile(r'^(?:your[_\\\\-]?(?:api[_\\\\-]?key|secret|token|password)|insert[_\\\\-]?(?:key|token)|xxx+|abc+123*|password123|changeme|replace[_\\\\-]?me|example[_\\\\-]?(?:key|token|secret)|<[^>]+>|\\\\$\\\\{[^}]+\\\\}|\\\\{\\\\{[^}]+\\\\}\\\\}|XXXXXXXX+)$', re.IGNORECASE)\","
+        ],
+        [
+          157,
+          "\"line\": \"<input class=\\\"search-box\\\" type=\\\"text\\\" placeholder=\\\"Search findings...\\\" oninput=\\\"searchFindings(this.value)\\\" />\","
+        ],
+        [
+          167,
+          "\"line\": \"\\\"\\\"\\\"Skeleton shimmer: a reassuring \\\"loading\\\" placeholder for premium feel.\","
+        ],
+        [
+          172,
+          "\"line\": \"Premium apps show a *skeleton* - grey placeholder bars shaped like the content\","
+        ],
+        [
+          177,
+          "\"line\": \"\\\"\\\"\\\"Animated placeholder bars used as a loading state.\","
+        ],
+        [
+          187,
+          "\"line\": \"# Real native icon where available; a token placeholder glyph when\","
+        ],
+        [
+          192,
+          "\"line\": \"\\\"\\\"\\\"Real native icon where available, else a token placeholder glyph, so\","
+        ],
+        [
+          202,
+          "\"line\": \"# Token-styled placeholder glyphs, keyed by the palette colors + size they were\","
+        ],
+        [
+          207,
+          "\"line\": \"token placeholder in that case (see :func:`placeholder_icon`, Req 8.3).\","
+        ],
+        [
+          212,
+          "\"line\": \"except Exception:  # noqa: BLE001 - any failure degrades to the placeholder\","
+        ],
+        [
+          217,
+          "\"line\": \"\\\"\\\"\\\"Return a token-styled placeholder glyph for items lacking a native icon.\","
+        ],
+        [
+          222,
+          "\"line\": \"ratio, so a live list refresh reuses one shared placeholder per theme\","
+        ],
+        [
+          232,
+          "\"line\": \"# placeholder child so the expand arrow shows; real contents load lazily\","
+        ],
+        [
+          237,
+          "\"line\": \"placeholder = QTreeWidgetItem([\\\"Loading\\\\u2026\\\", \\\"\\\", \\\"\\\", \\\"\\\"])\","
+        ],
+        [
+          242,
+          "\"line\": \"top.addChild(placeholder)\","
+        ],
+        [
+          247,
+          "\"line\": \"# Show a lightweight \\\"loading\\\" placeholder while the worker runs.\","
+        ],
+        [
+          252,
+          "\"line\": \"item.takeChildren()   # remove the \\\"Loading...\\\" placeholder\","
+        ],
+        [
+          257,
+          "\"line\": \"child.addChild(ph)   # placeholder so the expand arrow appears\","
+        ],
+        [
+          267,
+          "\"line\": \"\\\"\\\"\\\"Create mock data block for the target selection parameter requirements.\\\"\\\"\\\"\","
+        ],
+        [
+          277,
+          "\"line\": \"\\\"\\\"\\\"Placeholder figure prompting the user to run an analysis.\\\"\\\"\\\"\","
+        ],
+        [
+          287,
+          "\"line\": \"\\\"\\\"\\\"Render the sunburst figure, or a \\\"No Data\\\" placeholder.\","
+        ],
+        [
+          297,
+          "\"line\": \"\\\"\\\"\\\"Render the treemap figure, or a \\\"No Data\\\" placeholder.\","
+        ],
+        [
+          307,
+          "\"line\": \"# TODO: empty_icon rendering varies across platforms/fonts \\u2014\","
+        ],
+        [
+          317,
+          "\"line\": \"\\\"\\\"\\\"Add a dummy child to make the item expandable.\\\"\\\"\\\"\","
+        ],
+        [
+          322,
+          "\"line\": \"dummy = QStandardItem(\\\"\\\")\","
+        ],
+        [
+          327,
+          "\"line\": \"dummy.setData(\\\"\\\", Qt.ItemDataRole.UserRole)\","
+        ],
+        [
+          332,
+          "\"line\": \"parent_item.appendRow(dummy)\","
+        ],
+        [
+          342,
+          "\"line\": \"\\\".todo\\\": \\\"markdown\\\",\","
+        ]
+      ]
+    ],
+    [
+      "scripts\\scan_codebase.py",
+      [
+        [
+          6,
+          "'mock_fake_dummy': re.compile(r'\\b(mock|dummy|fake|sample_data|placeholder|simulated)\\b', re.I),"
+        ],
+        [
+          7,
+          "'TODO_FIXME': re.compile(r'\\b(TODO|FIXME|XXX|HACK)\\b'),"
+        ],
+        [
+          10,
+          "'stub_or_notimplemented': re.compile(r'raise NotImplementedError|pass  # stub', re.I),"
+        ]
+      ]
+    ],
+    [
+      "scripts\\stress_test_gui_all_actions.py",
+      [
+        [
+          55,
+          "# Create small sandbox directory with dummy files for rapid scanning"
+        ],
+        [
+          62,
+          "(sandbox_p / \"sub2\" / \"dummy.dat\").write_bytes(b\"DATA\" * 50)"
+        ],
+        [
+          64,
+          "# Mock blocking dialogs to return the fast sandbox and never hang"
+        ]
+      ]
+    ],
+    [
+      "src\\cortex_unified\\accessibility\\screen_reader.py",
+      [
+        [
+          66,
+          "self.logger.info(\"macOS accessibility support (placeholder)\")"
+        ],
+        [
+          69,
+          "self.logger.info(\"Linux accessibility support (placeholder)\")"
+        ]
+      ]
+    ],
+    [
+      "src\\cortex_unified\\analyzers\\audio_duplicate_finder.py",
+      [
+        [
+          400,
+          "# Convert prev subfp to dummy prev_energies for raw fallback? Simpler: use None"
+        ]
+      ]
+    ],
+    [
+      "src\\cortex_unified\\analyzers\\cloud_storage_analyzer.py",
+      [
+        [
+          18,
+          "* Local sync clients (OneDrive, Dropbox) create placeholder files; actual"
+        ]
+      ]
+    ],
+    [
+      "src\\cortex_unified\\analyzers\\duplicate_finder.py",
+      [
+        [
+          34,
+          "FCDC_NORMALIZATION = 1  # placeholder for Gear table size"
+        ]
+      ]
+    ],
+    [
+      "src\\cortex_unified\\analyzers\\package_manager_cleaner.py",
+      [
+        [
+          516,
+          "and files_removed is a placeholder (npm reports no file count)."
+        ]
+      ]
+    ],
+    [
+      "src\\cortex_unified\\engine\\fastwalk.py",
+      [
+        [
+          190,
+          "# Cloud placeholder: the bytes are not here. Deleting it"
+        ],
+        [
+          283,
+          "# A cloud placeholder is not an empty file - its content"
+        ]
+      ]
+    ],
+    [
+      "src\\cortex_unified\\engine\\models.py",
+      [
+        [
+          67,
+          "NTFS-compressed and cloud-placeholder files that overstates the space a"
+        ],
+        [
+          71,
+          "placeholder?\" without a second syscall."
+        ]
+      ]
+    ],
+    [
+      "src\\cortex_unified\\engine\\secure_delete.py",
+      [
+        [
+          393,
+          "reason=\"cloud placeholder: the file's content is not stored on \""
+        ]
+      ]
+    ],
+    [
+      "src\\cortex_unified\\engine\\winattrs.py",
+      [
+        [
+          168,
+          "online-only placeholder returns 0). Elsewhere the value is derived from"
+        ]
+      ]
+    ],
+    [
+      "src\\cortex_unified\\i18n\\locales\\es.json",
+      [
+        [
+          91,
+          "\"select_all\": \"Seleccionar Todo\","
+        ],
+        [
+          136,
+          "\"select_all\": \"Ctrl+A - Seleccionar Todo\","
+        ]
+      ]
+    ],
+    [
+      "src\\cortex_unified\\system_tools\\health_check.py",
+      [
+        [
+          10,
+          "* A check that can't gather data reports \"unknown\" (info), never a fake pass."
+        ]
+      ]
+    ],
+    [
+      "src\\cortex_unified\\system_tools\\network_traffic.py",
+      [
+        [
+          11,
+          "as Administrator, which is heavy and fragile; we deliberately don't fake a"
+        ]
+      ]
+    ],
+    [
+      "src\\cortex_unified\\system_tools\\oui.py",
+      [
+        [
+          203,
+          "# \"IEEE Registration Authority\" is the placeholder used for"
+        ]
+      ]
+    ],
+    [
+      "src\\cortex_unified\\system_tools\\secrets_scanner.py",
+      [
+        [
+          898,
+          "TEST_PATH_RE   = re.compile(r'(?:test|spec|fixture|mock|example|sample|demo|fake|stub|dummy|__test__|\\.test\\.|\\.spec\\.|_test\\.|_spec\\.)', re.IGNORECASE)"
+        ],
+        [
+          899,
+          "PLACEHOLDER_RE = re.compile(r'^(?:your[_\\-]?(?:api[_\\-]?key|secret|token|password)|insert[_\\-]?(?:key|token)|xxx+|abc+123*|password123|changeme|replace[_\\-]?me|example[_\\-]?(?:key|token|secret)|<[^>]+>|\\$\\{[^}]+\\}|\\{\\{[^}]+\\}\\}|XXXXXXXX+)$', re.IGNORECASE)"
+        ],
+        [
+          1780,
+          "<input class=\"search-box\" type=\"text\" placeholder=\"Search findings...\" oninput=\"searchFindings(this.value)\" />"
+        ]
+      ]
+    ],
+    [
+      "src\\cortex_unified\\ui\\premium\\more_pages.py",
+      [
+        [
+          613,
+          "\"\"\"Minimal folder-pick + scan page (no fake Cancel affordance)."
+        ]
+      ]
+    ],
+    [
+      "src\\cortex_unified\\ui\\premium\\skeleton.py",
+      [
+        [
+          1,
+          "\"\"\"Skeleton shimmer: a reassuring \"loading\" placeholder for premium feel."
+        ],
+        [
+          4,
+          "Premium apps show a *skeleton* - grey placeholder bars shaped like the content"
+        ],
+        [
+          26,
+          "\"\"\"Animated placeholder bars used as a loading state."
+        ]
+      ]
+    ],
+    [
+      "src\\cortex_unified\\ui\\premium\\system_pages.py",
+      [
+        [
+          522,
+          "# Real native icon where available; a token placeholder glyph when"
+        ],
+        [
+          878,
+          "\"\"\"Real native icon where available, else a token placeholder glyph, so"
+        ]
+      ]
+    ],
+    [
+      "src\\cortex_unified\\ui\\premium\\widgets.py",
+      [
+        [
+          492,
+          "# Token-styled placeholder glyphs, keyed by the palette colors + size they were"
+        ],
+        [
+          509,
+          "token placeholder in that case (see :func:`placeholder_icon`, Req 8.3)."
+        ],
+        [
+          527,
+          "except Exception:  # noqa: BLE001 - any failure degrades to the placeholder"
+        ],
+        [
+          534,
+          "\"\"\"Return a token-styled placeholder glyph for items lacking a native icon."
+        ],
+        [
+          544,
+          "ratio, so a live list refresh reuses one shared placeholder per theme"
+        ]
+      ]
+    ],
+    [
+      "src\\cortex_unified\\ui\\premium\\window.py",
+      [
+        [
+          1614,
+          "# placeholder child so the expand arrow shows; real contents load lazily"
+        ],
+        [
+          1616,
+          "placeholder = QTreeWidgetItem([\"Loading\\u2026\", \"\", \"\", \"\"])"
+        ],
+        [
+          1617,
+          "top.addChild(placeholder)"
+        ],
+        [
+          1694,
+          "# Show a lightweight \"loading\" placeholder while the worker runs."
+        ],
+        [
+          1730,
+          "item.takeChildren()   # remove the \"Loading...\" placeholder"
+        ],
+        [
+          1756,
+          "child.addChild(ph)   # placeholder so the expand arrow appears"
+        ]
+      ]
+    ],
+    [
+      "src\\cortex_unified\\ui\\tabs\\reports_tab.py",
+      [
+        [
+          227,
+          "\"\"\"Create mock data block for the target selection parameter requirements.\"\"\""
+        ]
+      ]
+    ],
+    [
+      "src\\cortex_unified\\visualization\\interactive_dashboard.py",
+      [
+        [
+          91,
+          "\"\"\"Placeholder figure prompting the user to run an analysis.\"\"\""
+        ]
+      ]
+    ],
+    [
+      "src\\cortex_unified\\visualization\\sunburst_generator.py",
+      [
+        [
+          195,
+          "\"\"\"Render the sunburst figure, or a \"No Data\" placeholder."
+        ]
+      ]
+    ],
+    [
+      "src\\cortex_unified\\visualization\\treemap_generator.py",
+      [
+        [
+          206,
+          "\"\"\"Render the treemap figure, or a \"No Data\" placeholder."
+        ]
+      ]
+    ],
+    [
+      "src\\NexusExplorer\\native\\nexus_explorer.py",
+      [
+        [
+          5385,
+          "# TODO: empty_icon rendering varies across platforms/fonts \u2014"
+        ]
+      ]
+    ],
+    [
+      "src\\NexusExplorer\\native\\nexus_folder_tree.py",
+      [
+        [
+          84,
+          "\"\"\"Add a dummy child to make the item expandable.\"\"\""
+        ],
+        [
+          85,
+          "dummy = QStandardItem(\"\")"
+        ],
+        [
+          86,
+          "dummy.setData(\"\", Qt.ItemDataRole.UserRole)"
+        ],
+        [
+          87,
+          "parent_item.appendRow(dummy)"
+        ]
+      ]
+    ],
+    [
+      "src\\NexusExplorer\\native\\nexus_icons.py",
+      [
+        [
+          863,
+          "\".hack\": \"hack\", \".hh\": \"hack\", \".hhi\": \"hack\","
+        ],
+        [
+          1138,
+          "\".todo\": \"markdown\","
+        ]
+      ]
+    ],
+    [
+      "tests\\conftest.py",
+      [
+        [
+          14,
+          "\"\"\"Create a test directory structure with mock files.\"\"\""
+        ]
+      ]
+    ],
+    [
+      "tests\\test_audio_duplicate_finder.py",
+      [
+        [
+          141,
+          "p = tmp_path / \"fake.mp3\""
+        ]
+      ]
+    ],
+    [
+      "tests\\test_browser_extensions.py",
+      [
+        [
+          3,
+          "We build a fake Chromium/Firefox profile tree under a temp home so the scan is"
+        ]
+      ]
+    ],
+    [
+      "tests\\test_cloud_aware_scan.py",
+      [
+        [
+          1,
+          "\"\"\"Cloud-placeholder / reparse-point awareness in the scan engine."
+        ],
+        [
+          23,
+          "# A file is treated as a placeholder when its mtime matches this marker, which"
+        ],
+        [
+          49,
+          "# A plain reparse point on its own is not a placeholder."
+        ],
+        [
+          189,
+          "assert \"cloud placeholder\" in res.reason"
+        ]
+      ]
+    ],
+    [
+      "tests\\test_content_defined_chunker.py",
+      [
+        [
+          159,
+          "p1 = Path(\"/mock/file1.bin\")"
+        ],
+        [
+          160,
+          "p2 = Path(\"/mock/file2.bin\")"
+        ],
+        [
+          161,
+          "p3 = Path(\"/mock/file3.bin\")"
+        ]
+      ]
+    ],
+    [
+      "tests\\test_engine.py",
+      [
+        [
+          99,
+          "except (OSError, NotImplementedError):"
+        ]
+      ]
+    ],
+    [
+      "tests\\test_engine_cloud_safety.py",
+      [
+        [
+          1,
+          "\"\"\"Cloud-placeholder and reparse-point safety in the scan engine."
+        ],
+        [
+          10,
+          "* refuse to \"shred\" a placeholder instead of hydrating gigabytes to overwrite"
+        ],
+        [
+          13,
+          "The placeholder is simulated with ``FILE_ATTRIBUTE_OFFLINE``, which is one of"
+        ],
+        [
+          93,
+          "\"\"\"A folder with one local file, one simulated placeholder, one junction.\"\"\""
+        ],
+        [
+          97,
+          "stub = real / \"cloud_only.bin\""
+        ],
+        [
+          98,
+          "stub.write_bytes(b\"b\" * 100_000)"
+        ],
+        [
+          99,
+          "if not _mark_offline(stub):"
+        ],
+        [
+          107,
+          "return tmp_path, stub"
+        ],
+        [
+          112,
+          "root, stub = cloud_tree"
+        ],
+        [
+          116,
+          "assert names == [\"local.bin\"], \"the cloud placeholder must not be scanned\""
+        ],
+        [
+          149,
+          "\"\"\"find_empty must not offer a placeholder as a deletable empty file.\"\"\""
+        ],
+        [
+          157,
+          "\"\"\"Overwriting a placeholder would download it first - refuse instead.\"\"\""
+        ],
+        [
+          161,
+          "_, stub = cloud_tree"
+        ],
+        [
+          162,
+          "# force_overwrite_on_flash=True proves the refusal is about the placeholder,"
+        ],
+        [
+          165,
+          "stub, method=DeletionMethod.OVERWRITE, force_overwrite_on_flash=True)"
+        ],
+        [
+          169,
+          "assert stub.exists(), \"the file must be left untouched\""
+        ]
+      ]
+    ],
+    [
+      "tests\\test_gui_pages_e2e.py",
+      [
+        [
+          334,
+          "# The summary cards must be populated (numbers, not the placeholder dash)."
+        ]
+      ]
+    ],
+    [
+      "tests\\test_leftover_cleaner.py",
+      [
+        [
+          298,
+          "\"\"\"Install a fake winreg module driving LeftoverScanner's registry walk."
+        ],
+        [
+          548,
+          "# The fake serves both HKLM and HKCU identically, so the mirrored"
+        ],
+        [
+          565,
+          "# Build a fake unins000.dat: absolute paths as UTF-16LE runs."
+        ]
+      ]
+    ],
+    [
+      "tests\\test_license_gui.py",
+      [
+        [
+          60,
+          "was offered), so a fake exec/clickedButton pair drives the accept path"
+        ]
+      ]
+    ],
+    [
+      "tests\\test_network_expert_tools.py",
+      [
+        [
+          212,
+          "fake = _Socket()"
+        ],
+        [
+          213,
+          "monkeypatch.setattr(wake_on_lan.socket, \"socket\", lambda *_args: fake)"
+        ],
+        [
+          219,
+          "assert fake.timeout == 5.0"
+        ],
+        [
+          220,
+          "assert fake.options == ["
+        ],
+        [
+          223,
+          "assert fake.sent[0][1] == (\"192.168.50.255\", 9)"
+        ],
+        [
+          224,
+          "assert fake.closed is True"
+        ],
+        [
+          239,
+          "fake = _Socket()"
+        ],
+        [
+          244,
+          "fake.sendto = fail_send"
+        ],
+        [
+          245,
+          "monkeypatch.setattr(wake_on_lan.socket, \"socket\", lambda *_args: fake)"
+        ],
+        [
+          250,
+          "assert fake.closed is True"
+        ]
+      ]
+    ],
+    [
+      "tests\\test_premium_gui.py",
+      [
+        [
+          123,
+          "# Before expansion: a single placeholder child."
+        ]
+      ]
+    ],
+    [
+      "tests\\test_secrets_page.py",
+      [
+        [
+          9,
+          "# Plant an obvious fake AWS access key id (matches the AKIA... pattern)."
+        ]
+      ]
+    ],
+    [
+      "tests\\test_security_fixes.py",
+      [
+        [
+          1,
+          "\"\"\"Regression tests for the shell-injection and no-op-stub fixes.\"\"\""
+        ]
+      ]
+    ],
+    [
+      "tests\\test_staging_shelf.py",
+      [
+        [
+          186,
+          "# Fake engine without FFI and without CLI"
+        ],
+        [
+          240,
+          "import unittest.mock as mock"
+        ],
+        [
+          258,
+          "# Mock open so pagefile.sys raises PermissionError like Windows does"
+        ],
+        [
+          266,
+          "with mock.patch(\"builtins.open\", side_effect=_mock_open):"
+        ],
+        [
+          372,
+          "file_to_drag.write_text(\"dummy payload\", encoding=\"utf-8\")"
+        ]
+      ]
+    ],
+    [
+      "tests\\test_tabs_gating.py",
+      [
+        [
+          139,
+          "except (OSError, NotImplementedError, AttributeError):"
+        ]
+      ]
+    ],
+    [
+      "tests\\test_temp_cleaner.py",
+      [
+        [
+          37,
+          "\"\"\"Two fake temp roots; TempCleaner.LOCATIONS is pointed at them.\"\"\""
+        ],
+        [
+          128,
+          "except (OSError, NotImplementedError):"
+        ]
+      ]
+    ]
+  ],
+  "bare_excepts": []
+}

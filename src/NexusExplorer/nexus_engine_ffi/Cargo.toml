@@ -1,0 +1,32 @@
+[package]
+name = "nexus_engine_ffi"
+version = "0.1.0"
+edition = "2021"
+description = "C FFI layer for NexusExplorer engine"
+
+[lib]
+name = "nexus_engine"
+crate-type = ["cdylib", "staticlib"]
+
+[dependencies]
+nexus-explorer = { path = "../src-tauri" }
+libc = "0.2"
+serde_json = "1"
+thiserror = "2.0"
+jwalk = "0.8"
+notify = "8.2"
+notify-debouncer-full = "0.7"
+uuid = { version = "1", features = ["v4"] }
+parking_lot = "0.12"
+xxhash-rust = { version = "0.8", features = ["xxh3"] }
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync", "fs", "time", "io-util"] }
+trash = "5.2"
+windows = { version = "0.62", features = [
+  "Win32_Foundation",
+  "Win32_Security",
+  "Win32_Storage_FileSystem",
+  "Win32_System_IO",
+  "Win32_System_Ioctl",
+  "Win32_System_SystemInformation",
+  "Win32_System_Diagnostics_Debug",
+] }

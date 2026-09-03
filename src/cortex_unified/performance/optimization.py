@@ -5,7 +5,7 @@ import gc
 import threading
 import time
 from dataclasses import dataclass
-from typing import Dict, Any, Optional, Callable
+from typing import Dict, Any, Callable
 from pathlib import Path
 import logging
 
@@ -68,7 +68,6 @@ class PerformanceOptimizer:
         if self.settings.enable_gc_optimization:
             self._optimize_garbage_collection()
         
-        # Start memory monitoring
         self._start_memory_monitoring()
         
         # Set process priority if available
@@ -94,7 +93,6 @@ class PerformanceOptimizer:
         if self.original_gc_thresholds:
             gc.set_threshold(*self.original_gc_thresholds)
         
-        # Stop memory monitoring
         self.memory_monitor_active = False
         
         # Final garbage collection
@@ -103,7 +101,6 @@ class PerformanceOptimizer:
             self.logger.info(f"Final garbage collection freed {collected} objects")
     
     def _optimize_garbage_collection(self) -> None:
-        """Optimize garbage collection settings."""
         # Store original thresholds
         self.original_gc_thresholds = gc.get_threshold()
         
@@ -115,6 +112,8 @@ class PerformanceOptimizer:
         
         gc.set_threshold(*new_thresholds)
         self.logger.info(f"Set GC thresholds from {self.original_gc_thresholds} to {new_thresholds}")
+        """_optimize_garbage_collection."""
+        """_optimize_garbage_collection."""
     
     def _start_memory_monitoring(self) -> None:
         """Start memory usage monitoring."""
@@ -146,6 +145,8 @@ class PerformanceOptimizer:
                 except Exception as e:
                     self.logger.error(f"Error monitoring memory: {e}")
                     break
+            """monitor_memory."""
+            """monitor_memory."""
         
         monitor_thread = threading.Thread(target=monitor_memory, daemon=True)
         monitor_thread.start()
@@ -169,10 +170,11 @@ class PerformanceOptimizer:
         self._clear_internal_caches()
     
     def _clear_internal_caches(self) -> None:
-        """Clear internal caches to free memory."""
         # This would clear any internal caches maintained by Cortex Cleaner
         # For now, just log the action
         self.logger.debug("Clearing internal caches")
+        """_clear_internal_caches."""
+        """_clear_internal_caches."""
     
     def get_optimal_thread_count(self, operation_type: str = "default") -> int:
         """Get optimal thread count for an operation.
@@ -263,7 +265,6 @@ class PerformanceOptimizer:
                     'max_memory': 0.0
                 }
             
-            # Execute operation
             result = operation_func(*args, **kwargs)
             
             # Post-operation tracking
@@ -273,7 +274,6 @@ class PerformanceOptimizer:
             operation_time = end_time - start_time
             memory_used = max(0, end_memory - start_memory)
             
-            # Update statistics
             stats = self.operation_stats[operation_name]
             stats['count'] += 1
             stats['total_time'] += operation_time
@@ -414,7 +414,7 @@ class PerformanceOptimizer:
             }
             
             Path(filepath).parent.mkdir(parents=True, exist_ok=True)
-            with open(filepath, 'w') as f:
+            with open(filepath, 'w', encoding='utf-8') as f:
                 json.dump(export_data, f, indent=2)
             
             self.logger.info(f"Exported performance data to {filepath}")

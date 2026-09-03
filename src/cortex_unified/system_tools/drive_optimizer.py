@@ -15,20 +15,23 @@ from __future__ import annotations
 
 import enum
 import logging
-import platform
+import sys
 import subprocess
-from dataclasses import dataclass, field
+import threading
+from dataclasses import dataclass
 from typing import Any
 
+from cortex_unified.core import proc as _proc
 from cortex_unified.engine.storage import detect_storage
 from cortex_unified.engine.models import StorageKind
 
 _LOG = logging.getLogger("cortex.system_tools.drive_optimizer")
-_IS_WINDOWS = platform.system() == "Windows"
+_IS_WINDOWS = sys.platform == "win32"
 _NO_WINDOW = 0x08000000 if _IS_WINDOWS else 0
 
 
 class OptimizeOp(str, enum.Enum):
+    """Optimize Op enumeration."""
     TRIM = "retrim"          # correct for SSD/NVMe
     DEFRAG = "defrag"        # correct for HDD
     NONE = "none"            # nothing appropriate / unsupported
@@ -36,12 +39,14 @@ class OptimizeOp(str, enum.Enum):
 
 @dataclass(slots=True)
 class DriveInfo:
+    """Drive Info data container."""
     letter: str
     kind: StorageKind
     recommended_op: OptimizeOp
     note: str = ""
 
     def to_dict(self) -> dict[str, Any]:
+        """To dict."""
         return {
             "letter": self.letter,
             "kind": self.kind.value,
@@ -52,6 +57,7 @@ class DriveInfo:
 
 @dataclass(slots=True)
 class OptimizeResult:
+    """Optimize Result data container."""
     letter: str
     op: OptimizeOp
     success: bool
@@ -62,10 +68,12 @@ class DriveOptimizer:
     """List fixed drives, recommend the correct op per medium, and run it safely."""
 
     def __init__(self) -> None:
+        """Initialize Drive Optimizer."""
         self.logger = _LOG
 
     @staticmethod
     def is_supported() -> bool:
+        """Is supported."""
         return _IS_WINDOWS
 
     def list_drives(self) -> list[DriveInfo]:
@@ -88,8 +96,11 @@ class DriveOptimizer:
         if kind is StorageKind.REMOVABLE:
             return OptimizeOp.TRIM, "Removable/flash media: TRIM if supported."
         return OptimizeOp.NONE, "Unknown medium: no optimization recommended."
+        """_recommend."""
+        """_recommend."""
 
-    def optimize(self, letter: str, op: OptimizeOp | None = None) -> OptimizeResult:
+    def optimize(self, letter: str, op: OptimizeOp | None = None,
+                cancel_event: "threading.Event | None" = None) -> OptimizeResult:
         """Run the correct optimization for *letter*. If *op* is None, auto-pick.
 
         Refuses to defrag SSD/NVMe even if explicitly asked (safety).
@@ -120,7 +131,7 @@ class DriveOptimizer:
             f"Write-Output 'OPTIMIZE_OK' }} "
             f"catch {{ Write-Output ('OPTIMIZE_FAIL;'+$_.Exception.Message) }}"
         )
-        out = self._run_ps(script, timeout=1800)  # defrag can be slow
+        out = self._run_ps(script, timeout=1800, cancel_event=cancel_event)  # defrag can be slow
         if out and "OPTIMIZE_OK" in out:
             return OptimizeResult(letter, chosen, True,
                                   f"{chosen.value.upper()} completed on {letter}:.")
@@ -146,13 +157,17 @@ class DriveOptimizer:
                     letters.append(line.upper())
         return letters or ["C"]
 
-    def _run_ps(self, script: str, timeout: int) -> str | None:
+    def _run_ps(self, script: str, timeout: int,
+               cancel_event: "threading.Event | None" = None) -> str | None:
         try:
-            proc = subprocess.run(
+            proc = _proc.run(
                 ["powershell", "-NoProfile", "-NonInteractive", "-Command", script],
-                capture_output=True, text=True, timeout=timeout, creationflags=_NO_WINDOW,
+                text=True, timeout=timeout, cancel_event=cancel_event,
+                creationflags=_NO_WINDOW,
             )
             return proc.stdout if proc.stdout else (proc.stderr or None)
-        except (OSError, subprocess.SubprocessError) as exc:
+        except (_proc.ProcessCancelled, OSError, subprocess.SubprocessError) as exc:
             self.logger.debug("powershell failed: %s", exc)
             return None
+        """_run_ps."""
+        """_run_ps."""

@@ -35,12 +35,27 @@ class TestParse:
         assert "224.0.0.22" not in ips
         assert ips == ["192.168.1.1", "192.168.1.15", "192.168.1.42"]
 
-    def test_vendor_lookup(self):
+    def test_vendor_comes_from_the_ieee_registry(self):
+        """Vendor names must be authoritative, never hand-maintained guesses.
+
+        This test previously asserted ``d8:eb:97 == "TP-Link"``, which came from
+        a hardcoded table and is simply wrong - IEEE assigns that block to
+        TRENDnet. Rather than re-encode any specific name, we assert the
+        property that matters: a vendor is either what the registry says, or
+        empty. Never invented.
+        """
+        from cortex_unified.system_tools import oui
+
         devices = {d.ip: d for d in LanScanner._parse(SAMPLE_WIN)}
-        assert devices["192.168.1.1"].vendor == "TP-Link"
-        assert devices["192.168.1.15"].vendor == "Raspberry Pi"
-        # Unknown OUI -> empty, not a guess.
-        assert devices["192.168.1.42"].vendor == ""
+        for device in devices.values():
+            expected = oui.shorten(oui.lookup(device.mac))
+            assert device.vendor == expected
+
+        if oui.has_full_registry():
+            # With the registry present, a real assignment resolves...
+            assert devices["192.168.1.15"].vendor, "known OUI should resolve"
+            # ...and it is the registry's answer, not the old wrong label.
+            assert devices["192.168.1.1"].vendor != "TP-Link"
 
     def test_sorted_by_ip(self):
         devices = LanScanner._parse(SAMPLE_WIN)
@@ -59,10 +74,17 @@ class TestParse:
 
 class TestVendorHelper:
     def test_normalizes_dashes(self):
-        assert LanScanner._vendor_for("08-00-27-AA-BB-CC") == "VirtualBox"
+        """Dash-separated input must resolve identically to colon-separated."""
+        assert (LanScanner._vendor_for("08-00-27-AA-BB-CC")
+                == LanScanner._vendor_for("08:00:27:aa:bb:cc"))
 
-    def test_unknown(self):
+    def test_unassigned_prefix_is_empty_not_a_guess(self):
+        # A locally-administered address has no IEEE vendor by definition.
         assert LanScanner._vendor_for("aa:aa:aa:aa:aa:aa") == ""
+
+    def test_garbage_input(self):
+        assert LanScanner._vendor_for("not-a-mac") == ""
+        assert LanScanner._vendor_for("") == ""
 
 
 class TestScan:

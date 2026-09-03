@@ -1,47 +1,72 @@
-"""Command-line interface for Cortex Cleaner."""
+"""Command-line interface for Cortex Cleaner (legacy ``cortex-cleaner``).
 
-from cortex_unified._version import __version__
+.. note::
+   The modern, dry-run-first CLI is ``cortex``
+   (:mod:`cortex_unified.engine.cli`), which is backed by the typed engine and
+   is the recommended entry point. This command is retained because it exposes
+   11 capabilities the engine CLI does not yet cover (Docker and package-cache
+   cleanup, leftover heuristics, restore, reports, checkpoints, startup and
+   process inspection, broken-link repair).
+
+Import cost policy
+------------------
+Click builds the whole command tree at import time, so anything imported at
+module scope is paid on *every* invocation - including ``--help``. Importing the
+analyzers eagerly meant ``cortex-cleaner --help`` loaded 718 modules and took
+~1.1 s, pulling in the Docker SDK, ``send2trash`` (-> pywin32/COM), ``psutil``
+and ``pyyaml`` merely to print help text.
+
+Each heavy dependency is therefore imported inside the single command that
+needs it. The mapping is 1:1 - ``DockerCleaner`` is only used by
+``docker-cleanup``, ``FileShredder`` only by ``secure-delete``, and so on - so
+this defers cost without changing behaviour. Only genuinely shared, cheap
+helpers stay at module scope.
+"""
 
 import os
 import sys
 from pathlib import Path
+
 import click
 
-from cortex_unified.core.scanner import Scanner
-from cortex_unified.core.deleter import Deleter
+from cortex_unified import __version__
+# Shared by nearly every command and cheap to import (stdlib + pyyaml only).
 from cortex_unified.core.config import Config, DEFAULT_CONFIG
-from cortex_unified.core.utils import setup_logging, normalize_path
+from cortex_unified.core.utils import setup_logging, normalize_path, format_bytes
 
-# Import new modules
-from cortex_unified.analyzers.duplicate_finder import DuplicateFinder
-from cortex_unified.analyzers.large_file_finder import LargeFileFinder
-# from cortex_unified.analyzers.temp_cleaner import TempCleaner  # TODO: Create this module
-from cortex_unified.analyzers.cache_cleaner import CacheCleaner
-from cortex_unified.analyzers.old_file_cleaner import OldFileCleaner
-from cortex_unified.analyzers.file_shredder import FileShredder
-from cortex_unified.analyzers.disk_analyzer import DiskAnalyzer
-from cortex_unified.analyzers.duplicate_folder_finder import DuplicateFolderFinder
-from cortex_unified.analyzers.docker_cleaner import DockerCleaner
-from cortex_unified.analyzers.broken_link_detector import BrokenLinkDetector
+#: ``registry_cleaner`` is Windows-only; probe lazily so a non-Windows host
+#: neither pays the import nor fails at module load. ``None`` means "not yet
+#: probed" so the answer is computed at most once.
+_HAS_REGISTRY_CLEANER: bool | None = None
 
-from cortex_unified.system_tools.startup_manager import StartupManager
-from cortex_unified.system_tools.process_analyzer import ProcessAnalyzer
+def _has_registry_cleaner() -> bool:
+    """True when the optional Windows registry cleaner can be imported."""
+    global _HAS_REGISTRY_CLEANER
+    if _HAS_REGISTRY_CLEANER is None:
+        try:
+            from cortex_unified.system_tools.registry_cleaner import (  # noqa: F401
+                RegistryCleaner,
+            )
+        except ImportError:
+            _HAS_REGISTRY_CLEANER = False
+        else:
+            _HAS_REGISTRY_CLEANER = True
+    return _HAS_REGISTRY_CLEANER
 
-try:
-    from cortex_unified.system_tools.registry_cleaner import RegistryCleaner
-    HAS_REGISTRY_CLEANER = True
-except ImportError:
-    HAS_REGISTRY_CLEANER = False
+def __getattr__(name: str):
+    """Preserve the historical ``HAS_REGISTRY_CLEANER`` module flag (:pep:`562`).
 
-from cortex_unified.scheduler.scheduler import TaskScheduler
-from cortex_unified.scheduler.auto_clean_rules import AutoCleanRules
-from cortex_unified.reports.restore_manager import RestoreManager
-from cortex_unified.reports.reports import ReportsGenerator
+    Reading the flag performs the probe, which is what the old eager
+    ``try/except ImportError`` did - just deferred until someone asks.
+    """
+    if name == "HAS_REGISTRY_CLEANER":
+        return _has_registry_cleaner()
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 @click.group()
 @click.version_option(version=__version__)
 def main():
-    """Cortex Cleaner - A comprehensive utility to find and remove unnecessary files and folders."""
+    """Cortex Workstation - The Ultimate Windows NT Systems, Forensics & File Management Platform."""
     pass
 
 @main.command()
@@ -85,9 +110,19 @@ def clean_empty(
     resume_from,
     path
 ):
-    """Find and remove empty files and folders safely."""
-    
-    # Set up logging first
+    """Find and remove empty files and folders safely.
+
+    Dry run by default; pass --delete or --trash (with --yes to skip the
+    confirmation prompt) to act. Supports glob filters, an age cutoff
+    (--older-than), tuned thread counts and priorities, and resumable
+    scans via --resume-from.
+    """
+    # Imported here, not at module scope: Click builds the
+    # command tree on import, so a module-level import would
+    # be paid by every invocation including --help.
+    from cortex_unified.core.deleter import Deleter
+    from cortex_unified.core.scanner import Scanner
+
     if quiet:
         verbose = False
     logger = setup_logging(verbose, log_file, json_log)
@@ -105,7 +140,7 @@ def clean_empty(
     
     # Override config with command line options
     if pattern:
-        config_obj.config_data["exclude_patterns"] = list(pattern)
+        config_obj.config_data["include_patterns"] = list(pattern)
     
     if older_than is not None:
         config_obj.config_data["min_age_days"] = older_than
@@ -135,7 +170,6 @@ def clean_empty(
     dry_run_mode = action == "dry_run"
     trash_mode = action == "trash"
     
-    # Normalize path
     target_path = normalize_path(path)
     
     # Log startup info
@@ -145,7 +179,6 @@ def clean_empty(
     if dry_run_mode:
         logger.info("DRY RUN MODE - No files will be deleted")
     
-    # Set up performance management
     try:
         from cortex_unified.performance.resource_throttler import ResourceThrottler
         from cortex_unified.performance.scan_manager import ScanManager
@@ -153,7 +186,6 @@ def clean_empty(
         throttler = ResourceThrottler()
         throttler.set_process_priority(cpu_priority)
         
-        # Set up scan manager for checkpoints
         scan_manager = ScanManager(config_obj)
         
         # Resume from checkpoint if specified
@@ -165,9 +197,11 @@ def clean_empty(
             else:
                 logger.warning("Failed to load checkpoint, starting fresh scan")
     except ImportError:
+        if resume_from:
+            logger.error("--resume-from requires performance features that are not available")
+            sys.exit(1)
         logger.warning("Performance features not available, using basic scanning")
     
-    # Create scanner and scan
     scanner = Scanner(config_obj, str(target_path))
     logger.info("Scanning for empty files and directories...")
     
@@ -200,18 +234,15 @@ def clean_empty(
             else:
                 logger.info("Skipping confirmation due to --yes flag")
         
-        # Create deleter and delete
         deleter = Deleter(dry_run_mode, trash_mode)
         result = deleter.delete(empty_files, empty_dirs)
         
-        # Generate manifest
         try:
             manifest_path = deleter.generate_manifest()
             logger.info(f"Manifest saved to: {manifest_path}")
         except Exception as e:
             logger.error(f"Failed to generate manifest: {e}")
         
-        # Log results
         if dry_run_mode:
             logger.info(f"Would delete {result['files_deleted']} files and {result['dirs_deleted']} directories")
         else:
@@ -254,9 +285,12 @@ def find_large_files(
     export,
     path
 ):
-    """Find large files."""
-    
-    # Set up logging
+    """List files larger than --min-size MB under PATH, biggest first."""
+    # Imported here, not at module scope: Click builds the
+    # command tree on import, so a module-level import would
+    # be paid by every invocation including --help.
+    from cortex_unified.analyzers.large_file_finder import LargeFileFinder
+
     logger = setup_logging(verbose, log_file, json_log)
     
     # Load configuration
@@ -268,7 +302,7 @@ def find_large_files(
     
     # Override config with command line options
     if pattern:
-        config_obj.config_data["exclude_patterns"] = list(pattern)
+        config_obj.config_data["include_patterns"] = list(pattern)
     
     if exclude_pattern:
         config_obj.config_data["exclude_dirs"] = list(exclude_pattern)
@@ -279,7 +313,6 @@ def find_large_files(
     if json_log:
         config_obj.config_data["json_logging"] = json_log
     
-    # Normalize path
     target_path = normalize_path(path)
     
     # Log startup info
@@ -288,7 +321,6 @@ def find_large_files(
     logger.info(f"Minimum size: {min_size} MB")
     
     try:
-        # Create finder and find large files
         finder = LargeFileFinder(config_obj, str(target_path))
         large_files = finder.find_large_files(min_size_mb=min_size, threads=threads)
         stats = finder.get_stats()
@@ -309,10 +341,11 @@ def find_large_files(
                 "large_files": [{"path": str(path), "size_bytes": size} for path, size in large_files],
                 "stats": stats
             }
-            with open(export, 'w') as f:
+            with open(export, 'w', encoding='utf-8') as f:
                 json.dump(export_data, f, indent=2)
             logger.info(f"Results exported to: {export}")
-    
+
+
     except Exception as e:
         logger.error(f"An error occurred: {e}")
         sys.exit(1)
@@ -352,9 +385,18 @@ def find_duplicates(
     export,
     path
 ):
-    """Find duplicate files."""
-    
-    # Set up logging
+    """Find duplicate files by content hash.
+
+    Duplicate groups are listed with potential space savings. With
+    --delete, all but one file per group (chosen by --strategy) are moved
+    to the recycle bin after confirmation.
+    """
+    # Imported here, not at module scope: Click builds the
+    # command tree on import, so a module-level import would
+    # be paid by every invocation including --help.
+    from cortex_unified.analyzers.duplicate_finder import DuplicateFinder
+    from cortex_unified.core.deleter import Deleter
+
     logger = setup_logging(verbose, log_file, json_log)
     
     # Load configuration
@@ -366,7 +408,7 @@ def find_duplicates(
     
     # Override config with command line options
     if pattern:
-        config_obj.config_data["exclude_patterns"] = list(pattern)
+        config_obj.config_data["include_patterns"] = list(pattern)
     
     if exclude_pattern:
         config_obj.config_data["exclude_dirs"] = list(exclude_pattern)
@@ -377,7 +419,6 @@ def find_duplicates(
     if json_log:
         config_obj.config_data["json_logging"] = json_log
     
-    # Normalize path
     target_path = normalize_path(path)
     
     # Log startup info
@@ -387,7 +428,6 @@ def find_duplicates(
     logger.info(f"Selection strategy: {strategy}")
     
     try:
-        # Create finder and find duplicates
         finder = DuplicateFinder(config_obj, str(target_path))
         finder.hash_algorithm = hash_algorithm
         duplicates = finder.find_duplicates(threads=threads)
@@ -412,10 +452,11 @@ def find_duplicates(
                 "duplicates": {hash_val: [str(path) for path in paths] for hash_val, paths in duplicates.items()},
                 "stats": stats
             }
-            with open(export, 'w') as f:
+            with open(export, 'w', encoding='utf-8') as f:
                 json.dump(export_data, f, indent=2)
             logger.info(f"Results exported to: {export}")
-        
+
+    
         # Handle deletion if requested
         if delete and duplicates:
             files_to_delete = finder.auto_select_duplicates(strategy)
@@ -431,7 +472,6 @@ def find_duplicates(
             else:
                 logger.info("Skipping confirmation due to --yes flag")
             
-            # Delete files
             deleter = Deleter(dry_run=False, use_trash=True)
             result = deleter.delete(files_to_delete, [])
             
@@ -445,8 +485,123 @@ def find_duplicates(
         logger.error(f"An error occurred: {e}")
         sys.exit(1)
 
-# TODO: Create TempCleaner module and re-enable clean-temp command
-# The clean_temp command has been temporarily disabled because TempCleaner module doesn't exist yet
+@main.command()
+@click.option('--dry-run', is_flag=True, default=True, help='Show what would be deleted without actually deleting (default)')
+@click.option('--delete', is_flag=True, default=False, help='Permanently delete stale temp files')
+@click.option('--trash', is_flag=True, default=False, help='Move stale temp files to trash/recycle bin')
+@click.option('--min-age', type=int, default=1, help='Only consider temp files older than N days (default: 1)')
+@click.option('--exclude-pattern', multiple=True, help='Exclude files/directories matching this pattern (can be used multiple times)')
+@click.option('--config', type=click.Path(exists=False), help='Path to configuration file')
+@click.option('--no-config', is_flag=True, default=False, help='Don\'t load any configuration file')
+@click.option('--yes', is_flag=True, default=False, help='Skip confirmation prompts')
+@click.option('--verbose', is_flag=True, default=False, help='Enable verbose output')
+@click.option('--log-file', type=click.Path(), help='Write logs to file')
+@click.option('--json-log', is_flag=True, default=False, help='Output logs in JSON format')
+def clean_temp(
+    dry_run,
+    delete,
+    trash,
+    min_age,
+    exclude_pattern,
+    config,
+    no_config,
+    yes,
+    verbose,
+    log_file,
+    json_log
+):
+    """Find and remove stale temporary files from system temp locations safely.
+
+    Only files older than --min-age days are considered. Dry run by
+    default; use --delete or --trash to act.
+    """
+    # Imported here, not at module scope: Click builds the
+    # command tree on import, so a module-level import would
+    # be paid by every invocation including --help.
+    from cortex_unified.core.temp_cleaner import TempCleaner
+
+    logger = setup_logging(verbose, log_file, json_log)
+    
+    # Load configuration
+    if no_config:
+        config_obj = Config()  # Empty config
+    else:
+        config_path = config
+        config_obj = Config(config_path)
+    
+    # Explicit --exclude-pattern wins over the configured baseline,
+    # mirroring how clean-empty applies its pattern overrides.
+    if exclude_pattern:
+        exclude_patterns = list(exclude_pattern)
+    else:
+        exclude_patterns = list(config_obj.exclude_patterns)
+    
+    # Determine action mode (--delete outranks --trash, as in clean-empty).
+    if delete:
+        action = "delete"
+    elif trash:
+        action = "trash"
+    else:
+        action = "dry_run"  # fallback
+    
+    dry_run_mode = action == "dry_run"
+    trash_mode = action == "trash"
+    
+    # Log startup info
+    logger.info(f"Cortex Cleaner starting...")
+    logger.info(f"Action mode: {action}")
+    logger.info(f"Minimum file age: {min_age} days")
+    if dry_run_mode:
+        logger.info("DRY RUN MODE - No files will be deleted")
+    
+    try:
+        cleaner = TempCleaner(min_age_days=min_age, exclude_patterns=exclude_patterns)
+        
+        logger.info("Scanning temp locations...")
+        findings = cleaner.scan()
+        
+        # Print findings grouped by temp location, biggest files first.
+        by_location = {}
+        for finding in findings:
+            by_location.setdefault(finding.location, []).append(finding)
+        
+        for location in sorted(by_location):
+            entries = sorted(by_location[location], key=lambda f: f.size_bytes, reverse=True)
+            location_bytes = sum(f.size_bytes for f in entries)
+            logger.info(f"{location}: {len(entries)} files ({format_bytes(location_bytes)})")
+            for finding in entries:
+                logger.info(f"  {format_bytes(finding.size_bytes):>10}  {finding.path}")
+        
+        logger.info(f"Found {len(findings)} reclaimable temp files ({format_bytes(cleaner.total_reclaimable())})")
+        
+        if len(findings) == 0:
+            logger.info("No reclaimable temp files found")
+            return
+        
+        if dry_run_mode:
+            logger.info(f"Would delete {len(findings)} temp files and free {format_bytes(cleaner.total_reclaimable())}")
+            return
+        
+        # If performing a real deletion, confirm first unless --yes was passed
+        if not yes:
+            click.confirm(f"Delete {len(findings)} temp files? This action cannot be undone.", abort=True)
+        else:
+            logger.info("Skipping confirmation due to --yes flag")
+        
+        result = cleaner.clean(findings, use_trash=trash_mode, dry_run=False)
+        
+        logger.info(f"Deleted {result['deleted']} temp files and freed {format_bytes(result['bytes_freed'])}")
+        if result['failed']:
+            logger.error(f"Encountered {result['failed']} failures:")
+            for error in result['errors']:
+                logger.error(f"  {error.get('path', '?')}: {error.get('error', 'unknown error')}")
+    
+    except KeyboardInterrupt:
+        logger.info("Operation cancelled by user")
+        sys.exit(1)
+    except Exception as e:
+        logger.error(f"An error occurred: {e}")
+        sys.exit(1)
 
 @main.command()
 @click.option('--analyze', is_flag=True, default=False, help='Analyze disk usage')
@@ -501,8 +656,11 @@ def analyze_disk(
     
     Performance: Use --cpu-priority and --memory-limit to control resource usage.
     """
-    
-    # Set up logging
+    # Imported here, not at module scope: Click builds the
+    # command tree on import, so a module-level import would
+    # be paid by every invocation including --help.
+    from cortex_unified.analyzers.disk_analyzer import DiskAnalyzer
+
     logger = setup_logging(verbose, log_file, json_log)
     
     # Load configuration
@@ -518,7 +676,6 @@ def analyze_disk(
     if json_log:
         config_obj.config_data["json_logging"] = json_log
     
-    # Normalize path
     target_path = normalize_path(path)
     
     # Log startup info
@@ -526,14 +683,12 @@ def analyze_disk(
     logger.info(f"Target path: {target_path}")
     
     try:
-        # Set up performance management
         from cortex_unified.performance.resource_throttler import ResourceThrottler
         from cortex_unified.performance.scan_manager import ScanManager
         
         throttler = ResourceThrottler()
         throttler.set_process_priority(cpu_priority)
         
-        # Set up scan manager for checkpoints
         scan_manager = ScanManager(config_obj)
         
         # Resume from checkpoint if specified
@@ -545,7 +700,6 @@ def analyze_disk(
             else:
                 logger.warning("Failed to load checkpoint, starting fresh scan")
         
-        # Create analyzer and analyze disk
         analyzer = DiskAnalyzer(config_obj, str(target_path))
         
         # Configure performance settings
@@ -668,13 +822,15 @@ def analyze_disk(
 
 @main.command()
 def list_startup_items():
-    """List system startup items."""
-    
-    # Set up logging
+    """List system startup items with enabled/disabled status and location."""
+    # Imported here, not at module scope: Click builds the
+    # command tree on import, so a module-level import would
+    # be paid by every invocation including --help.
+    from cortex_unified.system_tools.startup_manager import StartupManager
+
     logger = setup_logging()
     
     try:
-        # Create manager and list startup items
         manager = StartupManager()
         items = manager.list_startup_items()
         stats = manager.get_stats()
@@ -695,13 +851,19 @@ def list_startup_items():
 @main.command()
 @click.option('--export', type=click.Path(), help='Export results to JSON file')
 def analyze_processes(export):
-    """Analyze system processes."""
-    
-    # Set up logging
+    """Summarize running processes and services.
+
+    Prints totals for each; --export writes the full process and service
+    listings plus stats to a JSON file.
+    """
+    # Imported here, not at module scope: Click builds the
+    # command tree on import, so a module-level import would
+    # be paid by every invocation including --help.
+    from cortex_unified.system_tools.process_analyzer import ProcessAnalyzer
+
     logger = setup_logging()
     
     try:
-        # Create analyzer and analyze processes
         analyzer = ProcessAnalyzer()
         processes = analyzer.list_processes()
         services = analyzer.list_services()
@@ -719,10 +881,11 @@ def analyze_processes(export):
                 "services": services,
                 "stats": stats
             }
-            with open(export, 'w') as f:
+            with open(export, 'w', encoding='utf-8') as f:
                 json.dump(export_data, f, indent=2)
             logger.info(f"Results exported to: {export}")
-    
+
+
     except Exception as e:
         logger.error(f"An error occurred: {e}")
         sys.exit(1)
@@ -771,8 +934,11 @@ def docker_cleanup(
     
     Safety: Creates backup manifests for potential restoration.
     """
-    
-    # Set up logging
+    # Imported here, not at module scope: Click builds the
+    # command tree on import, so a module-level import would
+    # be paid by every invocation including --help.
+    from cortex_unified.analyzers.docker_cleaner import DockerCleaner
+
     logger = setup_logging(verbose, log_file, json_log)
     
     # Load configuration
@@ -804,10 +970,8 @@ def docker_cleanup(
     logger.info(f"Mode: {'DRY RUN' if dry_run else 'CLEANUP'}")
     
     try:
-        # Create Docker cleaner
         docker_cleaner = DockerCleaner(config_obj)
         
-        # Check if Docker is available
         if not docker_cleaner.is_docker_available():
             logger.error("Docker is not available. Please ensure Docker is installed and running.")
             sys.exit(1)
@@ -856,10 +1020,11 @@ def docker_cleanup(
                 "resources": [str(resource) for resource in resources_to_clean],
                 "stats": docker_cleaner.get_stats()
             }
-            with open(export, 'w') as f:
+            with open(export, 'w', encoding='utf-8') as f:
                 json.dump(export_data, f, indent=2)
             logger.info(f"Results exported to: {export}")
-        
+
+    
         # Cleanup if not dry run
         if not dry_run:
             if not yes:
@@ -932,7 +1097,6 @@ def package_cleanup(
     Safety: Creates backups of package lists before making changes.
     """
     
-    # Set up logging
     logger = setup_logging(verbose, log_file, json_log)
     
     # Load configuration
@@ -964,13 +1128,10 @@ def package_cleanup(
     logger.info(f"Mode: {'DRY RUN' if dry_run else 'CLEANUP'}")
     
     try:
-        # Import package manager cleaner
         from cortex_unified.analyzers.package_manager_cleaner import PackageManagerCleaner
         
-        # Create package manager cleaner
         pm_cleaner = PackageManagerCleaner(config_obj)
         
-        # Detect available package managers
         available_managers = pm_cleaner.detect_package_managers()
         logger.info(f"Detected package managers: {[pm.name for pm in available_managers]}")
         
@@ -1019,10 +1180,11 @@ def package_cleanup(
                 "available_managers": [pm.name for pm in available_managers],
                 "stats": pm_cleaner.get_stats()
             }
-            with open(export, 'w') as f:
+            with open(export, 'w', encoding='utf-8') as f:
                 json.dump(export_data, f, indent=2)
             logger.info(f"Results exported to: {export}")
-        
+
+    
         # Summary
         total_files = sum(result['files_cleaned'] for result in cleanup_results)
         total_space = sum(result['space_freed_bytes'] for result in cleanup_results)
@@ -1079,8 +1241,11 @@ def heuristics_scan(
     Warning: This feature uses heuristics and may flag legitimate files.
     Always review results carefully before cleaning.
     """
-    
-    # Set up logging
+    # Imported here, not at module scope: Click builds the
+    # command tree on import, so a module-level import would
+    # be paid by every invocation including --help.
+    from cortex_unified.core.deleter import Deleter
+
     logger = setup_logging(verbose, log_file, json_log)
     
     # Load configuration
@@ -1100,7 +1265,6 @@ def heuristics_scan(
     if clean:
         dry_run = False
     
-    # Normalize path
     target_path = normalize_path(path)
     
     # Log startup info
@@ -1110,20 +1274,19 @@ def heuristics_scan(
     logger.info(f"Mode: {'DRY RUN' if dry_run else 'CLEANUP'}")
     
     try:
-        # Import leftover detector
         from cortex_unified.analyzers.leftover_detector import LeftoverDetector
         
-        # Create leftover detector
         detector = LeftoverDetector(config_obj)
         
         # Scan for orphaned folders
         logger.info("Scanning for orphaned application folders...")
-        orphaned_folders = detector.scan_orphaned_folders([
-            "C:\\Program Files",
-            "C:\\Program Files (x86)",
-            os.path.expanduser("~\\AppData\\Local"),
-            os.path.expanduser("~\\AppData\\Roaming")
-        ])
+        app_folders = [
+            os.environ.get("ProgramFiles", r"C:\Program Files"),
+            os.environ.get("ProgramFiles(x86)", r"C:\Program Files (x86)"),
+            os.path.expanduser(r"~\AppData\Local"),
+            os.path.expanduser(r"~\AppData\Roaming"),
+        ]
+        orphaned_folders = detector.scan_orphaned_folders([p for p in app_folders if os.path.exists(p)])
         
         # Scan for installer files
         logger.info("Scanning for installer files...")
@@ -1135,7 +1298,6 @@ def heuristics_scan(
             logger.info("Analyzing Windows registry...")
             registry_orphans = detector.analyze_registry_orphans()
         
-        # Combine all detected items
         all_items = orphaned_folders + installer_files + registry_orphans
         
         # Apply ML patterns if enabled
@@ -1168,10 +1330,11 @@ def heuristics_scan(
                 "confidence_threshold": confidence_threshold,
                 "stats": detector.get_stats()
             }
-            with open(export, 'w') as f:
+            with open(export, 'w', encoding='utf-8') as f:
                 json.dump(export_data, f, indent=2)
             logger.info(f"Results exported to: {export}")
-        
+
+    
         # Cleanup if not dry run
         if not dry_run and high_confidence_items:
             if not yes:
@@ -1179,10 +1342,8 @@ def heuristics_scan(
             else:
                 logger.info("Skipping confirmation due to --yes flag")
             
-            # Generate cleanup recommendations
             recommendations = detector.generate_cleanup_recommendations()
             
-            # Execute cleanup
             deleter = Deleter(dry_run=False, use_trash=True)
             files_to_delete = [item for item in high_confidence_items if hasattr(item, 'path')]
             result = deleter.delete(files_to_delete, [])
@@ -1216,9 +1377,17 @@ def secure_delete(
     json_log,
     files
 ):
-    """Securely delete files."""
-    
-    # Set up logging
+    """Securely delete FILES (preview by default).
+
+    Without --shred only shows how each file would be shredded; with
+    --shred, overwrites each file with --passes passes (verifying when
+    --verify is on) after a confirmation prompt unless --yes is given.
+    """
+    # Imported here, not at module scope: Click builds the
+    # command tree on import, so a module-level import would
+    # be paid by every invocation including --help.
+    from cortex_unified.analyzers.file_shredder import FileShredder
+
     logger = setup_logging(verbose, log_file, json_log)
     
     if not files:
@@ -1230,7 +1399,6 @@ def secure_delete(
     logger.info(f"Overwrite passes: {passes}")
     
     try:
-        # Create shredder and shred files
         shredder = FileShredder()
         shredder.set_passes(passes)
         shredder.verify_deletion(verify)
@@ -1241,7 +1409,6 @@ def secure_delete(
             else:
                 logger.info("Skipping confirmation due to --yes flag")
             
-            # Shred files
             results = shredder.shred_files([Path(f) for f in files], passes)
             
             logger.info(f"Shredded {results['shredded']} files")
@@ -1270,13 +1437,20 @@ def restore(
     log_file,
     json_log
 ):
-    """Restore files from backup."""
-    
-    # Set up logging
+    """Restore files from a deletion manifest, or list saved backups.
+
+    With --restore MANIFEST, replays a recorded deletion (previews it
+    while --dry-run is active, the default). Without it, lists the
+    available backup manifests.
+    """
+    # Imported here, not at module scope: Click builds the
+    # command tree on import, so a module-level import would
+    # be paid by every invocation including --help.
+    from cortex_unified.reports.restore_manager import RestoreManager
+
     logger = setup_logging(verbose, log_file, json_log)
     
     try:
-        # Create restore manager
         manager = RestoreManager()
         
         if restore:
@@ -1330,13 +1504,19 @@ def generate_report(
     log_file,
     json_log
 ):
-    """Generate system reports."""
-    
-    # Set up logging
+    """Generate a system report as text, html, json, or csv.
+
+    Captures platform and Python version details; --export copies the
+    generated report to another location.
+    """
+    # Imported here, not at module scope: Click builds the
+    # command tree on import, so a module-level import would
+    # be paid by every invocation including --help.
+    from cortex_unified.reports.reports import ReportsGenerator
+
     logger = setup_logging(verbose, log_file, json_log)
     
     try:
-        # Create reports generator
         generator = ReportsGenerator()
         
         # Sample data for report
@@ -1385,14 +1565,13 @@ def generate_report(
 
 @main.group()
 def checkpoint():
-    """Manage scan checkpoints."""
-    pass
+    """Create, list, resume from, or delete scan checkpoints."""
 
 @checkpoint.command(name='list')
 @click.option('--config', type=click.Path(exists=False), help='Path to configuration file')
 @click.option('--verbose', is_flag=True, default=False, help='Enable verbose output')
 def list_checkpoints(config, verbose):
-    """List all available checkpoints."""
+    """List saved scan checkpoints with id, timestamp, path, and progress."""
     from cortex_unified.performance import ScanManager
     
     logger = setup_logging(verbose)
@@ -1422,7 +1601,7 @@ def list_checkpoints(config, verbose):
 @click.argument('checkpoint_id')
 @click.option('--verbose', is_flag=True, default=False, help='Enable verbose output')
 def delete(checkpoint_id, verbose):
-    """Delete a specific checkpoint."""
+    """Delete a saved checkpoint by its id."""
     from cortex_unified.performance import ScanManager
     
     logger = setup_logging(verbose)
@@ -1444,7 +1623,7 @@ def delete(checkpoint_id, verbose):
 @click.option('--max-age', type=int, default=7, help='Maximum age in days (default: 7)')
 @click.option('--verbose', is_flag=True, default=False, help='Enable verbose output')
 def cleanup(max_age, verbose):
-    """Clean up old checkpoints."""
+    """Delete checkpoints older than --max-age days (default: 7)."""
     from cortex_unified.performance import ScanManager
     
     logger = setup_logging(verbose)
@@ -1505,9 +1684,19 @@ def scan_enhanced(
     threads,
     path
 ):
-    """Enhanced scan with checkpoint and performance features."""
-    
-    # Set up logging first
+    """Empty-file scan with optional checkpointing and resource throttling.
+
+    Extends the basic scan with resumable checkpoints
+    (--enable-checkpoints, --checkpoint-id) and CPU/memory usage caps
+    (--enable-throttling, --cpu-limit, --memory-limit). Deletion
+    behaviour matches clean-empty.
+    """
+    # Imported here, not at module scope: Click builds the
+    # command tree on import, so a module-level import would
+    # be paid by every invocation including --help.
+    from cortex_unified.core.deleter import Deleter
+    from cortex_unified.core.scanner import Scanner
+
     if quiet:
         verbose = False
     logger = setup_logging(verbose, log_file, json_log)
@@ -1525,7 +1714,7 @@ def scan_enhanced(
     
     # Override config with command line options
     if pattern:
-        config_obj.config_data["exclude_patterns"] = list(pattern)
+        config_obj.config_data["include_patterns"] = list(pattern)
     
     if older_than is not None:
         config_obj.config_data["min_age_days"] = older_than
@@ -1555,7 +1744,6 @@ def scan_enhanced(
     dry_run_mode = action == "dry_run"
     trash_mode = action == "trash"
     
-    # Normalize path
     target_path = normalize_path(path)
     
     # Log startup info
@@ -1571,7 +1759,6 @@ def scan_enhanced(
     if dry_run_mode:
         logger.info("DRY RUN MODE - No files will be deleted")
     
-    # Create enhanced scanner
     scanner = Scanner(
         config_obj, 
         str(target_path),
@@ -1587,7 +1774,6 @@ def scan_enhanced(
     logger.info("Scanning for empty files and directories...")
     
     try:
-        # Perform enhanced scan
         empty_files, empty_dirs = scanner.scan(threads, checkpoint_id)
         stats = scanner.get_stats()
         
@@ -1624,18 +1810,15 @@ def scan_enhanced(
             else:
                 logger.info("Skipping confirmation due to --yes flag")
         
-        # Create deleter and delete
         deleter = Deleter(dry_run_mode, trash_mode)
         result = deleter.delete(empty_files, empty_dirs)
         
-        # Generate manifest
         try:
             manifest_path = deleter.generate_manifest()
             logger.info(f"Manifest saved to: {manifest_path}")
         except Exception as e:
             logger.error(f"Failed to generate manifest: {e}")
         
-        # Log results
         if dry_run_mode:
             logger.info(f"Would delete {result['files_deleted']} files and {result['dirs_deleted']} directories")
         else:
@@ -1677,12 +1860,16 @@ def scan_enhanced(
 def scan_broken_links(scan_symlinks, scan_shortcuts, scan_registry, repair, backup, 
                      confidence_threshold, export, verbose, path):
     """Scan for and optionally repair broken symlinks, shortcuts, and registry references."""
-    
-    # Set up logging
+    # Imported here, not at module scope: Click builds the
+    # command tree on import, so a module-level import would
+    # be paid by every invocation including --help.
+    from cortex_unified.analyzers.broken_link_detector import (
+        BrokenLinkDetector,
+    )
+
     logger = setup_logging(verbose=verbose)
     
     try:
-        # Initialize detector
         config = Config()
         detector = BrokenLinkDetector(config)
         
@@ -1797,20 +1984,93 @@ def scan_broken_links(scan_symlinks, scan_shortcuts, scan_registry, repair, back
                 
                 export_data['broken_links'].append(link_data)
             
-            with open(export, 'w') as f:
+            with open(export, 'w', encoding='utf-8') as f:
                 json.dump(export_data, f, indent=2)
             
             click.echo(f"\nResults exported to: {export}")
         
         # Display statistics
         stats = detector.get_scan_statistics()
-        click.echo(f"\nScan Statistics:")
+        click.echo("\nScan Statistics:")
         click.echo(f"  Items scanned: {stats['total_scanned']}")
         click.echo(f"  Errors encountered: {stats['errors']}")
         
     except Exception as e:
         logger.error(f"Error during broken link scan: {e}")
         sys.exit(1)
+
+
+@main.command('clean-shaders')
+@click.option('--min-age-days', default=0, type=int, help='Minimum age in days to consider a shader file stale (default: 0)')
+@click.option('--dry-run', is_flag=True, default=False, help='Show cleanable shaders without deleting')
+def clean_shaders_cmd(min_age_days: int, dry_run: bool):
+    """Audit and purge DirectX and GPU vendor shader caches."""
+    from cortex_unified.system_tools.shader_cache_cleaner import ShaderCacheCleaner
+    cleaner = ShaderCacheCleaner()
+    report = cleaner.scan(min_age_days=min_age_days)
+    click.echo(f"Found {report.total_files} shader files ({format_bytes(report.total_bytes)}).")
+    for loc in report.locations:
+        if loc.exists:
+            click.echo(f"  [{loc.vendor}] {loc.name}: {loc.file_count} files ({format_bytes(loc.total_bytes)})")
+    
+    if not dry_run:
+        res = cleaner.clean(min_age_days=min_age_days, dry_run=False)
+        click.echo(f"Cleaned {res.cleaned_files} shaders, reclaimed {format_bytes(res.freed_bytes)}.")
+
+
+@main.command('clean-ai')
+@click.option('--dry-run', is_flag=True, default=False, help='Show AI artifacts without cleaning')
+def clean_ai_cmd(dry_run: bool):
+    """Audit and clean Windows 11 Copilot, Recall, and SQLite WAL journals."""
+    from cortex_unified.system_tools.ai_telemetry_cleaner import AiTelemetryCleaner
+    cleaner = AiTelemetryCleaner()
+    rep = cleaner.scan()
+    click.echo(f"Discovered {len(rep.artifacts)} AI artifacts ({format_bytes(rep.total_size_bytes)}).")
+    for a in rep.artifacts:
+        click.echo(f"  [{a.category}] {a.name}: {format_bytes(a.size_bytes)}")
+    if not dry_run:
+        res = cleaner.clean(checkpoint_wal=True, dry_run=False)
+        click.echo(f"Cleaned {res.cleaned_items} cache files, checkpointed {res.truncated_wal_count} WAL journals, freed {format_bytes(res.freed_bytes)}.")
+
+
+@main.command('trim-ssd')
+@click.argument('drive', default='C')
+def trim_ssd_cmd(drive: str):
+    """Trigger SSD NVMe flash block deallocation (TRIM/ReTrim)."""
+    from cortex_unified.system_tools.ssd_trim_optimizer import SsdTrimOptimizer
+    opt = SsdTrimOptimizer()
+    res = opt.retrim_volume(drive)
+    if res.success:
+        click.echo(f"[OK] {res.message}")
+    else:
+        click.echo(f"[ERROR] {res.message}")
+
+
+@main.command('vss-health')
+def vss_health_cmd():
+    """Inspect Volume Shadow Copy (VSS) writers and shadow storage."""
+    from cortex_unified.system_tools.vss_health_analyzer import VssHealthAnalyzer
+    analyzer = VssHealthAnalyzer()
+    rep = analyzer.inspect_health()
+    click.echo(f"VSS Subsystem: {rep.healthy_writer_count} healthy, {rep.failed_writer_count} failed/stalled writers.")
+    for w in rep.writers:
+        status = "HEALTHY" if w.is_healthy else f"FAILED ({w.state_desc})"
+        click.echo(f"  * {w.name}: {status}")
+
+
+@main.command('verify-checksums')
+@click.argument('manifest_file', type=click.Path(exists=True))
+def verify_checksums_cmd(manifest_file: str):
+    """Verify an integrity manifest (.sha256, .md5, .sfv) against files on disk."""
+    from cortex_unified.system_tools.checksum_matrix import ChecksumMatrix
+    matrix = ChecksumMatrix()
+    rep = matrix.verify_manifest(Path(manifest_file))
+    click.echo(f"Manifest verification ({rep.algorithm.upper()}): {rep.matched_files}/{rep.total_files} matched.")
+    if rep.mismatched_files:
+        click.echo(f"  WARNING: {rep.mismatched_files} MISMATCHED (CORRUPTED) FILES!")
+    if rep.missing_files:
+        click.echo(f"  WARNING: {rep.missing_files} MISSING FILES!")
+
 
 if __name__ == '__main__':
     main()

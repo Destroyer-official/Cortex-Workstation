@@ -1,30 +1,31 @@
-"""System startup manager for Cortex Cleaner."""
+"""Startup item enumeration and disabling across platforms.
+
+Reads autostart locations read-only: registry Run/RunOnce keys, Startup
+folders, launchd plists, XDG .desktop files. Disabling is implemented for
+Windows only. Every failed location increments ``error_count`` instead of
+aborting, so one broken source never hides the others.
+"""
 
 import os
-import sys
 import platform
 from pathlib import Path
-from typing import List, Dict, Tuple
-import subprocess
+from typing import List, Dict
 
-from ..core.utils import normalize_path
 from ..core.config import Config
 
-
 class StartupManager:
-    """Manager for system startup programs and services."""
-    
+    """Enumerate autostart entries; disable them on Windows."""
+
     def __init__(self, config: Config = None):
-        """Initialize startup manager."""
+        """Use *config* or a default Config; the OS decides which backends run."""
         self.config = config or Config()
         self.system = platform.system().lower()
-        
-        # Results
+
         self.startup_items = []
         self.error_count = 0
     
     def list_startup_items(self) -> List[Dict]:
-        """List all startup items based on the operating system."""
+        """Populate ``startup_items`` from every autostart location for this OS."""
         self.startup_items = []
         self.error_count = 0
         
@@ -41,31 +42,27 @@ class StartupManager:
         return self.startup_items
     
     def _list_windows_startup_items(self):
-        """List Windows startup items."""
+        """Collect registry Run/RunOnce values plus Startup-folder files."""
         try:
-            # Method 1: Registry-based startup items
+            # Registry-based items: HKCU/HKLM x Run/RunOnce.
             try:
                 import winreg
                 
-                # HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run
                 self._read_registry_startup_items(
                     winreg.HKEY_CURRENT_USER,
                     r"Software\Microsoft\Windows\CurrentVersion\Run"
                 )
                 
-                # HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Run
                 self._read_registry_startup_items(
                     winreg.HKEY_LOCAL_MACHINE,
                     r"Software\Microsoft\Windows\CurrentVersion\Run"
                 )
                 
-                # HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\RunOnce
                 self._read_registry_startup_items(
                     winreg.HKEY_CURRENT_USER,
                     r"Software\Microsoft\Windows\CurrentVersion\RunOnce"
                 )
                 
-                # HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\RunOnce
                 self._read_registry_startup_items(
                     winreg.HKEY_LOCAL_MACHINE,
                     r"Software\Microsoft\Windows\CurrentVersion\RunOnce"
@@ -73,13 +70,11 @@ class StartupManager:
             except Exception:
                 self.error_count += 1
             
-            # Method 2: Startup folder items
+            # File-based items: per-user and all-users Startup folders.
             try:
-                # Current user startup folder
                 startup_folder = Path.home() / "AppData" / "Roaming" / "Microsoft" / "Windows" / "Start Menu" / "Programs" / "Startup"
                 self._read_startup_folder_items(startup_folder)
                 
-                # All users startup folder
                 all_users_startup = Path(os.environ.get("PROGRAMDATA", r"C:\ProgramData")) / "Microsoft" / "Windows" / "Start Menu" / "Programs" / "Startup"
                 self._read_startup_folder_items(all_users_startup)
             except Exception:
@@ -89,7 +84,7 @@ class StartupManager:
             self.error_count += 1
     
     def _read_registry_startup_items(self, hive, key_path):
-        """Read startup items from Windows registry."""
+        """Append every value under one Run/RunOnce key."""
         try:
             import winreg
             
@@ -112,7 +107,7 @@ class StartupManager:
             self.error_count += 1
     
     def _read_startup_folder_items(self, folder_path: Path):
-        """Read startup items from Windows startup folder."""
+        """Append each file in one Startup folder."""
         try:
             if folder_path.exists():
                 for item in folder_path.iterdir():
@@ -128,7 +123,6 @@ class StartupManager:
             self.error_count += 1
     
     def _list_macos_startup_items(self):
-        """List macOS startup items."""
         try:
             # Launch agents in ~/Library/LaunchAgents
             user_agents = Path.home() / "Library" / "LaunchAgents"
@@ -143,14 +137,15 @@ class StartupManager:
             self._read_plist_items(system_daemons)
         except Exception:
             self.error_count += 1
+        """_list_macos_startup_items."""
+        """_list_macos_startup_items."""
     
     def _read_plist_items(self, folder_path: Path):
-        """Read startup items from macOS plist files."""
+        """Append each launchd plist in one folder (name only, no parsing)."""
         try:
             if folder_path.exists():
                 for plist_file in folder_path.glob("*.plist"):
                     try:
-                        # Try to read basic info from plist
                         plist_name = plist_file.stem
                         self.startup_items.append({
                             "name": plist_name,
@@ -165,7 +160,6 @@ class StartupManager:
             self.error_count += 1
     
     def _list_linux_startup_items(self):
-        """List Linux startup items."""
         try:
             # Autostart directory items
             autostart_dirs = [
@@ -177,6 +171,8 @@ class StartupManager:
                 self._read_desktop_items(autostart_dir)
         except Exception:
             self.error_count += 1
+        """_list_linux_startup_items."""
+        """_list_linux_startup_items."""
     
     def _read_desktop_items(self, folder_path: Path):
         """Read startup items from Linux .desktop files."""
@@ -197,18 +193,114 @@ class StartupManager:
         except Exception:
             self.error_count += 1
     
-    def enable_startup_item(self, item_name: str) -> bool:
-        """Enable a startup item."""
-        # This is a placeholder implementation
-        # Actual implementation would need to modify system settings
+    def _registry_backup_path(self) -> Path:
+        """JSON sidecar where disabled Run/RunOnce values are preserved."""
+        return Path.home() / "StartupBackup" / "disabled_registry_backup.json"
+
+    def _load_registry_backup(self) -> Dict[str, dict]:
         try:
-            # Find the item
+            import json
+            with open(self._registry_backup_path(), encoding="utf-8") as handle:
+                data = json.load(handle)
+            return data if isinstance(data, dict) else {}
+        except Exception:
+            return {}
+        """_load_registry_backup."""
+        """_load_registry_backup."""
+
+    def _save_registry_backup(self, backup: Dict[str, dict]) -> None:
+        try:
+            import json
+            self._registry_backup_path().parent.mkdir(exist_ok=True)
+            with open(self._registry_backup_path(), "w", encoding="utf-8") as handle:
+                json.dump(backup, handle, indent=2)
+        except Exception:
+            pass
+        """_save_registry_backup."""
+        """_save_registry_backup."""
+
+    def enable_startup_item(self, item_name: str) -> bool:
+        """
+        Re-enable a previously disabled startup item.
+
+        File-based items are restored from ``~/StartupBackup`` (where
+        :meth:`_disable_startup_folder_item` moves them). Registry items are
+        restored from the JSON sidecar written at disable time; without that
+        record the original value cannot be reconstructed, so this returns
+        False rather than guessing.
+
+        Args:
+            item_name: The ``name`` of the startup item.
+
+        Returns:
+            bool: True if the item was restored successfully.
+        """
+        try:
+            if platform.system() != "Windows":
+                return False
+            target = None
             for item in self.startup_items:
-                if item["name"] == item_name:
-                    # In a real implementation, we would enable the item
-                    item["enabled"] = True
-                    return True
-            return False
+                if item.get("name") == item_name:
+                    target = item
+                    break
+            if target is None and not item_name:
+                return False
+
+            wanted = (target or {}).get("name", item_name)
+
+            # File items: move the newest matching backup back into place.
+            backup_folder = Path.home() / "StartupBackup"
+            if backup_folder.exists():
+                candidates = sorted(
+                    backup_folder.glob(wanted + "*"),
+                    key=lambda p: p.stat().st_mtime,
+                    reverse=True,
+                )
+                startup_folders = [
+                    Path.home() / "AppData" / "Roaming" / "Microsoft" / "Windows"
+                    / "Start Menu" / "Programs" / "Startup",
+                    Path(os.environ.get("PROGRAMDATA", r"C:\ProgramData"))
+                    / "Microsoft" / "Windows" / "Start Menu" / "Programs" / "Startup",
+                ]
+                for candidate in candidates:
+                    if candidate.suffix.lower() == ".json":
+                        continue
+                    for folder in startup_folders:
+                        destination = folder / candidate.name
+                        if destination.exists():
+                            continue
+                        try:
+                            folder.mkdir(parents=True, exist_ok=True)
+                            candidate.rename(destination)
+                            if target is not None:
+                                target["enabled"] = True
+                            return True
+                        except Exception:
+                            continue
+
+            # Registry items: restore from the JSON sidecar.
+            backup = self._load_registry_backup()
+            record = backup.get(wanted)
+            if not record:
+                return False
+            try:
+                import winreg
+
+                hive = getattr(winreg, record.get("hive", "HKEY_CURRENT_USER"))
+                with winreg.OpenKey(
+                    hive, record["key_path"], 0, winreg.KEY_SET_VALUE
+                ) as key:
+                    winreg.SetValueEx(
+                        key, wanted, 0, record.get("value_type", winreg.REG_SZ),
+                        record["value_data"],
+                    )
+                backup.pop(wanted, None)
+                self._save_registry_backup(backup)
+                if target is not None:
+                    target["enabled"] = True
+                return True
+            except Exception:
+                return False
         except Exception:
             return False
     
@@ -231,24 +323,67 @@ class StartupManager:
         return False
 
     def _disable_registry_item(self, name: str) -> bool:
-        """Disable a registry-based startup item."""
+        """Disable a registry-based startup item (values backed up first)."""
         try:
             import winreg
-            
-            # For registry items, we can delete the value to disable
+
+            # Snapshot every location holding this value BEFORE deleting, so
+            # enable_startup_item() can restore the exact original data.
+            snapshot = {}
+
+            def capture(hive_name, hive, key_path):
+                """Capture.
+
+                Args:
+                    hive_name: hive name.
+                    hive: hive.
+                    key_path: key path."""
+                try:
+                    with winreg.OpenKey(
+                        hive, key_path, 0,
+                        winreg.KEY_QUERY_VALUE | winreg.KEY_SET_VALUE
+                    ) as key:
+                        value_data, value_type = winreg.QueryValueEx(key, name)
+                        snapshot[name] = {
+                            "hive": hive_name,
+                            "key_path": key_path,
+                            "value_type": int(value_type),
+                            "value_data": value_data,
+                        }
+                except Exception:
+                    pass
+
+            capture("HKEY_CURRENT_USER", winreg.HKEY_CURRENT_USER,
+                    r"Software\Microsoft\Windows\CurrentVersion\Run")
+            capture("HKEY_LOCAL_MACHINE", winreg.HKEY_LOCAL_MACHINE,
+                    r"Software\Microsoft\Windows\CurrentVersion\Run")
+            capture("HKEY_CURRENT_USER", winreg.HKEY_CURRENT_USER,
+                    r"Software\Microsoft\Windows\CurrentVersion\RunOnce")
+            capture("HKEY_LOCAL_MACHINE", winreg.HKEY_LOCAL_MACHINE,
+                    r"Software\Microsoft\Windows\CurrentVersion\RunOnce")
+
+            if not snapshot:
+                return False
+
             def delete_value(hive, key_path, value_name):
+                """Delete value.
+
+                Args:
+                    hive: hive.
+                    key_path: key path.
+                    value_name: value name."""
                 try:
                     with winreg.OpenKey(hive, key_path, 0, winreg.KEY_SET_VALUE) as key:
                         winreg.DeleteValue(key, value_name)
                 except Exception:
                     pass
-            
-            # Check both current user and local machine
+
             delete_value(winreg.HKEY_CURRENT_USER, r"Software\Microsoft\Windows\CurrentVersion\Run", name)
             delete_value(winreg.HKEY_LOCAL_MACHINE, r"Software\Microsoft\Windows\CurrentVersion\Run", name)
             delete_value(winreg.HKEY_CURRENT_USER, r"Software\Microsoft\Windows\CurrentVersion\RunOnce", name)
             delete_value(winreg.HKEY_LOCAL_MACHINE, r"Software\Microsoft\Windows\CurrentVersion\RunOnce", name)
-            
+
+            self._save_registry_backup({**self._load_registry_backup(), **snapshot})
             return True
         except Exception:
             return False
@@ -258,6 +393,10 @@ class StartupManager:
         try:
             # For file items, we can move them to a backup location
             def move_to_backup(item_path):
+                """Move to backup.
+
+                Args:
+                    item_path: item path."""
                 try:
                     backup_folder = Path.home() / "StartupBackup"
                     backup_folder.mkdir(exist_ok=True)

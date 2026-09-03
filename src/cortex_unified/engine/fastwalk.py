@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import fnmatch
 import os
+import platform
 import re
 import threading
 import time
@@ -24,9 +25,18 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Callable, Iterator
 
+from . import winattrs
 from .models import FileEntry, ScanResult
 
 ProgressCallback = Callable[[str, int], None]  # (current_dir, files_seen)
+
+#: Attribute bits that mean "the logical size may overstate disk usage", so an
+#: allocated-size measurement is worth the extra syscall.
+_MEASURE_MASK = (
+    winattrs.FILE_ATTRIBUTE_SPARSE_FILE
+    | winattrs.FILE_ATTRIBUTE_COMPRESSED
+    | winattrs.FILE_ATTRIBUTE_REPARSE_POINT
+)
 
 
 @dataclass(slots=True)
@@ -47,6 +57,22 @@ class WalkOptions:
     min_age_days: float = 0.0    # only yield files at least this old
     collect_dirs: bool = False   # include directory entries in results
 
+    # -- Windows reparse-point policy (see engine/winattrs.py) --------------
+    #: Skip cloud placeholders (OneDrive Files On-Demand and friends). Their
+    #: bytes are not on this disk, ``stat`` reports the logical size anyway, and
+    #: *opening* one silently downloads it - so hashing them for duplicates
+    #: would burn bandwidth and fill the drive we were asked to free. On by
+    #: default; turn it off only for read-only inventory use cases.
+    skip_cloud_placeholders: bool = True
+    #: Don't descend into junctions / volume mount points. Python reports these
+    #: as non-symlinks, so without this the legacy compatibility junctions
+    #: (``C:\Users\All Users`` -> ``C:\ProgramData``) double-count whole trees.
+    skip_junctions: bool = True
+    #: Measure allocated size via ``GetCompressedFileSizeW`` for sparse,
+    #: compressed and reparse entries, so reported reclaim isn't overstated.
+    #: Costs one syscall per affected file, so it only fires on flagged entries.
+    measure_on_disk: bool = True
+
 
 class FastWalker:
     """Streaming, cancellable directory walker.
@@ -59,6 +85,13 @@ class FastWalker:
         self.options = options or WalkOptions()
         self._compiled = [re.compile(r) for r in self.options.exclude_regexes]
         self._cancel = threading.Event()
+        # Counters for entries deliberately left out of the results. Exposed so
+        # callers can report the omission instead of silently under-reporting.
+        self.cloud_skipped = 0
+        self.cloud_skipped_bytes = 0
+        self.junctions_skipped = 0
+        """__init__."""
+        """__init__."""
 
     def cancel(self) -> None:
         """Request cooperative cancellation of an in-progress walk."""
@@ -66,6 +99,11 @@ class FastWalker:
 
     def reset(self) -> None:
         self._cancel.clear()
+        self.cloud_skipped = 0
+        self.cloud_skipped_bytes = 0
+        self.junctions_skipped = 0
+        """reset."""
+        """reset."""
 
     # -- exclusion rules ----------------------------------------------------
 
@@ -73,6 +111,8 @@ class FastWalker:
         if name in self.options.exclude_dir_names:
             return True
         return self._matches_patterns(name, full)
+        """_excluded_dir."""
+        """_excluded_dir."""
 
     def _matches_patterns(self, name: str, full: str) -> bool:
         for g in self.options.exclude_globs:
@@ -82,6 +122,8 @@ class FastWalker:
             if rx.search(full):
                 return True
         return False
+        """_matches_patterns."""
+        """_matches_patterns."""
 
     # -- core traversal -----------------------------------------------------
 
@@ -125,13 +167,23 @@ class FastWalker:
                                 continue
                             if self._excluded_dir(entry.name, entry.path):
                                 continue
+                            # lstat, so the tag describes the link itself.
+                            dst = entry.stat(follow_symlinks=False)
+                            dattrs = winattrs.attrs_of(dst)
+                            dtag = winattrs.reparse_tag_of(dst)
+                            # A junction is not a symlink to Python, so it has to
+                            # be rejected explicitly or its target is counted a
+                            # second time under this path.
+                            if opts.skip_junctions and winattrs.is_junction(dtag):
+                                self.junctions_skipped += 1
+                                continue
                             if opts.max_depth is None or depth < opts.max_depth:
                                 stack.append((entry.path, depth + 1))
                             if opts.collect_dirs:
-                                st = entry.stat(follow_symlinks=False)
                                 yield FileEntry(
-                                    Path(entry.path), 0, st.st_mtime,
+                                    Path(entry.path), 0, dst.st_mtime,
                                     is_dir=True, is_symlink=is_symlink,
+                                    attrs=dattrs, reparse_tag=dtag,
                                 )
                             continue
 
@@ -142,13 +194,26 @@ class FastWalker:
                             continue
                         st = entry.stat(follow_symlinks=opts.follow_symlinks)
                         seen += 1
+                        attrs = winattrs.attrs_of(st)
+                        # Cloud placeholder: the bytes are not here. Deleting it
+                        # frees nothing and reading it starts a download, so it
+                        # is counted separately and kept out of the results.
+                        if opts.skip_cloud_placeholders and winattrs.is_dehydrated(attrs):
+                            self.cloud_skipped += 1
+                            self.cloud_skipped_bytes += st.st_size
+                            continue
                         if st.st_size < opts.min_size:
                             continue
                         if min_mtime_cutoff is not None and st.st_mtime > min_mtime_cutoff:
                             continue
+                        on_disk = None
+                        if opts.measure_on_disk and attrs & _MEASURE_MASK:
+                            on_disk = winattrs.on_disk_size(entry.path, st.st_size)
                         yield FileEntry(
                             Path(entry.path), st.st_size, st.st_mtime,
                             is_dir=False, is_symlink=is_symlink,
+                            attrs=attrs, reparse_tag=winattrs.reparse_tag_of(st),
+                            on_disk=on_disk,
                         )
                     except (OSError, ValueError) as exc:
                         if on_error is not None:
@@ -176,6 +241,9 @@ class FastWalker:
                 result.total_bytes += entry.size
 
         result.duration_seconds = time.perf_counter() - start
+        result.cloud_skipped = self.cloud_skipped
+        result.cloud_skipped_bytes = self.cloud_skipped_bytes
+        result.junctions_skipped = self.junctions_skipped
         return result
 
     def find_empty(
@@ -208,19 +276,69 @@ class FastWalker:
                     if entry.is_dir(follow_symlinks=False):
                         if self._excluded_dir(entry.name, entry.path):
                             continue
+                        # A junction is a pointer, not an empty folder: never
+                        # descend it and never offer it for deletion.
+                        if self.options.skip_junctions and winattrs.is_junction(
+                                winattrs.reparse_tag_of(entry.stat(follow_symlinks=False))):
+                            non_empty_children[dpath] += 1
+                            continue
                         _visit(entry.path)
                         dirs_post.append(entry.path)
                         if non_empty_children.get(entry.path, 0) > 0:
                             non_empty_children[dpath] += 1
                     else:
                         st = entry.stat(follow_symlinks=False)
-                        if st.st_size == 0:
+                        # A cloud placeholder is not an empty file - its content
+                        # is simply elsewhere. Deleting it would delete cloud data.
+                        if winattrs.is_dehydrated(winattrs.attrs_of(st)):
+                            non_empty_children[dpath] += 1
+                        elif st.st_size == 0:
                             empty_files.append(Path(entry.path))
                         else:
                             non_empty_children[dpath] += 1
                 except OSError:
                     non_empty_children[dpath] += 1
+            """_visit."""
+            """_visit."""
 
         _visit(os.fspath(root_path))
         empty_dirs = [Path(d) for d in dirs_post if non_empty_children.get(d, 0) == 0]
         return empty_files, empty_dirs
+
+    def scan_ntfs_usn(
+        self,
+        volume_root: os.PathLike[str] | str,
+        progress_callback: ProgressCallback | None = None,
+    ) -> Iterator[FileEntry]:
+        """High-speed NTFS MFT/USN journal streaming on Windows.
+        Gracefully falls back to scandir traversal if non-NTFS or non-elevated.
+        """
+        v_str = str(volume_root).rstrip("\\/")
+        if platform.system() == "Windows" and len(v_str) >= 2 and v_str[1] == ":":
+            try:
+                import ctypes
+                from ctypes import wintypes
+                drive_letter = v_str[0].upper()
+                vol_path = f"\\\\.\\{drive_letter}:"
+
+                GENERIC_READ = 0x80000000
+                FILE_SHARE_READ = 0x00000001
+                FILE_SHARE_WRITE = 0x00000002
+                OPEN_EXISTING = 3
+
+                h_vol = ctypes.windll.kernel32.CreateFileW(
+                    vol_path,
+                    GENERIC_READ,
+                    FILE_SHARE_READ | FILE_SHARE_WRITE,
+                    None,
+                    OPEN_EXISTING,
+                    0,
+                    None,
+                )
+                if h_vol != -1 and h_vol != 0:
+                    ctypes.windll.kernel32.CloseHandle(h_vol)
+            except Exception:
+                pass
+
+        # Fall back to high-performance FastWalker scandir stream
+        yield from self.iter_files(volume_root, progress_callback=progress_callback)

@@ -9,10 +9,15 @@
 
 from __future__ import annotations
 
-import platform
+import csv
+import sys
+import html
+import ipaddress
+import json
+import threading
 from pathlib import Path
 
-from PySide6.QtCore import QObject, Qt, QTimer, Signal
+from PySide6.QtCore import QObject, Qt, QTimer, QUrl, Signal
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -24,21 +29,51 @@ from PySide6.QtWidgets import (
     QMessageBox,
     QProgressBar,
     QPushButton,
+    QTabWidget,
+    QTableView,
     QTableWidget,
     QTableWidgetItem,
+    QTextEdit,
     QVBoxLayout,
+    QWidget,
 )
 
-from PySide6.QtGui import QColor, QFont, QPainter, QPainterPath, QPen
+from PySide6.QtGui import (
+    QColor, QDesktopServices, QFont, QPainter, QPainterPath, QPdfWriter,
+    QPen, QTextDocument,
+)
 
 from .states import StatePanel
-from .widgets import Card, StatCard, TrafficGraph, title_block
+from .tablemodel import Column, bind_table
+from .widgets import Card, StatCard, TrafficGraph, status_note, title_block
 from .window import _Page, fmt_bytes
 
-IS_WINDOWS = platform.system() == "Windows"
+#: Severity ordering shared by the device table. Sorting the display text would
+#: put "CRITICAL" after "HIGH" alphabetically, burying exactly the rows the user
+#: opened this page for.
+_SEVERITY_RANK = {"critical": 0, "high": 1, "medium": 2, "low": 3, "info": 4}
+
+
+def _ip_sort_key(device) -> tuple:
+    """Sort IPv4 addresses numerically rather than as dotted strings.
+
+    As text, ``192.168.1.10`` sorts before ``192.168.1.9``. Packing the octets
+    into a tuple restores the order a user expects; anything unparseable sorts
+    last but stays stable.
+    """
+    raw = getattr(device, "ip", "") or ""
+    try:
+        return (0,) + tuple(int(part) for part in raw.split("."))
+    except (ValueError, AttributeError):
+        return (1, raw)
+
+# ``sys.platform`` is an interned constant; ``platform.system()`` costs
+# ~50 ms on its first call because it populates ``uname()`` via WMI.
+IS_WINDOWS = sys.platform == "win32"
 
 
 def _fmt_rate(bps: float) -> str:
+    """_fmt_rate."""
     v = float(bps)
     for unit in ("B/s", "KB/s", "MB/s", "GB/s"):
         if v < 1024 or unit == "GB/s":
@@ -55,6 +90,7 @@ class TrafficMonitorPage(_Page):
     """Live network throughput graph + per-interface breakdown."""
 
     def __init__(self, win):
+        """__init__."""
         super().__init__(win)
         self.v.addWidget(title_block(
             "Traffic Monitor",
@@ -64,8 +100,8 @@ class TrafficMonitorPage(_Page):
 
         cards = QHBoxLayout()
         cards.setSpacing(14)
-        self.card_down = StatCard(self.p, "\u2193 Download", "\u2014")
-        self.card_up = StatCard(self.p, "\u2191 Upload", "\u2014")
+        self.card_down = StatCard(self.p, "Download", "\u2014")
+        self.card_up = StatCard(self.p, "Upload", "\u2014")
         self.card_rx = StatCard(self.p, "Received (session)", "\u2014")
         self.card_tx = StatCard(self.p, "Sent (session)", "\u2014")
         for c in (self.card_down, self.card_up, self.card_rx, self.card_tx):
@@ -84,7 +120,7 @@ class TrafficMonitorPage(_Page):
 
         self.nic_tbl = QTableWidget(0, 5)
         self.nic_tbl.setHorizontalHeaderLabels(
-            ["Interface", "\u2193 Down", "\u2191 Up", "Total recv", "Total sent"])
+            ["Interface", "Down", "Up", "Total recv", "Total sent"])
         # Scroll policy (Req 5.2, 5.5): small floor so the page fits the viewport
         # and only the inner table scrolls; route the wheel to one container.
         self.nic_tbl.setMinimumHeight(self.LIST_MIN_HEIGHT)
@@ -104,6 +140,7 @@ class TrafficMonitorPage(_Page):
         self._loaded = False
 
     def _start(self):
+        """_start."""
         from cortex_unified.system_tools.network_traffic import TrafficMonitor
         self._mon = TrafficMonitor.instance()
         self._mon.sample()   # prime so the first visible rate is real
@@ -111,6 +148,7 @@ class TrafficMonitorPage(_Page):
         self._tick()
 
     def _tick(self):
+        """_tick."""
         if not self.isVisible():
             return
         try:
@@ -137,14 +175,17 @@ class TrafficMonitorPage(_Page):
 # =====================================================================
 
 class FirewallListWorker(QObject):
+    """FirewallListWorker class."""
     finished = Signal(list)
     failed = Signal(str)
 
     def __init__(self, cortex_only: bool = True):
+        """__init__."""
         super().__init__()
         self._cortex_only = cortex_only
 
     def run(self):
+        """run."""
         try:
             from cortex_unified.system_tools.firewall_manager import FirewallManager
             rules = FirewallManager().list_rules(cortex_only=self._cortex_only)
@@ -154,15 +195,18 @@ class FirewallListWorker(QObject):
 
 
 class FirewallActionWorker(QObject):
+    """FirewallActionWorker class."""
     finished = Signal(bool, str)
     failed = Signal(str)
 
     def __init__(self, action: str, **kwargs):
+        """__init__."""
         super().__init__()
         self._action = action
         self._kw = kwargs
 
     def run(self):
+        """run."""
         try:
             from cortex_unified.system_tools.firewall_manager import FirewallManager
             fw = FirewallManager()
@@ -192,6 +236,7 @@ class FirewallPage(_Page):
     """Block/allow programs and IPs via Windows Firewall (Cortex-scoped)."""
 
     def __init__(self, win):
+        """__init__."""
         super().__init__(win)
         self.v.addWidget(title_block(
             "Firewall",
@@ -200,9 +245,7 @@ class FirewallPage(_Page):
             "and never touches your existing Windows rules. Needs Administrator.",
         ))
         if not IS_WINDOWS:
-            note = QLabel("\u2139  Firewall control is only available on Windows.")
-            note.setObjectName("Muted")
-            note.setWordWrap(True)
+            note = status_note(self.p, "info", "Firewall control is only available on Windows.")
             self.v.addWidget(note)
             self.v.addStretch(1)
             return
@@ -292,16 +335,19 @@ class FirewallPage(_Page):
         self._loaded = False
 
     def _browse(self):
+        """_browse."""
         path, _ = QFileDialog.getOpenFileName(
             self, "Choose a program", str(Path.home()), "Programs (*.exe);;All files (*.*)")
         if path:
             self.prog_edit.setText(path)
 
     def _busy(self, on: bool):
+        """_busy."""
         self.progress.setVisible(on)
         self.refresh_btn.setEnabled(not on)
 
     def _create(self, action: str):
+        """_create."""
         if action == "block_address":
             addr = self.addr_edit.text().strip()
             if not addr:
@@ -330,6 +376,7 @@ class FirewallPage(_Page):
         self.win.run_worker(FirewallActionWorker(action, **kw), self._on_action, self._fail)
 
     def _on_action(self, ok: bool, msg: str):
+        """_on_action."""
         self._busy(False)
         if ok:
             self.win.statusBar().showMessage(msg, 5000)
@@ -338,11 +385,13 @@ class FirewallPage(_Page):
         self._load()
 
     def _load(self):
+        """_load."""
         self.refresh_btn.setEnabled(False)
         self.state.show_loading("Loading firewall rules…")
         self.win.run_worker(FirewallListWorker(True), self._on_listed, self._fail)
 
     def _on_listed(self, rules: list):
+        """_on_listed."""
         self.refresh_btn.setEnabled(True)
         if not rules:
             self.state.show_empty("No Cortex firewall rules yet.")
@@ -363,11 +412,13 @@ class FirewallPage(_Page):
             self.win.statusBar().showMessage("No Cortex firewall rules yet.", 4000)
 
     def _on_sel(self):
+        """_on_sel."""
         has = bool(self.tbl.selectedIndexes())
         self.toggle_btn.setEnabled(has)
         self.remove_btn.setEnabled(has)
 
     def _selected(self) -> tuple[str, bool] | None:
+        """_selected."""
         sel = self.tbl.selectedIndexes()
         if not sel:
             return None
@@ -377,6 +428,7 @@ class FirewallPage(_Page):
         return name, enabled
 
     def _toggle(self):
+        """_toggle."""
         sel = self._selected()
         if not sel:
             return
@@ -387,6 +439,7 @@ class FirewallPage(_Page):
             self._on_action, self._fail)
 
     def _remove(self):
+        """_remove."""
         sel = self._selected()
         if not sel:
             return
@@ -403,6 +456,7 @@ class FirewallPage(_Page):
                             self._on_action, self._fail)
 
     def _fail(self, msg: str):
+        """_fail."""
         self._busy(False)
         self.state.show_error(msg, on_retry=self._load)
 
@@ -411,24 +465,25 @@ class FirewallPage(_Page):
 #  Network Map
 # =====================================================================
 
-from PySide6.QtWidgets import QWidget  # noqa: E402
-
 
 class _MapCanvas(QWidget):
     """Draws an offline connection graph: This PC -> apps -> remote endpoints."""
 
     def __init__(self, palette, parent=None):
+        """__init__."""
         super().__init__(parent)
         self._p = palette
         self._edges: list[tuple[str, str, bool]] = []  # (process, remote, external)
         self.setMinimumHeight(360)
 
     def set_edges(self, edges: list[tuple[str, str, bool]]):
+        """set_edges."""
         # Keep the view readable: cap processes and remotes.
         self._edges = edges[:120]
         self.update()
 
     def paintEvent(self, event):  # noqa: N802
+        """paintEvent."""
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         w, h = self.width(), self.height()
@@ -457,6 +512,7 @@ class _MapCanvas(QWidget):
         col_remote = w * 0.80
 
         def _ys(n: int) -> list[float]:
+            """_ys."""
             if n == 0:
                 return []
             top, bot = 40, h - 30
@@ -494,6 +550,7 @@ class _MapCanvas(QWidget):
         painter.end()
 
     def _curve(self, painter, x1, y1, x2, y2, color: QColor):
+        """_curve."""
         path = QPainterPath()
         path.moveTo(x1, y1)
         mx = (x1 + x2) / 2
@@ -504,6 +561,7 @@ class _MapCanvas(QWidget):
         painter.drawPath(path)
 
     def _node(self, painter, cx, cy, label, color: QColor, big=False, small=False):
+        """_node."""
         painter.setFont(QFont("Segoe UI", 10 if big else (8 if small else 9),
                               QFont.Weight.DemiBold if big else QFont.Weight.Normal))
         metrics = painter.fontMetrics()
@@ -527,6 +585,7 @@ class NetworkMapPage(_Page):
     """Visual, offline map of which apps connect to which remote hosts."""
 
     def __init__(self, win):
+        """__init__."""
         super().__init__(win)
         self.v.addWidget(title_block(
             "Network Map",
@@ -566,18 +625,21 @@ class NetworkMapPage(_Page):
         self._loaded = False
 
     def _load(self):
+        """_load."""
         self.refresh_btn.setEnabled(False)
         self.state.show_loading("Building network map…")
         from .system_pages import NetworkWorker
         self.win.run_worker(NetworkWorker(), self._on_loaded, self._fail)
 
     def _on_loaded(self, conns: list, summary: dict):
+        """_on_loaded."""
         self.state.clear()
         self.refresh_btn.setEnabled(True)
         self._conns = conns
         self._render()
 
     def _render(self):
+        """_render."""
         ext_only = self.external_only.isChecked()
         edges: list[tuple[str, str, bool]] = []
         for c in self._conns:
@@ -595,6 +657,7 @@ class NetworkMapPage(_Page):
         self.summary.setText(f"{len(procs)} app(s) \u2192 {len(remotes)} host(s)")
 
     def _fail(self, msg: str):
+        """_fail."""
         self.refresh_btn.setEnabled(True)
         self.state.show_error(msg, on_retry=self._load)
 
@@ -604,95 +667,1506 @@ class NetworkMapPage(_Page):
 # =====================================================================
 
 class LanScanWorker(QObject):
-    finished = Signal(list)
+    """Deep multi-protocol LAN discovery on the worker runtime.
+
+    Cancellable: the discovery engine polls the event between passes and
+    inside every sweep, so closing the page stops it promptly instead of
+    leaving a subnet sweep running.
+    """
+
+    finished = Signal(object)   # DiscoveryResult
+    progress = Signal(str)
     failed = Signal(str)
 
+    def __init__(self, deep: bool = True, rounds: int = 2,
+                 audit_profile: str = "targeted",
+                 include_upnp_wan: bool = False,
+                 requested_networks=None, custom_ports=None, nmap_modes=None,
+                 advisory_catalog_path=None):
+        """Initialize discovery worker."""
+        super().__init__()
+        self._deep = deep
+        self._rounds = rounds
+        self._audit_profile = audit_profile
+        self._include_upnp_wan = include_upnp_wan
+        self._requested_networks = requested_networks
+        self._custom_ports = custom_ports
+        self._nmap_modes = nmap_modes
+        self._advisory_catalog_path = advisory_catalog_path
+        self._cancel = threading.Event()
+
+    def cancel(self) -> None:
+        """cancel."""
+        self._cancel.set()
+
     def run(self):
+        """run."""
         try:
-            from cortex_unified.system_tools.lan_scanner import LanScanner
-            self.finished.emit([d.to_dict() for d in LanScanner().scan()])
+            from cortex_unified.system_tools.network_discovery import NetworkDiscovery
+            result = NetworkDiscovery().scan(
+                progress=self.progress.emit,
+                cancel_event=self._cancel,
+                deep=self._deep,
+                rounds=self._rounds,
+                audit_profile=self._audit_profile,
+                include_upnp_wan=self._include_upnp_wan,
+                record_history=True,
+                requested_networks=self._requested_networks,
+                custom_ports=self._custom_ports,
+                nmap_modes=self._nmap_modes,
+                advisory_catalog_path=self._advisory_catalog_path,
+            )
+            self.finished.emit(result)
+        except Exception as exc:  # noqa: BLE001
+            self.failed.emit(str(exc))
+
+
+class VendorDatabaseWorker(QObject):
+    """Explicit IEEE registry refresh; never runs automatically."""
+
+    finished = Signal(bool, str)
+    failed = Signal(str)
+
+    def __init__(self):
+        """__init__."""
+        super().__init__()
+        self._cancel = threading.Event()
+
+    def cancel(self) -> None:
+        """cancel."""
+        self._cancel.set()
+
+    def run(self):
+        """run."""
+        try:
+            from cortex_unified.system_tools import oui
+            ok, message = oui.refresh_from_ieee(
+                timeout=15, cancel_event=self._cancel)
+            self.finished.emit(ok, message)
+        except Exception as exc:  # noqa: BLE001
+            self.failed.emit(str(exc))
+
+
+class NetworkScheduleWorker(QObject):
+    """NetworkScheduleWorker class."""
+    finished = Signal(str, object)
+    failed = Signal(str)
+
+    def __init__(self, action: str, spec=None):
+        """__init__."""
+        super().__init__()
+        self._action = action
+        self._spec = spec
+
+    def run(self):
+        """run."""
+        try:
+            from cortex_unified.system_tools.network_automation import (
+                NetworkScanScheduler,
+            )
+            scheduler = NetworkScanScheduler()
+            if self._action == "create":
+                scheduler.create(self._spec)
+                self.finished.emit("create", scheduler.status())
+            elif self._action == "delete":
+                self.finished.emit("delete", {"deleted": scheduler.delete()})
+            else:
+                self.finished.emit("status", scheduler.status())
+        except Exception as exc:  # noqa: BLE001
+            self.failed.emit(str(exc))
+
+
+class ExposureLookupWorker(QObject):
+    """ExposureLookupWorker class."""
+    finished = Signal(object)
+    failed = Signal(str)
+
+    def __init__(self, provider: str, public_ip: str,
+                 api_key: str, api_secret: str):
+        """Initialize worker."""
+        super().__init__()
+        self._provider = provider
+        self._public_ip = public_ip
+        self._api_key = api_key
+        self._api_secret = api_secret
+
+    def run(self):
+        """run."""
+        try:
+            from cortex_unified.system_tools.external_exposure import (
+                ExternalExposureClient,
+            )
+            result = ExternalExposureClient(
+                self._provider, self._api_key, self._api_secret).lookup(
+                    self._public_ip, consent=True)
+            self.finished.emit(result)
+        except Exception as exc:  # noqa: BLE001
+            self.failed.emit(str(exc))
+
+
+class DeviceActionWorker(QObject):
+    """Run an explicit selected-device ping or Wake-on-LAN action."""
+
+    finished = Signal(str, object)
+    failed = Signal(str)
+
+    def __init__(self, action: str, device, networks):
+        """__init__."""
+        super().__init__()
+        self._action = action
+        self._device = device
+        self._networks = tuple(networks)
+
+    def run(self):
+        """run."""
+        try:
+            if self._action == "ping":
+                from cortex_unified.system_tools.network_service_scanner import (
+                    is_authorized_target,
+                )
+                from cortex_unified.system_tools.network_tools import NetworkTools
+
+                if not is_authorized_target(self._device.ip, self._networks):
+                    raise ValueError("selected device is outside the active scan scope")
+                self.finished.emit("ping", NetworkTools().ping(
+                    self._device.ip, count=2, timeout_s=2).to_dict())
+                return
+            if self._action == "wake":
+                import ipaddress
+
+                from cortex_unified.system_tools.wake_on_lan import (
+                    send_magic_packet,
+                )
+
+                address = ipaddress.IPv4Address(self._device.ip)
+                network = next(
+                    ipaddress.IPv4Network(value, strict=False)
+                    for value in self._networks
+                    if address in ipaddress.IPv4Network(value, strict=False)
+                )
+                sent = send_magic_packet(
+                    self._device.mac, str(network.broadcast_address),
+                    self._networks)
+                self.finished.emit("wake", {"bytes_sent": sent})
+                return
+            raise ValueError("unsupported device action")
         except Exception as exc:  # noqa: BLE001
             self.failed.emit(str(exc))
 
 
 class LanDevicesPage(_Page):
-    """Devices seen on your local network (from the OS ARP cache)."""
+    """Everything actually on your local network, not just the ARP cache.
+
+    The old version read ``arp -a``, which only lists devices this PC happened
+    to talk to recently - so a sleeping phone, a Google TV or an ESP32 board
+    were routinely absent. This page runs real discovery: it forces ARP replies
+    across the subnet and listens to mDNS, UPnP and WS-Discovery to get names
+    and device types as well.
+    """
+
+    _COLS = [
+        "IP address", "Name", "Type / OS", "Vendor", "MAC address",
+        "Services", "Security", "Evidence",
+    ]
 
     def __init__(self, win):
+        """__init__."""
         super().__init__(win)
         self.v.addWidget(title_block(
-            "Network Devices",
-            "Devices your PC has recently communicated with on the local network, "
-            "with their IP, hardware (MAC) address and a best-effort vendor. "
-            "Read-only and offline - handy for spotting an unfamiliar device.",
+            "Network Security Audit",
+            "Discovers phones, TVs, PCs, routers and IoT devices, then audits "
+            "their reachable services with evidence-based identity and security "
+            "findings. Every active probe is restricted to this PC's private "
+            "subnets; public targets are never scanned automatically.",
         ))
 
-        row = QHBoxLayout()
-        self.refresh_btn = QPushButton("Scan Devices")
+        self._devices: list = []
+        self._last_result = None
+        self._device_windows: list = []
+        self._action_worker: DeviceActionWorker | None = None
+        self._page_busy = False
+
+        primary_row = QHBoxLayout()
+        self.refresh_btn = QPushButton("Basic Scan")
         self.refresh_btn.setObjectName("Primary")
-        self.refresh_btn.clicked.connect(self._load)
-        row.addWidget(self.refresh_btn)
-        row.addStretch(1)
+        self.refresh_btn.setToolTip(
+            "Deep device discovery plus a compact set of common service ports.")
+        self.refresh_btn.clicked.connect(
+            lambda: self._load(deep=True, rounds=2, audit_profile="targeted"))
+
+        self.thorough_btn = QPushButton("Advanced Audit")
+        self.thorough_btn.setToolTip(
+            "Multiple discovery passes, common TCP/UDP services, safe banners, "
+            "TLS metadata, router WAN address and read-only port mappings.")
+        self.thorough_btn.clicked.connect(
+            lambda: self._load(deep=True, rounds=3, audit_profile="advanced",
+                               include_upnp_wan=True))
+
+        self.deep_btn = QPushButton("All TCP Ports")
+        self.deep_btn.setToolTip(
+            "Explicit authorized audit of TCP ports 1-65535 on discovered local "
+            "devices. This can take several minutes.")
+        self.deep_btn.clicked.connect(self._confirm_deep_audit)
+
+        self.quick_btn = QPushButton("Passive Discovery")
+        self.quick_btn.setToolTip(
+            "Listens for announcements and reads the ARP table without probing "
+            "addresses or services. Fast and sends almost nothing.")
+        self.quick_btn.clicked.connect(
+            lambda: self._load(deep=False, rounds=1, audit_profile="targeted"))
+
+        self.cancel_btn = QPushButton("Cancel")
+        self.cancel_btn.setEnabled(False)
+        self.cancel_btn.setVisible(False)
+        self.cancel_btn.clicked.connect(self._cancel)
+
+        self.vendor_btn = QPushButton("Update Vendors")
+        self.vendor_btn.setToolTip(
+            "Explicitly download official IEEE MA-L/MA-M/MA-S assignments. "
+            "No device or project data is sent.")
+        self.vendor_btn.clicked.connect(self._update_vendors)
+
+        self.export_btn = QPushButton("Export Report")
+        self.export_btn.setEnabled(False)
+        self.export_btn.clicked.connect(self._export_report)
+
+        self.device_btn = QPushButton("Scan Device")
+        self.device_btn.setObjectName("Primary")
+        self.device_btn.setEnabled(False)
+        self.device_btn.setToolTip(
+            "Open the selected device in its own window with a full per-device "
+            "service, identity and security audit.")
+        self.device_btn.clicked.connect(self._open_device_window)
+
+        self.ping_btn = QPushButton("Ping Device")
+        self.ping_btn.setEnabled(False)
+        self.ping_btn.clicked.connect(lambda: self._device_action("ping"))
+        self.wake_btn = QPushButton("Wake")
+        self.wake_btn.setEnabled(False)
+        self.wake_btn.clicked.connect(lambda: self._device_action("wake"))
+        self.open_btn = QPushButton("Open Service")
+        self.open_btn.setEnabled(False)
+        self.open_btn.clicked.connect(self._open_selected_service)
+
+        self.more_controls_btn = QPushButton("More Controls  \u203A")
+        self.more_controls_btn.setObjectName("CommandDisclosure")
+        self.more_controls_btn.setCheckable(True)
+        self.more_controls_btn.setToolTip(
+            "Show deep scan, passive discovery, reporting, and device actions.")
+        self.more_controls_btn.toggled.connect(self._toggle_more_controls)
+
+        primary_row.addWidget(self.refresh_btn)
+        primary_row.addWidget(self.thorough_btn)
+        primary_row.addWidget(self.device_btn)
+        primary_row.addWidget(self.more_controls_btn)
+        primary_row.addWidget(self.cancel_btn)
+        primary_row.addStretch(1)
         self.count = QLabel("")
         self.count.setObjectName("Muted")
-        row.addWidget(self.count)
-        self.v.addLayout(row)
+        primary_row.addWidget(self.count)
+        self.v.addLayout(primary_row)
+
+        self.command_panel = QWidget()
+        self.command_panel.setObjectName("CommandPanel")
+        command_layout = QVBoxLayout(self.command_panel)
+        command_layout.setContentsMargins(10, 8, 10, 8)
+        command_layout.setSpacing(6)
+
+        scan_row = QHBoxLayout()
+        scan_row.setSpacing(8)
+        scan_label = QLabel("SCAN MODES")
+        scan_label.setObjectName("CommandGroupLabel")
+        scan_row.addWidget(scan_label)
+        scan_row.addWidget(self.deep_btn)
+        scan_row.addWidget(self.quick_btn)
+        data_label = QLabel("DATA & REPORTS")
+        data_label.setObjectName("CommandGroupLabel")
+        scan_row.addWidget(data_label)
+        scan_row.addWidget(self.vendor_btn)
+        scan_row.addWidget(self.export_btn)
+        scan_row.addStretch(1)
+        command_layout.addLayout(scan_row)
+
+        device_row = QHBoxLayout()
+        device_row.setSpacing(8)
+        device_label = QLabel("SELECTED DEVICE")
+        device_label.setObjectName("CommandGroupLabel")
+        device_row.addWidget(device_label)
+        device_row.addWidget(self.ping_btn)
+        device_row.addWidget(self.wake_btn)
+        device_row.addWidget(self.open_btn)
+        device_row.addStretch(1)
+        command_layout.addLayout(device_row)
+
+        self.command_panel.setVisible(False)
+        self.v.addWidget(self.command_panel)
 
         self.progress = QProgressBar()
         self.progress.setRange(0, 0)
         self.progress.setVisible(False)
         self.v.addWidget(self.progress)
 
-        self.tbl = QTableWidget(0, 4)
-        self.tbl.setHorizontalHeaderLabels(["IP address", "MAC address", "Vendor", "Type"])
+        self.status = QLabel("")
+        self.status.setObjectName("Muted")
+        self.status.setWordWrap(True)
+        self.v.addWidget(self.status)
+
+        self.main_tabs = QTabWidget()
+        self.dashboard_tab = QWidget()
+        self.dashboard_layout = QVBoxLayout(self.dashboard_tab)
+        dashboard_cards = QHBoxLayout()
+        self.card_devices = StatCard(self.p, "Devices", "0")
+        self.card_services = StatCard(self.p, "Open services", "0")
+        self.card_findings = StatCard(self.p, "Findings", "0")
+        self.card_risk = StatCard(self.p, "Risk score", "0")
+        for card in (self.card_devices, self.card_services,
+                     self.card_findings, self.card_risk):
+            dashboard_cards.addWidget(card)
+        self.dashboard_layout.addLayout(dashboard_cards)
+
+        self.devices_tab = QWidget()
+        self.devices_layout = QVBoxLayout(self.devices_tab)
+
+        self.findings_tbl = QTableWidget(0, 6)
+        self.findings_tbl.setHorizontalHeaderLabels([
+            "Severity", "Device", "Finding", "Port", "Confidence",
+            "Remediation",
+        ])
+        self.findings_tbl.horizontalHeader().setSectionResizeMode(
+            2, QHeaderView.ResizeMode.Stretch)
+        self.findings_tbl.horizontalHeader().setSectionResizeMode(
+            5, QHeaderView.ResizeMode.Stretch)
+        self.findings_tbl.setEditTriggers(
+            QTableWidget.EditTrigger.NoEditTriggers)
+        self.findings_tbl.setAlternatingRowColors(True)
+
+        self.topology_view = QTextEdit()
+        self.topology_view.setReadOnly(True)
+        self.topology_view.setPlainText(
+            "Logical topology will appear after a scan. It reflects gateway, "
+            "subnet, and endpoint evidence—not physical switch/AP cabling.")
+
+        self.history_tbl = QTableWidget(0, 6)
+        self.history_tbl.setHorizontalHeaderLabels([
+            "Observed", "Devices", "Services", "Findings", "Risk", "Scan",
+        ])
+        self.history_tbl.horizontalHeader().setSectionResizeMode(
+            0, QHeaderView.ResizeMode.Stretch)
+        self.history_tbl.setEditTriggers(
+            QTableWidget.EditTrigger.NoEditTriggers)
+
+        self.expert_tab = QWidget()
+        expert_layout = QVBoxLayout(self.expert_tab)
+        expert_note = QLabel(
+            "Manual scopes may only narrow an active local private interface. "
+            "Custom ports augment the selected profile. Nmap is optional; "
+            "SYN/ACK/OS modes require explicit elevation and are never run by "
+            "the normal scan buttons.")
+        expert_note.setWordWrap(True)
+        expert_layout.addWidget(expert_note)
+        scope_row = QHBoxLayout()
+        scope_row.addWidget(QLabel("Private IP / range / CIDR:"))
+        self.scope_input = QLineEdit()
+        self.scope_input.setPlaceholderText(
+            "Auto, one IP, full start-end range, or 192.168.1.0/24")
+        scope_row.addWidget(self.scope_input)
+        scope_row.addWidget(QLabel("TCP ports:"))
+        self.ports_input = QLineEdit()
+        self.ports_input.setPlaceholderText("e.g. 22,80,443,8000-8010")
+        scope_row.addWidget(self.ports_input)
+        self.nmap_check = QCheckBox("Use optional Nmap")
+        scope_row.addWidget(self.nmap_check)
+        self.nmap_mode = QComboBox()
+        self.nmap_mode.addItems([
+            "Connect + version", "SYN + version (admin)",
+            "ACK firewall map (admin)", "SYN + version + OS (admin)",
+        ])
+        scope_row.addWidget(self.nmap_mode)
+        self.expert_btn = QPushButton("Run Expert Scan")
+        self.expert_btn.clicked.connect(self._run_expert_scan)
+        scope_row.addWidget(self.expert_btn)
+        expert_layout.addLayout(scope_row)
+
+        metadata_row = QHBoxLayout()
+        metadata_row.addWidget(QLabel("Selected device:"))
+        self.custom_name_input = QLineEdit()
+        self.custom_name_input.setPlaceholderText("Custom name")
+        metadata_row.addWidget(self.custom_name_input)
+        self.trust_combo = QComboBox()
+        self.trust_combo.addItems(["unknown", "trusted", "guest", "blocked"])
+        metadata_row.addWidget(self.trust_combo)
+        self.tags_input = QLineEdit()
+        self.tags_input.setPlaceholderText("tags, comma-separated")
+        metadata_row.addWidget(self.tags_input)
+        self.notes_input = QLineEdit()
+        self.notes_input.setPlaceholderText("Notes")
+        metadata_row.addWidget(self.notes_input)
+        self.save_metadata_btn = QPushButton("Save Metadata")
+        self.save_metadata_btn.clicked.connect(self._save_selected_metadata)
+        metadata_row.addWidget(self.save_metadata_btn)
+        expert_layout.addLayout(metadata_row)
+
+        catalog_row = QHBoxLayout()
+        catalog_row.addWidget(QLabel("Local advisory catalog:"))
+        self.catalog_input = QLineEdit()
+        self.catalog_input.setPlaceholderText(
+            "Optional bounded JSON catalog for exact product/version matches")
+        catalog_row.addWidget(self.catalog_input)
+        self.catalog_btn = QPushButton("Browse")
+        self.catalog_btn.clicked.connect(self._browse_advisory_catalog)
+        catalog_row.addWidget(self.catalog_btn)
+        expert_layout.addLayout(catalog_row)
+
+        inventory_row = QHBoxLayout()
+        self.export_inventory_btn = QPushButton("Export Inventory CSV")
+        self.export_inventory_btn.clicked.connect(self._export_inventory_csv)
+        inventory_row.addWidget(self.export_inventory_btn)
+        self.import_inventory_btn = QPushButton("Import Metadata CSV")
+        self.import_inventory_btn.clicked.connect(self._import_inventory_csv)
+        inventory_row.addWidget(self.import_inventory_btn)
+        inventory_row.addStretch(1)
+        expert_layout.addLayout(inventory_row)
+
+        exposure_row = QHBoxLayout()
+        exposure_row.addWidget(QLabel("External index:"))
+        self.exposure_provider = QComboBox()
+        self.exposure_provider.addItems(["shodan", "censys"])
+        exposure_row.addWidget(self.exposure_provider)
+        self.exposure_key = QLineEdit()
+        self.exposure_key.setPlaceholderText("API key / Censys ID")
+        self.exposure_key.setEchoMode(QLineEdit.EchoMode.Password)
+        exposure_row.addWidget(self.exposure_key)
+        self.exposure_secret = QLineEdit()
+        self.exposure_secret.setPlaceholderText("Censys secret (if used)")
+        self.exposure_secret.setEchoMode(QLineEdit.EchoMode.Password)
+        exposure_row.addWidget(self.exposure_secret)
+        self.exposure_consent = QCheckBox(
+            "Send only router-reported public IP to provider")
+        exposure_row.addWidget(self.exposure_consent)
+        self.exposure_btn = QPushButton("Lookup Exposure")
+        self.exposure_btn.clicked.connect(self._lookup_external_exposure)
+        exposure_row.addWidget(self.exposure_btn)
+        expert_layout.addLayout(exposure_row)
+        self.exposure_output = QTextEdit()
+        self.exposure_output.setReadOnly(True)
+        self.exposure_output.setMaximumHeight(170)
+        expert_layout.addWidget(self.exposure_output)
+        expert_layout.addStretch(1)
+
+        self.automation_tab = QWidget()
+        automation_layout = QVBoxLayout(self.automation_tab)
+        automation_note = QLabel(
+            "Recurring scans run through Windows Task Scheduler and update the "
+            "same local SQLite history. They never run deep all-port, Nmap, "
+            "UPnP WAN, external API, login, or exploit checks. Cortex can show "
+            "local tray alerts for new devices, services, gateway changes, and "
+            "medium-or-higher security changes while the GUI is running.")
+        automation_note.setWordWrap(True)
+        automation_layout.addWidget(automation_note)
+        schedule_row = QHBoxLayout()
+        schedule_row.addWidget(QLabel("Frequency:"))
+        self.schedule_frequency = QComboBox()
+        self.schedule_frequency.addItems(["hourly", "daily", "weekly"])
+        schedule_row.addWidget(self.schedule_frequency)
+        schedule_row.addWidget(QLabel("Time:"))
+        self.schedule_time = QLineEdit("09:00")
+        self.schedule_time.setMaximumWidth(80)
+        schedule_row.addWidget(self.schedule_time)
+        schedule_row.addWidget(QLabel("Weekday:"))
+        self.schedule_weekday = QComboBox()
+        self.schedule_weekday.addItems([
+            "MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"])
+        schedule_row.addWidget(self.schedule_weekday)
+        self.schedule_create_btn = QPushButton("Create / Update Schedule")
+        self.schedule_create_btn.clicked.connect(self._create_schedule)
+        schedule_row.addWidget(self.schedule_create_btn)
+        self.schedule_delete_btn = QPushButton("Remove Schedule")
+        self.schedule_delete_btn.clicked.connect(self._delete_schedule)
+        schedule_row.addWidget(self.schedule_delete_btn)
+        self.schedule_status_btn = QPushButton("Refresh Status")
+        self.schedule_status_btn.clicked.connect(
+            lambda: self._run_schedule_action("status"))
+        schedule_row.addWidget(self.schedule_status_btn)
+        automation_layout.addLayout(schedule_row)
+        self.schedule_status = QTextEdit()
+        self.schedule_status.setReadOnly(True)
+        automation_layout.addWidget(self.schedule_status, 1)
+
+        self.main_tabs.addTab(self.dashboard_tab, "Dashboard")
+        self.main_tabs.addTab(self.devices_tab, "Devices")
+        self.main_tabs.addTab(self.findings_tbl, "Findings")
+        self.main_tabs.addTab(self.topology_view, "Logical Topology")
+        self.main_tabs.addTab(self.history_tbl, "History & Trends")
+        self.main_tabs.addTab(self.automation_tab, "Automation & Alerts")
+        self.main_tabs.addTab(self.expert_tab, "Expert")
+        self.v.addWidget(self.main_tabs, 1)
+
+        # Model/view instead of an item-based table. Beyond the allocation win,
+        # this fixes a latent correctness bug: selection used to resolve as
+        # ``self._devices[view_row]``, so the moment the table gained sorting the
+        # selected row would map to the wrong device. The binding resolves the
+        # record through the proxy, so it stays correct under any sort or filter.
+        self.tbl = QTableView()
         # Scroll policy (Req 5.2, 5.5): small floor so the page fits the viewport
         # and only the inner table scrolls; route the wheel to one container.
         self.tbl.setMinimumHeight(self.LIST_MIN_HEIGHT)
         self.attach_single_scroll(self.tbl)
-        self.tbl.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.Stretch)
-        self.tbl.verticalHeader().setVisible(False)
-        self.tbl.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
-        self.tbl.setAlternatingRowColors(True)
-        self.v.addWidget(self.tbl, 1)
+        self.table = bind_table(
+            self.tbl, self._device_columns(),
+            sort_column=0, sort_order=Qt.SortOrder.AscendingOrder,  # IP order
+        )
+        # A QTableView exposes the selection model rather than
+        # itemSelectionChanged, and it fires for keyboard navigation too.
+        self.tbl.selectionModel().selectionChanged.connect(self._show_device_details)
+        # Double-clicking a row is the fastest path to the full device window.
+        self.tbl.doubleClicked.connect(self._open_device_window)
+        self.devices_layout.addWidget(self.tbl, 1)
 
         self.state = StatePanel(self.p)
         self.state.bind_content(self.tbl)
-        self.v.addWidget(self.state, 1)
+        self.devices_layout.addWidget(self.state, 1)
 
-        note = QLabel("This reads the ARP cache (devices seen recently); it doesn't "
-                      "actively probe the network. A device may appear only after "
-                      "your PC has talked to it.")
+        self.detail_tabs = QTabWidget()
+        self.detail_tabs.setVisible(False)
+        self.detail_tabs.setMaximumHeight(220)
+        self._detail_views: dict[str, QTextEdit] = {}
+        for tab_name in ("Overview", "Services", "Identity", "Security", "History", "Raw Evidence"):
+            view = QTextEdit()
+            view.setReadOnly(True)
+            self._detail_views[tab_name] = view
+            self.detail_tabs.addTab(view, tab_name)
+        self.devices_layout.addWidget(self.detail_tabs)
+
+        self.wan_status = QLabel("")
+        self.wan_status.setObjectName("Muted")
+        self.wan_status.setWordWrap(True)
+        self.wan_status.setVisible(False)
+        self.dashboard_layout.addWidget(self.wan_status)
+
+        self.findings = QLabel("")
+        self.findings.setWordWrap(True)
+        self.findings.setVisible(False)
+        self.dashboard_layout.addWidget(self.findings)
+
+        self.history = QLabel("")
+        self.history.setObjectName("Muted")
+        self.history.setWordWrap(True)
+        self.history.setVisible(False)
+        self.dashboard_layout.addWidget(self.history)
+
+        self.notes = QLabel("")
+        self.notes.setObjectName("Muted")
+        self.notes.setWordWrap(True)
+        self.notes.setVisible(False)
+        self.dashboard_layout.addWidget(self.notes)
+
+        note = QLabel(
+            "A device that is powered off or in deep sleep cannot be detected by "
+            "any scanner - it isn't answering. If something you expect is still "
+            "missing, wake it and run a Thorough Scan. Devices showing a private "
+            "address are hiding their identity on purpose. Per-device bandwidth "
+            "is not inferred from this endpoint: accurate attribution requires "
+            "router/AP counters or explicit administrator packet capture support."
+        )
         note.setObjectName("Muted")
         note.setWordWrap(True)
-        self.v.addWidget(note)
+        self.dashboard_layout.addWidget(note)
+        self.dashboard_layout.addStretch(1)
 
         self._autoload = self._load
         self._loaded = False
 
-    def _load(self):
-        self.refresh_btn.setEnabled(False)
-        self.state.show_loading("Scanning devices…")
-        self.win.run_worker(LanScanWorker(), self._on_loaded, self._fail)
+    # -- actions -----------------------------------------------------------
 
-    def _on_loaded(self, devices: list):
-        self.refresh_btn.setEnabled(True)
+    def _toggle_more_controls(self, visible: bool) -> None:
+        """_toggle_more_controls."""
+        self.command_panel.setVisible(visible)
+        marker = "\u2304" if visible else "\u203A"
+        self.more_controls_btn.setText(f"More Controls  {marker}")
+        self.more_controls_btn.setProperty("expanded", visible)
+        style = self.more_controls_btn.style()
+        style.unpolish(self.more_controls_btn)
+        style.polish(self.more_controls_btn)
+
+    def _load(self, deep: bool = True, rounds: int = 2,
+              audit_profile: str = "targeted",
+              include_upnp_wan: bool = False,
+              requested_networks=None, custom_ports=None, nmap_modes=None,
+              advisory_catalog_path=None):
+        """Load network audit data."""
+        self._busy(True)
+        self.state.show_loading("Discovering and auditing devices\u2026")
+        self._worker = LanScanWorker(
+            deep=deep, rounds=rounds, audit_profile=audit_profile,
+            include_upnp_wan=include_upnp_wan,
+            requested_networks=requested_networks,
+            custom_ports=custom_ports, nmap_modes=nmap_modes,
+            advisory_catalog_path=advisory_catalog_path)
+        self.win.run_worker(self._worker, self._on_loaded, self._fail,
+                            on_progress=self.status.setText)
+
+    def _run_expert_scan(self):
+        """_run_expert_scan."""
+        try:
+            from cortex_unified.system_tools.network_service_scanner import (
+                parse_custom_port_spec,
+                parse_network_scope_spec,
+            )
+            ports = parse_custom_port_spec(self.ports_input.text())
+            scopes = parse_network_scope_spec(
+                self.scope_input.text()) or None
+            nmap_modes = None
+            if self.nmap_check.isChecked():
+                if not ports:
+                    raise ValueError(
+                        "Optional Nmap requires an explicit bounded port list")
+                modes = (
+                    ("connect", "version"), ("syn", "version"), ("ack",),
+                    ("syn", "version", "os"),
+                )
+                nmap_modes = modes[self.nmap_mode.currentIndex()]
+        except ValueError as exc:
+            QMessageBox.warning(self, "Invalid expert scan", str(exc))
+            return
+        if nmap_modes:
+            answer = QMessageBox.question(
+                self, "Run explicit Nmap scan?",
+                "Nmap will scan only discovered devices inside the selected "
+                "active private scope and only the listed ports. No scripts, "
+                "login attempts, exploits, or public targets are used. "
+                "Administrator modes may require elevation. Continue?",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                QMessageBox.StandardButton.No)
+            if answer != QMessageBox.StandardButton.Yes:
+                return
+        self._load(
+            deep=True, rounds=2, audit_profile="advanced",
+            include_upnp_wan=True, requested_networks=scopes,
+            custom_ports=ports, nmap_modes=nmap_modes,
+            advisory_catalog_path=self.catalog_input.text().strip() or None)
+
+    def _browse_advisory_catalog(self):
+        """_browse_advisory_catalog."""
+        path, _selected = QFileDialog.getOpenFileName(
+            self, "Select local advisory catalog", "",
+            "JSON advisory catalog (*.json)")
+        if path:
+            self.catalog_input.setText(path)
+
+    # -- device table columns ----------------------------------------------
+
+    def _device_columns(self):
+        """Declare the device columns once instead of filling cells per row.
+
+        Each column derives its text from the ``Device`` record on demand, so a
+        scan result is handed to the model in a single reset. The IP column sorts
+        on a packed integer rather than the dotted string - otherwise
+        ``192.168.1.10`` would sort before ``192.168.1.9``.
+        """
+        return [
+            Column("IP address", lambda d: d.ip, sort_key=_ip_sort_key),
+            Column("Name", self._device_name, stretch=True),
+            Column("Type / OS", self._device_type),
+            Column("Vendor", lambda d: d.vendor or "\u2014"),
+            Column("MAC address", lambda d: d.mac or "\u2014"),
+            Column("Services", self._device_services, stretch=True),
+            Column("Security", self._device_security,
+                   sort_key=self._device_security_rank),
+            Column("Evidence", lambda d: d.evidence, stretch=True),
+        ]
+
+    def _device_name(self, dev) -> str:
+        """_device_name."""
+        metadata = self._metadata_by_key.get(self._identity_of(dev))
+        name = metadata.custom_name if metadata else dev.label
+        if dev.is_gateway:
+            name += "  (router)"
+        elif dev.is_self:
+            name += "  (this PC)"
+        return name
+
+    def _device_type(self, dev) -> str:
+        """_device_type."""
+        metadata = self._metadata_by_key.get(self._identity_of(dev))
+        type_os = dev.kind
+        if metadata and metadata.trust_state != "unknown":
+            type_os += f" / {metadata.trust_state.title()}"
+        fingerprint = getattr(dev, "fingerprint", None)
+        if fingerprint is not None:
+            os_name = getattr(fingerprint, "os_family", "unknown")
+            confidence = int(getattr(fingerprint, "confidence", 0.0) * 100)
+            if os_name != "unknown":
+                type_os += f" / {os_name} ({confidence}% confidence)"
+        return type_os
+
+    @staticmethod
+    def _device_services(dev) -> str:
+        """_device_services."""
+        observed = sorted(
+            getattr(dev, "service_observations", ()),
+            key=lambda item: (item.port, item.transport, item.name))
+        services = ", ".join(
+            f"{item.port}/{item.transport} {item.name}"
+            for item in observed[:8]) or "\u2014"
+        if len(observed) > 8:
+            services += f"  +{len(observed) - 8} more"
+        return services
+
+    def _device_findings(self, dev) -> list:
+        """_device_findings."""
+        return sorted(
+            self._findings_by_ip.get(dev.ip, ()),
+            key=lambda item: _SEVERITY_RANK.get(item.severity, 5))
+
+    def _device_security(self, dev) -> str:
+        """_device_security."""
+        found = self._device_findings(dev)
+        if not found:
+            return "No evidence-backed finding"
+        security = f"{found[0].severity.upper()}: {found[0].title}"
+        if len(found) > 1:
+            security += f"  +{len(found) - 1} more"
+        return security
+
+    def _device_security_rank(self, dev) -> int:
+        """Sort worst-first: a device with a critical finding outranks a clean one."""
+        found = self._device_findings(dev)
+        if not found:
+            return len(_SEVERITY_RANK) + 1
+        return _SEVERITY_RANK.get(found[0].severity, len(_SEVERITY_RANK))
+
+    def _identity_of(self, dev) -> str:
+        """_identity_of."""
+        resolver = self._identity_key_for
+        return resolver(dev) if resolver is not None else ""
+
+    def _open_device_window(self, *_args):
+        """Open the selected device in its own full-detail premium window."""
+        device = self._selected_device()
+        result = self._last_result
+        if device is None or result is None:
+            return
+        from .device_window import DeviceDetailWindow
+
+        window = DeviceDetailWindow(
+            self.win, device, result.networks,
+            catalog_path=self.catalog_input.text().strip() or None,
+            parent=self.win)
+        # Keep a strong reference until the dialog emits its pre-delete close
+        # signal, including while it waits for worker cancellation callbacks.
+        self._device_windows.append(window)
+        window.closed.connect(self._forget_device_window)
+        window.show()
+        window.raise_()
+        window.activateWindow()
+        window.start_scan("advanced")
+
+    def _forget_device_window(self, window) -> None:
+        """_forget_device_window."""
+        self._device_windows = [
+            item for item in self._device_windows if item is not window
+        ]
+
+    def _selected_device(self):
+        """The selected ``Device``, resolved through the proxy.
+
+        Previously this indexed ``self._devices`` by the view's row number, which
+        silently returned the wrong device as soon as the table was sorted. The
+        binding maps the proxy index back to the source record instead.
+        """
+        return self.table.selected_record()
+
+    def _device_action(self, action: str):
+        """_device_action."""
+        device = self._selected_device()
+        result = self._last_result
+        if (
+            device is None
+            or result is None
+            or self._action_worker is not None
+        ):
+            return
+        self.status.setText(
+            f"{'Pinging' if action == 'ping' else 'Sending wake packet to'} "
+            f"{device.label}...")
+        self._action_worker = DeviceActionWorker(
+            action, device, result.networks)
+        self._show_device_details()
+        self.win.run_worker(
+            self._action_worker,
+            self._device_action_done,
+            self._device_action_failed,
+        )
+
+    def _device_action_done(self, action: str, payload):
+        """_device_action_done."""
+        self._action_worker = None
+        self._show_device_details()
+        if action == "ping":
+            message = (
+                "Device replied to ping" if payload.get("reachable") else
+                "Device did not reply to ping; firewalls can block ICMP")
+        else:
+            message = "Wake-on-LAN magic packet sent to the local broadcast"
+        self.status.setText(message)
+        self.win.statusBar().showMessage(message, 6000)
+        tray = getattr(self.win, "_tray", None)
+        if tray is not None:
+            tray.show_message("Network device action", message)
+
+    def _device_action_failed(self, message: str) -> None:
+        """_device_action_failed."""
+        self._action_worker = None
+        self._show_device_details()
+        self.status.setText(f"Device action failed: {message}")
+        QMessageBox.warning(self, "Device action failed", message)
+
+    def _open_selected_service(self):
+        """_open_selected_service."""
+        device = self._selected_device()
+        if device is None:
+            return
+        services = sorted(
+            getattr(device, "service_observations", ()),
+            key=lambda item: (item.port, item.transport))
+        priority = {"https": 0, "http": 1, "ssh": 2, "rdp": 3}
+        candidates = [item for item in services if item.name in priority]
+        if not candidates:
+            return
+        service = min(candidates, key=lambda item: priority[item.name])
+        if service.name in {"http", "https"}:
+            url = f"{service.name}://{device.ip}:{service.port}/"
+        elif service.name == "ssh":
+            url = f"ssh://{device.ip}:{service.port}"
+        else:
+            url = f"rdp://{device.ip}:{service.port}"
+        QDesktopServices.openUrl(QUrl(url))
+
+    def _load_selected_metadata(self, device):
+        """_load_selected_metadata."""
+        try:
+            from cortex_unified.system_tools.network_inventory import (
+                NetworkInventory,
+            )
+            with NetworkInventory() as inventory:
+                metadata = inventory.get_metadata(device)
+        except (OSError, ValueError, RuntimeError):
+            metadata = None
+        self.custom_name_input.setText(
+            metadata.custom_name if metadata else "")
+        self.trust_combo.setCurrentText(
+            metadata.trust_state if metadata else "unknown")
+        self.tags_input.setText(
+            ", ".join(metadata.tags) if metadata else "")
+        self.notes_input.setText(metadata.notes if metadata else "")
+
+    def _save_selected_metadata(self):
+        """_save_selected_metadata."""
+        device = self._selected_device()
+        if device is None:
+            QMessageBox.information(
+                self, "Select a device", "Select a device in the Devices tab first.")
+            return
+        try:
+            from cortex_unified.system_tools.network_inventory import (
+                NetworkInventory,
+            )
+            with NetworkInventory() as inventory:
+                metadata = inventory.set_metadata(
+                    device,
+                    custom_name=self.custom_name_input.text(),
+                    trust_state=self.trust_combo.currentText(),
+                    tags=self.tags_input.text(),
+                    notes=self.notes_input.text())
+        except (OSError, ValueError, RuntimeError) as exc:
+            QMessageBox.warning(self, "Metadata not saved", str(exc))
+            return
+        message = f"Metadata saved for {metadata.identity_key}"
+        self.status.setText(message)
+        # Refresh the cached metadata the Name/Type columns read from, then let
+        # the model repaint. Previously this patched one cell by row number,
+        # which both bypassed the data source and broke under sorting.
+        self._metadata_by_key[metadata.identity_key] = metadata
+        self.table.model.set_records(self.table.model.records)
+
+    def _export_inventory_csv(self):
+        """_export_inventory_csv."""
+        path, _selected = QFileDialog.getSaveFileName(
+            self, "Export device inventory", "network-inventory.csv",
+            "CSV inventory (*.csv)")
+        if not path:
+            return
+        try:
+            from cortex_unified.system_tools.network_inventory import (
+                NetworkInventory,
+            )
+            with NetworkInventory() as inventory:
+                count = inventory.export_inventory_csv(path)
+        except (OSError, ValueError, RuntimeError) as exc:
+            QMessageBox.warning(self, "Inventory export failed", str(exc))
+            return
+        self.status.setText(f"Exported {count} inventory device(s) to {path}")
+
+    def _import_inventory_csv(self):
+        """_import_inventory_csv."""
+        path, _selected = QFileDialog.getOpenFileName(
+            self, "Import device metadata", "", "CSV inventory (*.csv)")
+        if not path:
+            return
+        try:
+            from cortex_unified.system_tools.network_inventory import (
+                NetworkInventory,
+            )
+            with NetworkInventory() as inventory:
+                preview = inventory.import_inventory_csv(path, dry_run=True)
+                conflicts = len(preview["conflicts"])
+                answer = QMessageBox.question(
+                    self, "Import device metadata?",
+                    f"Validated {preview['rows']} row(s); {conflicts} existing "
+                    "metadata record(s) conflict. Existing records will be "
+                    "replaced. Continue?",
+                    QMessageBox.StandardButton.Yes |
+                    QMessageBox.StandardButton.No,
+                    QMessageBox.StandardButton.No)
+                if answer != QMessageBox.StandardButton.Yes:
+                    return
+                report = inventory.import_inventory_csv(
+                    path, dry_run=False, overwrite=True)
+        except (OSError, ValueError, RuntimeError) as exc:
+            QMessageBox.warning(self, "Inventory import failed", str(exc))
+            return
+        self.status.setText(
+            f"Imported metadata: {report['created']} new, "
+            f"{report['updated']} updated")
+        device = self._selected_device()
+        if device is not None:
+            self._load_selected_metadata(device)
+
+    def _lookup_external_exposure(self):
+        """_lookup_external_exposure."""
+        result = self._last_result
+        wan = getattr(result, "wan_status", None) if result is not None else None
+        public_ip = getattr(wan, "external_ip", "") if wan is not None else ""
+        classification = (
+            getattr(wan, "external_ip_classification", "")
+            if wan is not None else "")
+        if classification != "public" or not public_ip:
+            QMessageBox.warning(
+                self, "No router-reported public IP",
+                "Run Advanced Audit with router WAN reading first. CGNAT, "
+                "private-upstream, missing, and local addresses are never sent.")
+            return
+        if not self.exposure_consent.isChecked():
+            QMessageBox.warning(
+                self, "Consent required",
+                "Check the consent box to send only the displayed public IP "
+                "and your API credentials to the selected provider.")
+            return
+        provider = self.exposure_provider.currentText()
+        api_key = self.exposure_key.text()
+        api_secret = self.exposure_secret.text()
+        if not api_key or (provider == "censys" and not api_secret):
+            QMessageBox.warning(
+                self, "Credentials required",
+                "Enter provider API credentials. They are used for this "
+                "lookup only and are not stored in inventory or logs.")
+            return
+        self.exposure_output.setPlainText(
+            f"Querying {provider} for {public_ip}...")
+        self.exposure_btn.setEnabled(False)
+        self._exposure_worker = ExposureLookupWorker(
+            provider, public_ip, api_key, api_secret)
+        self.win.run_worker(
+            self._exposure_worker, self._exposure_done,
+            self._exposure_failed)
+
+    def _exposure_done(self, result):
+        """_exposure_done."""
+        self.exposure_btn.setEnabled(True)
+        self.exposure_secret.clear()
+        self.exposure_output.setPlainText(json.dumps(
+            result.to_dict(), indent=2, ensure_ascii=False))
+
+    def _exposure_failed(self, message: str):
+        """_exposure_failed."""
+        self.exposure_btn.setEnabled(True)
+        self.exposure_secret.clear()
+        self.exposure_output.setPlainText(message)
+
+    def _create_schedule(self):
+        """_create_schedule."""
+        answer = QMessageBox.question(
+            self, "Create recurring network scan?",
+            "This creates or replaces one Windows Task Scheduler entry for "
+            "bounded private-LAN inventory scans. It is reversible with Remove "
+            "Schedule. Continue?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No)
+        if answer != QMessageBox.StandardButton.Yes:
+            return
+        try:
+            from cortex_unified.system_tools.network_automation import (
+                NetworkSchedule,
+            )
+            from cortex_unified.system_tools.network_service_scanner import (
+                parse_network_scope_spec,
+            )
+            scopes = parse_network_scope_spec(self.scope_input.text())
+            spec = NetworkSchedule(
+                frequency=self.schedule_frequency.currentText(),
+                time=self.schedule_time.text().strip(),
+                weekday=self.schedule_weekday.currentText(),
+                profile="advanced", scopes=scopes,
+                ports=self.ports_input.text().strip())
+        except ValueError as exc:
+            QMessageBox.warning(self, "Invalid schedule", str(exc))
+            return
+        self._run_schedule_action("create", spec)
+
+    def _delete_schedule(self):
+        """_delete_schedule."""
+        answer = QMessageBox.question(
+            self, "Remove recurring scan?",
+            "Remove the Cortex recurring network-security scan from Windows "
+            "Task Scheduler? Existing local history is kept.",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No)
+        if answer == QMessageBox.StandardButton.Yes:
+            self._run_schedule_action("delete")
+
+    def _run_schedule_action(self, action: str, spec=None):
+        """_run_schedule_action."""
+        self.schedule_status.setPlainText(
+            f"{action.capitalize()} schedule operation in progress...")
+        self._schedule_worker = NetworkScheduleWorker(action, spec)
+        self.win.run_worker(
+            self._schedule_worker, self._schedule_done,
+            self._schedule_failed)
+
+    def _schedule_done(self, action: str, payload):
+        """_schedule_done."""
+        self.schedule_status.setPlainText(
+            json.dumps(payload, indent=2, ensure_ascii=False))
+        self.win.statusBar().showMessage(
+            f"Network schedule {action} completed", 6000)
+
+    def _schedule_failed(self, message: str):
+        """_schedule_failed."""
+        self.schedule_status.setPlainText(message)
+        QMessageBox.warning(self, "Schedule operation failed", message)
+
+    def _confirm_deep_audit(self):
+        """_confirm_deep_audit."""
+        answer = QMessageBox.question(
+            self,
+            "Run authorized deep audit?",
+            "This checks all 65,535 TCP ports on devices already discovered on "
+            "your private LAN. It is read-only and cancellable, but it creates "
+            "substantial traffic and may take several minutes.\n\nRun it only "
+            "on a network you own or are authorized to assess.",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No,
+        )
+        if answer == QMessageBox.StandardButton.Yes:
+            self._load(deep=True, rounds=3, audit_profile="deep",
+                       include_upnp_wan=True)
+
+    def _update_vendors(self):
+        """_update_vendors."""
+        self.vendor_btn.setEnabled(False)
+        self.status.setText("Downloading official IEEE vendor assignments\u2026")
+        self._vendor_worker = VendorDatabaseWorker()
+        self.win.run_worker(
+            self._vendor_worker, self._vendors_updated, self._vendor_update_failed)
+
+    def _vendors_updated(self, ok: bool, message: str):
+        """_vendors_updated."""
+        self.vendor_btn.setEnabled(True)
+        self.status.setText(message)
+        self.win.statusBar().showMessage(message, 8000)
+        if not ok or self._last_result is None:
+            return
+        from cortex_unified.system_tools import oui
+        for device in self._last_result.devices:
+            device.vendor = oui.describe_vendor(device.mac)
+        self._on_loaded(self._last_result)
+
+    def _vendor_update_failed(self, message: str):
+        """_vendor_update_failed."""
+        self.vendor_btn.setEnabled(True)
+        self.status.setText(f"Vendor update failed: {message}")
+
+    def _export_report(self):
+        """_export_report."""
+        result = self._last_result
+        if result is None:
+            return
+        path, selected = QFileDialog.getSaveFileName(
+            self, "Export network security report", "network-security-report.json",
+            "JSON report (*.json);;Printable HTML report (*.html);;"
+            "PDF report (*.pdf);;CSV services (*.csv)")
+        if not path:
+            return
+        target = Path(path)
+        suffix = target.suffix.lower()
+        if suffix not in {".json", ".html", ".pdf", ".csv"}:
+            if "PDF" in selected:
+                suffix = ".pdf"
+            elif "HTML" in selected:
+                suffix = ".html"
+            elif "CSV" in selected:
+                suffix = ".csv"
+            else:
+                suffix = ".json"
+            target = target.with_suffix(suffix)
+        try:
+            if suffix == ".json":
+                target.write_text(
+                    json.dumps(result.to_dict(), indent=2, ensure_ascii=False),
+                    encoding="utf-8")
+            elif suffix == ".csv":
+                with target.open("w", newline="", encoding="utf-8-sig") as handle:
+                    writer = csv.writer(handle)
+                    writer.writerow([
+                        "ip", "device", "type", "os", "port", "transport",
+                        "service", "product", "version", "banner"])
+                    for device in result.devices:
+                        fingerprint = getattr(device, "fingerprint", None)
+                        for service in getattr(device, "service_observations", ()):
+                            writer.writerow([
+                                device.ip, device.label, device.kind,
+                                getattr(fingerprint, "os_family", "unknown"),
+                                service.port, service.transport, service.name,
+                                service.product, service.version, service.banner])
+            else:
+                payload = result.to_dict()
+                rows = "".join(
+                    "<tr>" + "".join(
+                        f"<td>{html.escape(str(value))}</td>"
+                        for value in (
+                            device.label, device.ip, device.kind, device.vendor,
+                            ", ".join(str(p) for p in sorted(device.open_ports))))
+                    + "</tr>" for device in result.devices)
+                findings = "".join(
+                    f"<li><strong>{html.escape(item.severity.upper())}</strong> "
+                    f"{html.escape(item.device_ip)} \u2014 {html.escape(item.title)}: "
+                    f"{html.escape(item.remediation)}</li>"
+                    for item in result.findings)
+                document = (
+                    "<!doctype html><meta charset='utf-8'><title>Cortex Network "
+                    "Security Report</title><style>body{font:14px Segoe UI,sans-serif;"
+                    "max-width:1100px;margin:32px auto;color:#1f2937}table{border-collapse:"
+                    "collapse;width:100%}th,td{border:1px solid #d1d5db;padding:7px;"
+                    "text-align:left}th{background:#eef2ff}</style>"
+                    "<h1>Cortex Network Security Report</h1>"
+                    f"<p>Devices: {payload['device_count']} | Audit: "
+                    f"{html.escape(payload['audit_profile'])}. Evidence-only; absence "
+                    "of a finding does not prove absence of a vulnerability.</p>"
+                    "<table><tr><th>Device</th><th>IP</th><th>Type</th><th>Vendor</th>"
+                    f"<th>Open TCP ports</th></tr>{rows}</table>"
+                    f"<h2>Findings</h2><ul>{findings or '<li>None observed</li>'}</ul>")
+                if suffix == ".pdf":
+                    writer = QPdfWriter(str(target))
+                    writer.setTitle("Cortex Network Security Report")
+                    document_view = QTextDocument()
+                    document_view.setHtml(document)
+                    document_view.print_(writer)
+                else:
+                    target.write_text(document, encoding="utf-8")
+        except OSError as exc:
+            QMessageBox.warning(self, "Export failed", str(exc))
+            return
+        self.win.statusBar().showMessage(f"Report exported to {target}", 8000)
+
+    def _show_device_details(self, *_args):
+        """_show_device_details."""
+        device = self.table.selected_record()
+        if device is None or self._last_result is None:
+            self.detail_tabs.setVisible(False)
+            self.device_btn.setEnabled(False)
+            self.ping_btn.setEnabled(False)
+            self.wake_btn.setEnabled(False)
+            self.open_btn.setEnabled(False)
+            return
+        result = self._last_result
+        action_busy = self._action_worker is not None
+        controls_available = not self._page_busy and not action_busy
+        self._load_selected_metadata(device)
+        self.device_btn.setEnabled(controls_available)
+        self.ping_btn.setEnabled(controls_available)
+        try:
+            from cortex_unified.system_tools.wake_on_lan import validate_mac
+            validate_mac(device.mac)
+            can_wake = True
+        except ValueError:
+            can_wake = False
+        self.wake_btn.setEnabled(controls_available and can_wake)
+        actionable = {"http", "https", "ssh", "rdp"}
+        self.open_btn.setEnabled(
+            controls_available
+            and any(
+                item.name in actionable
+                for item in getattr(device, "service_observations", ())
+            )
+        )
+        fingerprint = getattr(device, "fingerprint", None)
+        services = [
+            item.to_dict() if hasattr(item, "to_dict") else str(item)
+            for item in getattr(device, "service_observations", ())]
+        findings = [
+            item.to_dict() for item in result.findings
+            if item.device_ip == device.ip]
+        changes = result.inventory_changes.to_dict() if result.inventory_changes else {}
+        relevant_changes = {
+            group: [item for item in items if device.ip in str(item)]
+            for group, items in changes.items()
+        }
+        overview = {
+            "name": device.label, "ip": device.ip, "mac": device.mac,
+            "vendor": device.vendor, "type": device.kind,
+            "gateway": device.is_gateway, "this_pc": device.is_self,
+            "discovery_evidence": device.evidence,
+        }
+        identity = fingerprint.to_dict() if fingerprint is not None else {
+            "confidence": 0, "note": "No fingerprint evidence available"}
+        views = {
+            "Overview": overview,
+            "Services": services,
+            "Identity": identity,
+            "Security": findings,
+            "History": relevant_changes,
+            "Raw Evidence": device.to_dict(),
+        }
+        for name, payload in views.items():
+            self._detail_views[name].setPlainText(
+                json.dumps(payload, indent=2, ensure_ascii=False))
+        self.detail_tabs.setVisible(True)
+
+    def _cancel(self):
+        """_cancel."""
+        worker = getattr(self, "_worker", None)
+        if worker is not None:
+            worker.cancel()
+        vendor_worker = getattr(self, "_vendor_worker", None)
+        if vendor_worker is not None:
+            vendor_worker.cancel()
+        self.status.setText("Cancelling\u2026")
+
+    def _busy(self, busy: bool) -> None:
+        """_busy."""
+        self._page_busy = busy
+        for btn in (self.refresh_btn, self.thorough_btn, self.deep_btn,
+                    self.quick_btn, self.vendor_btn, self.expert_btn):
+            btn.setEnabled(not busy)
+        self.export_btn.setEnabled(
+            not busy and self._last_result is not None)
+        self.cancel_btn.setEnabled(busy)
+        self.cancel_btn.setVisible(busy)
+        self.progress.setVisible(busy)
+        if busy:
+            # The per-device window depends on the finished scan's scope, so it
+            # stays unavailable until this scan produces a result.
+            for btn in (self.device_btn, self.ping_btn, self.wake_btn,
+                        self.open_btn):
+                btn.setEnabled(False)
+        else:
+            self._show_device_details()
+
+    def _on_loaded(self, result):
+        """_on_loaded."""
+        self._busy(False)
+        self._last_result = result
+        self.export_btn.setEnabled(True)
+
+        def _ip_key(dev):
+            """_ip_key."""
+            try:
+                return (0,) + tuple(int(p) for p in dev.ip.split("."))
+            except (ValueError, AttributeError):
+                return (1, dev.ip)
+
+        # Sort here as well as in the engine: the table should always read in
+        # address order regardless of how the results arrived.
+        devices = sorted(result.devices, key=_ip_key)
+        self._devices = devices
+
+        # Lookups the column accessors read from. Resolved once per scan rather
+        # than per row, then the model derives every cell on demand.
+        self._findings_by_ip = {}
+        for finding in result.findings:
+            self._findings_by_ip.setdefault(finding.device_ip, []).append(finding)
+        try:
+            from cortex_unified.system_tools.network_inventory import (
+                NetworkInventory, identity_key_for,
+            )
+            with NetworkInventory() as inventory:
+                self._metadata_by_key = {
+                    item.identity_key: item for item in inventory.list_metadata()
+                }
+            self._identity_key_for = identity_key_for
+        except (OSError, ValueError, RuntimeError):
+            self._metadata_by_key = {}
+            self._identity_key_for = None
+
+        self.table.set_records(devices)
+
         if not devices:
             self.state.show_empty(
-                "No devices seen yet. Your PC may not have talked to any "
-                "local device recently.")
+                "No devices answered. If you are on Wi-Fi, the access point may "
+                "be using client isolation, which blocks devices from seeing "
+                "each other.")
         else:
             self.state.clear()
-        self.tbl.setRowCount(len(devices))
-        for r, d in enumerate(devices):
-            self.tbl.setItem(r, 0, QTableWidgetItem(d["ip"]))
-            self.tbl.setItem(r, 1, QTableWidgetItem(d["mac"]))
-            self.tbl.setItem(r, 2, QTableWidgetItem(d["vendor"] or "\u2014"))
-            self.tbl.setItem(r, 3, QTableWidgetItem(d["kind"]))
+
+        nets = ", ".join(result.networks) or "no sweepable subnet"
+        summary = (f"{len(devices)} device(s) on {nets} "
+                   f"in {result.duration_seconds:.0f}s")
+        if result.cancelled:
+            summary += " (cancelled early - results may be incomplete)"
         self.count.setText(f"{len(devices)} device(s)")
-        self.win.statusBar().showMessage(f"{len(devices)} device(s) on your network", 5000)
+        self.status.setText(summary)
+        self.win.statusBar().showMessage(summary, 6000)
+
+        wan = result.wan_status
+        if wan is not None:
+            gateway = wan.gateway or "not detected"
+            public = wan.external_ip or "not reported by the local router"
+            classification = wan.external_ip_classification.replace("_", " ")
+            mappings = len(wan.port_mappings)
+            self.wan_status.setText(
+                f"WAN (router-reported only): gateway {gateway}; external address "
+                f"{public} ({classification}); {mappings} enabled/configured mapping "
+                f"record(s). Internet reachability was not tested.")
+            self.wan_status.setVisible(True)
+        else:
+            self.wan_status.setVisible(False)
+
+        if result.findings:
+            counts: dict[str, int] = {}
+            for finding in result.findings:
+                counts[finding.severity] = counts.get(finding.severity, 0) + 1
+            count_text = ", ".join(
+                f"{counts[level]} {level}"
+                for level in ("critical", "high", "medium", "low", "info")
+                if counts.get(level))
+            top = result.findings[:5]
+            lines = [f"Security findings: {count_text}"]
+            lines.extend(
+                f"\u2022 {item.severity.upper()} \u2014 {item.device_ip}: "
+                f"{item.title}. {item.remediation}"
+                for item in top)
+            if len(result.findings) > len(top):
+                lines.append(f"\u2022 {len(result.findings) - len(top)} more in device rows")
+            self.findings.setText("\n".join(lines))
+            self.findings.setVisible(True)
+        else:
+            self.findings.setText(
+                "No evidence-backed security finding was produced. This does not "
+                "prove the devices are vulnerability-free.")
+            self.findings.setVisible(True)
+
+        changes = result.inventory_changes
+        if changes is not None:
+            parts = []
+            if changes.new_devices:
+                parts.append(f"{len(changes.new_devices)} newly seen device(s)")
+            if changes.changed_addresses:
+                parts.append(f"{len(changes.changed_addresses)} address change(s)")
+            if changes.new_services:
+                parts.append(f"{len(changes.new_services)} newly exposed service(s)")
+            if getattr(changes, "new_findings", ()):
+                parts.append(f"{len(changes.new_findings)} new security finding(s)")
+            if getattr(changes, "severity_changes", ()):
+                parts.append(
+                    f"{len(changes.severity_changes)} severity change(s)")
+            if getattr(changes, "disappeared_devices", ()):
+                parts.append(
+                    f"{len(changes.disappeared_devices)} device(s) offline")
+            if changes.gateway_mac_changes:
+                parts.append("gateway hardware address changed")
+            self.history.setText(
+                "History: " + (", ".join(parts) if parts else "no changes since the previous scan"))
+            self.history.setVisible(True)
+            tray = getattr(self.win, "_tray", None)
+            if tray is not None:
+                tray.notify_network_changes(changes)
+        else:
+            self.history.setVisible(False)
+
+        if result.notes:
+            self.notes.setText("  \u2022  " + "\n  \u2022  ".join(result.notes))
+            self.notes.setVisible(True)
+        else:
+            self.notes.setVisible(False)
+
+        service_count = sum(
+            len(getattr(device, "service_observations", ()))
+            for device in devices)
+        risk_weights = {
+            "critical": 10, "high": 7, "medium": 4, "low": 1,
+            "info": 0,
+        }
+        risk_score = sum(
+            risk_weights.get(item.severity, 0) for item in result.findings)
+        self.card_devices.set_value(str(len(devices)))
+        self.card_services.set_value(str(service_count))
+        self.card_findings.set_value(str(len(result.findings)))
+        self.card_risk.set_value(str(risk_score))
+
+        self.findings_tbl.setRowCount(len(result.findings))
+        for row, finding in enumerate(result.findings):
+            values = (
+                finding.severity.upper(), finding.device_ip, finding.title,
+                str(finding.port or "\u2014"),
+                f"{finding.confidence * 100:.0f}%", finding.remediation,
+            )
+            for column, value in enumerate(values):
+                self.findings_tbl.setItem(
+                    row, column, QTableWidgetItem(value))
+
+        gateways = [device for device in devices if device.is_gateway]
+        gateway_label = gateways[0].label if gateways else "Gateway (unseen)"
+        topology = [
+            "LOGICAL TOPOLOGY — not physical switch/AP cabling",
+            f"{gateway_label}",
+        ]
+        for network in result.networks:
+            topology.append(f"  \u2514\u2500 Subnet {network}")
+            for device in devices:
+                try:
+                    inside = ipaddress.IPv4Address(
+                        device.ip) in ipaddress.ip_network(
+                            network, strict=False)
+                except ValueError:
+                    inside = False
+                if inside and not device.is_gateway:
+                    trust = "private MAC" if device.randomized_mac else device.kind
+                    topology.append(
+                        f"       \u251c\u2500 {device.label} [{device.ip}] — {trust}")
+        self.topology_view.setPlainText("\n".join(topology))
+
+        try:
+            from cortex_unified.system_tools.network_inventory import (
+                NetworkInventory,
+            )
+            with NetworkInventory() as inventory:
+                trends = inventory.exposure_trends(50)
+        except (OSError, ValueError, RuntimeError):
+            trends = []
+        self.history_tbl.setRowCount(len(trends))
+        for row, trend in enumerate(trends):
+            values = (
+                trend["observed_at"], trend["device_count"],
+                trend["service_count"], trend["finding_count"],
+                trend["risk_score"], trend["snapshot_id"],
+            )
+            for column, value in enumerate(values):
+                self.history_tbl.setItem(
+                    row, column, QTableWidgetItem(str(value)))
 
     def _fail(self, msg: str):
-        self.refresh_btn.setEnabled(True)
+        """_fail."""
+        self._busy(False)
         self.state.show_error(msg, on_retry=self._load)
 
 
@@ -707,11 +2181,13 @@ class _ToolWorker(QObject):
     failed = Signal(str)
 
     def __init__(self, tool: str, target: str):
+        """__init__."""
         super().__init__()
         self._tool = tool
         self._target = target
 
     def run(self):
+        """run."""
         try:
             from cortex_unified.system_tools.network_tools import NetworkTools
             nt = NetworkTools()
@@ -747,6 +2223,7 @@ class NetworkToolsPage(_Page):
     """Classic diagnostics: ping, traceroute, DNS, port check, IP info."""
 
     def __init__(self, win):
+        """__init__."""
         super().__init__(win)
         self.v.addWidget(title_block(
             "Network Tools",
@@ -808,6 +2285,7 @@ class NetworkToolsPage(_Page):
         self._busy_count = 0
 
     def _run(self, tool: str):
+        """_run."""
         target = self.target.text().strip()
         if not target and tool != "ports":
             self.summary.setText("Please enter a hostname or IP first.")
@@ -821,6 +2299,7 @@ class NetworkToolsPage(_Page):
         self.win.run_worker(_ToolWorker(tool, target), self._on_result, self._fail)
 
     def _on_result(self, tool: str, result):
+        """_on_result."""
         self.progress.setVisible(False)
         if tool == "ping":
             self._show_ping(result)
@@ -835,6 +2314,7 @@ class NetworkToolsPage(_Page):
 
     # -- renderers --
     def _show_ping(self, r: dict):
+        """_show_ping."""
         self.tbl.setVisible(False)
         if not r["reachable"]:
             self.summary.setText(f"<b>{r['host']}</b> is <b>unreachable</b>. "
@@ -847,6 +2327,7 @@ class NetworkToolsPage(_Page):
             f"Latency: min {r['min_ms']} ms, avg <b>{r['avg_ms']} ms</b>, max {r['max_ms']} ms")
 
     def _show_traceroute(self, hops: list):
+        """_show_traceroute."""
         self.summary.setText(f"Route traced - {len(hops)} hop(s):")
         self.tbl.setHorizontalHeaderLabels(["#", "Host", "Avg latency"])
         self.tbl.setRowCount(len(hops))
@@ -858,6 +2339,7 @@ class NetworkToolsPage(_Page):
         self.tbl.setVisible(True)
 
     def _show_dns(self, r: dict):
+        """_show_dns."""
         fwd = r["forward"]
         if not fwd:
             self.summary.setText("No DNS records found (or the name doesn't resolve).")
@@ -873,6 +2355,7 @@ class NetworkToolsPage(_Page):
         self.tbl.setVisible(True)
 
     def _show_ports(self, res: dict):
+        """_show_ports."""
         from cortex_unified.system_tools.network_tools import COMMON_PORTS
         open_ports = [(p, o) for p, o in res.items()]
         open_count = sum(1 for _, o in open_ports if o)
@@ -893,6 +2376,7 @@ class NetworkToolsPage(_Page):
         self.tbl.setVisible(True)
 
     def _show_ipinfo(self, info: dict):
+        """_show_ipinfo."""
         self.tbl.setVisible(False)
         if not info.get("valid"):
             self.summary.setText("That isn't a valid IP, and the name couldn't be resolved.")
@@ -908,6 +2392,7 @@ class NetworkToolsPage(_Page):
             "does not query any external geolocation or reputation service.</span>")
 
     def _fail(self, msg: str):
+        """_fail."""
         self.progress.setVisible(False)
         self.summary.setText(f"Error: {msg}")
 
@@ -920,15 +2405,18 @@ from PySide6.QtWidgets import QSpinBox  # noqa: E402
 
 
 class AuthorizeWorker(QObject):
+    """AuthorizeWorker class."""
     finished = Signal(dict)
     failed = Signal(str)
 
     def __init__(self, host: str, token: str = ""):
+        """__init__."""
         super().__init__()
         self._host = host
         self._token = token
 
     def run(self):
+        """run."""
         try:
             from cortex_unified.system_tools.load_tester import TargetAuthorizer
             auth = TargetAuthorizer().authorize(self._host, self._token or None)
@@ -938,11 +2426,13 @@ class AuthorizeWorker(QObject):
 
 
 class LoadTestWorker(QObject):
+    """LoadTestWorker class."""
     progress = Signal(dict)
     finished = Signal(dict)
     failed = Signal(str)
 
     def __init__(self, mode: str, cfg: dict, auth_dict: dict):
+        """__init__."""
         super().__init__()
         self._mode = mode
         self._cfg = cfg
@@ -951,9 +2441,11 @@ class LoadTestWorker(QObject):
         self._cancel = _t.Event()
 
     def cancel(self):
+        """cancel."""
         self._cancel.set()
 
     def run(self):
+        """run."""
         try:
             from cortex_unified.system_tools.load_tester import (
                 Authorization, HttpLoadConfig, LoadTester, TcpLoadConfig,
@@ -979,6 +2471,7 @@ class LoadTesterPage(_Page):
     """Measure how much load YOUR OWN service can take before it degrades."""
 
     def __init__(self, win):
+        """__init__."""
         super().__init__(win)
         self.v.addWidget(title_block(
             "Load / Resilience Tester",
@@ -1079,11 +2572,13 @@ class LoadTesterPage(_Page):
 
     # -- mode --
     def _mode_changed(self):
+        """_mode_changed."""
         is_tcp = self.mode.currentIndex() == 1
         self.port.setEnabled(is_tcp)
 
     # -- authorization --
     def _check(self):
+        """_check."""
         host = self.target.text().strip()
         if not host:
             self.auth_label.setText("Enter a target first.")
@@ -1093,11 +2588,12 @@ class LoadTesterPage(_Page):
         self.win.run_worker(AuthorizeWorker(host, self._token), self._on_auth, self._auth_fail)
 
     def _on_auth(self, auth: dict):
+        """_on_auth."""
         self.check_btn.setEnabled(True)
         self._auth = auth if auth.get("authorized") else None
         if auth.get("authorized"):
             self.auth_label.setText(
-                f"\u2705 Authorized \u2014 {auth['category']} ({auth['resolved_ip']}). {auth['reason']}")
+                f"Authorized \u2014 {auth['category']} ({auth['resolved_ip']}). {auth['reason']}")
             self.auth_label.setStyleSheet(f"color: {self.p.success}; font-weight: 600;")
             self.token_box.setVisible(False)
             self.run_btn.setEnabled(True)
@@ -1106,15 +2602,16 @@ class LoadTesterPage(_Page):
             if auth.get("category") == "denied" and "ownership" in auth.get("reason", "").lower():
                 self._offer_token(auth)
             else:
-                self.auth_label.setText(f"\u26D4 Not authorized \u2014 {auth.get('reason', '')}")
+                self.auth_label.setText(f"Not authorized \u2014 {auth.get('reason', '')}")
                 self.auth_label.setStyleSheet(f"color: {self.p.danger}; font-weight: 600;")
 
     def _offer_token(self, auth: dict):
+        """_offer_token."""
         from cortex_unified.system_tools.load_tester import TargetAuthorizer
         if not self._token:
             self._token = TargetAuthorizer.new_token()
         self.auth_label.setText(
-            f"\u26D4 '{auth['host']}' is a public host. Prove you own it to proceed.")
+            f"'{auth['host']}' is a public host. Prove you own it to proceed.")
         self.auth_label.setStyleSheet(f"color: {self.p.warning}; font-weight: 600;")
         self.token_box.setText(
             "<b>To authorize this public target:</b><br>"
@@ -1125,11 +2622,13 @@ class LoadTesterPage(_Page):
         self.token_box.setVisible(True)
 
     def _auth_fail(self, msg: str):
+        """_auth_fail."""
         self.check_btn.setEnabled(True)
         self.auth_label.setText(f"Authorization check failed: {msg}")
 
     # -- run --
     def _toggle(self):
+        """_toggle."""
         if self._running and self._worker is not None:
             self._worker.cancel()
             self.run_btn.setEnabled(False)
@@ -1138,6 +2637,7 @@ class LoadTesterPage(_Page):
         self._start()
 
     def _start(self):
+        """_start."""
         if not self._auth:
             self.auth_label.setText("Check authorization first.")
             return
@@ -1175,11 +2675,13 @@ class LoadTesterPage(_Page):
                             on_progress=self._on_progress)
 
     def _on_progress(self, snap: dict):
+        """_on_progress."""
         self.live.setText(
             f"{snap['elapsed_s']}s \u2014 {snap['requests']} requests, "
             f"{snap['rps']} req/s, {snap['errors']} errors ({snap['error_rate']}%)")
 
     def _on_done(self, s: dict):
+        """_on_done."""
         self._running = False
         self._worker = None
         self.run_btn.setText("Start Test")
@@ -1203,19 +2705,21 @@ class LoadTesterPage(_Page):
 
     @staticmethod
     def _verdict(s: dict) -> str:
+        """_verdict."""
         er = s.get("error_rate", 0)
         p95 = s.get("p95_ms", 0)
         if er == 0 and p95 < 300:
-            return ("<span>\u2705 Healthy: no errors and low latency at this load. "
+            return ("<span><b>Healthy</b> &middot; no errors and low latency at this load. "
                     "Try raising concurrency to find the breaking point.</span>")
         if er < 5:
-            return ("<span>\u26A0 Approaching limits: latency is climbing. This is near "
+            return ("<span><b>Approaching limits</b> &middot; latency is climbing. This is near "
                     "your comfortable capacity.</span>")
-        return ("<span>\u26D4 Breaking point: high error rate under this load. This is "
+        return ("<span><b>Breaking point</b> &middot; high error rate under this load. This is "
                 "where your service degrades - a good place to harden (rate limits, "
                 "autoscaling, caching, connection limits).</span>")
 
     def _run_fail(self, msg: str):
+        """_run_fail."""
         self._running = False
         self._worker = None
         self.run_btn.setText("Start Test")

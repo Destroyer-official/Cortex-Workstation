@@ -9,7 +9,6 @@ from datetime import datetime
 from typing import Dict, List, Any, Optional
 import logging
 import os
-import shutil
 
 from cortex_unified.core.utils import DeepCleanerError, ensure_directory
 
@@ -39,9 +38,10 @@ class ManifestSystem:
         self._current_operations: Dict[str, Dict] = {}
     
     def _get_default_manifest_dir(self) -> Path:
-        """Get default manifest directory."""
         home = Path.home()
         return home / ".cortex_cleaner" / "manifests"
+        """_get_default_manifest_dir."""
+        """_get_default_manifest_dir."""
     
     def create_operation_manifest(self, operation_type: str, parameters: Dict[str, Any] = None) -> str:
         """Create atomic manifest with unique operation ID.
@@ -62,7 +62,6 @@ class ManifestSystem:
             random_suffix = uuid.uuid4().hex[:6]
             op_id = f"{timestamp}_{random_suffix}"
             
-            # Create manifest structure
             manifest = {
                 "op_id": op_id,
                 "timestamp": datetime.now().isoformat(),
@@ -101,7 +100,8 @@ class ManifestSystem:
                 "username": getpass.getuser()
             }
             
-            # Add UID on Unix systems
+            # Owner identity is only available on POSIX; recorded so a
+            # restored file can be attributed correctly.
             if hasattr(os, 'getuid'):
                 user_info["uid"] = os.getuid()
             
@@ -110,12 +110,13 @@ class ManifestSystem:
             return {"username": "unknown"}
     
     def _get_os_info(self) -> str:
-        """Get OS information."""
         try:
             import platform
             return f"{platform.system()} {platform.release()}"
         except Exception:
             return "unknown"
+        """_get_os_info."""
+        """_get_os_info."""
     
     def log_file_action(self, op_id: str, action_type: str, file_path: Path, 
                        action: str, **kwargs) -> None:
@@ -137,7 +138,6 @@ class ManifestSystem:
             # Generate item ID
             item_id = str(len(manifest["items"]) + 1)
             
-            # Create file action entry
             action_entry = {
                 "id": item_id,
                 "type": action_type,
@@ -168,10 +168,8 @@ class ManifestSystem:
                 if key not in action_entry:
                     action_entry[key] = value
             
-            # Add to manifest
             manifest["items"].append(action_entry)
             
-            # Update summary
             if action_type == "file":
                 manifest["summary"]["files_processed"] += 1
             elif action_type == "directory":
@@ -249,15 +247,14 @@ class ManifestSystem:
             
             manifest = self._current_operations[op_id]
             
-            # Update final status
             manifest["status"] = "completed" if success else "failed"
             manifest["completion_time"] = datetime.now().isoformat()
             
-            # Calculate final summary
             total_items = len(manifest["items"])
             manifest["summary"]["total_items"] = total_items
             
-            # Write atomically using temporary file
+            # Temp-file + rename so a crash mid-write can never leave a
+            # truncated (unrestorable) manifest behind.
             manifest_filename = f"manifest_{op_id}.json"
             manifest_path = self.manifest_dir / manifest_filename
             

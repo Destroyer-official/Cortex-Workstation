@@ -18,6 +18,8 @@ class StartupScanWorker(QThread):
     def __init__(self, config):
         super().__init__()
         self.manager = StartupManager(config)
+        """__init__."""
+        """__init__."""
         
     def run(self):
         try:
@@ -25,6 +27,9 @@ class StartupScanWorker(QThread):
             self.finished.emit(items)
         except Exception as e:
             self.error.emit(str(e))
+        """run."""
+    """StartupScanWorker class."""
+    """StartupScanWorker class."""
 
 class StartupManagerTab(BaseTab):
     """Tab for startup manager tab functionality."""
@@ -33,6 +38,8 @@ class StartupManagerTab(BaseTab):
         super().__init__(config, logger, safety_manager)
         self.manager = StartupManager(config)
         self.worker = None
+        """__init__."""
+        """__init__."""
 
     def setup_ui(self):
         """Create the startup manager tab."""
@@ -70,6 +77,8 @@ class StartupManagerTab(BaseTab):
 
     def _on_selection(self):
         self.disable_startup_button.setEnabled(len(self.startup_table.selectedItems()) > 0)
+        """_on_selection."""
+        """_on_selection."""
 
     def refresh_startup_items(self):
         if self.worker and self.worker.isRunning():
@@ -84,6 +93,8 @@ class StartupManagerTab(BaseTab):
         self.worker.finished.connect(self._on_scan_finished)
         self.worker.error.connect(self._on_scan_error)
         self.worker.start()
+        """refresh_startup_items."""
+        """refresh_startup_items."""
 
     def _on_scan_finished(self, items: List[Dict]):
         self.startup_progress_bar.setVisible(False)
@@ -95,12 +106,16 @@ class StartupManagerTab(BaseTab):
             self.startup_table.setItem(row, 1, QTableWidgetItem(item.get("location", "")))
             self.startup_table.setItem(row, 2, QTableWidgetItem("Enabled" if item.get("enabled", True) else "Disabled"))
             self.startup_table.setItem(row, 3, QTableWidgetItem(item.get("type", "")))
+        """_on_scan_finished."""
+        """_on_scan_finished."""
 
     def _on_scan_error(self, err_msg):
         self.startup_progress_bar.setVisible(False)
         self.refresh_startup_button.setEnabled(True)
         self.logger.error(f"Startup manager scan failed: {err_msg}")
         QMessageBox.critical(self, "Scan Failed", f"Failed to list startup items:\n{err_msg}")
+        """_on_scan_error."""
+        """_on_scan_error."""
 
     def disable_selected_startup_items(self):
         row = self.startup_table.currentRow()
@@ -120,3 +135,5 @@ class StartupManagerTab(BaseTab):
                 self.refresh_startup_items()
             else:
                 QMessageBox.critical(self, "Failed", "Could not modify registry/folder access directly. Elevate privileges.")
+        """disable_selected_startup_items."""
+        """disable_selected_startup_items."""

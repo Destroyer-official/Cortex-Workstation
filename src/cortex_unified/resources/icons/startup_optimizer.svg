@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="rocketBody" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#60A5FA"/>
+      <stop offset="100%" stop-color="#3B82F6"/>
+    </linearGradient>
+    <linearGradient id="flame" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#FBBF24"/>
+      <stop offset="60%" stop-color="#F97316"/>
+      <stop offset="100%" stop-color="#EF4444"/>
+    </linearGradient>
+    <linearGradient id="gaugeArc" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#22C55E"/>
+      <stop offset="50%" stop-color="#FBBF24"/>
+      <stop offset="100%" stop-color="#EF4444"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Rocket body -->
+  <path d="M64 12 C64 12, 80 30, 80 60 L80 72 C80 76, 76 80, 72 80 L56 80 C52 80, 48 76, 48 72 L48 60 C48 30, 64 12, 64 12 Z" fill="url(#rocketBody)" stroke="#2563EB" stroke-width="1.5"/>
+
+  <!-- Rocket window -->
+  <circle cx="64" cy="38" r="8" fill="#1E3A5F" stroke="#93C5FD" stroke-width="1.5"/>
+  <circle cx="64" cy="38" r="4.5" fill="#BFDBFE" opacity="0.6"/>
+
+  <!-- Left fin -->
+  <path d="M48 58 L34 74 L48 72 Z" fill="#2563EB" stroke="#1D4ED8" stroke-width="1"/>
+
+  <!-- Right fin -->
+  <path d="M80 58 L94 74 L80 72 Z" fill="#2563EB" stroke="#1D4ED8" stroke-width="1"/>
+
+  <!-- Exhaust flame -->
+  <path d="M56 80 Q58 95 60 100 Q62 95 64 108 Q66 95 68 100 Q70 95 72 80 Z" fill="url(#flame)" opacity="0.9"/>
+  <path d="M58 80 Q60 90 62 95 Q64 88 66 95 Q68 90 70 80 Z" fill="#FDE68A" opacity="0.7"/>
+
+  <!-- Speed gauge arc (bottom-right) -->
+  <path d="M86 92 A28 28 0 0 1 110 116" fill="none" stroke="#374151" stroke-width="3" stroke-linecap="round" opacity="0.3"/>
+  <path d="M86 92 A28 28 0 0 1 104 108" fill="none" stroke="url(#gaugeArc)" stroke-width="3" stroke-linecap="round"/>
+
+  <!-- Gauge needle -->
+  <line x1="98" y1="114" x2="107" y2="100" stroke="#F9FAFB" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="98" cy="114" r="2.5" fill="#F9FAFB"/>
+
+  <!-- Gauge center dot -->
+  <circle cx="98" cy="114" r="1" fill="#374151"/>
+
+  <!-- Speed lines -->
+  <line x1="20" y1="50" x2="32" y2="50" stroke="#93C5FD" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
+  <line x1="14" y1="60" x2="30" y2="60" stroke="#93C5FD" stroke-width="1.5" stroke-linecap="round" opacity="0.4"/>
+  <line x1="20" y1="70" x2="32" y2="70" stroke="#93C5FD" stroke-width="1.5" stroke-linecap="round" opacity="0.3"/>
+</svg>

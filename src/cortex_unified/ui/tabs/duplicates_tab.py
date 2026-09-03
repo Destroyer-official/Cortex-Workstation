@@ -36,6 +36,8 @@ class DuplicateFinderWorker(QThread):
         self.path = path
         self.hash_algorithm = hash_algorithm
         self._is_running = True
+        """__init__."""
+        """__init__."""
 
     def run(self):
         try:
@@ -51,6 +53,8 @@ class DuplicateFinderWorker(QThread):
                     # we emit 0 just to satisfy signature requirements
                     self.progress_updated.emit(0)
                     time.sleep(0.1)
+                """poll_progress."""
+                """poll_progress."""
 
             t = threading.Thread(target=poll_progress)
             t.daemon = True
@@ -67,12 +71,17 @@ class DuplicateFinderWorker(QThread):
         except Exception as e:
             self._is_running = False
             self.error_occurred.emit(str(e))
+        """run."""
+    """DuplicateFinderWorker class."""
+    """DuplicateFinderWorker class."""
 
 
 class DuplicatesTab(BaseTab):
     def __init__(self, config, logger, safety_manager):
         super().__init__(config, logger, safety_manager)
         self.current_duplicates = {}
+        """__init__."""
+        """__init__."""
         
     def setup_ui(self):
         layout = QVBoxLayout(self)
@@ -158,6 +167,8 @@ class DuplicatesTab(BaseTab):
         splitter.addWidget(self.duplicates_details)
         splitter.setSizes([400, 400])
         layout.addWidget(splitter)
+        """setup_ui."""
+        """setup_ui."""
         # Note: Do not override layout manually to prevent QLayout errors
 
     def start_find_duplicates(self):
@@ -182,6 +193,8 @@ class DuplicatesTab(BaseTab):
         worker.error_occurred.connect(self.duplicates_error)
         worker.finished.connect(lambda: self.operation_finished(worker))
         worker.start()
+        """start_find_duplicates."""
+        """start_find_duplicates."""
         
     def duplicates_found(self, result):
         self.logger.info("Duplicates found")
@@ -209,7 +222,7 @@ class DuplicatesTab(BaseTab):
             try:
                 group_size = paths[0].stat().st_size
                 size_str = f"{group_size / 1024:.2f} KB"
-            except:
+            except (OSError, ValueError):
                 size_str = "Unknown"
                 
             group_item = QTreeWidgetItem(self.duplicates_tree)
@@ -233,12 +246,18 @@ class DuplicatesTab(BaseTab):
                     child.setCheckState(0, Qt.CheckState.Unchecked)
                     
         self.delete_duplicates_button.setEnabled(len(duplicates) > 0)
+        """duplicates_found."""
+        """duplicates_found."""
         
     def select_all_duplicates(self):
         self._set_tree_states(Qt.CheckState.Checked)
+        """select_all_duplicates."""
+        """select_all_duplicates."""
         
     def deselect_all_duplicates(self):
         self._set_tree_states(Qt.CheckState.Unchecked)
+        """deselect_all_duplicates."""
+        """deselect_all_duplicates."""
         
     def _set_tree_states(self, state):
         root = self.duplicates_tree.invisibleRootItem()
@@ -248,11 +267,15 @@ class DuplicatesTab(BaseTab):
             for j in range(group.childCount()):
                 child = group.child(j)
                 child.setCheckState(0, state)
+        """_set_tree_states."""
+        """_set_tree_states."""
 
     def duplicates_error(self, error):
         self.logger.error(f"Error finding duplicates: {error}")
         QMessageBox.critical(self, 'Error', f'An error occurred: {error}')
         self.status_label.setText(f"Error: {error}")
+        """duplicates_error."""
+        """duplicates_error."""
         
     def delete_selected_duplicates(self):
         self.logger.info("Deleting selected duplicates")
@@ -298,14 +321,21 @@ class DuplicatesTab(BaseTab):
             
         # Rescan to update
         self.start_find_duplicates()
+        """delete_selected_duplicates."""
+        """delete_selected_duplicates."""
         
     def progress_bar_start_delete(self):
         self.status_label.setText("Deleting files...")
         self.duplicates_progress_bar.setVisible(True)
         self.duplicates_progress_bar.setRange(0, 0)
+        """progress_bar_start_delete."""
+        """progress_bar_start_delete."""
         
     def operation_finished(self, worker):
         self.duplicates_progress_bar.setVisible(False)
         self.find_duplicates_button.setEnabled(True)
         self.remove_worker_thread(worker)
         worker.deleteLater()
+        """operation_finished."""
+    """DuplicatesTab class."""
+    """DuplicatesTab class."""

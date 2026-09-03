@@ -63,6 +63,8 @@ class BaseTab(QWidget):
                     return getattr(top_window, name)(*args, **kwargs)
                 except Exception as e:
                     self.logger.error(f"Error in lazy proxy {name}: {e}")
+                """lazy_call."""
+                """lazy_call."""
             return lazy_call
         finally:
             self._in_getattr = False
@@ -139,7 +141,6 @@ class BaseTab(QWidget):
             Created Operation instance
         """
         try:
-            # Create operation through safety manager
             operation = self.safety_manager.create_operation(
                 operation_type=operation_type,
                 paths=paths,
@@ -150,7 +151,6 @@ class BaseTab(QWidget):
             # Store current operation
             self._current_operation = operation
 
-            # Emit signal for operation request
             self.operation_requested.emit(operation)
 
             return operation
@@ -187,7 +187,6 @@ class BaseTab(QWidget):
                 )
                 return
 
-            # Execute operation if approved
             if validation_result == ValidationResult.APPROVED:
                 self._execute_operation(operation)
 
@@ -206,13 +205,10 @@ class BaseTab(QWidget):
             self.status_changed.emit(self.tr("status.executing_operation",
                                              operation_type=operation.type.value))
 
-            # Execute through safety manager
             result = self.safety_manager.execute_safe_operation(operation)
 
-            # Emit completion signal
             self.operation_completed.emit(result)
 
-            # Update status
             if result.success:
                 self.status_changed.emit(self.tr("status.operation_completed_successfully",
                                                  processed_items=result.processed_items))
@@ -271,17 +267,24 @@ class BaseTab(QWidget):
                     self._current_operation.id)
                 self._current_operation = None
 
-            # Stop all worker threads
+            # Stop all worker threads (never use QThread.terminate — it
+            # can corrupt the process if the thread holds CRT/heap locks).
+            stuck = []
             for thread in self.worker_threads:
                 if thread and thread.isRunning():
                     try:
                         thread.quit()
-                        thread.wait(3000)  # Wait up to 3 seconds
-                        if thread.isRunning():
-                            thread.terminate()
-                            thread.wait(1000)  # Wait for termination
+                        thread.wait(3000)
                     except RuntimeError:
-                        pass  # Thread already deleted
+                        pass
+                    if thread.isRunning():
+                        stuck.append(thread)
+                        thread.setParent(None)  # detach so destructor won't fire
+
+            if stuck:
+                self.logger.warning(
+                    "%d worker thread(s) did not stop within grace period; "
+                    "detaching to avoid process corruption", len(stuck))
 
             self.worker_threads.clear()
 

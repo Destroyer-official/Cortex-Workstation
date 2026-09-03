@@ -28,10 +28,14 @@ venv/
 env/
 ENV/
 
-# --- IDE ---
+# --- IDE / Tooling ---
 .vscode/
 .idea/
+.kiro/
 *.swp
+
+# --- Node / Web cruft ---
+node_modules/
 
 # --- OS cruft ---
 .DS_Store
@@ -46,6 +50,8 @@ CortexCleanerBackups/
 
 # --- Misc scratch files that shouldn't be tracked ---
 _archive/
+.tmp/
+.tmp*/
 
 # --- SEPARATE PROJECT: never ship with Cortex ---
 # NetStress is an unrelated offensive network tool that must NOT be committed,
@@ -55,3 +61,6 @@ _archive/
 NetStress/
 Destroyer-DoS/
 attack.log
+
+# Release archives / stray downloads
+*.zip

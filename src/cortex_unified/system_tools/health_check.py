@@ -14,12 +14,14 @@ Design principles:
 from __future__ import annotations
 
 import logging
-import platform
+import os
+import sys
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any, Callable
 
 _LOG = logging.getLogger("cortex.system_tools.health_check")
-_IS_WINDOWS = platform.system() == "Windows"
+_IS_WINDOWS = sys.platform == "win32"
 
 # severity -> points deducted from 100
 _DEDUCT = {"good": 0, "info": 0, "warning": 12, "critical": 30}
@@ -27,6 +29,7 @@ _DEDUCT = {"good": 0, "info": 0, "warning": 12, "critical": 30}
 
 @dataclass(slots=True)
 class HealthCheck:
+    """Health Check data container."""
     id: str
     title: str
     severity: str          # good / warning / critical / info
@@ -34,17 +37,20 @@ class HealthCheck:
     action_page: str = ""  # page id to jump to, if any
 
     def to_dict(self) -> dict[str, Any]:
+        """To dict."""
         return {"id": self.id, "title": self.title, "severity": self.severity,
                 "detail": self.detail, "action_page": self.action_page}
 
 
 @dataclass(slots=True)
 class HealthReport:
+    """Health Report data container."""
     checks: list[HealthCheck] = field(default_factory=list)
     score: int = 100
     grade: str = "A"
 
     def to_dict(self) -> dict[str, Any]:
+        """To dict."""
         return {"checks": [c.to_dict() for c in self.checks],
                 "score": self.score, "grade": self.grade}
 
@@ -56,6 +62,7 @@ class HealthChecker:
     """Runs the read-only health checks and scores them."""
 
     def run(self, progress: ProgressCB | None = None) -> HealthReport:
+        """Run."""
         checks: list[HealthCheck] = []
         steps = [
             ("Checking free disk space\u2026", self._check_disk_space),
@@ -96,13 +103,15 @@ class HealthChecker:
         else:
             grade = "F"
         return score, grade
+        """_score."""
+        """_score."""
 
     # -- individual checks --------------------------------------------------
 
     @staticmethod
     def _check_disk_space() -> HealthCheck:
         import shutil
-        root = "C:\\" if _IS_WINDOWS else "/"
+        root = str(Path.home().anchor or (os.environ.get("SystemDrive", "C:") + "\\")) if _IS_WINDOWS else "/"
         total, used, free = shutil.disk_usage(root)
         pct_free = (free / total * 100) if total else 0
         free_gb = free / 1024 ** 3
@@ -115,6 +124,8 @@ class HealthChecker:
         else:
             sev, detail = "good", f"{pct_free:.0f}% free ({free_gb:.0f} GB). Plenty of room."
         return HealthCheck("disk_space", "Free disk space", sev, detail, "dashboard")
+        """_check_disk_space."""
+        """_check_disk_space."""
 
     @staticmethod
     def _check_memory() -> HealthCheck:
@@ -129,6 +140,8 @@ class HealthChecker:
         else:
             sev, detail = "good", f"Memory is {vm.percent:.0f}% used - comfortable."
         return HealthCheck("memory", "Memory usage", sev, detail, "processes")
+        """_check_memory."""
+        """_check_memory."""
 
     @staticmethod
     def _check_disk_health() -> HealthCheck | None:
@@ -148,6 +161,8 @@ class HealthChecker:
                                "diskhealth")
         return HealthCheck("disk_health", "Drive health", "good",
                            f"All {len(disks)} drive(s) report healthy.", "diskhealth")
+        """_check_disk_health."""
+        """_check_disk_health."""
 
     @staticmethod
     def _check_boot() -> HealthCheck | None:
@@ -170,6 +185,8 @@ class HealthChecker:
         else:
             sev, detail = "good", f"Boot takes {latest:.0f}s - fast."
         return HealthCheck("boot", "Boot performance", sev, detail, "bootperf")
+        """_check_boot."""
+        """_check_boot."""
 
     @staticmethod
     def _check_security() -> HealthCheck | None:
@@ -190,6 +207,8 @@ class HealthChecker:
                                "security")
         return HealthCheck("security", "Security", "good",
                            "Defender is on with current signatures.", "security")
+        """_check_security."""
+        """_check_security."""
 
     @staticmethod
     def _check_updates() -> HealthCheck | None:
@@ -215,3 +234,5 @@ class HealthChecker:
             sev = "good"
             detail = f"Last update installed {age_days} day(s) ago."
         return HealthCheck("updates", "Windows Update", sev, detail, "winupdate")
+        """_check_updates."""
+        """_check_updates."""

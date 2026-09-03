@@ -57,11 +57,36 @@ PROTECTED_EXTENSIONS = {
 }
 
 def _get_protected_paths() -> set:
-    """Get protected paths for current platform."""
+    """Protected system locations for the current platform.
+
+    The platform-specific set is always merged with ``PROTECTED_PATHS_COMMON``
+    so callers cannot accidentally skip the entries that apply everywhere.
+    On Windows, this dynamically resolves system environment paths and drive roots.
+    """
     system = platform.system().lower()
-    
+
     if system == "windows":
-        return PROTECTED_PATHS_WINDOWS | PROTECTED_PATHS_COMMON
+        paths = set(PROTECTED_PATHS_WINDOWS)
+        # Dynamically add current environment paths
+        for env_k in ("SystemRoot", "WINDIR", "ProgramFiles", "ProgramFiles(x86)", "ProgramData", "PUBLIC"):
+            val = os.environ.get(env_k)
+            if val:
+                paths.add(val)
+        # Dynamically protect drive roots system directories across all drives
+        try:
+            import psutil
+            for part in psutil.disk_partitions(all=False):
+                mount = part.mountpoint.rstrip("\\/")
+                if mount:
+                    paths.add(f"{mount}\\$Recycle.Bin")
+                    paths.add(f"{mount}\\System Volume Information")
+                    paths.add(f"{mount}\\Recovery")
+        except Exception:
+            for letter in "CDEFGHIJKLMNOPQRSTUVWXYZ":
+                paths.add(f"{letter}:\\$Recycle.Bin")
+                paths.add(f"{letter}:\\System Volume Information")
+                paths.add(f"{letter}:\\Recovery")
+        return paths | PROTECTED_PATHS_COMMON
     elif system == "darwin":
         return PROTECTED_PATHS_MACOS | PROTECTED_PATHS_COMMON
     else:  # Linux and others
@@ -95,45 +120,49 @@ def is_safe_path(path: Union[str, Path], base_dir: Union[str, Path] = None) -> b
     """
     try:
         path = Path(path).resolve()
-        
-        # Check if path exists
+
         if not path.exists():
             return False
-        
-        # Check if path is within base_dir (if specified)
+
+        # Constrain operations to a subtree when the caller provides one;
+        # relative_to() raises ValueError for anything outside it.
         if base_dir:
             base_dir = Path(base_dir).resolve()
             try:
                 path.relative_to(base_dir)
             except ValueError:
-                # Path is outside base_dir
                 return False
-        
-        # Check against protected paths
+
+        # Prefix match against protected roots. Comparison is lowercased
+        # because Windows paths are case-insensitive and macOS preserves
+        # case while still matching insensitively on its default FS.
         path_str = str(path)
         protected_paths = _get_protected_paths()
-        
+
         for protected in protected_paths:
-            # Normalize path separators for comparison
-            protected_normalized = str(Path(protected))
-            path_normalized = str(path)
-            
-            # Check if path starts with protected path
-            if path_normalized.lower().startswith(protected_normalized.lower()):
+            protected_resolved = Path(protected).resolve()
+
+            if path == protected_resolved:
                 return False
-        
-        # Check file extension for system files
+            try:
+                if path.is_relative_to(protected_resolved):
+                    return False
+            except (ValueError, OSError):
+                pass
+
+        # System binaries outside user areas are off limits. The user-area
+        # exemption exists so users can still clean their own Downloads or
+        # Desktop copies of .exe/.dll files.
         if path.is_file() and path.suffix.lower() in PROTECTED_EXTENSIONS:
-            # Allow if it's in a user directory
             path_str_lower = path_str.lower()
             user_indicators = ["users", "home", "documents", "downloads", "desktop"]
             if not any(indicator in path_str_lower for indicator in user_indicators):
                 return False
-        
+
         return True
-        
+
     except Exception:
-        # If we can't determine safety, err on the side of caution
+        # Undeterminable safety means unsafe; never fail open here.
         return False
 
 def is_system_file(path: Union[str, Path]) -> bool:
@@ -155,30 +184,34 @@ def is_system_file(path: Union[str, Path]) -> bool:
     """
     try:
         path = Path(path).resolve()
-        
-        # Check against protected paths
+
         path_str = str(path)
         protected_paths = _get_protected_paths()
-        
+
         for protected in protected_paths:
-            protected_normalized = str(Path(protected))
-            path_normalized = str(path)
-            
-            if path_normalized.lower().startswith(protected_normalized.lower()):
+            protected_resolved = Path(protected).resolve()
+
+            if path == protected_resolved:
                 return True
-        
-        # Check file extension
+            try:
+                if path.is_relative_to(protected_resolved):
+                    return True
+            except (ValueError, OSError):
+                pass
+
+        # Not under a protected root, but a system binary type in a
+        # system-ish directory still counts as a system file.
         if path.is_file() and path.suffix.lower() in PROTECTED_EXTENSIONS:
-            # Check if it's in a system directory
             path_str_lower = path_str.lower()
             system_indicators = ["windows", "system32", "program files", "usr", "bin", "sbin", "lib"]
             if any(indicator in path_str_lower for indicator in system_indicators):
                 return True
-        
+
         return False
-        
+
     except Exception:
-        # If we can't determine, assume it's a system file to be safe
+        # Undeterminable means assume the worst; callers treat this as
+        # undeletable rather than risking an OS file.
         return True
 
 def validate_paths(paths: List[Union[str, Path]], 
@@ -222,23 +255,25 @@ def validate_paths(paths: List[Union[str, Path]],
 
 def is_path_writable(path: Union[str, Path]) -> bool:
     """Check if a path is writable.
-    
+
+    For paths that do not exist yet, writability of the parent directory is
+    used as the proxy -- creating the file is what matters in that case.
+
     Args:
         path: Path to check
-    
+
     Returns:
         True if path is writable, False otherwise
     """
     try:
         path = Path(path)
-        
+
         if path.exists():
             return os.access(path, os.W_OK)
         else:
-            # Check if parent directory is writable
             parent = path.parent
             return parent.exists() and os.access(parent, os.W_OK)
-            
+
     except Exception:
         return False
 
@@ -251,7 +286,6 @@ def get_safe_temp_dir() -> Path:
     import tempfile
     return Path(tempfile.gettempdir())
 
-# Convenience function for common use case
 def check_deletion_safety(path: Union[str, Path], 
                          allow_system_files: bool = False) -> Tuple[bool, str]:
     """Check if it's safe to delete a path.
@@ -277,24 +311,20 @@ def check_deletion_safety(path: Union[str, Path],
     """
     try:
         path = Path(path)
-        
-        # Check if path exists
+
         if not path.exists():
             return False, "Path does not exist"
-        
-        # Check if it's a system file
+
         if not allow_system_files and is_system_file(path):
             return False, "Cannot delete system files"
-        
-        # Check if path is safe
+
         if not is_safe_path(path):
             return False, "Path is in a protected location"
-        
-        # Check if we have write permission
+
         if not is_path_writable(path):
             return False, "No write permission"
-        
+
         return True, ""
-        
+
     except Exception as e:
         return False, f"Error checking path: {e}"

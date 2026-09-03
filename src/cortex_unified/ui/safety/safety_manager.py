@@ -11,9 +11,9 @@ import os
 
 from cortex_unified.core.config import Config
 from cortex_unified.core.utils import DeepCleanerError
-from .path_validator import PathValidator, PathValidationError
-from .manifest_system import ManifestSystem, ManifestError
-from .process_manager import ProcessManager, ProcessError
+from .path_validator import PathValidator
+from .manifest_system import ManifestSystem
+from .process_manager import ProcessManager
 
 class OperationType(Enum):
     """Types of operations that can be performed."""
@@ -102,18 +102,21 @@ class SafetyManager:
         import sys
         
         if sys.platform.startswith("win"):
+            sys_drive = os.environ.get("SystemDrive", "C:").rstrip("\\/")
+            windir = os.environ.get("SystemRoot", os.environ.get("WINDIR", f"{sys_drive}\\Windows"))
+            progdata = os.environ.get("PROGRAMDATA", f"{sys_drive}\\ProgramData")
             critical_paths = [
-                "C:\\Windows\\System32",
-                "C:\\Windows\\SysWOW64", 
-                "C:\\Windows\\Boot",
-                "C:\\Windows\\Fonts",
-                "C:\\Windows\\inf",
-                "C:\\Windows\\Logs",
-                "C:\\Windows\\servicing",
-                "C:\\Windows\\WinSxS",
-                "C:\\ProgramData\\Microsoft\\Windows\\Start Menu",
-                "C:\\Users\\All Users",
-                "C:\\Users\\Default User"
+                os.path.join(windir, "System32"),
+                os.path.join(windir, "SysWOW64"), 
+                os.path.join(windir, "Boot"),
+                os.path.join(windir, "Fonts"),
+                os.path.join(windir, "inf"),
+                os.path.join(windir, "Logs"),
+                os.path.join(windir, "servicing"),
+                os.path.join(windir, "WinSxS"),
+                os.path.join(progdata, "Microsoft", "Windows", "Start Menu"),
+                os.path.join(sys_drive, "Users", "All Users"),
+                os.path.join(sys_drive, "Users", "Default User"),
             ]
         else:
             critical_paths = [
@@ -190,7 +193,6 @@ class SafetyManager:
         # Convert paths to Path objects
         path_objects = [Path(p) if isinstance(p, str) else p for p in paths]
         
-        # Create operation with safety defaults
         operation = Operation(
             id=op_id,
             type=operation_type,
@@ -200,7 +202,6 @@ class SafetyManager:
             description=description or f"{operation_type.value.title()} operation on {len(path_objects)} items"
         )
         
-        # Store as pending
         self._pending_operations[op_id] = operation
         
         self.logger.info(f"Created operation {op_id}: {operation.description}")
@@ -293,15 +294,12 @@ class SafetyManager:
     
     def _validate_basic_requirements(self, operation: Operation) -> ValidationResult:
         """Phase 1: Basic validation requirements."""
-        # Check batch size limits
         if len(operation.paths) > self.max_batch_size:
             raise SafetyError(f"Batch size {len(operation.paths)} exceeds maximum {self.max_batch_size}")
         
-        # Check for empty operations
         if not operation.paths:
             raise SafetyError("Operation contains no paths to process")
         
-        # Validate operation type
         if not isinstance(operation.type, OperationType):
             raise SafetyError(f"Invalid operation type: {operation.type}")
         
@@ -317,7 +315,6 @@ class SafetyManager:
     def _enforce_dry_run_policy(self, operation: Operation) -> ValidationResult:
         """Phase 2: Enforce dry-run policy for destructive operations."""
         if not operation.dry_run:
-            # Check if we have a completed dry-run for this operation pattern
             dry_run_key = self._get_dry_run_key(operation)
             
             if dry_run_key not in self._completed_dry_runs:
@@ -337,19 +334,17 @@ class SafetyManager:
     
     def _get_dry_run_key(self, operation: Operation) -> str:
         """Generate a key for tracking dry-run results."""
-        # Create a key based on operation type and path patterns
+        # Paths are resolved + sorted (capped at 10) so the same logical
+        # operation maps to one key even if the caller lists paths differently.
         path_signatures = sorted([str(p.resolve()) for p in operation.paths[:10]])  # Limit to first 10 paths
         return f"{operation.type.value}_{hash(tuple(path_signatures))}"
     
     def _validate_path_safety(self, operation: Operation) -> ValidationResult:
         """Phase 3: Enhanced path safety validation."""
-        # Get detailed validation summary
         validation_summary = self.path_validator.get_validation_summary(operation.paths)
         
-        # Store validation summary in operation
         operation.parameters['validation_summary'] = validation_summary
         
-        # Check if any paths were blocked
         if validation_summary['blocked_paths'] > 0:
             self.logger.warning(f"Operation {operation.id}: {validation_summary['blocked_paths']} paths blocked")
             
@@ -386,7 +381,6 @@ class SafetyManager:
                     size_mb = size_bytes / (1024 * 1024)
                     total_size_mb += size_mb
                     
-                    # Check individual file size limits
                     if size_mb > self.max_file_size_mb:
                         large_files.append((path, size_mb))
             except Exception as e:
@@ -401,7 +395,6 @@ class SafetyManager:
             for path, size_mb in large_files[:5]:  # Log first 5
                 self.logger.warning(f"  Large file: {path} ({size_mb:.1f}MB)")
             
-            # Store large file info
             operation.parameters['large_files'] = [(str(p), s) for p, s in large_files]
             
             # Require confirmation for operations with large files
@@ -439,18 +432,19 @@ class SafetyManager:
         return ValidationResult.APPROVED
     
     def _validate_delete_operation(self, operation: Operation) -> ValidationResult:
-        """Validate delete operation specifics."""
         if not operation.dry_run and self.require_confirmation and not operation.user_confirmed:
             return ValidationResult.REQUIRES_CONFIRMATION
         return ValidationResult.APPROVED
+        """_validate_delete_operation."""
+        """_validate_delete_operation."""
     
     def _validate_clean_operation(self, operation: Operation) -> ValidationResult:
-        """Validate clean operation specifics."""
-        # Clean operations have same requirements as delete
+        # Clean and delete share safety requirements; clean just logs more
         return self._validate_delete_operation(operation)
+        """_validate_clean_operation."""
+        """_validate_clean_operation."""
     
     def _validate_move_operation(self, operation: Operation) -> ValidationResult:
-        """Validate move operation specifics."""
         destination = operation.parameters.get("destination")
         if not destination:
             raise SafetyError("Move operation requires destination parameter")
@@ -463,11 +457,14 @@ class SafetyManager:
             raise SafetyError(f"Move destination is not a directory: {destination}")
         
         return ValidationResult.APPROVED
+        """_validate_move_operation."""
+        """_validate_move_operation."""
     
     def _validate_analyze_operation(self, operation: Operation) -> ValidationResult:
-        """Validate analyze operation specifics."""
         # Analyze operations are generally safe (read-only)
         return ValidationResult.APPROVED
+        """_validate_analyze_operation."""
+        """_validate_analyze_operation."""
     
     def _validate_restore_operation_enhanced(self, operation: Operation) -> ValidationResult:
         """Enhanced validation for restore operations."""
@@ -485,7 +482,6 @@ class SafetyManager:
             if not manifest_details:
                 raise SafetyError(f"Could not read manifest: {manifest_path}")
             
-            # Check if manifest is for a completed destructive operation
             if manifest_details.get("status") != "completed":
                 raise SafetyError("Can only restore from completed operations")
             
@@ -507,7 +503,6 @@ class SafetyManager:
             True if valid, False otherwise
         """
         try:
-            # Check if manifest file exists for restore operations
             manifest_path = operation.parameters.get("manifest_path")
             if manifest_path and not Path(manifest_path).exists():
                 self.logger.error(f"Restore manifest not found: {manifest_path}")
@@ -610,12 +605,10 @@ class SafetyManager:
         if not self.enforce_dry_run_first:
             return False  # Dry-run enforcement disabled
         
-        # Check if this is a destructive operation
         destructive_ops = [OperationType.DELETE, OperationType.CLEAN, OperationType.MOVE]
         if operation.type not in destructive_ops:
             return False  # Non-destructive operations don't need dry-run
         
-        # Check if we have a recent dry-run result
         dry_run_key = self._get_dry_run_key(operation)
         return dry_run_key not in self._completed_dry_runs
     
@@ -726,11 +719,12 @@ class SafetyManager:
         return result
     
     def _store_dry_run_result(self, operation: Operation, result: OperationResult) -> None:
-        """Store dry-run result for future reference."""
         if operation.dry_run or result.dry_run_performed:
             dry_run_key = self._get_dry_run_key(operation)
             self._completed_dry_runs[dry_run_key] = result
             self.logger.debug(f"Stored dry-run result for key: {dry_run_key}")
+        """_store_dry_run_result."""
+        """_store_dry_run_result."""
     
     def get_dry_run_result(self, operation: Operation) -> Optional[OperationResult]:
         """Get stored dry-run result for an operation pattern.

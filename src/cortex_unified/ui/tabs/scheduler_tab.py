@@ -51,6 +51,9 @@ class AddTaskDialog(QDialog):
         btns.accepted.connect(self.accept)
         btns.rejected.connect(self.reject)
         layout.addWidget(btns)
+        """__init__."""
+    """AddTaskDialog class."""
+    """AddTaskDialog class."""
 
 class SchedulerTab(BaseTab):
     """Tab for scheduler tab functionality."""
@@ -59,6 +62,8 @@ class SchedulerTab(BaseTab):
         super().__init__(config, logger, safety_manager)
         self.task_scheduler = TaskScheduler(config)
         self.auto_rules = AutoCleanRules(config)
+        """__init__."""
+        """__init__."""
 
     def setup_ui(self):
         """Create the task scheduler tab."""
@@ -109,6 +114,8 @@ class SchedulerTab(BaseTab):
         # Populate immediately
         QTimer.singleShot(100, self._refresh_tasks)
         return tab
+        """create_tasks_subtab."""
+        """create_tasks_subtab."""
 
     def _refresh_tasks(self):
         tasks = self.task_scheduler.list_scheduled_tasks()
@@ -124,6 +131,8 @@ class SchedulerTab(BaseTab):
             self.tasks_table.setItem(i, 1, QTableWidgetItem(trigger))
             self.tasks_table.setItem(i, 2, QTableWidgetItem(status))
             self.tasks_table.setItem(i, 3, QTableWidgetItem(str(task)))
+        """_refresh_tasks."""
+        """_refresh_tasks."""
 
     def _add_task(self):
         dialog = AddTaskDialog(self)
@@ -153,6 +162,8 @@ class SchedulerTab(BaseTab):
                 self._refresh_tasks()
             else:
                 QMessageBox.critical(self, "Error", "Failed to register OS Task. Ensure you have administrator/root privileges.")
+        """_add_task."""
+        """_add_task."""
 
     def _remove_task(self):
         row = self.tasks_table.currentRow()
@@ -169,6 +180,8 @@ class SchedulerTab(BaseTab):
                 self._refresh_tasks()
             else:
                 QMessageBox.critical(self, "Error", "Failed to delete task. Root privileges may be required.")
+        """_remove_task."""
+        """_remove_task."""
 
     def create_auto_clean_rules_subtab(self) -> QWidget:
         tab = QWidget()
@@ -205,6 +218,8 @@ class SchedulerTab(BaseTab):
         layout.addStretch()
         
         return tab
+        """create_auto_clean_rules_subtab."""
+        """create_auto_clean_rules_subtab."""
 
     def _apply_rules(self):
         self.auto_rules.rules.clear()
@@ -220,3 +235,5 @@ class SchedulerTab(BaseTab):
         self.auto_rules.start_monitoring(interval_seconds=3600) # hourly checks
         self.daemon_status_lbl.setText("Daemon: ACTIVE (Rule Enforced)")
         QMessageBox.information(self, "Rules Applied", f"System will now passively flush temp boundaries crossing {limit}% disk usage.")
+        """_apply_rules."""
+        """_apply_rules."""

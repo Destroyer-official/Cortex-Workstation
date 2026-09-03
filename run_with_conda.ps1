@@ -4,22 +4,24 @@ Write-Host "   Cortex Cleaner - Starting with Conda Python" -ForegroundColor Cya
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 
-$condaPython = "D:\program_software\conda\python.exe"
-if (-not (Test-Path $condaPython)) {
-    # Fallback to python in PATH
-    $condaPython = "python"
-    try {
-        $pythonPath = Get-Command python -ErrorAction Stop | Select-Object -ExpandProperty Source
-        Write-Host "Conda Python not found at default location. Falling back to PATH: $pythonPath" -ForegroundColor Yellow
-    } catch {
-        Write-Host "ERROR: python not found in PATH." -ForegroundColor Red
-        Write-Host "Please ensure you have activated your conda environment or python is in your PATH." -ForegroundColor Red
-        Read-Host "Press Enter to exit"
-        exit 1
-    }
+$condaPython = if ($env:CONDA_PREFIX -and (Test-Path "$env:CONDA_PREFIX\python.exe")) {
+    "$env:CONDA_PREFIX\python.exe"
 } else {
-    Write-Host "Using Conda Python at: $condaPython" -ForegroundColor Green
+    try {
+        (Get-Command python -ErrorAction Stop).Source
+    } catch {
+        $null
+    }
 }
+
+if (-not $condaPython) {
+    Write-Host "ERROR: python not found in PATH or active Conda environment." -ForegroundColor Red
+    Write-Host "Please ensure you have activated your conda environment or python is in your PATH." -ForegroundColor Red
+    Read-Host "Press Enter to exit"
+    exit 1
+}
+
+Write-Host "Using Python at: $condaPython" -ForegroundColor Green
 
 Write-Host "Working Directory: $(Get-Location)" -ForegroundColor Green
 Write-Host ""

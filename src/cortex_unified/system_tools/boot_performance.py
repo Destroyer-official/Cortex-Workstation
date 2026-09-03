@@ -18,13 +18,15 @@ from __future__ import annotations
 
 import json
 import logging
-import platform
+import sys
 import subprocess
 from dataclasses import dataclass
 from typing import Any
 
+from cortex_unified.core import proc as _proc
+
 _LOG = logging.getLogger("cortex.system_tools.boot_performance")
-_IS_WINDOWS = platform.system() == "Windows"
+_IS_WINDOWS = sys.platform == "win32"
 _NO_WINDOW = 0x08000000 if _IS_WINDOWS else 0
 
 _LOG_NAME = "Microsoft-Windows-Diagnostics-Performance/Operational"
@@ -41,21 +43,25 @@ _KIND = {
 
 @dataclass(slots=True)
 class BootRecord:
+    """Boot Record data container."""
     when: str
     boot_ms: int
     main_path_ms: int
 
     @property
     def boot_seconds(self) -> float:
+        """Boot seconds."""
         return round(self.boot_ms / 1000.0, 1)
 
     def to_dict(self) -> dict[str, Any]:
+        """To dict."""
         return {"when": self.when, "boot_ms": self.boot_ms,
                 "main_path_ms": self.main_path_ms, "boot_seconds": self.boot_seconds}
 
 
 @dataclass(slots=True)
 class BootIssue:
+    """Boot Issue data container."""
     kind: str
     name: str
     impact_ms: int
@@ -63,9 +69,11 @@ class BootIssue:
 
     @property
     def impact_seconds(self) -> float:
+        """Impact seconds."""
         return round(self.impact_ms / 1000.0, 1)
 
     def to_dict(self) -> dict[str, Any]:
+        """To dict."""
         return {"kind": self.kind, "name": self.name, "impact_ms": self.impact_ms,
                 "impact_seconds": self.impact_seconds, "when": self.when}
 
@@ -75,9 +83,11 @@ class BootPerformanceMonitor:
 
     @staticmethod
     def is_supported() -> bool:
+        """Is supported."""
         return _IS_WINDOWS
 
     def analyze(self, max_boots: int = 10, max_issues: int = 40) -> dict[str, Any]:
+        """Analyze."""
         if not _IS_WINDOWS:
             return {"supported": False, "boots": [], "issues": []}
         out = self._run(self._script(max_boots, max_issues))
@@ -108,6 +118,8 @@ class BootPerformanceMonitor:
             " Name=$d['Name']; TotalTime=$d['TotalTime']; Time=$_.TimeCreated.ToString('s') } };"
             "[pscustomobject]@{ boots=$boots; issues=$issues } | ConvertTo-Json -Depth 4 -Compress"
         )
+        """_script."""
+        """_script."""
 
     @staticmethod
     def _parse(out: str | None) -> tuple[list[BootRecord], list[BootIssue]]:
@@ -123,11 +135,15 @@ class BootPerformanceMonitor:
                 return int(float(v)) if v not in (None, "") else 0
             except (ValueError, TypeError):
                 return 0
+            """_int."""
+            """_int."""
 
         def _as_list(v):
             if v is None:
                 return []
             return v if isinstance(v, list) else [v]
+            """_as_list."""
+            """_as_list."""
 
         boots: list[BootRecord] = []
         for b in _as_list(data.get("boots")):
@@ -154,14 +170,18 @@ class BootPerformanceMonitor:
             ))
         issues.sort(key=lambda i: i.impact_ms, reverse=True)
         return boots, issues
+        """_parse."""
+        """_parse."""
 
     def _run(self, script: str) -> str | None:
         try:
-            proc = subprocess.run(
+            proc = _proc.run(
                 ["powershell", "-NoProfile", "-NonInteractive", "-Command", script],
-                capture_output=True, text=True, timeout=60, creationflags=_NO_WINDOW,
+                text=True, timeout=60, creationflags=_NO_WINDOW,
             )
             return proc.stdout if proc.returncode == 0 else None
-        except (OSError, subprocess.SubprocessError) as exc:
+        except (_proc.ProcessCancelled, OSError, subprocess.SubprocessError) as exc:
             _LOG.debug("boot performance query failed: %s", exc)
             return None
+        """_run."""
+        """_run."""

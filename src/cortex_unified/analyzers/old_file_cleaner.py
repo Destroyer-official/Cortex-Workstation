@@ -1,38 +1,42 @@
-"""Old/unused files cleaner for Cortex Cleaner."""
+"""Discovery of files untouched for a configurable number of days.
+
+Age is measured from mtime via :func:`~cortex_unified.core.utils.get_file_age_days`;
+results are returned oldest-first so the safest candidates surface first.
+"""
 
 import os
 from pathlib import Path
 from typing import List, Tuple
-from datetime import datetime, timedelta
-import platform
 
 from cortex_unified.core.utils import normalize_path, get_file_age_days
 from cortex_unified.core.config import Config
 
 class OldFileCleaner:
-    """Cleaner for old and unused files."""
+    """Finds files older than an age threshold under a root directory."""
     
     def __init__(self, config: Config = None, root_path: str = "."):
-        """Initialize old file cleaner."""
+        """
+        Args:
+            config: Exclusion rules; defaults to ``Config()``.
+            root_path: Directory tree to search.
+        """
         self.config = config or Config()
         self.root_path = normalize_path(root_path)
         self.exclude_patterns = set(self.config.exclude_patterns)
         self.exclude_dirs = set(self.config.exclude_dirs)
         self.follow_symlinks = self.config.follow_symlinks
-        self.min_age_days = 30  # Default: files not accessed in 30 days
+        self.min_age_days = 30
         
-        # Results
-        self.old_files: List[Tuple[Path, int]] = []  # (filepath, age_days)
+        # (filepath, age_days) pairs, oldest first after find_old_files().
+        self.old_files: List[Tuple[Path, int]] = []
         self.file_count = 0
         self.error_count = 0
     
     def _should_exclude_path(self, path: Path) -> bool:
-        """Check if a path should be excluded based on patterns."""
-        # Check exclude directories by name
+        """True when *path* hits an excluded directory name or pattern."""
         if path.name in self.exclude_dirs:
             return True
         
-        # Check exclude patterns
         path_str = str(path)
         for pattern in self.exclude_patterns:
             if pattern in path_str or pattern in path.name:
@@ -55,12 +59,15 @@ class OldFileCleaner:
         
         try:
             for root, dirs, files in os.walk(self.root_path):
-                # Remove excluded directories
+                # Prune excluded directories before descending (os.walk idiom).
                 dirs[:] = [d for d in dirs if d not in self.exclude_dirs]
+                
+                if not self.follow_symlinks:
+                    dirs[:] = [d for d in dirs if not (Path(root) / d).is_symlink()]
                 
                 root_path = Path(root)
                 if self._should_exclude_path(root_path):
-                    dirs[:] = []  # Don't recurse into this directory
+                    dirs[:] = []
                     continue
                 
                 for file in files:
@@ -69,9 +76,11 @@ class OldFileCleaner:
                         continue
                     
                     try:
+                        if filepath.is_symlink() and not self.follow_symlinks:
+                            continue
+                        
                         self.file_count += 1
                         
-                        # Get file age
                         age_days = get_file_age_days(filepath)
                         if age_days >= min_age_days:
                             self.old_files.append((filepath, age_days))
@@ -81,7 +90,6 @@ class OldFileCleaner:
         except Exception:
             pass
         
-        # Sort by age (oldest first)
         self.old_files.sort(key=lambda x: x[1], reverse=True)
         return self.old_files
     

@@ -435,7 +435,6 @@ class TooltipManager:
         
         layout = QVBoxLayout(dialog)
         
-        # Create help text
         help_text = QTextEdit()
         help_text.setReadOnly(True)
         
@@ -490,7 +489,6 @@ class TooltipManager:
         help_text.setHtml(content)
         layout.addWidget(help_text)
         
-        # Close button
         close_button = QPushButton("Close")
         close_button.clicked.connect(dialog.accept)
         layout.addWidget(close_button)
@@ -506,7 +504,6 @@ def setup_tooltips_and_help(main_window) -> None:
     # Apply tooltips to all matching widgets
     TooltipManager.apply_tooltips_to_window(main_window)
     
-    # Set up help menu action
     if hasattr(main_window, 'help_action'):
         main_window.help_action.triggered.connect(
             lambda: TooltipManager.show_help_dialog(main_window)
@@ -515,7 +512,6 @@ def setup_tooltips_and_help(main_window) -> None:
     # Configure tooltip display settings
     QToolTip.setFont(QFont('Arial', 9))
     
-    # Set up context-sensitive help
     main_window.setWhatsThis(
         "Cortex Cleaner main window. Use the tabs to access different cleanup tools. "
         "Hover over controls for detailed tooltips, or press F1 for comprehensive help."
@@ -551,6 +547,8 @@ def create_help_button(parent, help_text: str) -> 'QPushButton':
     
     def show_help():
         QMessageBox.information(parent, "Help", help_text)
+        """show_help."""
+        """show_help."""
     
     help_button.clicked.connect(show_help)
     return help_button

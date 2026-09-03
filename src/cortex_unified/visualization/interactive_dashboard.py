@@ -2,10 +2,12 @@
 Interactive dashboard for comprehensive data visualization.
 """
 
+import logging
 import os
-import json
-from typing import Any, Optional, Dict, List, Union
+from typing import Any, Dict, List
 from pathlib import Path
+
+log = logging.getLogger(__name__)
 try:
     import plotly.graph_objects as go
     from plotly.subplots import make_subplots
@@ -14,35 +16,57 @@ try:
     HAS_PLOTLY = True
 except ImportError:
     HAS_PLOTLY = False
-    # Create dummy classes for when plotly is not available
+    # No-op stand-ins keep method bodies runnable without Plotly
     class go:
         class Figure:
             def __init__(self, *args, **kwargs):
                 pass
+                """__init__."""
+                """__init__."""
             def add_trace(self, *args, **kwargs):
                 pass
+                """add_trace."""
+                """add_trace."""
             def update_layout(self, *args, **kwargs):
                 pass
+                """update_layout."""
+            """Figure class."""
+        """go class."""
+        """go class."""
     class px:
         @staticmethod
         def bar(*args, **kwargs):
             return go.Figure()
+            """bar."""
+            """bar."""
         @staticmethod
         def pie(*args, **kwargs):
             return go.Figure()
+            """pie."""
+        """px class."""
+        """px class."""
     def make_subplots(*args, **kwargs):
         return go.Figure()
+        """make_subplots."""
+        """make_subplots."""
     def plot(*args, **kwargs):
         pass
+        """plot."""
+        """plot."""
 
 from cortex_unified.visualization.treemap_generator import TreeMapGenerator
 from cortex_unified.visualization.sunburst_generator import SunburstGenerator
 
 class InteractiveDashboard:
-    """Creates interactive dashboards with multiple visualization types."""
+    """Composes analyzer output into interactive Plotly dashboards.
+
+    Offers treemap-only, sunburst-only, side-by-side, and combined
+    layouts; drill-down swaps in a fresh analyzer rooted at the
+    clicked path so the caller's original analyzer is untouched.
+    """
     
     def __init__(self, analyzer: Any = None):
-        """Initialize dashboard with disk analyzer."""
+        """Store the analyzer; generators defer until first render."""
         self.analyzer = analyzer
         self.has_plotly = HAS_PLOTLY
         if not self.has_plotly:
@@ -54,13 +78,21 @@ class InteractiveDashboard:
         self.drill_down_history = []
         
     def _initialize_generators(self):
-        """Initialize visualization generators with current data."""
+        """(Re)build tree generators from the current analyzer."""
         if self.analyzer:
             self.treemap_generator = TreeMapGenerator(self.analyzer)
             self.sunburst_generator = SunburstGenerator(self.analyzer)
     
     def create_dashboard(self, layout_type: str = "combined") -> go.Figure:
-        """Create interactive dashboard widget."""
+        """Render the requested layout.
+
+        Args:
+            layout_type: "treemap_only", "sunburst_only",
+                "side_by_side", or "combined" (default).
+
+        Returns:
+            Plotly figure; annotation-only figure when no data exists.
+        """
         if not self.analyzer:
             return self._create_empty_dashboard()
         
@@ -76,7 +108,7 @@ class InteractiveDashboard:
             return self._create_combined_dashboard()
     
     def _create_empty_dashboard(self) -> go.Figure:
-        """Create empty dashboard when no data is available."""
+        """Empty state figure prompting the user to run an analysis."""
         fig = go.Figure()
         fig.add_annotation(
             text="No data available. Please run disk analysis first.",
@@ -94,7 +126,7 @@ class InteractiveDashboard:
         return fig
     
     def _create_treemap_dashboard(self) -> go.Figure:
-        """Create dashboard with only treemap visualization."""
+        """Full-height treemap alone."""
         if not self.treemap_generator:
             return self._create_empty_dashboard()
         
@@ -106,7 +138,7 @@ class InteractiveDashboard:
         return fig
     
     def _create_sunburst_dashboard(self) -> go.Figure:
-        """Create dashboard with only sunburst visualization."""
+        """Full-height sunburst alone."""
         if not self.sunburst_generator:
             return self._create_empty_dashboard()
         
@@ -118,11 +150,10 @@ class InteractiveDashboard:
         return fig
     
     def _create_side_by_side_dashboard(self) -> go.Figure:
-        """Create dashboard with treemap and sunburst side by side."""
+        """Treemap and sunburst sharing one row."""
         if not self.treemap_generator or not self.sunburst_generator:
             return self._create_empty_dashboard()
         
-        # Create subplots
         fig = make_subplots(
             rows=1, cols=2,
             subplot_titles=("TreeMap View", "Sunburst View"),
@@ -130,15 +161,13 @@ class InteractiveDashboard:
             horizontal_spacing=0.05
         )
         
-        # Get individual figures
+        # Subplots cannot nest figures; copy traces over grid slot by slot
         treemap_fig = self.treemap_generator.generate_treemap()
         sunburst_fig = self.sunburst_generator.generate_sunburst()
         
-        # Add treemap
         for trace in treemap_fig.data:
             fig.add_trace(trace, row=1, col=1)
         
-        # Add sunburst
         for trace in sunburst_fig.data:
             fig.add_trace(trace, row=1, col=2)
         
@@ -151,11 +180,11 @@ class InteractiveDashboard:
         return fig
     
     def _create_combined_dashboard(self) -> go.Figure:
-        """Create comprehensive dashboard with multiple visualizations."""
+        """Pie + bar overview on row 1, full-width treemap on row 2."""
         if not self.analyzer:
             return self._create_empty_dashboard()
         
-        # Create subplots with mixed types
+        # Treemap spans both columns; the trailing None pads the spec grid
         fig = make_subplots(
             rows=2, cols=2,
             subplot_titles=(
@@ -170,13 +199,10 @@ class InteractiveDashboard:
             horizontal_spacing=0.05
         )
         
-        # Add disk usage pie chart
         self._add_disk_usage_pie(fig, row=1, col=1)
         
-        # Add file type bar chart
         self._add_file_type_bar(fig, row=1, col=2)
         
-        # Add treemap
         if self.treemap_generator:
             treemap_fig = self.treemap_generator.generate_treemap()
             for trace in treemap_fig.data:
@@ -191,7 +217,7 @@ class InteractiveDashboard:
         return fig
     
     def _add_disk_usage_pie(self, fig: go.Figure, row: int, col: int):
-        """Add disk usage pie chart to the dashboard."""
+        """Pie of used vs free bytes; silently skipped when data absent."""
         if hasattr(self.analyzer, 'disk_usage') and self.analyzer.disk_usage:
             disk_data = self.analyzer.disk_usage
             
@@ -214,11 +240,10 @@ class InteractiveDashboard:
             )
     
     def _add_file_type_bar(self, fig: go.Figure, row: int, col: int):
-        """Add file type distribution bar chart to the dashboard."""
+        """Bar chart of the ten largest extensions by total bytes."""
         if hasattr(self.analyzer, 'file_type_breakdown') and self.analyzer.file_type_breakdown:
             file_types = self.analyzer.file_type_breakdown
             
-            # Get top 10 file types by size
             sorted_types = sorted(
                 file_types.items(),
                 key=lambda x: x[1].get('size_bytes', 0),
@@ -242,43 +267,41 @@ class InteractiveDashboard:
             fig.update_yaxes(title_text="Size (bytes)", row=row, col=col)
     
     def handle_drill_down(self, path: str) -> go.Figure:
-        """Handle drill-down navigation in visualizations."""
-        # Store current path in history
+        """Re-root the analysis at ``path`` and rebuild the dashboard.
+
+        Uses a fresh DiskAnalyzer rather than mutating the existing one,
+        preserving the caller's original analyzer object.
+        """
         if self.current_path:
             self.drill_down_history.append(self.current_path)
         
         self.current_path = path
         
-        # Create new analyzer for the selected path
         if self.analyzer and hasattr(self.analyzer, '__class__'):
             from cortex_unified.analyzers.disk_analyzer import DiskAnalyzer
             
-            # Create new analyzer for the drill-down path
             drill_analyzer = DiskAnalyzer(
                 config=getattr(self.analyzer, 'config', None),
                 root_path=path
             )
             
-            # Run analysis
             drill_analyzer.analyze_disk_usage()
             drill_analyzer.analyze_directory_tree()
             drill_analyzer.analyze_file_types()
             
-            # Update current analyzer
             self.analyzer = drill_analyzer
             
-            # Recreate dashboard with new data
             return self.create_dashboard()
         
         return self._create_empty_dashboard()
     
     def handle_drill_up(self) -> go.Figure:
-        """Handle drill-up navigation (go back in history)."""
+        """Pop the last drilled path; walk to the filesystem parent if empty."""
         if self.drill_down_history:
             previous_path = self.drill_down_history.pop()
             return self.handle_drill_down(previous_path)
         else:
-            # Go to parent directory
+            # No history: climb one directory instead
             if self.current_path:
                 parent_path = str(Path(self.current_path).parent)
                 return self.handle_drill_down(parent_path)
@@ -286,7 +309,7 @@ class InteractiveDashboard:
         return self.create_dashboard()
     
     def handle_context_menu(self, path: str) -> Dict[str, Any]:
-        """Handle context menu actions."""
+        """Action descriptors offered for a right-clicked path."""
         context_actions = {
             'open_in_explorer': {
                 'label': 'Open in File Explorer',
@@ -313,7 +336,16 @@ class InteractiveDashboard:
         return context_actions
     
     def export_visualization(self, format: str, filepath: str, visualization_type: str = "dashboard") -> bool:
-        """Export visualization in specified format."""
+        """Export a figure to image or HTML.
+
+        Args:
+            format: "png"/"jpg"/"jpeg"/"svg" for raster, "html" for a div.
+            filepath: Destination file path.
+            visualization_type: "treemap", "sunburst", or "dashboard".
+
+        Returns:
+            True on success; False on unsupported format or failure.
+        """
         try:
             if visualization_type == "treemap" and self.treemap_generator:
                 if format.lower() in ['png', 'jpg', 'jpeg', 'svg']:
@@ -357,11 +389,11 @@ class InteractiveDashboard:
             return True
             
         except Exception as e:
-            print(f"Export failed: {str(e)}")
+            log.warning("Dashboard export failed: %s", e)
             return False
     
     def export_batch(self, base_path: str, formats: List[str]) -> Dict[str, bool]:
-        """Export visualization in multiple formats."""
+        """Export the dashboard once per format; per-format success map."""
         results = {}
         
         for format_type in formats:
@@ -376,23 +408,20 @@ class InteractiveDashboard:
         return results
     
     def refresh_data(self) -> go.Figure:
-        """Refresh dashboard data by re-running analysis."""
+        """Re-run all analyses and rebuild; empty figure without analyzer."""
         if self.analyzer and hasattr(self.analyzer, 'analyze_disk_usage'):
-            # Re-run analysis
             self.analyzer.analyze_disk_usage()
             self.analyzer.analyze_directory_tree()
             self.analyzer.analyze_file_types()
             
-            # Recreate generators
             self._initialize_generators()
             
-            # Return updated dashboard
             return self.create_dashboard()
         
         return self._create_empty_dashboard()
     
     def get_dashboard_stats(self) -> Dict[str, Any]:
-        """Get statistics about the current dashboard data."""
+        """Snapshot of current path, drill depth, size, and counts."""
         if not self.analyzer:
             return {}
         
@@ -404,11 +433,9 @@ class InteractiveDashboard:
             'directory_count': 0
         }
         
-        # Get disk usage stats
         if hasattr(self.analyzer, 'disk_usage') and self.analyzer.disk_usage:
             stats['total_size'] = self.analyzer.disk_usage.get('used_bytes', 0)
         
-        # Get directory tree stats
         if hasattr(self.analyzer, 'directory_tree') and self.analyzer.directory_tree:
             tree = self.analyzer.directory_tree
             if isinstance(tree, dict):

@@ -15,19 +15,22 @@ time-boxed; upgrades are launched non-interactively with agreements accepted.
 from __future__ import annotations
 
 import logging
-import platform
+import sys
 import shutil
 import subprocess
 from dataclasses import dataclass
 from typing import Any
 
+from cortex_unified.core import proc as _proc
+
 _LOG = logging.getLogger("cortex.system_tools.app_updater")
-_IS_WINDOWS = platform.system() == "Windows"
+_IS_WINDOWS = sys.platform == "win32"
 _NO_WINDOW = 0x08000000 if _IS_WINDOWS else 0
 
 
 @dataclass(slots=True)
 class UpgradableApp:
+    """Upgradable App data container."""
     name: str
     package_id: str
     current: str
@@ -35,6 +38,7 @@ class UpgradableApp:
     source: str = "winget"
 
     def to_dict(self) -> dict[str, Any]:
+        """To dict."""
         return {
             "name": self.name,
             "id": self.package_id,
@@ -48,6 +52,7 @@ class AppUpdater:
     """List and apply application updates via winget."""
 
     def __init__(self) -> None:
+        """Initialize App Updater."""
         self.logger = _LOG
 
     @staticmethod
@@ -147,11 +152,14 @@ class AppUpdater:
 
     def _run(self, cmd: list[str], timeout: int) -> str | None:
         try:
-            proc = subprocess.run(
-                cmd, capture_output=True, timeout=timeout, creationflags=_NO_WINDOW,
-            )
+            # upgrade_all() can run for a long time updating many packages;
+            # poll the timeout rather than block uninterruptibly, and kill the
+            # whole tree on timeout - never the calling thread.
+            proc = _proc.run(cmd, timeout=timeout, creationflags=_NO_WINDOW)
             # winget emits UTF-8 (ellipsis etc.); decode explicitly.
             return proc.stdout.decode("utf-8", errors="replace") if proc.stdout else ""
-        except (OSError, subprocess.SubprocessError) as exc:
+        except (_proc.ProcessCancelled, OSError, subprocess.SubprocessError) as exc:
             self.logger.debug("winget invocation failed: %s", exc)
             return None
+        """_run."""
+        """_run."""

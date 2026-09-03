@@ -62,6 +62,13 @@ class FileEntry:
 
     ``size`` and ``mtime`` are captured from the ``DirEntry`` stat cache to avoid
     a second ``stat`` syscall on the hot path.
+
+    ``size`` is always the *logical* size reported by the filesystem. For sparse,
+    NTFS-compressed and cloud-placeholder files that overstates the space a
+    deletion would actually reclaim, so ``on_disk`` carries the allocated size
+    when it was measured. ``attrs``/``reparse_tag`` are the raw Windows values
+    captured during the walk, which lets consumers ask "is this a cloud
+    placeholder?" without a second syscall.
     """
 
     path: Path
@@ -69,11 +76,46 @@ class FileEntry:
     mtime: float
     is_dir: bool = False
     is_symlink: bool = False
+    attrs: int = 0
+    reparse_tag: int = 0
+    on_disk: int | None = None
 
     @property
     def age_days(self) -> float:
         import time
         return max(0.0, (time.time() - self.mtime) / 86400.0)
+        """age_days."""
+        """age_days."""
+
+    @property
+    def reclaimable_size(self) -> int:
+        """Bytes that deleting this entry would actually free.
+
+        Falls back to the logical size when the allocated size wasn't measured,
+        and is 0 for cloud placeholders because their bytes are not here.
+        """
+        from . import winattrs
+        if winattrs.is_dehydrated(self.attrs):
+            return 0
+        return self.size if self.on_disk is None else self.on_disk
+
+    @property
+    def is_cloud_placeholder(self) -> bool:
+        """True when the content lives in the cloud, not on this disk."""
+        from . import winattrs
+        return winattrs.is_dehydrated(self.attrs)
+
+    @property
+    def is_junction(self) -> bool:
+        """True for a junction / volume mount point (not a symlink to Python)."""
+        from . import winattrs
+        return winattrs.is_junction(self.reparse_tag)
+
+    @property
+    def special_note(self) -> str:
+        """Short human explanation of any special storage behaviour, or ``""``."""
+        from . import winattrs
+        return winattrs.describe(self.attrs, self.reparse_tag)
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -82,7 +124,12 @@ class FileEntry:
             "mtime": self.mtime,
             "is_dir": self.is_dir,
             "is_symlink": self.is_symlink,
+            "on_disk": self.on_disk,
+            "cloud_placeholder": self.is_cloud_placeholder,
+            "note": self.special_note,
         }
+        """to_dict."""
+        """to_dict."""
 
 
 @dataclass(slots=True)
@@ -96,10 +143,18 @@ class ScanResult:
     dirs_scanned: int = 0
     errors: list[str] = field(default_factory=list)
     duration_seconds: float = 0.0
+    #: Files left out because their bytes live in the cloud, not on this disk.
+    #: Reported rather than silently dropped so the UI can say so out loud.
+    cloud_skipped: int = 0
+    cloud_skipped_bytes: int = 0
+    #: Junctions / mount points not descended into, to avoid double counting.
+    junctions_skipped: int = 0
 
     @property
     def error_count(self) -> int:
         return len(self.errors)
+        """error_count."""
+        """error_count."""
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -110,7 +165,12 @@ class ScanResult:
             "dirs_scanned": self.dirs_scanned,
             "error_count": self.error_count,
             "duration_seconds": round(self.duration_seconds, 4),
+            "cloud_skipped": self.cloud_skipped,
+            "cloud_skipped_bytes": self.cloud_skipped_bytes,
+            "junctions_skipped": self.junctions_skipped,
         }
+        """to_dict."""
+        """to_dict."""
 
 
 @dataclass(slots=True)
@@ -127,6 +187,8 @@ class DeletionResult:
     @property
     def succeeded(self) -> bool:
         return self.outcome not in (DeletionOutcome.FAILED, DeletionOutcome.SKIPPED_UNSAFE)
+        """succeeded."""
+        """succeeded."""
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -137,3 +199,5 @@ class DeletionResult:
             "reason": self.reason,
             "backup_path": str(self.backup_path) if self.backup_path else None,
         }
+        """to_dict."""
+        """to_dict."""

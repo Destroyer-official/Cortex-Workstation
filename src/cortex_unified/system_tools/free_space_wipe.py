@@ -14,20 +14,23 @@ caveat rather than promising more than the medium can deliver.
 from __future__ import annotations
 
 import logging
-import platform
+import sys
 import re
 import subprocess
+import threading
 from dataclasses import dataclass
 
+from cortex_unified.core import proc as _proc
 from cortex_unified.engine.storage import detect_storage
 
 _LOG = logging.getLogger("cortex.system_tools.free_space_wipe")
-_IS_WINDOWS = platform.system() == "Windows"
+_IS_WINDOWS = sys.platform == "win32"
 _NO_WINDOW = 0x08000000 if _IS_WINDOWS else 0
 
 
 @dataclass(slots=True)
 class WipeResult:
+    """Wipe Result data container."""
     success: bool
     message: str
     medium: str = ""
@@ -39,6 +42,7 @@ class FreeSpaceWiper:
 
     @staticmethod
     def is_supported() -> bool:
+        """Is supported."""
         return _IS_WINDOWS
 
     def medium_for(self, drive_letter: str) -> tuple[str, bool]:
@@ -49,7 +53,8 @@ class FreeSpaceWiper:
         except Exception:  # noqa: BLE001
             return "unknown", False
 
-    def wipe(self, drive_letter: str) -> WipeResult:
+    def wipe(self, drive_letter: str,
+            cancel_event: "threading.Event | None" = None) -> WipeResult:
         """Wipe free space on *drive_letter* (e.g. 'C'). Blocking; can be slow."""
         if not _IS_WINDOWS:
             return WipeResult(False, "Free-space wipe is only available on Windows.")
@@ -58,11 +63,16 @@ class FreeSpaceWiper:
             return WipeResult(False, "Invalid drive letter.")
         medium, effective = self.medium_for(letter)
         try:
-            proc = subprocess.run(
+            # cipher /w can run for up to an hour; poll the timeout and
+            # cancel_event instead of blocking uninterruptibly, and kill the
+            # whole process tree on either - never the calling thread.
+            proc = _proc.run(
                 ["cipher", f"/w:{letter}:\\"],
-                capture_output=True, text=True, timeout=60 * 60,
+                text=True, timeout=60 * 60, cancel_event=cancel_event,
                 creationflags=_NO_WINDOW,
             )
+        except _proc.ProcessCancelled:
+            return WipeResult(False, "Free-space wipe cancelled.", medium, effective)
         except subprocess.TimeoutExpired:
             return WipeResult(False, "Free-space wipe timed out.", medium, effective)
         except (OSError, subprocess.SubprocessError) as exc:

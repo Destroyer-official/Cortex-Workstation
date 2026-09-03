@@ -1,8 +1,10 @@
-"""Privacy Cleaner — detects and removes browser traces for all major browsers.
+"""Detects and removes browser traces (cache, cookies, history, sessions)
+for Chrome, Edge, Brave, Opera, Vivaldi, and Firefox, plus Windows-level
+privacy artifacts (Recent items, INetCache, jump lists, DNS cache).
 
-Dynamically discovers Chromium profiles instead of hard-coding 3 profile names.
-Supports: Chrome, Edge, Brave, Opera, Vivaldi, Firefox.
-Also cleans system-level privacy traces (Recent docs, DNS cache, etc.)
+Chromium profiles are discovered from disk instead of assuming profile
+names, so secondary and guest profiles are covered. Deletion is
+best-effort: files locked by a running browser are skipped silently.
 """
 
 import os
@@ -14,7 +16,11 @@ from typing import List, Dict
 
 
 class PrivacyCleaner:
-    """Cleans browser data, caches, and Windows system traces."""
+    """Removes privacy-sensitive browser data and Windows activity traces.
+
+    Every deletion helper swallows OS errors, so a locked or missing file
+    never aborts a cleaning pass.
+    """
 
     def __init__(self):
         self.logger = logging.getLogger("privacy_cleaner")
@@ -29,6 +35,8 @@ class PrivacyCleaner:
             "Vivaldi":  os.path.join(self.local_appdata, "Vivaldi", "User Data"),
             "Firefox":  os.path.join(self.appdata, "Mozilla", "Firefox", "Profiles"),
         }
+        """__init__."""
+        """__init__."""
 
     # ──────────────────────────────────────────────────────────────────
     # Scanning
@@ -50,7 +58,8 @@ class PrivacyCleaner:
                 # Opera stores data directly in the base path (no profile subfolders)
                 self._scan_chromium_profile(base_path, stats)
             else:
-                # Chromium-based — dynamically discover profiles
+                # Chromium layout: per-profile dirs (Default, Profile N, ...)
+                # live directly under "User Data"
                 for profile_dir in self._discover_chromium_profiles(base_path):
                     self._scan_chromium_profile(profile_dir, stats)
 
@@ -63,15 +72,14 @@ class PrivacyCleaner:
         """Return sizes of cleanable Windows system privacy traces."""
         traces: Dict[str, int] = {}
 
-        # Recent documents
+        # Shell MRU list: exposes which files were recently opened
         recent = os.path.join(self.appdata, "Microsoft", "Windows", "Recent")
         traces["Recent Documents"] = self._get_dir_size(recent)
 
-        # Windows temp internet files
         inet = os.path.join(self.local_appdata, "Microsoft", "Windows", "INetCache")
         traces["Internet Cache"] = self._get_dir_size(inet)
 
-        # Taskbar jump lists
+        # Jump lists index per-application file access; stored alongside Recent
         jumplists_auto = os.path.join(self.appdata, "Microsoft", "Windows", "Recent", "AutomaticDestinations")
         jumplists_custom = os.path.join(self.appdata, "Microsoft", "Windows", "Recent", "CustomDestinations")
         traces["Jump Lists"] = self._get_dir_size(jumplists_auto) + self._get_dir_size(jumplists_custom)
@@ -83,7 +91,15 @@ class PrivacyCleaner:
     # ──────────────────────────────────────────────────────────────────
 
     def clean_browser(self, browser: str, items: List[str]) -> bool:
-        """Delete specified data categories for a browser.  Returns False on partial failure."""
+        """Delete selected data categories for one browser.
+
+        Args:
+            browser: Key into ``browser_paths`` (e.g. "Chrome").
+            items: Subset of {"Cache", "Cookies", "History", "Sessions"}.
+
+        Returns:
+            False if any profile could not be fully cleaned.
+        """
         base_path = self.browser_paths.get(browser)
         if not base_path or not os.path.exists(base_path):
             return False
@@ -114,19 +130,20 @@ class PrivacyCleaner:
 
         return success
 
-    def clean_system_traces(self) -> int:
+    def clean_system_traces(self, clean_recent: bool = False) -> int:
         """Clean system-level privacy traces, return bytes freed."""
         freed = 0
 
-        # Recent docs
-        recent = os.path.join(self.appdata, "Microsoft", "Windows", "Recent")
-        freed += self._clean_directory_contents(recent)
+        if clean_recent:
+            recent = os.path.join(self.appdata, "Microsoft", "Windows", "Recent")
+            freed += self._clean_directory_contents(recent)
 
-        # Internet cache
         inet = os.path.join(self.local_appdata, "Microsoft", "Windows", "INetCache")
-        freed += self._clean_directory_contents(inet)
+        if os.path.isdir(inet):
+            freed += self._clean_directory_contents(inet)
 
-        # Flush DNS cache
+        # Resolved hostnames linger in the DNS cache; flushdns needs no
+        # elevation. 0x08000000 (CREATE_NO_WINDOW) suppresses the console flash.
         try:
             subprocess.run(["ipconfig", "/flushdns"],
                            capture_output=True, timeout=10, creationflags=0x08000000)
@@ -149,10 +166,10 @@ class PrivacyCleaner:
             full = os.path.join(base_path, entry)
             if not os.path.isdir(full):
                 continue
-            # Default profile or numbered Profile N
+            # Regular profiles ("Default", "Profile N") plus the ephemeral
+            # guest/system profiles; other dirs are shared component storage
             if entry == "Default" or entry.startswith("Profile "):
                 profiles.append(full)
-            # Also check for "Guest Profile" or "System Profile"
             elif entry in ("Guest Profile", "System Profile"):
                 profiles.append(full)
         return profiles
@@ -205,12 +222,14 @@ class PrivacyCleaner:
             stats["History"] += self._get_file_size(os.path.join(profile, "places.sqlite"))
             stats["Sessions"] += self._get_file_size(os.path.join(profile, "sessionstore.jsonlz4"))
 
-            # Firefox cache2
+            # Disk cache spans cache2 (HTTP cache) and startupCache
+            # (precompiled script bytecode)
             cache2 = os.path.join(profile, "cache2")
             stats["Cache"] += self._get_dir_size(cache2)
 
-            # startupCache
             stats["Cache"] += self._get_dir_size(os.path.join(profile, "startupCache"))
+        """_scan_firefox."""
+        """_scan_firefox."""
 
     # ──────────────────────────────────────────────────────────────────
     # Utility
@@ -222,6 +241,8 @@ class PrivacyCleaner:
             return os.path.getsize(path) if os.path.isfile(path) else 0
         except OSError:
             return 0
+        """_get_file_size."""
+        """_get_file_size."""
 
     @staticmethod
     def _get_dir_size(path: str) -> int:
@@ -238,9 +259,12 @@ class PrivacyCleaner:
         except OSError:
             pass
         return total
+        """_get_dir_size."""
+        """_get_dir_size."""
 
     @staticmethod
     def _safe_delete(path: str):
+        """Remove a file, ignoring errors (browsers commonly hold locks)."""
         if os.path.isfile(path):
             try:
                 os.remove(path)
@@ -249,11 +273,15 @@ class PrivacyCleaner:
 
     @staticmethod
     def _safe_delete_dir(path: str):
+        """Recursively remove a directory tree, ignoring failures."""
         if os.path.isdir(path):
             shutil.rmtree(path, ignore_errors=True)
 
     def _clean_directory_contents(self, path: str) -> int:
-        """Remove all files inside a directory, return bytes freed."""
+        """Remove all files inside a directory, return bytes freed.
+
+        Walks bottom-up so emptied subdirectories can be pruned too.
+        """
         freed = 0
         if not os.path.isdir(path):
             return 0

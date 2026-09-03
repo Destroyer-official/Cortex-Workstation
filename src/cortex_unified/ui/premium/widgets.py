@@ -5,6 +5,8 @@ smooth animated gauge) that plain QSS cannot.
 
 from __future__ import annotations
 
+import logging
+
 from PySide6.QtCore import Property, QPropertyAnimation, QRectF, Qt
 from PySide6.QtGui import (
     QBrush,
@@ -13,7 +15,6 @@ from PySide6.QtGui import (
     QFont,
     QFontMetrics,
     QIcon,
-    QLinearGradient,
     QPainter,
     QPen,
     QPixmap,
@@ -22,14 +23,17 @@ from PySide6.QtWidgets import (
     QFrame,
     QHBoxLayout,
     QLabel,
+    QMessageBox,
     QSizePolicy,
     QVBoxLayout,
     QWidget,
 )
 
 from . import motion
-from .theme import Palette
-from .tokens import Elevation, Radius, elevation_style
+from .theme import MONO_FAMILIES, Palette
+from .tokens import Elevation, Radius, Spacing, elevation_style
+
+_LOG = logging.getLogger("cortex.ui.premium")
 
 
 class Card(QFrame):
@@ -59,6 +63,7 @@ class Card(QFrame):
     """
 
     def __init__(self, palette: Palette, object_name: str = "Card", parent=None):
+        """__init__."""
         super().__init__(parent)
         self.setObjectName(object_name)
         # Resolve the token elevation treatment (surface/border/shadow metrics)
@@ -79,6 +84,7 @@ class StatCard(Card):
     """A small metric tile: big number + caption."""
 
     def __init__(self, palette: Palette, label: str, value: str = "—", parent=None):
+        """__init__."""
         super().__init__(palette, parent=parent)
         lay = QVBoxLayout(self)
         lay.setContentsMargins(16, 12, 16, 12)
@@ -90,7 +96,12 @@ class StatCard(Card):
         lay.addWidget(self._value)
         lay.addWidget(self._caption)
 
+    def value(self) -> str:
+        """Return the current displayed text value."""
+        return self._value.text()
+
     def set_value(self, text: str, animate: bool = False) -> None:
+        """set_value."""
         changed = text != self._value.text()
         self._value.setText(text)
         if animate and changed:
@@ -128,14 +139,32 @@ class Badge(QLabel):
         "high": ("danger", "CAUTION"),
     }
 
+    @staticmethod
+    def _rgb(hex_color: str) -> tuple[int, int, int]:
+        """Parse ``#RRGGBB`` -> (r, g, b); degrade to the accent blue on error."""
+        s = str(hex_color).strip().lstrip("#")
+        if len(s) == 3:
+            s = "".join(ch * 2 for ch in s)
+        try:
+            return int(s[0:2], 16), int(s[2:4], 16), int(s[4:6], 16)
+        except Exception:  # noqa: BLE001
+            return 110, 139, 255
+
     def __init__(self, palette: Palette, kind: str = "low", text: str | None = None, parent=None):
+        """__init__."""
         super().__init__(parent)
         color_attr, default_text = self._COLORS.get(kind, ("info", kind.upper()))
         color = getattr(palette, color_attr)
+        # Build the translucent fill/border from explicit rgba() rather than an
+        # 8-digit ``#RRGGBBAA`` hex: Qt style sheets don't reliably parse the
+        # alpha-hex form (it can be mis-read as #AARRGGBB, giving a muddy,
+        # wrong-coloured pill), which is what made the badges look distorted.
+        r, g, b = self._rgb(color)
         self.setText(text or default_text)
         self.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.setStyleSheet(
-            f"background-color: {color}22; color: {color}; border: 1px solid {color}55;"
+            f"background-color: rgba({r}, {g}, {b}, 0.16); color: {color}; "
+            f"border: 1px solid rgba({r}, {g}, {b}, 0.48); "
             f"border-radius: 9px; padding: 2px 10px; font-size: 11px; font-weight: 700;"
         )
         self.setFixedHeight(22)
@@ -149,6 +178,7 @@ class CircularGauge(QWidget):
     """
 
     def __init__(self, palette: Palette, caption: str = "", parent=None):
+        """__init__."""
         super().__init__(parent)
         self._p = palette
         self._value = 0.0
@@ -168,15 +198,18 @@ class CircularGauge(QWidget):
 
     # animatable property -------------------------------------------------
     def _get_value(self) -> float:
+        """_get_value."""
         return self._value
 
     def _set_value(self, v: float) -> None:
+        """_set_value."""
         self._value = v
         self.update()
 
     value = Property(float, _get_value, _set_value)
 
     def animate_to(self, target: float, display: str | None = None) -> None:
+        """animate_to."""
         self._display = display if display is not None else f"{int(target)}"
         self._anim.stop()
         self._anim.setStartValue(self._value)
@@ -184,6 +217,7 @@ class CircularGauge(QWidget):
         self._anim.start()
 
     def set_center_text(self, text: str) -> None:
+        """set_center_text."""
         self._display = text
         self.update()
 
@@ -203,6 +237,7 @@ class CircularGauge(QWidget):
         self.update()
 
     def paintEvent(self, event) -> None:  # noqa: N802 (Qt signature)
+        """paintEvent."""
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
 
@@ -256,12 +291,14 @@ class CircularGauge(QWidget):
         painter.setPen(arc)
         painter.drawArc(rect, 90 * 16, span)
 
-        # center value - auto-fit the font so long text (e.g. "102.9 MB")
-        # never overflows or gets clipped by the ring.
+        # center value - a tabular monospace "HUD" readout; auto-fit the font so
+        # long text (e.g. "102.9 MB") never overflows or gets clipped by the ring.
         painter.setPen(QColor(self._p.text))
         inner_w = rect.width() - 2 * thickness - 6
         size = max(10, int(side * 0.16))
-        f = QFont("Segoe UI", size, QFont.Weight.ExtraBold)
+        f = QFont()
+        f.setFamilies(MONO_FAMILIES)
+        f.setWeight(QFont.Weight.ExtraBold)
         while size > 9:
             f.setPointSize(size)
             if QFontMetrics(f).horizontalAdvance(self._display) <= inner_w:
@@ -288,6 +325,7 @@ class CoreBars(QWidget):
     """
 
     def __init__(self, palette: Palette, parent=None):
+        """__init__."""
         super().__init__(parent)
         self._p = palette
         self._values: list[float] = []
@@ -295,10 +333,12 @@ class CoreBars(QWidget):
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
 
     def set_values(self, values: list[float]) -> None:
+        """set_values."""
         self._values = [max(0.0, min(100.0, float(v))) for v in values]
         self.update()
 
     def _bar_color(self, pct: float) -> QColor:
+        """_bar_color."""
         if pct >= 80:
             return QColor(getattr(self._p, "danger", "#FB7185"))
         if pct >= 50:
@@ -306,6 +346,7 @@ class CoreBars(QWidget):
         return QColor(self._p.accent)
 
     def paintEvent(self, event) -> None:  # noqa: N802
+        """paintEvent."""
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         n = len(self._values)
@@ -346,6 +387,7 @@ class TrafficGraph(QWidget):
     """
 
     def __init__(self, palette: Palette, capacity: int = 120, parent=None):
+        """__init__."""
         super().__init__(parent)
         self._p = palette
         self._cap = capacity
@@ -355,6 +397,7 @@ class TrafficGraph(QWidget):
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
     def add_sample(self, down_rate: float, up_rate: float) -> None:
+        """add_sample."""
         self._down.append(max(0.0, down_rate))
         self._up.append(max(0.0, up_rate))
         if len(self._down) > self._cap:
@@ -363,12 +406,14 @@ class TrafficGraph(QWidget):
         self.update()
 
     def clear(self) -> None:
+        """clear."""
         self._down.clear()
         self._up.clear()
         self.update()
 
     @staticmethod
     def _fmt_rate(bps: float) -> str:
+        """_fmt_rate."""
         v = float(bps)
         for unit in ("B/s", "KB/s", "MB/s", "GB/s"):
             if v < 1024 or unit == "GB/s":
@@ -377,6 +422,7 @@ class TrafficGraph(QWidget):
         return f"{bps} B/s"
 
     def paintEvent(self, event) -> None:  # noqa: N802
+        """paintEvent."""
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         w, h = self.width(), self.height()
@@ -394,6 +440,7 @@ class TrafficGraph(QWidget):
         peak = max([1.0] + self._down + self._up)
 
         def _draw(series: list[float], color: str):
+            """_draw."""
             if len(series) < 2:
                 return
             from PySide6.QtGui import QPainterPath
@@ -586,6 +633,54 @@ def hline(palette: Palette) -> QFrame:
     return line
 
 
+#: Status name -> (icon asset, palette attribute holding its colour).
+_STATUS_STYLE = {
+    "info": ("info", "info"),
+    "warning": ("warning", "warning"),
+    "success": ("success", "success"),
+    "error": ("error", "danger"),
+}
+
+
+def status_note(palette: Palette, status: str, text: str) -> QWidget:
+    """An icon + message row for platform notes, warnings and results.
+
+    Replaces the older pattern of prefixing a label with a symbol codepoint
+    (``QLabel("\\u2139  ... only available on Windows.")``). That embedded an
+    icon inside a user-facing string and relied on system font fallback, which
+    Qt 6 does not guarantee - the same note could render as a thin outline, a
+    colour emoji, or a missing-glyph box depending on the machine.
+
+    Here the icon is a crisp SVG tinted from the palette's semantic colour, and
+    the message stays a clean string. The status is also carried in the
+    accessible name, so meaning is never conveyed by colour alone.
+    """
+    from .icons import icon_size, pixmap
+
+    asset, color_attr = _STATUS_STYLE.get(status, _STATUS_STYLE["info"])
+    color = getattr(palette, color_attr, palette.text_muted)
+
+    row = QWidget()
+    row.setObjectName("StatusNote")
+    lay = QHBoxLayout(row)
+    lay.setContentsMargins(0, 0, 0, 0)
+    lay.setSpacing(Spacing.SM)
+
+    glyph = QLabel()
+    glyph.setPixmap(pixmap(asset, 15, color))
+    glyph.setFixedSize(icon_size(15))
+    glyph.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
+    lay.addWidget(glyph, 0, Qt.AlignmentFlag.AlignTop)
+
+    label = QLabel(text)
+    label.setObjectName("Muted")
+    label.setWordWrap(True)
+    lay.addWidget(label, 1)
+
+    row.setAccessibleName(f"{status}: {text}")
+    return row
+
+
 def title_block(title: str, subtitle: str = "") -> QWidget:
     """A page header (title + subtitle)."""
     w = QWidget()
@@ -600,3 +695,85 @@ def title_block(title: str, subtitle: str = "") -> QWidget:
         s.setObjectName("PageSubtitle")
         lay.addWidget(s)
     return w
+
+
+def require_feature(page_or_parent, feature) -> bool:
+    """Gate a UI action behind *feature*; offer the trial when denied.
+
+    Why here and not in :mod:`cortex_unified.licensing.gating`: the licensing
+    package is GUI-agnostic (the CLI and engine call it too) and must never
+    open dialogs or know about widgets. This is the UI-side counterpart: when
+    the action's tier is not licensed it explains the upgrade path (needed
+    tier vs. current tier) and - when this machine has never used its trial -
+    offers a one-click "Start Free Trial" button, so a gated click becomes a
+    conversion moment instead of a dead end.
+
+    Usage at the top of an action handler::
+
+        if not require_feature(self, Feature.SENTINEL_PRO):
+            return
+
+    Returns True when the action may proceed (already allowed, or the user
+    started the trial right from the dialog, which activates it immediately).
+    Returns False when denied and nothing was started. The dialog is parented
+    to *page_or_parent* so it stays modal to the window, and any failure to
+    read the license fails closed (denied) exactly like ``gating.allowed``.
+    Never raises.
+    """
+    # Imported lazily so importing the widget module costs nothing and never
+    # drags the licensing stack into processes that only want paint helpers.
+    from cortex_unified.licensing import Tier
+    from cortex_unified.licensing.license_manager import (
+        TRIAL_DAYS,
+        get_license_manager,
+    )
+    from cortex_unified.licensing.tiers import FEATURE_MIN_TIER
+
+    try:
+        manager = get_license_manager()
+        state = manager.validate()
+    except Exception as exc:  # noqa: BLE001 - gating must never break callers
+        _LOG.debug("license validation failed; denying %s: %s", feature.value, exc)
+        return False
+
+    if state.allows(feature):
+        return True
+
+    required = FEATURE_MIN_TIER.get(feature, Tier.FREE)
+    _LOG.info(
+        "gated action blocked: %s needs %s, machine is on %s",
+        feature.value, required.value, state.tier.value,
+    )
+    box = QMessageBox(page_or_parent)
+    box.setWindowTitle("Upgrade required")
+    box.setIcon(QMessageBox.Icon.Information)
+    box.setText(
+        f"{feature.value.replace('.', ' ').title()} requires the "
+        f"{required.value.title()} edition."
+    )
+    box.setInformativeText(f"Your current tier: {state.tier.value.title()}.")
+
+    # The trial is available until first used - mirror start_trial()'s own
+    # preconditions so the button is only offered when clicking it can work.
+    # Kept on the box for tests (and honest introspection): None means "no
+    # trial was offered".
+    trial_btn: QWidget | None = None
+    if not state.licensed and not state.trial:
+        trial_btn = box.addButton("Start Free Trial", QMessageBox.ButtonRole.AcceptRole)
+    box.addButton(QMessageBox.StandardButton.Close)
+    box.setDefaultButton(QMessageBox.StandardButton.Close)
+    box._trial_button = trial_btn
+    box.exec()
+
+    if trial_btn is None or box.clickedButton() is not trial_btn:
+        return False
+    try:
+        manager.start_trial()
+    except RuntimeError as exc:
+        # Raced/exhausted between showing the dialog and clicking; say so
+        # honestly instead of pretending the trial started.
+        _LOG.info("trial refused from upgrade dialog: %s", exc)
+        QMessageBox.information(page_or_parent, "Trial unavailable", str(exc))
+        return False
+    _LOG.info("trial started from upgrade dialog (%s days, PRO)", TRIAL_DAYS)
+    return True

@@ -19,7 +19,6 @@ class ProfileReport:
     custom_metrics: Dict[str, Any] = field(default_factory=dict)
     
     def to_dict(self) -> Dict[str, Any]:
-        """Convert report to dictionary."""
         return {
             'operation_name': self.operation_name,
             'total_time': self.total_time,
@@ -28,16 +27,19 @@ class ProfileReport:
             'io_stats': self.io_stats,
             'custom_metrics': self.custom_metrics
         }
+        """to_dict."""
+        """to_dict."""
 
 class OperationProfiler:
     """Profiles operations for performance analysis."""
     
     def __init__(self):
-        """Initialize profiler."""
         self.logger = logging.getLogger(__name__)
         self.profiles: List[ProfileReport] = []
         self.current_operation: Optional[str] = None
         self.start_time: Optional[float] = None
+        """__init__."""
+        """__init__."""
     
     @contextmanager
     def profile_operation(self, operation_name: str):
@@ -69,7 +71,6 @@ class OperationProfiler:
         self.profiles.append(report)
         self.logger.debug(f"Completed profiling: {self.current_operation} ({total_time:.3f}s)")
         
-        # Reset state
         self.current_operation = None
         self.start_time = None
         

@@ -1,45 +1,51 @@
-"""Restore manager for Cortex Cleaner."""
+"""Backup manifests and quarantine-style restoration of deleted files.
 
-import os
+A manifest records ``original_path``/``backup_path`` pairs; restoring copies
+each item back from its backup. Manifests that merely logged a deletion carry
+no recoverable payload, so their entries are skipped and reported.
+"""
+
 import json
 import shutil
 from pathlib import Path
 from typing import List, Dict, Optional
 from datetime import datetime
 
-from ..core.utils import normalize_path
 from ..core.config import Config
 
 class RestoreManager:
-    """Manager for backup and restore operations."""
+    """Copies files aside before deletion and restores them from manifests."""
     
     def __init__(self, config: Config = None, backup_dir: str = None):
-        """Initialize restore manager."""
+        """Set the backup directory and create it eagerly.
+
+        Args:
+            config: Application config; defaults are built when omitted.
+            backup_dir: Backup storage directory override.
+        """
         self.config = config or Config()
         self.backup_dir = backup_dir or self._get_default_backup_dir()
         self.manifests = []
         self.error_count = 0
         
-        # Create backup directory if it doesn't exist
         Path(self.backup_dir).mkdir(parents=True, exist_ok=True)
     
     def _get_default_backup_dir(self) -> str:
-        """Get the default backup directory."""
+        """Return ``~/.deepcleaner/backups`` (per-user, no admin needed)."""
         home = Path.home()
         backup_dir = home / ".deepcleaner" / "backups"
         return str(backup_dir)
     
     def list_manifests(self) -> List[Dict]:
-        """List all available manifests."""
+        """Rescan the backup dir and return manifests newest-first."""
         self.manifests = []
         
         try:
-            # Look for manifest files in backup directory
             backup_path = Path(self.backup_dir)
             if backup_path.exists():
                 for file in backup_path.glob("manifest_*.json"):
                     try:
-                        with open(file, 'r') as f:
+                        with open(file, 'r', encoding='utf-8') as f:
                             manifest = json.load(f)
                             manifest["file_path"] = str(file)
                             self.manifests.append(manifest)
@@ -54,11 +60,11 @@ class RestoreManager:
         return self.manifests
     
     def get_manifest_details(self, manifest_file: str) -> Optional[Dict]:
-        """Get details of a specific manifest."""
+        """Load one manifest JSON, or ``None`` if missing/unreadable."""
         try:
             manifest_path = Path(manifest_file)
             if manifest_path.exists():
-                with open(manifest_path, 'r') as f:
+                with open(manifest_path, 'r', encoding='utf-8') as f:
                     return json.load(f)
         except Exception:
             self.error_count += 1
@@ -113,7 +119,7 @@ class RestoreManager:
                     skipped_count += 1
                     continue
 
-                # No stored copy => genuinely unrecoverable. Be honest.
+                # No stored copy recorded -> unrecoverable by design.
                 if not backup:
                     skipped_count += 1
                     errors.append(
@@ -168,7 +174,7 @@ class RestoreManager:
         }
     
     def create_backup(self, files_to_backup: List[str], backup_name: str = None) -> str:
-        """Create a backup of specified files.
+        """Copy files aside and record them in a manifest.
         
         Args:
             files_to_backup: List of file paths to backup
@@ -178,27 +184,23 @@ class RestoreManager:
             Path to the backup manifest file
         """
         try:
-            # Generate backup name if not provided
             if not backup_name:
                 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
                 backup_name = f"backup_{timestamp}"
-            
-            # Create backup directory
+
             backup_path = Path(self.backup_dir) / backup_name
             backup_path.mkdir(parents=True, exist_ok=True)
             
-            # Copy files to backup directory
             backup_operations = []
             for file_path in files_to_backup:
                 try:
                     src_path = Path(file_path)
                     if src_path.exists():
-                        # Create relative path structure in backup
+                        # Strip the drive letter so dest stays under backup_path
                         rel_path = src_path.relative_to(src_path.anchor)
                         dest_path = backup_path / rel_path
                         dest_path.parent.mkdir(parents=True, exist_ok=True)
                         
-                        # Copy file
                         if src_path.is_file():
                             shutil.copy2(src_path, dest_path)
                         elif src_path.is_dir():
@@ -214,7 +216,6 @@ class RestoreManager:
                     self.error_count += 1
                     continue
             
-            # Create manifest
             manifest = {
                 "backup_name": backup_name,
                 "timestamp": datetime.now().isoformat(),
@@ -222,9 +223,8 @@ class RestoreManager:
                 "operations": backup_operations
             }
             
-            # Save manifest
             manifest_file = Path(self.backup_dir) / f"manifest_{backup_name}.json"
-            with open(manifest_file, 'w') as f:
+            with open(manifest_file, 'w', encoding='utf-8') as f:
                 json.dump(manifest, f, indent=2)
             
             return str(manifest_file)
@@ -233,7 +233,7 @@ class RestoreManager:
             raise Exception(f"Failed to create backup: {str(e)}")
     
     def delete_backup(self, backup_name: str) -> bool:
-        """Delete a backup.
+        """Delete a backup's stored files and manifest.
         
         Args:
             backup_name: Name of the backup to delete
@@ -242,12 +242,10 @@ class RestoreManager:
             True if successful, False otherwise
         """
         try:
-            # Delete backup directory
             backup_path = Path(self.backup_dir) / backup_name
             if backup_path.exists():
                 shutil.rmtree(backup_path)
             
-            # Delete manifest file
             manifest_file = Path(self.backup_dir) / f"manifest_{backup_name}.json"
             if manifest_file.exists():
                 manifest_file.unlink()
@@ -258,13 +256,12 @@ class RestoreManager:
             return False
     
     def get_stats(self) -> dict:
-        """Get statistics about backups."""
+        """Summarize backup counts, stored-file totals, and errors."""
         manifests = self.list_manifests()
         
         total_backups = len(manifests)
         total_files = 0
         
-        # Count total files in all backups
         for manifest in manifests:
             total_files += manifest.get("files_backed_up", 0)
         

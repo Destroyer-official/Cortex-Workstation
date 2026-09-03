@@ -1,4 +1,4 @@
-"""Quick functional verification of all weaponized modules.
+"""Quick functional verification of core system modules.
 
 Run from the project root:  python scripts/verify_modules.py
 """
@@ -66,11 +66,11 @@ if apps:
     leftovers = rh.scan_for_app(test_app["name"], test_app.get("publisher", ""))
     print(f"    Residuals for '{test_app['name']}': {len(leftovers)} found")
 
-# 6. Weaponized Shredder
-print("\n[6] WeaponizedShredder — verifying constructor...")
-from cortex_unified.analyzers.weaponized_shredder import WeaponizedShredder
-ws = WeaponizedShredder()
-print("    WeaponizedShredder initialized (DoD 5220.22-M ready)")
+# 6. Advanced Shredder
+print("\n[6] AdvancedShredder — verifying constructor...")
+from cortex_unified.analyzers.advanced_shredder import AdvancedShredder
+ws = AdvancedShredder()
+print("    AdvancedShredder initialized (DoD 5220.22-M ready)")
 
 # 7. Smart Scanner
 print("\n[7] SmartScanReport — testing score calculation...")

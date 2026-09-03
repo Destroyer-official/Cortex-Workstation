@@ -22,8 +22,8 @@ from __future__ import annotations
 import functools
 import logging
 import os
-import platform
 import subprocess
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -31,8 +31,23 @@ from .models import StorageKind
 
 _LOG = logging.getLogger("cortex.engine.storage")
 
+# ``sys.platform`` is an interned constant set at interpreter start, so this
+# costs nothing. ``platform.system()`` was measured at ~49 ms on its first call
+# (it populates ``uname()``, which consults WMI on Windows) - far too expensive
+# to pay at import time just to build a subprocess flag, especially since this
+# module sits on the import path of every CLI invocation.
+_IS_WINDOWS = sys.platform == "win32"
+
 # Hide console windows for subprocess probes on Windows.
-_NO_WINDOW = 0x08000000 if platform.system() == "Windows" else 0
+_NO_WINDOW = 0x08000000 if _IS_WINDOWS else 0
+
+#: ``platform.system()``-style name derived without importing ``platform``.
+_SYSTEM_NAME = (
+    "Windows" if _IS_WINDOWS
+    else "Darwin" if sys.platform == "darwin"
+    else "Linux" if sys.platform.startswith("linux")
+    else sys.platform
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -46,14 +61,18 @@ class StorageInfo:
     @property
     def overwrite_effective(self) -> bool:
         return self.kind.overwrite_effective
+        """overwrite_effective."""
+        """overwrite_effective."""
 
 
 class StorageProbe:
     """Detects the physical medium for a given path, with per-mount caching."""
 
     def __init__(self) -> None:
-        self._system = platform.system()
+        self._system = _SYSTEM_NAME
         self._cache: dict[str, StorageInfo] = {}
+        """__init__."""
+        """__init__."""
 
     def probe(self, path: os.PathLike[str] | str) -> StorageInfo:
         """Return :class:`StorageInfo` for the medium hosting *path*."""
@@ -78,6 +97,8 @@ class StorageProbe:
         if self._system == "Windows":
             return (resolved.drive or "C:").upper()
         return "/"  # simple, correct for the common single-root case
+        """_mount_key."""
+        """_mount_key."""
 
     # -- dispatch -----------------------------------------------------------
 
@@ -89,6 +110,8 @@ class StorageProbe:
         if self._system == "Darwin":
             return self._probe_macos(path)
         return StorageInfo(StorageKind.UNKNOWN)
+        """_probe_uncached."""
+        """_probe_uncached."""
 
     # -- Windows ------------------------------------------------------------
 
@@ -116,6 +139,8 @@ class StorageProbe:
         if "hdd" in media_l:
             return StorageInfo(StorageKind.HDD, drive_letter, out.strip())
         return StorageInfo(StorageKind.UNKNOWN, drive_letter, out.strip())
+        """_probe_windows."""
+        """_probe_windows."""
 
     # -- Linux --------------------------------------------------------------
 
@@ -140,6 +165,8 @@ class StorageProbe:
         except OSError:
             pass
         return StorageInfo(StorageKind.UNKNOWN, dev)
+        """_probe_linux."""
+        """_probe_linux."""
 
     # -- macOS --------------------------------------------------------------
 
@@ -151,6 +178,8 @@ class StorageProbe:
         if "solid state: no" in low:
             return StorageInfo(StorageKind.HDD)
         return StorageInfo(StorageKind.UNKNOWN)
+        """_probe_macos."""
+        """_probe_macos."""
 
     # -- helper -------------------------------------------------------------
 
@@ -167,11 +196,15 @@ class StorageProbe:
             return proc.stdout if proc.returncode == 0 else ""
         except (OSError, subprocess.SubprocessError):
             return ""
+        """_run."""
+        """_run."""
 
 
 @functools.lru_cache(maxsize=1)
 def _shared_probe() -> StorageProbe:
     return StorageProbe()
+    """_shared_probe."""
+    """_shared_probe."""
 
 
 def detect_storage(path: os.PathLike[str] | str) -> StorageInfo:

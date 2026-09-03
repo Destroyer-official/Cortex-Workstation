@@ -1,22 +1,42 @@
-"""File and directory scanning functionality for Cortex Cleaner."""
+"""Discovery of empty files and directories under a configured root.
 
+The scanner applies exclusion rules (globs, regexes, system directories)
+and an optional minimum-age filter before anything is reported as
+deletable. Results feed :class:`~cortex_unified.core.deleter.Deleter`,
+which performs the actual removal.
+"""
+
+import logging
 import os
-import sys
 from pathlib import Path
-from typing import List, Set, Generator, Tuple, Optional
-import concurrent.futures
+from typing import List, Tuple, Optional
 from threading import Lock
 
 from cortex_unified.core.utils import is_system_directory, get_file_age_days
 from cortex_unified.core.config import Config
 from cortex_unified.performance import ScanManager, ResourceThrottler
 
+log = logging.getLogger(__name__)
+
 class Scanner:
-    """Scanner for finding empty files and directories."""
+    """Finds empty files and directories eligible for cleanup.
+
+    Supports checkpointing (pause/resume across runs) and resource
+    throttling, both opt-in via constructor flags so plain scans stay
+    dependency-free.
+    """
     
     def __init__(self, config: Config = None, root_path: str = ".", 
                  enable_checkpoints: bool = False, enable_throttling: bool = False):
-        """Initialize scanner."""
+        """Create a scanner.
+
+        Args:
+            config: Exclusion and age rules; defaults to ``Config()``.
+            root_path: Directory tree to scan.
+            enable_checkpoints: Track progress so interrupted scans can
+                resume instead of restarting.
+            enable_throttling: Slow the scan when system resources run low.
+        """
         self.config = config or Config()
         self.root_path = Path(root_path).resolve()
         self.exclude_patterns = set(self.config.exclude_patterns)
@@ -24,14 +44,12 @@ class Scanner:
         self.min_age_days = self.config.min_age_days
         self.follow_symlinks = self.config.follow_symlinks
         
-        # Thread safety
+        # Result lists are appended from scan callbacks; guard mutations.
         self._lock = Lock()
         
-        # Results
         self.empty_files: List[Path] = []
         self.empty_dirs: List[Path] = []
         
-        # Performance enhancements
         self.enable_checkpoints = enable_checkpoints
         self.enable_throttling = enable_throttling
         self._scan_manager: Optional[ScanManager] = None
@@ -45,23 +63,24 @@ class Scanner:
             self._resource_throttler.start_monitoring()
     
     def _should_exclude_path(self, path: Path) -> bool:
-        """Check if a path should be excluded based on patterns and system directories."""
-        # Check system directories
+        """True when *path* hits a system directory or a configured pattern."""
         if is_system_directory(path):
             return True
-        
-        # Check exclude patterns using the enhanced method
         return self.config.matches_exclude_patterns(str(path))
     
     def _is_file_empty(self, filepath: Path) -> bool:
-        """Check if a file is empty."""
+        """True when *filepath* has zero bytes.
+
+        Unreadable files count as NOT empty -- failing stat() must never
+        cause a file we know nothing about to be deleted.
+        """
         try:
             return filepath.stat().st_size == 0
         except (OSError, FileNotFoundError):
             return False
     
     def _is_file_old_enough(self, filepath: Path) -> bool:
-        """Check if a file is old enough based on min_age_days setting."""
+        """Apply the ``min_age_days`` rule; files younger are skipped."""
         if self.min_age_days <= 0:
             return True
         
@@ -69,11 +88,12 @@ class Scanner:
             file_age = get_file_age_days(filepath)
             return file_age >= self.min_age_days
         except (OSError, ValueError):
-            # If we can't determine the age, include it
+            # Undeterminable age counts as old enough: deleting an empty
+            # file is harmless even if it turns out to be recent.
             return True
     
     def _scan_file(self, filepath: Path) -> bool:
-        """Scan a single file and determine if it should be deleted."""
+        """True when *filepath* passes every eligibility filter."""
         if self._should_exclude_path(filepath):
             return False
         
@@ -98,20 +118,18 @@ class Scanner:
         if self._should_exclude_path(dirpath):
             return False, [], []
         
-        # Use iterative BFS with a queue to avoid recursion
         from collections import deque
         
-        # Queue contains: (path, depth, parent_info)
+        # Queue entries: (path, depth, parent path).
         queue = deque([(dirpath, 0, None)])
         
-        # Track results for each directory
-        dir_results = {}  # path -> (is_empty, has_content, empty_files, empty_subdirs)
+        # First pass: per-directory facts gathered in BFS order.
+        # path -> (is_empty_prelim, has_content, empty_files, empty_subdirs, subdirs)
+        dir_results = {}
         
-        # Process queue in BFS order (breadth-first)
         while queue:
             current_path, depth, parent = queue.popleft()
             
-            # Check depth limit
             if depth > max_depth:
                 import logging
                 logging.warning(f"Max depth {max_depth} reached at {current_path}")
@@ -125,16 +143,15 @@ class Scanner:
             try:
                 entries = list(current_path.iterdir())
             except (OSError, PermissionError):
-                # Can't read directory, mark as non-empty
+                # Unreadable means "not known to be empty" -- never report
+                # a directory we could not inspect for deletion.
                 dir_results[current_path] = (False, True, [], [])
                 continue
             
-            # Check if directory is empty
             if not entries:
                 dir_results[current_path] = (True, False, [], [])
                 continue
             
-            # Scan entries
             empty_files = []
             empty_subdirs = []
             has_non_excluded_content = False
@@ -151,13 +168,13 @@ class Scanner:
                         else:
                             has_non_excluded_content = True
                     elif entry.is_dir():
-                        # Add subdirectory to queue for processing
                         subdirs_to_process.append(entry)
                         queue.append((entry, depth + 1, current_path))
                 except (OSError, PermissionError):
                     continue
             
-            # Store preliminary results (will be updated after subdirs are processed)
+            # Preliminary emptiness: children have not been resolved yet,
+            # so a directory holding only empty subdirs still looks empty.
             dir_results[current_path] = (
                 not has_non_excluded_content and len(subdirs_to_process) == 0,
                 has_non_excluded_content,
@@ -166,18 +183,17 @@ class Scanner:
                 subdirs_to_process
             )
         
-        # Second pass: aggregate results from children to parents (bottom-up)
-        # Process in reverse order (deepest first)
+        # Second pass: resolve children before parents so emptiness rolls up
+        # bottom-up; sorting by path depth guarantees parents come last.
         processed_paths = sorted(dir_results.keys(), key=lambda p: len(p.parts), reverse=True)
         
         final_results = {}
         for path in processed_paths:
             result = dir_results[path]
             
-            if len(result) == 5:  # Has subdirs to process
+            if len(result) == 5:  # directory had queued subdirectories
                 is_empty_prelim, has_content, empty_files, empty_subdirs, subdirs = result
                 
-                # Check subdirectory results
                 for subdir in subdirs:
                     if subdir in final_results:
                         sub_is_empty, sub_files, sub_dirs = final_results[subdir]
@@ -187,19 +203,16 @@ class Scanner:
                         else:
                             has_content = True
                         
-                        # Aggregate files and dirs from subdirectories
                         empty_files.extend(sub_files)
                         empty_subdirs.extend(sub_dirs)
                 
-                # Final determination
                 is_empty = not has_content and len(empty_subdirs) == 0
                 final_results[path] = (is_empty, empty_files, empty_subdirs)
             else:
-                # No subdirs, use preliminary result
+                # Leaf directory: the preliminary result is already final.
                 is_empty, has_content, empty_files, empty_subdirs = result
                 final_results[path] = (is_empty, empty_files, empty_subdirs)
         
-        # Return result for the root directory
         if dirpath in final_results:
             return final_results[dirpath]
         else:
@@ -219,45 +232,37 @@ class Scanner:
         if threads <= 0:
             threads = min(32, os.cpu_count() + 4)
         
-        # Apply resource throttling if enabled
         if self._resource_throttler:
             threads = self._resource_throttler.adjust_thread_count(threads)
         
-        # Handle checkpoint restoration
         scan_state = {}
         if self._scan_manager and checkpoint_id:
             try:
                 scan_state = self._scan_manager.load_checkpoint(checkpoint_id)
-                # Restore previous results if available
                 if 'empty_files' in scan_state:
                     self.empty_files = [Path(p) for p in scan_state['empty_files']]
                 if 'empty_dirs' in scan_state:
                     self.empty_dirs = [Path(p) for p in scan_state['empty_dirs']]
             except Exception:
-                # If checkpoint loading fails, start fresh
+                # A corrupt or stale checkpoint must not kill the run;
+                # restarting from scratch is always safe.
                 scan_state = {}
         
-        # Start scan tracking
         if self._scan_manager:
-            # Estimate total items (rough approximation)
             total_items = self._estimate_total_items()
             self._scan_manager.start_scan(total_items)
         
         try:
-            # Perform the scan with enhanced features
             is_root_empty, empty_files, empty_dirs = self._scan_directory_enhanced(
                 self.root_path, scan_state
             )
             
-            # If the root directory is empty, add it to the list
             if is_root_empty:
                 empty_dirs.append(self.root_path.resolve())
             
-            # Resolve all paths to ensure consistency
             self.empty_files = [f.resolve() for f in empty_files]
             self.empty_dirs = [d.resolve() for d in empty_dirs]
             
-            # Create final checkpoint if enabled
             if self._scan_manager:
                 final_state = {
                     'empty_files': [str(f) for f in self.empty_files],
@@ -270,49 +275,54 @@ class Scanner:
             return self.empty_files, self.empty_dirs
             
         except KeyboardInterrupt:
-            # Handle interruption gracefully
+            # Persist partial results so the user can resume instead of
+            # losing a long scan to Ctrl+C.
             if self._scan_manager:
-                # Create checkpoint before stopping
                 interrupted_state = {
                     'empty_files': [str(f) for f in self.empty_files],
                     'empty_dirs': [str(d) for d in self.empty_dirs],
                     'interrupted': True
                 }
                 checkpoint_id = self._scan_manager.create_checkpoint(interrupted_state)
-                print(f"Scan interrupted. Checkpoint saved: {checkpoint_id}")
+                log.warning("Scan interrupted. Checkpoint saved: %s", checkpoint_id)
                 self._scan_manager.stop_scan()
             raise
         finally:
-            # Clean up resources
             if self._resource_throttler:
                 self._resource_throttler.stop_monitoring()
     
     def _estimate_total_items(self) -> int:
-        """Estimate total number of items to scan."""
+        """Rough item count for progress bars; exactness is not required."""
         try:
-            # Quick directory count estimation
             count = 0
             for root, dirs, files in os.walk(self.root_path):
-                if count > 10000:  # Cap estimation to avoid long delays
+                if count > 10000:  # cap the estimation cost itself
                     break
                 count += len(dirs) + len(files)
-                if count > 1000:  # Early exit for large directories
-                    return count * 10  # Rough extrapolation
+                if count > 1000:
+                    # Large tree: extrapolate instead of walking it all.
+                    return count * 10
             return count
         except Exception:
-            return 1000  # Default estimate
+            return 1000  # arbitrary but plausible default
     
-    def _scan_directory_enhanced(self, dirpath: Path, scan_state: dict) -> Tuple[bool, List[Path], List[Path]]:
-        """Enhanced directory scanning with checkpoint and throttling support."""
+    def _scan_directory_enhanced(self, dirpath: Path, scan_state: dict, max_depth: int = 20) -> Tuple[bool, List[Path], List[Path]]:
+        """Recursive scan with pause/throttle hooks.
+
+        A directory counts as empty when it contains nothing except
+        eligible empty files and (recursively) empty subdirectories --
+        excluded entries are invisible to the emptiness decision.
+        """
+        if max_depth <= 0:
+            return False, [], []
+        
         if self._should_exclude_path(dirpath):
             return False, [], []
         
-        # Check for pause/resume
         if self._scan_manager:
             self._scan_manager.wait_if_paused()
             self._scan_manager.update_progress(str(dirpath))
         
-        # Apply throttling if needed
         if self._resource_throttler:
             self._resource_throttler.throttle_if_needed()
         
@@ -322,18 +332,14 @@ class Scanner:
         try:
             entries = list(dirpath.iterdir())
         except (OSError, PermissionError):
-            # Can't read directory, skip it
             return False, [], []
         
-        # Check if directory is empty
         if not entries:
             return True, [], []
         
-        # Scan all entries
         has_non_excluded_content = False
         for entry in entries:
             try:
-                # Check for pause/resume
                 if self._scan_manager:
                     self._scan_manager.wait_if_paused()
                 
@@ -343,25 +349,19 @@ class Scanner:
                 if entry.is_file():
                     if self._scan_file(entry):
                         empty_files.append(entry.resolve())
-                        # Empty files don't count as non-excluded content
                     else:
-                        # Non-empty file counts as non-excluded content
                         has_non_excluded_content = True
                 elif entry.is_dir():
-                    is_empty, sub_files, sub_dirs = self._scan_directory_enhanced(entry, scan_state)
+                    is_empty, sub_files, sub_dirs = self._scan_directory_enhanced(entry, scan_state, max_depth - 1)
                     if is_empty:
                         empty_subdirs.append(entry.resolve())
                     else:
-                        # Non-empty directory counts as non-excluded content
                         has_non_excluded_content = True
-                    # Resolve paths for consistency
                     empty_files.extend([f.resolve() for f in sub_files])
                     empty_subdirs.extend([d.resolve() for d in sub_dirs])
             except (OSError, PermissionError):
-                # Can't access entry, skip it
                 continue
         
-        # A directory is considered empty if it has no non-excluded content
         return not has_non_excluded_content, empty_files, empty_subdirs
     
     def pause_scan(self) -> None:
@@ -370,9 +370,9 @@ class Scanner:
             self._scan_manager.pause_scan()
     
     def resume_scan(self, checkpoint_id: Optional[str] = None) -> None:
-        """Resume the scan operation."""
         if self._scan_manager:
             self._scan_manager.resume_scan(checkpoint_id)
+        """resume_scan."""
     
     def get_scan_progress(self):
         """Get current scan progress."""

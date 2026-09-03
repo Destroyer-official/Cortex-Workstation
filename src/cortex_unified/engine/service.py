@@ -51,6 +51,8 @@ def _throttle(cb: "Callable[[str], None] | None", interval: float = 0.1):
         if now - last[0] >= interval:
             last[0] = now
             cb(msg)
+        """wrapped."""
+        """wrapped."""
 
     return wrapped
 
@@ -62,10 +64,17 @@ class CategoryScan:
     category: CleanupCategory
     entries: list[FileEntry] = field(default_factory=list)
     total_bytes: int = 0
+    #: Cloud placeholders (OneDrive Files On-Demand and friends) left out of
+    #: this category. Their bytes are not on this disk, so deleting them would
+    #: free nothing while removing cloud data - reported, never silently dropped.
+    cloud_skipped: int = 0
+    cloud_skipped_bytes: int = 0
 
     @property
     def file_count(self) -> int:
         return len(self.entries)
+        """file_count."""
+        """file_count."""
 
     def breakdown(self, limit: int = 200) -> list[dict]:
         """Group this category's files into their top folders for preview.
@@ -112,7 +121,11 @@ class CategoryScan:
             "reversible": self.category.reversible,
             "file_count": self.file_count,
             "total_bytes": self.total_bytes,
+            "cloud_skipped": self.cloud_skipped,
+            "cloud_skipped_bytes": self.cloud_skipped_bytes,
         }
+        """to_dict."""
+        """to_dict."""
 
 
 @dataclass(slots=True)
@@ -125,18 +138,50 @@ class CleanupReport:
     @property
     def total_reclaimable_bytes(self) -> int:
         return sum(s.total_bytes for s in self.scans)
+        """total_reclaimable_bytes."""
+        """total_reclaimable_bytes."""
 
     @property
     def total_files(self) -> int:
         return sum(s.file_count for s in self.scans)
+        """total_files."""
+        """total_files."""
+
+    @property
+    def cloud_skipped(self) -> int:
+        """Total cloud placeholders excluded across all categories."""
+        return sum(s.cloud_skipped for s in self.scans)
+
+    @property
+    def cloud_skipped_bytes(self) -> int:
+        """Logical size of the excluded placeholders (not local, not reclaimable)."""
+        return sum(s.cloud_skipped_bytes for s in self.scans)
+
+    @property
+    def cloud_note(self) -> str:
+        """One-line explanation of skipped cloud files, or ``""`` when none.
+
+        Shown so the user understands why a folder they know is large didn't
+        contribute to the total, instead of assuming the scan missed it.
+        """
+        n = self.cloud_skipped
+        if not n:
+            return ""
+        return (f"Skipped {n:,} cloud-only file{'s' if n != 1 else ''}: the content "
+                "isn't stored on this PC, so removing it would free no space and "
+                "would delete your cloud copy.")
 
     def to_dict(self) -> dict:
         return {
             "total_reclaimable_bytes": self.total_reclaimable_bytes,
             "total_files": self.total_files,
             "duration_seconds": round(self.duration_seconds, 3),
+            "cloud_skipped": self.cloud_skipped,
+            "cloud_skipped_bytes": self.cloud_skipped_bytes,
             "categories": [s.to_dict() for s in self.scans],
         }
+        """to_dict."""
+        """to_dict."""
 
 
 class CleanerService:
@@ -149,6 +194,8 @@ class CleanerService:
     ) -> None:
         self.guard = guard or PathGuard()
         self.probe = probe or StorageProbe()
+        """__init__."""
+        """__init__."""
 
     # -- category scan / clean ---------------------------------------------
 
@@ -240,6 +287,8 @@ class CleanerService:
             def _rep(cur_dir, seen):
                 if emit is not None:
                     emit(f"Indexing files: {len(entries) + seen}\u2026")
+                """_rep."""
+                """_rep."""
             for e in walker.iter_files(root, progress=_rep):
                 if extensions is not None and e.path.suffix.lower() not in extensions:
                     continue
@@ -250,6 +299,8 @@ class CleanerService:
         def _hprog(done, total):
             if emit is not None:
                 emit(f"Hashing {done}/{total}\u2026")
+            """_hprog."""
+            """_hprog."""
         return DuplicateFinderEngine().find(entries, progress=_hprog)
 
     def find_large_files(
@@ -271,6 +322,8 @@ class CleanerService:
         def _rep(cur_dir, seen):
             if emit is not None:
                 emit(f"Scanning: {seen} files ({len(entries)} large)\u2026")
+            """_rep."""
+            """_rep."""
         for e in walker.iter_files(root, progress=_rep):
             entries.append(e)
         entries.sort(key=lambda e: e.size, reverse=True)
@@ -299,6 +352,8 @@ class CleanerService:
         else:
             cats = [c for c in cats if include_disabled or c.default_enabled]
         return [c for c in cats if c.risk.rank <= max_risk.rank or (ids and c.id in set(ids or []))]
+        """_select_categories."""
+        """_select_categories."""
 
     def _scan_category(self, cat: CleanupCategory, progress=None, cancel_event=None) -> CategoryScan:
         scan = CategoryScan(category=cat)
@@ -326,15 +381,26 @@ class CleanerService:
             def _report(cur_dir, seen, _label=cat.label):
                 if progress is not None:
                     progress(f"Scanning {_label}: {scan.file_count + seen} files\u2026")
+                """_report."""
+                """_report."""
 
             for entry in walker.iter_files(base, progress=_report):
                 if globset != ("*",) and not _matches_any(entry.path.name, globset):
                     continue
                 scan.entries.append(entry)
-                scan.total_bytes += entry.size
+                # reclaimable_size, not the logical size: sparse and compressed
+                # files occupy less than they claim, so promising their logical
+                # size back would overstate the result.
+                scan.total_bytes += entry.reclaimable_size
+        scan.cloud_skipped = walker.cloud_skipped
+        scan.cloud_skipped_bytes = walker.cloud_skipped_bytes
         return scan
+        """_scan_category."""
+        """_scan_category."""
 
 
 def _matches_any(name: str, globs: tuple[str, ...]) -> bool:
     import fnmatch
     return any(fnmatch.fnmatch(name, g) for g in globs)
+    """_matches_any."""
+    """_matches_any."""

@@ -1,14 +1,23 @@
-"""Utility functions for Cortex Cleaner."""
+"""Shared utilities: logging setup, formatting, path helpers, error types.
+
+Everything here is dependency-light and safe to import from any layer of
+the application -- analyzers, UI and CLI all pull from this module rather
+than re-implementing their own variants.
+"""
 
 import os
 import sys
 import logging
 from pathlib import Path
-from typing import List, Set, Tuple
+from typing import Set
 from datetime import datetime
 
 def get_system_excludes() -> Set[str]:
-    """Get platform-specific system directories to exclude by default."""
+    """System directories that must never be scanned or cleaned.
+
+    Returned as bare directory names so scanners can match them cheaply
+    at any depth without resolving each path.
+    """
     if sys.platform.startswith("win"):
         return {
             "System Volume Information",
@@ -29,39 +38,42 @@ def get_system_excludes() -> Set[str]:
         }
 
 def is_system_directory(path: Path) -> bool:
-    """Check if a path is a system directory that should be excluded."""
+    """True if *path* names one of the platform's protected directories."""
     system_excludes = get_system_excludes()
     return path.name in system_excludes
 
 def setup_logging(verbose: bool = False, log_file: str = None, json_logging: bool = False, 
                  component: str = None, log_level: str = None) -> logging.Logger:
-    """Set up comprehensive logging for the application with enhanced features.
-    
+    """Configure and return an application logger.
+
+    Handlers are rebuilt on every call (existing ones are cleared first),
+    so calling this twice with different settings replaces the previous
+    configuration instead of duplicating output lines.
+
     Args:
         verbose: Enable verbose logging
         log_file: Path to log file
         json_logging: Use JSON format for structured logging
         component: Specific component name for targeted logging
         log_level: Override log level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
-    
+
     Returns:
         Configured logger instance
     """
     logger_name = f"{component}" if component else "cortex_cleaner"
     logger = logging.getLogger(logger_name)
-    
-    # Determine log level
+
     if log_level:
         level = getattr(logging, log_level.upper(), logging.INFO)
     else:
         level = logging.DEBUG if verbose else logging.INFO
-    
+
     logger.setLevel(level)
-    
-    # Clear any existing handlers to avoid duplicates
+
+    # Replacing handlers prevents duplicate lines when this runs more than
+    # once per process (e.g. CLI reconfiguration after config load).
     logger.handlers.clear()
-    
-    # Create enhanced formatters
+
     if json_logging:
         import json
         class JSONFormatter(logging.Formatter):
@@ -76,11 +88,11 @@ def setup_logging(verbose: bool = False, log_file: str = None, json_logging: boo
                     "line": record.lineno
                 }
                 
-                # Add exception info if present
                 if record.exc_info:
                     log_entry["exception"] = self.formatException(record.exc_info)
-                
-                # Add extra fields if present
+
+                # Optional structured fields; emitters attach these via
+                # the logging ``extra`` mapping.
                 if hasattr(record, 'operation'):
                     log_entry["operation"] = record.operation
                 if hasattr(record, 'duration'):
@@ -91,20 +103,21 @@ def setup_logging(verbose: bool = False, log_file: str = None, json_logging: boo
                     log_entry["bytes_processed"] = record.bytes_processed
                 
                 return json.dumps(log_entry)
+                """format."""
+            """JSONFormatter class."""
         
         formatter = JSONFormatter()
     else:
-        # Enhanced text formatter with more context
         formatter = logging.Formatter(
             '%(asctime)s - %(name)s - %(levelname)s - [%(module)s:%(funcName)s:%(lineno)d] - %(message)s'
         )
-    
-    # Console handler with color support
+
     console_handler = logging.StreamHandler()
     console_handler.setLevel(level)
     console_handler.setFormatter(formatter)
-    
-    # Add color support for console output (if not JSON)
+
+    # Colors only on an interactive TTY and only for text output; colorlog
+    # is optional and its absence must not break logging.
     if not json_logging and hasattr(sys.stderr, 'isatty') and sys.stderr.isatty():
         try:
             import colorlog
@@ -120,44 +133,43 @@ def setup_logging(verbose: bool = False, log_file: str = None, json_logging: boo
             )
             console_handler.setFormatter(color_formatter)
         except ImportError:
-            # colorlog not available, use standard formatter
             pass
-    
+
     logger.addHandler(console_handler)
-    
-    # File handler with rotation support
+
+    # Rotating file log: DEBUG always, regardless of console level, so a
+    # support bundle contains the full story even when the console is quiet.
     if log_file:
         try:
             from logging.handlers import RotatingFileHandler
-            
-            # Ensure log directory exists
+
             log_path = Path(log_file)
             log_path.parent.mkdir(parents=True, exist_ok=True)
-            
-            # Create rotating file handler (10MB max, 5 backups)
+
             file_handler = RotatingFileHandler(
-                log_file, 
+                log_file,
                 maxBytes=10*1024*1024,  # 10MB
                 backupCount=5
             )
-            file_handler.setLevel(logging.DEBUG)  # Always debug level for files
+            file_handler.setLevel(logging.DEBUG)
             file_handler.setFormatter(formatter)
             logger.addHandler(file_handler)
-            
+
         except Exception as e:
+            # File logging is an enhancement; console logging keeps working.
             logger.warning(f"Could not set up file logging: {e}")
-    
-    # Add performance monitoring handler
+
     if verbose:
         class PerformanceFilter(logging.Filter):
             def filter(self, record):
-                # Add performance context to log records
                 if not hasattr(record, 'start_time'):
                     record.start_time = datetime.now()
                 return True
-        
+                """filter."""
+            """PerformanceFilter class."""
+
         logger.addFilter(PerformanceFilter())
-    
+
     return logger
 
 def get_component_logger(component: str, verbose: bool = False, 
@@ -258,11 +270,13 @@ def get_file_age_days(filepath: Path) -> int:
         # If we can't get the file age, return 0 (assume it's new)
         return 0
 
-# Enhanced Error Handling and Resource Management
-
 class DeepCleanerError(Exception):
-    """Base exception for Cortex Cleaner operations."""
-    
+    """Base exception for Cortex Cleaner operations.
+
+    Carries structured context (operation, component, error_code, details)
+    so callers can branch on failure modes without parsing message text.
+    """
+
     def __init__(self, message: str, operation: str = None, component: str = None, 
                  error_code: str = None, details: dict = None):
         super().__init__(message)
@@ -271,6 +285,7 @@ class DeepCleanerError(Exception):
         self.error_code = error_code
         self.details = details or {}
         self.timestamp = datetime.now()
+        """__init__."""
 
 class DockerError(DeepCleanerError):
     """Docker-specific errors."""
@@ -313,15 +328,13 @@ def handle_error(logger: logging.Logger, error: Exception, operation: str = None
         'error_type': type(error).__name__,
         'error_message': str(error)
     }
-    
-    # Add specific error details for known error types
+
     if isinstance(error, DeepCleanerError):
         error_context.update({
             'error_code': error.error_code,
             'details': error.details
         })
-    
-    # Log the error with full context
+
     logger.error(f"Error in {operation or 'unknown operation'}: {error}", 
                 extra=error_context, exc_info=True)
     
@@ -361,14 +374,17 @@ class ResourceManager:
         self.resources = []
         self.start_time = None
         self.context = {}
+        """__init__."""
     
     def __enter__(self):
         self.start_time = datetime.now()
         self.context = log_operation_start(self.logger, self.operation or "resource_operation")
         return self
+        """__enter__."""
     
     def __exit__(self, exc_type, exc_val, exc_tb):
-        # Clean up resources
+        # Release in reverse registration order, mirroring how nested
+        # resources were acquired. Cleanup failures are logged, never raised.
         for resource in reversed(self.resources):
             try:
                 if hasattr(resource, 'close'):
@@ -379,23 +395,27 @@ class ResourceManager:
                     resource()
             except Exception as e:
                 self.logger.warning(f"Error cleaning up resource: {e}")
-        
-        # Log operation completion
+
         success = exc_type is None
         log_operation_end(self.logger, self.context, success, exc_val)
-        
-        return False  # Don't suppress exceptions
+
+        return False  # never suppress the caller's exception
+        """__exit__."""
     
     def add_resource(self, resource):
         """Add a resource to be cleaned up."""
         self.resources.append(resource)
     
     def add_cleanup_function(self, func, *args, **kwargs):
-        """Add a cleanup function to be called."""
         self.resources.append(lambda: func(*args, **kwargs))
+        """add_cleanup_function."""
 
 def format_bytes(bytes_value: int) -> str:
-    """Format bytes in human-readable format with enhanced precision."""
+    """Format a byte count for display.
+
+    Precision shrinks as magnitude grows (100+ -> whole numbers) so table
+    columns stay aligned without losing resolution on small values.
+    """
     if bytes_value == 0:
         return "0 B"
     
@@ -407,7 +427,6 @@ def format_bytes(bytes_value: int) -> str:
         size /= 1024
         unit_index += 1
     
-    # Use appropriate precision based on size
     if size >= 100:
         precision = 0
     elif size >= 10:
@@ -544,8 +563,7 @@ def create_error_report(error: Exception, context: dict = None) -> dict:
         'system_info': get_system_info(),
         'timestamp': datetime.now().isoformat()
     }
-    
-    # Add specific error details for known error types
+
     if isinstance(error, DeepCleanerError):
         report['error'].update({
             'operation': error.operation,

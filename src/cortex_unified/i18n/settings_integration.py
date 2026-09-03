@@ -1,10 +1,12 @@
 """
-Settings integration for internationalization and accessibility.
+Qt settings surface for i18n and accessibility preferences.
+
+Binds locale, theme, and a11y toggles to persistent QSettings keys
+("i18n/*", "accessibility/*") and applies changes immediately on edit.
+I18nManager replays the saved values at startup.
 """
 
-from typing import Dict, Any, Optional, Callable
 import logging
-from pathlib import Path
 
 try:
     from PySide6.QtWidgets import (
@@ -20,15 +22,14 @@ from .translator import get_translator, set_global_locale, translate as _
 from cortex_unified.accessibility import get_theme_manager
 
 class I18nSettingsWidget(QWidget):
-    """Widget for internationalization and accessibility settings."""
+    """Editor widget persisting i18n/accessibility choices to QSettings."""
     
-    # Signals
     locale_changed = Signal(str)
     theme_changed = Signal(str)
     accessibility_changed = Signal(dict)
     
     def __init__(self, parent=None):
-        """Initialize settings widget."""
+        """Build the controls and restore persisted values."""
         super().__init__(parent)
         self.logger = logging.getLogger(__name__)
         self.settings = QSettings()
@@ -39,13 +40,12 @@ class I18nSettingsWidget(QWidget):
         self.load_settings()
     
     def setup_ui(self):
-        """Set up the user interface."""
+        """Assemble language and accessibility groups; no-op without Qt."""
         if not HAS_PYSIDE6:
             return
             
         layout = QVBoxLayout(self)
         
-        # Language settings
         lang_group = QGroupBox(_("settings.language"))
         lang_layout = QFormLayout(lang_group)
         
@@ -55,7 +55,6 @@ class I18nSettingsWidget(QWidget):
         
         layout.addWidget(lang_group)
         
-        # Accessibility settings
         a11y_group = QGroupBox(_("settings.accessibility"))
         a11y_layout = QFormLayout(a11y_group)
         
@@ -86,7 +85,7 @@ class I18nSettingsWidget(QWidget):
         self.font_size_spin.valueChanged.connect(self.on_accessibility_changed) 
    
     def populate_languages(self):
-        """Populate language combo box."""
+        """Fill the combo with native names, storing locale as item data."""
         if not HAS_PYSIDE6:
             return
             
@@ -99,7 +98,7 @@ class I18nSettingsWidget(QWidget):
             self.language_combo.addItem(display_name, locale)
     
     def populate_themes(self):
-        """Populate theme combo box."""
+        """Mirror theme_manager.get_available_themes() into the combo."""
         if not HAS_PYSIDE6:
             return
             
@@ -110,25 +109,23 @@ class I18nSettingsWidget(QWidget):
             self.theme_combo.addItem(theme_name, theme_id)
     
     def load_settings(self):
-        """Load settings from QSettings."""
+        """Restore persisted values; absent keys fall back to defaults."""
         if not HAS_PYSIDE6:
             return
             
-        # Load language setting
         current_locale = self.settings.value("i18n/locale", "en")
         for i in range(self.language_combo.count()):
             if self.language_combo.itemData(i) == current_locale:
                 self.language_combo.setCurrentIndex(i)
                 break
         
-        # Load theme setting
         current_theme = self.settings.value("accessibility/theme", "default")
         for i in range(self.theme_combo.count()):
             if self.theme_combo.itemData(i) == current_theme:
                 self.theme_combo.setCurrentIndex(i)
                 break
         
-        # Load accessibility settings
+        # Remaining a11y flags share one QSettings prefix
         self.high_contrast_cb.setChecked(
             self.settings.value("accessibility/high_contrast", False, type=bool)
         )
@@ -143,21 +140,18 @@ class I18nSettingsWidget(QWidget):
         )
     
     def save_settings(self):
-        """Save settings to QSettings."""
+        """Write current control state to QSettings and sync."""
         if not HAS_PYSIDE6:
             return
             
-        # Save language
         current_locale = self.language_combo.currentData()
         if current_locale:
             self.settings.setValue("i18n/locale", current_locale)
         
-        # Save theme
         current_theme = self.theme_combo.currentData()
         if current_theme:
             self.settings.setValue("accessibility/theme", current_theme)
         
-        # Save accessibility settings
         self.settings.setValue("accessibility/high_contrast", self.high_contrast_cb.isChecked())
         self.settings.setValue("accessibility/keyboard_navigation", self.keyboard_nav_cb.isChecked())
         self.settings.setValue("accessibility/screen_reader", self.screen_reader_cb.isChecked())
@@ -166,7 +160,7 @@ class I18nSettingsWidget(QWidget):
         self.settings.sync()
     
     def on_language_changed(self, language_name):
-        """Handle language change."""
+        """Apply the picked locale globally and persist it."""
         locale = self.language_combo.currentData()
         if locale:
             set_global_locale(locale)
@@ -175,7 +169,7 @@ class I18nSettingsWidget(QWidget):
             self.logger.info(f"Language changed to: {locale}")
     
     def on_theme_changed(self, theme_name):
-        """Handle theme change."""
+        """Apply the picked theme and persist its id."""
         theme_id = self.theme_combo.currentData()
         if theme_id:
             self.theme_manager.apply_theme(theme_id)
@@ -184,7 +178,7 @@ class I18nSettingsWidget(QWidget):
             self.logger.info(f"Theme changed to: {theme_id}")
     
     def on_accessibility_changed(self):
-        """Handle accessibility setting changes."""
+        """Push the combined a11y state to the theme manager and persist it."""
         settings = {
             'high_contrast': self.high_contrast_cb.isChecked(),
             'keyboard_navigation': self.keyboard_nav_cb.isChecked(),
@@ -192,7 +186,7 @@ class I18nSettingsWidget(QWidget):
             'font_size': self.font_size_spin.value()
         }
         
-        # Apply high contrast if enabled
+        # High contrast overrides whatever theme was applied earlier
         if settings['high_contrast']:
             self.theme_manager.apply_high_contrast_theme()
         
@@ -201,29 +195,26 @@ class I18nSettingsWidget(QWidget):
         self.logger.info(f"Accessibility settings changed: {settings}")
 
 class I18nManager:
-    """Manager for internationalization and accessibility integration."""
+    """Startup glue: replays persisted locale/theme and hands out the widget."""
     
     def __init__(self):
-        """Initialize i18n manager."""
+        """No-op without PySide6; otherwise restores saved preferences."""
         self.logger = logging.getLogger(__name__)
         self.settings = QSettings() if HAS_PYSIDE6 else None
         self.translator = get_translator()
         self.theme_manager = get_theme_manager()
         
-        # Load saved settings
         self.load_saved_settings()
     
     def load_saved_settings(self):
-        """Load and apply saved settings."""
+        """Replay persisted locale/theme; failures are logged, not raised."""
         if not self.settings:
             return
             
         try:
-            # Load and apply locale
             saved_locale = self.settings.value("i18n/locale", "en")
             set_global_locale(saved_locale)
             
-            # Load and apply theme
             saved_theme = self.settings.value("accessibility/theme", "default")
             self.theme_manager.apply_theme(saved_theme)
             
@@ -233,28 +224,28 @@ class I18nManager:
             self.logger.error(f"Error loading saved settings: {e}")
     
     def create_settings_widget(self, parent=None):
-        """Create settings widget."""
+        """Return an I18nSettingsWidget, or None without PySide6."""
         if HAS_PYSIDE6:
             return I18nSettingsWidget(parent)
         return None
     
     def get_current_locale(self) -> str:
-        """Get current locale."""
+        """Currently active locale code."""
         return self.translator.locale
     
     def get_current_theme(self) -> str:
-        """Get current theme."""
+        """Currently active theme id."""
         return self.theme_manager.get_current_theme()
     
     def is_rtl_layout(self) -> bool:
-        """Check if current locale uses RTL layout."""
+        """True when the active locale renders right-to-left."""
         return self.translator.is_rtl_locale()
 
-# Global i18n manager instance
+# Lazy singleton shared across the app
 _i18n_manager = None
 
 def get_i18n_manager() -> I18nManager:
-    """Get the global i18n manager instance."""
+    """Return the shared I18nManager, creating it on first call."""
     global _i18n_manager
     if _i18n_manager is None:
         _i18n_manager = I18nManager()

@@ -30,12 +30,18 @@ from typing import Any, Callable
 
 _LOG = logging.getLogger("cortex.system_tools.load_tester")
 
-# Hard ceilings so a test can't accidentally exhaust the local machine.
-MAX_CONCURRENCY = 500
+_MAX_CONCURRENCY_HARD = 500
+MAX_CONCURRENCY = 100
 MAX_DURATION_S = 600
 _USER_AGENT = "CortexCleaner-LoadTester/1.0 (authorized resilience test)"
 _TOKEN_PATH = "/.well-known/cortex-loadtest-authorization"
 _AUDIT_LOG = Path.home() / ".cortex_cleaner" / "logs" / "loadtest_audit.log"
+
+_WARNING_BANNER = (
+    "WARNING: This tool generates network traffic for load testing purposes.\n"
+    "Use only against infrastructure you own or have explicit authorization to test.\n"
+    "All activity is logged to %s\n"
+)
 
 
 # =====================================================================
@@ -44,6 +50,7 @@ _AUDIT_LOG = Path.home() / ".cortex_cleaner" / "logs" / "loadtest_audit.log"
 
 @dataclass(slots=True)
 class Authorization:
+    """Authorization data container."""
     authorized: bool
     category: str            # loopback / private / link-local / owned-public / denied
     host: str
@@ -51,6 +58,7 @@ class Authorization:
     reason: str = ""
 
     def to_dict(self) -> dict[str, Any]:
+        """To dict."""
         return {
             "authorized": self.authorized, "category": self.category,
             "host": self.host, "resolved_ip": self.resolved_ip, "reason": self.reason,
@@ -90,6 +98,7 @@ class TargetAuthorizer:
 
     def authorize(self, host: str, ownership_token: str | None = None,
                   verify_public: bool = True) -> Authorization:
+        """Authorize."""
         category, ip = self.classify(host)
         if category in ("loopback", "private", "link-local"):
             return Authorization(True, category, host, ip,
@@ -139,6 +148,7 @@ class TargetAuthorizer:
 
 @dataclass(slots=True)
 class HttpLoadConfig:
+    """Http Load Config data container."""
     url: str
     method: str = "GET"
     concurrency: int = 10
@@ -150,6 +160,7 @@ class HttpLoadConfig:
 
 @dataclass(slots=True)
 class TcpLoadConfig:
+    """Tcp Load Config data container."""
     host: str
     port: int
     concurrency: int = 10
@@ -159,6 +170,7 @@ class TcpLoadConfig:
 
 @dataclass(slots=True)
 class LoadResult:
+    """Load Result data container."""
     kind: str
     target: str
     total: int = 0
@@ -171,13 +183,16 @@ class LoadResult:
 
     @property
     def rps(self) -> float:
+        """Rps."""
         return round(self.total / self.duration_s, 1) if self.duration_s else 0.0
 
     @property
     def error_rate(self) -> float:
+        """Error rate."""
         return round(100.0 * self.failed / self.total, 2) if self.total else 0.0
 
     def percentile(self, p: float) -> float:
+        """Percentile."""
         if not self.latencies_ms:
             return 0.0
         s = sorted(self.latencies_ms)
@@ -185,6 +200,7 @@ class LoadResult:
         return round(s[k], 1)
 
     def summary(self) -> dict[str, Any]:
+        """Summary."""
         return {
             "kind": self.kind, "target": self.target, "total": self.total,
             "succeeded": self.succeeded, "failed": self.failed,
@@ -212,16 +228,26 @@ class LoadTester:
     """Runs authorized load tests and reports resilience metrics."""
 
     def __init__(self):
+        """Initialize Load Tester."""
         self._authorizer = TargetAuthorizer()
 
     # -- HTTP (L7) ----------------------------------------------------------
 
     def run_http(self, cfg: HttpLoadConfig, auth: Authorization,
                  progress: ProgressCB | None = None,
-                 cancel_event: threading.Event | None = None) -> LoadResult:
+                 cancel_event: threading.Event | None = None,
+                 confirm: bool = False,
+                 safe_mode: bool = False) -> LoadResult:
+        """Run http."""
         if not auth.authorized:
             raise PermissionError(f"Target not authorized: {auth.reason}")
-        conc = max(1, min(cfg.concurrency, MAX_CONCURRENCY))
+        if not confirm:
+            raise PermissionError(
+                "Load test not confirmed. Pass confirm=True to acknowledge "
+                "that you are testing your own authorized infrastructure.")
+        print(_WARNING_BANNER % _AUDIT_LOG, flush=True)
+        conc = max(1, min(cfg.concurrency,
+                          MAX_CONCURRENCY if not safe_mode else min(MAX_CONCURRENCY, 10)))
         dur = max(1, min(cfg.duration_s, MAX_DURATION_S))
         result = LoadResult(kind="http", target=cfg.url)
         self._audit("http", cfg.url, auth, conc, dur)
@@ -230,12 +256,11 @@ class LoadTester:
         cancel = cancel_event or threading.Event()
         start = time.monotonic()
         deadline = start + dur
-        # Simple global rate limit (requests/sec) shared across workers.
         min_interval = (conc / cfg.rate_cap_rps) if cfg.rate_cap_rps > 0 else 0.0
 
         def worker(idx: int):
+            """Worker."""
             import urllib.request
-            # Stagger start during ramp so load rises gradually.
             if cfg.ramp_s > 0:
                 time.sleep(cfg.ramp_s * idx / conc)
             while time.monotonic() < deadline and not cancel.is_set():
@@ -282,10 +307,19 @@ class LoadTester:
 
     def run_tcp(self, cfg: TcpLoadConfig, auth: Authorization,
                 progress: ProgressCB | None = None,
-                cancel_event: threading.Event | None = None) -> LoadResult:
+                cancel_event: threading.Event | None = None,
+                confirm: bool = False,
+                safe_mode: bool = False) -> LoadResult:
+        """Run tcp."""
         if not auth.authorized:
             raise PermissionError(f"Target not authorized: {auth.reason}")
-        conc = max(1, min(cfg.concurrency, MAX_CONCURRENCY))
+        if not confirm:
+            raise PermissionError(
+                "Load test not confirmed. Pass confirm=True to acknowledge "
+                "that you are testing your own authorized infrastructure.")
+        print(_WARNING_BANNER % _AUDIT_LOG, flush=True)
+        conc = max(1, min(cfg.concurrency,
+                          MAX_CONCURRENCY if not safe_mode else min(MAX_CONCURRENCY, 10)))
         dur = max(1, min(cfg.duration_s, MAX_DURATION_S))
         result = LoadResult(kind="tcp", target=f"{cfg.host}:{cfg.port}")
         self._audit("tcp", f"{cfg.host}:{cfg.port}", auth, conc, dur)
@@ -296,6 +330,7 @@ class LoadTester:
         deadline = start + dur
 
         def worker(idx: int):
+            """Worker."""
             while time.monotonic() < deadline and not cancel.is_set():
                 t0 = time.monotonic()
                 ok = False
@@ -333,7 +368,6 @@ class LoadTester:
                    for i in range(conc)]
         for t in threads:
             t.start()
-        # Heartbeat so the UI keeps updating even between the 25-request marks.
         while any(t.is_alive() for t in threads):
             if progress:
                 progress(LoadTester._progress_snapshot(result, start))
@@ -342,6 +376,8 @@ class LoadTester:
                 break
         for t in threads:
             t.join(timeout=2.0)
+        """_run_pool."""
+        """_run_pool."""
 
     @staticmethod
     def _progress_snapshot(result: LoadResult, start: float, final: bool = False) -> dict:
@@ -354,6 +390,8 @@ class LoadTester:
             "error_rate": result.error_rate,
             "final": final,
         }
+        """_progress_snapshot."""
+        """_progress_snapshot."""
 
     @staticmethod
     def _audit(kind: str, target: str, auth: Authorization, conc: int, dur: int) -> None:
@@ -365,3 +403,5 @@ class LoadTester:
                          f"\tip={auth.resolved_ip}\tconc={conc}\tdur={dur}s\n")
         except OSError:
             pass
+        """_audit."""
+        """_audit."""

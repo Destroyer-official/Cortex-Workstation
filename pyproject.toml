@@ -1,51 +1,75 @@
 [build-system]
-requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.2"]
+requires = ["setuptools>=45", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "cortex-cleaner"
-description = "A professional, safe, and powerful utility to find and remove unnecessary files and folders."
+name = "cortex-workstation"
+description = "The Ultimate Windows NT Systems, Forensics & File Management Platform"
 readme = "README.md"
-license = {file = "LICENSE"}
+license = "MIT"
+license-files = ["LICENSE"]
 authors = [
-    {name = "Cortex Cleaner Development Team", email = "dev@cortex-cleaner.example.com"}
+    {name = "Cortex Workstation Team", email = "dev@cortex-workstation.example.com"}
 ]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "Intended Audience :: End Users/Desktop",
-    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Utilities",
     "Topic :: System :: Filesystems",
 ]
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 dependencies = [
     "click>=8.0",
     "pyyaml>=6.0",
     "psutil>=5.9.0",
+    "send2trash>=1.8.0",
+    "sqlalchemy>=2.0",
+    "structlog>=23.0.0",
+    "pydantic>=2.0.0",
+    "pydantic-settings>=2.0.0",
+    "pywin32>=306; sys_platform == 'win32'",
 ]
-version = "1.0.0"
+version = "1.2.0"
 
 [project.optional-dependencies]
-trash = ["send2trash>=1.8.0"]
 progress = ["tqdm>=4.64.0"]
 gui = ["PySide6>=6.0.0"]
 docker = ["docker>=6.0.0"]
 visualization = ["plotly>=5.15.0"]
 parquet = ["pyarrow>=12.0.0"]
-all = ["cortex-cleaner[trash,progress,gui,docker,visualization,parquet]"]
+vision = ["Pillow>=10.0.0"]  # perceptual image hashing for duplicate photos
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "pytest-qt>=4.0.0",
+    "hypothesis>=6.0.0",
+    "xxhash>=3.0.0",
+    "black>=22.0.0",
+    "flake8>=5.0.0",
+    "mypy>=1.0.0",
+    "pre-commit>=2.20.0",
+]
+all = ["cortex-workstation[progress,gui,docker,visualization,parquet,vision]"]
 
 [project.urls]
-Homepage = "https://github.com/Destroyer-official/Cortex_Cleaner"
-Repository = "https://github.com/Destroyer-official/Cortex_Cleaner"
+Homepage = "https://github.com/Destroyer-official/Cortex-Workstation"
+Repository = "https://github.com/Destroyer-official/Cortex-Workstation"
 
 [project.scripts]
 cortex = "cortex_unified.engine.cli:main"
 cortex-gui = "cortex_unified.ui.premium.app:main"
+cortex-workstation = "cortex_unified.cli.cli:main"
+cortex-workstation-gui = "cortex_unified.ui.launcher:main"
 cortex-cleaner = "cortex_unified.cli.cli:main"
 cortex-cleaner-gui = "cortex_unified.ui.launcher:main"
+cortex-debug = "cortex_unified.debug.runner:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -53,6 +77,60 @@ where = ["src"]
 [tool.setuptools.package-dir]
 "" = "src"
 
+[tool.setuptools.package-data]
+cortex_unified = [
+    "i18n/locales/*.json",
+    # Shipped SVG icon set. Without this the navigation renders blank in an
+    # installed build, because wheels only include .py files by default.
+    "ui/premium/resources/icons/*.svg",
+]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["src"]
 addopts = ["--verbose", "--cov=cortex_unified"]
+markers = [
+    "live: walks real system state (registry trees, running services); deselect with -m 'not live'",
+]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+check_untyped_defs = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+show_error_codes = true
+ignore_missing_imports = true
+exclude = [
+    "tests/",
+    "build/",
+    "dist/",
+    "*.egg-info/",
+]
+
+[tool.coverage.run]
+source = ["cortex_unified"]
+omit = [
+    "*/tests/*",
+    "*/test_*",
+    "*/__pycache__/*",
+    "*/build/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if TYPE_CHECKING:",
+    "if __name__ == .__main__.:",
+    "raise NotImplementedError",
+    "pass",
+    "\\.\\.\\.",
+]
+show_missing = true
+skip_covered = true
+fail_under = 50

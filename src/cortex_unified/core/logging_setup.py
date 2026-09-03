@@ -17,10 +17,8 @@ from contextvars import ContextVar
 import structlog
 from structlog.types import EventDict, Processor
 
-
 # Context variable for correlation/request IDs
 correlation_id_var: ContextVar[Optional[str]] = ContextVar("correlation_id", default=None)
-
 
 def add_correlation_id(logger: Any, method_name: str, event_dict: EventDict) -> EventDict:
     """Add correlation ID to log events if present."""
@@ -29,13 +27,15 @@ def add_correlation_id(logger: Any, method_name: str, event_dict: EventDict) -> 
         event_dict["correlation_id"] = correlation_id
     return event_dict
 
-
 def add_app_context(logger: Any, method_name: str, event_dict: EventDict) -> EventDict:
     """Add application context to all log events."""
     event_dict["app"] = "cortex_cleaner"
-    event_dict["version"] = "1.0.0"  # TODO: Import from __version__
+    try:
+        from cortex_unified import __version__ as app_version
+    except Exception:  # pragma: no cover - defensive, package always ships it
+        app_version = "unknown"
+    event_dict["version"] = app_version
     return event_dict
-
 
 def censor_sensitive_data(logger: Any, method_name: str, event_dict: EventDict) -> EventDict:
     """
@@ -49,7 +49,6 @@ def censor_sensitive_data(logger: Any, method_name: str, event_dict: EventDict) 
     }
     
     def _censor_dict(d: Dict[str, Any]) -> Dict[str, Any]:
-        """Recursively censor dictionary values."""
         result = {}
         for key, value in d.items():
             key_lower = key.lower()
@@ -65,9 +64,9 @@ def censor_sensitive_data(logger: Any, method_name: str, event_dict: EventDict) 
             else:
                 result[key] = value
         return result
+        """_censor_dict."""
     
     return _censor_dict(event_dict)
-
 
 def configure_logging(
     log_level: str = "INFO",
@@ -98,34 +97,21 @@ def configure_logging(
             enable_colors=False
         )
     """
-    # Convert log level string to logging constant
     numeric_level = getattr(logging, log_level.upper(), logging.INFO)
-    
-    # Configure stdlib logging to work with structlog
+
+    # stdlib stays the sink; structlog only shapes the event dicts.
     logging.basicConfig(
         format="%(message)s",
         level=numeric_level,
         stream=sys.stdout,
     )
-    
-    # Build processor chain
+
     processors: list[Processor] = [
-        # Add context variables
         structlog.contextvars.merge_contextvars,
-        
-        # Add correlation ID
         add_correlation_id,
-        
-        # Add app context
         add_app_context,
-        
-        # Add log level
         structlog.processors.add_log_level,
-        
-        # Add timestamp
         structlog.processors.TimeStamper(fmt="iso", utc=True),
-        
-        # Add caller information (file, line, function)
         structlog.processors.CallsiteParameterAdder(
             parameters=[
                 structlog.processors.CallsiteParameter.FILENAME,
@@ -133,24 +119,16 @@ def configure_logging(
                 structlog.processors.CallsiteParameter.FUNC_NAME,
             ]
         ),
-        
-        # Add stack info for exceptions
         structlog.processors.StackInfoRenderer(),
-        
-        # Format exceptions
         structlog.processors.format_exc_info,
     ]
-    
-    # Add censoring if enabled
+
     if enable_censoring:
         processors.append(censor_sensitive_data)
-    
-    # Add final renderer
+
     if json_output:
-        # JSON output for production
         processors.append(structlog.processors.JSONRenderer())
     else:
-        # Human-readable output for development
         if enable_colors and sys.stdout.isatty():
             processors.append(
                 structlog.dev.ConsoleRenderer(
@@ -166,7 +144,6 @@ def configure_logging(
                 )
             )
     
-    # Configure structlog
     structlog.configure(
         processors=processors,
         wrapper_class=structlog.make_filtering_bound_logger(numeric_level),
@@ -174,23 +151,20 @@ def configure_logging(
         logger_factory=structlog.PrintLoggerFactory(),
         cache_logger_on_first_use=True,
     )
-    
-    # Set up file logging if requested
+
+    # File output is always raw JSON lines, independent of the console
+    # renderer, so log aggregators can parse it without configuration.
     if log_file:
         log_file = Path(log_file)
         log_file.parent.mkdir(parents=True, exist_ok=True)
-        
-        # Create file handler
+
         file_handler = logging.FileHandler(log_file, encoding="utf-8")
         file_handler.setLevel(numeric_level)
-        
-        # Use JSON format for file logs
+
         file_formatter = logging.Formatter("%(message)s")
         file_handler.setFormatter(file_formatter)
-        
-        # Add to root logger
-        logging.root.addHandler(file_handler)
 
+        logging.root.addHandler(file_handler)
 
 def get_logger(name: Optional[str] = None) -> structlog.BoundLogger:
     """
@@ -212,7 +186,6 @@ def get_logger(name: Optional[str] = None) -> structlog.BoundLogger:
         return structlog.get_logger(name)
     return structlog.get_logger()
 
-
 def set_correlation_id(correlation_id: str) -> None:
     """
     Set correlation ID for the current context.
@@ -230,11 +203,9 @@ def set_correlation_id(correlation_id: str) -> None:
     """
     correlation_id_var.set(correlation_id)
 
-
 def clear_correlation_id() -> None:
-    """Clear the correlation ID for the current context."""
     correlation_id_var.set(None)
-
+    """clear_correlation_id."""
 
 class LogContext:
     """
@@ -263,9 +234,6 @@ class LogContext:
             structlog.contextvars.unbind_contextvars(*self.context.keys())
         return False
 
-
-# Convenience functions for common log patterns
-
 def log_scan_start(
     logger: structlog.BoundLogger,
     scan_type: str,
@@ -279,7 +247,6 @@ def log_scan_start(
         root_path=root_path,
         **kwargs
     )
-
 
 def log_scan_complete(
     logger: structlog.BoundLogger,
@@ -299,7 +266,6 @@ def log_scan_complete(
         **kwargs
     )
 
-
 def log_scan_error(
     logger: structlog.BoundLogger,
     scan_type: str,
@@ -316,7 +282,6 @@ def log_scan_error(
         **kwargs
     )
 
-
 def log_file_operation(
     logger: structlog.BoundLogger,
     operation: str,
@@ -324,7 +289,6 @@ def log_file_operation(
     success: bool,
     **kwargs
 ) -> None:
-    """Log a file operation (delete, move, etc.)."""
     level = "info" if success else "warning"
     getattr(logger, level)(
         "file_operation",
@@ -333,7 +297,7 @@ def log_file_operation(
         success=success,
         **kwargs
     )
-
+    """log_file_operation."""
 
 def log_performance_metric(
     logger: structlog.BoundLogger,
@@ -342,7 +306,6 @@ def log_performance_metric(
     unit: str = "seconds",
     **kwargs
 ) -> None:
-    """Log a performance metric."""
     logger.info(
         "performance_metric",
         metric=metric_name,
@@ -350,13 +313,12 @@ def log_performance_metric(
         unit=unit,
         **kwargs
     )
+    """log_performance_metric."""
 
-
-# Example usage and testing
 if __name__ == "__main__":
     print("Testing structured logging...\n")
     
-    # Test 1: Development mode (colored console)
+    # Development mode (colored console)
     print("=== Development Mode (Colored Console) ===")
     configure_logging(log_level="DEBUG", json_output=False, enable_colors=True)
     log = get_logger(__name__)
@@ -366,21 +328,21 @@ if __name__ == "__main__":
     log.warning("warning_message", disk_usage=95, threshold=90)
     log.error("error_message", error_code=500, path="/nonexistent")
     
-    # Test 2: With correlation ID
+    # With correlation ID
     print("\n=== With Correlation ID ===")
     set_correlation_id("req-12345")
     log.info("request_received", endpoint="/api/scan")
     log.info("request_processed", duration_ms=150)
     clear_correlation_id()
     
-    # Test 3: With context manager
+    # With context manager
     print("\n=== With Context Manager ===")
     with LogContext(scan_id=42, scan_type="duplicates"):
         log.info("scan_phase", phase="initialization")
         log.info("scan_phase", phase="scanning")
         log.info("scan_phase", phase="complete")
     
-    # Test 4: Sensitive data censoring
+    # Sensitive data censoring
     print("\n=== Sensitive Data Censoring ===")
     log.info(
         "user_login",
@@ -390,14 +352,14 @@ if __name__ == "__main__":
         email="user@example.com"  # Should NOT be censored
     )
     
-    # Test 5: Exception logging
+    # Exception logging
     print("\n=== Exception Logging ===")
     try:
         raise ValueError("Something went wrong!")
     except Exception as e:
         log_scan_error(log, "duplicate_scan", e, root_path="/home/user")
     
-    # Test 6: JSON output (production mode)
+    # JSON output (production mode)
     print("\n=== Production Mode (JSON Output) ===")
     configure_logging(log_level="INFO", json_output=True, enable_colors=False)
     log = get_logger(__name__)

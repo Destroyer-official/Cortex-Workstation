@@ -39,12 +39,14 @@ class SmartScanReport:
         self.privacy_risks_count: int = 0
         self.scan_time_seconds: float = 0.0
         self.issues: List[Dict[str, Any]] = []
+        """__init__."""
 
     @property
     def total_cleanable_mb(self) -> float:
         return (self.total_junk_mb + self.browser_cache_mb +
                 self.win_update_cache_mb + self.recycle_bin_mb +
                 self.prefetch_mb + self.thumbnail_cache_mb)
+        """total_cleanable_mb."""
 
     def calculate_score(self):
         """Calculate 0-100 health score from real metrics."""
@@ -78,6 +80,7 @@ class SmartScannerWorker(QObject):
         self.config = config
         self.logger = logging.getLogger("smart_scanner")
         self._should_stop = False
+        """__init__."""
 
     def run(self):
         try:
@@ -151,8 +154,10 @@ class SmartScannerWorker(QObject):
         except Exception as exc:
             self.logger.error("Smart Scan failed: %s", exc, exc_info=True)
             self.error.emit(str(exc))
+        """run."""
 
     def stop(self):
+        """Cooperative cancel: checked between phases and inside directory walks."""
         self._should_stop = True
 
     # ──────────────────────────────────────────────────────────────────

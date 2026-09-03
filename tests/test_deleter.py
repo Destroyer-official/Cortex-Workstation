@@ -1,4 +1,4 @@
-﻿import os
+import os
 import pytest
 from pathlib import Path
 from cortex_unified.core.deleter import Deleter

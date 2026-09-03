@@ -9,11 +9,11 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 from PySide6.QtCore import QObject, Qt, Signal
 from PySide6.QtWidgets import (
-    QFileDialog,
     QHBoxLayout,
     QHeaderView,
     QLabel,
@@ -27,7 +27,7 @@ from PySide6.QtWidgets import (
 
 from .states import StatePanel
 from .widgets import Card, title_block
-from .window import _Page, fmt_bytes
+from .window import _Page
 
 
 # =====================================================================
@@ -41,10 +41,12 @@ class HealthReportWorker(QObject):
     failed = Signal(str)
 
     def __init__(self, fmt: str):
+        """__init__."""
         super().__init__()
         self._fmt = fmt
 
     def _collect(self) -> dict:
+        """_collect."""
         data: dict = {}
         try:
             from cortex_unified.system_tools.system_info import SystemInfo
@@ -60,6 +62,7 @@ class HealthReportWorker(QObject):
         return data
 
     def run(self):
+        """run."""
         try:
             from cortex_unified.reports.reports import ReportsGenerator
             data = self._collect()
@@ -76,28 +79,75 @@ class HealthReportWorker(QObject):
 
 
 class ManifestListWorker(QObject):
+    """List cleanup backups: operation manifests + leftover-clean journals.
+
+    Leftover sessions appear as read-only history rows: files went to the
+    Recycle Bin and registry keys have .reg exports inside the session
+    folder, so there is deliberately no in-app restore button for them -
+    the row's detail says exactly where each undo artifact lives.
+    """
+
     finished = Signal(list)
     failed = Signal(str)
 
+    @staticmethod
+    def _leftover_sessions() -> list[dict]:
+        """_leftover_sessions."""
+        rows: list[dict] = []
+        root = Path.home() / "CortexCleanerBackups" / "leftovers"
+        try:
+            sessions = sorted(p for p in root.iterdir() if p.is_dir())
+        except OSError:
+            return rows
+        for session in reversed(sessions):          # newest first
+            journal_file = session / "journal.json"
+            if not journal_file.is_file():
+                continue
+            try:
+                payload = json.loads(
+                    journal_file.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                continue
+            ok = int(payload.get("ok_count", 0))
+            failed = int(payload.get("fail_count", 0))
+            rows.append({
+                "backup_name": f"Leftover cleanup \u2014 {session.name}",
+                "timestamp": payload.get("timestamp", session.name),
+                "files_backed_up": ok,
+                "_kind": "leftovers",
+                "_detail": (f"{ok} cleaned, {failed} failed. Files are in "
+                            f"the Recycle Bin; .reg/.xml backups and the "
+                            f"journal are in {session}"),
+            })
+        return rows
+
     def run(self):
+        """run."""
         try:
             from cortex_unified.reports.restore_manager import RestoreManager
-            self.finished.emit(RestoreManager().list_manifests())
+            manifests = list(RestoreManager().list_manifests())
+            for m in manifests:
+                m.setdefault("_kind", "manifest")
+            manifests.extend(self._leftover_sessions())
+            self.finished.emit(manifests)
         except Exception as exc:  # noqa: BLE001
             self.failed.emit(str(exc))
 
 
 class RestoreWorker(QObject):
+    """RestoreWorker class."""
     finished = Signal(dict)
     failed = Signal(str)
 
     def __init__(self, manifest_file: str, dry_run: bool, overwrite: bool):
+        """__init__."""
         super().__init__()
         self._file = manifest_file
         self._dry = dry_run
         self._overwrite = overwrite
 
     def run(self):
+        """run."""
         try:
             from cortex_unified.reports.restore_manager import RestoreManager
             res = RestoreManager().restore_from_manifest(
@@ -115,6 +165,7 @@ class HealthReportPage(_Page):
     """Generate an exportable, shareable PC health report."""
 
     def __init__(self, win):
+        """__init__."""
         super().__init__(win)
         self.v.addWidget(title_block(
             "PC Health Report",
@@ -161,6 +212,7 @@ class HealthReportPage(_Page):
         self._last_path: str | None = None
 
     def _generate(self, fmt: str):
+        """_generate."""
         for b in (self.html_btn, self.json_btn, self.txt_btn):
             b.setEnabled(False)
         self.state.show_loading("Collecting diagnostics\u2026")
@@ -168,6 +220,7 @@ class HealthReportPage(_Page):
         self.win.run_worker(HealthReportWorker(fmt), self._on_done, self._fail)
 
     def _on_done(self, path: str, data: dict):
+        """_on_done."""
         self.state.clear()
         for b in (self.html_btn, self.json_btn, self.txt_btn):
             b.setEnabled(True)
@@ -192,6 +245,7 @@ class HealthReportPage(_Page):
         self.win.statusBar().showMessage(f"Report written to {path}", 6000)
 
     def _open_last(self):
+        """_open_last."""
         if not self._last_path:
             return
         try:
@@ -206,6 +260,7 @@ class HealthReportPage(_Page):
             QMessageBox.warning(self, "Open failed", str(exc))
 
     def _fail(self, msg: str):
+        """_fail."""
         for b in (self.html_btn, self.json_btn, self.txt_btn):
             b.setEnabled(True)
         self.state.show_error(msg, on_retry=None)
@@ -219,6 +274,7 @@ class BackupsPage(_Page):
     """List backup manifests and restore files from them."""
 
     def __init__(self, win):
+        """__init__."""
         super().__init__(win)
         self.v.addWidget(title_block(
             "Backups & Restore",
@@ -276,16 +332,19 @@ class BackupsPage(_Page):
         self._loaded = False
 
     def _on_sel(self):
+        """_on_sel."""
         has = bool(self.tbl.selectedIndexes())
         self.preview_btn.setEnabled(has)
         self.restore_btn.setEnabled(has)
 
     def _load(self):
+        """_load."""
         self.refresh_btn.setEnabled(False)
         self.state.show_loading("Loading backups\u2026")
         self.win.run_worker(ManifestListWorker(), self._on_listed, self._fail)
 
     def _on_listed(self, manifests: list):
+        """_on_listed."""
         if not manifests:
             self.state.show_empty("No backups found yet. Cortex creates these before "
                                    "cleaning when backups are enabled in Settings.")
@@ -307,6 +366,7 @@ class BackupsPage(_Page):
             self.status.setText(f"{len(manifests)} backup(s) available.")
 
     def _selected_manifest(self) -> str | None:
+        """_selected_manifest."""
         sel = self.tbl.selectedIndexes()
         if not sel:
             return None
@@ -314,6 +374,7 @@ class BackupsPage(_Page):
         return item.data(Qt.ItemDataRole.UserRole) if item else None
 
     def _preview(self):
+        """_preview."""
         mf = self._selected_manifest()
         if not mf:
             return
@@ -321,6 +382,7 @@ class BackupsPage(_Page):
         self.win.run_worker(RestoreWorker(mf, True, False), self._on_preview, self._fail)
 
     def _on_preview(self, res: dict):
+        """_on_preview."""
         self._busy(False)
         self.status.setText(
             f"Dry-run: {res['restored']} file(s) would be restored, "
@@ -328,6 +390,7 @@ class BackupsPage(_Page):
             + (f"First issues: {res['error_details'][0]}" if res.get("error_details") else ""))
 
     def _restore(self):
+        """_restore."""
         mf = self._selected_manifest()
         if not mf:
             return
@@ -350,6 +413,7 @@ class BackupsPage(_Page):
         self.win.run_worker(RestoreWorker(mf, False, overwrite), self._on_restored, self._fail)
 
     def _on_restored(self, res: dict):
+        """_on_restored."""
         self._busy(False)
         msg = (f"Restored {res['restored']} file(s). "
                f"Skipped {res['skipped']}, {res['errors']} error(s).")
@@ -358,11 +422,13 @@ class BackupsPage(_Page):
         self.win.statusBar().showMessage(msg, 6000)
 
     def _busy(self, on: bool):
+        """_busy."""
         self.progress.setVisible(on)
         self.refresh_btn.setEnabled(not on)
         self.preview_btn.setEnabled(not on and bool(self.tbl.selectedIndexes()))
         self.restore_btn.setEnabled(not on and bool(self.tbl.selectedIndexes()))
 
     def _fail(self, msg: str):
+        """_fail."""
         self._busy(False)
         self.state.show_error(msg, on_retry=self._load)

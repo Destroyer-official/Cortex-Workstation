@@ -1,7 +1,11 @@
-"""Disk space analyzer for Cortex Cleaner."""
+"""Disk space analysis: volume usage, tree breakdown, per-extension stats.
+
+Produces the aggregate numbers behind the visualization views (treemap,
+sunburst, dashboards). All walks honor the configured exclusion rules so
+the reported picture matches what a cleanup run would actually touch.
+"""
 
 import os
-import sys
 import platform
 from pathlib import Path
 from typing import List, Dict, Tuple
@@ -11,16 +15,20 @@ from cortex_unified.core.utils import normalize_path
 from cortex_unified.core.config import Config
 
 class DiskAnalyzer:
-    """Analyzer for disk space usage with visualization support."""
+    """Analyzes disk usage and directory composition under a root."""
     
     def __init__(self, config: Config = None, root_path: str = "."):
-        """Initialize disk analyzer."""
+        """
+        Args:
+            config: Exclusion rules; defaults to ``Config()``.
+            root_path: Directory (or drive) to analyze.
+        """
         self.config = config or Config()
         self.root_path = normalize_path(root_path)
         self.exclude_patterns = set(self.config.exclude_patterns)
         self.exclude_dirs = set(self.config.exclude_dirs)
         
-        # Results
+        # Populated by the analyze_* methods; get_stats() serializes them.
         self.disk_usage = {}
         self.directory_tree = {}
         self.file_type_breakdown = {}
@@ -28,12 +36,10 @@ class DiskAnalyzer:
         self.error_count = 0
     
     def _should_exclude_path(self, path: Path) -> bool:
-        """Check if a path should be excluded based on patterns."""
-        # Check exclude directories by name
+        """True when *path* hits an excluded directory name or pattern."""
         if path.name in self.exclude_dirs:
             return True
         
-        # Check exclude patterns
         path_str = str(path)
         for pattern in self.exclude_patterns:
             if pattern in path_str or pattern in path.name:
@@ -42,14 +48,17 @@ class DiskAnalyzer:
         return False
     
     def analyze_disk_usage(self) -> Dict[str, int]:
-        """Analyze disk usage for the root path."""
+        """Volume-level totals for the root path's drive.
+
+        Uses ``shutil.disk_usage`` on Windows; POSIX gets ``os.statvfs``
+        with ``f_bavail`` so the free figure reflects unprivileged space
+        (reserved blocks excluded).
+        """
         try:
             if platform.system() == "Windows":
-                # Use Windows-specific method
                 import shutil
                 total, used, free = shutil.disk_usage(self.root_path)
             else:
-                # Use POSIX method
                 statvfs = os.statvfs(self.root_path)
                 total = statvfs.f_frsize * statvfs.f_blocks
                 free = statvfs.f_frsize * statvfs.f_bavail
@@ -76,7 +85,7 @@ class DiskAnalyzer:
         return self.disk_usage
     
     def analyze_directory_tree(self, max_depth: int = 3) -> Dict:
-        """Analyze directory tree structure for visualization.
+        """Build a bounded-depth tree with sizes rolled up to each parent.
         
         Args:
             max_depth: Maximum depth to analyze (to prevent excessive recursion)
@@ -87,12 +96,16 @@ class DiskAnalyzer:
         return self.directory_tree
     
     def _analyze_directory_recursive(self, path: Path, max_depth: int, current_depth: int) -> Dict:
-        """Recursively analyze directory structure."""
+        """Build one tree node; child sizes roll up into their parent.
+
+        Returns ``{}`` past the depth limit, for excluded paths, or when
+        the directory cannot be read -- callers treat that as a pruned
+        branch rather than an error.
+        """
         if current_depth > max_depth or self._should_exclude_path(path):
             return {}
         
         try:
-            # Get directory stats
             stat = path.stat()
             dir_info = {
                 "name": path.name,
@@ -104,7 +117,6 @@ class DiskAnalyzer:
                 "is_file": False
             }
             
-            # Process directory contents
             if path.is_dir():
                 try:
                     for item in path.iterdir():
@@ -141,12 +153,12 @@ class DiskAnalyzer:
         
         try:
             for root, dirs, files in os.walk(self.root_path):
-                # Remove excluded directories
+                # Prune excluded directories before descending (os.walk idiom).
                 dirs[:] = [d for d in dirs if d not in self.exclude_dirs]
                 
                 root_path = Path(root)
                 if self._should_exclude_path(root_path):
-                    dirs[:] = []  # Don't recurse into this directory
+                    dirs[:] = []
                     continue
                 
                 for file in files:
@@ -155,14 +167,13 @@ class DiskAnalyzer:
                         continue
                     
                     try:
-                        # Get file extension
+                        # Extension-less files group under one bucket so they
+                        # remain visible in the breakdown instead of vanishing.
                         ext = filepath.suffix.lower() or "no_extension"
                         
-                        # Get file size
                         stat = filepath.stat()
                         size = stat.st_size
                         
-                        # Update file type breakdown
                         if ext not in self.file_type_breakdown:
                             self.file_type_breakdown[ext] = {
                                 "count": 0,
@@ -177,7 +188,8 @@ class DiskAnalyzer:
         except Exception:
             self.error_count += 1
         
-        # Sort by size
+        # Largest types first: consumers render the head of the dict and
+        # would otherwise bury the interesting entries.
         self.file_type_breakdown = dict(
             sorted(
                 self.file_type_breakdown.items(),
@@ -189,20 +201,24 @@ class DiskAnalyzer:
         return self.file_type_breakdown
     
     def find_largest_directories(self, limit: int = 10) -> List[Tuple[Path, int]]:
-        """Find the largest directories."""
+        """Return the *limit* biggest directories by direct file content.
+
+        Sizes are per-directory (files directly inside), not recursive
+        rollups -- cheap to compute during a single walk and enough for a
+        top-N list.
+        """
         dir_sizes = {}
         
         try:
             for root, dirs, files in os.walk(self.root_path):
-                # Remove excluded directories
+                # Prune excluded directories before descending (os.walk idiom).
                 dirs[:] = [d for d in dirs if d not in self.exclude_dirs]
                 
                 root_path = Path(root)
                 if self._should_exclude_path(root_path):
-                    dirs[:] = []  # Don't recurse into this directory
+                    dirs[:] = []
                     continue
                 
-                # Calculate directory size
                 dir_size = 0
                 for file in files:
                     filepath = root_path / file
@@ -220,7 +236,6 @@ class DiskAnalyzer:
         except Exception:
             self.error_count += 1
         
-        # Sort by size and limit results
         sorted_dirs = sorted(dir_sizes.items(), key=lambda x: x[1], reverse=True)
         self.largest_directories = sorted_dirs[:limit]
         
@@ -273,7 +288,7 @@ class DiskAnalyzer:
         """Export analysis results to JSON file."""
         try:
             stats = self.get_stats()
-            with open(filepath, 'w') as f:
+            with open(filepath, 'w', encoding='utf-8') as f:
                 json.dump(stats, f, indent=2)
             return True
         except Exception:

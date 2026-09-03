@@ -21,7 +21,6 @@ from cortex_unified.core.config import Config
 from cortex_unified.core.scanner import Scanner
 from cortex_unified.core.deleter import Deleter
 
-
 class EmptyFilesWorker(QThread):
     """Worker thread for empty files operations."""
 
@@ -38,9 +37,10 @@ class EmptyFilesWorker(QThread):
         self.operation = operation
         self.files_to_delete = files_to_delete or []
         self.dirs_to_delete = dirs_to_delete or []
+        """__init__."""
+        """__init__."""
 
     def run(self):
-        """Run the operation."""
         try:
             if self.operation == "scan":
                 self.status_updated.emit(
@@ -59,6 +59,8 @@ class EmptyFilesWorker(QThread):
                             current = Path(prog.current_path).name if prog.current_path else ""
                             self.status_updated.emit(f"Scanning: {current}")
                         time.sleep(0.1)
+                    """poll_progress."""
+                    """poll_progress."""
                 
                 t = threading.Thread(target=poll_progress)
                 t.daemon = True
@@ -83,7 +85,8 @@ class EmptyFilesWorker(QThread):
 
         except Exception as e:
             self.error_occurred.emit(str(e))
-
+        """run."""
+        """run."""
 
 class EmptyFilesTab(BaseTab):
     """Tab for empty files cleaning functionality."""
@@ -92,6 +95,8 @@ class EmptyFilesTab(BaseTab):
         super().__init__(config, logger, safety_manager)
         self.empty_files = []
         self.empty_dirs = []
+        """__init__."""
+        """__init__."""
 
     def setup_ui(self):
         """Set up the user interface."""
@@ -225,7 +230,6 @@ class EmptyFilesTab(BaseTab):
             self.path_input.setText(path)
 
     def start_scan(self):
-        """Start scanning for empty files."""
         path = self.path_input.text().strip()
         if not path or not Path(path).exists():
             QMessageBox.warning(self, "Invalid Path",
@@ -237,12 +241,10 @@ class EmptyFilesTab(BaseTab):
         self.progress_bar.setVisible(True)
         self.progress_bar.setRange(0, 0)
 
-        # Clear previous results
         self.results_table.setRowCount(0)
         self.empty_files = []
         self.empty_dirs = []
 
-        # Start worker
         worker = EmptyFilesWorker(self.config, path, "scan")
         self.add_worker_thread(worker)
 
@@ -253,6 +255,8 @@ class EmptyFilesTab(BaseTab):
         worker.finished.connect(lambda: self.operation_finished(worker))
 
         worker.start()
+        """start_scan."""
+        """start_scan."""
 
     def start_delete(self):
         """Start deleting selected items."""
@@ -292,7 +296,6 @@ class EmptyFilesTab(BaseTab):
         self.progress_bar.setVisible(True)
         self.progress_bar.setRange(0, 0)
 
-        # Start deletion
         worker = EmptyFilesWorker(
             self.config, "", "delete", selected_files, selected_dirs)
         self.add_worker_thread(worker)
@@ -337,7 +340,6 @@ class EmptyFilesTab(BaseTab):
             self.results_table.setItem(row, 3, QTableWidgetItem("0 B"))
             row += 1
 
-        # Update summary
         self.summary_label.setText(
             f"Found {len(empty_files)} empty files and {len(empty_dirs)} empty directories"
         )
@@ -346,18 +348,20 @@ class EmptyFilesTab(BaseTab):
         self.delete_button.setEnabled(total_items > 0)
 
     def select_all_items(self):
-        """Select all items in the results table."""
         for row in range(self.results_table.rowCount()):
             checkbox = self.results_table.cellWidget(row, 0)
             if checkbox:
                 checkbox.setChecked(True)
+        """select_all_items."""
+        """select_all_items."""
 
     def deselect_all_items(self):
-        """Deselect all items in the results table."""
         for row in range(self.results_table.rowCount()):
             checkbox = self.results_table.cellWidget(row, 0)
             if checkbox:
                 checkbox.setChecked(False)
+        """deselect_all_items."""
+        """deselect_all_items."""
 
     def delete_completed(self, result):
         """Handle deletion completion."""
@@ -375,10 +379,11 @@ class EmptyFilesTab(BaseTab):
         self.start_scan()
 
     def handle_error(self, error_message):
-        """Handle errors."""
         QMessageBox.critical(
             self, "Error", f"An error occurred: {error_message}")
         self.status_label.setText(f"Error: {error_message}")
+        """handle_error."""
+        """handle_error."""
 
     def operation_finished(self, worker):
         """Handle operation completion."""

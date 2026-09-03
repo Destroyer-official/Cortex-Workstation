@@ -1,7 +1,7 @@
 """Disk health (S.M.A.R.T.) reporting - read-only, honest.
 
 Reads each physical disk's health/operational status (and, where the driver
-exposes it, wear %, temperature and reallocated sectors) via Windows'
+exposes it, wear %, temperature and read errors) via Windows'
 ``Get-PhysicalDisk`` / ``Get-StorageReliabilityCounter``. Purely informational;
 it never modifies anything. Values that a drive doesn't report are left as
 ``None`` rather than guessed.
@@ -11,18 +11,21 @@ from __future__ import annotations
 
 import json
 import logging
-import platform
+import sys
 import subprocess
 from dataclasses import dataclass
 from typing import Any
 
+from cortex_unified.core import proc as _proc
+
 _LOG = logging.getLogger("cortex.system_tools.disk_health")
-_IS_WINDOWS = platform.system() == "Windows"
+_IS_WINDOWS = sys.platform == "win32"
 _NO_WINDOW = 0x08000000 if _IS_WINDOWS else 0
 
 
 @dataclass(slots=True)
 class DiskHealth:
+    """Disk Health data container."""
     name: str
     media_type: str
     health_status: str          # Healthy / Warning / Unhealthy / Unknown
@@ -30,14 +33,16 @@ class DiskHealth:
     size_bytes: int = 0
     wear_percent: int | None = None
     temperature_c: int | None = None
-    reallocated_sectors: int | None = None
+    reallocated_sectors: int | None = None  # from Get-StorageReliabilityCounter.ReadErrorsTotal
     power_on_hours: int | None = None
 
     @property
     def is_healthy(self) -> bool:
+        """Is healthy."""
         return self.health_status.lower() == "healthy"
 
     def to_dict(self) -> dict[str, Any]:
+        """To dict."""
         return {
             "name": self.name,
             "media_type": self.media_type,
@@ -56,9 +61,11 @@ class DiskHealthMonitor:
 
     @staticmethod
     def is_supported() -> bool:
+        """Is supported."""
         return _IS_WINDOWS
 
     def get_health(self) -> list[DiskHealth]:
+        """Get health."""
         if not _IS_WINDOWS:
             return []
         script = (
@@ -72,7 +79,7 @@ class DiskHealthMonitor:
             "    Size=$d.Size;"
             "    Wear=(if($rc){$rc.Wear}else{$null});"
             "    Temp=(if($rc){$rc.Temperature}else{$null});"
-            "    Realloc=(if($rc){$rc.ReadErrorsTotal}else{$null});"
+            "    ReadErrs=(if($rc){$rc.ReadErrorsTotal}else{$null});"
             "    Hours=(if($rc){$rc.PowerOnHours}else{$null})"
             "  }"
             "}"
@@ -97,6 +104,8 @@ class DiskHealthMonitor:
                 return int(v) if v is not None else None
             except (ValueError, TypeError):
                 return None
+            """_int."""
+            """_int."""
 
         disks: list[DiskHealth] = []
         for d in data:
@@ -112,14 +121,18 @@ class DiskHealthMonitor:
                 power_on_hours=_int(d.get("Hours")),
             ))
         return disks
+        """_parse."""
+        """_parse."""
 
     def _run(self, script: str) -> str | None:
         try:
-            proc = subprocess.run(
+            proc = _proc.run(
                 ["powershell", "-NoProfile", "-NonInteractive", "-Command", script],
-                capture_output=True, text=True, timeout=45, creationflags=_NO_WINDOW,
+                text=True, timeout=45, creationflags=_NO_WINDOW,
             )
             return proc.stdout if proc.returncode == 0 else (proc.stdout or None)
-        except (OSError, subprocess.SubprocessError) as exc:
+        except (_proc.ProcessCancelled, OSError, subprocess.SubprocessError) as exc:
             _LOG.debug("disk health query failed: %s", exc)
             return None
+        """_run."""
+        """_run."""

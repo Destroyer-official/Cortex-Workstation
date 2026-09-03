@@ -30,6 +30,8 @@ class SentinelScanWorker(QThread):
         self.scan_archives = scan_archives
         self.scan_git = scan_git
         self.max_workers = max_workers
+        """__init__."""
+        """__init__."""
 
     def run(self):
         try:
@@ -56,6 +58,8 @@ class SentinelScanWorker(QThread):
             self.finished.emit(stats)
         except Exception as e:
             self.error.emit(str(e))
+        """run."""
+        """run."""
 
 
 SEVERITY_COLORS = {
@@ -73,6 +77,8 @@ class SecurityScannerTab(BaseTab):
     def __init__(self, config, logger, safety_manager):
         self.scan_stats = None
         super().__init__(config, logger, safety_manager)
+        """__init__."""
+        """__init__."""
 
     def setup_ui(self):
         """Set up the security scanner UI."""
@@ -175,6 +181,8 @@ class SecurityScannerTab(BaseTab):
         path = QFileDialog.getExistingDirectory(self, "Select Directory to Scan")
         if path:
             self.scan_path_input.setText(path)
+        """_browse_path."""
+        """_browse_path."""
 
     def start_scan(self):
         path = self.scan_path_input.text().strip()
@@ -203,10 +211,14 @@ class SecurityScannerTab(BaseTab):
         worker.finished.connect(lambda: self._cleanup_worker(worker))
         worker.error.connect(lambda: self._cleanup_worker(worker))
         worker.start()
+        """start_scan."""
+        """start_scan."""
 
     def _cleanup_worker(self, worker):
         self.remove_worker_thread(worker)
         worker.deleteLater()
+        """_cleanup_worker."""
+        """_cleanup_worker."""
 
     def _scan_complete(self, stats):
         self.scan_stats = stats
@@ -255,12 +267,16 @@ class SecurityScannerTab(BaseTab):
 
         self.findings_table.resizeColumnsToContents()
         self.set_status(f"Security scan complete: {len(findings)} findings (Risk: {stats.risk_score}/100)")
+        """_scan_complete."""
+        """_scan_complete."""
 
     def _scan_error(self, error_msg):
         self.scan_button.setEnabled(True)
         self.progress_bar.setVisible(False)
         self.progress_label.setText("")
         QMessageBox.critical(self, "Scan Error", f"Security scan failed:\n{error_msg}")
+        """_scan_error."""
+        """_scan_error."""
 
     def _on_finding_selected(self, row, col, prev_row, prev_col):
         if not self.scan_stats or row < 0 or row >= len(self.scan_stats.findings):
@@ -281,6 +297,8 @@ class SecurityScannerTab(BaseTab):
             f"Remediation:\n{f.remediation}\n"
         )
         self.detail_text.setPlainText(detail)
+        """_on_finding_selected."""
+        """_on_finding_selected."""
 
     def export_report(self):
         if not self.scan_stats:
@@ -297,3 +315,5 @@ class SecurityScannerTab(BaseTab):
             QMessageBox.information(self, "Export Complete", f"Report saved to:\n{file_path}")
         except Exception as e:
             QMessageBox.critical(self, "Export Error", f"Failed to export report:\n{str(e)}")
+        """export_report."""
+        """export_report."""

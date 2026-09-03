@@ -1,18 +1,30 @@
 """
 Translation and internationalization management.
+
+Loads JSON catalogs from locales/<code>.json, resolves dotted keys against
+nested dicts, and falls back to English for missing locales or keys. A
+lazily created singleton backs the module-level translate() helper.
 """
 
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any
 import json
-import os
 import logging
 from pathlib import Path
 
 class Translator:
-    """Manages translations and internationalization."""
+    """Resolves translation keys against cached JSON locale catalogs.
+
+    Unknown locales and missing keys fall back to ``fallback_locale``;
+    an unresolved key is returned verbatim so UI text degrades to the
+    identifier rather than raising.
+    """
     
     def __init__(self, locale: str = "en"):
-        """Initialize translator with default locale."""
+        """Create the translator and load ``locale`` immediately.
+
+        Args:
+            locale: Locale code matching a ``locales/<code>.json`` file.
+        """
         self.locale = locale
         self.translations = {}
         self.locales_dir = Path(__file__).parent / "locales"
@@ -23,7 +35,14 @@ class Translator:
         self.load_translations(locale)
     
     def load_translations(self, locale: str) -> Dict[str, str]:
-        """Load translations for specified locale."""
+        """Load and cache a catalog, recursing into the fallback on failure.
+
+        Args:
+            locale: Locale code naming ``locales/<code>.json``.
+
+        Returns:
+            The loaded mapping, or {} if even the fallback fails.
+        """
         try:
             locale_file = self.locales_dir / f"{locale}.json"
             
@@ -48,33 +67,39 @@ class Translator:
             return {}
     
     def translate(self, key: str, **kwargs) -> str:
-        """Translate text key with optional parameters."""
-        # Get translation from current locale
+        """Resolve ``key`` in the active locale, then the fallback.
+
+        Args:
+            key: Dotted lookup path such as "menu.file.open".
+            **kwargs: Values interpolated into the template via str.format.
+
+        Returns:
+            Translated text, or ``key`` itself when unresolved.
+        """
         translation = self._get_translation(key, self.locale)
         
-        # If not found and not using fallback, try fallback locale
+        # Key miss: retry the fallback before returning the bare key
         if translation == key and self.locale != self.fallback_locale:
             translation = self._get_translation(key, self.fallback_locale)
         
-        # Perform parameter substitution
         if kwargs and translation != key:
             try:
                 translation = translation.format(**kwargs)
             except (KeyError, ValueError) as e:
                 self.logger.warning(f"Error formatting translation for key '{key}': {e}")
-                # Return the unformatted translation
+                # Raw template beats crashing on bad placeholders
                 pass
         
         return translation
     
     def _get_translation(self, key: str, locale: str) -> str:
-        """Get translation for key from specific locale."""
+        """Walk a dotted key through one locale's cached catalog."""
         if locale not in self.translations:
             self.load_translations(locale)
         
         translations = self.translations.get(locale, {})
         
-        # Support nested keys with dot notation (e.g., "menu.file.open")
+        # Catalogs nest dicts, so dots address successive levels
         keys = key.split('.')
         value = translations
         
@@ -86,7 +111,7 @@ class Translator:
             return key  # Return the key itself if translation not found
     
     def get_available_locales(self) -> List[str]:
-        """Get list of available locales."""
+        """Locale codes present on disk; always contains the fallback."""
         if not self.locales_dir.exists():
             return ["en"]
         
@@ -95,7 +120,7 @@ class Translator:
             locale = file_path.stem
             locales.append(locale)
         
-        # Ensure English is always available
+        # Fallback must resolve even with no en.json shipped
         if "en" not in locales:
             locales.append("en")
         
@@ -111,7 +136,15 @@ class Translator:
             self.logger.warning(f"Locale '{locale}' not available, keeping current locale '{self.locale}'")
     
     def get_locale_info(self, locale: str) -> Dict[str, Any]:
-        """Get information about a specific locale."""
+        """Display metadata from the locale file's ``_meta`` block.
+
+        Args:
+            locale: Locale code to inspect.
+
+        Returns:
+            Code, name, native_name, direction, completion; degraded to
+            ``{'code': ..., 'name': ...}`` when the file is unreadable.
+        """
         locale_file = self.locales_dir / f"{locale}.json"
         
         if not locale_file.exists():
@@ -120,8 +153,7 @@ class Translator:
         try:
             with open(locale_file, 'r', encoding='utf-8') as f:
                 data = json.load(f)
-                
-            # Extract metadata if available
+            
             return {
                 'code': locale,
                 'name': data.get('_meta', {}).get('name', locale),
@@ -133,32 +165,32 @@ class Translator:
             return {'code': locale, 'name': locale}
     
     def is_rtl_locale(self, locale: str = None) -> bool:
-        """Check if locale uses right-to-left text direction."""
+        """True when the locale metadata declares RTL direction."""
         if locale is None:
             locale = self.locale
             
         locale_info = self.get_locale_info(locale)
         return locale_info.get('direction', 'ltr') == 'rtl'
 
-# Global translator instance
+# Process-wide singleton, built on first request
 _global_translator = None
 
 def get_translator() -> Translator:
-    """Get the global translator instance."""
+    """Return the shared Translator, creating it on first call."""
     global _global_translator
     if _global_translator is None:
         _global_translator = Translator()
     return _global_translator
 
 def set_global_locale(locale: str) -> None:
-    """Set the global locale."""
+    """Point the shared Translator at a new locale."""
     translator = get_translator()
     translator.set_locale(locale)
 
 def translate(key: str, **kwargs) -> str:
-    """Convenience function for translation using global translator."""
+    """Module-level shorthand delegating to the shared Translator."""
     translator = get_translator()
     return translator.translate(key, **kwargs)
 
-# Alias for shorter usage
+# gettext-style short alias for dense UI code
 _ = translate

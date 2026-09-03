@@ -23,6 +23,7 @@ import logging
 import os
 import shutil
 from pathlib import Path
+from typing import Any
 
 from .guard import PathGuard
 from .models import DeletionMethod, DeletionOutcome, DeletionResult, StorageKind
@@ -30,14 +31,55 @@ from .storage import StorageProbe
 
 _LOG = logging.getLogger("cortex.engine.secure_delete")
 
-try:
-    from send2trash import send2trash  # type: ignore
-
-    _HAS_TRASH = True
-except ImportError:
-    _HAS_TRASH = False
-
 _OVERWRITE_CHUNK = 1024 * 1024  # 1 MiB
+
+# ``send2trash`` drags in the whole Windows COM shell stack
+# (pywin32 -> pythoncom -> win32com.shell), which measured ~113 ms of import
+# time. Recycling is the only feature that needs it, so it is resolved on first
+# use instead of at import time: a read-only ``cortex scan`` must not pay for
+# the recycle-bin machinery it never calls.
+_trash_fn: Any = None          # cached callable once successfully imported
+_trash_probed: bool = False    # True once we've attempted the import
+
+
+def _resolve_send2trash() -> Any:
+    """Import ``send2trash`` once and cache the result (``None`` if absent)."""
+    global _trash_fn, _trash_probed
+    if not _trash_probed:
+        _trash_probed = True
+        try:
+            from send2trash import send2trash as _fn  # type: ignore
+        except ImportError:
+            _LOG.debug("send2trash unavailable; recycle will be reported as "
+                       "unsupported rather than silently hard-deleting")
+            _trash_fn = None
+        else:
+            _trash_fn = _fn
+    return _trash_fn
+
+
+def _has_trash() -> bool:
+    """True when reversible recycle-to-trash is actually available."""
+    return _resolve_send2trash() is not None
+
+
+def __getattr__(name: str) -> Any:
+    """Keep the historical module-level names working (:pep:`562`).
+
+    ``_HAS_TRASH`` was a module constant that callers and tests import
+    directly (for example ``@pytest.mark.skipif(not _HAS_TRASH, ...)``).
+    Exposing it here preserves that contract while keeping the import lazy:
+    reading the flag probes for the dependency, which is exactly what the old
+    eager constant did - just deferred to the moment someone asks.
+    """
+    if name == "_HAS_TRASH":
+        return _has_trash()
+    if name == "send2trash":
+        fn = _resolve_send2trash()
+        if fn is None:
+            raise AttributeError("send2trash is not installed")
+        return fn
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 
 class OverwriteNotEffective(RuntimeError):
@@ -55,6 +97,8 @@ class OverwriteNotEffective(RuntimeError):
             f"media ({path}). On flash storage, use full-disk encryption + key "
             f"destruction or the drive's hardware secure-erase instead."
         )
+        """__init__."""
+        """__init__."""
 
 
 class SecureDeleter:
@@ -70,6 +114,8 @@ class SecureDeleter:
         self.probe = probe or StorageProbe()
         self.overwrite_passes = max(1, overwrite_passes)
         self.results: list[DeletionResult] = []
+        """__init__."""
+        """__init__."""
 
     # -- public API ---------------------------------------------------------
 
@@ -93,6 +139,23 @@ class SecureDeleter:
             self.results.append(res)
             _LOG.warning("blocked unsafe deletion: %s (%s)", p, verdict.reason)
             return res
+
+        try:
+            _open_flags = os.O_RDONLY
+            if hasattr(os, "O_NONBLOCK"):
+                _open_flags |= os.O_NONBLOCK
+            fd = os.open(str(p), _open_flags)
+        except OSError:
+            fd = -1
+
+        if fd >= 0:
+            os.close(fd)
+            recheck = self.guard.check(p)
+            if not recheck.safe:
+                res = DeletionResult(p, DeletionOutcome.SKIPPED_UNSAFE, method,
+                                     reason="TOCTOU: path changed between check and delete")
+                self.results.append(res)
+                return res
 
         size = self._size_of(p)
 
@@ -136,7 +199,7 @@ class SecureDeleter:
                       key=lambda d: len(d.parts), reverse=True)
         ordered = files + dirs   # files first, then deepest dirs
 
-        if method is DeletionMethod.RECYCLE and _HAS_TRASH:
+        if method is DeletionMethod.RECYCLE and _has_trash():
             return self._recycle_batch(ordered, progress, cancel_event, sizes=sizes)
 
         if method in (DeletionMethod.DELETE, DeletionMethod.DRY_RUN):
@@ -169,7 +232,11 @@ class SecureDeleter:
         if verdict is None:
             verdict = self.guard.check(p.parent).safe
             approved[parent] = verdict
-        return verdict
+        if not verdict:
+            return False
+        if p.is_symlink():
+            return self.guard.check(p).safe
+        return True
 
     def _delete_batch(self, files: list[Path], dirs: list[Path],
                       method: DeletionMethod, progress=None, cancel_event=None,
@@ -187,6 +254,8 @@ class SecureDeleter:
                 if s is not None:
                     return s
             return self._size_of(p)
+            """_size."""
+            """_size."""
 
         done = 0
         for p in files:
@@ -232,6 +301,11 @@ class SecureDeleter:
         total = len(items)
         done = 0
         approved: dict[str, bool] = {}
+        # Resolved once for the whole batch. Callers reach this method only
+        # after ``_has_trash()`` confirmed availability.
+        trash = _resolve_send2trash()
+        if trash is None:  # defensive: keep the honest per-item failure path
+            return [self._recycle(p, self._size_of(p)) for p in items]
 
         def _size(p: Path) -> int:
             if sizes is not None:
@@ -239,6 +313,8 @@ class SecureDeleter:
                 if s is not None:
                     return s
             return self._size_of(p)
+            """_size."""
+            """_size."""
 
         for start in range(0, total, chunk):
             if cancel_event is not None and cancel_event.is_set():
@@ -254,7 +330,7 @@ class SecureDeleter:
                                             DeletionMethod.RECYCLE, 0, reason=verdict.reason))
             if safe:
                 try:
-                    send2trash([str(p) for p, _ in safe])   # one shell op for the batch
+                    trash([str(p) for p, _ in safe])   # one shell op for the batch
                     for p, size in safe:
                         out.append(self._record(p, DeletionOutcome.RECYCLED,
                                                 DeletionMethod.RECYCLE, size))
@@ -268,7 +344,7 @@ class SecureDeleter:
                                                     reason="in use / locked"))
                             continue
                         try:
-                            send2trash(str(p))
+                            trash(str(p))
                             out.append(self._record(p, DeletionOutcome.RECYCLED,
                                                     DeletionMethod.RECYCLE, size))
                         except Exception as exc:  # noqa: BLE001
@@ -284,7 +360,8 @@ class SecureDeleter:
     # -- method implementations --------------------------------------------
 
     def _recycle(self, p: Path, size: int) -> DeletionResult:
-        if not _HAS_TRASH:
+        trash = _resolve_send2trash()
+        if trash is None:
             # Honest fallback: don't silently hard-delete when the user asked
             # for a reversible recycle. Surface it.
             return self._record(
@@ -292,8 +369,10 @@ class SecureDeleter:
                 reason="send2trash not installed; recycle unavailable "
                        "(install 'send2trash' or choose DELETE explicitly)",
             )
-        send2trash(str(p))
+        trash(str(p))
         return self._record(p, DeletionOutcome.RECYCLED, DeletionMethod.RECYCLE, size)
+        """_recycle."""
+        """_recycle."""
 
     def _plain_delete(self, p: Path, size: int) -> DeletionResult:
         if p.is_dir() and not p.is_symlink():
@@ -301,8 +380,33 @@ class SecureDeleter:
         else:
             p.unlink()
         return self._record(p, DeletionOutcome.DELETED, DeletionMethod.DELETE, size)
+        """_plain_delete."""
+        """_plain_delete."""
+
+    @staticmethod
+    def _is_cloud_placeholder(p: Path) -> bool:
+        """True when *p* is a dehydrated cloud file (OneDrive Files On-Demand).
+
+        Overwriting one is worse than useless: opening it for write forces the
+        provider to download the whole file first, so we'd burn bandwidth and
+        disk to shred bytes that were never here - and the cloud copy survives.
+        """
+        try:
+            from . import winattrs
+            return winattrs.is_dehydrated(winattrs.attrs_of(p.lstat()))
+        except OSError:
+            return False
 
     def _overwrite_delete(self, p: Path, size: int, force: bool) -> DeletionResult:
+        if self._is_cloud_placeholder(p):
+            # Refuse rather than pretend the shred was meaningful.
+            return self._record(
+                p, DeletionOutcome.SKIPPED_UNSAFE, DeletionMethod.OVERWRITE, size,
+                reason="cloud placeholder: the file's content is not stored on "
+                       "this disk, so overwriting it would download it first and "
+                       "still leave the cloud copy. Delete it from the cloud "
+                       "service instead.",
+            )
         kind = self.probe.probe(p).kind
         if not kind.overwrite_effective and not force:
             # Do NOT pretend. Refuse and let the caller decide.
@@ -325,6 +429,8 @@ class SecureDeleter:
 
         note = "" if kind.overwrite_effective else f"best-effort on {kind.value} (see docs)"
         return self._record(p, DeletionOutcome.OVERWRITTEN, DeletionMethod.OVERWRITE, size, reason=note)
+        """_overwrite_delete."""
+        """_overwrite_delete."""
 
     def _overwrite_file(self, p: Path) -> None:
         """Overwrite file contents in place, then flush to the physical device.
@@ -355,6 +461,8 @@ class SecureDeleter:
         res = DeletionResult(p, outcome, method, size=size, reason=reason)
         self.results.append(res)
         return res
+        """_record."""
+        """_record."""
 
     @staticmethod
     def _quick_locked(p: Path) -> bool:
@@ -389,6 +497,40 @@ class SecureDeleter:
             return total
         except OSError:
             return 0
+        """_size_of."""
+        """_size_of."""
+
+    def adaptive_delete(
+        self,
+        path: os.PathLike[str] | str,
+        level: str | None = None,
+        verify: bool = True,
+    ) -> DeletionResult:
+        """Adaptive sanitization (PL0-PL3) per 2025 research.
+
+        Wraps :class:`system_tools.adaptive_sanitizer.AdaptiveSanitizer`
+        and maps its :class:`SanitizeResult` back into a :class:`DeletionResult`
+        so callers can use the same batch accounting. Auto-picks PL when
+        *level* is None (WAS-Deletion hot/cold, PULSE).
+        """
+        p = Path(path)
+        try:
+            from cortex_unified.system_tools.adaptive_sanitizer import (
+                AdaptiveSanitizer,
+                PrivacyLevel,
+            )
+            san = AdaptiveSanitizer(guard=self.guard, probe=self.probe)
+            lvl = PrivacyLevel(level) if level else None
+            sres = san.sanitize(p, level=lvl, verify=verify)
+            outcome = DeletionOutcome.DELETED if sres.success else DeletionOutcome.FAILED
+            if sres.level.value == "pl3":
+                outcome = DeletionOutcome.DELETED if sres.success else DeletionOutcome.FAILED
+            method = DeletionMethod.OVERWRITE if sres.level in (PrivacyLevel.PL0, PrivacyLevel.PL1) else DeletionMethod.DELETE
+            return self._record(p, outcome, method, self._size_of(p),
+                                reason=f"{sres.method}: {sres.message} (wear={sres.wear_cost})")
+        except Exception as exc:  # noqa: BLE001
+            return self._record(p, DeletionOutcome.FAILED, DeletionMethod.OVERWRITE,
+                                self._size_of(p), reason=str(exc))
 
     def summary(self) -> dict[str, int]:
         """Aggregate counters over all recorded results."""

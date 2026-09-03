@@ -17,14 +17,15 @@ Safety design:
 from __future__ import annotations
 
 import logging
-import platform
-import re
+import sys
 import subprocess
 from dataclasses import dataclass
 from typing import Any
 
+from cortex_unified.core import proc as _proc
+
 _LOG = logging.getLogger("cortex.system_tools.firewall_manager")
-_IS_WINDOWS = platform.system() == "Windows"
+_IS_WINDOWS = sys.platform == "win32"
 _NO_WINDOW = 0x08000000 if _IS_WINDOWS else 0
 
 _PREFIX = "Cortex Cleaner:"
@@ -32,6 +33,7 @@ _PREFIX = "Cortex Cleaner:"
 
 @dataclass(slots=True)
 class FirewallRule:
+    """Firewall Rule data container."""
     name: str
     display_name: str
     direction: str        # Inbound / Outbound
@@ -43,6 +45,7 @@ class FirewallRule:
     managed_by_cortex: bool = False
 
     def to_dict(self) -> dict[str, Any]:
+        """To dict."""
         return {
             "name": self.name,
             "display_name": self.display_name,
@@ -61,6 +64,7 @@ class FirewallManager:
 
     @staticmethod
     def is_supported() -> bool:
+        """Is supported."""
         return _IS_WINDOWS
 
     # -- creation -----------------------------------------------------------
@@ -73,6 +77,7 @@ class FirewallManager:
 
     def allow_program(self, program_path: str, direction: str = "Outbound",
                       label: str = "") -> tuple[bool, str]:
+        """Allow program."""
         return self._new_rule(action="Allow", program=program_path,
                               direction=direction, label=label or program_path)
 
@@ -94,8 +99,8 @@ class FirewallManager:
         args = [
             "New-NetFirewallRule",
             "-DisplayName", self._ps_quote(display),
-            "-Direction", direction,
-            "-Action", action,
+            "-Direction", self._ps_quote(direction),
+            "-Action", self._ps_quote(action),
             "-Profile", "Any",
         ]
         if program:
@@ -106,10 +111,13 @@ class FirewallManager:
         if ok:
             return True, f"{action} rule created for {label}."
         return False, "Could not create the rule (Administrator is required)."
+        """_new_rule."""
+        """_new_rule."""
 
     # -- listing / management ----------------------------------------------
 
     def list_rules(self, cortex_only: bool = True) -> list[FirewallRule]:
+        """List rules."""
         if not _IS_WINDOWS:
             return []
         # Pull rules plus their program/address filters in one JSON blob.
@@ -131,6 +139,7 @@ class FirewallManager:
         return self._parse_rules(self._run(script, want_output=True))
 
     def set_enabled(self, name: str, enabled: bool) -> tuple[bool, str]:
+        """Set enabled."""
         if not _IS_WINDOWS:
             return False, "Firewall control is only available on Windows."
         state = "True" if enabled else "False"
@@ -138,6 +147,7 @@ class FirewallManager:
         return (ok, "Rule updated." if ok else "Could not update rule (Administrator required).")
 
     def remove_rule(self, name: str) -> tuple[bool, str]:
+        """Remove rule."""
         if not _IS_WINDOWS:
             return False, "Firewall control is only available on Windows."
         ok = self._run(f"Remove-NetFirewallRule -Name {self._ps_quote(name)}")
@@ -173,6 +183,8 @@ class FirewallManager:
                 managed_by_cortex=disp.startswith(_PREFIX),
             ))
         return rules
+        """_parse_rules."""
+        """_parse_rules."""
 
     @staticmethod
     def _valid_address(addr: str) -> bool:
@@ -192,6 +204,8 @@ class FirewallManager:
             return True
         except ValueError:
             return False
+        """_valid_address."""
+        """_valid_address."""
 
     @staticmethod
     def _ps_quote(value: str) -> str:
@@ -200,13 +214,15 @@ class FirewallManager:
 
     def _run(self, script: str, want_output: bool = False):
         try:
-            proc = subprocess.run(
+            proc = _proc.run(
                 ["powershell", "-NoProfile", "-NonInteractive", "-Command", script],
-                capture_output=True, text=True, timeout=30, creationflags=_NO_WINDOW,
+                text=True, timeout=30, creationflags=_NO_WINDOW,
             )
             if want_output:
                 return proc.stdout if proc.returncode == 0 else None
             return proc.returncode == 0
-        except (OSError, subprocess.SubprocessError) as exc:
+        except (_proc.ProcessCancelled, OSError, subprocess.SubprocessError) as exc:
             _LOG.debug("firewall command failed: %s", exc)
             return None if want_output else False
+        """_run."""
+        """_run."""

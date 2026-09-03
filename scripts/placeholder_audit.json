@@ -1,0 +1,212 @@
+[
+  {
+    "file": "src\\cortex_unified\\analyzers\\cloud_storage_analyzer.py",
+    "findings": [
+      {
+        "line_num": 18,
+        "line": "* Local sync clients (OneDrive, Dropbox) create placeholder files; actual",
+        "match": "\\bplaceholder\\b"
+      }
+    ]
+  },
+  {
+    "file": "src\\cortex_unified\\engine\\fastwalk.py",
+    "findings": [
+      {
+        "line_num": 190,
+        "line": "# Cloud placeholder: the bytes are not here. Deleting it",
+        "match": "\\bplaceholder\\b"
+      },
+      {
+        "line_num": 283,
+        "line": "# A cloud placeholder is not an empty file - its content",
+        "match": "\\bplaceholder\\b"
+      }
+    ]
+  },
+  {
+    "file": "src\\cortex_unified\\engine\\models.py",
+    "findings": [
+      {
+        "line_num": 67,
+        "line": "NTFS-compressed and cloud-placeholder files that overstates the space a",
+        "match": "\\bplaceholder\\b"
+      },
+      {
+        "line_num": 71,
+        "line": "placeholder?\" without a second syscall.",
+        "match": "\\bplaceholder\\b"
+      }
+    ]
+  },
+  {
+    "file": "src\\cortex_unified\\engine\\secure_delete.py",
+    "findings": [
+      {
+        "line_num": 393,
+        "line": "reason=\"cloud placeholder: the file's content is not stored on \"",
+        "match": "\\bplaceholder\\b"
+      }
+    ]
+  },
+  {
+    "file": "src\\cortex_unified\\engine\\winattrs.py",
+    "findings": [
+      {
+        "line_num": 168,
+        "line": "online-only placeholder returns 0). Elsewhere the value is derived from",
+        "match": "\\bplaceholder\\b"
+      }
+    ]
+  },
+  {
+    "file": "src\\cortex_unified\\system_tools\\oui.py",
+    "findings": [
+      {
+        "line_num": 203,
+        "line": "# \"IEEE Registration Authority\" is the placeholder used for",
+        "match": "\\bplaceholder\\b"
+      }
+    ]
+  },
+  {
+    "file": "src\\cortex_unified\\system_tools\\secrets_scanner.py",
+    "findings": [
+      {
+        "line_num": 898,
+        "line": "TEST_PATH_RE   = re.compile(r'(?:test|spec|fixture|mock|example|sample|demo|fake|stub|dummy|__test__|\\.test\\.|\\.spec\\.|_test\\.|_spec\\.)', re.IGNORECASE)",
+        "match": "\\bdummy\\b"
+      },
+      {
+        "line_num": 898,
+        "line": "TEST_PATH_RE   = re.compile(r'(?:test|spec|fixture|mock|example|sample|demo|fake|stub|dummy|__test__|\\.test\\.|\\.spec\\.|_test\\.|_spec\\.)', re.IGNORECASE)",
+        "match": "\\bmock\\b"
+      },
+      {
+        "line_num": 898,
+        "line": "TEST_PATH_RE   = re.compile(r'(?:test|spec|fixture|mock|example|sample|demo|fake|stub|dummy|__test__|\\.test\\.|\\.spec\\.|_test\\.|_spec\\.)', re.IGNORECASE)",
+        "match": "\\bstub\\b"
+      },
+      {
+        "line_num": 899,
+        "line": "PLACEHOLDER_RE = re.compile(r'^(?:your[_\\-]?(?:api[_\\-]?key|secret|token|password)|insert[_\\-]?(?:key|token)|xxx+|abc+123*|password123|changeme|replace[_\\-]?me|example[_\\-]?(?:key|token|secret)|<[^>]+>|\\$\\{[^}]+\\}|\\{\\{[^}]+\\}\\}|XXXXXXXX+)$', re.IGNORECASE)",
+        "match": "\\bXXX\\b"
+      },
+      {
+        "line_num": 1780,
+        "line": "<input class=\"search-box\" type=\"text\" placeholder=\"Search findings...\" oninput=\"searchFindings(this.value)\" />",
+        "match": "\\bplaceholder\\b"
+      }
+    ]
+  },
+  {
+    "file": "src\\cortex_unified\\ui\\premium\\skeleton.py",
+    "findings": [
+      {
+        "line_num": 1,
+        "line": "\"\"\"Skeleton shimmer: a reassuring \"loading\" placeholder for premium feel.",
+        "match": "\\bplaceholder\\b"
+      },
+      {
+        "line_num": 4,
+        "line": "Premium apps show a *skeleton* - grey placeholder bars shaped like the content",
+        "match": "\\bplaceholder\\b"
+      },
+      {
+        "line_num": 26,
+        "line": "\"\"\"Animated placeholder bars used as a loading state.",
+        "match": "\\bplaceholder\\b"
+      }
+    ]
+  },
+  {
+    "file": "src\\cortex_unified\\ui\\premium\\system_pages.py",
+    "findings": [
+      {
+        "line_num": 522,
+        "line": "# Real native icon where available; a token placeholder glyph when",
+        "match": "\\bplaceholder\\b"
+      },
+      {
+        "line_num": 878,
+        "line": "\"\"\"Real native icon where available, else a token placeholder glyph, so",
+        "match": "\\bplaceholder\\b"
+      }
+    ]
+  },
+  {
+    "file": "src\\cortex_unified\\ui\\premium\\widgets.py",
+    "findings": [
+      {
+        "line_num": 492,
+        "line": "# Token-styled placeholder glyphs, keyed by the palette colors + size they were",
+        "match": "\\bplaceholder\\b"
+      },
+      {
+        "line_num": 509,
+        "line": "token placeholder in that case (see :func:`placeholder_icon`, Req 8.3).",
+        "match": "\\bplaceholder\\b"
+      },
+      {
+        "line_num": 527,
+        "line": "except Exception:  # noqa: BLE001 - any failure degrades to the placeholder",
+        "match": "\\bplaceholder\\b"
+      },
+      {
+        "line_num": 534,
+        "line": "\"\"\"Return a token-styled placeholder glyph for items lacking a native icon.",
+        "match": "\\bplaceholder\\b"
+      },
+      {
+        "line_num": 544,
+        "line": "ratio, so a live list refresh reuses one shared placeholder per theme",
+        "match": "\\bplaceholder\\b"
+      }
+    ]
+  },
+  {
+    "file": "src\\cortex_unified\\ui\\premium\\window.py",
+    "findings": [
+      {
+        "line_num": 1614,
+        "line": "# placeholder child so the expand arrow shows; real contents load lazily",
+        "match": "\\bplaceholder\\b"
+      },
+      {
+        "line_num": 1616,
+        "line": "placeholder = QTreeWidgetItem([\"Loading\\u2026\", \"\", \"\", \"\"])",
+        "match": "\\bplaceholder\\b"
+      },
+      {
+        "line_num": 1617,
+        "line": "top.addChild(placeholder)",
+        "match": "\\bplaceholder\\b"
+      },
+      {
+        "line_num": 1694,
+        "line": "# Show a lightweight \"loading\" placeholder while the worker runs.",
+        "match": "\\bplaceholder\\b"
+      },
+      {
+        "line_num": 1730,
+        "line": "item.takeChildren()   # remove the \"Loading...\" placeholder",
+        "match": "\\bplaceholder\\b"
+      },
+      {
+        "line_num": 1756,
+        "line": "child.addChild(ph)   # placeholder so the expand arrow appears",
+        "match": "\\bplaceholder\\b"
+      }
+    ]
+  },
+  {
+    "file": "src\\NexusExplorer\\native\\nexus_icons.py",
+    "findings": [
+      {
+        "line_num": 1138,
+        "line": "\".todo\": \"markdown\",",
+        "match": "\\bTODO\\b"
+      }
+    ]
+  }
+]

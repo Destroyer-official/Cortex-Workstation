@@ -7,12 +7,19 @@ Run them from the **project root**, e.g.:
 
 ```bash
 python scripts/build_exe.py       # build the standalone executable
-python scripts/verify_modules.py  # smoke-test the weaponized modules
+python scripts/verify_modules.py  # smoke-test the core system modules
 ```
 
 | Script | Purpose |
 | ------ | ------- |
 | `build_exe.py` | PyInstaller build of the standalone GUI executable. |
-| `verify_modules.py` | Manual functional smoke test of system-tool modules. |
-| `repair_imports.py` | One-off migration helper (historical; kept for reference). |
-| `apply_critical_fixes.py`, `implement_phase1.py`, `setup_phase1.py`, `test_fixes.py`, `implement_phase1.bat` | Historical one-off upgrade/migration helpers. |
+| `run_all_tests.py` | Runs all test suites across the repository. |
+| `test_all_pages.py` | Fast smoke test validating instantiation of all 126 UI pages. |
+| `test_navigation.py` | Fast UI navigation smoke test cycling through all pages. |
+| `check_lint_issues.py` | Scans the codebase with pyflakes for syntax errors or undefined variables. |
+| `check_hardcoded_paths.py` | Scans codebase for hardcoded static drive letters or usernames. |
+| `audit_imports.py` | Audits module imports and dependency graphs. |
+| `audit_pages.py` | Audits UI page registry and metadata. |
+| `audit_system_tools.py` | Verifies system tool module availability. |
+| `verify_modules.py` | Functional smoke test of system tools. |
+| `scan_codebase.py` | General codebase health scanner. |

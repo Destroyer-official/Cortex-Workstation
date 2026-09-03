@@ -11,18 +11,21 @@ from __future__ import annotations
 
 import json
 import logging
-import platform
+import sys
 import subprocess
 from dataclasses import dataclass
 from typing import Any
 
+from cortex_unified.core import proc as _proc
+
 _LOG = logging.getLogger("cortex.system_tools.defender")
-_IS_WINDOWS = platform.system() == "Windows"
+_IS_WINDOWS = sys.platform == "win32"
 _NO_WINDOW = 0x08000000 if _IS_WINDOWS else 0
 
 
 @dataclass(slots=True)
 class DefenderStatus:
+    """Defender Status data container."""
     available: bool
     realtime_protection: bool = False
     antivirus_enabled: bool = False
@@ -35,10 +38,12 @@ class DefenderStatus:
 
     @property
     def healthy(self) -> bool:
+        """Healthy."""
         return (self.available and self.realtime_protection and self.antivirus_enabled
                 and (self.signature_age_days is None or self.signature_age_days <= 7))
 
     def to_dict(self) -> dict[str, Any]:
+        """To dict."""
         return {
             "available": self.available,
             "realtime_protection": self.realtime_protection,
@@ -58,9 +63,11 @@ class WindowsDefender:
 
     @staticmethod
     def is_supported() -> bool:
+        """Is supported."""
         return _IS_WINDOWS
 
     def status(self) -> DefenderStatus:
+        """Status."""
         if not _IS_WINDOWS:
             return DefenderStatus(available=False)
         script = (
@@ -88,6 +95,8 @@ class WindowsDefender:
                 return int(v) if v is not None else None
             except (ValueError, TypeError):
                 return None
+            """_int."""
+            """_int."""
 
         return DefenderStatus(
             available=True,
@@ -100,8 +109,11 @@ class WindowsDefender:
             last_full_scan=WindowsDefender._clean_date(d.get("FullScanEndTime")),
             engine_version=str(d.get("AMEngineVersion") or ""),
         )
+        """_parse_status."""
+        """_parse_status."""
 
     def recent_threats(self, limit: int = 20) -> list[dict[str, Any]]:
+        """Recent threats."""
         if not _IS_WINDOWS:
             return []
         script = (
@@ -133,6 +145,8 @@ class WindowsDefender:
                     "id": t.get("ThreatID"),
                 })
         return threats
+        """_parse_threats."""
+        """_parse_threats."""
 
     def start_quick_scan(self) -> tuple[bool, str]:
         """Kick off a Defender quick scan (harmless; scans, doesn't delete data)."""
@@ -157,16 +171,23 @@ class WindowsDefender:
             except (ValueError, OverflowError, OSError):
                 return ""
         return s.replace("T", " ")[:16]
+        """_clean_date."""
+        """_clean_date."""
 
     def _run(self, script: str, timeout: int, want_returncode: bool = False):
         try:
-            proc = subprocess.run(
+            # A quick scan can run for many minutes; poll the timeout instead of
+            # blocking uninterruptibly, and kill the whole tree if it fires
+            # (never the calling thread - see core/proc.py).
+            proc = _proc.run(
                 ["powershell", "-NoProfile", "-NonInteractive", "-Command", script],
-                capture_output=True, text=True, timeout=timeout, creationflags=_NO_WINDOW,
+                text=True, timeout=timeout, creationflags=_NO_WINDOW,
             )
             if want_returncode:
                 return proc.returncode == 0
             return proc.stdout if proc.returncode == 0 else None
-        except (OSError, subprocess.SubprocessError) as exc:
+        except (_proc.ProcessCancelled, OSError, subprocess.SubprocessError) as exc:
             _LOG.debug("defender query failed: %s", exc)
             return False if want_returncode else None
+        """_run."""
+        """_run."""

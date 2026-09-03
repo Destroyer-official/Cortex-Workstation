@@ -2,8 +2,7 @@
 echo ========================================
 echo    Cortex Cleaner - Starting with Conda Python
 echo ========================================
-echo.
-echo Using Python: D:\program_software\conda\python.exe
+echo Starting Cortex Cleaner environment...
 echo Working Directory: %CD%
 echo.
 

@@ -1,0 +1,2577 @@
+Folder PATH listing for volume Local Disk
+Volume serial number is 7E89-DDB1
+D:.
+|   .full_suite_results.txt
+|   .gitignore
+|   audit_report_full.json
+|   CHANGELOG.md
+|   COMPLETE_FEATURES_CHECKLIST.md
+|   CONTRIBUTING.md
+|   CortexCleaner.spec
+|   implementation_plan.md
+|   LICENSE
+|   MANIFEST.in
+|   ONE_BY_ONE_VERIFICATION_REPORT.md
+|   PROGRAM_FILES_CHECKLIST.md
+|   pyproject.toml
+|   README.md
+|   requirements-dev.txt
+|   requirements.txt
+|   run_gui.py
+|   run_with_conda.bat
+|   run_with_conda.ps1
+|   SECURITY.md
+|   structure.txt
+|   tree_structure.txt
+|   
++---.github
+|   \---workflows
+|           ci.yml
+|           publish.yml
+|           
++---.hypothesis
+|   |   .gitignore
+|   |   
+|   +---constants
+|   |       001bb5cdb46bf83d
+|   |       00e9fa418a8d6594
+|   |       017cdf27145e3c6b
+|   |       019af72d4787cd8a
+|   |       01d20c9f8e83d952
+|   |       020db7cc97e16fb4
+|   |       03378838c953c3fe
+|   |       04d7e15858a2ee84
+|   |       050c284f0448cac0
+|   |       05f65f8047fe0398
+|   |       06a4a8501e7a157a
+|   |       073eaf786bf5796d
+|   |       0833a1ce70fcc0b2
+|   |       08950c79c7537220
+|   |       08a6610d7ef10466
+|   |       08f92deb55b36b36
+|   |       096d8c22a991b02e
+|   |       099991cf76af967b
+|   |       0a11584caf7bdfca
+|   |       0bc1d1e6e5af5672
+|   |       0e40452230d6cbe5
+|   |       0eaa804333cff5c0
+|   |       0f9e892e40ce4af4
+|   |       0fb1df8701c13aa1
+|   |       119cc7bbb7d0be89
+|   |       14a3ed1a814f0b62
+|   |       14dfe4c441a9c3aa
+|   |       1589339f76f20adc
+|   |       15e4832473da026c
+|   |       182148b1e7467a6a
+|   |       185163d999c3eee7
+|   |       18ecef37801fb70c
+|   |       1a669bc0280a3c1d
+|   |       1a66ffc3d7dc81ad
+|   |       1aad8d38b1932af9
+|   |       1b6c2cc30cb41f30
+|   |       1c50a8d78165a580
+|   |       1e3619ddfd9f2d49
+|   |       1e61cfc8f4751759
+|   |       1e80d623e0f7f33e
+|   |       1ef92c3131b94d90
+|   |       205913a63f07049b
+|   |       210999c5767da8c7
+|   |       22411e421d1f630f
+|   |       224efcee6cbbc83f
+|   |       24158a608aba2efc
+|   |       246a0cec9b3f6a7f
+|   |       2776c7b444e42250
+|   |       277ad50ca74fbe9c
+|   |       27ead0795433d03e
+|   |       27ee189002649cfe
+|   |       282878c94d97fe75
+|   |       2c8f768352bc2ee0
+|   |       2ccdb72c5abec1c1
+|   |       2ea8708f79445bcc
+|   |       2f1e19b7b0117957
+|   |       30999f0d9363abb2
+|   |       317cdf68b3409637
+|   |       333e34366089720f
+|   |       34c8bed543a87280
+|   |       35c300e7208b1381
+|   |       35d99715a5fcf28e
+|   |       36af6d81cdeaa401
+|   |       37124a941406d9f4
+|   |       376e3c22566c0b51
+|   |       37a5d04031591eed
+|   |       39fe7f7738604fb6
+|   |       3a7194ec139eada8
+|   |       3a9a0756c8397ee6
+|   |       3aed32ebd4cc2551
+|   |       3b1c3198d6542330
+|   |       3b2f2e8739467c54
+|   |       3c9be07334abe7cc
+|   |       3e7739f0c6e51d50
+|   |       3e9062fce3c53f3a
+|   |       3ea32772d57f705c
+|   |       3ec08f984142f3ef
+|   |       3f3676e929c307b7
+|   |       3fdecc8b93389d27
+|   |       40b8b366898683cc
+|   |       417b592f8cac68a0
+|   |       41e85a1fd1b54db9
+|   |       430dea03dfeb74ef
+|   |       43cd393df9b415c7
+|   |       44be3d305fff368b
+|   |       453e9f7e5b8a237e
+|   |       455a108962022aef
+|   |       45c1e028a24a9c00
+|   |       462c4a4b473e6196
+|   |       468e8863c686ab62
+|   |       4a183469261f4025
+|   |       4ae691d5c46f1541
+|   |       4b25592d3bef8e03
+|   |       4ba7fb51c0fee901
+|   |       4bcd64c4269d4278
+|   |       4bde26736f1f01f0
+|   |       4c53e04068bf2007
+|   |       4c84e2549f0f4808
+|   |       4d46f96e46207e7c
+|   |       4d6b687f62ccba8c
+|   |       4e7361acd77bedb7
+|   |       4e96093b0c1dad98
+|   |       4eac0de866c23c9f
+|   |       4ee0ae12774d5d52
+|   |       5030cbfc3b3d0bd0
+|   |       51caf3239233fd50
+|   |       51f089fb303a09e8
+|   |       5225912c6e1d2ee7
+|   |       53131dd998036ccd
+|   |       58515771962387dd
+|   |       58f4094eb103cf3d
+|   |       5935587a0cd722ea
+|   |       5a9dc4a4a21a1b90
+|   |       5b016ca551cff655
+|   |       5b67ad962a0bb823
+|   |       5b797e097dad12a1
+|   |       5c0ced2c57aa3fff
+|   |       5cb3889c5661d8b6
+|   |       5d5ebee4fa5a8c5a
+|   |       5db10bc3b0c1e701
+|   |       5dcc15a52d804081
+|   |       5de951b546f1f7bb
+|   |       5ea5a98e74194fc3
+|   |       610e6231bca4b701
+|   |       611e54c5dc4d58fb
+|   |       6314d440ab40d5b2
+|   |       647858a0607d66ad
+|   |       649e7399ea614766
+|   |       6571ec369ad905e1
+|   |       6593d45e7233767a
+|   |       660131b4cbd90de0
+|   |       66392897ac4b9b45
+|   |       6673b4585497355d
+|   |       66868efc76500c4d
+|   |       6737b970b31abaf4
+|   |       683acf114be62c6a
+|   |       690002a393b377b4
+|   |       694d27177f4ee67c
+|   |       69fa7930a2071b91
+|   |       6a32df7e36cb90df
+|   |       6c7ac20608a8597e
+|   |       6dc5c08136f9f54d
+|   |       6febb4912e45ba5e
+|   |       6fec66457b576779
+|   |       7214dd5c29c0fae3
+|   |       73aca7d15644059c
+|   |       73da62df3d35975b
+|   |       74440b21aa3a01f5
+|   |       7481716b05d36eb8
+|   |       772c4c4867c87056
+|   |       7891f4973f445ed5
+|   |       78a687ab21ae1d3d
+|   |       791ecbdb5da02950
+|   |       7a9ff919dcc7ade1
+|   |       7aa35da3f7507ca6
+|   |       7ad680321667b885
+|   |       7b0ec87953dd34e9
+|   |       7e0c4f5bd40265ab
+|   |       7e6327dee7f10fc3
+|   |       7f354c3c49c07e77
+|   |       80a68c7c6ec0a97d
+|   |       82e42327fa8b882f
+|   |       8375de67668bf6cb
+|   |       84754ddc755e9713
+|   |       8512a8f2f79cdd89
+|   |       853f884320c16d7b
+|   |       85e5a10453a1d9e1
+|   |       873463b15c050542
+|   |       88016dcbbab1ee08
+|   |       8846f7a4bed00a73
+|   |       8876c0e766c72654
+|   |       88ae90f1c56f9afb
+|   |       8960cc03831b8639
+|   |       89bfd133baa782f3
+|   |       8a63d7ef5a9103a3
+|   |       8a8112913090c149
+|   |       8b0b66f107be344a
+|   |       8c08d610f62e6146
+|   |       9120f951c7539f85
+|   |       91ddac4d82e4b450
+|   |       92346faa6549ead0
+|   |       935933c5cabb9024
+|   |       935a3c998804280c
+|   |       939ab850b1073a9d
+|   |       9427b0e4a0920f3e
+|   |       94a6b48ef19bbac3
+|   |       9506c1440f870def
+|   |       95530fc38c49de72
+|   |       96780646942f9253
+|   |       96cddc5b525b03b9
+|   |       97cacc000f4de050
+|   |       982a36658866c391
+|   |       9c38679f304a7b5c
+|   |       9d7e90e6afdcd1df
+|   |       9d9247585f455937
+|   |       9dc9b0a891f365c4
+|   |       9e3dc9a77e7f1c49
+|   |       9efebb2785c9d1e8
+|   |       a04eb7b03ea11afb
+|   |       a1027e56545b8193
+|   |       a11d013b6c0b64e6
+|   |       a1b25fdf69854dba
+|   |       a2035188bbc8042b
+|   |       a250ecf00d954044
+|   |       a295c099ff59024c
+|   |       a313fa1ef1e7c5b2
+|   |       a352965129cb04ec
+|   |       a3f7d273c638bef1
+|   |       a4bf48a2f50ff041
+|   |       a52811c7c8d1b9f6
+|   |       a5716f97956c29f5
+|   |       a681208ba08ca811
+|   |       a7cb2b2ca7466e3b
+|   |       a8792c94a6a08e8e
+|   |       a94b473201c57629
+|   |       aab3cc65270adc79
+|   |       abb33fca885cdfe0
+|   |       ac13cf5069af273f
+|   |       ac1ab95865f3deac
+|   |       adeb1ce65bb540c2
+|   |       ae47eaaede14c189
+|   |       ae79f805a8d11e04
+|   |       aebae3d3d4191cca
+|   |       afc20233ce41e6dd
+|   |       b0e2baba729463a1
+|   |       b24fdd49337e5be0
+|   |       b2cd5f6e33feda39
+|   |       b33e525231177055
+|   |       b3612337f2a126c7
+|   |       b36a9c54e69019f9
+|   |       b39507dea7ffe9fb
+|   |       b4495ec88b97d6f2
+|   |       b4e5b1af82956694
+|   |       b5504bf067949936
+|   |       b601513a8a00e89f
+|   |       b62b0b34f33eba50
+|   |       b651fda06d5f7798
+|   |       b6e8f4f303128711
+|   |       b8c4c0e61b05d7e6
+|   |       b9d1be0bc1af88a7
+|   |       bad0a449e585945a
+|   |       bad23f13c7046ef5
+|   |       bada81b2e5420904
+|   |       bbb4bd754d8ef26c
+|   |       bc343b92f06b7eac
+|   |       bf5e3ecf8f4e9f91
+|   |       c093c227b569db9f
+|   |       c098f455bd7eed6a
+|   |       c0ebe905e9ffb38c
+|   |       c28de3ef34ef29cc
+|   |       c320da752f138955
+|   |       c3c8f6c3b73f5658
+|   |       c3f4f64c613ca0e0
+|   |       c415b199b472292f
+|   |       c6578817d7764e93
+|   |       c7d092118ad8948a
+|   |       c801ae392db588e4
+|   |       c906c8375c778281
+|   |       c9da14e9565a7f0a
+|   |       cbc00acc2ca9b8c8
+|   |       cc2672c2403a9422
+|   |       cd28389e05b5448c
+|   |       cd516070680dfd62
+|   |       cdbee4bf4fd757f7
+|   |       cfa7fb7984ed061b
+|   |       d1495310a13801e8
+|   |       d20cd25706b1ef71
+|   |       d33b9ae01774b138
+|   |       d36c31037af60048
+|   |       d42b28a31f6a1647
+|   |       d4bc4206c4be9cf9
+|   |       d4bd5b055909d3bb
+|   |       d632f215c8019331
+|   |       d63b3e950bd7ce53
+|   |       d884f18491605e0f
+|   |       da39a3ee5e6b4b0d
+|   |       da91fc030a057e93
+|   |       dbab82c32fe463a2
+|   |       dbbe2f4a1d40ab7b
+|   |       dcb5c833199bcc36
+|   |       dd5db61e6c792406
+|   |       de54489457d82e24
+|   |       de920ba754119f3c
+|   |       def3123c6577c283
+|   |       dfc439f2416a7953
+|   |       dfe4c03d7abd06c1
+|   |       e085242295081e01
+|   |       e13d85db73755a7f
+|   |       e16c978eed56bd3c
+|   |       e2859d21bc32270b
+|   |       e689602aec741d21
+|   |       e69f5a2998de77be
+|   |       e703e77c4d160818
+|   |       e7999c93514901ff
+|   |       e7c1dbbca11e6a9e
+|   |       e83b880f34d59a0c
+|   |       e86f9f037fbc2a74
+|   |       e8804b4d6fa8fcd3
+|   |       e98cd1b7eab1e807
+|   |       ea78e4e45f68e963
+|   |       eaeebe6e5250bcaa
+|   |       eb146215ff47b5e5
+|   |       eb1bde8e6b2b276f
+|   |       eec11916ec81433b
+|   |       ef143299498fee1b
+|   |       efa55602a61e939b
+|   |       eff64d626cb92aed
+|   |       f04db3c56b38b8db
+|   |       f0f2261499f6191f
+|   |       f214c462adcf2647
+|   |       f2882d4c07a62653
+|   |       f292755174b17fb3
+|   |       f315d52b6fe6127b
+|   |       f3190e1a98a9d0ab
+|   |       f36a50df0f57ef6d
+|   |       f37f851bbcf8e731
+|   |       f4b1a273a1015bce
+|   |       f5382e22bb6f986d
+|   |       f5af0f13182bd02a
+|   |       f5b5d57dbaec8dfb
+|   |       f685b9e4c1d87ffb
+|   |       fa0e6086b30895ec
+|   |       fb9a786b8e5a08df
+|   |       fc1154891f16a0d3
+|   |       
+|   +---tmp
+|   |       tmp22v94ya7
+|   |       tmp3sst_9mu
+|   |       tmp9vawrhl1
+|   |       tmpac5j48vs
+|   |       tmpdjxr9b8q
+|   |       tmpg__sbag_
+|   |       tmphqopxfz9
+|   |       tmpivml3lz9
+|   |       tmppbcf7d1a
+|   |       tmptx2kievf
+|   |       tmpvg3mlr2c
+|   |       tmpvofm6v_6
+|   |       tmpwdeiygt8
+|   |       tmp_ed40uqq
+|   |       tmp_n_xt028
+|   |       
+|   \---unicode_data
+|       \---16.0.0
+|               charmap.json.gz
+|               codec-v2-utf-8.json.gz
+|               
++---.mypy_cache
+|   |   .gitignore
+|   |   CACHEDIR.TAG
+|   |   
+|   \---3.10
+|           cache.0.db
+|           cache.1.db
+|           cache.10.db
+|           cache.11.db
+|           cache.12.db
+|           cache.13.db
+|           cache.14.db
+|           cache.15.db
+|           cache.2.db
+|           cache.3.db
+|           cache.4.db
+|           cache.5.db
+|           cache.6.db
+|           cache.7.db
+|           cache.8.db
+|           cache.9.db
+|           
++---.pytest_cache
++---docs
+|       advanced-features.md
+|       API_REFERENCE.md
+|       ARCHITECTURE.md
+|       configuration.md
+|       DEVELOPER_GUIDE.md
+|       FEATURE_DIRECTORY.md
+|       i18n_accessibility.md
+|       leftover_scanner_page.png
+|       nexus_file_manager.md
+|       package_manager_guide.md
+|       premium_gui_preview.png
+|       quick_reference.md
+|       troubleshooting.md
+|       ui_visual_guide.md
+|       usage.md
+|       
++---installer
+|       cortex_cleaner.iss
+|       README.md
+|       sign.ps1
+|       
++---scripts
+|   |   audit_all_page_functions.py
+|   |   audit_imports.py
+|   |   audit_pages.py
+|   |   audit_system_tools.py
+|   |   build_exe.py
+|   |   check_all_structure_files.py
+|   |   check_hardcoded_paths.py
+|   |   check_lint_issues.py
+|   |   deep_codebase_inspection.py
+|   |   deep_inspect_placeholders.py
+|   |   generate_complete_features.py
+|   |   generate_feature_directory.py
+|   |   generate_program_checklist.py
+|   |   placeholder_audit.json
+|   |   README.md
+|   |   run_all_tests.py
+|   |   scan_codebase.py
+|   |   stress_test_gui_all_actions.py
+|   |   test_all_pages.py
+|   |   test_navigation.py
+|   |   update_structure_txt.py
+|   |   verify_modules.py
+|   |   verify_production_readiness.py
+|   |   
+|   \---__pycache__
+|           apply_critical_fixes.cpython-314.pyc
+|           audit_imports.cpython-314.pyc
+|           build_exe.cpython-314.pyc
+|           implement_phase1.cpython-314.pyc
+|           repair_imports.cpython-314.pyc
+|           setup_phase1.cpython-314.pyc
+|           test_fixes.cpython-314.pyc
+|           verify_modules.cpython-314.pyc
+|           _progress_check.cpython-314.pyc
+|           
++---src
+|   +---cortex_unified
+|   |   |   __init__.py
+|   |   |   __main__.py
+|   |   |   
+|   |   +---accessibility
+|   |   |   |   keyboard_handler.py
+|   |   |   |   screen_reader.py
+|   |   |   |   themes.py
+|   |   |   |   __init__.py
+|   |   |   |   
+|   |   |   \---__pycache__
+|   |   |           keyboard_handler.cpython-314.pyc
+|   |   |           screen_reader.cpython-314.pyc
+|   |   |           themes.cpython-314.pyc
+|   |   |           __init__.cpython-314.pyc
+|   |   |           
+|   |   +---analyzers
+|   |   |   |   advanced_disk_analyzer.py
+|   |   |   |   advanced_shredder.py
+|   |   |   |   advanced_uninstaller.py
+|   |   |   |   audio_duplicate_finder.py
+|   |   |   |   broken_link_detector.py
+|   |   |   |   cache_cleaner.py
+|   |   |   |   cloud_storage_analyzer.py
+|   |   |   |   content_defined_chunker.py
+|   |   |   |   czkawka_tools.py
+|   |   |   |   deep_cleaner.py
+|   |   |   |   disk_analyzer.py
+|   |   |   |   docker_cleaner.py
+|   |   |   |   duplicate_finder.py
+|   |   |   |   duplicate_folder_finder.py
+|   |   |   |   file_shredder.py
+|   |   |   |   fuzzy_finder.py
+|   |   |   |   large_file_finder.py
+|   |   |   |   leftover_detector.py
+|   |   |   |   near_duplicate_finder.py
+|   |   |   |   old_file_cleaner.py
+|   |   |   |   package_manager_cleaner.py
+|   |   |   |   perceptual_duplicate_finder.py
+|   |   |   |   portable_manager.py
+|   |   |   |   privacy_cleaner.py
+|   |   |   |   project_cache_scanner.py
+|   |   |   |   registry_cleaner_ai.py
+|   |   |   |   residual_cleaner.py
+|   |   |   |   residual_hunter.py
+|   |   |   |   video_duplicate_finder.py
+|   |   |   |   weaponized_shredder.py
+|   |   |   |   __init__.py
+|   |   |   |   
+|   |   |   \---__pycache__
+|   |   |           advanced_disk_analyzer.cpython-314.pyc
+|   |   |           advanced_shredder.cpython-314.pyc
+|   |   |           advanced_uninstaller.cpython-314.pyc
+|   |   |           audio_duplicate_finder.cpython-314.pyc
+|   |   |           broken_link_detector.cpython-314.pyc
+|   |   |           cache_cleaner.cpython-314.pyc
+|   |   |           cloud_storage_analyzer.cpython-314.pyc
+|   |   |           content_defined_chunker.cpython-314.pyc
+|   |   |           czkawka_tools.cpython-314.pyc
+|   |   |           deep_cleaner.cpython-314.pyc
+|   |   |           disk_analyzer.cpython-314.pyc
+|   |   |           disk_analyzer_advanced.cpython-314.pyc
+|   |   |           docker_cleaner.cpython-314.pyc
+|   |   |           duplicate_finder.cpython-314.pyc
+|   |   |           duplicate_folder_finder.cpython-314.pyc
+|   |   |           file_shredder.cpython-314.pyc
+|   |   |           fuzzy_finder.cpython-314.pyc
+|   |   |           large_file_finder.cpython-314.pyc
+|   |   |           leftover_detector.cpython-314.pyc
+|   |   |           near_duplicate_finder.cpython-314.pyc
+|   |   |           old_file_cleaner.cpython-314.pyc
+|   |   |           package_manager_cleaner.cpython-314.pyc
+|   |   |           perceptual_duplicate_finder.cpython-314.pyc
+|   |   |           portable_manager.cpython-314.pyc
+|   |   |           privacy_cleaner.cpython-314.pyc
+|   |   |           project_cache_scanner.cpython-314.pyc
+|   |   |           registry_cleaner_ai.cpython-314.pyc
+|   |   |           residual_cleaner.cpython-314.pyc
+|   |   |           residual_hunter.cpython-314.pyc
+|   |   |           video_duplicate_finder.cpython-314.pyc
+|   |   |           weaponized_shredder.cpython-314.pyc
+|   |   |           __init__.cpython-314.pyc
+|   |   |           
+|   |   +---cli
+|   |   |   |   cli.py
+|   |   |   |   __init__.py
+|   |   |   |   
+|   |   |   \---__pycache__
+|   |   |           cli.cpython-314.pyc
+|   |   |           __init__.cpython-314.pyc
+|   |   |           
+|   |   +---core
+|   |   |   |   background_agent.py
+|   |   |   |   config.py
+|   |   |   |   config_v2.py
+|   |   |   |   database.py
+|   |   |   |   deleter.py
+|   |   |   |   logging_setup.py
+|   |   |   |   proc.py
+|   |   |   |   scanner.py
+|   |   |   |   security.py
+|   |   |   |   smart_scanner.py
+|   |   |   |   smart_suggest.py
+|   |   |   |   temp_cleaner.py
+|   |   |   |   utils.py
+|   |   |   |   __init__.py
+|   |   |   |   
+|   |   |   \---__pycache__
+|   |   |           background_agent.cpython-314.pyc
+|   |   |           config.cpython-314.pyc
+|   |   |           config_v2.cpython-314.pyc
+|   |   |           database.cpython-314.pyc
+|   |   |           deleter.cpython-314.pyc
+|   |   |           logging_setup.cpython-314.pyc
+|   |   |           proc.cpython-314.pyc
+|   |   |           scanner.cpython-314.pyc
+|   |   |           security.cpython-314.pyc
+|   |   |           smart_scanner.cpython-314.pyc
+|   |   |           smart_suggest.cpython-314.pyc
+|   |   |           temp_cleaner.cpython-314.pyc
+|   |   |           utils.cpython-314.pyc
+|   |   |           __init__.cpython-314.pyc
+|   |   |           
+|   |   +---debug
+|   |   |   |   runner.py
+|   |   |   |   __init__.py
+|   |   |   |   
+|   |   |   \---__pycache__
+|   |   |           runner.cpython-314.pyc
+|   |   |           __init__.cpython-314.pyc
+|   |   |           
+|   |   +---engine
+|   |   |   |   categories.py
+|   |   |   |   cli.py
+|   |   |   |   fastwalk.py
+|   |   |   |   guard.py
+|   |   |   |   hashing.py
+|   |   |   |   models.py
+|   |   |   |   secure_delete.py
+|   |   |   |   service.py
+|   |   |   |   storage.py
+|   |   |   |   winattrs.py
+|   |   |   |   __init__.py
+|   |   |   |   
+|   |   |   \---__pycache__
+|   |   |           categories.cpython-314.pyc
+|   |   |           cli.cpython-314.pyc
+|   |   |           fastwalk.cpython-314.pyc
+|   |   |           guard.cpython-314.pyc
+|   |   |           hashing.cpython-314.pyc
+|   |   |           models.cpython-314.pyc
+|   |   |           secure_delete.cpython-314.pyc
+|   |   |           service.cpython-314.pyc
+|   |   |           storage.cpython-314.pyc
+|   |   |           winattrs.cpython-314.pyc
+|   |   |           __init__.cpython-314.pyc
+|   |   |           
+|   |   +---explorer
+|   |   |   |   archive.py
+|   |   |   |   cloud.py
+|   |   |   |   content_search.py
+|   |   |   |   core.py
+|   |   |   |   ffi.py
+|   |   |   |   folder_tree.py
+|   |   |   |   icons.py
+|   |   |   |   indexer.py
+|   |   |   |   network.py
+|   |   |   |   plugins.py
+|   |   |   |   transfers.py
+|   |   |   |   undo.py
+|   |   |   |   widget.py
+|   |   |   |   __init__.py
+|   |   |   |   
+|   |   |   \---__pycache__
+|   |   |           archive.cpython-314.pyc
+|   |   |           cloud.cpython-314.pyc
+|   |   |           content_search.cpython-314.pyc
+|   |   |           core.cpython-314.pyc
+|   |   |           ffi.cpython-314.pyc
+|   |   |           folder_tree.cpython-314.pyc
+|   |   |           icons.cpython-314.pyc
+|   |   |           indexer.cpython-314.pyc
+|   |   |           network.cpython-314.pyc
+|   |   |           plugins.cpython-314.pyc
+|   |   |           transfers.cpython-314.pyc
+|   |   |           undo.cpython-314.pyc
+|   |   |           widget.cpython-314.pyc
+|   |   |           __init__.cpython-314.pyc
+|   |   |           
+|   |   +---i18n
+|   |   |   |   settings_integration.py
+|   |   |   |   translator.py
+|   |   |   |   __init__.py
+|   |   |   |   
+|   |   |   +---locales
+|   |   |   |       .gitkeep
+|   |   |   |       de.json
+|   |   |   |       en.json
+|   |   |   |       es.json
+|   |   |   |       fr.json
+|   |   |   |       zh.json
+|   |   |   |       
+|   |   |   \---__pycache__
+|   |   |           settings_integration.cpython-314.pyc
+|   |   |           translator.cpython-314.pyc
+|   |   |           __init__.cpython-314.pyc
+|   |   |           
+|   |   +---licensing
+|   |   |   |   fingerprint.py
+|   |   |   |   gating.py
+|   |   |   |   license_manager.py
+|   |   |   |   tiers.py
+|   |   |   |   __init__.py
+|   |   |   |   
+|   |   |   \---__pycache__
+|   |   |           fingerprint.cpython-314.pyc
+|   |   |           gating.cpython-314.pyc
+|   |   |           license_manager.cpython-314.pyc
+|   |   |           tiers.cpython-314.pyc
+|   |   |           __init__.cpython-314.pyc
+|   |   |           
+|   |   +---performance
+|   |   |   |   multi_drive_scanner.py
+|   |   |   |   optimization.py
+|   |   |   |   profiler.py
+|   |   |   |   resource_monitor.py
+|   |   |   |   resource_throttler.py
+|   |   |   |   scan_manager.py
+|   |   |   |   settings_integration.py
+|   |   |   |   __init__.py
+|   |   |   |   
+|   |   |   \---__pycache__
+|   |   |           multi_drive_scanner.cpython-314.pyc
+|   |   |           optimization.cpython-314.pyc
+|   |   |           profiler.cpython-314.pyc
+|   |   |           resource_monitor.cpython-314.pyc
+|   |   |           resource_throttler.cpython-314.pyc
+|   |   |           scan_manager.cpython-314.pyc
+|   |   |           settings_integration.cpython-314.pyc
+|   |   |           __init__.cpython-314.pyc
+|   |   |           
+|   |   +---reports
+|   |   |   |   reports.py
+|   |   |   |   restore_manager.py
+|   |   |   |   __init__.py
+|   |   |   |   
+|   |   |   \---__pycache__
+|   |   |           reports.cpython-314.pyc
+|   |   |           restore_manager.cpython-314.pyc
+|   |   |           __init__.cpython-314.pyc
+|   |   |           
+|   |   +---resources
+|   |   |   \---icons
+|   |   |           3d.svg
+|   |   |           abap.svg
+|   |   |           abc.svg
+|   |   |           actionscript.svg
+|   |   |           ada.svg
+|   |   |           adobe-illustrator.svg
+|   |   |           adobe-illustrator_light.svg
+|   |   |           adobe-photoshop.svg
+|   |   |           adobe-photoshop_light.svg
+|   |   |           adobe-swc.svg
+|   |   |           adonis.svg
+|   |   |           advanced_uninstaller.svg
+|   |   |           advpl.svg
+|   |   |           agent.svg
+|   |   |           amplify.svg
+|   |   |           analyzer.svg
+|   |   |           android.svg
+|   |   |           angular.svg
+|   |   |           antlr.svg
+|   |   |           apiblueprint.svg
+|   |   |           apollo.svg
+|   |   |           apple.svg
+|   |   |           applescript.svg
+|   |   |           apps-script.svg
+|   |   |           appveyor.svg
+|   |   |           appwrite.svg
+|   |   |           architecture.svg
+|   |   |           arduino.svg
+|   |   |           asciidoc.svg
+|   |   |           assembly.svg
+|   |   |           astro-config.svg
+|   |   |           astro.svg
+|   |   |           astyle.svg
+|   |   |           audio.svg
+|   |   |           aurelia.svg
+|   |   |           authors.svg
+|   |   |           auto.svg
+|   |   |           autohotkey.svg
+|   |   |           autoit.svg
+|   |   |           auto_light.svg
+|   |   |           azure-pipelines.svg
+|   |   |           azure.svg
+|   |   |           babel.svg
+|   |   |           backups.svg
+|   |   |           ballerina.svg
+|   |   |           bashly-hook.svg
+|   |   |           bashly.svg
+|   |   |           bazel.svg
+|   |   |           bbx.svg
+|   |   |           beancount.svg
+|   |   |           bench-js.svg
+|   |   |           bench-jsx.svg
+|   |   |           bench-ts.svg
+|   |   |           bibliography.svg
+|   |   |           bibtex-style.svg
+|   |   |           bicep.svg
+|   |   |           binary.svg
+|   |   |           biome.svg
+|   |   |           bitbucket.svg
+|   |   |           bithound.svg
+|   |   |           bitlocker.svg
+|   |   |           bitrot.svg
+|   |   |           blender.svg
+|   |   |           blink.svg
+|   |   |           blink_light.svg
+|   |   |           blitz.svg
+|   |   |           bootperf.svg
+|   |   |           bower.svg
+|   |   |           brainfuck.svg
+|   |   |           brand.svg
+|   |   |           brokenlinks.svg
+|   |   |           browserlist.svg
+|   |   |           browserlist_light.svg
+|   |   |           bruno.svg
+|   |   |           buck.svg
+|   |   |           bucklescript.svg
+|   |   |           buildkite.svg
+|   |   |           bun.svg
+|   |   |           bun_light.svg
+|   |   |           c.svg
+|   |   |           c3.svg
+|   |   |           cabal.svg
+|   |   |           caddy.svg
+|   |   |           cadence.svg
+|   |   |           cairo.svg
+|   |   |           cake.svg
+|   |   |           capacitor.svg
+|   |   |           capnp.svg
+|   |   |           cargo.svg
+|   |   |           cbx.svg
+|   |   |           cdc.svg
+|   |   |           cds.svg
+|   |   |           certificate.svg
+|   |   |           changelog.svg
+|   |   |           check.svg
+|   |   |           chess.svg
+|   |   |           chess_light.svg
+|   |   |           chevron-down.svg
+|   |   |           chevron-up.svg
+|   |   |           chromatic.svg
+|   |   |           chrome.svg
+|   |   |           circleci.svg
+|   |   |           circleci_light.svg
+|   |   |           citation.svg
+|   |   |           clangd.svg
+|   |   |           claude.svg
+|   |   |           cleanuphub.svg
+|   |   |           cline.svg
+|   |   |           clojure.svg
+|   |   |           cloudfoundry.svg
+|   |   |           cloud_storage.svg
+|   |   |           cmake.svg
+|   |   |           coala.svg
+|   |   |           cobol.svg
+|   |   |           coconut.svg
+|   |   |           code-climate.svg
+|   |   |           code-climate_light.svg
+|   |   |           codecov.svg
+|   |   |           codeowners.svg
+|   |   |           coderabbit-ai.svg
+|   |   |           coffee.svg
+|   |   |           coffeescript.svg
+|   |   |           coldfusion.svg
+|   |   |           coloredpetrinets.svg
+|   |   |           command.svg
+|   |   |           commitizen.svg
+|   |   |           commitlint.svg
+|   |   |           compactos.svg
+|   |   |           compstore.svg
+|   |   |           concourse.svg
+|   |   |           conduct.svg
+|   |   |           console.svg
+|   |   |           contentlayer.svg
+|   |   |           context.svg
+|   |   |           contributing.svg
+|   |   |           controller.svg
+|   |   |           copilot.svg
+|   |   |           copilot_light.svg
+|   |   |           cpp.svg
+|   |   |           craco.svg
+|   |   |           credits.svg
+|   |   |           cross.svg
+|   |   |           crystal.svg
+|   |   |           crystal_light.svg
+|   |   |           csharp.svg
+|   |   |           css-map.svg
+|   |   |           css.svg
+|   |   |           cucumber.svg
+|   |   |           cuda.svg
+|   |   |           cue.svg
+|   |   |           cursor.svg
+|   |   |           cursor_light.svg
+|   |   |           cypress.svg
+|   |   |           d.svg
+|   |   |           dart.svg
+|   |   |           dart_generated.svg
+|   |   |           dashboard.svg
+|   |   |           database.svg
+|   |   |           deepsource.svg
+|   |   |           delphi.svg
+|   |   |           denizenscript.svg
+|   |   |           deno.svg
+|   |   |           deno_light.svg
+|   |   |           dependabot.svg
+|   |   |           dependencies-update.svg
+|   |   |           devdrive.svg
+|   |   |           dhall.svg
+|   |   |           diff.svg
+|   |   |           dinophp.svg
+|   |   |           disc.svg
+|   |   |           diskhealth.svg
+|   |   |           disk_analyzer.svg
+|   |   |           django.svg
+|   |   |           dll.svg
+|   |   |           docker.svg
+|   |   |           doctex-installer.svg
+|   |   |           document.svg
+|   |   |           dotjs.svg
+|   |   |           download.svg
+|   |   |           drawio.svg
+|   |   |           drivers.svg
+|   |   |           driver_manager.svg
+|   |   |           drives.svg
+|   |   |           drizzle.svg
+|   |   |           drone.svg
+|   |   |           drone_light.svg
+|   |   |           duc.svg
+|   |   |           dune.svg
+|   |   |           dupfolders.svg
+|   |   |           duplicates.svg
+|   |   |           edge.svg
+|   |   |           editorconfig.svg
+|   |   |           ejs.svg
+|   |   |           elixir.svg
+|   |   |           elm.svg
+|   |   |           email.svg
+|   |   |           ember.svg
+|   |   |           empty.svg
+|   |   |           epub.svg
+|   |   |           erlang.svg
+|   |   |           error.svg
+|   |   |           esbuild.svg
+|   |   |           eslint.svg
+|   |   |           excalidraw.svg
+|   |   |           excel.svg
+|   |   |           exe.svg
+|   |   |           expo.svg
+|   |   |           expo_light.svg
+|   |   |           extensions.svg
+|   |   |           fastlane.svg
+|   |   |           favicon.svg
+|   |   |           figma.svg
+|   |   |           firebase.svg
+|   |   |           firewall.svg
+|   |   |           flash.svg
+|   |   |           flow.svg
+|   |   |           folder-admin.svg
+|   |   |           folder-android.svg
+|   |   |           folder-angular.svg
+|   |   |           folder-animation.svg
+|   |   |           folder-ansible.svg
+|   |   |           folder-api.svg
+|   |   |           folder-apollo.svg
+|   |   |           folder-app.svg
+|   |   |           folder-appwrite.svg
+|   |   |           folder-archive.svg
+|   |   |           folder-assembly.svg
+|   |   |           folder-astro.svg
+|   |   |           folder-atom.svg
+|   |   |           folder-attachment.svg
+|   |   |           folder-audio.svg
+|   |   |           folder-aurelia.svg
+|   |   |           folder-aws.svg
+|   |   |           folder-azure-pipelines.svg
+|   |   |           folder-backup.svg
+|   |   |           folder-base.svg
+|   |   |           folder-batch.svg
+|   |   |           folder-benchmark.svg
+|   |   |           folder-bibliography.svg
+|   |   |           folder-bicep.svg
+|   |   |           folder-blender.svg
+|   |   |           folder-bloc.svg
+|   |   |           folder-bower.svg
+|   |   |           folder-buildkite.svg
+|   |   |           folder-cart.svg
+|   |   |           folder-changesets.svg
+|   |   |           folder-ci.svg
+|   |   |           folder-circleci.svg
+|   |   |           folder-class.svg
+|   |   |           folder-claude.svg
+|   |   |           folder-client.svg
+|   |   |           folder-cline.svg
+|   |   |           folder-cloud-functions.svg
+|   |   |           folder-cloudflare.svg
+|   |   |           folder-cluster.svg
+|   |   |           folder-cobol.svg
+|   |   |           folder-code.svg
+|   |   |           folder-command.svg
+|   |   |           folder-components.svg
+|   |   |           folder-config.svg
+|   |   |           folder-connection.svg
+|   |   |           folder-console.svg
+|   |   |           folder-constant.svg
+|   |   |           folder-container.svg
+|   |   |           folder-content.svg
+|   |   |           folder-context.svg
+|   |   |           folder-contract.svg
+|   |   |           folder-controller.svg
+|   |   |           folder-core.svg
+|   |   |           folder-coverage.svg
+|   |   |           folder-css.svg
+|   |   |           folder-cue.svg
+|   |   |           folder-cursor.svg
+|   |   |           folder-cursor_light.svg
+|   |   |           folder-custom.svg
+|   |   |           folder-cypress.svg
+|   |   |           folder-dal.svg
+|   |   |           folder-dart.svg
+|   |   |           folder-database.svg
+|   |   |           folder-debug.svg
+|   |   |           folder-decorators.svg
+|   |   |           folder-delta.svg
+|   |   |           folder-desktop.svg
+|   |   |           folder-directive.svg
+|   |   |           folder-dist.svg
+|   |   |           folder-docker.svg
+|   |   |           folder-docs.svg
+|   |   |           folder-documents.svg
+|   |   |           folder-download.svg
+|   |   |           folder-downloads.svg
+|   |   |           folder-drizzle.svg
+|   |   |           folder-dump.svg
+|   |   |           folder-element.svg
+|   |   |           folder-enum.svg
+|   |   |           folder-environment.svg
+|   |   |           folder-error.svg
+|   |   |           folder-eslint.svg
+|   |   |           folder-event.svg
+|   |   |           folder-examples.svg
+|   |   |           folder-expo.svg
+|   |   |           folder-export.svg
+|   |   |           folder-fastlane.svg
+|   |   |           folder-favicon.svg
+|   |   |           folder-features.svg
+|   |   |           folder-filter.svg
+|   |   |           folder-firebase.svg
+|   |   |           folder-firestore.svg
+|   |   |           folder-flow.svg
+|   |   |           folder-flutter.svg
+|   |   |           folder-font.svg
+|   |   |           folder-forgejo.svg
+|   |   |           folder-form.svg
+|   |   |           folder-functions.svg
+|   |   |           folder-gamemaker.svg
+|   |   |           folder-gemini-ai.svg
+|   |   |           folder-generator.svg
+|   |   |           folder-gh-workflows.svg
+|   |   |           folder-git.svg
+|   |   |           folder-gitea.svg
+|   |   |           folder-github.svg
+|   |   |           folder-gitlab.svg
+|   |   |           folder-global.svg
+|   |   |           folder-go.svg
+|   |   |           folder-godot.svg
+|   |   |           folder-gradle.svg
+|   |   |           folder-graphql.svg
+|   |   |           folder-guard.svg
+|   |   |           folder-gulp.svg
+|   |   |           folder-helm.svg
+|   |   |           folder-helper.svg
+|   |   |           folder-home.svg
+|   |   |           folder-hook.svg
+|   |   |           folder-husky.svg
+|   |   |           folder-i18n.svg
+|   |   |           folder-images.svg
+|   |   |           folder-import.svg
+|   |   |           folder-include.svg
+|   |   |           folder-input.svg
+|   |   |           folder-intellij.svg
+|   |   |           folder-intellij_light.svg
+|   |   |           folder-interceptor.svg
+|   |   |           folder-interface.svg
+|   |   |           folder-ios.svg
+|   |   |           folder-java.svg
+|   |   |           folder-javascript.svg
+|   |   |           folder-jinja.svg
+|   |   |           folder-jinja_light.svg
+|   |   |           folder-job.svg
+|   |   |           folder-json.svg
+|   |   |           folder-jupyter.svg
+|   |   |           folder-keys.svg
+|   |   |           folder-kotlin.svg
+|   |   |           folder-kubernetes.svg
+|   |   |           folder-kusto.svg
+|   |   |           folder-layout.svg
+|   |   |           folder-lefthook.svg
+|   |   |           folder-less.svg
+|   |   |           folder-lib.svg
+|   |   |           folder-library.svg
+|   |   |           folder-license.svg
+|   |   |           folder-link.svg
+|   |   |           folder-linux.svg
+|   |   |           folder-liquibase.svg
+|   |   |           folder-log.svg
+|   |   |           folder-lottie.svg
+|   |   |           folder-lua.svg
+|   |   |           folder-luau.svg
+|   |   |           folder-macos.svg
+|   |   |           folder-mail.svg
+|   |   |           folder-mappings.svg
+|   |   |           folder-markdown.svg
+|   |   |           folder-mercurial.svg
+|   |   |           folder-messages.svg
+|   |   |           folder-meta.svg
+|   |   |           folder-metro.svg
+|   |   |           folder-middleware.svg
+|   |   |           folder-migrations.svg
+|   |   |           folder-mjml.svg
+|   |   |           folder-mobile.svg
+|   |   |           folder-mock.svg
+|   |   |           folder-mojo.svg
+|   |   |           folder-molecule.svg
+|   |   |           folder-moon.svg
+|   |   |           folder-music.svg
+|   |   |           folder-netlify.svg
+|   |   |           folder-next.svg
+|   |   |           folder-nginx.svg
+|   |   |           folder-ngrx-store.svg
+|   |   |           folder-node.svg
+|   |   |           folder-npm.svg
+|   |   |           folder-nuxt.svg
+|   |   |           folder-obsidian.svg
+|   |   |           folder-opencode.svg
+|   |   |           folder-organism.svg
+|   |   |           folder-other.svg
+|   |   |           folder-packages.svg
+|   |   |           folder-pdf.svg
+|   |   |           folder-pdm.svg
+|   |   |           folder-php.svg
+|   |   |           folder-phpmailer.svg
+|   |   |           folder-pipe.svg
+|   |   |           folder-plastic.svg
+|   |   |           folder-plugin.svg
+|   |   |           folder-pnpm.svg
+|   |   |           folder-policy.svg
+|   |   |           folder-postman.svg
+|   |   |           folder-powershell.svg
+|   |   |           folder-prisma.svg
+|   |   |           folder-private.svg
+|   |   |           folder-project.svg
+|   |   |           folder-prompts.svg
+|   |   |           folder-proto.svg
+|   |   |           folder-public.svg
+|   |   |           folder-python.svg
+|   |   |           folder-pytorch.svg
+|   |   |           folder-quasar.svg
+|   |   |           folder-queue.svg
+|   |   |           folder-r.svg
+|   |   |           folder-react-components.svg
+|   |   |           folder-react.svg
+|   |   |           folder-redux-reducer.svg
+|   |   |           folder-repository.svg
+|   |   |           folder-resolver.svg
+|   |   |           folder-resource.svg
+|   |   |           folder-review.svg
+|   |   |           folder-robot.svg
+|   |   |           folder-routes.svg
+|   |   |           folder-rules.svg
+|   |   |           folder-rust.svg
+|   |   |           folder-salt.svg
+|   |   |           folder-sandbox.svg
+|   |   |           folder-sass.svg
+|   |   |           folder-scala.svg
+|   |   |           folder-scons.svg
+|   |   |           folder-scripts.svg
+|   |   |           folder-secure.svg
+|   |   |           folder-seeders.svg
+|   |   |           folder-server.svg
+|   |   |           folder-serverless.svg
+|   |   |           folder-settings.svg
+|   |   |           folder-shader.svg
+|   |   |           folder-shared.svg
+|   |   |           folder-simulations.svg
+|   |   |           folder-skills.svg
+|   |   |           folder-snapcraft.svg
+|   |   |           folder-snippet.svg
+|   |   |           folder-src-tauri.svg
+|   |   |           folder-src.svg
+|   |   |           folder-stack.svg
+|   |   |           folder-stencil.svg
+|   |   |           folder-store.svg
+|   |   |           folder-storybook.svg
+|   |   |           folder-stylus.svg
+|   |   |           folder-sublime.svg
+|   |   |           folder-supabase.svg
+|   |   |           folder-svelte.svg
+|   |   |           folder-svg.svg
+|   |   |           folder-syntax.svg
+|   |   |           folder-target.svg
+|   |   |           folder-taskfile.svg
+|   |   |           folder-tasks.svg
+|   |   |           folder-television.svg
+|   |   |           folder-temp.svg
+|   |   |           folder-template.svg
+|   |   |           folder-terraform.svg
+|   |   |           folder-test.svg
+|   |   |           folder-theme.svg
+|   |   |           folder-toc.svg
+|   |   |           folder-tools.svg
+|   |   |           folder-trash.svg
+|   |   |           folder-trigger.svg
+|   |   |           folder-turborepo.svg
+|   |   |           folder-typescript.svg
+|   |   |           folder-ui.svg
+|   |   |           folder-unity.svg
+|   |   |           folder-update.svg
+|   |   |           folder-upload.svg
+|   |   |           folder-utils.svg
+|   |   |           folder-vercel.svg
+|   |   |           folder-verdaccio.svg
+|   |   |           folder-video.svg
+|   |   |           folder-views.svg
+|   |   |           folder-vm.svg
+|   |   |           folder-vscode.svg
+|   |   |           folder-vue-directives.svg
+|   |   |           folder-vue.svg
+|   |   |           folder-vuepress.svg
+|   |   |           folder-vuex-store.svg
+|   |   |           folder-wakatime.svg
+|   |   |           folder-webpack.svg
+|   |   |           folder-windows.svg
+|   |   |           folder-wordpress.svg
+|   |   |           folder-yarn.svg
+|   |   |           folder-zeabur.svg
+|   |   |           folder-zed.svg
+|   |   |           folder-zip.svg
+|   |   |           folder.svg
+|   |   |           font.svg
+|   |   |           forth.svg
+|   |   |           fortran.svg
+|   |   |           foxpro.svg
+|   |   |           freemarker.svg
+|   |   |           fsharp.svg
+|   |   |           fusebox.svg
+|   |   |           fuzzyhash.svg
+|   |   |           gamemaker.svg
+|   |   |           garden.svg
+|   |   |           gatsby.svg
+|   |   |           gcp.svg
+|   |   |           gem.svg
+|   |   |           gemfile.svg
+|   |   |           gemini-ai.svg
+|   |   |           gemini.svg
+|   |   |           git.svg
+|   |   |           github-actions-workflow.svg
+|   |   |           github-sponsors.svg
+|   |   |           gitignore.svg
+|   |   |           gitlab.svg
+|   |   |           gitpod.svg
+|   |   |           gleam.svg
+|   |   |           gnuplot.svg
+|   |   |           go-mod.svg
+|   |   |           go.svg
+|   |   |           godot-assets.svg
+|   |   |           godot.svg
+|   |   |           google.svg
+|   |   |           go_gopher.svg
+|   |   |           gradle.svg
+|   |   |           grafana-alloy.svg
+|   |   |           grain.svg
+|   |   |           graphcool.svg
+|   |   |           graphql.svg
+|   |   |           gridsome.svg
+|   |   |           groovy.svg
+|   |   |           growth.svg
+|   |   |           grunt.svg
+|   |   |           gulp.svg
+|   |   |           h.svg
+|   |   |           hack.svg
+|   |   |           hadolint.svg
+|   |   |           haml.svg
+|   |   |           handlebars.svg
+|   |   |           happo.svg
+|   |   |           hardhat.svg
+|   |   |           harmonix.svg
+|   |   |           haskell.svg
+|   |   |           haxe.svg
+|   |   |           hcl.svg
+|   |   |           hcl_light.svg
+|   |   |           health.svg
+|   |   |           helm.svg
+|   |   |           heroku.svg
+|   |   |           hex.svg
+|   |   |           hip.svg
+|   |   |           histoire.svg
+|   |   |           hjson.svg
+|   |   |           horusec.svg
+|   |   |           hosts.svg
+|   |   |           hosts_light.svg
+|   |   |           hpp.svg
+|   |   |           html.svg
+|   |   |           http.svg
+|   |   |           huff.svg
+|   |   |           huff_light.svg
+|   |   |           hurl.svg
+|   |   |           husky.svg
+|   |   |           i18n.svg
+|   |   |           idris.svg
+|   |   |           ifanr-cloud.svg
+|   |   |           illustrator.svg
+|   |   |           image.svg
+|   |   |           imba.svg
+|   |   |           info.svg
+|   |   |           installation.svg
+|   |   |           ionic.svg
+|   |   |           istanbul.svg
+|   |   |           jar.svg
+|   |   |           java.svg
+|   |   |           javaclass.svg
+|   |   |           javascript-map.svg
+|   |   |           javascript.svg
+|   |   |           jenkins.svg
+|   |   |           jest.svg
+|   |   |           jinja.svg
+|   |   |           jinja_light.svg
+|   |   |           jsconfig.svg
+|   |   |           json.svg
+|   |   |           json_schema.svg
+|   |   |           jsr.svg
+|   |   |           jsr_light.svg
+|   |   |           julia.svg
+|   |   |           junctions.svg
+|   |   |           jupyter.svg
+|   |   |           just.svg
+|   |   |           karma.svg
+|   |   |           kcl.svg
+|   |   |           key.svg
+|   |   |           keystatic.svg
+|   |   |           kivy.svg
+|   |   |           kl.svg
+|   |   |           knip.svg
+|   |   |           kotlin.svg
+|   |   |           kubernetes.svg
+|   |   |           kusto.svg
+|   |   |           label.svg
+|   |   |           landevices.svg
+|   |   |           laravel.svg
+|   |   |           large.svg
+|   |   |           latex.svg
+|   |   |           latexmk.svg
+|   |   |           lbx.svg
+|   |   |           lean.svg
+|   |   |           lefthook.svg
+|   |   |           leftovers.svg
+|   |   |           lerna.svg
+|   |   |           less.svg
+|   |   |           liara.svg
+|   |   |           lib.svg
+|   |   |           license.svg
+|   |   |           lighthouse.svg
+|   |   |           lilypond.svg
+|   |   |           lintstaged.svg
+|   |   |           liquid.svg
+|   |   |           lisp.svg
+|   |   |           livescript.svg
+|   |   |           loadtest.svg
+|   |   |           lock.svg
+|   |   |           log.svg
+|   |   |           logsweep.svg
+|   |   |           lolcode.svg
+|   |   |           lottie.svg
+|   |   |           lua.svg
+|   |   |           luau.svg
+|   |   |           lynx.svg
+|   |   |           lyric.svg
+|   |   |           macaulay2.svg
+|   |   |           make.svg
+|   |   |           makefile.svg
+|   |   |           markdoc-config.svg
+|   |   |           markdoc.svg
+|   |   |           markdown.svg
+|   |   |           markdownlint.svg
+|   |   |           markojs.svg
+|   |   |           mathematica.svg
+|   |   |           matlab.svg
+|   |   |           maven.svg
+|   |   |           mdsvex.svg
+|   |   |           mdx.svg
+|   |   |           memcompress.svg
+|   |   |           menu.svg
+|   |   |           mercurial.svg
+|   |   |           merlin.svg
+|   |   |           mermaid.svg
+|   |   |           meson.svg
+|   |   |           metro.svg
+|   |   |           minecraft-fabric.svg
+|   |   |           minecraft.svg
+|   |   |           mint.svg
+|   |   |           mjml.svg
+|   |   |           mocha.svg
+|   |   |           modelcache.svg
+|   |   |           modernizr.svg
+|   |   |           mojo.svg
+|   |   |           moon.svg
+|   |   |           moonscript.svg
+|   |   |           mrpack.svg
+|   |   |           mxml.svg
+|   |   |           nano-staged.svg
+|   |   |           nano-staged_light.svg
+|   |   |           ndst.svg
+|   |   |           neardup.svg
+|   |   |           nest.svg
+|   |   |           netlify.svg
+|   |   |           netlify_light.svg
+|   |   |           netmap.svg
+|   |   |           nettools.svg
+|   |   |           network.svg
+|   |   |           next.svg
+|   |   |           next_light.svg
+|   |   |           nginx.svg
+|   |   |           ngrx-actions.svg
+|   |   |           ngrx-effects.svg
+|   |   |           ngrx-entity.svg
+|   |   |           ngrx-reducer.svg
+|   |   |           ngrx-selectors.svg
+|   |   |           ngrx-state.svg
+|   |   |           nim.svg
+|   |   |           nix.svg
+|   |   |           nodejs.svg
+|   |   |           nodejs_alt.svg
+|   |   |           nodemon.svg
+|   |   |           npm.svg
+|   |   |           nuget.svg
+|   |   |           nunjucks.svg
+|   |   |           nuxt.svg
+|   |   |           nx.svg
+|   |   |           objective-c.svg
+|   |   |           objective-cpp.svg
+|   |   |           ocaml.svg
+|   |   |           odin.svg
+|   |   |           onnx.svg
+|   |   |           opa.svg
+|   |   |           opam.svg
+|   |   |           openapi.svg
+|   |   |           openapi_light.svg
+|   |   |           opencode.svg
+|   |   |           opencode_light.svg
+|   |   |           opentofu.svg
+|   |   |           opentofu_light.svg
+|   |   |           otne.svg
+|   |   |           oxc.svg
+|   |   |           packages.svg
+|   |   |           packship.svg
+|   |   |           palette.svg
+|   |   |           panda.svg
+|   |   |           parcel.svg
+|   |   |           pascal.svg
+|   |   |           pawn.svg
+|   |   |           payload.svg
+|   |   |           payload_light.svg
+|   |   |           pdf.svg
+|   |   |           pdm.svg
+|   |   |           perceptual.svg
+|   |   |           percy.svg
+|   |   |           performance.svg
+|   |   |           perl.svg
+|   |   |           photos.svg
+|   |   |           photoshop.svg
+|   |   |           php-cs-fixer.svg
+|   |   |           php.svg
+|   |   |           phpstan.svg
+|   |   |           phpunit.svg
+|   |   |           php_elephant.svg
+|   |   |           php_elephant_pink.svg
+|   |   |           pinejs.svg
+|   |   |           pipeline.svg
+|   |   |           pkl.svg
+|   |   |           plastic.svg
+|   |   |           playwright.svg
+|   |   |           plop.svg
+|   |   |           pm2-ecosystem.svg
+|   |   |           pnpm.svg
+|   |   |           pnpm_light.svg
+|   |   |           poetry.svg
+|   |   |           portable_manager.svg
+|   |   |           postcss.svg
+|   |   |           posthtml.svg
+|   |   |           powerpoint.svg
+|   |   |           powershell.svg
+|   |   |           pre-commit.svg
+|   |   |           prettier.svg
+|   |   |           prisma.svg
+|   |   |           privacy.svg
+|   |   |           privacy_blocker.svg
+|   |   |           processes.svg
+|   |   |           processing.svg
+|   |   |           projcaches.svg
+|   |   |           prolog.svg
+|   |   |           prompt.svg
+|   |   |           proto.svg
+|   |   |           protractor.svg
+|   |   |           pug.svg
+|   |   |           puppet.svg
+|   |   |           puppeteer.svg
+|   |   |           purescript.svg
+|   |   |           python-misc.svg
+|   |   |           python.svg
+|   |   |           pytorch.svg
+|   |   |           qsharp.svg
+|   |   |           quarto.svg
+|   |   |           quasar.svg
+|   |   |           quokka.svg
+|   |   |           qwik.svg
+|   |   |           r.svg
+|   |   |           racket.svg
+|   |   |           raml.svg
+|   |   |           razor.svg
+|   |   |           rbxmk.svg
+|   |   |           rc.svg
+|   |   |           react.svg
+|   |   |           react_ts.svg
+|   |   |           readme.svg
+|   |   |           reason.svg
+|   |   |           red.svg
+|   |   |           redux-action.svg
+|   |   |           redux-reducer.svg
+|   |   |           redux-selector.svg
+|   |   |           redux-store.svg
+|   |   |           regedit.svg
+|   |   |           registry.svg
+|   |   |           registry_ai.svg
+|   |   |           remark.svg
+|   |   |           remix.svg
+|   |   |           remix_light.svg
+|   |   |           renovate.svg
+|   |   |           repair.svg
+|   |   |           replit.svg
+|   |   |           report.svg
+|   |   |           rescript-interface.svg
+|   |   |           rescript.svg
+|   |   |           restql.svg
+|   |   |           riot.svg
+|   |   |           roadmap.svg
+|   |   |           roblox.svg
+|   |   |           robot.svg
+|   |   |           robots.svg
+|   |   |           rocket.svg
+|   |   |           rojo.svg
+|   |   |           rolldown.svg
+|   |   |           rollup.svg
+|   |   |           rome.svg
+|   |   |           routing.svg
+|   |   |           rspec.svg
+|   |   |           rstack.svg
+|   |   |           rubocop.svg
+|   |   |           rubocop_light.svg
+|   |   |           ruby.svg
+|   |   |           ruff.svg
+|   |   |           rust.svg
+|   |   |           s3fifo.svg
+|   |   |           salesforce.svg
+|   |   |           salt.svg
+|   |   |           san.svg
+|   |   |           sandbox.svg
+|   |   |           sas.svg
+|   |   |           sass.svg
+|   |   |           sbt.svg
+|   |   |           scala.svg
+|   |   |           schedule.svg
+|   |   |           scheme.svg
+|   |   |           scons.svg
+|   |   |           scons_light.svg
+|   |   |           screwdriver.svg
+|   |   |           scss.svg
+|   |   |           search.svg
+|   |   |           secrets.svg
+|   |   |           secure_shredder.svg
+|   |   |           security.svg
+|   |   |           semantic-release.svg
+|   |   |           semantic-release_light.svg
+|   |   |           semgrep.svg
+|   |   |           sentry.svg
+|   |   |           sequelize.svg
+|   |   |           serverless.svg
+|   |   |           settings.svg
+|   |   |           shader.svg
+|   |   |           shellcheck.svg
+|   |   |           shellcheck_light.svg
+|   |   |           shred.svg
+|   |   |           silverstripe.svg
+|   |   |           simulink.svg
+|   |   |           siyuan.svg
+|   |   |           sketch.svg
+|   |   |           skill.svg
+|   |   |           slim.svg
+|   |   |           slint.svg
+|   |   |           slug.svg
+|   |   |           smarty.svg
+|   |   |           smbshares.svg
+|   |   |           sml.svg
+|   |   |           snakemake.svg
+|   |   |           snapcraft.svg
+|   |   |           snowpack.svg
+|   |   |           snowpack_light.svg
+|   |   |           snyk.svg
+|   |   |           solidity.svg
+|   |   |           sonarcloud.svg
+|   |   |           spwn.svg
+|   |   |           sql.svg
+|   |   |           sqlite.svg
+|   |   |           stackblitz.svg
+|   |   |           stan.svg
+|   |   |           startup.svg
+|   |   |           startup_optimizer.svg
+|   |   |           steadybit.svg
+|   |   |           stencil.svg
+|   |   |           stitches.svg
+|   |   |           stitches_light.svg
+|   |   |           storagesense.svg
+|   |   |           storybook.svg
+|   |   |           stryker.svg
+|   |   |           stylable.svg
+|   |   |           stylelint.svg
+|   |   |           stylelint_light.svg
+|   |   |           stylus.svg
+|   |   |           sublime.svg
+|   |   |           subtitles.svg
+|   |   |           success.svg
+|   |   |           supabase.svg
+|   |   |           svelte.svg
+|   |   |           svg.svg
+|   |   |           svgo.svg
+|   |   |           svgr.svg
+|   |   |           swagger.svg
+|   |   |           sway.svg
+|   |   |           swc.svg
+|   |   |           swift.svg
+|   |   |           syncpack.svg
+|   |   |           sysinfo.svg
+|   |   |           systemd.svg
+|   |   |           systemd_light.svg
+|   |   |           table.svg
+|   |   |           tailwindcss.svg
+|   |   |           tar-gz.svg
+|   |   |           taskfile.svg
+|   |   |           tauri.svg
+|   |   |           taze.svg
+|   |   |           tcl.svg
+|   |   |           teal.svg
+|   |   |           telemetry.svg
+|   |   |           templ.svg
+|   |   |           template.svg
+|   |   |           terminal.svg
+|   |   |           terraform.svg
+|   |   |           test-js.svg
+|   |   |           test-jsx.svg
+|   |   |           test-ts.svg
+|   |   |           tex.svg
+|   |   |           textlint.svg
+|   |   |           tilt.svg
+|   |   |           tldraw.svg
+|   |   |           tldraw_light.svg
+|   |   |           tobi.svg
+|   |   |           tobimake.svg
+|   |   |           toc.svg
+|   |   |           todo.svg
+|   |   |           tokens.svg
+|   |   |           toml.svg
+|   |   |           toml_light.svg
+|   |   |           toon.svg
+|   |   |           traffic.svg
+|   |   |           travis.svg
+|   |   |           tree.svg
+|   |   |           trigger.svg
+|   |   |           tsconfig.svg
+|   |   |           tsdoc.svg
+|   |   |           tsdown.svg
+|   |   |           tsil.svg
+|   |   |           tune.svg
+|   |   |           turborepo.svg
+|   |   |           turborepo_light.svg
+|   |   |           twig.svg
+|   |   |           twine.svg
+|   |   |           typedoc.svg
+|   |   |           typescript-def.svg
+|   |   |           typescript.svg
+|   |   |           typst.svg
+|   |   |           uiua.svg
+|   |   |           umi.svg
+|   |   |           uml.svg
+|   |   |           uml_light.svg
+|   |   |           uninstaller.svg
+|   |   |           unity.svg
+|   |   |           unlicense.svg
+|   |   |           unocss.svg
+|   |   |           updater.svg
+|   |   |           upload.svg
+|   |   |           url.svg
+|   |   |           uv.svg
+|   |   |           vagrant.svg
+|   |   |           vala.svg
+|   |   |           vanilla-extract.svg
+|   |   |           varnish.svg
+|   |   |           vdisks.svg
+|   |   |           vedic.svg
+|   |   |           velite.svg
+|   |   |           velocity.svg
+|   |   |           vercel.svg
+|   |   |           vercel_light.svg
+|   |   |           verdaccio.svg
+|   |   |           verified.svg
+|   |   |           verilog.svg
+|   |   |           verse.svg
+|   |   |           verse_light.svg
+|   |   |           vfl.svg
+|   |   |           video.svg
+|   |   |           vim.svg
+|   |   |           virtual.svg
+|   |   |           visualstudio.svg
+|   |   |           vite.svg
+|   |   |           vitest.svg
+|   |   |           vlang.svg
+|   |   |           vscode.svg
+|   |   |           vss.svg
+|   |   |           vue-config.svg
+|   |   |           vue.svg
+|   |   |           vuex-store.svg
+|   |   |           wakatime.svg
+|   |   |           wakatime_light.svg
+|   |   |           wallaby.svg
+|   |   |           wally.svg
+|   |   |           warning.svg
+|   |   |           warp.svg
+|   |   |           warp_light.svg
+|   |   |           watchman.svg
+|   |   |           webassembly.svg
+|   |   |           webhint.svg
+|   |   |           webpack.svg
+|   |   |           wepy.svg
+|   |   |           werf.svg
+|   |   |           win-close.svg
+|   |   |           win-maximize.svg
+|   |   |           win-minimize.svg
+|   |   |           win-restore.svg
+|   |   |           windicss.svg
+|   |   |           winupdate.svg
+|   |   |           win_update_repair.svg
+|   |   |           wolframlanguage.svg
+|   |   |           word.svg
+|   |   |           wrangler.svg
+|   |   |           wsl.svg
+|   |   |           wxt.svg
+|   |   |           xaml.svg
+|   |   |           xmake.svg
+|   |   |           xml.svg
+|   |   |           yaml.svg
+|   |   |           yang.svg
+|   |   |           yarn.svg
+|   |   |           zeabur.svg
+|   |   |           zeabur_light.svg
+|   |   |           zig.svg
+|   |   |           zip.svg
+|   |   |           
+|   |   +---scheduler
+|   |   |   |   auto_clean_rules.py
+|   |   |   |   scheduler.py
+|   |   |   |   __init__.py
+|   |   |   |   
+|   |   |   \---__pycache__
+|   |   |           auto_clean_rules.cpython-314.pyc
+|   |   |           scheduler.cpython-314.pyc
+|   |   |           __init__.cpython-314.pyc
+|   |   |           
+|   |   +---system_tools
+|   |   |   |   adaptive_sanitizer.py
+|   |   |   |   ai_telemetry_cleaner.py
+|   |   |   |   app_uninstaller.py
+|   |   |   |   app_updater.py
+|   |   |   |   bitlocker_auditor.py
+|   |   |   |   bitrot_scrubber.py
+|   |   |   |   boot_performance.py
+|   |   |   |   browser_cleaner.py
+|   |   |   |   browser_deep_cleaner.py
+|   |   |   |   browser_extensions.py
+|   |   |   |   checksum_matrix.py
+|   |   |   |   compact_os.py
+|   |   |   |   component_store.py
+|   |   |   |   component_store_cleaner.py
+|   |   |   |   context_menu_manager.py
+|   |   |   |   crash_dump_cleaner.py
+|   |   |   |   defender.py
+|   |   |   |   delivery_optimization_cleaner.py
+|   |   |   |   device_fingerprint.py
+|   |   |   |   dev_cleaner.py
+|   |   |   |   dev_drive_optimizer.py
+|   |   |   |   dev_package_cache_cleaner.py
+|   |   |   |   diagnostic_data_manager.py
+|   |   |   |   disk_benchmark.py
+|   |   |   |   disk_health.py
+|   |   |   |   dns_benchmark.py
+|   |   |   |   driver_inventory.py
+|   |   |   |   driver_manager.py
+|   |   |   |   driver_store_cleaner.py
+|   |   |   |   drive_optimizer.py
+|   |   |   |   env_variable_manager.py
+|   |   |   |   event_log_cleaner.py
+|   |   |   |   event_log_monitor.py
+|   |   |   |   external_exposure.py
+|   |   |   |   firewall_manager.py
+|   |   |   |   font_cache_manager.py
+|   |   |   |   free_space_wipe.py
+|   |   |   |   game_mode.py
+|   |   |   |   health_check.py
+|   |   |   |   hosts_file_manager.py
+|   |   |   |   junction_auditor.py
+|   |   |   |   lan_scanner.py
+|   |   |   |   leftover_cleaner.py
+|   |   |   |   load_tester.py
+|   |   |   |   memory_compression_tuner.py
+|   |   |   |   memory_optimizer.py
+|   |   |   |   model_cache_manager.py
+|   |   |   |   network_automation.py
+|   |   |   |   network_discovery.py
+|   |   |   |   network_inventory.py
+|   |   |   |   network_monitor.py
+|   |   |   |   network_scan_cli.py
+|   |   |   |   network_security_audit.py
+|   |   |   |   network_service_scanner.py
+|   |   |   |   network_stack_optimizer.py
+|   |   |   |   network_tools.py
+|   |   |   |   network_traffic.py
+|   |   |   |   nmap_adapter.py
+|   |   |   |   notification_cleaner.py
+|   |   |   |   oui.py
+|   |   |   |   pagefile_optimizer.py
+|   |   |   |   performance_tuner.py
+|   |   |   |   power_plan_optimizer.py
+|   |   |   |   prefetch_analyzer.py
+|   |   |   |   privacy_blocker.py
+|   |   |   |   process_analyzer.py
+|   |   |   |   process_meta.py
+|   |   |   |   process_token_auditor.py
+|   |   |   |   registry_cleaner.py
+|   |   |   |   restart_manager_unlocker.py
+|   |   |   |   restore_point.py
+|   |   |   |   s3_fifo.py
+|   |   |   |   sandbox_cleaner.py
+|   |   |   |   search_index_optimizer.py
+|   |   |   |   secrets_scanner.py
+|   |   |   |   secure_shredder.py
+|   |   |   |   service_manager.py
+|   |   |   |   shader_cache_cleaner.py
+|   |   |   |   shellbags_privacy_cleaner.py
+|   |   |   |   sieve_cache.py
+|   |   |   |   slack_space_analyzer.py
+|   |   |   |   smb_share_auditor.py
+|   |   |   |   ssd_trim_optimizer.py
+|   |   |   |   startup_impact_analyzer.py
+|   |   |   |   startup_manager.py
+|   |   |   |   startup_optimizer.py
+|   |   |   |   storage_growth_tracker.py
+|   |   |   |   storage_sense.py
+|   |   |   |   system_cache_rebuilder.py
+|   |   |   |   system_info.py
+|   |   |   |   system_repair.py
+|   |   |   |   task_manager.py
+|   |   |   |   telemetry_blocker.py
+|   |   |   |   temp_folder_cleaner.py
+|   |   |   |   update_checker.py
+|   |   |   |   vhdx_manager.py
+|   |   |   |   vss_health_analyzer.py
+|   |   |   |   vss_manager.py
+|   |   |   |   vulnerability_catalog.py
+|   |   |   |   wake_on_lan.py
+|   |   |   |   wan_audit.py
+|   |   |   |   windows_update.py
+|   |   |   |   windows_update_repair.py
+|   |   |   |   wsl_cleaner.py
+|   |   |   |   __init__.py
+|   |   |   |   
+|   |   |   \---__pycache__
+|   |   |           adaptive_sanitizer.cpython-314.pyc
+|   |   |           ai_telemetry_cleaner.cpython-314.pyc
+|   |   |           app_uninstaller.cpython-314.pyc
+|   |   |           app_updater.cpython-314.pyc
+|   |   |           bitlocker_auditor.cpython-314.pyc
+|   |   |           bitrot_scrubber.cpython-314.pyc
+|   |   |           boot_performance.cpython-314.pyc
+|   |   |           browser_cleaner.cpython-314.pyc
+|   |   |           browser_deep_cleaner.cpython-314.pyc
+|   |   |           browser_extensions.cpython-314.pyc
+|   |   |           checksum_matrix.cpython-314.pyc
+|   |   |           compact_os.cpython-314.pyc
+|   |   |           component_store.cpython-314.pyc
+|   |   |           component_store_cleaner.cpython-314.pyc
+|   |   |           context_menu_manager.cpython-314.pyc
+|   |   |           crash_dump_cleaner.cpython-314.pyc
+|   |   |           defender.cpython-314.pyc
+|   |   |           delivery_optimization_cleaner.cpython-314.pyc
+|   |   |           device_fingerprint.cpython-314.pyc
+|   |   |           dev_cleaner.cpython-314.pyc
+|   |   |           dev_drive_optimizer.cpython-314.pyc
+|   |   |           dev_package_cache_cleaner.cpython-314.pyc
+|   |   |           diagnostic_data_manager.cpython-314.pyc
+|   |   |           disk_benchmark.cpython-314.pyc
+|   |   |           disk_health.cpython-314.pyc
+|   |   |           dns_benchmark.cpython-314.pyc
+|   |   |           driver_inventory.cpython-314.pyc
+|   |   |           driver_manager.cpython-314.pyc
+|   |   |           driver_store_cleaner.cpython-314.pyc
+|   |   |           drive_optimizer.cpython-314.pyc
+|   |   |           env_variable_manager.cpython-314.pyc
+|   |   |           event_log_cleaner.cpython-314.pyc
+|   |   |           event_log_monitor.cpython-314.pyc
+|   |   |           external_exposure.cpython-314.pyc
+|   |   |           firewall_manager.cpython-314.pyc
+|   |   |           font_cache_manager.cpython-314.pyc
+|   |   |           free_space_wipe.cpython-314.pyc
+|   |   |           game_mode.cpython-314.pyc
+|   |   |           health_check.cpython-314.pyc
+|   |   |           hosts_file_manager.cpython-314.pyc
+|   |   |           junction_auditor.cpython-314.pyc
+|   |   |           lan_scanner.cpython-314.pyc
+|   |   |           leftover_cleaner.cpython-314.pyc
+|   |   |           load_tester.cpython-314.pyc
+|   |   |           memory_compression_tuner.cpython-314.pyc
+|   |   |           memory_optimizer.cpython-314.pyc
+|   |   |           model_cache_manager.cpython-314.pyc
+|   |   |           network_automation.cpython-314.pyc
+|   |   |           network_discovery.cpython-314.pyc
+|   |   |           network_inventory.cpython-314.pyc
+|   |   |           network_monitor.cpython-314.pyc
+|   |   |           network_scan_cli.cpython-314.pyc
+|   |   |           network_security_audit.cpython-314.pyc
+|   |   |           network_service_scanner.cpython-314.pyc
+|   |   |           network_stack_optimizer.cpython-314.pyc
+|   |   |           network_tools.cpython-314.pyc
+|   |   |           network_traffic.cpython-314.pyc
+|   |   |           nmap_adapter.cpython-314.pyc
+|   |   |           notification_cleaner.cpython-314.pyc
+|   |   |           oui.cpython-314.pyc
+|   |   |           pagefile_optimizer.cpython-314.pyc
+|   |   |           performance_tuner.cpython-314.pyc
+|   |   |           power_plan_optimizer.cpython-314.pyc
+|   |   |           prefetch_analyzer.cpython-314.pyc
+|   |   |           privacy_blocker.cpython-314.pyc
+|   |   |           process_analyzer.cpython-314.pyc
+|   |   |           process_meta.cpython-314.pyc
+|   |   |           process_token_auditor.cpython-314.pyc
+|   |   |           registry_cleaner.cpython-314.pyc
+|   |   |           restart_manager_unlocker.cpython-314.pyc
+|   |   |           restore_point.cpython-314.pyc
+|   |   |           s3_fifo.cpython-314.pyc
+|   |   |           sandbox_cleaner.cpython-314.pyc
+|   |   |           search_index_optimizer.cpython-314.pyc
+|   |   |           secrets_scanner.cpython-314.pyc
+|   |   |           secure_shredder.cpython-314.pyc
+|   |   |           service_manager.cpython-314.pyc
+|   |   |           shader_cache_cleaner.cpython-314.pyc
+|   |   |           shellbags_privacy_cleaner.cpython-314.pyc
+|   |   |           sieve_cache.cpython-314.pyc
+|   |   |           slack_space_analyzer.cpython-314.pyc
+|   |   |           smb_share_auditor.cpython-314.pyc
+|   |   |           ssd_trim_optimizer.cpython-314.pyc
+|   |   |           startup_impact_analyzer.cpython-314.pyc
+|   |   |           startup_manager.cpython-314.pyc
+|   |   |           startup_optimizer.cpython-314.pyc
+|   |   |           storage_growth_tracker.cpython-314.pyc
+|   |   |           storage_sense.cpython-314.pyc
+|   |   |           system_cache_rebuilder.cpython-314.pyc
+|   |   |           system_info.cpython-314.pyc
+|   |   |           system_repair.cpython-314.pyc
+|   |   |           task_manager.cpython-314.pyc
+|   |   |           telemetry_blocker.cpython-314.pyc
+|   |   |           temp_folder_cleaner.cpython-314.pyc
+|   |   |           update_checker.cpython-314.pyc
+|   |   |           vhdx_manager.cpython-314.pyc
+|   |   |           vss_health_analyzer.cpython-314.pyc
+|   |   |           vss_manager.cpython-314.pyc
+|   |   |           vulnerability_catalog.cpython-314.pyc
+|   |   |           wake_on_lan.cpython-314.pyc
+|   |   |           wan_audit.cpython-314.pyc
+|   |   |           windows_update.cpython-314.pyc
+|   |   |           windows_update_repair.cpython-314.pyc
+|   |   |           wsl_cleaner.cpython-314.pyc
+|   |   |           __init__.cpython-314.pyc
+|   |   |           
+|   |   +---ui
+|   |   |   |   launcher.py
+|   |   |   |   main_window.py
+|   |   |   |   tooltips.py
+|   |   |   |   tray_icon.py
+|   |   |   |   __init__.py
+|   |   |   |   
+|   |   |   +---navigation
+|   |   |   |   |   icon_helper.py
+|   |   |   |   |   navigation_controller.py
+|   |   |   |   |   __init__.py
+|   |   |   |   |   
+|   |   |   |   \---__pycache__
+|   |   |   |           icon_helper.cpython-314.pyc
+|   |   |   |           navigation_controller.cpython-314.pyc
+|   |   |   |           __init__.cpython-314.pyc
+|   |   |   |           
+|   |   |   +---premium
+|   |   |   |   |   advanced_uninstaller_page.py
+|   |   |   |   |   analysis_pages.py
+|   |   |   |   |   apex_tools_pages.py
+|   |   |   |   |   app.py
+|   |   |   |   |   audio_duplicates_page.py
+|   |   |   |   |   backdrop.py
+|   |   |   |   |   cdc_page.py
+|   |   |   |   |   cleanup_hub_page.py
+|   |   |   |   |   cloud_storage_page.py
+|   |   |   |   |   compact_os_page.py
+|   |   |   |   |   device_window.py
+|   |   |   |   |   disk_analyzer_page.py
+|   |   |   |   |   driver_manager_page.py
+|   |   |   |   |   enterprise_suite_pages.py
+|   |   |   |   |   expanded_tools_pages.py
+|   |   |   |   |   focus.py
+|   |   |   |   |   fuzzy_hash_page.py
+|   |   |   |   |   icons.py
+|   |   |   |   |   license_page.py
+|   |   |   |   |   log_sweeper_page.py
+|   |   |   |   |   model_cache_page.py
+|   |   |   |   |   more_pages.py
+|   |   |   |   |   motion.py
+|   |   |   |   |   near_duplicates_page.py
+|   |   |   |   |   network_pages.py
+|   |   |   |   |   nextgen_suite_pages.py
+|   |   |   |   |   nexus_page.py
+|   |   |   |   |   perceptual_duplicates_page.py
+|   |   |   |   |   portable_manager_page.py
+|   |   |   |   |   power_suite_pages.py
+|   |   |   |   |   power_tools_pages.py
+|   |   |   |   |   privacy_blocker_page.py
+|   |   |   |   |   registry.py
+|   |   |   |   |   registry_ai_page.py
+|   |   |   |   |   report_pages.py
+|   |   |   |   |   s3_fifo_page.py
+|   |   |   |   |   secure_shredder_page.py
+|   |   |   |   |   settings_store.py
+|   |   |   |   |   skeleton.py
+|   |   |   |   |   smoothscroll.py
+|   |   |   |   |   startup_optimizer_page.py
+|   |   |   |   |   states.py
+|   |   |   |   |   system_pages.py
+|   |   |   |   |   tablemodel.py
+|   |   |   |   |   theme.py
+|   |   |   |   |   tokens.py
+|   |   |   |   |   tools_pages.py
+|   |   |   |   |   tray.py
+|   |   |   |   |   video_duplicates_page.py
+|   |   |   |   |   widgets.py
+|   |   |   |   |   window.py
+|   |   |   |   |   win_update_repair_page.py
+|   |   |   |   |   workers.py
+|   |   |   |   |   wsl_page.py
+|   |   |   |   |   __init__.py
+|   |   |   |   |   
+|   |   |   |   \---__pycache__
+|   |   |   |           advanced_uninstaller_page.cpython-314.pyc
+|   |   |   |           analysis_pages.cpython-314.pyc
+|   |   |   |           apex_tools_pages.cpython-314.pyc
+|   |   |   |           app.cpython-314.pyc
+|   |   |   |           audio_duplicates_page.cpython-314.pyc
+|   |   |   |           backdrop.cpython-314.pyc
+|   |   |   |           cdc_page.cpython-314.pyc
+|   |   |   |           cleanup_hub_page.cpython-314.pyc
+|   |   |   |           cloud_storage_page.cpython-314.pyc
+|   |   |   |           compact_os_page.cpython-314.pyc
+|   |   |   |           device_window.cpython-314.pyc
+|   |   |   |           disk_analyzer_page.cpython-314.pyc
+|   |   |   |           driver_manager_page.cpython-314.pyc
+|   |   |   |           enterprise_suite_pages.cpython-314.pyc
+|   |   |   |           expanded_tools_pages.cpython-314.pyc
+|   |   |   |           focus.cpython-314.pyc
+|   |   |   |           fuzzy_hash_page.cpython-314.pyc
+|   |   |   |           icons.cpython-314.pyc
+|   |   |   |           license_page.cpython-314.pyc
+|   |   |   |           log_sweeper_page.cpython-314.pyc
+|   |   |   |           model_cache_page.cpython-314.pyc
+|   |   |   |           more_pages.cpython-314.pyc
+|   |   |   |           motion.cpython-314.pyc
+|   |   |   |           near_duplicates_page.cpython-314.pyc
+|   |   |   |           network_pages.cpython-314.pyc
+|   |   |   |           nextgen_suite_pages.cpython-314.pyc
+|   |   |   |           nexus_page.cpython-314.pyc
+|   |   |   |           perceptual_duplicates_page.cpython-314.pyc
+|   |   |   |           portable_manager_page.cpython-314.pyc
+|   |   |   |           power_suite_pages.cpython-314.pyc
+|   |   |   |           power_tools_pages.cpython-314.pyc
+|   |   |   |           privacy_blocker_page.cpython-314.pyc
+|   |   |   |           registry.cpython-314.pyc
+|   |   |   |           registry_ai_page.cpython-314.pyc
+|   |   |   |           report_pages.cpython-314.pyc
+|   |   |   |           s3_fifo_page.cpython-314.pyc
+|   |   |   |           secure_shredder_page.cpython-314.pyc
+|   |   |   |           settings_store.cpython-314.pyc
+|   |   |   |           skeleton.cpython-314.pyc
+|   |   |   |           smoothscroll.cpython-314.pyc
+|   |   |   |           startup_optimizer_page.cpython-314.pyc
+|   |   |   |           states.cpython-314.pyc
+|   |   |   |           system_pages.cpython-314.pyc
+|   |   |   |           tablemodel.cpython-314.pyc
+|   |   |   |           theme.cpython-314.pyc
+|   |   |   |           tokens.cpython-314.pyc
+|   |   |   |           tools_pages.cpython-314.pyc
+|   |   |   |           tray.cpython-314.pyc
+|   |   |   |           video_duplicates_page.cpython-314.pyc
+|   |   |   |           widgets.cpython-314.pyc
+|   |   |   |           window.cpython-314.pyc
+|   |   |   |           win_update_repair_page.cpython-314.pyc
+|   |   |   |           workers.cpython-314.pyc
+|   |   |   |           wsl_page.cpython-314.pyc
+|   |   |   |           __init__.cpython-314.pyc
+|   |   |   |           
+|   |   |   +---safety
+|   |   |   |   |   manifest_system.py
+|   |   |   |   |   path_validator.py
+|   |   |   |   |   process_manager.py
+|   |   |   |   |   safety_manager.py
+|   |   |   |   |   __init__.py
+|   |   |   |   |   
+|   |   |   |   \---__pycache__
+|   |   |   |           manifest_system.cpython-314.pyc
+|   |   |   |           path_validator.cpython-314.pyc
+|   |   |   |           process_manager.cpython-314.pyc
+|   |   |   |           safety_manager.cpython-314.pyc
+|   |   |   |           __init__.cpython-314.pyc
+|   |   |   |           
+|   |   |   +---tabs
+|   |   |   |   |   base_tab.py
+|   |   |   |   |   broken_links_tab.py
+|   |   |   |   |   dashboard_tab.py
+|   |   |   |   |   deep_cleaner_tab.py
+|   |   |   |   |   disk_analyzer_tab.py
+|   |   |   |   |   docker_tab.py
+|   |   |   |   |   duplicates_tab.py
+|   |   |   |   |   empty_files_tab.py
+|   |   |   |   |   file_shredder_tab.py
+|   |   |   |   |   heuristics_tab.py
+|   |   |   |   |   large_files_tab.py
+|   |   |   |   |   package_manager_tab.py
+|   |   |   |   |   privacy_tab.py
+|   |   |   |   |   process_analyzer_tab.py
+|   |   |   |   |   registry_cleaner_tab.py
+|   |   |   |   |   reports_tab.py
+|   |   |   |   |   resource_monitor_tab.py
+|   |   |   |   |   restore_tab.py
+|   |   |   |   |   scheduler_tab.py
+|   |   |   |   |   security_scanner_tab.py
+|   |   |   |   |   settings_tab.py
+|   |   |   |   |   startup_manager_tab.py
+|   |   |   |   |   system_tools_tab.py
+|   |   |   |   |   uninstaller_tab.py
+|   |   |   |   |   __init__.py
+|   |   |   |   |   
+|   |   |   |   \---__pycache__
+|   |   |   |           base_tab.cpython-314.pyc
+|   |   |   |           broken_links_tab.cpython-314.pyc
+|   |   |   |           dashboard_tab.cpython-314.pyc
+|   |   |   |           deep_cleaner_tab.cpython-314.pyc
+|   |   |   |           disk_analyzer_tab.cpython-314.pyc
+|   |   |   |           docker_tab.cpython-314.pyc
+|   |   |   |           duplicates_tab.cpython-314.pyc
+|   |   |   |           empty_files_tab.cpython-314.pyc
+|   |   |   |           file_shredder_tab.cpython-314.pyc
+|   |   |   |           heuristics_tab.cpython-314.pyc
+|   |   |   |           large_files_tab.cpython-314.pyc
+|   |   |   |           package_manager_tab.cpython-314.pyc
+|   |   |   |           privacy_tab.cpython-314.pyc
+|   |   |   |           process_analyzer_tab.cpython-314.pyc
+|   |   |   |           registry_cleaner_tab.cpython-314.pyc
+|   |   |   |           reports_tab.cpython-314.pyc
+|   |   |   |           resource_monitor_tab.cpython-314.pyc
+|   |   |   |           restore_tab.cpython-314.pyc
+|   |   |   |           scheduler_tab.cpython-314.pyc
+|   |   |   |           security_scanner_tab.cpython-314.pyc
+|   |   |   |           settings_tab.cpython-314.pyc
+|   |   |   |           startup_manager_tab.cpython-314.pyc
+|   |   |   |           system_tools_tab.cpython-314.pyc
+|   |   |   |           uninstaller_tab.cpython-314.pyc
+|   |   |   |           __init__.cpython-314.pyc
+|   |   |   |           
+|   |   |   \---__pycache__
+|   |   |           launcher.cpython-314.pyc
+|   |   |           main_window.cpython-314.pyc
+|   |   |           tooltips.cpython-314.pyc
+|   |   |           tray_icon.cpython-314.pyc
+|   |   |           __init__.cpython-314.pyc
+|   |   |           
+|   |   +---visualization
+|   |   |   |   interactive_dashboard.py
+|   |   |   |   sunburst_generator.py
+|   |   |   |   treemap_generator.py
+|   |   |   |   __init__.py
+|   |   |   |   
+|   |   |   \---__pycache__
+|   |   |           interactive_dashboard.cpython-314.pyc
+|   |   |           sunburst_generator.cpython-314.pyc
+|   |   |           treemap_generator.cpython-314.pyc
+|   |   |           __init__.cpython-314.pyc
+|   |   |           
+|   |   \---__pycache__
+|   |           __init__.cpython-314.pyc
+|   |           __main__.cpython-314.pyc
+|   |           
+|   \---NexusExplorer
+|       |   .gitignore
+|       |   Cargo.lock
+|       |   Cargo.toml
+|       |   pytest.ini
+|       |   test_explorer.py
+|       |   __init__.py
+|       |   
+|       +---.pytest_cache
+|       |   |   .gitignore
+|       |   |   CACHEDIR.TAG
+|       |   |   README.md
+|       |   |   
+|       |   \---v
+|       |       \---cache
+|       |               lastfailed
+|       |               nodeids
+|       |               
+|       +---native
+|       |   |   binary_differ.py
+|       |   |   file_signature_sniffer.py
+|       |   |   image_optimizer.py
+|       |   |   nexus_ads_manager.py
+|       |   |   nexus_archive.py
+|       |   |   nexus_archive_manager.py
+|       |   |   nexus_batch_renamer.py
+|       |   |   nexus_cloud.py
+|       |   |   nexus_content_search.py
+|       |   |   nexus_core.py
+|       |   |   nexus_dir_diff.py
+|       |   |   nexus_explorer.py
+|       |   |   nexus_fast_copier.py
+|       |   |   nexus_ffi.py
+|       |   |   nexus_file_splitter.py
+|       |   |   nexus_folder_tree.py
+|       |   |   nexus_hash_tool.py
+|       |   |   nexus_icons.py
+|       |   |   nexus_indexer.py
+|       |   |   nexus_links_manager.py
+|       |   |   nexus_native_app.py
+|       |   |   nexus_network.py
+|       |   |   nexus_plugins.py
+|       |   |   nexus_timestamp_touch.py
+|       |   |   nexus_transfer_monitor.py
+|       |   |   nexus_transfer_queue.py
+|       |   |   nexus_undo.py
+|       |   |   nexus_unlocker.py
+|       |   |   par2_recovery.py
+|       |   |   usn_journal_scanner.py
+|       |   |   __init__.py
+|       |   |   
+|       |   \---__pycache__
+|       |           binary_differ.cpython-314.pyc
+|       |           file_signature_sniffer.cpython-314.pyc
+|       |           image_optimizer.cpython-314.pyc
+|       |           nexus_ads_manager.cpython-314.pyc
+|       |           nexus_archive.cpython-314.pyc
+|       |           nexus_archive_manager.cpython-314.pyc
+|       |           nexus_batch_renamer.cpython-314.pyc
+|       |           nexus_cloud.cpython-314.pyc
+|       |           nexus_content_search.cpython-314.pyc
+|       |           nexus_core.cpython-314.pyc
+|       |           nexus_dir_diff.cpython-314.pyc
+|       |           nexus_explorer.cpython-314.pyc
+|       |           nexus_fast_copier.cpython-314.pyc
+|       |           nexus_ffi.cpython-314.pyc
+|       |           nexus_file_splitter.cpython-314.pyc
+|       |           nexus_folder_tree.cpython-314.pyc
+|       |           nexus_hash_tool.cpython-314.pyc
+|       |           nexus_icons.cpython-314.pyc
+|       |           nexus_indexer.cpython-314.pyc
+|       |           nexus_links_manager.cpython-314.pyc
+|       |           nexus_native_app.cpython-314.pyc
+|       |           nexus_network.cpython-314.pyc
+|       |           nexus_plugins.cpython-314.pyc
+|       |           nexus_timestamp_touch.cpython-314.pyc
+|       |           nexus_transfer_monitor.cpython-314.pyc
+|       |           nexus_transfer_queue.cpython-314.pyc
+|       |           nexus_undo.cpython-314.pyc
+|       |           nexus_unlocker.cpython-314.pyc
+|       |           par2_recovery.cpython-314.pyc
+|       |           usn_journal_scanner.cpython-314.pyc
+|       |           __init__.cpython-314.pyc
+|       |           
+|       +---nexus_engine_ffi
+|       |   |   Cargo.lock
+|       |   |   Cargo.toml
+|       |   |   
+|       |   +---include
+|       |   |       nexus_engine.h
+|       |   |       
+|       |   \---src
+|       |           copy.rs
+|       |           drives.rs
+|       |           ffi_types.rs
+|       |           lib.rs
+|       |           listing.rs
+|       |           search.rs
+|       |           utils.rs
+|       |           watch.rs
+|       |           
+|       +---src-tauri
+|       |   |   build.rs
+|       |   |   Cargo.lock
+|       |   |   Cargo.toml
+|       |   |   tauri.conf.json
+|       |   |   
+|       |   +---capabilities
+|       |   |       default.json
+|       |   |       
+|       |   +---gen
+|       |   |   \---schemas
+|       |   |           acl-manifests.json
+|       |   |           capabilities.json
+|       |   |           desktop-schema.json
+|       |   |           windows-schema.json
+|       |   |           
+|       |   +---icons
+|       |   |       128x128.png
+|       |   |       icon.ico
+|       |   |       icon.png
+|       |   |       
+|       |   \---src
+|       |       |   lib.rs
+|       |       |   main.rs
+|       |       |   
+|       |       +---bin
+|       |       |       nexus-cli.rs
+|       |       |       
+|       |       +---commands
+|       |       |       fs_cmds.rs
+|       |       |       mod.rs
+|       |       |       ops_cmds.rs
+|       |       |       search_cmds.rs
+|       |       |       
+|       |       +---engine
+|       |       |       copy_engine.rs
+|       |       |       job_manager.rs
+|       |       |       listing.rs
+|       |       |       mod.rs
+|       |       |       search_engine.rs
+|       |       |       watch.rs
+|       |       |       
+|       |       \---models
+|       |               events.rs
+|       |               file_entry.rs
+|       |               mod.rs
+|       |               
+|       +---tests
+|       |   |   benchmarks.py
+|       |   |   
+|       |   +---native
+|       |   |   |   test_ffi_bridge.py
+|       |   |   |   test_journal.py
+|       |   |   |   test_mouse_interactions.py
+|       |   |   |   test_nested_creation.py
+|       |   |   |   test_stage0.py
+|       |   |   |   test_transfers_ffi.py
+|       |   |   |   test_transfer_monitor.py
+|       |   |   |   test_transport_parity.py
+|       |   |   |   test_ui_state.py
+|       |   |   |   
+|       |   |   \---__pycache__
+|       |   |           test_ffi_bridge.cpython-314-pytest-9.1.1.pyc
+|       |   |           test_ffi_bridge.cpython-314.pyc
+|       |   |           test_journal.cpython-314-pytest-9.1.1.pyc
+|       |   |           test_journal.cpython-314.pyc
+|       |   |           test_mouse_interactions.cpython-314-pytest-9.1.1.pyc
+|       |   |           test_mouse_interactions.cpython-314.pyc
+|       |   |           test_nested_creation.cpython-314-pytest-9.1.1.pyc
+|       |   |           test_nested_creation.cpython-314.pyc
+|       |   |           test_stage0.cpython-314-pytest-9.1.1.pyc
+|       |   |           test_stage0.cpython-314.pyc
+|       |   |           test_transfers_ffi.cpython-314-pytest-9.1.1.pyc
+|       |   |           test_transfers_ffi.cpython-314.pyc
+|       |   |           test_transfer_monitor.cpython-314-pytest-9.1.1.pyc
+|       |   |           test_transfer_monitor.cpython-314.pyc
+|       |   |           test_transport_parity.cpython-314-pytest-9.1.1.pyc
+|       |   |           test_transport_parity.cpython-314.pyc
+|       |   |           test_ui_state.cpython-314-pytest-9.1.1.pyc
+|       |   |           test_ui_state.cpython-314.pyc
+|       |   |           
+|       |   \---__pycache__
+|       |           benchmarks.cpython-314.pyc
+|       |           
+|       \---__pycache__
+|               test_explorer.cpython-314-pytest-9.1.1.pyc
+|               test_explorer.cpython-314.pyc
+|               __init__.cpython-314.pyc
+|               
+\---tests
+    |   conftest.py
+    |   test_advanced_disk_analyzer.py
+    |   test_apex_power_tools.py
+    |   test_app_updater.py
+    |   test_audio_duplicate_finder.py
+    |   test_boot_performance.py
+    |   test_browser_cleaner.py
+    |   test_browser_extensions.py
+    |   test_cli.py
+    |   test_cli_leftovers.py
+    |   test_cloud_aware_scan.py
+    |   test_compact_os.py
+    |   test_component_store.py
+    |   test_config.py
+    |   test_config_defaults_unified.py
+    |   test_config_legacy_loading.py
+    |   test_config_v2.py
+    |   test_content_defined_chunker.py
+    |   test_core_proc.py
+    |   test_czkawka_tools.py
+    |   test_defender.py
+    |   test_deleter.py
+    |   test_disk_health.py
+    |   test_driver_inventory.py
+    |   test_drive_optimizer.py
+    |   test_engine.py
+    |   test_engine_cloud_safety.py
+    |   test_engine_service.py
+    |   test_enterprise_suite_tools.py
+    |   test_expanded_power_tools.py
+    |   test_external_exposure.py
+    |   test_feature_matrix_audit.py
+    |   test_firewall_manager.py
+    |   test_free_space_wipe.py
+    |   test_fuzzy_finder.py
+    |   test_game_mode_memory.py
+    |   test_gui_device_window.py
+    |   test_gui_pages_e2e.py
+    |   test_health_check.py
+    |   test_icons.py
+    |   test_lan_scanner.py
+    |   test_lazy_pages.py
+    |   test_leftover_cleaner.py
+    |   test_license_gui.py
+    |   test_licensing.py
+    |   test_load_tester.py
+    |   test_network_audit.py
+    |   test_network_automation.py
+    |   test_network_discovery.py
+    |   test_network_expert_tools.py
+    |   test_network_inventory.py
+    |   test_network_monitor.py
+    |   test_network_security_audit.py
+    |   test_network_tools.py
+    |   test_network_traffic.py
+    |   test_nextgen_tools.py
+    |   test_nexus_exhaustive_audit.py
+    |   test_page_registry.py
+    |   test_perceptual_duplicate_finder.py
+    |   test_performance_tuner.py
+    |   test_portable_manager.py
+    |   test_power_suite_tools.py
+    |   test_power_tools_production.py
+    |   test_premium_gui.py
+    |   test_premium_hidpi.py
+    |   test_premium_tokens.py
+    |   test_process_meta.py
+    |   test_production_hardening.py
+    |   test_registry_cleaner_ai.py
+    |   test_release_infra.py
+    |   test_restore_point.py
+    |   test_s3_fifo.py
+    |   test_scanner.py
+    |   test_secrets_page.py
+    |   test_secure_delete_batch.py
+    |   test_secure_shredder.py
+    |   test_security_fixes.py
+    |   test_shutdown_safety.py
+    |   test_sieve_cache.py
+    |   test_smart_suggest.py
+    |   test_staging_shelf.py
+    |   test_startup_imports.py
+    |   test_startup_optimizer.py
+    |   test_storage_sense.py
+    |   test_system_info.py
+    |   test_system_repair.py
+    |   test_tablemodel.py
+    |   test_tabs_gating.py
+    |   test_task_manager.py
+    |   test_temp_cleaner.py
+    |   test_utils.py
+    |   test_vhdx_manager.py
+    |   test_video_duplicate_finder.py
+    |   test_wan_audit.py
+    |   test_windows_update.py
+    |   __init__.py
+    |   
+    \---__pycache__
+            conftest.cpython-314-pytest-9.1.1.pyc
+            test_advanced_disk_analyzer.cpython-314-pytest-9.1.1.pyc
+            test_apex_power_tools.cpython-314-pytest-9.1.1.pyc
+            test_app_updater.cpython-314-pytest-9.1.1.pyc
+            test_audio_duplicate_finder.cpython-314-pytest-9.1.1.pyc
+            test_boot_performance.cpython-314-pytest-9.1.1.pyc
+            test_browser_cleaner.cpython-314-pytest-9.1.1.pyc
+            test_browser_extensions.cpython-314-pytest-9.1.1.pyc
+            test_cli.cpython-314-pytest-9.1.1.pyc
+            test_cli_leftovers.cpython-314-pytest-9.1.1.pyc
+            test_cloud_aware_scan.cpython-314-pytest-9.1.1.pyc
+            test_compact_os.cpython-314-pytest-9.1.1.pyc
+            test_component_store.cpython-314-pytest-9.1.1.pyc
+            test_config.cpython-314-pytest-9.1.1.pyc
+            test_config_defaults_unified.cpython-314-pytest-9.1.1.pyc
+            test_config_legacy_loading.cpython-314-pytest-9.1.1.pyc
+            test_config_v2.cpython-314-pytest-9.1.1.pyc
+            test_content_defined_chunker.cpython-314-pytest-9.1.1.pyc
+            test_core_proc.cpython-314-pytest-9.1.1.pyc
+            test_czkawka_tools.cpython-314-pytest-9.1.1.pyc
+            test_defender.cpython-314-pytest-9.1.1.pyc
+            test_deleter.cpython-314-pytest-9.1.1.pyc
+            test_disk_health.cpython-314-pytest-9.1.1.pyc
+            test_driver_inventory.cpython-314-pytest-9.1.1.pyc
+            test_drive_optimizer.cpython-314-pytest-9.1.1.pyc
+            test_engine.cpython-314-pytest-9.1.1.pyc
+            test_engine_cloud_safety.cpython-314-pytest-9.1.1.pyc
+            test_engine_service.cpython-314-pytest-9.1.1.pyc
+            test_enterprise_suite_tools.cpython-314-pytest-9.1.1.pyc
+            test_expanded_power_tools.cpython-314-pytest-9.1.1.pyc
+            test_external_exposure.cpython-314-pytest-9.1.1.pyc
+            test_feature_matrix_audit.cpython-314-pytest-9.1.1.pyc
+            test_firewall_manager.cpython-314-pytest-9.1.1.pyc
+            test_free_space_wipe.cpython-314-pytest-9.1.1.pyc
+            test_fuzzy_finder.cpython-314-pytest-9.1.1.pyc
+            test_game_mode_memory.cpython-314-pytest-9.1.1.pyc
+            test_game_mode_memory.cpython-314.pyc
+            test_gui_device_window.cpython-314-pytest-9.1.1.pyc
+            test_gui_pages_e2e.cpython-314-pytest-9.1.1.pyc
+            test_health_check.cpython-314-pytest-9.1.1.pyc
+            test_icons.cpython-314-pytest-9.1.1.pyc
+            test_lan_scanner.cpython-314-pytest-9.1.1.pyc
+            test_lazy_pages.cpython-314-pytest-9.1.1.pyc
+            test_leftover_cleaner.cpython-314-pytest-9.1.1.pyc
+            test_leftover_cleaner.cpython-314.pyc
+            test_license_gui.cpython-314-pytest-9.1.1.pyc
+            test_licensing.cpython-314-pytest-9.1.1.pyc
+            test_licensing.cpython-314.pyc
+            test_load_tester.cpython-314-pytest-9.1.1.pyc
+            test_network_audit.cpython-314-pytest-9.1.1.pyc
+            test_network_automation.cpython-314-pytest-9.1.1.pyc
+            test_network_discovery.cpython-314-pytest-9.1.1.pyc
+            test_network_expert_tools.cpython-314-pytest-9.1.1.pyc
+            test_network_inventory.cpython-314-pytest-9.1.1.pyc
+            test_network_monitor.cpython-314-pytest-9.1.1.pyc
+            test_network_security_audit.cpython-314-pytest-9.1.1.pyc
+            test_network_tools.cpython-314-pytest-9.1.1.pyc
+            test_network_traffic.cpython-314-pytest-9.1.1.pyc
+            test_nextgen_tools.cpython-314-pytest-9.1.1.pyc
+            test_nexus_exhaustive_audit.cpython-314-pytest-9.1.1.pyc
+            test_page_registry.cpython-314-pytest-9.1.1.pyc
+            test_perceptual_duplicate_finder.cpython-314-pytest-9.1.1.pyc
+            test_performance_tuner.cpython-314-pytest-9.1.1.pyc
+            test_portable_manager.cpython-314-pytest-9.1.1.pyc
+            test_power_suite_tools.cpython-314-pytest-9.1.1.pyc
+            test_power_tools_production.cpython-314-pytest-9.1.1.pyc
+            test_premium_gui.cpython-314-pytest-9.1.1.pyc
+            test_premium_gui.cpython-314.pyc
+            test_premium_hidpi.cpython-314-pytest-9.1.1.pyc
+            test_premium_tokens.cpython-314-pytest-9.1.1.pyc
+            test_process_meta.cpython-314-pytest-9.1.1.pyc
+            test_production_hardening.cpython-314-pytest-9.1.1.pyc
+            test_registry_cleaner_ai.cpython-314-pytest-9.1.1.pyc
+            test_release_infra.cpython-314-pytest-9.1.1.pyc
+            test_release_infra.cpython-314.pyc
+            test_restore_point.cpython-314-pytest-9.1.1.pyc
+            test_s3_fifo.cpython-314-pytest-9.1.1.pyc
+            test_scanner.cpython-314-pytest-9.1.1.pyc
+            test_secrets_page.cpython-314-pytest-9.1.1.pyc
+            test_secure_delete_batch.cpython-314-pytest-9.1.1.pyc
+            test_secure_shredder.cpython-314-pytest-9.1.1.pyc
+            test_security_fixes.cpython-314-pytest-9.1.1.pyc
+            test_shutdown_safety.cpython-314-pytest-9.1.1.pyc
+            test_sieve_cache.cpython-314-pytest-9.1.1.pyc
+            test_smart_suggest.cpython-314-pytest-9.1.1.pyc
+            test_staging_shelf.cpython-314-pytest-9.1.1.pyc
+            test_startup_imports.cpython-314-pytest-9.1.1.pyc
+            test_startup_optimizer.cpython-314-pytest-9.1.1.pyc
+            test_storage_sense.cpython-314-pytest-9.1.1.pyc
+            test_system_info.cpython-314-pytest-9.1.1.pyc
+            test_system_repair.cpython-314-pytest-9.1.1.pyc
+            test_tablemodel.cpython-314-pytest-9.1.1.pyc
+            test_tabs_gating.cpython-314-pytest-9.1.1.pyc
+            test_task_manager.cpython-314-pytest-9.1.1.pyc
+            test_temp_cleaner.cpython-314-pytest-9.1.1.pyc
+            test_utils.cpython-314-pytest-9.1.1.pyc
+            test_vhdx_manager.cpython-314-pytest-9.1.1.pyc
+            test_video_duplicate_finder.cpython-314-pytest-9.1.1.pyc
+            test_wan_audit.cpython-314-pytest-9.1.1.pyc
+            test_windows_update.cpython-314-pytest-9.1.1.pyc
+            __init__.cpython-314.pyc
+            

@@ -9,6 +9,7 @@ import os
 import time
 import logging
 import platform
+import threading
 from PySide6.QtCore import QObject, Signal
 
 
@@ -24,7 +25,7 @@ class BackgroundAgent(QObject):
         super().__init__()
         self.logger = logging.getLogger("background_agent")
         self.check_interval = check_interval
-        self._is_running = False
+        self._is_running = threading.Event()
 
         # Thresholds
         self.ram_threshold = 90.0   # percent
@@ -36,6 +37,7 @@ class BackgroundAgent(QObject):
         self._last_cpu_alert = 0.0
         self._last_disk_alert = 0.0
         self._alert_cooldown = 300  # 5 minutes between repeated alerts
+        """__init__."""
 
     def start_monitoring(self):
         """Main loop — called when the owning QThread starts."""
@@ -45,10 +47,10 @@ class BackgroundAgent(QObject):
             self.logger.error("psutil is not installed — background monitor disabled")
             return
 
-        self._is_running = True
+        self._is_running.set()
         self.logger.info("Background monitoring started (interval=%ds)", self.check_interval)
 
-        while self._is_running:
+        while self._is_running.is_set():
             try:
                 mem = psutil.virtual_memory()
                 cpu = psutil.cpu_percent(interval=1)
@@ -91,4 +93,5 @@ class BackgroundAgent(QObject):
             time.sleep(self.check_interval)
 
     def stop(self):
-        self._is_running = False
+        """Request loop exit; takes effect within one check interval."""
+        self._is_running.clear()

@@ -1,3 +1,8 @@
+"""Compile run_gui.py into a distributable Windows executable via PyInstaller.
+
+Must be launched from the project root: 'build', 'dist', 'src' and 'run_gui.py'
+are all resolved against the current working directory, not this script's location.
+"""
 import os
 import subprocess
 import sys
@@ -8,7 +13,7 @@ def build_app():
     print("Cortex Cleaner Suite - Release Compiler")
     print("=" * 60)
     
-    # Clean previous builds
+    # Wipe leftovers from prior runs so dist/ reflects only this build
     if os.path.exists("build"):
         print("[*] Cleaning old build directory...")
         shutil.rmtree("build", ignore_errors=True)
@@ -21,10 +26,10 @@ def build_app():
     cmd = [
         sys.executable, "-m", "PyInstaller",
         "--name", "CortexCleaner",
-        "--windowed",           # Suppress terminal window on background
-        "--noconfirm",          # Overwrite output dir automatically
-        "--clean",              # Clean PyInstaller cache
-        "--uac-admin",          # Request Windows Administrator privileges natively
+        "--windowed",           # GUI product: end users must never see a console
+        "--noconfirm",          # never stall an unattended build on the overwrite prompt
+        "--clean",              # stale cache can resurrect modules deleted from src/
+        "--uac-admin",          # registry/system cleanup needs elevation; prompt once at launch
         "--add-data", f"src{os.pathsep}src",  # Safely include entire module tree to catch dynamic refs
         "--log-level", "WARN",
         # Explicit module exclusions to drastically reduce final file size (Exclude data science packages)
@@ -34,7 +39,7 @@ def build_app():
         "--exclude-module", "pandas",
         "--exclude-module", "PyQt5",
         "--exclude-module", "PyQt6",
-        "run_gui.py"            # Our main entry point
+        "run_gui.py"            # entry script PyInstaller crawls for dependencies
     ]
     
     try:

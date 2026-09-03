@@ -22,14 +22,16 @@ from __future__ import annotations
 
 import enum
 import logging
-import platform
+import sys
 import subprocess
 from dataclasses import dataclass
 from typing import Any
 
+from cortex_unified.core import proc as _proc
+
 _LOG = logging.getLogger("cortex.system_tools.restore_point")
 
-_IS_WINDOWS = platform.system() == "Windows"
+_IS_WINDOWS = sys.platform == "win32"
 _NO_WINDOW = 0x08000000 if _IS_WINDOWS else 0
 
 # Valid Windows restore-point types (SRSetRestorePoint / Checkpoint-Computer).
@@ -62,6 +64,7 @@ class RestorePointResult:
 
     @property
     def created(self) -> bool:
+        """Created."""
         return self.status is RestoreStatus.CREATED
 
     @property
@@ -74,6 +77,7 @@ class RestorePointResult:
         return self.status in (RestoreStatus.CREATED, RestoreStatus.THROTTLED)
 
     def to_dict(self) -> dict[str, Any]:
+        """To dict."""
         return {"status": self.status.value, "message": self.message, "created": self.created}
 
 
@@ -81,12 +85,14 @@ class RestorePointManager:
     """Create and list Windows System Restore points, honestly."""
 
     def __init__(self) -> None:
+        """Initialize Restore Point Manager."""
         self.logger = _LOG
 
     # -- capability checks --------------------------------------------------
 
     @staticmethod
     def is_supported() -> bool:
+        """Is supported."""
         return _IS_WINDOWS
 
     @staticmethod
@@ -171,6 +177,8 @@ class RestorePointManager:
             _, _, msg = line.partition("MSG=")
             return RestorePointResult(RestoreStatus.FAILED, msg or "Restore point creation failed.")
         return RestorePointResult(RestoreStatus.FAILED, "Unexpected System Restore response.")
+        """_parse_create_output."""
+        """_parse_create_output."""
 
     # -- list ---------------------------------------------------------------
 
@@ -220,15 +228,17 @@ class RestorePointManager:
 
     def _run_ps(self, script: str, timeout: int) -> str | None:
         try:
-            proc = subprocess.run(
+            proc = _proc.run(
                 ["powershell", "-NoProfile", "-NonInteractive", "-Command", script],
-                capture_output=True, text=True, timeout=timeout, creationflags=_NO_WINDOW,
+                text=True, timeout=timeout, creationflags=_NO_WINDOW,
             )
             if proc.returncode == 0:
                 return proc.stdout
             self.logger.debug("powershell rc=%s stderr=%s", proc.returncode, proc.stderr.strip())
             # Some failures still print a STATUS= line to stdout; return it.
             return proc.stdout or None
-        except (OSError, subprocess.SubprocessError) as exc:
+        except (_proc.ProcessCancelled, OSError, subprocess.SubprocessError) as exc:
             self.logger.debug("powershell invocation failed: %s", exc)
             return None
+        """_run_ps."""
+        """_run_ps."""

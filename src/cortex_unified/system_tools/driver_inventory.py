@@ -12,18 +12,21 @@ from __future__ import annotations
 
 import json
 import logging
-import platform
+import sys
 import subprocess
 from dataclasses import dataclass
 from typing import Any
 
+from cortex_unified.core import proc as _proc
+
 _LOG = logging.getLogger("cortex.system_tools.driver_inventory")
-_IS_WINDOWS = platform.system() == "Windows"
+_IS_WINDOWS = sys.platform == "win32"
 _NO_WINDOW = 0x08000000 if _IS_WINDOWS else 0
 
 
 @dataclass(slots=True)
 class DriverInfo:
+    """Driver Info data container."""
     device_name: str
     provider: str
     version: str
@@ -31,6 +34,7 @@ class DriverInfo:
     device_class: str = ""
 
     def to_dict(self) -> dict[str, Any]:
+        """To dict."""
         return {
             "device_name": self.device_name,
             "provider": self.provider,
@@ -45,9 +49,11 @@ class DriverInventory:
 
     @staticmethod
     def is_supported() -> bool:
+        """Is supported."""
         return _IS_WINDOWS
 
     def list_drivers(self) -> list[DriverInfo]:
+        """List drivers."""
         if not _IS_WINDOWS:
             return []
         script = (
@@ -91,6 +97,8 @@ class DriverInventory:
             ))
         drivers.sort(key=lambda x: (x.device_class, x.device_name))
         return drivers
+        """_parse."""
+        """_parse."""
 
     @staticmethod
     def _clean_date(raw: Any) -> str:
@@ -108,14 +116,18 @@ class DriverInventory:
         if len(s) >= 8 and s[:8].isdigit():
             return f"{s[:4]}-{s[4:6]}-{s[6:8]}"
         return s
+        """_clean_date."""
+        """_clean_date."""
 
     def _run(self, script: str) -> str | None:
         try:
-            proc = subprocess.run(
+            proc = _proc.run(
                 ["powershell", "-NoProfile", "-NonInteractive", "-Command", script],
-                capture_output=True, text=True, timeout=60, creationflags=_NO_WINDOW,
+                text=True, timeout=60, creationflags=_NO_WINDOW,
             )
             return proc.stdout if proc.returncode == 0 else None
-        except (OSError, subprocess.SubprocessError) as exc:
+        except (_proc.ProcessCancelled, OSError, subprocess.SubprocessError) as exc:
             _LOG.debug("driver inventory query failed: %s", exc)
             return None
+        """_run."""
+        """_run."""

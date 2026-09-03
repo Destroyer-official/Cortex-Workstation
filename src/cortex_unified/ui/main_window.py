@@ -61,10 +61,21 @@ from cortex_unified.ui.tabs.restore_tab import RestoreTab
 from cortex_unified.ui.tabs.settings_tab import SettingsTab
 from cortex_unified.ui.tabs.uninstaller_tab import UninstallerTab
 from cortex_unified.ui.tabs.privacy_tab import PrivacyTab
+from cortex_unified.ui.tabs.package_manager_tab import PackageManagerTab
 from cortex_unified.ui.tray_icon import SystemTrayManager
 
-
 class ScanWorker(QObject):
+    """Runs a filesystem scan off the GUI thread.
+
+    Instances are moved to a QThread via moveToThread(); results travel
+    back to the UI thread only through signals, which Qt queues across
+    the thread boundary.
+
+    Attributes:
+        finished: Emits ``(empty_files, empty_dirs)`` on success.
+        error: Emits a human-readable message on failure.
+        progress_updated: Emits checkpoint progress objects when enabled.
+    """
     finished = Signal(list, list)
     error = Signal(str)
     progress_updated = Signal(object)
@@ -78,15 +89,19 @@ class ScanWorker(QObject):
         self.checkpoint_id = checkpoint_id
         self.scanner = None
         self._should_stop = False
+        """__init__."""
+        """__init__."""
 
     def run(self):
-        """Run the scanning process."""
         try:
             self.scanner = Scanner(self.config, self.path, enable_checkpoints=self.enable_checkpoints, enable_throttling=self.enable_throttling)
             if self.enable_checkpoints:
                 import threading
                 import time
 
+                # Scanner exposes no progress callback, so poll it from a
+                # daemon thread and relay updates through the signal; the
+                # thread dies with the process, so it needs no join.
                 def progress_monitor():
                     while not self._should_stop:
                         if self.scanner and self.scanner._scan_manager:
@@ -94,25 +109,31 @@ class ScanWorker(QObject):
                             if progress:
                                 self.progress_updated.emit(progress)
                         time.sleep(0.5)
+                    """progress_monitor."""
+                    """progress_monitor."""
                 progress_thread = threading.Thread(target=progress_monitor, daemon=True)
                 progress_thread.start()
             empty_files, empty_dirs = self.scanner.scan(checkpoint_id=self.checkpoint_id)
             self.finished.emit(empty_files, empty_dirs)
         except Exception as e:
             self.error.emit(str(e))
+        """run."""
+        """run."""
 
     def pause(self):
-        """Pause the scanning process."""
         if self.scanner:
             self.scanner.pause_scan()
+        """pause."""
+        """pause."""
 
     def resume(self):
-        """Resume the scanning process."""
         if self.scanner:
             self.scanner.resume_scan()
+        """resume."""
+        """resume."""
 
     def stop(self):
-        """Stop the scanning process."""
+        # Checkpoint before aborting so partial progress stays resumable.
         self._should_stop = True
         if self.scanner and self.enable_checkpoints:
             try:
@@ -121,6 +142,8 @@ class ScanWorker(QObject):
             except Exception:
                 pass
         return None
+        """stop."""
+        """stop."""
 
 class DeleteWorker(QObject):
     finished = Signal(dict)
@@ -131,17 +154,21 @@ class DeleteWorker(QObject):
         self.deleter = deleter
         self.empty_files = empty_files
         self.empty_dirs = empty_dirs
+        """__init__."""
+        """__init__."""
 
     def run(self):
-        """Run the deletion process."""
         try:
             result = self.deleter.delete(self.empty_files, self.empty_dirs)
             self.finished.emit(result)
         except Exception as e:
             self.error.emit(str(e))
+        """run."""
+    """DeleteWorker class."""
+    """DeleteWorker class."""
 
 class MultiDriveScanWorker(QObject):
-    """Worker class for scanning multiple drives in separate threads."""
+    """Scans several drives sequentially, aggregating their results."""
     finished = Signal(list, list)
     error = Signal(str)
     progress_updated = Signal(object)
@@ -153,9 +180,12 @@ class MultiDriveScanWorker(QObject):
         self.enable_checkpoints = enable_checkpoints
         self.enable_throttling = enable_throttling
         self._should_stop = False
+        self._is_paused = False
+        """__init__."""
+        """__init__."""
 
     def run(self):
-        """Run the multi-drive scanning process."""
+        """Scan each configured drive and emit the combined result lists."""
         try:
             from cortex_unified.performance.multi_drive_scanner import MultiDriveScanner
             scanner = MultiDriveScanner(self.config, enable_checkpoints=self.enable_checkpoints, enable_throttling=self.enable_throttling)
@@ -163,17 +193,27 @@ class MultiDriveScanWorker(QObject):
                 import threading
                 import time
 
+                # Same polling relay as ScanWorker, but reporting overall
+                # progress across all drives.
                 def progress_monitor():
                     while not self._should_stop:
-                        progress = scanner.get_overall_progress()
-                        if progress:
-                            self.progress_updated.emit(progress)
+                        if not self._is_paused:
+                            progress = scanner.get_overall_progress()
+                            if progress:
+                                self.progress_updated.emit(progress)
                         time.sleep(0.5)
+                    """progress_monitor."""
+                    """progress_monitor."""
                 progress_thread = threading.Thread(target=progress_monitor, daemon=True)
                 progress_thread.start()
             all_empty_files = []
             all_empty_dirs = []
             for path in self.paths:
+                if self._should_stop:
+                    break
+                while self._is_paused and not self._should_stop:
+                    import time
+                    time.sleep(0.2)
                 empty_files, empty_dirs = scanner.scan_drive(path)
                 all_empty_files.extend(empty_files)
                 all_empty_dirs.extend(empty_dirs)
@@ -184,16 +224,20 @@ class MultiDriveScanWorker(QObject):
             self.error.emit(str(e))
 
     def pause(self):
-        """Pause the scanning process."""
-        pass
+        self._is_paused = True
+        """pause."""
+        """pause."""
 
     def resume(self):
-        """Resume the scanning process."""
-        pass
+        self._is_paused = False
+        """resume."""
+        """resume."""
 
     def stop(self):
-        """Stop the scanning process."""
         self._should_stop = True
+        self._is_paused = False
+        """stop."""
+        """stop."""
 
 class DeepCleanerGUI(QMainWindow):
     """Main window for Cortex Cleaner GUI application."""
@@ -227,7 +271,8 @@ class DeepCleanerGUI(QMainWindow):
         self.init_ui()
         self.load_settings()
         
-        # Initialize comprehensive accessibility and theme layers
+        # Bind the optional accessibility stack defensively: a missing
+        # dependency must not abort window construction.
         try:
             from cortex_unified.accessibility import setup_full_accessibility
             self.keyboard_handler, self.screen_reader = setup_full_accessibility(
@@ -238,11 +283,15 @@ class DeepCleanerGUI(QMainWindow):
             self.logger.error(f"Accessibility system failed to bind: {e}")
             
         from PySide6.QtCore import QTimer
+        # Attach optional subsystems on a short timer so __init__ and the
+        # event loop are up and running first.
         QTimer.singleShot(100, self.add_advanced_tabs)
         QTimer.singleShot(150, self.init_tray_icon)
+        """__init__."""
+        """__init__."""
 
     def init_tray_icon(self):
-        """Initialize the System Tray Manager."""
+        """Attach the tray icon; failure is logged and otherwise ignored."""
         try:
             self.tray_manager = SystemTrayManager(self, QApplication.instance())
             self.logger.info("System Tray initialized successfully.")
@@ -266,9 +315,15 @@ class DeepCleanerGUI(QMainWindow):
         finally:
             self._in_getattr = False
 
+    def _safe_widget(self, name, default=None):
+        """Safely get a widget attribute, returning default if not found."""
+        try:
+            return getattr(self, name)
+        except AttributeError:
+            return default
 
     def init_ui(self):
-        """Initialize the user interface."""
+        """Build the base tabs and status bar; advanced tabs attach later."""
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
         main_layout = QVBoxLayout(central_widget)
@@ -310,7 +365,7 @@ class DeepCleanerGUI(QMainWindow):
         main_layout.addWidget(self.status_bar)
 
     def add_advanced_tabs(self):
-        """Add advanced tabs after all methods are defined."""
+        """Attach lazily imported tabs once the window is fully initialized."""
         try:
             from cortex_unified.ui.tabs.file_shredder_tab import FileShredderTab
             from cortex_unified.ui.tabs.scheduler_tab import SchedulerTab
@@ -318,6 +373,9 @@ class DeepCleanerGUI(QMainWindow):
             from cortex_unified.ui.tabs.resource_monitor_tab import ResourceMonitorTab
             from cortex_unified.ui.tabs.system_tools_tab import SystemToolsTab
             from cortex_unified.ui.tabs.security_scanner_tab import SecurityScannerTab
+            
+            package_manager_tab = PackageManagerTab(self.config, self.logger, self.safety_manager)
+            self.navigation_controller.add_tab_with_default_icon(package_manager_tab, 'Package Caches')
             
             shredder_tab = FileShredderTab(self.config, self.logger, self.safety_manager)
             self.navigation_controller.add_tab_with_default_icon(shredder_tab, 'File Shredder')
@@ -343,11 +401,9 @@ class DeepCleanerGUI(QMainWindow):
             privacy_tab = PrivacyTab(self.config, self.logger, self.safety_manager)
             self.navigation_controller.add_tab_with_default_icon(privacy_tab, 'Privacy Shield')
             
-            self.logger.info('Advanced and Weaponized tabs added successfully')
+            self.logger.info('Advanced security and privacy tabs added successfully')
         except Exception as e:
             self.logger.warning(f'Could not add advanced tabs: {e}')
-
-
 
     def browse_path(self):
         """Open file dialog to select target path."""
@@ -362,128 +418,139 @@ class DeepCleanerGUI(QMainWindow):
             widget.setText(path)
 
     def add_activity(self, message):
-        """Add an activity message to the dashboard."""
-        self.activity_list.addItem(f'[{self.get_current_time()}] {message}')
+        activity_list = self._safe_widget('activity_list')
+        if activity_list is not None:
+            activity_list.addItem(f'[{self.get_current_time()}] {message}')
+        """add_activity."""
+        """add_activity."""
 
     def get_current_time(self):
-        """Get current time as string."""
         from datetime import datetime
         return datetime.now().strftime('%H:%M:%S')
+        """get_current_time."""
+        """get_current_time."""
 
     def quick_scan(self):
-        """Quick scan from dashboard."""
-        self.path_input.setText(str(Path.home()))
-        self.tab_widget.setCurrentIndex(1)
+        path_input = self._safe_widget('path_input')
+        if path_input:
+            path_input.setText(str(Path.home()))
+        tab_widget = self._safe_widget('tab_widget')
+        if tab_widget:
+            tab_widget.setCurrentIndex(1)
         self.start_scan()
+        """quick_scan."""
+        """quick_scan."""
 
     def start_scan(self):
-        """Start the enhanced scanning process."""
-        if hasattr(self, 'logger'):
-            self.logger.info('=== STARTING SCAN PROCESS (DUBBING LOG) ===')
-            self.logger.info('Target path mode: {}'.format('Single' if self.single_path_radio.isChecked() else 'Multi-drive'))
-        target_paths = []
-        if self.single_path_radio.isChecked():
-            path = self.path_input.text().strip()
+        """Validate targets and dispatch scanning to a worker thread.
+
+        Note: This legacy method references widgets that may not exist in
+        the current UI architecture. Safe attribute access is used throughout.
+        """
+        try:
+            single_path_radio = self._safe_widget('single_path_radio')
+            path_input = self._safe_widget('path_input')
+            drives_list = self._safe_widget('drives_list')
+            enable_checkpoints_checkbox = self._safe_widget('enable_checkpoints_checkbox')
+            enable_throttling_checkbox = self._safe_widget('enable_throttling_checkbox')
+            scan_button = self._safe_widget('scan_button')
+            delete_button = self._safe_widget('delete_button')
+            progress_group = self._safe_widget('progress_group')
+            pause_button = self._safe_widget('pause_button')
+            progress_bar = self._safe_widget('progress_bar')
+            progress_label = self._safe_widget('progress_label')
+            results_text = self._safe_widget('results_text')
+            pattern_input = self._safe_widget('pattern_input')
+            age_spinbox = self._safe_widget('age_spinbox')
+
             if hasattr(self, 'logger'):
-                self.logger.info('Single path selected: {}'.format(path if path else 'None'))
-            if not path:
-                QMessageBox.warning(self, 'Warning', 'Please select a directory to scan.')
-                return
-            target_paths = [path]
-        else:
-            if hasattr(self, 'logger'):
-                self.logger.info('Multi-drive mode selected')
-            for i in range(self.drives_list.count()):
-                item = self.drives_list.item(i)
-                drive_data = item.data(Qt.ItemDataRole.UserRole)
-                if isinstance(drive_data, dict):
-                    target_paths.append(drive_data['path'])
-                    if hasattr(self, 'logger'):
-                        self.logger.info('Adding network drive: {}'.format(drive_data['path']))
-                else:
-                    target_paths.append(drive_data)
-                    if hasattr(self, 'logger'):
-                        self.logger.info('Adding local drive: {}'.format(drive_data))
-            if not target_paths:
-                QMessageBox.warning(self, 'Warning', 'Please select drives to scan.')
-                return
-        if hasattr(self, 'logger'):
-            self.logger.info('Validating {} paths'.format(len(target_paths)))
-        valid_paths = []
-        for path in target_paths:
-            try:
-                normalized_path = normalize_path(path)
-                if normalized_path.exists():
-                    valid_paths.append(str(normalized_path))
-                    if hasattr(self, 'logger'):
-                        self.logger.info('Valid path: {}'.format(normalized_path))
-                else:
-                    self.add_activity(f'Skipping non-existent path: {path}')
-                    if hasattr(self, 'logger'):
-                        self.logger.warning('Skipping non-existent path: {}'.format(path))
-            except Exception as e:
-                self.add_activity(f'Invalid path {path}: {str(e)}')
+                self.logger.info('=== STARTING SCAN PROCESS (DUBBING LOG) ===')
+                mode = 'Single' if (single_path_radio and single_path_radio.isChecked()) else 'Multi-drive'
+                self.logger.info(f'Target path mode: {mode}')
+            target_paths = []
+            if single_path_radio and single_path_radio.isChecked():
+                path = path_input.text().strip() if path_input else ''
                 if hasattr(self, 'logger'):
-                    self.logger.error('Invalid path {}: {}'.format(path, str(e)))
-        if not valid_paths:
-            QMessageBox.critical(self, 'Error', 'No valid paths to scan.')
+                    self.logger.info(f'Single path selected: {path if path else "None"}')
+                if not path:
+                    QMessageBox.warning(self, 'Warning', 'Please select a directory to scan.')
+                    return
+                target_paths = [path]
+            else:
+                if hasattr(self, 'logger'):
+                    self.logger.info('Multi-drive mode selected')
+                if drives_list:
+                    for i in range(drives_list.count()):
+                        item = drives_list.item(i)
+                        drive_data = item.data(Qt.ItemDataRole.UserRole)
+                        if isinstance(drive_data, dict):
+                            target_paths.append(drive_data['path'])
+                        else:
+                            target_paths.append(drive_data)
+                if not target_paths:
+                    QMessageBox.warning(self, 'Warning', 'Please select drives to scan.')
+                    return
             if hasattr(self, 'logger'):
-                self.logger.error('No valid paths to scan')
-            return
-        enable_checkpoints = self.enable_checkpoints_checkbox.isChecked()
-        enable_throttling = self.enable_throttling_checkbox.isChecked()
-        if hasattr(self, 'logger'):
-            self.logger.info('Performance options - Checkpoints: {}, Throttling: {}'.format(enable_checkpoints, enable_throttling))
-        if hasattr(self, 'logger'):
-            self.logger.info('Updating UI for scan start')
-        self.scan_button.setEnabled(False)
-        self.delete_button.setEnabled(False)
-        self.progress_group.setVisible(True)
-        if enable_checkpoints:
-            self.pause_button.setEnabled(True)
-            self.progress_bar.setRange(0, 100)
-            self.progress_label.setText('Starting scan...')
-        else:
-            self.progress_bar.setRange(0, 0)
-            self.progress_label.setText('Scanning...')
-        self.progress_bar.setVisible(True)
-        self.results_text.clear()
-        if hasattr(self, 'logger'):
-            self.logger.info('Configuring scan options')
-        scan_config = Config()
-        scan_config.config_data = self.config.config_data.copy()
-        if self.pattern_input.text().strip():
-            patterns = [p.strip() for p in self.pattern_input.text().split(',') if p.strip()]
-            scan_config.config_data['exclude_patterns'] = patterns
+                self.logger.info(f'Validating {len(target_paths)} paths')
+            valid_paths = []
+            for path in target_paths:
+                try:
+                    normalized_path = normalize_path(path)
+                    if normalized_path.exists():
+                        valid_paths.append(str(normalized_path))
+                    else:
+                        self.add_activity(f'Skipping non-existent path: {path}')
+                except Exception as e:
+                    self.add_activity(f'Invalid path {path}: {str(e)}')
+            if not valid_paths:
+                QMessageBox.critical(self, 'Error', 'No valid paths to scan.')
+                return
+            enable_checkpoints = enable_checkpoints_checkbox.isChecked() if enable_checkpoints_checkbox else False
+            enable_throttling = enable_throttling_checkbox.isChecked() if enable_throttling_checkbox else False
+            if scan_button:
+                scan_button.setEnabled(False)
+            if delete_button:
+                delete_button.setEnabled(False)
+            if progress_group:
+                progress_group.setVisible(True)
+            if pause_button:
+                pause_button.setEnabled(enable_checkpoints)
+            if progress_bar:
+                progress_bar.setRange(0, 100 if enable_checkpoints else 0)
+            if progress_label:
+                progress_label.setText('Starting scan...' if enable_checkpoints else 'Scanning...')
+            if results_text:
+                results_text.clear()
+            scan_config = Config()
+            scan_config.config_data = self.config.config_data.copy()
+            if pattern_input and pattern_input.text().strip():
+                patterns = [p.strip() for p in pattern_input.text().split(',') if p.strip()]
+                scan_config.config_data['exclude_patterns'] = patterns
+            if age_spinbox:
+                age_days = age_spinbox.value()
+                if age_days > 0:
+                    scan_config.config_data['min_age_days'] = age_days
+            log_file = self._safe_widget('log_file_input')
+            log_file_path = log_file.text().strip() if log_file and log_file.text().strip() else ''
+            verbose = self._safe_widget('verbose_checkbox')
+            verbose_enabled = verbose.isChecked() if verbose else False
+            setup_logging(verbose_enabled, log_file_path)
+            self.scan_thread = QThread()
+            if len(valid_paths) > 1:
+                self.scan_worker = MultiDriveScanWorker(scan_config, valid_paths, enable_checkpoints=enable_checkpoints, enable_throttling=enable_throttling)
+            else:
+                self.scan_worker = ScanWorker(scan_config, valid_paths[0], enable_checkpoints=enable_checkpoints, enable_throttling=enable_throttling)
+            self.scan_worker.moveToThread(self.scan_thread)
+            self.scan_thread.started.connect(self.scan_worker.run)
+            self.scan_worker.finished.connect(self.scan_finished)
+            self.scan_worker.error.connect(self.scan_error)
+            if enable_checkpoints:
+                self.scan_worker.progress.connect(self.update_scan_progress)
+            self.scan_thread.start()
+        except Exception as e:
             if hasattr(self, 'logger'):
-                self.logger.info('Applied pattern filters: {}'.format(patterns))
-        age_days = self.age_spinbox.value()
-        if age_days > 0:
-            scan_config.config_data['min_age_days'] = age_days
-            if hasattr(self, 'logger'):
-                self.logger.info('Applied age filter: {} days'.format(age_days))
-        if hasattr(self, 'logger'):
-            self.logger.info('Setting up logging')
-        log_file = getattr(self, 'log_file_input', None)
-        log_file_path = log_file.text().strip() if log_file and log_file.text().strip() else ''
-        verbose = getattr(self, 'verbose_checkbox', None)
-        verbose_enabled = verbose.isChecked() if verbose else False
-        setup_logging(verbose_enabled, log_file_path)
-        if hasattr(self, 'logger'):
-            self.logger.info('Starting enhanced scanning in separate thread')
-        self.scan_thread = QThread()
-        if len(valid_paths) > 1:
-            if hasattr(self, 'logger'):
-                self.logger.info('Using MultiDriveScanWorker for {} paths'.format(len(valid_paths)))
-            self.scan_worker = MultiDriveScanWorker(scan_config, valid_paths, enable_checkpoints=enable_checkpoints, enable_throttling=enable_throttling)
-        else:
-            if hasattr(self, 'logger'):
-                self.logger.info('Using ScanWorker for single path: {}'.format(valid_paths[0]))
-            self.scan_worker = ScanWorker(scan_config, valid_paths[0], enable_checkpoints=enable_checkpoints, enable_throttling=enable_throttling)
-        self.scan_worker.moveToThread(self.scan_thread)
-        self.scan_thread.started.connect(self.scan_worker.run)
-        self.scan_worker.finished.connect(self.scan_finished)
-        self.scan_worker.error.connect(self.scan_error)
+                self.logger.error(f'start_scan failed: {e}')
+            self.add_activity(f'Scan error: {e}')
         if enable_checkpoints:
             self.scan_worker.progress_updated.connect(self.update_scan_progress)
         self.scan_worker.finished.connect(self.scan_thread.quit)
@@ -494,7 +561,7 @@ class DeepCleanerGUI(QMainWindow):
             self.logger.info('Scan thread started successfully')
 
     def scan_finished(self, empty_files: List[Path], empty_dirs: List[Path]):
-        """Handle scan completion."""
+        """Handle scan completion (runs on the UI thread via signal)."""
         if hasattr(self, 'logger'):
             self.logger.info('=== SCAN FINISHED (DUBBING LOG) ===')
             self.logger.info('Results - Empty files: {}, Empty dirs: {}'.format(len(empty_files), len(empty_dirs)))
@@ -528,7 +595,6 @@ class DeepCleanerGUI(QMainWindow):
         self.results_text.setPlainText(result_text)
 
     def scan_error(self, error: str):
-        """Handle scan error."""
         self.logger.error(f'=== Scan error occurred ===')
         self.logger.error(f'Error details: {error}')
         self.scan_button.setEnabled(True)
@@ -541,9 +607,11 @@ class DeepCleanerGUI(QMainWindow):
         if hasattr(self, 'add_activity'):
             self.add_activity(f'Scan failed: {error}')
         QMessageBox.critical(self, 'Scan Error', f'An error occurred during scanning:\n{error}')
+        """scan_error."""
+        """scan_error."""
 
     def update_scan_progress(self, progress):
-        """Update the scan progress bar with dubbing logs for debugging."""
+        """Render a worker progress report in the progress bar."""
         if hasattr(self, 'logger'):
             percentage = getattr(progress, 'percentage', 0.0)
             self.logger.info('Updating scan progress: {:.1f}%'.format(percentage))
@@ -553,7 +621,7 @@ class DeepCleanerGUI(QMainWindow):
                 self.scan_stats_label.setText(f'Processed: {progress.processed_count}/{progress.total_count} items ({progress.percentage:.1f}%)')
 
     def start_delete(self):
-        """Start the deletion process with dubbing logs for debugging."""
+        """Confirm options with the user and run Deleter on a worker thread."""
         if hasattr(self, 'logger'):
             self.logger.info('=== STARTING DELETE PROCESS (DUBBING LOG) ===')
             self.logger.info('Files to delete: {}'.format(len(self.empty_files)))
@@ -583,6 +651,8 @@ class DeepCleanerGUI(QMainWindow):
             self.logger.info('Starting deletion process in separate thread')
         self.delete_thread = QThread()
         self.delete_worker = DeleteWorker(Deleter(dry_run=dry_run, use_trash=use_trash), self.empty_files, self.empty_dirs)
+        # Same worker lifecycle as start_scan(): worker owns the thread's
+        # event loop, and finished/error quit it before deleteLater runs.
         self.delete_worker.moveToThread(self.delete_thread)
         self.delete_thread.started.connect(self.delete_worker.run)
         self.delete_worker.finished.connect(self.delete_finished)
@@ -595,7 +665,7 @@ class DeepCleanerGUI(QMainWindow):
             self.logger.info('Deletion thread started successfully')
 
     def pause_scan(self):
-        """Pause the scanning process with dubbing logs for debugging."""
+        """Pause the active scan worker."""
         if hasattr(self, 'logger'):
             self.logger.info('=== PAUSING SCAN PROCESS (DUBBING LOG) ===')
         if not hasattr(self, 'scan_worker') or not self.scan_worker:
@@ -623,7 +693,7 @@ class DeepCleanerGUI(QMainWindow):
             QMessageBox.critical(self, 'Error', f'Error pausing scan:\n{str(e)}')
 
     def resume_scan(self):
-        """Resume the scanning process with dubbing logs for debugging."""
+        """Resume a paused scan worker."""
         if hasattr(self, 'logger'):
             self.logger.info('=== RESUMING SCAN PROCESS (DUBBING LOG) ===')
         if not hasattr(self, 'scan_worker') or not self.scan_worker:
@@ -687,7 +757,6 @@ class DeepCleanerGUI(QMainWindow):
         QMessageBox.critical(self, 'Deletion Error', f'An error occurred during deletion:\n{error}')
 
     def show_treemap_visualization(self):
-        """Show TreeMap visualization in a new window."""
         if not hasattr(self, 'current_analyzer') or not self.current_analyzer:
             QMessageBox.warning(self, 'Warning', 'Please run disk analysis first.')
             return
@@ -707,9 +776,10 @@ class DeepCleanerGUI(QMainWindow):
             self.add_activity('TreeMap visualization opened in browser')
         except Exception as e:
             QMessageBox.critical(self, 'Error', f'Failed to generate TreeMap: {str(e)}')
+        """show_treemap_visualization."""
+        """show_treemap_visualization."""
 
     def show_sunburst_visualization(self):
-        """Show Sunburst visualization in a new window."""
         if not hasattr(self, 'current_analyzer') or not self.current_analyzer:
             QMessageBox.warning(self, 'Warning', 'Please run disk analysis first.')
             return
@@ -729,9 +799,10 @@ class DeepCleanerGUI(QMainWindow):
             self.add_activity('Sunburst visualization opened in browser')
         except Exception as e:
             QMessageBox.critical(self, 'Error', f'Failed to generate Sunburst: {str(e)}')
+        """show_sunburst_visualization."""
+        """show_sunburst_visualization."""
 
     def show_interactive_dashboard(self):
-        """Show interactive dashboard in a new window."""
         if not hasattr(self, 'current_analyzer') or not self.current_analyzer:
             QMessageBox.warning(self, 'Warning', 'Please run disk analysis first.')
             return
@@ -757,9 +828,10 @@ class DeepCleanerGUI(QMainWindow):
             self.add_activity('Interactive dashboard opened in browser')
         except Exception as e:
             QMessageBox.critical(self, 'Error', f'Failed to generate dashboard: {str(e)}')
+        """show_interactive_dashboard."""
+        """show_interactive_dashboard."""
 
     def export_visualization_dialog(self):
-        """Show export visualization dialog."""
         if not hasattr(self, 'current_analyzer') or not self.current_analyzer:
             QMessageBox.warning(self, 'Warning', 'Please run disk analysis first.')
             return
@@ -797,9 +869,11 @@ class DeepCleanerGUI(QMainWindow):
         buttons_layout.addWidget(cancel_button)
         layout.addLayout(buttons_layout)
         dialog.exec()
+        """export_visualization_dialog."""
+        """export_visualization_dialog."""
 
     def perform_visualization_export(self, dialog):
-        """Perform the actual visualization export."""
+        """Write the visualization chosen in the export dialog to disk."""
         try:
             if self.export_treemap_radio.isChecked():
                 viz_type = 'treemap'
@@ -849,7 +923,6 @@ class DeepCleanerGUI(QMainWindow):
             QMessageBox.critical(self, 'Error', f'Failed to export visualization: {str(e)}')
 
     def refresh_startup_items(self):
-        """Refresh startup items."""
         self.refresh_startup_button.setEnabled(False)
         self.startup_progress_bar.setVisible(True)
         self.startup_progress_bar.setRange(0, 0)
@@ -882,9 +955,10 @@ class DeepCleanerGUI(QMainWindow):
             self.status_bar.setText('Failed to load startup items')
             self.add_activity(f'Failed to load startup items: {e}')
             QMessageBox.critical(self, 'Error', f'An error occurred while loading startup items:\n{e}')
+        """refresh_startup_items."""
+        """refresh_startup_items."""
 
     def disable_selected_startup_items(self):
-        """Disable selected startup items."""
         selected_ranges = self.startup_table.selectedRanges()
         if not selected_ranges:
             QMessageBox.information(self, 'Info', 'Please select startup items to disable.')
@@ -925,9 +999,10 @@ class DeepCleanerGUI(QMainWindow):
         except Exception as e:
             QMessageBox.critical(self, 'Error', f'Error disabling startup items:\n{str(e)}')
             self.add_activity(f'Failed to disable startup items: {str(e)}')
+        """disable_selected_startup_items."""
+        """disable_selected_startup_items."""
 
     def refresh_processes(self):
-        """Refresh processes and services."""
         try:
             import platform
             system = platform.system().lower()
@@ -982,23 +1057,52 @@ class DeepCleanerGUI(QMainWindow):
         finally:
             self.refresh_processes_button.setEnabled(True)
             self.processes_progress_bar.setVisible(False)
+        """refresh_processes."""
+        """refresh_processes."""
 
     def quick_temp_clean(self):
-        """Quick clean temporary files."""
-        self.logger.info('=== Quick temp clean initiated ===')
-        self.tab_widget.setCurrentIndex(3)
+        """Activate the temp-cleaning tab and start its scan immediately."""
+        if hasattr(self, 'logger'):
+            self.logger.info('=== Quick temp clean initiated ===')
+        tab_widget = self._safe_widget('tab_widget')
+        if tab_widget:
+            tab_widget.setCurrentIndex(3)
         self.start_temp_scan()
 
+    def start_temp_scan(self):
+        """Start a temp file scan and report findings."""
+        self.add_activity('Temp scan started')
+        if hasattr(self, 'logger'):
+            self.logger.info('Temp scan started')
+        try:
+            from cortex_unified.engine.service import CleanerService, RiskLevel
+            report = CleanerService().scan_categories(max_risk=RiskLevel.LOW)
+            freed_bytes = report.total_reclaimable_bytes
+            file_count = report.total_files
+            msg = f"Temp scan complete: {file_count} files ({freed_bytes} bytes reclaimable)"
+            self.status_bar.setText(msg)
+            self.add_activity(msg)
+        except Exception as e:
+            if hasattr(self, 'logger'):
+                self.logger.warning(f"Temp scan error: {e}")
+
     def scan_registry(self):
-        """Scan registry for issues."""
         if not HAS_REGISTRY_CLEANER:
             QMessageBox.critical(self, 'Error', 'Registry cleaner is not available on this platform.')
             return
-        self.scan_registry_button.setEnabled(False)
-        self.clean_registry_button.setEnabled(False)
-        self.registry_progress_bar.setVisible(True)
-        self.registry_progress_bar.setRange(0, 0)
-        self.registry_results.clear()
+        scan_btn = self._safe_widget('scan_registry_button')
+        clean_btn = self._safe_widget('clean_registry_button')
+        progress = self._safe_widget('registry_progress_bar')
+        results = self._safe_widget('registry_results') or self._safe_widget('registry_table')
+        if scan_btn:
+            scan_btn.setEnabled(False)
+        if clean_btn:
+            clean_btn.setEnabled(False)
+        if progress:
+            progress.setVisible(True)
+            progress.setRange(0, 0)
+        if results and hasattr(results, 'clear'):
+            results.clear()
         self.status_bar.setText('Scanning registry...')
         self.add_activity('Scanning registry...')
         try:
@@ -1006,29 +1110,41 @@ class DeepCleanerGUI(QMainWindow):
                 raise Exception('Registry cleaner not available')
             cleaner = RegistryCleaner()
             issues = cleaner.scan_orphaned_entries()
-            self.scan_registry_button.setEnabled(True)
-            self.registry_progress_bar.setVisible(False)
+            if scan_btn:
+                scan_btn.setEnabled(True)
+            if progress:
+                progress.setVisible(False)
             self.status_bar.setText(f'Registry scan complete: {len(issues)} issues found')
             self.add_activity(f'Registry scan complete: {len(issues)} issues found')
             if issues:
-                self.clean_registry_button.setEnabled(True)
+                if clean_btn:
+                    clean_btn.setEnabled(True)
                 result_text = f'Found {len(issues)} registry issues:\n\n'
                 for issue in issues:
                     result_text += f'- {issue}\n'
-                self.registry_results.setPlainText(result_text)
+                if results and hasattr(results, 'setPlainText'):
+                    results.setPlainText(result_text)
+                elif results and hasattr(results, 'setItem'):
+                    results.clearContents()
+                    for i, issue in enumerate(issues):
+                        results.setItem(i, 0, QTableWidgetItem(str(issue)))
             else:
-                self.clean_registry_button.setEnabled(False)
-                self.registry_results.setPlainText('No registry issues found.')
+                if clean_btn:
+                    clean_btn.setEnabled(False)
+                if results and hasattr(results, 'setPlainText'):
+                    results.setPlainText('No registry issues found.')
         except Exception as e:
-            self.logger.error(f'Registry scan error: {e}')
+            if hasattr(self, 'logger'):
+                self.logger.error(f'Registry scan error: {e}')
             self.scan_registry_button.setEnabled(True)
             self.registry_progress_bar.setVisible(False)
             self.status_bar.setText('Registry scan failed')
             self.add_activity(f'Registry scan failed: {e}')
             QMessageBox.critical(self, 'Error', f'An error occurred while scanning registry:\n{e}')
+        """scan_registry."""
+        """scan_registry."""
 
     def clean_registry(self):
-        """Clean registry issues."""
         reply = QMessageBox.question(self, 'Confirm Cleaning', 'Are you sure you want to clean registry issues?\nThis action cannot be undone and may affect system stability.', QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No, QMessageBox.StandardButton.No)
         if reply == QMessageBox.StandardButton.No:
             return
@@ -1067,6 +1183,8 @@ class DeepCleanerGUI(QMainWindow):
         except Exception as e:
             QMessageBox.critical(self, 'Error', f'Error cleaning registry:\n{str(e)}')
             self.add_activity(f'Failed to clean registry: {str(e)}')
+        """clean_registry."""
+        """clean_registry."""
 
     def refresh_manifests(self):
         """Refresh backup manifests."""
@@ -1137,7 +1255,6 @@ class DeepCleanerGUI(QMainWindow):
             self.add_activity(f'Failed to restore from {manifest_path}: {str(e)}')
 
     def save_settings(self):
-        """Save settings to config file."""
         try:
             self.settings.setValue('log_file', self.log_file_input.text())
             self.settings.setValue('verbose', self.verbose_checkbox.isChecked())
@@ -1155,9 +1272,11 @@ class DeepCleanerGUI(QMainWindow):
         except Exception as e:
             self.logger.error(f'Failed to save settings: {e}')
             QMessageBox.critical(self, 'Error', f'Failed to save settings:\n{str(e)}')
+        """save_settings."""
+        """save_settings."""
 
     def load_settings(self):
-        """Load settings from config file."""
+        """Load persisted UI settings, then overlay config-file values."""
         try:
             log_file = self.settings.value('log_file', '')
             if isinstance(log_file, str):
@@ -1183,7 +1302,13 @@ class DeepCleanerGUI(QMainWindow):
         return f'{bytes_value:.1f} PB'
 
     def closeEvent(self, event):
-        """Handle window close event."""
+        """Stop worker threads before accepting the close.
+
+        Each live QThread gets quit() plus a bounded 3s wait so it is not
+        destroyed mid-run; stragglers are abandoned rather than hanging
+        application exit. Some listed attribute names are legacy and may
+        never exist, hence the hasattr guards.
+        """
         threads_to_cleanup = ['scan_thread', 'delete_thread', 'duplicates_thread', 'large_files_thread', 'disk_analysis_thread']
         for thread_name in threads_to_cleanup:
             try:
@@ -1210,71 +1335,13 @@ class DeepCleanerGUI(QMainWindow):
         event.accept()
 
     def switch_to_tab(self, index: int):
-        """Switch to the specified tab index."""
-        self.tab_widget.setCurrentIndex(index)
-
-    def create_package_manager_tab(self) -> QWidget:
-        """Create the Package Manager tab."""
-        pm_tab = QWidget()
-        layout = QVBoxLayout(pm_tab)
-        pm_group = QGroupBox('Package Managers')
-        pm_layout = QVBoxLayout(pm_group)
-        self.pm_pip_checkbox = QCheckBox('pip (Python)')
-        self.pm_pip_checkbox.setChecked(True)
-        pm_layout.addWidget(self.pm_pip_checkbox)
-        self.pm_npm_checkbox = QCheckBox('npm (Node.js)')
-        self.pm_npm_checkbox.setChecked(True)
-        pm_layout.addWidget(self.pm_npm_checkbox)
-        self.pm_yarn_checkbox = QCheckBox('yarn (Node.js)')
-        pm_layout.addWidget(self.pm_yarn_checkbox)
-        self.pm_conda_checkbox = QCheckBox('conda (Python)')
-        pm_layout.addWidget(self.pm_conda_checkbox)
-        self.pm_system_checkbox = QCheckBox('System Package Manager')
-        pm_layout.addWidget(self.pm_system_checkbox)
-        layout.addWidget(pm_group)
-        options_group = QGroupBox('Options')
-        options_layout = QFormLayout(options_group)
-        self.pm_keep_recent_spinbox = QSpinBox()
-        self.pm_keep_recent_spinbox.setRange(0, 365)
-        self.pm_keep_recent_spinbox.setValue(7)
-        self.pm_keep_recent_spinbox.setSuffix(' days')
-        options_layout.addRow('Keep recent cache files:', self.pm_keep_recent_spinbox)
-        self.pm_orphaned_checkbox = QCheckBox('Include orphaned packages')
-        options_layout.addRow(self.pm_orphaned_checkbox)
-        self.pm_dry_run_checkbox = QCheckBox('Dry Run (Preview Only)')
-        self.pm_dry_run_checkbox.setChecked(True)
-        options_layout.addRow(self.pm_dry_run_checkbox)
-        layout.addWidget(options_group)
-        button_layout = QHBoxLayout()
-        self.pm_detect_button = QPushButton('Detect Package Managers')
-        self.pm_detect_button.clicked.connect(self.detect_package_managers)
-        button_layout.addWidget(self.pm_detect_button)
-        self.pm_scan_button = QPushButton('Scan Cache')
-        self.pm_scan_button.clicked.connect(self.start_pm_scan)
-        button_layout.addWidget(self.pm_scan_button)
-        self.pm_cleanup_button = QPushButton('Clean Up')
-        self.pm_cleanup_button.clicked.connect(self.start_pm_cleanup)
-        self.pm_cleanup_button.setEnabled(False)
-        button_layout.addWidget(self.pm_cleanup_button)
-        layout.addLayout(button_layout)
-        self.pm_progress_bar = QProgressBar()
-        self.pm_progress_bar.setVisible(False)
-        layout.addWidget(self.pm_progress_bar)
-        results_group = QGroupBox('Package Manager Cache')
-        results_layout = QVBoxLayout(results_group)
-        self.pm_summary_label = QLabel("Click 'Detect Package Managers' to start")
-        results_layout.addWidget(self.pm_summary_label)
-        self.pm_table = QTableWidget()
-        self.pm_table.setColumnCount(4)
-        self.pm_table.setHorizontalHeaderLabels(['Package Manager', 'Cache Size', 'Files', 'Status'])
-        self.pm_table.horizontalHeader().setStretchLastSection(True)
-        self.pm_table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
-        results_layout.addWidget(self.pm_table)
-        layout.addWidget(results_group)
-        return pm_tab
+        tab_widget = self._safe_widget('tab_widget')
+        if tab_widget:
+            tab_widget.setCurrentIndex(index)
+        """switch_to_tab."""
+        """switch_to_tab."""
 
     def create_heuristics_tab(self) -> QWidget:
-        """Create the Heuristics tab."""
         heuristics_tab = QWidget()
         layout = QVBoxLayout(heuristics_tab)
         options_group = QGroupBox('Detection Options')
@@ -1328,6 +1395,8 @@ class DeepCleanerGUI(QMainWindow):
         results_layout.addWidget(self.heuristics_table)
         layout.addWidget(results_group)
         return heuristics_tab
+        """create_heuristics_tab."""
+        """create_heuristics_tab."""
 
     def detect_package_managers(self):
         """Detect available package managers."""
@@ -1423,7 +1492,6 @@ class DeepCleanerGUI(QMainWindow):
             self.heuristics_path_edit.setText(path)
 
     def start_heuristics_scan(self):
-        """Start heuristics scan."""
         try:
             from cortex_unified.analyzers.leftover_detector import LeftoverDetector
             scan_path = self.heuristics_path_edit.text().strip()
@@ -1454,9 +1522,10 @@ class DeepCleanerGUI(QMainWindow):
         except Exception as e:
             self.heuristics_summary_label.setText(f'Error during heuristics scan: {str(e)}')
             self.heuristics_scan_button.setEnabled(True)
+        """start_heuristics_scan."""
+        """start_heuristics_scan."""
 
     def start_heuristics_cleanup(self):
-        """Start heuristics cleanup."""
         if not hasattr(self, 'heuristics_results') or not self.heuristics_results:
             QMessageBox.warning(self, 'No Results', 'Please run a scan first.')
             return
@@ -1485,6 +1554,8 @@ class DeepCleanerGUI(QMainWindow):
             self.heuristics_cleanup_button.setEnabled(False)
         except Exception as e:
             QMessageBox.critical(self, 'Cleanup Error', f'Error during heuristics cleanup:\n{str(e)}')
+        """start_heuristics_cleanup."""
+        """start_heuristics_cleanup."""
 
     def repair_selected_links(self):
         """Repair selected broken links."""
@@ -1534,7 +1605,6 @@ class DeepCleanerGUI(QMainWindow):
             self.detect_available_drives()
 
     def detect_available_drives(self):
-        """Detect available drives on the system."""
         try:
             import psutil
             self.drives_list.clear()
@@ -1554,9 +1624,10 @@ class DeepCleanerGUI(QMainWindow):
             QMessageBox.critical(self, 'Error', 'psutil module required for drive detection.')
         except Exception as e:
             QMessageBox.critical(self, 'Error', f'Error detecting drives:\n{str(e)}')
+        """detect_available_drives."""
+        """detect_available_drives."""
 
     def add_network_drive(self):
-        """Add a network drive to the scan list."""
         dialog = QDialog(self)
         dialog.setWindowTitle('Add Network Drive')
         dialog.setModal(True)
@@ -1586,6 +1657,8 @@ class DeepCleanerGUI(QMainWindow):
         buttons_layout.addWidget(cancel_button)
         layout.addLayout(buttons_layout)
         dialog.exec()
+        """add_network_drive."""
+        """add_network_drive."""
 
     def test_network_connection(self, path, username, password):
         """Test network drive connection."""
@@ -1603,7 +1676,6 @@ class DeepCleanerGUI(QMainWindow):
             QMessageBox.critical(self, 'Error', f'Error testing connection:\n{str(e)}')
 
     def add_network_path(self, dialog, path, username, password):
-        """Add network path to drives list."""
         if not path:
             QMessageBox.warning(self, 'Invalid Input', 'Please enter a network path.')
             return
@@ -1619,9 +1691,10 @@ class DeepCleanerGUI(QMainWindow):
             dialog.accept()
         except Exception as e:
             QMessageBox.critical(self, 'Error', f'Error adding network drive:\n{str(e)}')
+        """add_network_path."""
+        """add_network_path."""
 
     def remove_selected_drives(self):
-        """Remove selected drives from the list."""
         selected_items = self.drives_list.selectedItems()
         if not selected_items:
             QMessageBox.information(self, 'No Selection', 'Please select drives to remove.')
@@ -1630,6 +1703,8 @@ class DeepCleanerGUI(QMainWindow):
             row = self.drives_list.row(item)
             self.drives_list.takeItem(row)
         self.add_activity(f'Removed {len(selected_items)} drives from scan list')
+        """remove_selected_drives."""
+        """remove_selected_drives."""
 
     def on_checkpoint_selection_changed(self):
         """Handle checkpoint selection changes."""
@@ -1748,7 +1823,6 @@ class DeepCleanerGUI(QMainWindow):
             QMessageBox.critical(self, 'Error', f'Error deleting checkpoint:\n{str(e)}')
 
     def cleanup_old_checkpoints(self):
-        """Cleanup old checkpoints."""
         try:
             from cortex_unified.performance.scan_manager import ScanManager
             age_days, ok = QInputDialog.getInt(self, 'Cleanup Checkpoints', 'Delete checkpoints older than how many days?', 7, 1, 365)
@@ -1763,9 +1837,10 @@ class DeepCleanerGUI(QMainWindow):
             QMessageBox.critical(self, 'Error', 'Scan manager module not available.')
         except Exception as e:
             QMessageBox.critical(self, 'Error', f'Error cleaning up checkpoints:\n{str(e)}')
+        """cleanup_old_checkpoints."""
+        """cleanup_old_checkpoints."""
 
     def create_file_shredder_tab(self) -> QWidget:
-        """Create the file shredder tab."""
         shredder_tab = QWidget()
         layout = QVBoxLayout(shredder_tab)
         warning_label = QLabel('⚠️ WARNING: File shredding permanently destroys data and cannot be undone!')
@@ -1825,13 +1900,16 @@ class DeepCleanerGUI(QMainWindow):
         self.shred_results.setMaximumHeight(150)
         layout.addWidget(self.shred_results)
         return shredder_tab
+        """create_file_shredder_tab."""
+        """create_file_shredder_tab."""
 
     def add_files_to_shred(self):
-        """Add files to the shredding list."""
         files, _ = QFileDialog.getOpenFileNames(self, 'Select Files to Shred', '', 'All Files (*.*)')
         for file_path in files:
             if file_path not in [self.shredder_file_list.item(i).text() for i in range(self.shredder_file_list.count())]:
                 self.shredder_file_list.addItem(file_path)
+        """add_files_to_shred."""
+        """add_files_to_shred."""
 
     def add_folder_to_shred(self):
         """Add folder contents to the shredding list."""
@@ -1860,7 +1938,6 @@ class DeepCleanerGUI(QMainWindow):
         self.shredder_file_list.clear()
 
     def start_file_shredding(self):
-        """Start the file shredding process."""
         if self.shredder_file_list.count() == 0:
             QMessageBox.warning(self, 'No Files', 'Please add files to shred first.')
             return
@@ -1923,6 +2000,8 @@ class DeepCleanerGUI(QMainWindow):
             self.start_shred_button.setEnabled(True)
             self.shred_progress_bar.setVisible(False)
             self.add_activity(f'File shredding failed: {str(e)}')
+        """start_file_shredding."""
+        """start_file_shredding."""
 
     def create_scheduler_tab(self) -> QWidget:
         """Create the task scheduler tab."""
@@ -2117,7 +2196,7 @@ class DeepCleanerGUI(QMainWindow):
             QMessageBox.warning(self, 'Invalid Path', 'Please select a valid target path.')
             return
         try:
-            from cortex_unified.scheduler.cortex_unified.scheduler import TaskScheduler
+            from cortex_unified.scheduler.scheduler import TaskScheduler
             scheduler = TaskScheduler()
             task_config = {'name': task_name, 'type': task_type.lower().replace(' ', '_'), 'target_path': target_path, 'dry_run': self.task_dry_run_checkbox.isChecked(), 'email_notification': self.task_email_checkbox.isChecked(), 'email_address': self.task_email_input.text().strip() if self.task_email_checkbox.isChecked() else None}
             schedule_type = self.schedule_type_combo.currentText()
@@ -2151,7 +2230,7 @@ class DeepCleanerGUI(QMainWindow):
     def refresh_scheduled_tasks(self):
         """Refresh the list of scheduled tasks."""
         try:
-            from cortex_unified.scheduler.cortex_unified.scheduler import TaskScheduler
+            from cortex_unified.scheduler.scheduler import TaskScheduler
             scheduler = TaskScheduler()
             tasks = scheduler.list_tasks()
             self.scheduled_tasks_table.setRowCount(len(tasks))
@@ -2179,7 +2258,6 @@ class DeepCleanerGUI(QMainWindow):
             QMessageBox.critical(self, 'Error', f'Error refreshing tasks:\n{str(e)}')
 
     def run_selected_task(self):
-        """Run the selected task immediately."""
         selected_rows = set()
         for item in self.scheduled_tasks_table.selectedItems():
             selected_rows.add(item.row())
@@ -2188,7 +2266,7 @@ class DeepCleanerGUI(QMainWindow):
         row = list(selected_rows)[0]
         task_name = self.scheduled_tasks_table.item(row, 0).text()
         try:
-            from cortex_unified.scheduler.cortex_unified.scheduler import TaskScheduler
+            from cortex_unified.scheduler.scheduler import TaskScheduler
             scheduler = TaskScheduler()
             result = scheduler.run_task_now(task_name)
             if result.get('success', False):
@@ -2201,9 +2279,10 @@ class DeepCleanerGUI(QMainWindow):
             QMessageBox.critical(self, 'Error', 'Task scheduler module not available.')
         except Exception as e:
             QMessageBox.critical(self, 'Error', f'Error running task:\n{str(e)}')
+        """run_selected_task."""
+        """run_selected_task."""
 
     def delete_selected_task(self):
-        """Delete the selected task."""
         selected_rows = set()
         for item in self.scheduled_tasks_table.selectedItems():
             selected_rows.add(item.row())
@@ -2215,7 +2294,7 @@ class DeepCleanerGUI(QMainWindow):
         if reply != QMessageBox.StandardButton.Yes:
             return
         try:
-            from cortex_unified.scheduler.cortex_unified.scheduler import TaskScheduler
+            from cortex_unified.scheduler.scheduler import TaskScheduler
             scheduler = TaskScheduler()
             success = scheduler.delete_task(task_name)
             if success:
@@ -2228,9 +2307,10 @@ class DeepCleanerGUI(QMainWindow):
             QMessageBox.critical(self, 'Error', 'Task scheduler module not available.')
         except Exception as e:
             QMessageBox.critical(self, 'Error', f'Error deleting task:\n{str(e)}')
+        """delete_selected_task."""
+        """delete_selected_task."""
 
     def create_reports_tab(self) -> QWidget:
-        """Create the reports tab."""
         reports_tab = QWidget()
         layout = QVBoxLayout(reports_tab)
         generation_group = QGroupBox('Report Generation')
@@ -2301,11 +2381,13 @@ class DeepCleanerGUI(QMainWindow):
         layout.addWidget(templates_group)
         self.refresh_reports_list()
         return reports_tab
+        """create_reports_tab."""
+        """create_reports_tab."""
 
     def generate_report(self):
         """Generate a report based on current settings."""
         try:
-            from cortex_unified.reports.cortex_unified.reports import ReportsGenerator
+            from cortex_unified.reports.reports import ReportsGenerator
             report_type = self.report_type_combo.currentText()
             report_format = self.report_format_combo.currentText().lower()
             date_range = self.report_date_range_combo.currentText()
@@ -2330,9 +2412,8 @@ class DeepCleanerGUI(QMainWindow):
             QMessageBox.critical(self, 'Error', f'Error generating report:\n{str(e)}')
 
     def preview_report(self):
-        """Preview the report before generating."""
         try:
-            from cortex_unified.reports.cortex_unified.reports import ReportsGenerator
+            from cortex_unified.reports.reports import ReportsGenerator
             generator = ReportsGenerator(self.config)
             report_config = {'type': self.report_type_combo.currentText().lower().replace(' ', '_'), 'format': 'html', 'date_range': self.report_date_range_combo.currentText().lower().replace(' ', '_'), 'include_charts': self.include_charts_checkbox.isChecked(), 'include_details': self.include_details_checkbox.isChecked(), 'include_recommendations': self.include_recommendations_checkbox.isChecked(), 'preview_mode': True}
             preview_html = generator.generate_preview(report_config)
@@ -2355,11 +2436,13 @@ class DeepCleanerGUI(QMainWindow):
                 QMessageBox.critical(self, 'Error', 'Reports generator module not available.')
         except Exception as e:
             QMessageBox.critical(self, 'Error', f'Error generating preview:\n{str(e)}')
+        """preview_report."""
+        """preview_report."""
 
     def schedule_report(self):
         """Schedule automatic report generation."""
         try:
-            from cortex_unified.scheduler.cortex_unified.scheduler import TaskScheduler
+            from cortex_unified.scheduler.scheduler import TaskScheduler
             task_config = {'name': f'Auto Report - {self.report_type_combo.currentText()}', 'type': 'generate_report', 'report_type': self.report_type_combo.currentText(), 'report_format': self.report_format_combo.currentText(), 'include_charts': self.include_charts_checkbox.isChecked(), 'include_details': self.include_details_checkbox.isChecked(), 'include_recommendations': self.include_recommendations_checkbox.isChecked()}
             schedule_type, ok = QInputDialog.getItem(self, 'Schedule Report', 'Select schedule frequency:', ['Daily', 'Weekly', 'Monthly'], 0, False)
             if ok and schedule_type:
@@ -2376,7 +2459,7 @@ class DeepCleanerGUI(QMainWindow):
     def refresh_reports_list(self):
         """Refresh the list of generated reports."""
         try:
-            from cortex_unified.reports.cortex_unified.reports import ReportsGenerator
+            from cortex_unified.reports.reports import ReportsGenerator
             generator = ReportsGenerator(self.config)
             reports = generator.list_reports()
             self.reports_table.setRowCount(len(reports))
@@ -2445,7 +2528,6 @@ class DeepCleanerGUI(QMainWindow):
                 QMessageBox.critical(self, 'Error', f'Error saving template:\n{str(e)}')
 
     def load_report_template(self):
-        """Load a report template."""
         current_item = self.templates_list.currentItem()
         if not current_item:
             QMessageBox.warning(self, 'No Selection', 'Please select a template to load.')
@@ -2456,9 +2538,10 @@ class DeepCleanerGUI(QMainWindow):
             self.add_activity(f'Loaded report template: {template_name}')
         except Exception as e:
             QMessageBox.critical(self, 'Error', f'Error loading template:\n{str(e)}')
+        """load_report_template."""
+        """load_report_template."""
 
     def create_resource_monitor_tab(self) -> QWidget:
-        """Create the resource monitor tab."""
         monitor_tab = QWidget()
         layout = QVBoxLayout(monitor_tab)
         controls_group = QGroupBox('Monitoring Controls')
@@ -2551,6 +2634,8 @@ class DeepCleanerGUI(QMainWindow):
         self.monitoring_timer = QTimer()
         self.monitoring_timer.timeout.connect(self.update_resource_metrics)
         return monitor_tab
+        """create_resource_monitor_tab."""
+        """create_resource_monitor_tab."""
 
     def start_resource_monitoring(self):
         """Start real-time resource monitoring."""
@@ -2578,7 +2663,6 @@ class DeepCleanerGUI(QMainWindow):
             QMessageBox.critical(self, 'Error', f'Error stopping monitoring:\n{str(e)}')
 
     def update_resource_metrics(self):
-        """Update resource metrics display."""
         try:
             if not hasattr(self, 'resource_monitor'):
                 return
@@ -2608,9 +2692,10 @@ class DeepCleanerGUI(QMainWindow):
             self.check_performance_alerts(cpu_percent, memory_percent)
         except Exception as e:
             self.alerts_text.append(f'Error updating metrics: {str(e)}')
+        """update_resource_metrics."""
+        """update_resource_metrics."""
 
     def check_performance_alerts(self, cpu_percent, memory_percent):
-        """Check for performance alerts and display warnings."""
         from datetime import datetime
         current_time = datetime.now().strftime('%H:%M:%S')
         cpu_threshold = self.cpu_threshold_spinbox.value()
@@ -2622,6 +2707,8 @@ class DeepCleanerGUI(QMainWindow):
             alert_msg = f'[{current_time}] HIGH MEMORY USAGE: {memory_percent:.1f}% (threshold: {memory_threshold}%)'
             self.alerts_text.append(alert_msg)
         self.alerts_text.moveCursor(self.alerts_text.textCursor().End)
+        """check_performance_alerts."""
+        """check_performance_alerts."""
 
     def on_rule_selection_changed(self):
         """Handle auto-clean rule selection changes."""

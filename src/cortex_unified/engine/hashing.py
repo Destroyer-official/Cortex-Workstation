@@ -94,6 +94,8 @@ class DuplicateFinderEngine:
         # oversubscribing. Capped to avoid thrashing on spinning media.
         self.workers = workers if workers > 0 else min(32, (os.cpu_count() or 4) + 4)
         self.hash_algorithm = HASH_ALGORITHM
+        """__init__."""
+        """__init__."""
 
     def find(
         self,
@@ -144,6 +146,8 @@ class DuplicateFinderEngine:
                 if progress is not None:
                     progress(done, total)
         return groups
+        """_group_by_hash."""
+        """_group_by_hash."""
 
     @staticmethod
     def wasted_bytes(groups: dict[str, list[Path]]) -> int:

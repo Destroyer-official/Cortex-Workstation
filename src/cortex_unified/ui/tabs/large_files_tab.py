@@ -23,7 +23,6 @@ from cortex_unified.core.scanner import Scanner
 from cortex_unified.core.deleter import Deleter
 from cortex_unified.analyzers.large_file_finder import LargeFileFinder
 
-
 class LargeFileFinderWorker(QThread):
     finished = Signal(list)
     error = Signal(str)
@@ -33,6 +32,8 @@ class LargeFileFinderWorker(QThread):
         self.config = config
         self.path = path
         self.min_size_mb = min_size_mb
+        """__init__."""
+        """__init__."""
 
     def run(self):
         """Run the large file finding process."""
@@ -43,13 +44,16 @@ class LargeFileFinderWorker(QThread):
             self.finished.emit([large_files, stats])
         except Exception as e:
             self.error.emit(str(e))
-
+    """LargeFileFinderWorker class."""
+    """LargeFileFinderWorker class."""
 
 class LargeFilesTab(BaseTab):
     """Tab for large files tab functionality."""
 
     def __init__(self, config, logger, safety_manager):
         super().__init__(config, logger, safety_manager)
+        """__init__."""
+        """__init__."""
 
     def setup_ui(self):
         """Set up the user interface."""
@@ -130,12 +134,18 @@ class LargeFilesTab(BaseTab):
     def _on_selection_changed(self):
         has_sel = len(self.large_files_table.selectedItems()) > 0
         self.delete_large_files_button.setEnabled(has_sel)
+        """_on_selection_changed."""
+        """_on_selection_changed."""
 
     def select_all(self):
         self.large_files_table.selectAll()
+        """select_all."""
+        """select_all."""
         
     def deselect_all(self):
         self.large_files_table.clearSelection()
+        """deselect_all."""
+        """deselect_all."""
 
     def start_find_large_files(self):
         """Start finding large files natively via Thread manager."""
@@ -177,9 +187,10 @@ class LargeFilesTab(BaseTab):
     def _on_worker_finished(self, worker):
         self.remove_worker_thread(worker)
         worker.deleteLater()
+        """_on_worker_finished."""
+        """_on_worker_finished."""
 
     def large_files_found(self, result: list):
-        """Handle large files found."""
         large_files, stats = result
         self.find_large_files_button.setEnabled(True)
         self.large_files_progress_bar.setVisible(False)
@@ -192,7 +203,7 @@ class LargeFilesTab(BaseTab):
                 stat = filepath.stat()
                 modified_time = stat.st_mtime
                 modified_str = datetime.fromtimestamp(modified_time).strftime('%Y-%m-%d %H:%M')
-            except:
+            except (OSError, ValueError):
                 modified_str = 'Unknown'
             size_str = self.format_bytes(size)
             
@@ -203,16 +214,18 @@ class LargeFilesTab(BaseTab):
         if len(large_files) > 0:
             self.select_all_btn.setEnabled(True)
             self.deselect_all_btn.setEnabled(True)
+        """large_files_found."""
+        """large_files_found."""
 
     def large_files_error(self, error: str):
-        """Handle large files error."""
         self.logger.error(f'Large files error: {error}')
         self.find_large_files_button.setEnabled(True)
         self.large_files_progress_bar.setVisible(False)
         QMessageBox.critical(self, 'Error', f'An error occurred while finding large files:\n{error}')
+        """large_files_error."""
+        """large_files_error."""
 
     def delete_selected_large_files(self):
-        """Delete selected large files."""
         selected_ranges = self.large_files_table.selectedRanges()
         if not selected_ranges:
             QMessageBox.information(self, 'Info', 'Please select files to delete.')
@@ -257,3 +270,5 @@ class LargeFilesTab(BaseTab):
         except Exception as e:
             self.large_files_progress_bar.setVisible(False)
             QMessageBox.critical(self, 'Deletion Error', f'Error deleting large files:\n{str(e)}')
+        """delete_selected_large_files."""
+        """delete_selected_large_files."""

@@ -18,6 +18,8 @@ class ProcessAnalyzerWorker(QThread):
     def __init__(self, config):
         super().__init__()
         self.analyzer = ProcessAnalyzer(config)
+        """__init__."""
+        """__init__."""
         
     def run(self):
         try:
@@ -27,6 +29,9 @@ class ProcessAnalyzerWorker(QThread):
             self.finished.emit(processes, services)
         except Exception as e:
             self.error.emit(str(e))
+        """run."""
+    """ProcessAnalyzerWorker class."""
+    """ProcessAnalyzerWorker class."""
 
 class ProcessAnalyzerTab(BaseTab):
     """Tab for process analyzer tab functionality."""
@@ -34,6 +39,8 @@ class ProcessAnalyzerTab(BaseTab):
     def __init__(self, config, logger, safety_manager):
         super().__init__(config, logger, safety_manager)
         self.worker = None
+        """__init__."""
+        """__init__."""
 
     def setup_ui(self):
         """Create the process analyzer tab."""
@@ -94,6 +101,8 @@ class ProcessAnalyzerTab(BaseTab):
         self.worker.finished.connect(self._on_scan_finished)
         self.worker.error.connect(self._on_scan_error)
         self.worker.start()
+        """refresh_processes."""
+        """refresh_processes."""
 
     def _on_scan_finished(self, processes: List[Dict], services: List[Dict]):
         self.processes_progress_bar.setVisible(False)
@@ -113,8 +122,12 @@ class ProcessAnalyzerTab(BaseTab):
             self.services_table.setItem(row, 0, QTableWidgetItem(s.get("display_name", s.get("name", s.get("unit", s.get("service", ""))))))
             self.services_table.setItem(row, 1, QTableWidgetItem(s.get("state", s.get("active", s.get("status", "")))))
             self.services_table.setItem(row, 2, QTableWidgetItem(s.get("description", str(s.get("pid", "")))))
+        """_on_scan_finished."""
+        """_on_scan_finished."""
             
     def _on_scan_error(self, err_msg):
         self.processes_progress_bar.setVisible(False)
         self.refresh_processes_button.setEnabled(True)
         self.logger.error(f"Process analysis failed: {err_msg}")
+        """_on_scan_error."""
+        """_on_scan_error."""

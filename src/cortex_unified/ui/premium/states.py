@@ -84,12 +84,13 @@ class StatePanel(QWidget):
     retryRequested = Signal()
 
     def __init__(self, palette: Palette, parent: QWidget | None = None) -> None:
+        """__init__."""
         super().__init__(parent)
         self.setObjectName("StatePanel")
         self._palette = palette
         self._mode = MODE_HIDDEN
         self._on_retry: Callable[[], None] | None = None
-        self._anim = None  # retains the entrance animation from GC
+        self._anim = None  # retain the fade so it isn't garbage-collected mid-run
         # Result widgets to hide while a state is shown and reveal on clear().
         self._content: list[QWidget] = []
 
@@ -123,6 +124,7 @@ class StatePanel(QWidget):
 
     # ------------------------------------------------------------------ UI --
     def _build_ui(self) -> None:
+        """_build_ui."""
         p = self._palette
         cap_size, cap_weight, cap_ls = TYPE_ROLES["caption"]
         title_size, title_weight, _ = TYPE_ROLES["section_title"]
@@ -254,6 +256,7 @@ class StatePanel(QWidget):
 
     # ------------------------------------------------------------- private --
     def _handle_retry(self) -> None:
+        """_handle_retry."""
         cb = self._on_retry
         # Emit for any listeners first, then invoke the direct callback.
         self.retryRequested.emit()
@@ -350,15 +353,17 @@ class _HoverLift(QObject):
     """
 
     def __init__(self, widget: QWidget, dy: int, duration: int) -> None:
+        """__init__."""
         super().__init__(widget)
         self._widget = widget
         self._dy = int(dy)
         self._duration = int(duration)
         self._base_pos: QPoint | None = None
-        self._anim = None  # retains the running animation from GC
+        self._anim = None  # retain the animation so it isn't garbage-collected mid-run
         widget.installEventFilter(self)
 
     def eventFilter(self, obj: QObject, event: QEvent) -> bool:  # noqa: N802 - Qt API
+        """eventFilter."""
         try:
             et = event.type()
             if et == QEvent.Type.Enter:
@@ -371,6 +376,7 @@ class _HoverLift(QObject):
         return False
 
     def _animate_to(self, offset: int) -> None:
+        """_animate_to."""
         w = self._widget
         # Capture the layout-assigned resting position lazily, the first time we
         # are hovered, so we always return exactly to where the layout put us.
@@ -404,6 +410,7 @@ class _FocusRing(QObject):
     """
 
     def __init__(self, widget: QWidget, accent: str) -> None:
+        """__init__."""
         super().__init__(widget)
         self._widget = widget
         self._accent = accent
@@ -411,6 +418,7 @@ class _FocusRing(QObject):
         widget.installEventFilter(self)
 
     def eventFilter(self, obj: QObject, event: QEvent) -> bool:  # noqa: N802 - Qt API
+        """eventFilter."""
         try:
             et = event.type()
             if et == QEvent.Type.FocusIn:
@@ -422,6 +430,7 @@ class _FocusRing(QObject):
         return False
 
     def _apply(self, on: bool) -> None:
+        """_apply."""
         w = self._widget
         # Also expose focus as a dynamic property so QSS ``[focusRing="true"]``
         # rules (or a repolish of the standard ``:focus`` rules) can react.

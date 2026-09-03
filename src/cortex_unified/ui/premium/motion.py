@@ -11,10 +11,30 @@ constants stay easy to assert against under Qt's ``offscreen`` platform.
 
 from __future__ import annotations
 
+import os
 from typing import Callable
 
-from PySide6.QtCore import QEasingCurve, QPropertyAnimation
+from PySide6.QtCore import QEasingCurve, QParallelAnimationGroup, QPoint, QPropertyAnimation
 from PySide6.QtWidgets import QGraphicsOpacityEffect, QWidget
+
+
+# Reduced-motion preference (accessibility / inclusivity). When enabled, callers
+# should skip or shorten non-essential motion (page fades, smooth scrolling,
+# gauge sweeps) - premium motion must never exclude users who are sensitive to
+# it. Defaults from the ``CORTEX_REDUCED_MOTION`` env var and can be toggled at
+# runtime (e.g. from a settings switch or an OS query).
+_REDUCED_MOTION = os.environ.get("CORTEX_REDUCED_MOTION") in ("1", "true", "True")
+
+
+def prefers_reduced_motion() -> bool:
+    """Return True when non-essential animation should be suppressed."""
+    return _REDUCED_MOTION
+
+
+def set_reduced_motion(value: bool) -> None:
+    """Enable/disable the app-wide reduced-motion preference."""
+    global _REDUCED_MOTION
+    _REDUCED_MOTION = bool(value)
 
 
 class Duration:
@@ -64,6 +84,7 @@ def fade_in(
     anim.setEasingCurve(EASING_STANDARD)
 
     def _teardown() -> None:
+        """_teardown."""
         # Guard against the widget having been deleted mid-animation.
         try:
             widget.setGraphicsEffect(None)
@@ -75,6 +96,127 @@ def fade_in(
     anim.finished.connect(_teardown)
     anim.start()
     return anim
+
+
+def reveal(
+    widget: QWidget,
+    duration: int = Duration.NORMAL,
+    rise: int = 12,
+    on_done: Callable[[], None] | None = None,
+):
+    """Reveal ``widget`` with a combined fade + gentle upward rise.
+
+    A premium page transition: instead of snapping in, content fades from
+    transparent while sliding up a few pixels so it "settles into place". The
+    widget must already sit at its final geometry - it is offset downward by
+    ``rise`` px, then both the opacity and position animate back together via a
+    :class:`QParallelAnimationGroup`.
+
+    Honors :func:`prefers_reduced_motion`: when reduced motion is requested the
+    animation is skipped entirely, the widget is left at its final state, and
+    ``on_done`` still runs - so motion-sensitive users get an instant, static
+    switch. The temporary opacity effect is removed on completion so child card
+    rendering (crisp text, borders) is never left routed through an offscreen
+    pixmap. Returns the animation group (retain it) or ``None`` under reduced
+    motion. Never raises - a failed transition must never break navigation.
+    """
+    if prefers_reduced_motion():
+        try:
+            widget.setGraphicsEffect(None)
+        except RuntimeError:
+            pass
+        if on_done is not None:
+            on_done()
+        return None
+
+    effect = QGraphicsOpacityEffect(widget)
+    widget.setGraphicsEffect(effect)
+    fade = QPropertyAnimation(effect, b"opacity", widget)
+    fade.setDuration(duration)
+    fade.setStartValue(0.0)
+    fade.setEndValue(1.0)
+    fade.setEasingCurve(EASING_STANDARD)
+
+    end_pos = widget.pos()
+    start_pos = QPoint(end_pos.x(), end_pos.y() + int(rise))
+    widget.move(start_pos)
+    slide = QPropertyAnimation(widget, b"pos", widget)
+    slide.setDuration(duration)
+    slide.setStartValue(start_pos)
+    slide.setEndValue(end_pos)
+    slide.setEasingCurve(EASING_STANDARD)
+
+    group = QParallelAnimationGroup(widget)
+    group.addAnimation(fade)
+    group.addAnimation(slide)
+
+    def _teardown() -> None:
+        """_teardown."""
+        try:
+            widget.setGraphicsEffect(None)
+            # Guarantee the final resting position even if a relayout raced us.
+            widget.move(end_pos)
+        except RuntimeError:
+            pass
+        if on_done is not None:
+            on_done()
+
+    group.finished.connect(_teardown)
+    group.start()
+    return group
+
+
+def press_feedback(widget, sink: int = 2) -> None:
+    """Give a clickable widget a subtle tactile "sink" on press.
+
+    On press the control eases down ``sink`` px and on release eases back, for a
+    premium, physical click feel (paired with the QSS ``:pressed`` colour shift,
+    which is the instant sub-120ms acknowledgement). The resting position is
+    (re)captured only when no press animation is already in flight, so rapid
+    clicks can never make the control drift from its layout position.
+
+    Honors :func:`prefers_reduced_motion` (no movement at all). Works on any
+    object exposing ``pressed``/``released`` signals (e.g. ``QPushButton``) and
+    never raises - press feedback is delight, never a dependency.
+    """
+    if not (hasattr(widget, "pressed") and hasattr(widget, "released")):
+        return
+
+    def _anim_to(point: QPoint) -> QPropertyAnimation:
+        """_anim_to."""
+        anim = QPropertyAnimation(widget, b"pos", widget)
+        anim.setDuration(Duration.INSTANT)
+        anim.setEndValue(point)
+        anim.setEasingCurve(EASING_STANDARD)
+        anim.start()
+        widget._press_anim = anim  # retain so it is not GC'd mid-flight
+        return anim
+
+    def _down() -> None:
+        """_down."""
+        if prefers_reduced_motion():
+            return
+        # Capture the resting position only when we're not mid-press, so a
+        # burst of clicks reuses one stable baseline and never accumulates.
+        if not getattr(widget, "_press_active", False):
+            widget._press_home = widget.pos()
+        widget._press_active = True
+        home = widget._press_home
+        _anim_to(QPoint(home.x(), home.y() + int(sink)))
+
+    def _up() -> None:
+        """_up."""
+        home = getattr(widget, "_press_home", None)
+        if home is None:
+            return
+        anim = _anim_to(home)
+        anim.finished.connect(lambda: setattr(widget, "_press_active", False))
+
+    try:
+        widget.pressed.connect(_down)
+        widget.released.connect(_up)
+    except Exception:  # noqa: BLE001 - press feedback must never break a control
+        pass
 
 
 def animate_property(

@@ -28,7 +28,6 @@ from cortex_unified.visualization.treemap_generator import TreeMapGenerator
 from cortex_unified.visualization.sunburst_generator import SunburstGenerator
 from cortex_unified.visualization.interactive_dashboard import InteractiveDashboard
 
-
 class DiskAnalyzerWorker(QThread):
     finished = Signal(dict)
     error = Signal(str)
@@ -38,6 +37,8 @@ class DiskAnalyzerWorker(QThread):
         self.config = config
         self.path = path
         self.logger = logging.getLogger('disk_analyzer')
+        """__init__."""
+        """__init__."""
 
     def run(self):
         """Run the disk analysis process."""
@@ -58,13 +59,16 @@ class DiskAnalyzerWorker(QThread):
         except Exception as e:
             self.logger.error('Error in disk analysis: {}'.format(str(e)))
             self.error.emit(str(e))
-
+    """DiskAnalyzerWorker class."""
+    """DiskAnalyzerWorker class."""
 
 class DiskAnalyzerTab(BaseTab):
     """Tab for disk analyzer tab functionality."""
 
     def __init__(self, config, logger, safety_manager):
         super().__init__(config, logger, safety_manager)
+        """__init__."""
+        """__init__."""
 
     def setup_ui(self):
         """Set up the user interface."""
@@ -191,6 +195,8 @@ class DiskAnalyzerTab(BaseTab):
     def _on_worker_finished(self, worker):
         self.remove_worker_thread(worker)
         worker.deleteLater()
+        """_on_worker_finished."""
+        """_on_worker_finished."""
 
     def disk_analysis_complete(self, result: dict):
         """Handle disk analysis completion."""
@@ -234,20 +240,22 @@ class DiskAnalyzerTab(BaseTab):
             self.largest_dirs_table.setItem(i, 1, QTableWidgetItem(size_str))
 
     def disk_analysis_error(self, error: str):
-        """Handle disk analysis error."""
         self.logger.error(f'Disk analysis error: {error}')
         self.analyze_disk_button.setEnabled(True)
         self.disk_analyzer_progress_bar.setVisible(False)
         self.set_status('Disk analysis failed')
         self.add_activity(f'Disk analysis failed: {error}')
         QMessageBox.critical(self, 'Error', f'An error occurred during disk analysis:\n{error}')
+        """disk_analysis_error."""
+        """disk_analysis_error."""
 
     def quick_disk_analysis(self):
-        """Quick disk analysis."""
         self.logger.info('=== Quick disk analysis initiated ===')
         home_dir = str(Path.home())
         self.disk_analyzer_path_input.setText(home_dir)
         self.start_disk_analysis()
+        """quick_disk_analysis."""
+        """quick_disk_analysis."""
 
     # Methods for rendering visualizations natively inside PyQt layout maps
     def show_treemap_visualization(self):
@@ -260,6 +268,8 @@ class DiskAnalyzerTab(BaseTab):
         with os.fdopen(fd, 'w', encoding='utf-8') as f:
             f.write(html_str)
         webbrowser.open('file://' + temp_path)
+        """show_treemap_visualization."""
+        """show_treemap_visualization."""
 
     def show_sunburst_visualization(self):
         if not hasattr(self, 'current_analyzer') or not self.current_analyzer:
@@ -271,6 +281,8 @@ class DiskAnalyzerTab(BaseTab):
         with os.fdopen(fd, 'w', encoding='utf-8') as f:
             f.write(html_str)
         webbrowser.open('file://' + temp_path)
+        """show_sunburst_visualization."""
+        """show_sunburst_visualization."""
 
     def show_interactive_dashboard(self):
         if not hasattr(self, 'current_analyzer') or not self.current_analyzer:
@@ -283,6 +295,8 @@ class DiskAnalyzerTab(BaseTab):
             webbrowser.open('file://' + temp_path)
         else:
             QMessageBox.critical(self, "Error", "Failed to generate dashboard.")
+        """show_interactive_dashboard."""
+        """show_interactive_dashboard."""
 
     def export_visualization_dialog(self):
         if not hasattr(self, 'current_analyzer') or not self.current_analyzer:
@@ -305,3 +319,5 @@ class DiskAnalyzerTab(BaseTab):
             QMessageBox.information(self, "Success", f"Dashboard exported successfully to:\n{file_path}")
         else:
             QMessageBox.critical(self, "Error", "Failed to export visualization. Make sure Kaleido and Plotly are installed for image export.")
+        """export_visualization_dialog."""
+        """export_visualization_dialog."""

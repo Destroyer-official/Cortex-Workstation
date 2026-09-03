@@ -1,47 +1,56 @@
-"""File shredder for secure deletion in Cortex Cleaner."""
+"""Overwrite-based file shredding.
+
+Multi-pass overwrite (random ... random, final zero pass) followed by
+unlink. Note the physical reality: overwrite passes are only meaningful on
+rotational HDDs; on SSD/NVMe, wear-leveling means the original blocks may
+survive. The storage-aware engine path (``engine.secure_delete``) enforces
+that distinction; this module is the simple legacy shredder.
+"""
 
 import os
-import random
-import struct
 from pathlib import Path
 from typing import List, Dict
-import hashlib
 
 from cortex_unified.core.utils import normalize_path
 from cortex_unified.core.config import Config
-from cortex_unified.core.security import check_deletion_safety, is_safe_path
+from cortex_unified.core.security import check_deletion_safety
 
 class FileShredder:
-    """Secure file deletion with overwrite passes."""
+    """Securely deletes files by overwriting contents before unlinking."""
     
     def __init__(self, config: Config = None):
-        """Initialize file shredder."""
+        """
+        Args:
+            config: Unused today beyond interface parity with other analyzers;
+                defaults are applied when omitted.
+        """
         self.config = config or Config()
-        self.passes = 3  # Default number of overwrite passes
-        self.verify = True  # Verify deletion by default
+        self.passes = 3  # overwrite passes per file
+        self.verify = True
         
-        # Results
         self.shredded_files: List[Path] = []
         self.errors: List[Dict[str, str]] = []
     
     def _generate_random_data(self, size: int) -> bytes:
-        """Generate random data of specified size."""
         return os.urandom(size)
+        """_generate_random_data."""
+        """_generate_random_data."""
     
     def _generate_pattern_data(self, size: int, pattern: int) -> bytes:
-        """Generate data with specific byte pattern."""
         return bytes([pattern] * size)
+        """_generate_pattern_data."""
+        """_generate_pattern_data."""
     
     def shred_file(self, filepath: Path, passes: int = None, allow_system_files: bool = False) -> bool:
-        """Securely delete a file by overwriting it multiple times.
+        """Overwrite *filepath* in place, then unlink it.
         
         Args:
             filepath: Path to the file to shred
             passes: Number of overwrite passes (defaults to self.passes)
-            allow_system_files: Whether to allow shredding system files (default: False)
+            allow_system_files: Whether to allow shredding system files
             
         Returns:
-            True if successful, False otherwise
+            True if successful, False otherwise (reason recorded in ``errors``)
         """
         if passes is None:
             passes = self.passes
@@ -49,7 +58,7 @@ class FileShredder:
         filepath = normalize_path(str(filepath))
         
         try:
-            # SECURITY CHECK: Verify it's safe to delete this file
+            # Safety gate first: refuse before a single byte is touched.
             is_safe, reason = check_deletion_safety(filepath, allow_system_files)
             if not is_safe:
                 self.errors.append({
@@ -58,7 +67,6 @@ class FileShredder:
                 })
                 return False
             
-            # Check if file exists
             if not filepath.exists():
                 self.errors.append({
                     "file": str(filepath),
@@ -66,38 +74,32 @@ class FileShredder:
                 })
                 return False
             
-            # Get file size
             file_size = filepath.stat().st_size
             if file_size == 0:
-                # For empty files, just delete normally
+                # Nothing to overwrite; deletion alone is complete.
                 filepath.unlink()
                 self.shredded_files.append(filepath)
                 return True
             
-            # Open file for writing
             with open(filepath, "r+b") as f:
-                # Perform overwrite passes
                 for i in range(passes):
-                    # Seek to beginning
                     f.seek(0)
                     
-                    # Generate and write data for this pass
+                    # Final pass writes zeros so no recognizable pattern of
+                    # the original data remains even at the magnetic level.
                     if i == passes - 1:
-                        # Last pass: write zeros
                         data = self._generate_pattern_data(file_size, 0x00)
                     else:
-                        # Other passes: write random data
                         data = self._generate_random_data(file_size)
                     
-                    # Write data
                     f.write(data)
+                    # fsync forces the pass through OS caches to platters;
+                    # without it the overwrite may never leave the page cache.
                     f.flush()
-                    os.fsync(f.fileno())  # Force write to disk
+                    os.fsync(f.fileno())
             
-            # Delete the file
             filepath.unlink()
             
-            # Verify deletion if requested
             if self.verify and filepath.exists():
                 self.errors.append({
                     "file": str(filepath),

@@ -20,8 +20,7 @@ from PySide6.QtGui import QIcon, QFont, QTextCursor
 
 from .base_tab import BaseTab
 from cortex_unified.core.config import Config
-from cortex_unified.analyzers.broken_link_detector import BrokenLinkDetector
-
+from cortex_unified.analyzers.broken_link_detector import BrokenLinkDetector, repair
 
 class BrokenLinksWorker(QThread):
     finished = Signal(list)
@@ -33,6 +32,8 @@ class BrokenLinksWorker(QThread):
         self.scan_symlinks = scan_symlinks
         self.scan_shortcuts = scan_shortcuts
         self.scan_registry = scan_registry
+        """__init__."""
+        """__init__."""
 
     def run(self):
         """Run the broken links scan."""
@@ -51,13 +52,48 @@ class BrokenLinksWorker(QThread):
             self.finished.emit(all_broken_links)
         except Exception as e:
             self.error.emit(str(e))
+    """BrokenLinksWorker class."""
+    """BrokenLinksWorker class."""
 
+class LinkRepairWorker(QThread):
+    """Runs safe repair (recycle shortcuts / remove dangling links) in background."""
+    finished = Signal(list)
+    error = Signal(str)
+
+    def __init__(self, items, use_trash=True, dry_run=False, create_backups=False):
+        super().__init__()
+        self.items = items
+        self.use_trash = use_trash
+        self.dry_run = dry_run
+        self.create_backups = create_backups
+        """__init__."""
+        """__init__."""
+
+    def run(self):
+        try:
+            if self.create_backups and not self.dry_run:
+                detector = BrokenLinkDetector()
+                for item in self.items:
+                    try:
+                        if getattr(item, 'link_type', '') == 'shortcut' \
+                                and Path(item.path).is_file():
+                            detector._create_backup(Path(item.path))
+                    except Exception as e:
+                        detector.logger.warning(f"Backup skipped for {item.path}: {e}")
+            outcomes = repair(self.items, use_trash=self.use_trash, dry_run=self.dry_run)
+            self.finished.emit(outcomes)
+        except Exception as e:
+            self.error.emit(str(e))
+        """run."""
+        """run."""
 
 class BrokenLinksTab(BaseTab):
     """Tab for broken links tab functionality."""
 
     def __init__(self, config, logger, safety_manager):
         super().__init__(config, logger, safety_manager)
+        """__init__."""
+        """__init__."""
 
     def setup_ui(self):
         """Set up the user interface."""
@@ -161,9 +197,13 @@ class BrokenLinksTab(BaseTab):
 
     def select_all(self):
         self.broken_links_table.selectAll()
+        """select_all."""
+        """select_all."""
         
     def deselect_all(self):
         self.broken_links_table.clearSelection()
+        """deselect_all."""
+        """deselect_all."""
 
     def browse_broken_links_path(self):
         """Browse for broken links scan path."""
@@ -208,6 +248,8 @@ class BrokenLinksTab(BaseTab):
     def _on_worker_finished(self, worker):
         self.remove_worker_thread(worker)
         worker.deleteLater()
+        """_on_worker_finished."""
+        """_on_worker_finished."""
 
     def on_broken_links_scan_finished(self, results):
         """Handle broken links scan completion."""
@@ -253,17 +295,102 @@ class BrokenLinksTab(BaseTab):
         self.broken_links_table.resizeColumnsToContents()
 
     def on_broken_links_scan_error(self, error_message):
-        """Handle broken links scan error."""
         self.broken_links_scan_button.setEnabled(True)
         self.broken_links_progress_bar.setVisible(False)
         QMessageBox.critical(self, 'Scan Error', f'Error during broken links scan:\n{error_message}')
+        """on_broken_links_scan_error."""
+        """on_broken_links_scan_error."""
 
     def repair_selected_links(self):
-        """Repairs the specified nodes."""
-        QMessageBox.information(self, "Repair Links", "Pro Feature: Intelligent recursive link repair is coming soon!")
+        """Repair the selected broken links (safe actions only)."""
+        results = getattr(self, 'broken_links_results', None) or []
+        rows = sorted({index.row() for index in self.broken_links_table.selectedItems()})
+        items = [results[r] for r in rows if 0 <= r < len(results)]
+        if not items:
+            QMessageBox.information(
+                self, 'Repair Links',
+                'Run a scan first, then select the broken links to repair.')
+            return
+
+        # Preview what repair would do before asking for confirmation.
+        try:
+            preview = repair(items, use_trash=True, dry_run=True)
+        except Exception as e:
+            QMessageBox.critical(self, 'Repair Error', f'Could not plan repair:\n{e}')
+            return
+
+        actionable = [o for o in preview if o.action not in ('excluded', 'skipped', 'failed')]
+        excluded = [o for o in preview if o.action == 'excluded']
+
+        if not actionable:
+            QMessageBox.information(
+                self, 'Repair Links',
+                'No safely repairable items in selection.\n'
+                + ('\n'.join(o.detail for o in excluded) if excluded else '').strip())
+            return
+
+        message = (
+            f"Repair {len(actionable)} item(s)?\n\n"
+            "- Broken shortcuts (.lnk) will be moved to the Recycle Bin.\n"
+            "- Dangling symlinks/junctions: only the LINK is removed.\n"
+        )
+        if self.create_backups_checkbox.isChecked():
+            message += "- Backups of shortcuts will be saved before removal.\n"
+        if excluded:
+            message += f"\n{len(excluded)} registry reference(s) will be skipped (manual review required).\n"
+        message += "\nThis cannot be undone for links removed outside the Recycle Bin."
+
+        reply = QMessageBox.warning(
+            self, 'CONFIRM REPAIR', message,
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No)
+        if reply != QMessageBox.StandardButton.Yes:
+            return
+
+        self.repair_selected_button.setEnabled(False)
+        self.broken_links_scan_button.setEnabled(False)
+        self.broken_links_progress_bar.setVisible(True)
+        self.broken_links_progress_bar.setRange(0, 0)
+
+        worker = LinkRepairWorker(
+            items,
+            use_trash=True,
+            dry_run=False,
+            create_backups=self.create_backups_checkbox.isChecked()
+        )
+        self.add_worker_thread(worker)
+
+        worker.finished.connect(self.on_repair_finished)
+        worker.error.connect(self.on_repair_error)
+        worker.finished.connect(lambda: self._on_worker_finished(worker))
+        worker.error.connect(lambda: self._on_worker_finished(worker))
+        worker.start()
+
+    def on_repair_finished(self, outcomes):
+        """Handle repair completion and report per-item outcomes."""
+        self.broken_links_scan_button.setEnabled(True)
+        self.broken_links_progress_bar.setVisible(False)
+
+        ok_count = sum(1 for o in outcomes if o.ok)
+        lines = [f'{"OK" if o.ok else "SKIPPED"}: {o.path} [{o.action}] {o.detail}'
+                 for o in outcomes]
+        detail = '\n'.join(lines)
+        self.broken_links_summary_label.setText(
+            f'Repair complete: {ok_count}/{len(outcomes)} items processed '
+            f'(shortcuts recycled, dangling links removed, registry refs skipped).')
+
+        QMessageBox.information(
+            self, 'Repair Complete',
+            f'{ok_count} of {len(outcomes)} item(s) processed.\n\n{detail}')
+
+    def on_repair_error(self, error_message):
+        self.broken_links_scan_button.setEnabled(True)
+        self.broken_links_progress_bar.setVisible(False)
+        QMessageBox.critical(self, 'Repair Error', f'Error during repair:\n{error_message}')
+        """on_repair_error."""
+        """on_repair_error."""
 
     def export_broken_links_results(self):
-        """Export broken links results to JSON."""
         if not hasattr(self, 'broken_links_results') or not self.broken_links_results:
             QMessageBox.warning(self, 'No Results', 'No broken links results to export.')
             return
@@ -300,3 +427,5 @@ class BrokenLinksTab(BaseTab):
             QMessageBox.information(self, 'Export Complete', f'Results exported to:\n{file_path}')
         except Exception as e:
             QMessageBox.critical(self, 'Export Error', f'Error exporting results:\n{str(e)}')
+        """export_broken_links_results."""
+        """export_broken_links_results."""

@@ -13,18 +13,19 @@ from __future__ import annotations
 
 import json
 import logging
+import sys
 import os
-import platform
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
 _LOG = logging.getLogger("cortex.system_tools.browser_extensions")
-_IS_WINDOWS = platform.system() == "Windows"
+_IS_WINDOWS = sys.platform == "win32"
 
 
 @dataclass(slots=True)
 class BrowserExtension:
+    """Browser Extension data container."""
     browser: str
     name: str
     version: str
@@ -40,6 +41,7 @@ class BrowserExtension:
         return any(p in risky for p in self.permissions)
 
     def to_dict(self) -> dict[str, Any]:
+        """To dict."""
         return {
             "browser": self.browser,
             "name": self.name,
@@ -62,6 +64,7 @@ class BrowserExtensionAuditor:
     }
 
     def __init__(self, home: Path | None = None):
+        """Initialize Browser Extension Auditor."""
         self._home = home or Path.home()
 
     def _localappdata(self) -> Path:
@@ -69,8 +72,11 @@ class BrowserExtensionAuditor:
             return Path(os.environ.get("LOCALAPPDATA", self._home / "AppData" / "Local"))
         # Reasonable fallbacks so the scanner still works cross-platform in tests.
         return self._home / ".config"
+        """_localappdata."""
+        """_localappdata."""
 
     def audit(self) -> list[BrowserExtension]:
+        """Audit."""
         out: list[BrowserExtension] = []
         out.extend(self._scan_chromium())
         out.extend(self._scan_firefox())
@@ -92,6 +98,8 @@ class BrowserExtensionAuditor:
                     continue
                 found.extend(self._scan_chromium_ext_root(browser, ext_root))
         return found
+        """_scan_chromium."""
+        """_scan_chromium."""
 
     def _scan_chromium_ext_root(self, browser: str, ext_root: Path) -> list[BrowserExtension]:
         found: list[BrowserExtension] = []
@@ -112,6 +120,8 @@ class BrowserExtensionAuditor:
                 continue
             found.append(self._from_chromium_manifest(browser, ext_dir.name, manifest))
         return found
+        """_scan_chromium_ext_root."""
+        """_scan_chromium_ext_root."""
 
     @staticmethod
     def _from_chromium_manifest(browser: str, ext_id: str, manifest: dict) -> BrowserExtension:
@@ -125,6 +135,8 @@ class BrowserExtensionAuditor:
             ext_id=ext_id,
             permissions=perms + host_perms,
         )
+        """_from_chromium_manifest."""
+        """_from_chromium_manifest."""
 
     # -- Firefox ------------------------------------------------------------
 
@@ -133,6 +145,8 @@ class BrowserExtensionAuditor:
             return Path(os.environ.get("APPDATA", self._home / "AppData" / "Roaming")) \
                 / "Mozilla" / "Firefox" / "Profiles"
         return self._home / ".mozilla" / "firefox"
+        """_firefox_root."""
+        """_firefox_root."""
 
     def _scan_firefox(self) -> list[BrowserExtension]:
         found: list[BrowserExtension] = []
@@ -160,6 +174,8 @@ class BrowserExtensionAuditor:
                     if isinstance(addon.get("userPermissions"), dict) else [],
                 ))
         return found
+        """_scan_firefox."""
+        """_scan_firefox."""
 
     # -- helpers ------------------------------------------------------------
 
@@ -169,6 +185,8 @@ class BrowserExtensionAuditor:
             return list(path.iterdir())
         except OSError:
             return []
+        """_safe_iterdir."""
+        """_safe_iterdir."""
 
     @staticmethod
     def _read_manifest(path: Path) -> dict | None:
@@ -178,3 +196,5 @@ class BrowserExtensionAuditor:
             return data if isinstance(data, dict) else None
         except (OSError, ValueError):
             return None
+        """_read_manifest."""
+        """_read_manifest."""

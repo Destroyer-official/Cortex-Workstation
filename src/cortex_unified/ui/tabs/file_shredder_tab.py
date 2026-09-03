@@ -18,7 +18,9 @@ from PySide6.QtGui import QIcon, QFont, QTextCursor
 
 from .base_tab import BaseTab
 from cortex_unified.core.config import Config
-from cortex_unified.analyzers.weaponized_shredder import WeaponizedShredder
+from cortex_unified.analyzers.advanced_shredder import AdvancedShredder
+from cortex_unified.system_tools.free_space_wipe import FreeSpaceWiper
+from cortex_unified.licensing import Feature, allowed
 
 
 class FileShredderWorker(QThread):
@@ -27,16 +29,20 @@ class FileShredderWorker(QThread):
     error = Signal(str)
     progress_update = Signal(str, int)
 
-    def __init__(self, config: Config, target_paths: List[str], passes: int, method: str):
+    def __init__(self, config: Config, target_paths: List[str], passes: int, method: str,
+                 wipe_drive: Optional[str] = None):
         super().__init__()
         self.config = config
         self.target_paths = target_paths
         self.passes = passes
         self.method = method
+        self.wipe_drive = wipe_drive
+        """__init__."""
+        """__init__."""
 
     def run(self):
         try:
-            shredder = WeaponizedShredder()
+            shredder = AdvancedShredder()
             results = {'successes': [], 'failures': []}
 
             total = len(self.target_paths)
@@ -60,10 +66,28 @@ class FileShredderWorker(QThread):
                 except Exception as e:
                     results['failures'].append((path, str(e)))
 
+            if self.wipe_drive:
+                self.progress_update.emit(
+                    f"Wiping free space on {self.wipe_drive}: (this may take a long time)…", 95)
+                try:
+                    wipe = FreeSpaceWiper().wipe(self.wipe_drive)
+                    results['free_space_wipe'] = {
+                        'success': wipe.success,
+                        'message': wipe.message,
+                        'effective': wipe.effective,
+                    }
+                    self.progress_update.emit(wipe.message, 99)
+                except Exception as e:
+                    results['free_space_wipe'] = {
+                        'success': False, 'message': str(e), 'effective': False}
+                    self.progress_update.emit(f"Free-space wipe failed: {e}", 99)
+
             self.progress_update.emit("Destruction sequence complete.", 100)
             self.finished.emit(results)
         except Exception as e:
             self.error.emit(str(e))
+        """run."""
+        """run."""
 
 
 class FileShredderTab(BaseTab):
@@ -72,6 +96,8 @@ class FileShredderTab(BaseTab):
     def __init__(self, config, logger, safety_manager):
         super().__init__(config, logger, safety_manager)
         self.files_to_shred = set()
+        """__init__."""
+        """__init__."""
 
     def setup_ui(self):
         """Create the file shredder tab."""
@@ -112,9 +138,17 @@ class FileShredderTab(BaseTab):
         options_group = QGroupBox('Shredding Options')
         options_layout = QFormLayout(options_group)
         
-        self.shred_passes_spinbox = QSpinBox()
-        self.shred_passes_spinbox.setRange(1, 35)
-        self.shred_passes_spinbox.setValue(3)
+        if allowed(Feature.SHRED_MULTIPASS):
+            self.shred_passes_spinbox = QSpinBox()
+            self.shred_passes_spinbox.setRange(1, 35)
+            self.shred_passes_spinbox.setValue(3)
+        else:
+            self.shred_passes_spinbox = QSpinBox()
+            self.shred_passes_spinbox.setRange(1, 1)
+            self.shred_passes_spinbox.setValue(1)
+            self.shred_passes_spinbox.setToolTip(
+                'Multi-pass shredding requires the Premium tier; '
+                'overwrite passes are capped at 1.')
         options_layout.addRow('Overwrite Passes:', self.shred_passes_spinbox)
         
         self.shred_method_combo = QComboBox()
@@ -126,7 +160,16 @@ class FileShredderTab(BaseTab):
         options_layout.addRow(self.verify_shred_checkbox)
         
         self.shred_free_space_checkbox = QCheckBox('Also shred free space (Pro)')
-        self.shred_free_space_checkbox.setEnabled(False)
+        if allowed(Feature.FREE_SPACE_WIPE):
+            self.shred_free_space_checkbox.setEnabled(True)
+            self.shred_free_space_checkbox.setToolTip(
+                'After shredding files, overwrite the unused space on the '
+                'drive (cipher /w). May take a long time.')
+        else:
+            self.shred_free_space_checkbox.setEnabled(False)
+            self.shred_free_space_checkbox.setToolTip(
+                'Shredding free space requires an upgrade to the Premium '
+                'tier (or higher).')
         options_layout.addRow(self.shred_free_space_checkbox)
         layout.addWidget(options_group)
         
@@ -157,6 +200,8 @@ class FileShredderTab(BaseTab):
         for f in self.files_to_shred:
             self.shredder_file_list.addItem(f)
         self.start_shred_button.setEnabled(len(self.files_to_shred) > 0)
+        """_sync_list."""
+        """_sync_list."""
 
     def add_files_to_shred(self):
         files, _ = QFileDialog.getOpenFileNames(self, "Select Files to Shred")
@@ -164,22 +209,48 @@ class FileShredderTab(BaseTab):
             for f in files:
                 self.files_to_shred.add(f)
             self._sync_list()
+        """add_files_to_shred."""
+        """add_files_to_shred."""
 
     def add_folder_to_shred(self):
         folder = QFileDialog.getExistingDirectory(self, "Select Directory to Shred")
         if folder:
             self.files_to_shred.add(folder)
             self._sync_list()
+        """add_folder_to_shred."""
+        """add_folder_to_shred."""
 
     def remove_files_from_shred(self):
         items = self.shredder_file_list.selectedItems()
         for item in items:
             self.files_to_shred.discard(item.text())
         self._sync_list()
+        """remove_files_from_shred."""
+        """remove_files_from_shred."""
 
     def clear_shred_list(self):
         self.files_to_shred.clear()
         self._sync_list()
+        """clear_shred_list."""
+        """clear_shred_list."""
+
+    def _resolve_passes(self):
+        """Entitlement-checked pass count; never exceeds the licensed cap."""
+        passes = self.shred_passes_spinbox.value()
+        if passes > 1 and not allowed(Feature.SHRED_MULTIPASS):
+            self.shred_results.append(
+                'Multi-pass shredding requires Premium - capped this run to 1 pass.')
+            return 1
+        return passes
+
+    @staticmethod
+    def _derive_drive_letter(paths):
+        """Single drive letter shared by all target paths, else None."""
+        anchors = {Path(p).anchor for p in paths}
+        if len(anchors) != 1:
+            return None
+        anchor = anchors.pop().rstrip(':\\')
+        return anchor or None
 
     def start_file_shredding(self):
         if not self.files_to_shred:
@@ -193,6 +264,27 @@ class FileShredderTab(BaseTab):
         )
         if reply != QMessageBox.StandardButton.Yes:
             return
+
+        passes = self._resolve_passes()
+
+        wipe_drive = None
+        if self.shred_free_space_checkbox.isEnabled() and self.shred_free_space_checkbox.isChecked():
+            wipe_drive = self._derive_drive_letter(self.files_to_shred)
+            if not wipe_drive:
+                QMessageBox.warning(
+                    self, 'Free-space Wipe',
+                    'All paths must be on the same drive to shred its free space.')
+                return
+            reply = QMessageBox.warning(
+                self, "CONFIRM FREE-SPACE WIPE",
+                f"Also overwrite ALL FREE SPACE on drive {wipe_drive}: ?\n"
+                "This may take a long time (up to an hour per drive).\n"
+                "Continue?",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                QMessageBox.StandardButton.No
+            )
+            if reply != QMessageBox.StandardButton.Yes:
+                return
             
         self.start_shred_button.setEnabled(False)
         self.shred_progress_bar.setVisible(True)
@@ -202,8 +294,9 @@ class FileShredderTab(BaseTab):
         worker = FileShredderWorker(
             self.config, 
             list(self.files_to_shred), 
-            self.shred_passes_spinbox.value(), 
-            self.shred_method_combo.currentText()
+            passes, 
+            self.shred_method_combo.currentText(),
+            wipe_drive=wipe_drive
         )
         self.add_worker_thread(worker)
         
@@ -213,14 +306,20 @@ class FileShredderTab(BaseTab):
         worker.finished.connect(lambda: self._on_worker_finished(worker))
         worker.error.connect(lambda: self._on_worker_finished(worker))
         worker.start()
+        """start_file_shredding."""
+        """start_file_shredding."""
 
     def _on_shred_progress(self, msg, pct):
         self.shred_status_label.setText(msg)
         self.shred_progress_bar.setValue(pct)
+        """_on_shred_progress."""
+        """_on_shred_progress."""
 
     def _on_worker_finished(self, worker):
         self.remove_worker_thread(worker)
         worker.deleteLater()
+        """_on_worker_finished."""
+        """_on_worker_finished."""
 
     def _on_shred_complete(self, results):
         self.start_shred_button.setEnabled(True)
@@ -232,14 +331,28 @@ class FileShredderTab(BaseTab):
         self.shred_results.append(f"SUCCESSFULLY SHREDDED {len(successes)} PATHS.")
         for f in failures:
             self.shred_results.append(f"FAILED: {f[0]} -> {f[1]}")
+
+        summary = f"Safely randomized and destroyed {len(successes)} items."
+        wipe = results.get('free_space_wipe')
+        if wipe:
+            if wipe.get('success'):
+                self.shred_results.append(f"FREE SPACE OK: {wipe.get('message')}")
+                summary += f"\nFree space: {wipe.get('message')}"
+            else:
+                self.shred_results.append(f"FREE SPACE FAILED: {wipe.get('message')}")
+                summary += f"\nFree-space wipe FAILED: {wipe.get('message')}"
             
         self.files_to_shred.clear()
         self._sync_list()
         
-        QMessageBox.information(self, "Sequence Complete", f"Safely randomized and destroyed {len(successes)} items.")
+        QMessageBox.information(self, "Sequence Complete", summary)
+        """_on_shred_complete."""
+        """_on_shred_complete."""
 
     def _on_shred_error(self, error):
         self.start_shred_button.setEnabled(True)
         self.shred_progress_bar.setVisible(False)
         self.shred_results.append(f"FATAL ERROR: {error}")
         QMessageBox.critical(self, "Error", f"Execution failed:\n{error}")
+        """_on_shred_error."""
+        """_on_shred_error."""

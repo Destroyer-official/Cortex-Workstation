@@ -16,13 +16,15 @@ from __future__ import annotations
 
 import json
 import logging
-import platform
+import sys
 import subprocess
 from dataclasses import dataclass
 from typing import Any
 
+from cortex_unified.core import proc as _proc
+
 _LOG = logging.getLogger("cortex.system_tools.windows_update")
-_IS_WINDOWS = platform.system() == "Windows"
+_IS_WINDOWS = sys.platform == "win32"
 _NO_WINDOW = 0x08000000 if _IS_WINDOWS else 0
 
 _RESULTS_KEY = r"SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\Results"
@@ -32,12 +34,14 @@ _HISTORY_RESULT = {1: "In progress", 2: "Succeeded", 3: "Succeeded with errors",
 
 @dataclass(slots=True)
 class PendingUpdate:
+    """Pending Update data container."""
     title: str
     kb: str = ""
     severity: str = ""
     size_bytes: int = 0
 
     def to_dict(self) -> dict[str, Any]:
+        """To dict."""
         return {"title": self.title, "kb": self.kb, "severity": self.severity,
                 "size_bytes": self.size_bytes}
 
@@ -47,11 +51,13 @@ class WindowsUpdate:
 
     @staticmethod
     def is_supported() -> bool:
+        """Is supported."""
         return _IS_WINDOWS
 
     # -- offline: last activity from registry -------------------------------
 
     def last_activity(self) -> dict[str, str]:
+        """Last activity."""
         if not _IS_WINDOWS:
             return {"last_check": "", "last_install": ""}
         return {
@@ -71,10 +77,13 @@ class WindowsUpdate:
         except Exception as exc:  # noqa: BLE001
             _LOG.debug("read WU %s time failed: %s", sub, exc)
             return ""
+        """_read_result_time."""
+        """_read_result_time."""
 
     # -- online: pending updates via COM ------------------------------------
 
     def check_pending(self) -> list[PendingUpdate]:
+        """Check pending."""
         if not _IS_WINDOWS:
             return []
         script = (
@@ -102,6 +111,8 @@ class WindowsUpdate:
                 return int(v) if v is not None else 0
             except (ValueError, TypeError):
                 return 0
+            """_int."""
+            """_int."""
 
         updates = []
         for u in data:
@@ -117,10 +128,13 @@ class WindowsUpdate:
                 size_bytes=_int(u.get("Size")),
             ))
         return updates
+        """_parse_pending."""
+        """_parse_pending."""
 
     # -- history via COM ----------------------------------------------------
 
     def recent_history(self, limit: int = 15) -> list[dict[str, Any]]:
+        """Recent history."""
         if not _IS_WINDOWS:
             return []
         script = (
@@ -161,14 +175,18 @@ class WindowsUpdate:
                 "succeeded": rc == 2,
             })
         return rows
+        """_parse_history."""
+        """_parse_history."""
 
     def _run(self, script: str, timeout: int) -> str | None:
         try:
-            proc = subprocess.run(
+            proc = _proc.run(
                 ["powershell", "-NoProfile", "-NonInteractive", "-Command", script],
-                capture_output=True, text=True, timeout=timeout, creationflags=_NO_WINDOW,
+                text=True, timeout=timeout, creationflags=_NO_WINDOW,
             )
             return proc.stdout if proc.returncode == 0 else None
-        except (OSError, subprocess.SubprocessError) as exc:
+        except (_proc.ProcessCancelled, OSError, subprocess.SubprocessError) as exc:
             _LOG.debug("windows update query failed: %s", exc)
             return None
+        """_run."""
+        """_run."""

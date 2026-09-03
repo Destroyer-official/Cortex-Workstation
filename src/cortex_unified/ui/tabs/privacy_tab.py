@@ -33,6 +33,8 @@ class BrowserScanWorker(QObject):
         browsers = cleaner.scan_browsers()
         traces = cleaner.scan_system_traces()
         self.finished.emit(browsers, traces)
+        """run."""
+        """run."""
 
 
 # ──────────────────────────────────────────────────────────────────────
@@ -49,6 +51,8 @@ class PrivacyTab(BaseTab):
         self._scan_worker = None
         self._last_browser_results = {}
         super().__init__(config, logger, safety_manager)
+        """__init__."""
+        """__init__."""
 
     def setup_ui(self):
         main_layout = QVBoxLayout(self)
@@ -123,10 +127,14 @@ class PrivacyTab(BaseTab):
 
         # Initial telemetry check
         self._refresh_telemetry()
+        """setup_ui."""
+        """setup_ui."""
 
     def setup_tooltips(self):
         self.btn_block.setToolTip("Modify registry to disable Windows telemetry (Admin required)")
         self.btn_restore.setToolTip("Remove custom telemetry blocks and restore Windows defaults")
+        """setup_tooltips."""
+        """setup_tooltips."""
 
     # ── Telemetry ─────────────────────────────────────────────────────
 
@@ -158,6 +166,8 @@ class PrivacyTab(BaseTab):
             self.lbl_telemetry.setText(f"🔴 All {total} telemetry features are active.")
             self.lbl_telemetry.setStyleSheet("color: #F44336; font-weight: bold;")
             self.btn_block.setEnabled(True)
+        """_refresh_telemetry."""
+        """_refresh_telemetry."""
 
     def _apply_block(self):
         reply = QMessageBox.question(
@@ -178,6 +188,8 @@ class PrivacyTab(BaseTab):
                     "Ensure the app is running as Administrator.",
                 )
             self._refresh_telemetry()
+        """_apply_block."""
+        """_apply_block."""
 
     def _restore_telemetry(self):
         reply = QMessageBox.question(
@@ -193,6 +205,8 @@ class PrivacyTab(BaseTab):
             else:
                 QMessageBox.warning(self, "Warning", "Some defaults could not be restored.")
             self._refresh_telemetry()
+        """_restore_telemetry."""
+        """_restore_telemetry."""
 
     # ── Browser Scan ──────────────────────────────────────────────────
 
@@ -212,6 +226,8 @@ class PrivacyTab(BaseTab):
         self._scan_thread.finished.connect(self._scan_thread.deleteLater)
 
         self._scan_thread.start()
+        """_scan_browsers."""
+        """_scan_browsers."""
 
     def _on_scan_done(self, browser_results: dict, system_traces: dict):
         self._last_browser_results = browser_results
@@ -271,6 +287,8 @@ class PrivacyTab(BaseTab):
             )
         else:
             QMessageBox.information(self, "Clean", "No privacy traces found!")
+        """_on_scan_done."""
+        """_on_scan_done."""
 
     # ── Browser Clean ─────────────────────────────────────────────────
 
@@ -329,3 +347,5 @@ class PrivacyTab(BaseTab):
 
         # Rescan
         self._scan_browsers()
+        """_clean_browsers."""
+        """_clean_browsers."""

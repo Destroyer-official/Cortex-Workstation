@@ -29,12 +29,15 @@ def _fmt_bytes(n: int | float | None) -> str:
             return f"{size:.1f} {unit}"
         size /= 1024
     return f"{n} B"
+    """_fmt_bytes."""
+    """_fmt_bytes."""
 
 
 class SystemInfo:
     """Collect a snapshot of system facts and live metrics."""
 
     def platform_info(self) -> dict[str, Any]:
+        """Platform info."""
         uname = platform.uname()
         return {
             "system": uname.system,
@@ -47,6 +50,7 @@ class SystemInfo:
         }
 
     def cpu_info(self) -> dict[str, Any]:
+        """Cpu info."""
         if not _HAS_PSUTIL:
             return {}
         try:
@@ -62,6 +66,7 @@ class SystemInfo:
         }
 
     def memory_info(self) -> dict[str, Any]:
+        """Memory info."""
         if not _HAS_PSUTIL:
             return {}
         vm = psutil.virtual_memory()
@@ -77,6 +82,7 @@ class SystemInfo:
         }
 
     def disk_info(self) -> list[dict[str, Any]]:
+        """Disk info."""
         if not _HAS_PSUTIL:
             return []
         out: list[dict[str, Any]] = []
@@ -98,6 +104,7 @@ class SystemInfo:
         return out
 
     def battery_info(self) -> dict[str, Any] | None:
+        """Battery info."""
         if not _HAS_PSUTIL or not hasattr(psutil, "sensors_battery"):
             return None
         try:
@@ -113,6 +120,7 @@ class SystemInfo:
         }
 
     def boot_time(self) -> float | None:
+        """Boot time."""
         if not _HAS_PSUTIL:
             return None
         try:

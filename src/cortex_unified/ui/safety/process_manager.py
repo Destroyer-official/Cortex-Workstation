@@ -9,7 +9,6 @@ from pathlib import Path
 from typing import List, Dict, Any, Optional, Union
 from dataclasses import dataclass
 import logging
-import signal
 import time
 
 from cortex_unified.core.utils import DeepCleanerError
@@ -98,14 +97,11 @@ class ProcessManager:
             ExecutableNotFoundError: If executable not found or not allowed
         """
         try:
-            # Get the base name for security checks
             exe_name = Path(executable).name.lower()
             
-            # Check if executable is blocked
             if exe_name in [blocked.lower() for blocked in self.blocked_executables]:
                 raise ExecutableNotFoundError(f"Executable '{executable}' is blocked by security policy")
             
-            # Check if we have an allowlist and executable is not in it
             if (self.allowed_executables is not None and 
                 exe_name not in [allowed.lower() for allowed in self.allowed_executables]):
                 raise ExecutableNotFoundError(f"Executable '{executable}' is not in allowed list")
@@ -118,7 +114,6 @@ class ProcessManager:
             # Additional security checks
             exe_path_obj = Path(exe_path)
             
-            # Check if executable exists and is actually executable
             if not exe_path_obj.exists():
                 raise ExecutableNotFoundError(f"Executable path does not exist: {exe_path}")
             

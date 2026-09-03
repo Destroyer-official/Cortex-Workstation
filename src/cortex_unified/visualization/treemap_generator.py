@@ -3,10 +3,8 @@ TreeMap visualization generator for disk usage analysis.
 """
 
 import os
-import math
-from typing import List, Dict, Any, Optional, Union
+from typing import List, Dict, Any, Optional
 from dataclasses import dataclass
-from pathlib import Path
 try:
     import plotly.graph_objects as go
     import plotly.express as px
@@ -14,27 +12,40 @@ try:
     HAS_PLOTLY = True
 except ImportError:
     HAS_PLOTLY = False
-    # Create dummy classes for when plotly is not available
+    # No-op stand-ins keep method bodies runnable without Plotly
     class go:
         class Figure:
             def __init__(self, *args, **kwargs):
                 pass
+                """__init__."""
+                """__init__."""
             def add_trace(self, *args, **kwargs):
                 pass
+                """add_trace."""
+                """add_trace."""
             def update_layout(self, *args, **kwargs):
                 pass
+                """update_layout."""
+            """Figure class."""
+        """go class."""
+        """go class."""
     class px:
         @staticmethod
         def treemap(*args, **kwargs):
             return go.Figure()
+            """treemap."""
+        """px class."""
+        """px class."""
     def plot(*args, **kwargs):
         pass
+        """plot."""
+        """plot."""
 
 import colorsys
 
 @dataclass
 class TreeMapNode:
-    """Data structure for TreeMap visualization nodes."""
+    """Tree cell carrying size, depth, and its resolved display color."""
     name: str
     size: int
     path: str
@@ -45,10 +56,10 @@ class TreeMapNode:
     modified_time: Optional[float] = None
 
 class TreeMapGenerator:
-    """Generates TreeMap visualizations for disk usage data."""
+    """Renders disk trees as treemaps; larger nodes darken within their hue."""
     
     def __init__(self, data: Any = None):
-        """Initialize TreeMap generator with disk analysis data."""
+        """Warn once without Plotly; color scale is sized lazily at flatten."""
         self.data = data
         self.color_map = {}
         self.has_plotly = HAS_PLOTLY
@@ -58,8 +69,7 @@ class TreeMapGenerator:
         self._setup_color_scheme()
     
     def _setup_color_scheme(self):
-        """Setup color scheme for different file types and sizes."""
-        # File type colors
+        """Per-extension base hues; 'unknown' catches unlisted types."""
         self.file_type_colors = {
             '.txt': '#3498db',    # Blue
             '.py': '#2ecc71',     # Green
@@ -79,50 +89,51 @@ class TreeMapGenerator:
         }
     
     def _get_file_type_from_path(self, path: str) -> str:
-        """Get file type from path."""
+        """Extension tag for a path; 'directory'/'unknown' sentinels."""
         if os.path.isdir(path):
             return 'directory'
         ext = os.path.splitext(path)[1].lower()
         return ext if ext else 'unknown'
     
     def _get_color_for_item(self, node: TreeMapNode) -> str:
-        """Get color for a tree map item based on type and size."""
+        """Base hue by type, darkened proportionally to size share.
+
+        Depends on ``self._max_size``, which
+        ``_flatten_nodes_for_plotly`` populates before any coloring.
+        """
         file_type = node.file_type or self._get_file_type_from_path(node.path)
         
-        # Base color from file type
         base_color = self.file_type_colors.get(file_type, self.file_type_colors['unknown'])
         
-        # Adjust brightness based on size (larger = darker)
         if hasattr(self, '_max_size') and self._max_size > 0:
             size_ratio = node.size / self._max_size
-            # Convert hex to RGB
             base_color = base_color.lstrip('#')
             r, g, b = tuple(int(base_color[i:i+2], 16) for i in (0, 2, 4))
             
-            # Convert to HSV and adjust brightness
             h, s, v = colorsys.rgb_to_hsv(r/255, g/255, b/255)
-            v = max(0.3, v * (0.5 + 0.5 * size_ratio))  # Ensure minimum brightness
+            v = max(0.3, v * (0.5 + 0.5 * size_ratio))  # legibility floor
             
-            # Convert back to RGB and hex
             r, g, b = colorsys.hsv_to_rgb(h, s, v)
             return f"#{int(r*255):02x}{int(g*255):02x}{int(b*255):02x}"
         
         return base_color
     
     def _convert_directory_tree_to_nodes(self, tree_data: Dict, max_depth: int = 3, current_depth: int = 0) -> List[TreeMapNode]:
-        """Convert directory tree data to TreeMapNode objects."""
+        """Recursively materialize TreeMapNodes up to max_depth.
+
+        Accepts a rooted dict, a dict of trees, or a list of trees;
+        non-dict entries are skipped.
+        """
         nodes = []
         
         if current_depth >= max_depth:
             return nodes
         
-        # Handle both single tree and list of trees
         if isinstance(tree_data, dict):
             if 'children' in tree_data:
-                # Single tree structure
+                # Rooted tree vs mapping of trees
                 trees = [tree_data]
             else:
-                # Dictionary of trees
                 trees = list(tree_data.values()) if tree_data else []
         elif isinstance(tree_data, list):
             trees = tree_data
@@ -143,7 +154,7 @@ class TreeMapGenerator:
                 file_type=self._get_file_type_from_path(tree.get('path', ''))
             )
             
-            # Recursively process children
+            # Descend only if another level is allowed
             children_data = tree.get('children', [])
             if children_data and current_depth < max_depth - 1:
                 node.children = self._convert_directory_tree_to_nodes(
@@ -155,7 +166,11 @@ class TreeMapGenerator:
         return nodes
     
     def _flatten_nodes_for_plotly(self, nodes: List[TreeMapNode]) -> Dict[str, List]:
-        """Flatten tree nodes for Plotly treemap format."""
+        """Depth-first flatten into parallel arrays for go.Treemap.
+
+        Also computes ``_max_size`` (consumed by ``_get_color_for_item``),
+        so this must run before color resolution.
+        """
         ids = []
         labels = []
         parents = []
@@ -172,26 +187,26 @@ class TreeMapGenerator:
             values.append(node.size)
             colors.append(self._get_color_for_item(node))
             
-            # Create hover text with size information
             size_mb = node.size / (1024 * 1024) if node.size > 0 else 0
             hover_text = f"{node.name}<br>Size: {self._format_bytes(node.size)}<br>Path: {node.path}"
             hover_texts.append(hover_text)
             
-            # Add children
             for child in node.children:
                 add_node(child, node_id)
+            """add_node."""
+            """add_node."""
         
-        # Calculate max size for color scaling
         all_sizes = []
         def collect_sizes(nodes_list):
             for node in nodes_list:
                 all_sizes.append(node.size)
                 collect_sizes(node.children)
+            """collect_sizes."""
+            """collect_sizes."""
         
         collect_sizes(nodes)
         self._max_size = max(all_sizes) if all_sizes else 1
         
-        # Add all nodes
         for node in nodes:
             add_node(node)
         
@@ -205,9 +220,12 @@ class TreeMapGenerator:
         }
     
     def generate_treemap(self, max_depth: int = 3) -> go.Figure:
-        """Generate TreeMap visualization data."""
+        """Render the treemap figure, or a "No Data" empty state.
+
+        Args:
+            max_depth: Maximum nesting depth passed through to Plotly.
+        """
         if not self.data:
-            # Create empty treemap
             fig = go.Figure(go.Treemap(
                 labels=["No Data"],
                 parents=[""],
@@ -217,17 +235,14 @@ class TreeMapGenerator:
             fig.update_layout(title="No Data Available")
             return fig
         
-        # Convert data to nodes
         if hasattr(self.data, 'directory_tree') and self.data.directory_tree:
             nodes = self._convert_directory_tree_to_nodes(self.data.directory_tree, max_depth)
         elif isinstance(self.data, dict):
             nodes = self._convert_directory_tree_to_nodes(self.data, max_depth)
         else:
-            # Fallback for other data formats
             nodes = []
         
         if not nodes:
-            # Create empty treemap
             fig = go.Figure(go.Treemap(
                 labels=["No Data"],
                 parents=[""],
@@ -237,7 +252,6 @@ class TreeMapGenerator:
             fig.update_layout(title="No Data Available")
             return fig
         
-        # Flatten nodes for Plotly
         plotly_data = self._flatten_nodes_for_plotly(nodes)
         fig = go.Figure(go.Treemap(
             ids=plotly_data['ids'],
@@ -270,11 +284,22 @@ class TreeMapGenerator:
         return fig
     
     def export_as_image(self, format: str = "png", width: int = 1200, height: int = 800) -> bytes:
-        """Export TreeMap as image."""
+        """Rasterize via the kaleido engine.
+
+        Args:
+            format: Image format, e.g. "png" or "svg".
+            width: Output width in pixels.
+            height: Output height in pixels.
+
+        Returns:
+            Encoded image bytes.
+
+        Raises:
+            RuntimeError: If generation or rasterization fails.
+        """
         try:
             fig = self.generate_treemap()
             
-            # Export as image
             img_bytes = fig.to_image(
                 format=format.lower(),
                 width=width,
@@ -287,18 +312,27 @@ class TreeMapGenerator:
             raise RuntimeError(f"Failed to export treemap as {format}: {str(e)}")
     
     def export_as_html(self, interactive: bool = True, include_plotlyjs: str = 'cdn') -> str:
-        """Export TreeMap as HTML."""
+        """Serialize to a standalone HTML <div>.
+
+        Args:
+            interactive: When False, strip pan/lasso/select mode-bar tools.
+            include_plotlyjs: Passed to plot(): 'cdn', True, False, etc.
+
+        Returns:
+            HTML fragment string.
+
+        Raises:
+            RuntimeError: On serialization failure.
+        """
         try:
             fig = self.generate_treemap()
             
-            # Configure interactivity
             config = {
                 'displayModeBar': interactive,
                 'displaylogo': False,
                 'modeBarButtonsToRemove': ['pan2d', 'lasso2d', 'select2d'] if not interactive else []
             }
             
-            # Generate HTML
             html_str = plot(
                 fig,
                 output_type='div',
@@ -311,7 +345,7 @@ class TreeMapGenerator:
             raise RuntimeError(f"Failed to export treemap as HTML: {str(e)}")
     
     def _format_bytes(self, bytes_count: int) -> str:
-        """Format bytes into human-readable format."""
+        """Human-readable size using binary (1024-step) units."""
         if bytes_count == 0:
             return "0 B"
         

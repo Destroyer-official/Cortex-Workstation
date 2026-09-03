@@ -48,6 +48,7 @@ _SERVICES = {
 
 @dataclass(slots=True)
 class Connection:
+    """Connection data container."""
     protocol: str
     local_addr: str
     local_port: int
@@ -62,16 +63,19 @@ class Connection:
 
     @property
     def listening_public(self) -> bool:
+        """Listening public."""
         return (self.status == "LISTEN"
                 and self.local_addr in ("0.0.0.0", "::"))
 
     @property
     def remote_external(self) -> bool:
+        """Remote external."""
         if self.status != "ESTABLISHED" or not self.remote_addr:
             return False
         return not _is_private(self.remote_addr)
 
     def to_dict(self) -> dict[str, Any]:
+        """To dict."""
         return {
             "protocol": self.protocol,
             "local": f"{self.local_addr}:{self.local_port}" if self.local_port else self.local_addr,
@@ -94,12 +98,15 @@ def _is_private(addr: str) -> bool:
     except ValueError:
         return True  # can't classify -> don't flag as external
     return ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_multicast
+    """_is_private."""
+    """_is_private."""
 
 
 class NetworkMonitor:
     """Read-only listing of active network connections and their owners."""
 
     def connections(self) -> list[Connection]:
+        """Connections."""
         try:
             import psutil
         except ImportError:
@@ -166,6 +173,7 @@ class NetworkMonitor:
 
     @staticmethod
     def summarize(conns: list[Connection]) -> dict[str, int]:
+        """Summarize."""
         return {
             "total": len(conns),
             "established": sum(1 for c in conns if c.status == "ESTABLISHED"),

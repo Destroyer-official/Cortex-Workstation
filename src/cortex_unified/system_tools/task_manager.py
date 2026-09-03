@@ -18,11 +18,11 @@ terminate a PID (guarded in the UI by a confirmation dialog).
 from __future__ import annotations
 
 import logging
-import platform
+import sys
 from typing import Any
 
 _LOG = logging.getLogger("cortex.system_tools.task_manager")
-_IS_WINDOWS = platform.system() == "Windows"
+_IS_WINDOWS = sys.platform == "win32"
 _NO_WINDOW = 0x08000000 if _IS_WINDOWS else 0
 
 
@@ -46,11 +46,13 @@ class TaskManager:
 
     @classmethod
     def instance(cls) -> "TaskManager":
+        """Instance."""
         if cls._instance is None:
             cls._instance = cls()
         return cls._instance
 
     def __init__(self) -> None:
+        """Initialize Task Manager."""
         self._cache: dict[int, Any] = {}   # pid -> psutil.Process
         self._installed_bytes: int | None = None  # physical RAM incl. reserved
 
@@ -173,6 +175,8 @@ class TaskManager:
                 continue
         procs.sort(key=lambda d: d["rss"], reverse=True)
         return procs
+        """_collect_processes."""
+        """_collect_processes."""
 
     def _collect_memory(self, psutil, processes: list[dict]) -> dict[str, Any]:
         vm = psutil.virtual_memory()
@@ -204,6 +208,8 @@ class TaskManager:
             out["installed"] = installed
             out["hardware_reserved"] = installed - vm.total
         return out
+        """_collect_memory."""
+        """_collect_memory."""
 
     def _installed_ram(self, psutil) -> int | None:
         """Physically-installed RAM (may exceed OS-usable due to reservations).
@@ -217,16 +223,16 @@ class TaskManager:
             self._installed_bytes = 0
             return None
         try:
-            import subprocess
-            out = subprocess.run(
+            from cortex_unified.core import proc as _proc
+            out = _proc.run(
                 ["powershell", "-NoProfile", "-NonInteractive", "-Command",
                  "(Get-CimInstance Win32_PhysicalMemory | "
                  "Measure-Object -Property Capacity -Sum).Sum"],
-                capture_output=True, text=True, timeout=15, creationflags=_NO_WINDOW,
+                text=True, timeout=15, creationflags=_NO_WINDOW,
             )
             val = int((out.stdout or "0").strip() or 0)
             self._installed_bytes = val
             return val or None
-        except (OSError, ValueError, subprocess.SubprocessError):
+        except Exception:  # noqa: BLE001 - includes ProcessCancelled/SubprocessError
             self._installed_bytes = 0
             return None

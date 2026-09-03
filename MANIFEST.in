@@ -4,6 +4,8 @@ include CHANGELOG.md
 include requirements.txt
 include run_gui.py
 recursive-include src *.py
+recursive-include src *.json
+recursive-include src *.svg
 recursive-include docs *.md
 recursive-include examples *.py *.md
 recursive-include tests *.py

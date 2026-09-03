@@ -1,9 +1,14 @@
-"""Docker cleaner for Cortex Cleaner."""
+"""Scans a local Docker daemon for reclaimable resources (images, stopped
+containers, orphaned volumes, unused networks) and removes them, optionally
+as a dry run.
+
+Talks to the daemon through the ``docker`` SDK using the ambient environment
+(DOCKER_HOST / named pipe / unix socket). The SDK import is optional so the
+rest of the app still works when it is not installed.
+"""
 
 import os
-import sys
-from pathlib import Path
-from typing import List, Dict, Optional, Union, Any
+from typing import List, Dict, Union, Any
 from dataclasses import dataclass
 from datetime import datetime
 import logging
@@ -15,12 +20,11 @@ try:
 except ImportError:
     HAS_DOCKER = False
 
-from cortex_unified.core.utils import normalize_path
 from cortex_unified.core.config import Config
 
 @dataclass
 class DockerImage:
-    """Docker image data model."""
+    """An image flagged as dangling or referenced by no container."""
     id: str
     repository: str
     tag: str
@@ -30,10 +34,12 @@ class DockerImage:
     
     def __str__(self):
         return f"{self.repository}:{self.tag} ({self.id[:12]})"
+        """__str__."""
+        """__str__."""
 
 @dataclass
 class DockerContainer:
-    """Docker container data model."""
+    """A non-running container eligible for removal."""
     id: str
     name: str
     image: str
@@ -43,10 +49,12 @@ class DockerContainer:
     
     def __str__(self):
         return f"{self.name} ({self.id[:12]})"
+        """__str__."""
+        """__str__."""
 
 @dataclass
 class DockerVolume:
-    """Docker volume data model."""
+    """A volume not mounted by any container."""
     name: str
     driver: str
     size: int
@@ -55,10 +63,12 @@ class DockerVolume:
     
     def __str__(self):
         return f"{self.name} ({self.driver})"
+        """__str__."""
+        """__str__."""
 
 @dataclass
 class DockerNetwork:
-    """Docker network data model."""
+    """A user-defined network with no attached containers."""
     id: str
     name: str
     driver: str
@@ -66,10 +76,12 @@ class DockerNetwork:
     
     def __str__(self):
         return f"{self.name} ({self.driver})"
+        """__str__."""
+        """__str__."""
 
 @dataclass
 class CleanupResult:
-    """Docker cleanup result data model."""
+    """Outcome of a cleanup pass; counts include dry-run simulations."""
     images_removed: int
     containers_removed: int
     volumes_removed: int
@@ -80,12 +92,23 @@ class CleanupResult:
     @property
     def total_removed(self) -> int:
         return self.images_removed + self.containers_removed + self.volumes_removed + self.networks_removed
+        """total_removed."""
+        """total_removed."""
 
 class DockerCleaner:
-    """Docker resource cleaner."""
+    """Finds and removes reclaimable Docker resources via the Docker SDK.
+
+    The daemon connection is created lazily, so instantiating this class
+    never touches Docker. Per-resource failures are logged and collected
+    rather than raised.
+    """
     
     def __init__(self, config: Config = None):
-        """Initialize Docker cleaner."""
+        """Initialize state; the Docker client itself connects lazily.
+
+        Args:
+            config: Optional application configuration.
+        """
         self.config = config or Config()
         self.logger = logging.getLogger(__name__)
         self._client = None
@@ -100,14 +123,18 @@ class DockerCleaner:
     
     @property
     def client(self):
-        """Get Docker client with lazy initialization."""
+        """Return a connected ``docker.DockerClient``, creating it on first use.
+
+        Raises:
+            ImportError: If the ``docker`` package is not installed.
+        """
         if self._client is None:
             if not HAS_DOCKER:
                 raise ImportError("Docker SDK not available. Install with: pip install docker")
             
             try:
                 self._client = docker.from_env()
-                # Test connection
+                # Fail fast here rather than mid-scan if the daemon is unreachable
                 self._client.ping()
             except Exception as e:
                 self.logger.error(f"Failed to connect to Docker: {e}")
@@ -133,23 +160,21 @@ class DockerCleaner:
             return False
     
     def scan_unused_images(self) -> List[DockerImage]:
-        """Scan for unused Docker images including dangling images."""
+        """Collect images that are dangling or referenced by no container."""
         if not self.is_docker_available():
             return []
         
         unused_images = []
         
         try:
-            # Get all images
             images = self.client.images.list(all=True)
             self._stats['images_scanned'] = len(images)
             
             for image in images:
                 try:
-                    # Check if image is dangling (no repository/tag)
+                    # Dangling images carry no tags ("<none>:<none>")
                     is_dangling = not image.tags or image.tags == ['<none>:<none>']
                     
-                    # Get image details
                     repository = '<none>'
                     tag = '<none>'
                     if image.tags:
@@ -157,14 +182,12 @@ class DockerCleaner:
                         repository = repo_tag[0] if len(repo_tag) > 0 else '<none>'
                         tag = repo_tag[1] if len(repo_tag) > 1 else '<none>'
                     
-                    # Get creation date
                     created = datetime.fromisoformat(image.attrs['Created'].replace('Z', '+00:00'))
                     
-                    # Get size
                     size = image.attrs.get('Size', 0)
                     self._stats['total_size'] += size
                     
-                    # Check if image is unused (not referenced by any container)
+                    # Cross-checks every container's image ID; O(images x containers)
                     is_unused = self._is_image_unused(image.id)
                     
                     if is_dangling or is_unused:
@@ -191,26 +214,22 @@ class DockerCleaner:
         return unused_images
     
     def scan_stopped_containers(self) -> List[DockerContainer]:
-        """Scan for stopped Docker containers."""
+        """Collect containers that are not currently running."""
         if not self.is_docker_available():
             return []
         
         stopped_containers = []
         
         try:
-            # Get all containers (including stopped ones)
             containers = self.client.containers.list(all=True)
             self._stats['containers_scanned'] = len(containers)
             
             for container in containers:
                 try:
-                    # Only include stopped containers
                     if container.status != 'running':
-                        # Calculate container size
                         size = self._get_container_size(container)
                         self._stats['total_size'] += size
                         
-                        # Get creation date
                         created = datetime.fromisoformat(container.attrs['Created'].replace('Z', '+00:00'))
                         
                         docker_container = DockerContainer(
@@ -236,24 +255,21 @@ class DockerCleaner:
         return stopped_containers
     
     def scan_unused_volumes(self) -> List[DockerVolume]:
-        """Scan for unused Docker volumes."""
+        """Collect volumes not mounted by any container."""
         if not self.is_docker_available():
             return []
         
         unused_volumes = []
         
         try:
-            # Get all volumes
             volumes = self.client.volumes.list()
             self._stats['volumes_scanned'] = len(volumes)
             
             for volume in volumes:
                 try:
-                    # Check if volume is orphaned (not used by any container)
                     is_orphaned = self._is_volume_orphaned(volume.name)
                     
                     if is_orphaned:
-                        # Get volume size (approximate)
                         size = self._get_volume_size(volume)
                         self._stats['total_size'] += size
                         
@@ -279,24 +295,22 @@ class DockerCleaner:
         return unused_volumes
     
     def scan_unused_networks(self) -> List[DockerNetwork]:
-        """Scan for unused Docker networks."""
+        """Collect user-defined networks with no attached containers."""
         if not self.is_docker_available():
             return []
         
         unused_networks = []
         
         try:
-            # Get all networks
             networks = self.client.networks.list()
             self._stats['networks_scanned'] = len(networks)
             
             for network in networks:
                 try:
-                    # Skip default networks
+                    # bridge/host/none are daemon-managed and must not be removed
                     if network.name in ['bridge', 'host', 'none']:
                         continue
                     
-                    # Check if network is unused
                     is_unused = self._is_network_unused(network.id)
                     
                     if is_unused:
@@ -322,7 +336,18 @@ class DockerCleaner:
     
     def cleanup_resources(self, resources: List[Union[DockerImage, DockerContainer, DockerVolume, DockerNetwork]], 
                          dry_run: bool = True) -> CleanupResult:
-        """Clean up Docker resources with dry-run support."""
+        """Remove the given resources, or simulate removal when dry_run.
+
+        Counters and ``space_freed`` are updated regardless of dry_run, so a
+        simulated pass reports what a real one would free.
+
+        Args:
+            resources: Mixed list of scan results to remove.
+            dry_run: When True, no destructive API calls are made.
+
+        Returns:
+            Per-type removal counts, bytes freed, and error strings.
+        """
         result = CleanupResult(
             images_removed=0,
             containers_removed=0,
@@ -375,16 +400,55 @@ class DockerCleaner:
         
         return result
     
+    def get_filesystem_cache_size(self) -> Dict[str, int]:
+        """Fallback: measure Docker Desktop's on-disk cache under AppData\\Local\\Docker.
+
+        The 8.6GB manual hit at ``AppData\\Local\\Docker`` is not visible via the
+        SDK (docker system prune); this probes the filesystem directly for the
+        Storage Sense file-based docker_desktop_cache category.
+        """
+        from pathlib import Path
+        local = os.environ.get("LOCALAPPDATA")
+        candidates = []
+        if local:
+            candidates.append(Path(local) / "Docker")
+            candidates.append(Path(local) / "DockerDesktop")
+        # Legacy AppData\Roaming\Docker
+        roaming = os.environ.get("APPDATA")
+        if roaming:
+            candidates.append(Path(roaming) / "Docker")
+
+        total = 0
+        found = []
+        for root in candidates:
+            try:
+                if root.is_dir():
+                    sz = 0
+                    for dirpath, _, filenames in os.walk(root):
+                        for fn in filenames:
+                            try:
+                                sz += (Path(dirpath) / fn).stat().st_size
+                            except OSError:
+                                continue
+                    if sz > 0:
+                        found.append((str(root), sz))
+                        total += sz
+            except OSError:
+                continue
+        return {"filesystem_cache_bytes": total, "locations": found}
+
     def get_space_usage(self) -> Dict[str, int]:
-        """Get Docker space usage information."""
+        """Get Docker space usage information (SDK + filesystem fallback)."""
+        # Prefer SDK when available, but always include filesystem cache probe
+        fs_info = self.get_filesystem_cache_size()
         if not self.is_docker_available():
-            return {}
+            return fs_info
         
         try:
-            # Use Docker system df to get space usage
+            # client.df() is the API equivalent of "docker system df"
             df_info = self.client.df()
             
-            return {
+            out = {
                 'images_size': sum(img.get('Size', 0) for img in df_info.get('Images', [])),
                 'containers_size': sum(cont.get('SizeRw', 0) + cont.get('SizeRootFs', 0) 
                                      for cont in df_info.get('Containers', [])),
@@ -392,17 +456,19 @@ class DockerCleaner:
                                   for vol in df_info.get('Volumes', [])),
                 'build_cache_size': df_info.get('BuildCache', {}).get('Size', 0)
             }
+            out.update(fs_info)
+            return out
         
         except Exception as e:
             self.logger.error(f"Error getting Docker space usage: {e}")
-            return {}
+            return fs_info
     
     def get_stats(self) -> Dict[str, Any]:
-        """Get scanning statistics."""
+        """Return a snapshot copy of cumulative scan counters."""
         return self._stats.copy()
     
     def _is_image_unused(self, image_id: str) -> bool:
-        """Check if an image is unused by any container."""
+        """True if no container references the image; False on API errors (fail-safe)."""
         try:
             containers = self.client.containers.list(all=True)
             for container in containers:
@@ -413,7 +479,7 @@ class DockerCleaner:
             return False
     
     def _is_volume_orphaned(self, volume_name: str) -> bool:
-        """Check if a volume is orphaned (not used by any container)."""
+        """True if no container mounts the volume; False on API errors (fail-safe)."""
         try:
             containers = self.client.containers.list(all=True)
             for container in containers:
@@ -426,7 +492,7 @@ class DockerCleaner:
             return False
     
     def _is_network_unused(self, network_id: str) -> bool:
-        """Check if a network is unused by any container."""
+        """True if the network reports zero attached containers; False on errors."""
         try:
             network = self.client.networks.get(network_id)
             containers = network.attrs.get('Containers', {})
@@ -435,28 +501,32 @@ class DockerCleaner:
             return False
     
     def _get_container_size(self, container) -> int:
-        """Get container size (approximate)."""
+        """Approximate container size in bytes.
+
+        Uses stats ``storage_stats`` when the daemon exposes it; otherwise
+        falls back to the image size, which overstates usage because shared
+        layers are counted per container.
+        """
         try:
-            # Get container stats
             stats = container.stats(stream=False)
-            # Use filesystem size if available
             if 'storage_stats' in stats:
                 return stats['storage_stats'].get('size_bytes', 0)
             
-            # Fallback: use image size as approximation
             return container.image.attrs.get('Size', 0)
         except Exception:
             return 0
     
     def _get_volume_size(self, volume) -> int:
-        """Get volume size (approximate)."""
+        """Approximate volume size in bytes.
+
+        Prefers daemon-reported ``UsageData``; otherwise walks the
+        mountpoint, which only works for local-storage volumes on this host.
+        """
         try:
-            # Try to get size from volume usage data
             usage_data = volume.attrs.get('UsageData', {})
             if 'Size' in usage_data:
                 return usage_data['Size']
             
-            # Fallback: try to estimate from mountpoint if accessible
             mountpoint = volume.attrs.get('Mountpoint', '')
             if mountpoint and os.path.exists(mountpoint):
                 total_size = 0
@@ -474,7 +544,7 @@ class DockerCleaner:
             return 0
     
     def _format_bytes(self, bytes_size: int) -> str:
-        """Format bytes to human readable string."""
+        """Render a byte count using the largest fitting binary unit."""
         for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
             if bytes_size < 1024.0:
                 return f"{bytes_size:.1f} {unit}"

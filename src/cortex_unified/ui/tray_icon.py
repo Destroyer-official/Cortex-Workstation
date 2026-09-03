@@ -41,6 +41,8 @@ class SystemTrayManager(QObject):
         self.agent.alert_low_disk.connect(self._on_low_disk)
 
         self.agent_thread.start()
+        """__init__."""
+        """__init__."""
 
     # ── Menu ──────────────────────────────────────────────────────────
 
@@ -65,17 +67,23 @@ class SystemTrayManager(QObject):
 
         self.tray_icon.setContextMenu(menu)
         self.tray_icon.activated.connect(self._on_tray_activated)
+        """_setup_menu."""
+        """_setup_menu."""
 
     # ── Slots ─────────────────────────────────────────────────────────
 
     def _on_tray_activated(self, reason):
         if reason == QSystemTrayIcon.Trigger:
             self._show_main_window()
+        """_on_tray_activated."""
+        """_on_tray_activated."""
 
     def _show_main_window(self):
         self.main_window.show()
         self.main_window.raise_()
         self.main_window.activateWindow()
+        """_show_main_window."""
+        """_show_main_window."""
 
     def _run_instant_scan(self):
         self._show_main_window()
@@ -85,6 +93,8 @@ class SystemTrayManager(QObject):
             dashboard = nc.get_tab_by_name("Dashboard")
             if dashboard and hasattr(dashboard, "run_smart_scan"):
                 dashboard.run_smart_scan()
+        """_run_instant_scan."""
+        """_run_instant_scan."""
 
     def _quit_app(self):
         self.agent.stop()
@@ -92,6 +102,8 @@ class SystemTrayManager(QObject):
         self.agent_thread.wait(3000)
         self.tray_icon.hide()
         self.app.quit()
+        """_quit_app."""
+        """_quit_app."""
 
     # ── Alert notifications ───────────────────────────────────────────
 
@@ -102,6 +114,8 @@ class SystemTrayManager(QObject):
             QSystemTrayIcon.Warning,
             8000,
         )
+        """_on_high_ram."""
+        """_on_high_ram."""
 
     def _on_high_cpu(self, value):
         self.tray_icon.showMessage(
@@ -110,6 +124,8 @@ class SystemTrayManager(QObject):
             QSystemTrayIcon.Information,
             8000,
         )
+        """_on_high_cpu."""
+        """_on_high_cpu."""
 
     def _on_low_disk(self, free_gb):
         self.tray_icon.showMessage(
@@ -119,3 +135,5 @@ class SystemTrayManager(QObject):
             QSystemTrayIcon.Critical,
             10000,
         )
+        """_on_low_disk."""
+        """_on_low_disk."""

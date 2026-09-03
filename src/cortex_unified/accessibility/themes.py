@@ -2,7 +2,7 @@
 High contrast and accessibility themes for Cortex Cleaner.
 """
 
-from typing import Dict, Any, Optional
+from typing import Dict, Optional
 import logging
 
 try:
@@ -14,10 +14,10 @@ except ImportError:
     HAS_PYSIDE6 = False
 
 class AccessibilityThemes:
-    """Manages high contrast and accessibility themes."""
+    """Applies light/dark/high-contrast palettes app-wide or per-widget."""
     
     def __init__(self):
-        """Initialize theme manager."""
+        """Snapshot the startup palette as the default-restore target."""
         self.logger = logging.getLogger(__name__)
         self.current_theme = "default"
         self.original_palette = None
@@ -28,7 +28,7 @@ class AccessibilityThemes:
                 self.original_palette = app.palette()
     
     def apply_high_contrast_theme(self, widget: Optional[QWidget] = None) -> None:
-        """Apply high contrast theme."""
+        """Black background, white text, blue highlight scheme."""
         if not HAS_PYSIDE6:
             self.logger.warning("PySide6 not available, cannot apply theme")
             return
@@ -38,18 +38,15 @@ class AccessibilityThemes:
             if not app:
                 return
                 
-            # Create high contrast palette
             palette = QPalette()
             
-            # High contrast colors
             black = QColor(0, 0, 0)
             white = QColor(255, 255, 255)
             dark_gray = QColor(64, 64, 64)
             light_gray = QColor(192, 192, 192)
-            blue = QColor(0, 120, 215)  # Accessible blue
-            yellow = QColor(255, 255, 0)  # High contrast yellow
+            blue = QColor(0, 120, 215)  # ~4.5:1 on black
+            yellow = QColor(255, 255, 0)  # reserved for warnings
             
-            # Set palette colors
             palette.setColor(QPalette.Window, black)
             palette.setColor(QPalette.WindowText, white)
             palette.setColor(QPalette.Base, black)
@@ -62,7 +59,7 @@ class AccessibilityThemes:
             palette.setColor(QPalette.Link, blue)
             palette.setColor(QPalette.LinkVisited, blue)
             
-            # Disabled colors
+            # Disabled state: dimmed text on unchanged surfaces
             palette.setColor(QPalette.Disabled, QPalette.WindowText, light_gray)
             palette.setColor(QPalette.Disabled, QPalette.Text, light_gray)
             palette.setColor(QPalette.Disabled, QPalette.ButtonText, light_gray)
@@ -80,7 +77,7 @@ class AccessibilityThemes:
             self.logger.error(f"Error applying high contrast theme: {e}")
     
     def apply_dark_theme(self, widget: Optional[QWidget] = None) -> None:
-        """Apply dark theme with good contrast."""
+        """Charcoal surfaces, white text, blue accent."""
         if not HAS_PYSIDE6:
             return
             
@@ -91,7 +88,6 @@ class AccessibilityThemes:
                 
             palette = QPalette()
             
-            # Dark theme colors with good contrast
             dark_bg = QColor(53, 53, 53)
             darker_bg = QColor(35, 35, 35)
             light_text = QColor(255, 255, 255)
@@ -108,7 +104,6 @@ class AccessibilityThemes:
             palette.setColor(QPalette.Highlight, blue_accent)
             palette.setColor(QPalette.HighlightedText, light_text)
             
-            # Disabled colors
             palette.setColor(QPalette.Disabled, QPalette.WindowText, gray_text)
             palette.setColor(QPalette.Disabled, QPalette.Text, gray_text)
             palette.setColor(QPalette.Disabled, QPalette.ButtonText, gray_text)
@@ -125,7 +120,7 @@ class AccessibilityThemes:
             self.logger.error(f"Error applying dark theme: {e}")
     
     def apply_light_theme(self, widget: Optional[QWidget] = None) -> None:
-        """Apply light theme with good contrast."""
+        """Light gray/white surfaces, black text, blue accent."""
         if not HAS_PYSIDE6:
             return
             
@@ -136,7 +131,6 @@ class AccessibilityThemes:
                 
             palette = QPalette()
             
-            # Light theme colors
             light_bg = QColor(240, 240, 240)
             white_bg = QColor(255, 255, 255)
             dark_text = QColor(0, 0, 0)
@@ -153,7 +147,6 @@ class AccessibilityThemes:
             palette.setColor(QPalette.Highlight, blue_accent)
             palette.setColor(QPalette.HighlightedText, white_bg)
             
-            # Disabled colors
             palette.setColor(QPalette.Disabled, QPalette.WindowText, gray_text)
             palette.setColor(QPalette.Disabled, QPalette.Text, gray_text)
             palette.setColor(QPalette.Disabled, QPalette.ButtonText, gray_text)
@@ -170,7 +163,7 @@ class AccessibilityThemes:
             self.logger.error(f"Error applying light theme: {e}")
     
     def restore_default_theme(self, widget: Optional[QWidget] = None) -> None:
-        """Restore the original system theme."""
+        """Reinstate the palette snapshotted at construction."""
         if not HAS_PYSIDE6 or not self.original_palette:
             return
             
@@ -191,7 +184,7 @@ class AccessibilityThemes:
             self.logger.error(f"Error restoring default theme: {e}")
     
     def get_available_themes(self) -> Dict[str, str]:
-        """Get list of available themes."""
+        """Theme id -> display name for settings pickers."""
         return {
             "default": "System Default",
             "light": "Light Theme",
@@ -200,7 +193,7 @@ class AccessibilityThemes:
         }
     
     def apply_theme(self, theme_name: str, widget: Optional[QWidget] = None) -> None:
-        """Apply theme by name."""
+        """Dispatch on theme id; unknown ids log a warning."""
         theme_methods = {
             "default": self.restore_default_theme,
             "light": self.apply_light_theme,
@@ -215,24 +208,24 @@ class AccessibilityThemes:
             self.logger.warning(f"Unknown theme: {theme_name}")
     
     def get_current_theme(self) -> str:
-        """Get current theme name."""
+        """Active theme id."""
         return self.current_theme
     
     def is_high_contrast_enabled(self) -> bool:
-        """Check if high contrast theme is enabled."""
+        """True while high contrast is the active theme."""
         return self.current_theme == "high_contrast"
 
-# Global theme manager instance
+# Lazily created shared manager
 _theme_manager = None
 
 def get_theme_manager() -> AccessibilityThemes:
-    """Get the global theme manager instance."""
+    """Return the shared AccessibilityThemes instance."""
     global _theme_manager
     if _theme_manager is None:
         _theme_manager = AccessibilityThemes()
     return _theme_manager
 
 def apply_accessibility_theme(theme_name: str, widget: Optional[QWidget] = None) -> None:
-    """Convenience function to apply accessibility theme."""
+    """Module-level convenience around the shared manager."""
     theme_manager = get_theme_manager()
     theme_manager.apply_theme(theme_name, widget)

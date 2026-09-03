@@ -11,7 +11,8 @@ Provides persistent storage for:
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta
+import threading
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import List, Optional, Dict, Any
 from contextlib import contextmanager
@@ -28,19 +29,12 @@ from sqlalchemy import (
     ForeignKey,
     Index,
 )
-from sqlalchemy.orm import (
-    DeclarativeBase,
-    Session,
-    sessionmaker,
-    relationship,
-)
+from sqlalchemy.orm import DeclarativeBase, sessionmaker, relationship
 from sqlalchemy.pool import StaticPool
-
 
 class Base(DeclarativeBase):
     """Base class for all database models."""
     pass
-
 
 class ScanRun(Base):
     """Record of a scan operation."""
@@ -50,7 +44,7 @@ class ScanRun(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     scan_type = Column(String(64), nullable=False, index=True)
     root_path = Column(String(1024), nullable=False)
-    started_at = Column(DateTime, default=datetime.utcnow, nullable=False, index=True)
+    started_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False, index=True)
     finished_at = Column(DateTime, nullable=True)
     status = Column(String(32), default="running")  # running, completed, failed, interrupted
     
@@ -76,13 +70,14 @@ class ScanRun(Base):
     
     def __repr__(self) -> str:
         return f"<ScanRun(id={self.id}, type={self.scan_type}, started={self.started_at})>"
+        """__repr__."""
     
     @property
     def duration_seconds(self) -> Optional[float]:
-        """Calculate scan duration in seconds."""
         if self.finished_at and self.started_at:
             return (self.finished_at - self.started_at).total_seconds()
         return None
+        """duration_seconds."""
     
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
@@ -101,7 +96,6 @@ class ScanRun(Base):
             "health_score_after": self.health_score_after,
             "duration_seconds": self.duration_seconds,
         }
-
 
 class DeletedItem(Base):
     """Record of a deleted file or directory."""
@@ -126,7 +120,7 @@ class DeletedItem(Base):
     in_quarantine = Column(Boolean, default=False)
     
     # Timestamps
-    deleted_at = Column(DateTime, default=datetime.utcnow, nullable=False, index=True)
+    deleted_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False, index=True)
     restored_at = Column(DateTime, nullable=True)
     
     # Metadata
@@ -143,6 +137,7 @@ class DeletedItem(Base):
     
     def __repr__(self) -> str:
         return f"<DeletedItem(id={self.id}, path={self.path}, deleted={self.deleted_at})>"
+        """__repr__."""
     
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
@@ -160,7 +155,6 @@ class DeletedItem(Base):
             "deletion_method": self.deletion_method,
             "can_restore": self.can_restore,
         }
-
 
 class ScheduledJob(Base):
     """Scheduled cleanup job."""
@@ -188,12 +182,12 @@ class ScheduledJob(Base):
     last_status = Column(String(32), nullable=True)
     last_error = Column(Text, nullable=True)
     
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
     
     def __repr__(self) -> str:
         return f"<ScheduledJob(id={self.id}, name={self.name}, enabled={self.enabled})>"
-
+        """__repr__."""
 
 class SystemMetric(Base):
     """System health and performance metrics."""
@@ -201,7 +195,7 @@ class SystemMetric(Base):
     __tablename__ = "system_metrics"
     
     id = Column(Integer, primary_key=True, autoincrement=True)
-    recorded_at = Column(DateTime, default=datetime.utcnow, nullable=False, index=True)
+    recorded_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False, index=True)
     
     # Disk metrics
     disk_total_gb = Column(Float, nullable=True)
@@ -223,7 +217,6 @@ class SystemMetric(Base):
         Index("idx_metrics_drive_date", "drive_path", "recorded_at"),
     )
 
-
 class UserPreference(Base):
     """User preferences and settings."""
     
@@ -234,12 +227,12 @@ class UserPreference(Base):
     value = Column(Text, nullable=True)
     value_type = Column(String(32), default="string")  # string, int, float, bool, json
     
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
     
     def __repr__(self) -> str:
         return f"<UserPreference(key={self.key}, value={self.value})>"
-
+        """__repr__."""
 
 class Database:
     """
@@ -328,14 +321,13 @@ class Database:
         health_score_after: Optional[int] = None,
         error_message: Optional[str] = None,
     ) -> None:
-        """Update scan run with results."""
         with self.session() as session:
             scan_run = session.query(ScanRun).filter(ScanRun.id == run_id).first()
             if scan_run:
                 if status:
                     scan_run.status = status
                 if status in ("completed", "failed", "interrupted"):
-                    scan_run.finished_at = datetime.utcnow()
+                    scan_run.finished_at = datetime.now(timezone.utc)
                 if items_found is not None:
                     scan_run.items_found = items_found
                 if bytes_found is not None:
@@ -348,6 +340,7 @@ class Database:
                     scan_run.health_score_after = health_score_after
                 if error_message:
                     scan_run.error_message = error_message
+        """update_scan_run."""
     
     def get_scan_history(
         self,
@@ -371,7 +364,7 @@ class Database:
     
     def get_scan_stats(self, days: int = 30) -> Dict[str, Any]:
         """Get aggregate statistics for recent scans."""
-        since = datetime.utcnow() - timedelta(days=days)
+        since = datetime.now(timezone.utc) - timedelta(days=days)
         
         with self.session() as session:
             scans = session.query(ScanRun).filter(
@@ -464,12 +457,12 @@ class Database:
         with self.session() as session:
             item = session.query(DeletedItem).filter(DeletedItem.id == item_id).first()
             if item:
-                item.restored_at = datetime.utcnow()
+                item.restored_at = datetime.now(timezone.utc)
                 item.in_quarantine = False
     
     def cleanup_old_quarantine(self, days: int = 30) -> int:
         """Remove quarantine records older than specified days."""
-        cutoff = datetime.utcnow() - timedelta(days=days)
+        cutoff = datetime.now(timezone.utc) - timedelta(days=days)
         
         with self.session() as session:
             count = session.query(DeletedItem).filter(
@@ -513,7 +506,7 @@ class Database:
         drive_path: Optional[str] = None,
     ) -> List[SystemMetric]:
         """Get historical metrics."""
-        since = datetime.utcnow() - timedelta(days=days)
+        since = datetime.now(timezone.utc) - timedelta(days=days)
         
         with self.session() as session:
             query = session.query(SystemMetric).filter(
@@ -553,22 +546,22 @@ class Database:
             
             return deleted
 
-
 # Global database instance
 _db_instance: Optional[Database] = None
-
+_db_lock = threading.Lock()
 
 def get_database(db_path: Optional[Path] = None) -> Database:
-    """Get or create the global database instance."""
     global _db_instance
-    
-    if _db_instance is None:
+    if _db_instance is not None:
+        return _db_instance
+    with _db_lock:
+        if _db_instance is not None:
+            return _db_instance
         if db_path is None:
             db_path = Path.home() / ".cortex_cleaner" / "history.db"
         _db_instance = Database(db_path)
-    
     return _db_instance
-
+    """get_database."""
 
 @contextmanager
 def db_session():
@@ -576,7 +569,6 @@ def db_session():
     db = get_database()
     with db.session() as session:
         yield session
-
 
 if __name__ == "__main__":
     # Example usage and testing

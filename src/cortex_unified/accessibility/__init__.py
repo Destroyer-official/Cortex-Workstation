@@ -37,14 +37,11 @@ def setup_full_accessibility(widget, enable_shortcuts=True, enable_announcements
     keyboard_handler = KeyboardHandler(widget)
     screen_reader = ScreenReaderSupport(widget)
     
-    # Set up keyboard navigation
     keyboard_handler.setup_keyboard_navigation()
     
-    # Set up default shortcuts if enabled
     if enable_shortcuts:
         keyboard_handler.setup_default_shortcuts()
     
-    # Set up screen reader support
     screen_reader.setup_accessible_descriptions()
     
     # Announce application ready if enabled

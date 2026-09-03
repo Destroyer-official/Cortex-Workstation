@@ -25,8 +25,10 @@ try:
     from cortex_unified.analyzers.docker_cleaner import DockerCleaner
 except ImportError:
     class DockerCleaner:
-        def is_docker_available(self): return False
-
+        """DockerCleaner fallback class."""
+        def is_docker_available(self):
+            """Check if Docker is available."""
+            return False
 
 class DockerScanWorker(QThread):
     finished = Signal(dict)
@@ -38,6 +40,7 @@ class DockerScanWorker(QThread):
         self.scan_containers = scan_containers
         self.scan_volumes = scan_volumes
         self.scan_networks = scan_networks
+        """__init__."""
 
     def run(self):
         """Run Docker resource scanning."""
@@ -63,7 +66,7 @@ class DockerScanWorker(QThread):
             self.finished.emit({'resources': all_resources, 'stats': stats})
         except Exception as e:
             self.error.emit(str(e))
-
+    """DockerScanWorker class."""
 
 class DockerCleanupWorker(QThread):
     finished = Signal(object)
@@ -73,6 +76,7 @@ class DockerCleanupWorker(QThread):
         super().__init__()
         self.resources = resources
         self.dry_run = dry_run
+        """__init__."""
 
     def run(self):
         """Run Docker resource cleanup."""
@@ -85,13 +89,14 @@ class DockerCleanupWorker(QThread):
             self.finished.emit(result)
         except Exception as e:
             self.error.emit(str(e))
-
+    """DockerCleanupWorker class."""
 
 class DockerTab(BaseTab):
     """Tab for docker tab functionality."""
 
     def __init__(self, config, logger, safety_manager):
         super().__init__(config, logger, safety_manager)
+        """__init__."""
 
     def setup_ui(self):
         """Set up the user interface."""
@@ -199,6 +204,7 @@ class DockerTab(BaseTab):
     def _on_worker_finished(self, worker):
         self.remove_worker_thread(worker)
         worker.deleteLater()
+        """_on_worker_finished."""
 
     def docker_scan_finished(self, result: dict):
         """Handle Docker scan completion."""
@@ -241,13 +247,13 @@ class DockerTab(BaseTab):
             self.docker_cleanup_button.setEnabled(False)
 
     def docker_scan_error(self, error: str):
-        """Handle Docker scan error."""
         self.logger.error(f'Docker scan error: {error}')
         self.docker_scan_button.setEnabled(True)
         self.docker_progress_bar.setVisible(False)
         self.set_status('Docker scan failed')
         self.add_activity(f'Docker scan failed: {error}')
         QMessageBox.critical(self, 'Docker Scan Error', f'An error occurred during Docker scan:\n{error}')
+        """docker_scan_error."""
 
     def start_docker_cleanup(self):
         """Start Docker resource cleanup."""
@@ -313,7 +319,6 @@ class DockerTab(BaseTab):
         self.docker_cleanup_button.setEnabled(False)
 
     def docker_cleanup_error(self, error: str):
-        """Handle Docker cleanup error."""
         self.logger.error(f'Docker cleanup error: {error}')
         self.docker_scan_button.setEnabled(True)
         self.docker_cleanup_button.setEnabled(True)
@@ -321,3 +326,4 @@ class DockerTab(BaseTab):
         self.set_status('Docker cleanup failed')
         self.add_activity(f'Docker cleanup failed: {error}')
         QMessageBox.critical(self, 'Docker Cleanup Error', f'An error occurred during Docker cleanup:\n{error}')
+        """docker_cleanup_error."""

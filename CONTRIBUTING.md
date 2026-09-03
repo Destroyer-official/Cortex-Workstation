@@ -1,99 +1,129 @@
-# Contributing to Cortex Cleaner
+# Contributing to Cortex Workstation
 
-Thank you for your interest in contributing to Cortex Cleaner! This document provides guidelines and information to help make the contribution process smooth and effective.
+Thank you for contributing to Cortex Workstation! This document provides an architectural overview, coding standards, and step-by-step guides for adding new features, UI pages, and maintaining enterprise production readiness.
 
-## Getting Started
+---
 
-1. Fork the repository
-2. Clone your fork: `git clone https://github.com/Destroyer-official/deep-cleaner.git`
-3. Create a new branch for your feature or bug fix: `git checkout -b feature/your-feature-name`
-4. Make your changes
-5. Test your changes
-6. Commit your changes: `git commit -am "Add your feature"`
-7. Push to your fork: `git push origin feature/your-feature-name`
-8. Create a pull request
+## 1. Codebase Architecture Overview
 
-## Development Setup
+Cortex Workstation is structured into high-performance, modular subsystems:
 
-1. Create a virtual environment: `python -m venv venv`
-2. Activate it:
-   - On Windows: `venv\Scripts\activate`
-   - On Unix/macOS: `source venv/bin/activate`
-3. Install the package in development mode: `pip install -e .[dev]`
-
-## Code Standards
-
-### Python Style
-
-- Follow PEP 8 style guide
-- Use type hints for function parameters and return values
-- Write docstrings for all public functions, classes, and modules
-- Keep functions small and focused on a single responsibility
-- Use descriptive variable and function names
-
-### Testing
-
-- Write tests for new functionality
-- Ensure all tests pass before submitting a pull request
-- Use pytest for testing
-- Maintain good test coverage
-
-Run tests with:
-```bash
-pytest
+```text
+src/
+├── cortex_unified/
+│   ├── analyzers/        # 23 deduplication, shredding, and disk analyzers
+│   ├── core/             # PathGuard security boundaries, configuration, database
+│   ├── debug/            # Comprehensive 7-stage production diagnostic engine
+│   ├── engine/           # FastWalk (PEP 471), storage media awareness, typed models
+│   ├── licensing/        # Hardware fingerprinting and tier gating (FREE/PRO/ENT)
+│   ├── performance/      # Multi-drive scanner, CPU/IO throttler, resource monitor
+│   ├── reports/          # Audit report generator and undo/restore snapshots
+│   ├── resources/icons/  # 132 crisp vector SVG icons (zero glyphs)
+│   ├── system_tools/     # 62 system maintenance, hardware, and network modules
+│   └── ui/premium/       # Modern Fluent UI shell, design tokens, and 132 lazy pages
+└── NexusExplorer/
+    ├── native/           # High-performance VFS transport, C/Rust FFI bridge, USN journal scanner
+    └── tests/            # Explorer benchmarks, transport parity, and UI state tests
 ```
 
-### Code Quality Tools
+---
 
-This project uses several tools to maintain code quality:
+## 2. Developer Setup
 
-- **Black** for code formatting
-- **Flake8** for linting
-- **MyPy** for type checking
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/Destroyer40/Cortex_Cleaner.git
+   cd Cortex_Cleaner
+   ```
+2. **Create & activate virtual environment**:
+   ```bash
+   python -m venv .venv
+   .venv\Scripts\activate
+   ```
+3. **Install development dependencies**:
+   ```bash
+   pip install -r requirements.txt
+   pip install -r requirements-dev.txt
+   pip install -e .
+   ```
 
-Run all checks with:
-```bash
-# Format code
-black .
+---
 
-# Lint code
-flake8 .
+## 3. How to Add New Features
 
-# Type check
-mypy .
-```
+### A. Adding a New System Tool
 
-## Pull Request Process
+1. **Create the tool module** in `src/cortex_unified/system_tools/<tool_name>.py`:
+   ```python
+   """My Tool - description of functionality."""
+   from __future__ import annotations
+   import logging
+   import os
+   from dataclasses import dataclass
+   from typing import Optional
 
-1. Ensure your code follows the style guidelines
-2. Add tests for new functionality
-3. Update documentation as needed
-4. Verify all tests pass
-5. Submit a pull request with a clear title and description
+   logger = logging.getLogger("cortex.system_tools.my_tool")
 
-## Reporting Issues
+   @dataclass
+   class MyToolReport:
+       status: str = "Ready"
+       error: Optional[str] = None
 
-When reporting issues, please include:
+   class MyTool:
+       def __init__(self):
+           self._is_windows = os.name == "nt"
 
-1. A clear and descriptive title
-2. Steps to reproduce the issue
-3. Expected behavior
-4. Actual behavior
-5. Environment information (OS, Python version, etc.)
-6. Any relevant logs or error messages
+       def audit(self) -> MyToolReport:
+           if not self._is_windows:
+               return MyToolReport(error="Windows NT required")
+           return MyToolReport(status="Compliant")
+   ```
 
-## Feature Requests
+2. **Add a dedicated test** in `tests/test_<tool_name>.py` and run `pytest`.
 
-We welcome feature requests! Please open an issue describing:
+---
 
-1. The problem the feature would solve
-2. How the feature would work
-3. Any implementation considerations
+### B. Adding a New UI Page to the Shell
 
-## Code of Conduct
+1. **Create the page widget** in `src/cortex_unified/ui/premium/<suite_name>_pages.py`:
+   - Inherit from `_Page(win)`.
+   - Use `Card`, `title_block`, and `_run_task(self.win, ...)` for non-blocking asynchronous execution.
 
-Please note that this project is released with a Contributor Code of Conduct. By participating in this project you agree to abide by its terms.
+2. **Add a vector SVG icon**:
+   - Create `src/cortex_unified/resources/icons/<icon_name>.svg`.
+   - Verify with `pytest tests/test_icons.py`.
 
-## Questions?
+3. **Register the page** in `src/cortex_unified/ui/premium/registry.py`:
+   ```python
+   PageSpec(
+       id="mytool",
+       title="My Tool",
+       icon="mytool",
+       group="system",  # 'overview', 'cleanup', 'system', 'files', etc.
+       factory="cortex_unified.ui.premium.my_pages:MyToolPage",
+   )
+   ```
 
-If you have any questions about contributing, feel free to open an issue asking for clarification.
+4. **Verify registry integrity**:
+   ```bash
+   pytest tests/test_page_registry.py
+   ```
+
+---
+
+## 4. Pull Request & Commit Guidelines
+
+### Conventional Commits
+Please use clear, descriptive commit messages adhering to Conventional Commits:
+- `feat: add ReFS Dev Drive block cloning verification`
+- `fix: resolve 64-bit pointer overflow in process token auditor`
+- `docs: update complete API reference and architecture specs`
+- `test: add unit tests for VSS shadow copy manager`
+- `perf: optimize USN journal NTFS record stream parsing`
+
+### Pre-PR Verification Checklist
+Before submitting a pull request, ensure:
+- [ ] All unit tests pass: `pytest tests/ -v --no-cov`
+- [ ] Page registry and icons pass: `pytest tests/test_page_registry.py tests/test_icons.py -v`
+- [ ] Codebase audit passes: `python scripts/check_all_structure_files.py` (100% pass rate)
+- [ ] No hardcoded paths, mock data, or blocking calls on the Qt GUI main thread.

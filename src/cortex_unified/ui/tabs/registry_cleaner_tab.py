@@ -19,6 +19,8 @@ class RegistryScanWorker(QThread):
     def __init__(self, config):
         super().__init__()
         self.cleaner = RegistryCleaner(config)
+        """__init__."""
+        """__init__."""
         
     def run(self):
         try:
@@ -26,6 +28,9 @@ class RegistryScanWorker(QThread):
             self.finished.emit(items)
         except Exception as e:
             self.error.emit(str(e))
+        """run."""
+    """RegistryScanWorker class."""
+    """RegistryScanWorker class."""
 
 class RegistryCleanWorker(QThread):
     finished = Signal(int)
@@ -35,6 +40,8 @@ class RegistryCleanWorker(QThread):
         super().__init__()
         self.cleaner = RegistryCleaner(config)
         self.paths_to_remove = paths_to_remove
+        """__init__."""
+        """__init__."""
         
     def run(self):
         try:
@@ -48,6 +55,9 @@ class RegistryCleanWorker(QThread):
             self.finished.emit(count)
         except Exception as e:
             self.error.emit(str(e))
+        """run."""
+    """RegistryCleanWorker class."""
+    """RegistryCleanWorker class."""
 
 class RegistryCleanerTab(BaseTab):
     """Tab for registry cleaner tab functionality."""
@@ -56,6 +66,8 @@ class RegistryCleanerTab(BaseTab):
         super().__init__(config, logger, safety_manager)
         self.cleaner = RegistryCleaner(config)
         self.worker = None
+        """__init__."""
+        """__init__."""
 
     def setup_ui(self):
         """Create the registry cleaner tab."""
@@ -115,6 +127,8 @@ class RegistryCleanerTab(BaseTab):
         self.worker.finished.connect(self._on_scan_finished)
         self.worker.error.connect(self._on_error)
         self.worker.start()
+        """scan_registry."""
+        """scan_registry."""
 
     def _on_scan_finished(self, items: List[Dict]):
         self.registry_progress_bar.setVisible(False)
@@ -128,6 +142,8 @@ class RegistryCleanerTab(BaseTab):
             self.registry_table.setItem(row, 0, QTableWidgetItem(item.get("path", "")))
             self.registry_table.setItem(row, 1, QTableWidgetItem(item.get("hive", "")))
             self.registry_table.setItem(row, 2, QTableWidgetItem(item.get("name", "")))
+        """_on_scan_finished."""
+        """_on_scan_finished."""
 
     def _on_error(self, err_msg):
         self.registry_progress_bar.setVisible(False)
@@ -136,6 +152,8 @@ class RegistryCleanerTab(BaseTab):
         
         self.logger.error(f"Registry operation failed: {err_msg}")
         QMessageBox.critical(self, "Error", f"Registry Error:\n{err_msg}")
+        """_on_error."""
+        """_on_error."""
 
     def clean_registry(self):
         if self.worker and self.worker.isRunning(): return
@@ -157,6 +175,8 @@ class RegistryCleanerTab(BaseTab):
             self.worker.finished.connect(self._on_clean_finished)
             self.worker.error.connect(self._on_error)
             self.worker.start()
+        """clean_registry."""
+        """clean_registry."""
 
     def _on_clean_finished(self, count):
         self.registry_progress_bar.setVisible(False)
@@ -165,3 +185,5 @@ class RegistryCleanerTab(BaseTab):
         QMessageBox.information(self, "Cleanup Complete", f"Successfully cleaned {count} orphaned registry entries. Backup generated.")
         self.registry_table.setRowCount(0)
         self.clean_registry_button.setEnabled(False)
+        """_on_clean_finished."""
+        """_on_clean_finished."""

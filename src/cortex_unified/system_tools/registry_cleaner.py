@@ -1,30 +1,28 @@
-"""Windows Registry Cleaner — finds and removes orphaned registry entries.
+"""Orphaned Windows registry entry detection with export-before-delete safety.
 
-Scans:
-  - Uninstall entries pointing to non-existent paths
-  - Startup entries referencing deleted executables
-  - File associations pointing to missing programs
-  - SharedDLLs with zero reference counts
-
-Provides real backup and deletion via `reg export` and `winreg.DeleteKey`.
+Finds uninstall entries whose install path or uninstaller is gone, Run/RunOnce
+values pointing at missing executables, file associations whose handler no
+longer exists, and SharedDLLs values with a zero reference count and no file
+on disk. Deletion via ``winreg`` is irreversible, so :meth:`RegistryCleaner.
+backup_registry` should run first - though it only exports the HKCU Uninstall
+key, so HKLM deletions have no restore path.
 """
 
 import os
-import sys
 import platform
 import subprocess
 import datetime
 import logging
-from pathlib import Path
 from typing import List, Dict, Optional
 
 from ..core.config import Config
 
 
 class RegistryCleaner:
-    """Cleaner for orphaned Windows registry entries."""
+    """Find and remove registry entries that reference files no longer on disk."""
 
     def __init__(self, config: Config = None):
+        """Initialize Registry Cleaner."""
         self.config = config or Config()
         self.logger = logging.getLogger("registry_cleaner")
 
@@ -44,7 +42,7 @@ class RegistryCleaner:
         return self.scan_orphaned_entries()
 
     def scan_orphaned_entries(self) -> List[Dict]:
-        """Full scan across all categories."""
+        """Run all category scans and return the accumulated orphans."""
         self.orphaned_entries.clear()
         self.error_count = 0
 
@@ -68,6 +66,8 @@ class RegistryCleaner:
     def _scan_uninstall_entries(self, hive):
         import winreg
 
+        # Both views must be enumerated: the plain path holds 64-bit installers,
+        # WOW6432Node the 32-bit ones.
         paths = [
             r"Software\Microsoft\Windows\CurrentVersion\Uninstall",
             r"Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall",
@@ -76,6 +76,8 @@ class RegistryCleaner:
 
         for sub_path in paths:
             try:
+                # KEY_WOW64_64KEY: read the 64-bit view even from 32-bit Python,
+                # so entries are neither missed nor shadowed by redirection.
                 with winreg.OpenKey(hive, sub_path, 0, winreg.KEY_READ | winreg.KEY_WOW64_64KEY) as key:
                     i = 0
                     while True:
@@ -90,6 +92,8 @@ class RegistryCleaner:
                 pass
             except Exception:
                 self.error_count += 1
+        """_scan_uninstall_entries."""
+        """_scan_uninstall_entries."""
 
     def _check_uninstall_entry(self, hive, hive_name, full_path, subkey_name):
         import winreg
@@ -97,7 +101,7 @@ class RegistryCleaner:
             with winreg.OpenKey(hive, full_path, 0, winreg.KEY_READ | winreg.KEY_WOW64_64KEY) as sk:
                 display_name = self._reg_val(winreg, sk, "DisplayName", subkey_name)
 
-                # Check InstallLocation — if it's set but doesn't exist, orphaned
+                # InstallLocation is frequently empty; only trust it when set.
                 install_loc = self._reg_val(winreg, sk, "InstallLocation", "")
                 if install_loc and not os.path.exists(install_loc):
                     self.orphaned_entries.append({
@@ -109,7 +113,8 @@ class RegistryCleaner:
                     })
                     return
 
-                # Check UninstallString — if it references a missing exe
+                # Many installers register only UninstallString, so fall back
+                # to it when InstallLocation gave no verdict.
                 uninstall_str = self._reg_val(winreg, sk, "UninstallString", "")
                 if uninstall_str:
                     exe = self._extract_exe_path(uninstall_str)
@@ -123,6 +128,8 @@ class RegistryCleaner:
                         })
         except Exception:
             self.error_count += 1
+        """_check_uninstall_entry."""
+        """_check_uninstall_entry."""
 
     # ──────────────────────────────────────────────────────────────────
     # Startup entries
@@ -180,16 +187,16 @@ class RegistryCleaner:
                     try:
                         ext_name = winreg.EnumKey(root, i)
                         i += 1
-                        # Only check file extensions (start with '.')
                         if not ext_name.startswith("."):
                             continue
-                        # Check shell\open\command
                         cmd_path = f"{classes_path}\\{ext_name}\\shell\\open\\command"
                         try:
                             with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, cmd_path) as cmd_key:
                                 val, _ = winreg.QueryValueEx(cmd_key, "")
                                 if isinstance(val, str):
                                     exe = self._extract_exe_path(val)
+                                    # System32 handlers are OS-inbox components,
+                                    # not orphans worth deleting.
                                     if exe and not os.path.exists(exe) and "system32" not in exe.lower():
                                         self.orphaned_entries.append({
                                             "name": f"{ext_name} handler",
@@ -220,6 +227,9 @@ class RegistryCleaner:
                     try:
                         dll_path, ref_count, _ = winreg.EnumValue(key, i)
                         i += 1
+                        # Refcounts are installer bookkeeping and often wrong,
+                        # so a zero alone is not verdict enough: the file must
+                        # also be gone before the entry counts as debris.
                         if isinstance(ref_count, int) and ref_count == 0:
                             if not os.path.exists(dll_path):
                                 self.orphaned_entries.append({
@@ -241,7 +251,11 @@ class RegistryCleaner:
     # ──────────────────────────────────────────────────────────────────
 
     def backup_registry(self, backup_dir: str = None) -> Optional[str]:
-        """Export HKCU uninstall keys to a .reg file for safety."""
+        """Export the HKCU Uninstall key to a .reg file for safety.
+
+        Scope is deliberately narrow: ``reg export`` of HKLM trees needs
+        elevation, so entries under HKLM have no restore path from here.
+        """
         if not backup_dir:
             backup_dir = os.path.join(os.environ.get("USERPROFILE", "."), "CortexCleanerBackups")
         os.makedirs(backup_dir, exist_ok=True)
@@ -267,8 +281,46 @@ class RegistryCleaner:
             self.logger.error("Backup failed: %s", exc)
             return None
 
-    def remove_orphaned_entry(self, entry: Dict) -> bool:
-        """Delete an orphaned registry entry.  Requires appropriate permissions."""
+    def backup_entry(self, entry: Dict, backup_dir: Optional[str] = None) -> Optional[str]:
+        """Export a specific registry entry to a .reg file before deletion for instant rollback."""
+        hive = entry.get("hive", "")
+        path = entry.get("path", "")
+        if not hive or not path:
+            return None
+
+        if not backup_dir:
+            backup_dir = os.path.join(
+                os.path.expanduser("~"), ".cortex_cleaner", "backups", "registry"
+            )
+        os.makedirs(backup_dir, exist_ok=True)
+
+        safe_name = "".join(c if c.isalnum() else "_" for c in f"{hive}_{path}")[:60]
+        ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        backup_file = os.path.join(backup_dir, f"rollback_{safe_name}_{ts}.reg")
+
+        target_key = f"{hive}\\{path}"
+        if entry.get("type") == "startup_entry":
+            parent, _, _ = path.rpartition("\\")
+            target_key = f"{hive}\\{parent}"
+
+        try:
+            res = subprocess.run(
+                ["reg", "export", target_key, backup_file, "/y"],
+                capture_output=True, text=True, timeout=15,
+            )
+            if res.returncode == 0:
+                self.backup_files.append(backup_file)
+                self.logger.info("Created rollback backup for %s at %s", target_key, backup_file)
+                return backup_file
+        except Exception as exc:
+            self.logger.debug("Failed to export rollback key %s: %s", target_key, exc)
+        return None
+
+    def remove_orphaned_entry(self, entry: Dict, auto_backup: bool = True) -> bool:
+        """Delete an orphaned registry entry with auto-backup for rollback.
+        
+        Requires appropriate permissions.
+        """
         import winreg
 
         hive_map = {
@@ -282,14 +334,17 @@ class RegistryCleaner:
         if not hive or not path:
             return False
 
+        if auto_backup:
+            self.backup_entry(entry)
+
         try:
             if entry_type in ("uninstall_entry", "file_association"):
-                # Delete the entire subkey
+                # Whole subkey: these entries are one key per product.
                 winreg.DeleteKey(hive, path)
                 self.logger.info("Deleted registry key: %s\\%s", entry["hive"], path)
                 return True
             elif entry_type == "startup_entry":
-                # Delete just the value from the parent key
+                # Value only - the Run key itself must survive.
                 parent, _, value_name = path.rpartition("\\")
                 with winreg.OpenKey(hive, parent, 0, winreg.KEY_SET_VALUE) as key:
                     winreg.DeleteValue(key, value_name)
@@ -309,6 +364,7 @@ class RegistryCleaner:
     # ──────────────────────────────────────────────────────────────────
 
     def get_stats(self) -> dict:
+        """Get stats."""
         return {
             "orphaned_entries_found": len(self.orphaned_entries),
             "backups_created": len(self.backup_files),
@@ -316,6 +372,7 @@ class RegistryCleaner:
         }
 
     def filter_by_type(self, entry_type: str) -> List[Dict]:
+        """Filter by type."""
         return [e for e in self.orphaned_entries if e.get("type") == entry_type]
 
     # ──────────────────────────────────────────────────────────────────
@@ -328,6 +385,8 @@ class RegistryCleaner:
             return winreg.QueryValueEx(key, name)[0]
         except (FileNotFoundError, OSError):
             return default
+        """_reg_val."""
+        """_reg_val."""
 
     @staticmethod
     def _extract_exe_path(raw: str) -> Optional[str]:
@@ -341,12 +400,12 @@ class RegistryCleaner:
             end = raw.find('"', 1)
             if end > 1:
                 return raw[1:end]
-        # No quotes — take everything before the first space that looks like an arg
+        # Unquoted path: spaces are ambiguous, so take the first token.
         parts = raw.split()
         if parts:
             candidate = parts[0]
-            # Handle MsiExec paths
+            # Launchers that always live in System32 - never orphans.
             if candidate.lower() in ("msiexec.exe", "msiexec", "rundll32.exe", "rundll32"):
-                return None  # These always exist in System32
+                return None
             return candidate
         return None

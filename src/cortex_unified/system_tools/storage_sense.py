@@ -14,11 +14,11 @@ are per-user and fully reversible. No admin required.
 from __future__ import annotations
 
 import logging
-import platform
+import sys
 from typing import Any
 
 _LOG = logging.getLogger("cortex.system_tools.storage_sense")
-_IS_WINDOWS = platform.system() == "Windows"
+_IS_WINDOWS = sys.platform == "win32"
 
 _KEY_PATH = r"Software\Microsoft\Windows\CurrentVersion\StorageSense\Parameters\StoragePolicy"
 
@@ -33,11 +33,13 @@ class StorageSense:
 
     @staticmethod
     def is_supported() -> bool:
+        """Is supported."""
         return _IS_WINDOWS
 
     # -- read ---------------------------------------------------------------
 
     def get_status(self) -> dict[str, Any]:
+        """Get status."""
         if not _IS_WINDOWS:
             return {"supported": False}
         return self._interpret(self._read_values())
@@ -61,6 +63,8 @@ class StorageSense:
         except Exception as exc:  # noqa: BLE001
             _LOG.debug("read StoragePolicy failed: %s", exc)
         return values
+        """_read_values."""
+        """_read_values."""
 
     @staticmethod
     def _interpret(v: dict[str, int]) -> dict[str, Any]:
@@ -95,8 +99,11 @@ class StorageSense:
         except Exception as exc:  # noqa: BLE001
             _LOG.debug("write StoragePolicy %s failed: %s", name, exc)
             return False
+        """_write."""
+        """_write."""
 
     def set_enabled(self, enabled: bool) -> tuple[bool, str]:
+        """Set enabled."""
         ok = self._write("01", 1 if enabled else 0)
         if not ok:
             return False, "Could not update Storage Sense (registry write failed)."
@@ -105,6 +112,7 @@ class StorageSense:
         return True, "Storage Sense turned on." if enabled else "Storage Sense turned off."
 
     def set_cadence(self, days: int) -> tuple[bool, str]:
+        """Set cadence."""
         if days not in _CADENCE:
             return False, "Invalid schedule."
         ok = self._write("2048", days)
@@ -112,6 +120,7 @@ class StorageSense:
                     else "Could not update the schedule.")
 
     def set_recycle_bin_days(self, days: int) -> tuple[bool, str]:
+        """Set recycle bin days."""
         if days not in _DAYS:
             return False, "Invalid retention period."
         ok1 = self._write("08", 1 if days else 0)

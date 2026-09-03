@@ -174,13 +174,11 @@ class ResourceMonitor:
                     last_disk_io = (metrics.timestamp, metrics.disk_io_read_mb, metrics.disk_io_write_mb)
                     last_network_io = (metrics.timestamp, metrics.network_io_sent_mb, metrics.network_io_recv_mb)
                     
-                    # Add to history
                     self._add_to_history(metrics)
                     
                     # Check thresholds and warn if needed
                     self._check_thresholds(metrics)
                     
-                    # Call callbacks
                     for callback in self.callbacks:
                         try:
                             callback(metrics)
@@ -368,7 +366,7 @@ class ResourceMonitor:
             }
             
             Path(filepath).parent.mkdir(parents=True, exist_ok=True)
-            with open(filepath, 'w') as f:
+            with open(filepath, 'w', encoding='utf-8') as f:
                 json.dump(export_data, f, indent=2)
             
             self.logger.info(f"Exported {len(export_metrics)} metrics to {filepath}")

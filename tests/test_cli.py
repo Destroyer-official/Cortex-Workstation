@@ -6,7 +6,7 @@ def test_cli_help():
     runner = CliRunner()
     result = runner.invoke(main, ['--help'])
     assert result.exit_code == 0
-    assert 'Cortex Cleaner' in result.output
+    assert 'Cortex Workstation' in result.output
 
 def test_cli_version():
     """Test that the CLI version command works."""

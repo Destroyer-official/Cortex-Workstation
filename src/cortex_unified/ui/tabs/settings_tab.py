@@ -34,6 +34,8 @@ class SettingsTab(BaseTab):
 
     def __init__(self, config, logger, safety_manager):
         super().__init__(config, logger, safety_manager)
+        """__init__."""
+        """__init__."""
 
     def setup_ui(self):
         """Create the settings tab natively hooking I18n modules."""

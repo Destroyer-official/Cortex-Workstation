@@ -19,13 +19,14 @@ from PySide6.QtGui import QIcon, QFont, QTextCursor
 from .base_tab import BaseTab
 from cortex_unified.core.config import Config
 
-
 class ResourceMonitorTab(BaseTab):
     """Tab for resource monitor tab functionality."""
 
     def __init__(self, config, logger, safety_manager):
         self.resource_monitor = None
         super().__init__(config, logger, safety_manager)
+        """__init__."""
+        """__init__."""
 
     def setup_ui(self):
         """Create the resource monitor tab."""
@@ -161,7 +162,6 @@ class ResourceMonitorTab(BaseTab):
             QMessageBox.critical(self, 'Error', f'Error stopping monitoring:\n{str(e)}')
 
     def update_resource_metrics(self):
-        """Update resource metrics display."""
         try:
             import psutil
             if not self.resource_monitor or not self.resource_monitor.metrics_history:
@@ -212,9 +212,10 @@ class ResourceMonitorTab(BaseTab):
             import traceback
             tb = traceback.format_exc()
             self.alerts_text.append(f'Error updating metrics: {str(e)}\n{tb}')
+        """update_resource_metrics."""
+        """update_resource_metrics."""
 
     def check_performance_alerts(self, cpu_percent, memory_percent):
-        """Check for performance alerts and display warnings."""
         from datetime import datetime
         current_time = datetime.now().strftime('%H:%M:%S')
         cpu_threshold = self.cpu_threshold_spinbox.value()
@@ -226,6 +227,8 @@ class ResourceMonitorTab(BaseTab):
             alert_msg = f'[{current_time}] HIGH MEMORY USAGE: {memory_percent:.1f}% (threshold: {memory_threshold}%)'
             self.alerts_text.append(alert_msg)
         self.alerts_text.moveCursor(QTextCursor.MoveOperation.End)
+        """check_performance_alerts."""
+        """check_performance_alerts."""
 
     def _show_process_context_menu(self, position):
         """Show context menu to kill a selected process."""
@@ -270,3 +273,5 @@ class ResourceMonitorTab(BaseTab):
             QMessageBox.warning(self, "Not Found", f"Process '{name}' no longer exists or already exited.")
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to kill process:\n{e}")
+        """_kill_process."""
+        """_kill_process."""

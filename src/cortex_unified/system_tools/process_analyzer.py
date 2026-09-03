@@ -1,33 +1,33 @@
-"""Process and service analyzer for Cortex Cleaner."""
+"""Process and service enumeration via platform CLI tools.
 
-import os
-import sys
+Wraps ``tasklist``/``sc`` on Windows and ``ps``/``launchctl``/``systemctl``
+elsewhere, parsing their text output into plain dicts. Parsing is deliberately
+tolerant: per-line failures increment ``error_count`` instead of aborting the
+listing, because partial data still serves a diagnostics view.
+"""
+
+import csv
 import platform
 import subprocess
-from pathlib import Path
-from typing import List, Dict, Tuple
-import time
+from typing import List, Dict
 
-from ..core.utils import normalize_path
 from ..core.config import Config
 
-
 class ProcessAnalyzer:
-    """Analyzer for system processes and services."""
-    
+    """Enumerate running processes/services and flag high-resource consumers."""
+
     def __init__(self, config: Config = None):
-        """Initialize process analyzer."""
+        """Use *config* or a default Config; the OS decides which backends run."""
         self.config = config or Config()
         self.system = platform.system().lower()
-        
-        # Results
+
         self.processes = []
         self.services = []
         self.high_resource_processes = []
         self.error_count = 0
-    
+
     def list_processes(self) -> List[Dict]:
-        """List all running processes."""
+        """Populate ``processes`` from the platform's process listing."""
         self.processes = []
         self.error_count = 0
         
@@ -44,19 +44,15 @@ class ProcessAnalyzer:
         return self.processes
     
     def _list_windows_processes(self):
-        """List Windows processes using tasklist."""
         try:
-            # Use tasklist command to get process information
             cmd = ["tasklist", "/fo", "csv", "/v"]
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
-            
+
             if result.returncode == 0:
-                lines = result.stdout.strip().split('\n')
-                if len(lines) > 1:
-                    # Parse CSV output
-                    for line in lines[1:]:  # Skip header
-                        # Remove quotes and split by comma
-                        parts = [part.strip('"') for part in line.split('","')]
+                reader = csv.reader(result.stdout.splitlines())
+                rows = list(reader)
+                if len(rows) > 1:
+                    for parts in rows[1:]:  # Skip header
                         if len(parts) >= 8:
                             self.processes.append({
                                 "pid": parts[1],
@@ -71,18 +67,17 @@ class ProcessAnalyzer:
                             })
         except Exception:
             self.error_count += 1
+        """_list_windows_processes."""
+        """_list_windows_processes."""
     
     def _list_macos_processes(self):
-        """List macOS processes using ps."""
         try:
-            # Use ps command to get process information
             cmd = ["ps", "aux"]
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
             
             if result.returncode == 0:
                 lines = result.stdout.strip().split('\n')
                 if len(lines) > 1:
-                    # Parse ps output
                     for line in lines[1:]:  # Skip header
                         parts = line.split(None, 10)
                         if len(parts) >= 11:
@@ -101,18 +96,17 @@ class ProcessAnalyzer:
                             })
         except Exception:
             self.error_count += 1
+        """_list_macos_processes."""
+        """_list_macos_processes."""
     
     def _list_linux_processes(self):
-        """List Linux processes using ps."""
         try:
-            # Use ps command to get process information
             cmd = ["ps", "aux"]
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
             
             if result.returncode == 0:
                 lines = result.stdout.strip().split('\n')
                 if len(lines) > 1:
-                    # Parse ps output
                     for line in lines[1:]:  # Skip header
                         parts = line.split(None, 10)
                         if len(parts) >= 11:
@@ -131,9 +125,11 @@ class ProcessAnalyzer:
                             })
         except Exception:
             self.error_count += 1
+        """_list_linux_processes."""
+        """_list_linux_processes."""
     
     def list_services(self) -> List[Dict]:
-        """List system services."""
+        """Populate ``services`` from the platform's service listing."""
         self.services = []
         self.error_count = 0
         
@@ -152,12 +148,10 @@ class ProcessAnalyzer:
     def _list_windows_services(self):
         """List Windows services using sc query."""
         try:
-            # Use sc query command to get service information
             cmd = ["sc", "query"]
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
             
             if result.returncode == 0:
-                # Parse service information
                 service_info = {}
                 for line in result.stdout.split('\n'):
                     line = line.strip()
@@ -176,23 +170,20 @@ class ProcessAnalyzer:
                     elif line.startswith("WIN32_EXIT_CODE"):
                         service_info["exit_code"] = line.split(":")[1].strip()
                 
-                # Add last service
+                # Flush the final service record after the loop.
                 if service_info:
                     self.services.append(service_info)
         except Exception:
             self.error_count += 1
     
     def _list_macos_services(self):
-        """List macOS services using launchctl."""
         try:
-            # Use launchctl list command to get service information
             cmd = ["launchctl", "list"]
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
             
             if result.returncode == 0:
                 lines = result.stdout.strip().split('\n')
                 if len(lines) > 1:
-                    # Parse launchctl output
                     for line in lines[1:]:  # Skip header
                         parts = line.split()
                         if len(parts) >= 3:
@@ -203,17 +194,18 @@ class ProcessAnalyzer:
                             })
         except Exception:
             self.error_count += 1
+        """_list_macos_services."""
+        """_list_macos_services."""
     
     def _list_linux_services(self):
-        """List Linux services using systemctl."""
+        """List Linux services using systemctl, falling back to ``service``."""
         try:
-            # Use systemctl list-units command to get service information
             cmd = ["systemctl", "list-units", "--type=service", "--no-pager"]
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
             
             if result.returncode == 0:
                 lines = result.stdout.strip().split('\n')
-                # Skip header lines and footer
+                # Drop the header line and systemctl's trailing blank/summary lines.
                 for line in lines[1:-6]:
                     parts = line.split(None, 4)
                     if len(parts) >= 5:
@@ -240,10 +232,9 @@ class ProcessAnalyzer:
                 self.error_count += 1
     
     def find_high_resource_processes(self, cpu_threshold: float = 50.0, mem_threshold: float = 50.0) -> List[Dict]:
-        """Find processes with high CPU or memory usage."""
+        """Flag processes at or above the CPU/memory percentage thresholds."""
         self.high_resource_processes = []
         
-        # First get all processes
         if not self.processes:
             self.list_processes()
         
@@ -252,11 +243,11 @@ class ProcessAnalyzer:
                 high_resource = False
                 
                 if self.system == "windows":
-                    # Windows uses different format
-                    # For simplicity, we'll skip detailed analysis on Windows
+                    # tasklist /v reports memory strings and CPU time, not
+                    # instantaneous percentages, so thresholding here is
+                    # impossible without a second sampling source.
                     pass
                 elif self.system in ["darwin", "linux"]:
-                    # Check CPU and memory usage
                     try:
                         cpu_percent = float(process.get("cpu_percent", 0))
                         mem_percent = float(process.get("mem_percent", 0))
@@ -269,7 +260,7 @@ class ProcessAnalyzer:
                             if mem_percent >= mem_threshold:
                                 process["high_resource_reason"].append(f"Memory: {mem_percent}%")
                     except ValueError:
-                        # Skip if we can't parse percentages
+                        # ps prints "-" for unavailable percentages.
                         pass
                 
                 if high_resource:
@@ -280,7 +271,7 @@ class ProcessAnalyzer:
         return self.high_resource_processes
     
     def get_stats(self) -> dict:
-        """Get statistics about processes and services."""
+        """Snapshot counts for UI display."""
         total_processes = len(self.processes)
         total_services = len(self.services)
         high_resource_count = len(self.high_resource_processes)
@@ -294,7 +285,7 @@ class ProcessAnalyzer:
         }
     
     def filter_processes_by_name(self, name_pattern: str) -> List[Dict]:
-        """Filter processes by name pattern."""
+        """Case-insensitive substring match on process name."""
         filtered = []
         for process in self.processes:
             if name_pattern.lower() in process.get("name", "").lower():
@@ -302,7 +293,7 @@ class ProcessAnalyzer:
         return filtered
     
     def filter_services_by_state(self, state: str) -> List[Dict]:
-        """Filter services by state."""
+        """Case-insensitive substring match on service state."""
         filtered = []
         for service in self.services:
             if state.lower() in service.get("state", "").lower():

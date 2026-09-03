@@ -27,6 +27,8 @@ class NavigationController(QWidget):
         # Setup UI
         self.setup_ui()
         self.setup_styling()
+        """__init__."""
+        """__init__."""
         
     def setup_ui(self):
         """Set up the navigation UI components."""
@@ -71,7 +73,6 @@ class NavigationController(QWidget):
         self.nav_list.setObjectName("navigationList")
         self.nav_list.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         
-        # Connect navigation selection
         self.nav_list.currentRowChanged.connect(self.on_navigation_changed)
         
         layout.addWidget(self.nav_list)
@@ -139,7 +140,6 @@ class NavigationController(QWidget):
         """
         index = self.content_stack.addWidget(widget)
         
-        # Create navigation item
         nav_item = QListWidgetItem()
         nav_item.setText(name)
         if icon:
@@ -155,7 +155,6 @@ class NavigationController(QWidget):
         }
         self._tabs[name] = tab_info
         
-        # Add to navigation list
         self.nav_list.addItem(nav_item)
         
         # If this is the first tab, select it
@@ -179,17 +178,13 @@ class NavigationController(QWidget):
             
         tab_info = self._tabs[name]
         
-        # Remove from stack
         self.content_stack.removeWidget(tab_info['widget'])
         
-        # Remove from navigation list
         row = self.nav_list.row(tab_info['nav_item'])
         self.nav_list.takeItem(row)
         
-        # Remove from internal tracking
         del self._tabs[name]
         
-        # Update current index if needed
         if self._current_index >= len(self._tabs):
             self._current_index = len(self._tabs) - 1
             if self._current_index >= 0:
@@ -264,15 +259,12 @@ class NavigationController(QWidget):
                 
     def clear_tabs(self):
         """Remove all tabs from the navigation system."""
-        # Clear the stack widget
         while self.content_stack.count() > 0:
             widget = self.content_stack.widget(0)
             self.content_stack.removeWidget(widget)
             
-        # Clear the navigation list
         self.nav_list.clear()
         
-        # Clear internal tracking
         self._tabs.clear()
         self._current_index = -1
         
@@ -310,7 +302,6 @@ class NavigationController(QWidget):
             tab_info['name'] = new_name
             tab_info['nav_item'].setText(new_name)
             
-            # Update internal tracking
             self._tabs[new_name] = tab_info
             del self._tabs[old_name]
             return True

@@ -1,11 +1,15 @@
-"""Deep disk cleaner for Cortex Cleaner."""
+"""Cross-platform "deep clean" discovery over per-OS target tables.
+
+Each platform gets a declarative map of junk locations (temp, browser and
+package caches, logs, bytecode) plus an orphaned-app-data pass that flags
+app folders whose owning application is no longer installed. Findings are
+reported only; deletion stays with the caller.
+"""
 
 import os
-import shutil
 import platform
 from pathlib import Path
-from typing import List, Dict, Any, Tuple
-from collections import defaultdict
+from typing import List, Dict, Any
 
 from cortex_unified.core.config import Config
 
@@ -13,8 +17,10 @@ SYSTEM = platform.system()
 HOME = Path.home()
 
 def get_path_size_safe(path: Path) -> int:
-    """Safely calculate folder size in bytes using cortex's get_path_size logic, 
-    but with a fallback to raw os.walk.
+    """Recursive byte size of *path*; 0 for anything unreadable.
+
+    Per-file failures are swallowed so one locked file cannot zero out the
+    total for its whole tree.
     """
     try:
         if path.is_file():
@@ -31,14 +37,26 @@ def get_path_size_safe(path: Path) -> int:
         return 0
 
 class DeepCleaner:
-    """Cleaner for temporary files, caches, and orphaned app data across platforms."""
-    
+    """Finds temp files, caches, and orphaned app data across platforms."""
+
     def __init__(self, config: Config = None):
+        """
+        Args:
+            config: Retained for interface parity; defaults are applied when
+                omitted.
+        """
         self.config = config or Config()
-        self.found_items = [] # List of dicts
-    
+        self.found_items = [] # list of dicts, see find_junk()
+
     def _find_orphaned_app_data(self) -> List[Path]:
-        """Find app data folders for apps that are no longer installed."""
+        """Find app data folders for apps that are no longer installed.
+
+        Detection is per-platform negative evidence: a folder is orphaned
+        when no matching binary/desktop entry (Linux), no ``*.app`` bundle
+        (macOS), or no uninstall registry entry (Windows) references it.
+        Conservative filters drop known system folders and tiny metadata
+        directories to keep the false-positive rate near zero.
+        """
         orphans = []
         if SYSTEM == "Linux":
             check_dirs = [HOME / ".config", HOME / ".local/share", HOME / ".cache"]
@@ -145,6 +163,13 @@ class DeepCleaner:
         return orphans
 
     def _get_scan_targets(self):
+        """Declarative scan table for the current platform.
+
+        Maps a display label to its paths, match pattern, category and
+        flags. ``recursive`` walks the whole subtree; ``is_orphan`` marks
+        the special target whose paths are produced by
+        :meth:`_find_orphaned_app_data` instead of the filesystem.
+        """
         targets = {}
         if SYSTEM == "Linux":
             targets = {
@@ -174,21 +199,28 @@ class DeepCleaner:
                 "👻  Orphaned Data": {"paths": [], "pattern": "*", "desc": "Uninstalled app data", "is_orphan": True, "category": "Orphaned"}
             }
         elif SYSTEM == "Windows":
+            windir = Path(os.environ.get("SystemRoot", os.environ.get("WINDIR", r"C:\Windows")))
             appdata = Path(os.environ.get("APPDATA", HOME / "AppData/Roaming"))
             localapp = Path(os.environ.get("LOCALAPPDATA", HOME / "AppData/Local"))
             temp = Path(os.environ.get("TEMP", HOME / "AppData/Local/Temp"))
             targets = {
-                "🌡️  Temp Files": {"paths": [temp, Path("C:/Windows/Temp")], "pattern": "*", "desc": "Temporary system files", "category": "Temp"},
+                "🌡️  Temp Files": {"paths": [temp, windir / "Temp"], "pattern": "*", "desc": "Temporary system files", "category": "Temp"},
                 "🌐  Browser Cache": {"paths": [localapp / "Google/Chrome/User Data/Default/Cache", localapp / "Google/Chrome/User Data/Default/Code Cache", localapp / "Microsoft/Edge/User Data/Default/Cache"], "pattern": "*", "desc": "Web browser caches", "category": "Cache"},
                 "📦  Package Cache": {"paths": [localapp / "pip/Cache"], "pattern": "*", "desc": "Python package caches", "category": "Cache"},
                 "🐍  Python Bytecode": {"paths": [HOME], "pattern": "__pycache__", "recursive": True, "desc": "Python bytecode", "category": "Cache"},
-                "🔧  Windows Update Cache": {"paths": [Path("C:/Windows/SoftwareDistribution/Download")], "pattern": "*", "desc": "Windows Update downloads", "category": "Cache"},
+                "🔧  Windows Update Cache": {"paths": [windir / "SoftwareDistribution" / "Download"], "pattern": "*", "desc": "Windows Update downloads", "category": "Cache"},
                 "📋  Log Files": {"paths": [appdata, localapp], "pattern": "*.log", "recursive": True, "desc": "App logs", "category": "Logs"},
                 "👻  Orphaned Data": {"paths": [], "pattern": "*", "desc": "Uninstalled app data", "is_orphan": True, "category": "Orphaned"}
             }
         return targets
 
     def find_junk(self, progress_callback=None) -> List[Dict[str, Any]]:
+        """Run every platform target and return one record per finding.
+
+        Records carry ``category``, ``description``, ``path``, ``size`` and
+        an ``is_orphan`` marker so callers can apply stricter confirmation
+        before deleting orphaned app data.
+        """
         self.found_items = []
         targets = self._get_scan_targets()
         
@@ -245,6 +277,8 @@ class DeepCleaner:
             "total_size_bytes": total_size,
             "total_size_human": self._format_bytes(total_size)
         }
+        """get_stats."""
+        """get_stats."""
     
     def _format_bytes(self, bytes_count: int) -> str:
         for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
@@ -252,3 +286,5 @@ class DeepCleaner:
                 return f"{bytes_count:.1f} {unit}"
             bytes_count /= 1024.0
         return f"{bytes_count:.1f} PB"
+        """_format_bytes."""
+        """_format_bytes."""

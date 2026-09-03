@@ -19,15 +19,18 @@ from __future__ import annotations
 
 import ipaddress
 import logging
-import platform
+import sys
 import re
 import socket
 import subprocess
+import threading
 from dataclasses import dataclass, field
 from typing import Any
 
+from cortex_unified.core import proc as _proc
+
 _LOG = logging.getLogger("cortex.system_tools.network_tools")
-_IS_WINDOWS = platform.system() == "Windows"
+_IS_WINDOWS = sys.platform == "win32"
 _NO_WINDOW = 0x08000000 if _IS_WINDOWS else 0
 
 # Common service ports for the self-audit / connectivity checks.
@@ -42,6 +45,7 @@ COMMON_PORTS = {
 
 @dataclass(slots=True)
 class PingResult:
+    """Ping Result data container."""
     host: str
     reachable: bool
     sent: int = 0
@@ -53,6 +57,7 @@ class PingResult:
     error: str = ""
 
     def to_dict(self) -> dict[str, Any]:
+        """To dict."""
         return {
             "host": self.host, "reachable": self.reachable, "sent": self.sent,
             "received": self.received, "loss_percent": self.loss_percent,
@@ -63,11 +68,13 @@ class PingResult:
 
 @dataclass(slots=True)
 class Hop:
+    """Hop data container."""
     number: int
     host: str
     times_ms: list[float] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
+        """To dict."""
         avg = round(sum(self.times_ms) / len(self.times_ms), 1) if self.times_ms else None
         return {"number": self.number, "host": self.host,
                 "times_ms": self.times_ms, "avg_ms": avg}
@@ -78,7 +85,14 @@ class NetworkTools:
 
     # -- ping ---------------------------------------------------------------
 
-    def ping(self, host: str, count: int = 4, timeout_s: int = 4) -> PingResult:
+    def ping(
+        self,
+        host: str,
+        count: int = 4,
+        timeout_s: int = 4,
+        cancel_event: threading.Event | None = None,
+    ) -> PingResult:
+        """Ping."""
         host = (host or "").strip()
         if not host:
             return PingResult(host, False, error="No host given.")
@@ -87,7 +101,11 @@ class NetworkTools:
             args = ["ping", "-n", str(count), "-w", str(timeout_s * 1000), host]
         else:
             args = ["ping", "-c", str(count), "-W", str(timeout_s), host]
-        out = self._run(args, timeout=count * timeout_s + 10)
+        out = self._run(
+            args,
+            timeout=count * timeout_s + 10,
+            cancel_event=cancel_event,
+        )
         if out is None:
             return PingResult(host, False, error="Could not run ping.")
         return self._parse_ping(host, out)
@@ -120,10 +138,13 @@ class NetworkTools:
                 res.min_ms, res.avg_ms, res.max_ms = float(nm.group(1)), float(nm.group(2)), float(nm.group(3))
         res.reachable = res.received > 0
         return res
+        """_parse_ping."""
+        """_parse_ping."""
 
     # -- traceroute ---------------------------------------------------------
 
     def traceroute(self, host: str, max_hops: int = 30) -> list[Hop]:
+        """Traceroute."""
         host = (host or "").strip()
         if not host:
             return []
@@ -151,11 +172,14 @@ class NetworkTools:
             hostname = hosts[-1] if hosts else ("*" if "*" in rest else "")
             hops.append(Hop(number=num, host=hostname, times_ms=times))
         return hops
+        """_parse_traceroute."""
+        """_parse_traceroute."""
 
     # -- DNS ----------------------------------------------------------------
 
     @staticmethod
     def dns_lookup(host: str) -> list[str]:
+        """Dns lookup."""
         host = (host or "").strip()
         if not host:
             return []
@@ -167,6 +191,7 @@ class NetworkTools:
 
     @staticmethod
     def reverse_dns(ip: str) -> str:
+        """Reverse dns."""
         ip = (ip or "").strip()
         try:
             return socket.gethostbyaddr(ip)[0]
@@ -233,16 +258,36 @@ class NetworkTools:
         if ip.is_global:
             return "Public (internet)"
         return "Unspecified"
+        """_category."""
+        """_category."""
 
     # -- helper -------------------------------------------------------------
 
-    def _run(self, args: list[str], timeout: int = 30) -> str | None:
+    def _run(
+        self,
+        args: list[str],
+        timeout: int = 30,
+        cancel_event: threading.Event | None = None,
+    ) -> str | None:
         try:
-            proc = subprocess.run(
-                args, capture_output=True, text=True, timeout=timeout,
+            result = _proc.run(
+                args,
+                text=True,
+                timeout=timeout,
                 creationflags=_NO_WINDOW,
+                cancel_event=cancel_event,
             )
-            return proc.stdout or proc.stderr or ""
-        except (OSError, subprocess.SubprocessError) as exc:
-            _LOG.debug("network tool failed (%s): %s", args[0] if args else "?", exc)
+            return result.stdout or result.stderr or ""
+        except (
+            _proc.ProcessCancelled,
+            OSError,
+            subprocess.SubprocessError,
+        ) as exc:
+            _LOG.debug(
+                "network tool failed (%s): %s",
+                args[0] if args else "?",
+                exc,
+            )
             return None
+        """_run."""
+        """_run."""

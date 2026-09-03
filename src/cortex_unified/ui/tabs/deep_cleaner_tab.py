@@ -29,6 +29,8 @@ class DeepCleanerWorker(QThread):
         super().__init__()
         self.config = config
         self._is_running = True
+        """__init__."""
+        """__init__."""
 
     def run(self):
         try:
@@ -39,12 +41,16 @@ class DeepCleanerWorker(QThread):
                 while self._is_running:
                     self.progress_updated.emit(0)
                     time.sleep(0.1)
+                """poll_progress."""
+                """poll_progress."""
 
             t = threading.Thread(target=poll_progress, daemon=True)
             t.start()
             
             def update_status(msg):
                 self.status_updated.emit(msg)
+                """update_status."""
+                """update_status."""
                 
             items = cleaner.find_junk(progress_callback=update_status)
             stats = cleaner.get_stats()
@@ -54,12 +60,17 @@ class DeepCleanerWorker(QThread):
         except Exception as e:
             self._is_running = False
             self.error_occurred.emit(str(e))
+        """run."""
+    """DeepCleanerWorker class."""
+    """DeepCleanerWorker class."""
 
 class DeepCleanerTab(BaseTab):
     """Tab for deep cleaner functionality (Temp, Cache, Logs, Orphans)."""
 
     def __init__(self, config, logger, safety_manager):
         super().__init__(config, logger, safety_manager)
+        """__init__."""
+        """__init__."""
 
     def setup_ui(self):
         layout = QVBoxLayout(self)
@@ -129,6 +140,8 @@ class DeepCleanerTab(BaseTab):
         self.summary_lbl = QLabel('')
         self.summary_lbl.setStyleSheet("font-weight: bold;")
         layout.addWidget(self.summary_lbl)
+        """setup_ui."""
+        """setup_ui."""
 
     def start_scan(self):
         self.scan_btn.setEnabled(False)
@@ -146,6 +159,8 @@ class DeepCleanerTab(BaseTab):
         worker.error_occurred.connect(self.scan_error)
         worker.finished.connect(lambda: self.operation_finished(worker))
         worker.start()
+        """start_scan."""
+        """start_scan."""
 
     def format_bytes(self, bytes_count: int) -> str:
         for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
@@ -153,6 +168,8 @@ class DeepCleanerTab(BaseTab):
                 return f"{bytes_count:.1f} {unit}"
             bytes_count /= 1024.0
         return f"{bytes_count:.1f} PB"
+        """format_bytes."""
+        """format_bytes."""
 
     def scan_finished(self, result):
         items, stats = result
@@ -201,6 +218,8 @@ class DeepCleanerTab(BaseTab):
         self.lbl_status.setText('Scan completed ✅')
         self.clean_btn.setEnabled(file_count > 0)
         self.update_selection_summary()
+        """scan_finished."""
+        """scan_finished."""
 
     def _on_item_changed(self, item, column):
         """Handle cascade checking/unchecking logic"""
@@ -247,10 +266,14 @@ class DeepCleanerTab(BaseTab):
                     checked_count += 1
                     
         self.clean_btn.setText(f'🗑️ Clean Selected ({checked_count})')
+        """update_selection_summary."""
+        """update_selection_summary."""
 
     def scan_error(self, error):
         self.lbl_status.setText(f'Error: {error}')
         QMessageBox.critical(self, 'Scan Error', f'An error occurred:\\n{error}')
+        """scan_error."""
+        """scan_error."""
 
     def start_clean(self):
         selected_paths = []
@@ -305,12 +328,18 @@ class DeepCleanerTab(BaseTab):
             QMessageBox.critical(self, 'Cleaning Error', f'An error occurred:\\n{str(e)}')
             
         self.start_scan()
+        """start_clean."""
+        """start_clean."""
 
     def select_all(self):
         self._toggle_checkboxes(Qt.CheckState.Checked)
+        """select_all."""
+        """select_all."""
 
     def deselect_all(self):
         self._toggle_checkboxes(Qt.CheckState.Unchecked)
+        """deselect_all."""
+        """deselect_all."""
 
     def _toggle_checkboxes(self, state):
         self.tree.blockSignals(True)
@@ -322,9 +351,13 @@ class DeepCleanerTab(BaseTab):
                 parent.child(j).setCheckState(0, state)
         self.tree.blockSignals(False)
         self.update_selection_summary()
+        """_toggle_checkboxes."""
+        """_toggle_checkboxes."""
 
     def operation_finished(self, worker):
         self.progress_bar.setVisible(False)
         self.scan_btn.setEnabled(True)
         self.remove_worker_thread(worker)
         worker.deleteLater()
+        """operation_finished."""
+        """operation_finished."""

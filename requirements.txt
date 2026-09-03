@@ -1,26 +1,43 @@
 # Core dependencies
-click>=8.0.0
+# Keep in sync with [project.dependencies] / optional-dependencies in pyproject.toml.
+click>=8.0
 psutil>=5.9.0
-pyyaml>=6.0.0
+pyyaml>=6.0
+sqlalchemy>=2.0
 
-# Trash support (used by deleter.py)
+# Structured logging + validated settings (engine/core modules)
+# (core/database.py uses SQLAlchemy for its persistence layer)
+structlog>=23.0.0
+pydantic>=2.0.0
+pydantic-settings>=2.0.0
+
+# Trash support (used by deleter.py and the leftover cleaner)
 send2trash>=1.8.0
 
 # Optional GUI dependencies
-# PySide6>=6.5.0
+PySide6>=6.0.0
 
 # Optional dependencies for enhanced features
-# plotly>=5.15.0       # For visualization features
-# docker>=6.0.0       # For Docker cleanup features
-# pyarrow>=12.0.0     # For Parquet exports (cotrex_tree Apex Edition)
-# requests>=2.28.0    # For network operations
+tqdm>=4.64.0         # progress bars (progress extra)
+plotly>=5.15.0       # visualization extras
+docker>=6.0.0        # Docker cleanup features
+pyarrow>=12.0.0      # Parquet exports (parquet extra)
+requests>=2.30.0     # network operations
+Pillow>=10.0.0       # perceptual image hashing (pHash/dHash) for duplicate photos
+
+# Dev tooling (mirrors the 'dev' extra; `pip install -e .[dev]` preferred)
+pytest>=7.0.0
+pytest-cov>=4.0.0
+pytest-qt>=4.0.0
+hypothesis>=6.0.0
+xxhash>=3.0.0
 
 # Platform-specific dependencies
 # Windows
 pywin32>=306; sys_platform == "win32"
 
 # macOS
-# pyobjc>=9.0; sys_platform == "darwin"
+# pyobjc>=12.2.2; sys_platform == "darwin"
 
 # Linux
 # python-xlib>=0.33; sys_platform == "linux"

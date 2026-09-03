@@ -13,6 +13,7 @@ PySide6 is unavailable.
 from __future__ import annotations
 
 import os
+import pathlib
 import platform
 
 import pytest
@@ -20,7 +21,7 @@ import pytest
 pytest.importorskip("PySide6", reason="PySide6 not installed")
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
-from PySide6.QtCore import QDeadlineTimer, QEventLoop, QTimer  # noqa: E402
+from PySide6.QtCore import QDeadlineTimer, QEventLoop, Qt, QTimer  # noqa: E402
 from PySide6.QtWidgets import QApplication  # noqa: E402
 
 IS_WINDOWS = platform.system() == "Windows"
@@ -40,6 +41,26 @@ def window(app):
     win.show()
     yield win
     win.close()
+
+
+@pytest.fixture
+def pro_license(monkeypatch, tmp_path):
+    """Grant PRO entitlement so gated handlers run headlessly.
+
+    Some e2e flows drive actions that are now tier-gated (e.g. the registry
+    scan). Without entitlement the gating pops a MODAL upgrade dialog, which
+    blocks pytest forever offscreen. Pointing the singleton at a temp-path
+    activated manager keeps the real user flow while staying headless.
+    """
+    from cortex_unified.licensing import license_manager as lm_module
+    from cortex_unified.licensing.license_manager import LicenseManager
+    from cortex_unified.licensing.tiers import Tier
+
+    manager = LicenseManager(path=tmp_path / "license.json")
+    manager.activate("E2E-KEY", Tier.PRO)
+    monkeypatch.setattr(lm_module, "_MANAGER", manager, raising=False)
+    yield manager
+    lm_module.reset_singleton()
 
 
 def pump_until(app, predicate, timeout_ms=45000, interval=25) -> bool:
@@ -125,9 +146,13 @@ def test_page_privacy_scan(app, window):
     window._select("privacy")
     page = window._pages["privacy"]
     page._scan()
-    # progress becomes visible on start, hidden on completion
-    assert pump_until(app, lambda: not page.progress.isVisible()), "privacy scan stuck"
-    assert page.scan_btn.isEnabled()  # re-enabled after scan
+    # The scan shows the StatePanel loading state and disables the button; both
+    # are released on completion (the inline progress bar is for the sweep).
+    assert page.state.mode() == "loading"
+    assert not page.scan_btn.isEnabled()
+    assert pump_until(app, lambda: page.scan_btn.isEnabled()), "privacy scan stuck"
+    assert page.state.mode() in ("hidden", "empty")  # results or honest empty
+    assert not page.progress.isVisible()
 
 
 # ---------------------------------------------------------------------------
@@ -266,13 +291,28 @@ def test_page_network_map(app, window):
     page.external_only.setChecked(False)  # re-render with all connections
 
 
-def test_page_lan_devices(app, window):
+def test_page_lan_devices(app, window, monkeypatch):
+    from cortex_unified.system_tools.network_discovery import NetworkDiscovery, DiscoveryResult, Device
+    from cortex_unified.system_tools.wan_audit import WanStatus
+
+    mock_result = DiscoveryResult(
+        devices=[Device(ip="192.168.1.1", mac="00:11:22:33:44:55", hostname="router", vendor="Test Vendor", is_gateway=True)],
+        networks=["192.168.1.0/24"],
+        wan_status=WanStatus(gateway="192.168.1.1", external_ip="1.2.3.4", external_ip_classification="public"),
+        findings=[],
+        duration_seconds=0.1,
+    )
+    monkeypatch.setattr(NetworkDiscovery, "scan", lambda *args, **kwargs: mock_result)
+
     window._select("landevices")   # triggers lazy autoload
     page = window._pages["landevices"]
-    assert pump_until(app, lambda: page.refresh_btn.isEnabled() and not page.progress.isVisible()), \
+    assert pump_until(app, lambda: page.refresh_btn.isEnabled() and not page.progress.isVisible(), timeout_ms=10000), \
         "LAN scan stuck"
-    # ARP cache almost always has the gateway; table exists regardless.
-    assert page.tbl.columnCount() == 4
+    # Advanced audit columns: identity, services, findings and evidence. The
+    # table is model/view now, so shape is read from the model.
+    assert page.tbl.model().columnCount() == 8
+    assert page.wan_status is not None
+    assert page.findings is not None
 
 
 @pytest.mark.skipif(not IS_WINDOWS, reason="Windows Firewall only")
@@ -295,7 +335,7 @@ def test_page_network_monitor(app, window):
     assert page.card_listen._value.text() != "\u2014"
     # Filtering to a nonsense term empties the table; clearing restores it.
     page.search.setText("zzzz_no_such_conn")
-    assert page.tbl.rowCount() == 0
+    assert page.table.visible_count == 0
     page.search.setText("")
 
 
@@ -306,28 +346,49 @@ def test_page_processes_list(app, window):
     page.auto_chk.setChecked(False)
     assert pump_until(app, lambda: page.refresh_btn.isEnabled() and bool(page._procs)), \
         "process list stuck"
-    assert page.tbl.rowCount() > 0  # there are always running processes
+    # The table is model/view now, so rows are counted through the proxy rather
+    # than the widget: page.table is the TableBinding, page.tbl the QTableView.
+    assert page.table.visible_count > 0  # there are always running processes
 
-    # The honest memory explanation must be present.
+    # The honest memory summary is always visible; the full explanation lives
+    # behind the progressive-disclosure toggle and renders when expanded.
+    assert "in use" in page.mem_summary.text()
+    page.why_btn.setChecked(True)
     txt = page.breakdown.text()
     assert "in use" in txt and "double-count shared memory" in txt
+    assert page.breakdown.isVisible()
+    page.why_btn.setChecked(False)
     assert "%" in page.cpu_card._value.text()
 
-    # Sorting by the CPU column (now col 3) must not raise and keeps all rows.
-    n = page.tbl.rowCount()
-    page.tbl.sortByColumn(3, __import__("PySide6.QtCore", fromlist=["Qt"]).Qt.SortOrder.DescendingOrder)
-    assert page.tbl.rowCount() == n
+    # Sorting by the CPU column (col 3) must not raise and keeps all rows.
+    from PySide6.QtCore import Qt as _Qt
+    n = page.table.visible_count
+    page.tbl.sortByColumn(3, _Qt.SortOrder.DescendingOrder)
+    assert page.table.visible_count == n
 
-    # Descriptions must be present for well-known system processes.
-    descs = {page.tbl.item(r, 2).text() for r in range(page.tbl.rowCount())
-             if page.tbl.item(r, 2)}
+    # Descriptions must be present for well-known system processes. Read through
+    # the model: a QTableView has no item() accessor.
+    model = page.tbl.model()
+    descs = {
+        model.data(model.index(r, 2), _Qt.ItemDataRole.DisplayRole)
+        for r in range(model.rowCount())
+    }
     assert any(d for d in descs), "no process descriptions populated"
 
-    # Filtering narrows the visible rows.
+    # Memory must sort on the real byte value, not the formatted string - this
+    # is what the item-based table got wrong ("9 MB" above "10 MB").
+    from cortex_unified.ui.premium.tablemodel import SORT_ROLE
+    page.tbl.sortByColumn(4, _Qt.SortOrder.DescendingOrder)
+    sizes = [model.data(model.index(r, 4), SORT_ROLE)
+             for r in range(min(model.rowCount(), 25))]
+    assert sizes == sorted(sizes, reverse=True), "memory column not sorted numerically"
+
+    # Filtering narrows the visible rows without discarding the snapshot.
     page.search.setText("zzzz_no_such_process_zzzz")
-    assert page.tbl.rowCount() == 0
+    assert page.table.visible_count == 0
+    assert len(page._procs) > 0, "filter must not clear the underlying records"
     page.search.setText("")
-    assert page.tbl.rowCount() > 0
+    assert page.table.visible_count > 0
 
 
 # ---------------------------------------------------------------------------
@@ -340,7 +401,8 @@ def test_page_uninstaller_list(app, window):
     page = window._pages["uninstaller"]
     assert pump_until(app, lambda: page.refresh_btn.isEnabled() and not page.progress.isVisible()), \
         "uninstaller list stuck"
-    assert page.tbl.rowCount() > 0
+    # Model/view table: count rows through the binding, not the widget.
+    assert page.table.visible_count > 0
 
 
 @pytest.mark.skipif(not IS_WINDOWS, reason="Windows-only feature")
@@ -352,14 +414,14 @@ def test_page_telemetry_status(app, window):
 
 
 @pytest.mark.skipif(not IS_WINDOWS, reason="Windows-only feature")
-def test_page_registry_scan(app, window):
+def test_page_registry_scan(app, window, pro_license):
     window._select("registry")
     page = window._pages["registry"]
     page._scan()
     assert pump_until(app, lambda: page.scan_btn.isEnabled() and not page.progress.isVisible()), \
         "registry scan stuck"
-    # rowCount >= 0 (a clean registry may have zero orphans)
-    assert page.tbl.rowCount() >= 0
+    # visible_count >= 0 (a clean registry may have zero orphans)
+    assert page.table.visible_count >= 0
 
 
 # ---------------------------------------------------------------------------
@@ -386,9 +448,60 @@ def test_page_drive_optimizer_list(app, window):
     assert pump_until(app, lambda: page.refresh_btn.isEnabled() and not page.progress.isVisible()), \
         "drive optimizer list stuck"
     assert page.tbl.rowCount() >= 1  # at least the system drive
-    # verify the SSD/HDD-correct action text is present
-    actions = {page.tbl.item(r, 2).text() for r in range(page.tbl.rowCount())}
-    assert any(("TRIM" in a) or ("Defragment" in a) or ("\u2014" in a) for a in actions)
+    actions = [page.tbl.item(r, 2).text() for r in range(page.tbl.rowCount()) if page.tbl.item(r, 2)]
+    assert any(("TRIM" in a) or ("Defragment" in a) or ("\u2014" in a)
+               for a in actions)
+
+
+def _drive_action_text(drive: dict) -> str:
+    from cortex_unified.ui.premium.more_pages import _drive_action
+    return _drive_action(drive)
+
+
+@pytest.mark.skipif(not IS_WINDOWS, reason="virtual disk compaction is Windows-only")
+def test_page_virtual_disks(app, window):
+    """Discovery is read-only, so it runs here; compaction is worker-tested."""
+    from cortex_unified.system_tools.vhdx_manager import DiskKind, VirtualDisk
+
+    window._select("vdisks")   # triggers lazy autoload (registry + PowerShell)
+    page = window._pages["vdisks"]
+    assert pump_until(app, lambda: page.refresh_btn.isEnabled(), timeout_ms=60000), \
+        "virtual disk discovery stuck"
+    # A machine with no WSL/Docker/Hyper-V must land in the empty state, not error.
+    assert page.state.mode() in ("hidden", "empty")
+
+    # A disk held open by its runtime must never be offered for compaction.
+    blocked = VirtualDisk(pathlib.Path("run_gui.py"), DiskKind.DOCKER, "Docker",
+                          8192, 8192, running=True, blockers=("dockerd.exe",))
+    page._on_listed([blocked])
+    page.tbl.selectRow(0)
+    assert page.compact_btn.isEnabled() is False
+    chosen = page._selected_disks()
+    assert chosen and "dockerd.exe" in str(chosen[0].status_note)
+
+
+@pytest.mark.skipif(not IS_WINDOWS, reason="component store is a Windows concept")
+def test_page_component_store_construct(app, window):
+    """Analysis runs real DISM (minutes); just verify the page builds and the
+    managed-item safety rule holds. The parser/cleanup logic is unit-tested."""
+    from cortex_unified.system_tools.component_store import Leftover, LeftoverRisk
+
+    window._select("compstore")
+    page = window._pages["compstore"]
+    assert hasattr(page, "analyze_btn") and hasattr(page, "del_btn")
+
+    managed = Leftover(pathlib.Path("run_gui.py"), "Component store (WinSxS)",
+                       123, LeftoverRisk.MANAGED, "hard links",
+                       supported_removal="Use DISM.")
+    page._on_analyzed(
+        type("A", (), {"actual_size": 0, "shared_with_windows": 0,
+                       "reclaimable_estimate": 0, "reclaimable_packages": 0,
+                       "last_cleanup": "", "explorer_gap_note": "", "message": ""})(),
+        [managed],
+    )
+    page.tbl.selectRow(0)
+    assert page.del_btn.isEnabled() is False, \
+        "a Windows-managed item must never be offered for direct deletion"
 
 
 def test_page_system_info_load(app, window):
@@ -402,9 +515,10 @@ def test_page_system_info_load(app, window):
 def test_page_package_caches_load(app, window):
     window._select("packages")
     page = window._pages["packages"]
-    assert pump_until(app, lambda: page.refresh_btn.isEnabled() and not page.progress.isVisible(),
+    assert pump_until(app, lambda: page.refresh_btn.isEnabled(),
                       timeout_ms=60000), "package cache detect stuck"
-    assert page.tbl.rowCount() >= 0  # >=0: machine may have no package managers
+    # The page reports detection through its status label (no table).
+    assert hasattr(page, "pm_detect_status")
 
 
 def test_dashboard_smart_learning_loop(app, window, tmp_path):
@@ -510,3 +624,122 @@ def test_restore_point_worker_reports_honest_status(app):
     worker.run()
     # Not elevated -> must be the honest NOT_ELEVATED status, never 'created'.
     assert captured.get("status") == "not_elevated"
+
+
+def test_page_lan_devices_renders_synthetic_advanced_audit(window):
+    """Exercise the premium audit UI without touching the live network."""
+    from cortex_unified.system_tools.network_discovery import Device, DiscoveryResult
+    from cortex_unified.system_tools.network_inventory import InventoryChanges
+    from cortex_unified.system_tools.network_security_audit import SecurityFinding
+    from cortex_unified.system_tools.network_service_scanner import ServiceObservation
+    from cortex_unified.system_tools.wan_audit import WanStatus
+
+    service = ServiceObservation(
+        ip="192.168.50.20", port=5555, transport="tcp", name="adb",
+        source="synthetic", metadata={"evidence": ["TCP connection accepted"]})
+    device = Device(
+        ip="192.168.50.20", hostname="test-phone", open_ports=[5555],
+        service_observations=[service], sources={"mdns", "ports"})
+    finding = SecurityFinding(
+        code="wireless-adb", severity="high", title="Wireless ADB reachable",
+        detail="Synthetic fixture", remediation="Disable wireless debugging.",
+        device_ip=device.ip, evidence=["synthetic"], confidence=0.95, port=5555)
+    result = DiscoveryResult(
+        devices=[device], networks=["192.168.50.0/24"], duration_seconds=1.2,
+        findings=[finding], wan_status=WanStatus(
+            external_ip="100.64.0.10", external_ip_classification="cgnat",
+            gateway="192.168.50.1"), inventory_changes=InventoryChanges(),
+        audit_profile="advanced")
+
+    page = window._pages["landevices"]
+    page._on_loaded(result)
+
+    # Cells are read through the model: the device table is a QTableView driven
+    # by a RecordTableModel, so there is no item() accessor.
+    model = page.tbl.model()
+    assert model.columnCount() == 8
+    assert page.table.visible_count == 1
+
+    def cell(row, col):
+        return model.data(model.index(row, col), Qt.ItemDataRole.DisplayRole)
+
+    assert "5555/tcp adb" in cell(0, 5)
+    assert "HIGH" in cell(0, 6)
+    assert "CGNAT" in page.wan_status.text().upper()
+    assert "1 high" in page.findings.text()
+    assert page.export_btn.isEnabled()
+
+    page.tbl.selectRow(0)
+    # Selection must resolve to the real record, not a list index - this is what
+    # used to break silently once the table could be sorted.
+    assert page.table.selected_record() is device
+    assert page._selected_device() is device
+    assert not page.detail_tabs.isHidden()
+    assert "Wireless ADB reachable" in page._detail_views["Security"].toPlainText()
+
+
+# ---------------------------------------------------------------------------
+# 28. NextGen & Enterprise Tools: Winapp2, SRUM/BAM, DirectStorage, StandbyMem, MFT Slack, Search
+# ---------------------------------------------------------------------------
+
+def test_page_winapp2_e2e(app, window):
+    page = window._pages["winapp2"]
+    assert page is not None
+    assert page.stat_apps is not None
+    page._start_scan()
+    assert pump_until(app, lambda: not page.progress_bar.isVisible(), timeout_ms=15000)
+
+
+def test_page_srum_bam_e2e(app, window):
+    page = window._pages["srumbam"]
+    assert page is not None
+    assert page.stat_bam_records is not None
+    page._start_scan()
+    assert pump_until(app, lambda: not page.progress_bar.isVisible(), timeout_ms=15000)
+
+
+def test_page_directstorage_e2e(app, window):
+    page = window._pages["directstorage"]
+    assert page is not None
+    assert page.stat_status is not None
+    page._start_audit()
+    assert pump_until(app, lambda: not page.progress_bar.isVisible(), timeout_ms=15000)
+
+
+def test_page_standby_purger_e2e(app, window):
+    page = window._pages["standbymem"]
+    assert page is not None
+    assert page.stat_phys_total is not None
+    page._refresh_stats()
+    assert page.stat_phys_total.value() != "0 GB" or not IS_WINDOWS
+
+
+def test_page_mft_slack_e2e(app, window):
+    page = window._pages["mftslack"]
+    assert page is not None
+    assert page.stat_total_records is not None
+    page._start_audit()
+    assert pump_until(app, lambda: not page.progress_bar.isVisible(), timeout_ms=15000)
+
+
+def test_page_search_optimizer_e2e(app, window):
+    page = window._pages["searchopt"]
+    assert page is not None
+    assert page.stat_size is not None
+    page._start_status_query()
+    assert pump_until(app, lambda: not page.progress_bar.isVisible(), timeout_ms=15000)
+
+
+def test_page_disk_analyzer_e2e(app, window, tmp_path):
+    sub = tmp_path / "subfolder"
+    sub.mkdir()
+    (sub / "test1.bin").write_bytes(b"A" * 1024)
+    (sub / "test2.txt").write_text("Hello World")
+    page = window._pages["diskanalyzer"]
+    assert page is not None
+    page._path_edit.setText(str(tmp_path))
+    page._run()
+    assert pump_until(app, lambda: page._worker is None, timeout_ms=15000)
+    assert page._tbl.rowCount() >= 1
+
+

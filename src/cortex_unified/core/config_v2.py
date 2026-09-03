@@ -3,6 +3,46 @@ Pydantic-based configuration management for Cortex Cleaner.
 
 This replaces the old YAML-based config with full type safety, validation,
 and support for environment variables and CLI overrides.
+
+Adoption status (read this before choosing a config module)
+-----------------------------------------------------------
+This module is the **intended** configuration layer and is fully covered by
+``tests/test_config_v2.py``, but it currently has **zero production callers**.
+Every module that reads configuration still imports the legacy
+:mod:`cortex_unified.core.config`.
+
+Do not add new callers to the legacy module; new code should import from here.
+
+What already matches
+~~~~~~~~~~~~~~~~~~~~
+The read-only surface is deliberately identical (``exclude_patterns``,
+``exclude_dirs``, ``exclude_regex_patterns``, ``min_age_days``,
+``default_action``, ``log_file``, ``json_logging``, ``threads``,
+``follow_symlinks``, ``matches_exclude_patterns``), and the **default exclusion
+values now agree**: the legacy loader was fixed to use its own
+``DEFAULT_CONFIG`` as the baseline, which it previously declared but never
+applied.
+
+What still blocks a mechanical migration
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+These are real incompatibilities, not cosmetic ones. Each needs a decision:
+
+1. **Mutable ``config_data``.** The CLI applies ``--exclude-pattern`` and
+   friends by assigning into ``Config.config_data[...]`` - roughly 48 sites.
+   A pydantic model has no such dict. A typed override API (or an explicit
+   ``model_copy(update=...)`` call per site) has to replace it.
+2. **Constructor shape.** Legacy accepts a positional path,
+   ``Config(config_path)``, and 8 CLI sites use it. This class takes keyword
+   data only, so those calls would raise ``TypeError``.
+3. **No ``DEFAULT_CONFIG`` export.** ``cli/cli.py`` and ``ui/main_window.py``
+   import that dict from the legacy module.
+4. **Different config file and key layout.** Legacy reads a flat
+   ``~/.deepcleaner.yaml``; this class reads a *sectioned*
+   ``~/.cortex_cleaner.yaml`` (``scan:``, ``performance:``, ...). Existing user
+   files would need migrating, or a compatibility reader.
+
+Until those are addressed, swapping the import in place would break the CLI
+rather than improve it.
 """
 
 from __future__ import annotations
@@ -14,6 +54,12 @@ from pydantic import BaseModel, Field, field_validator, ConfigDict
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic_settings.sources import PydanticBaseSettingsSource
 import yaml
+
+# Single source of truth for the safety-critical exclusion defaults. Imported
+# (rather than restated) so this module and the legacy config can never disagree
+# about which directories cleanup must stay out of. ``core.config`` is
+# deliberately import-cheap - stdlib plus pyyaml - so this adds no real cost.
+from cortex_unified.core.config import DEFAULT_CONFIG as _DEFAULTS
 
 
 def _read_yaml_file(path: Path) -> dict:
@@ -39,39 +85,51 @@ class _YamlConfigSource(PydanticBaseSettingsSource):
     def __init__(self, settings_cls, config_file):
         super().__init__(settings_cls)
         self._data = _read_yaml_file(Path(config_file)) if config_file else {}
+        """__init__."""
 
     def get_field_value(self, field, field_name):  # pragma: no cover - trivial
         return self._data.get(field_name), field_name, False
+        """get_field_value."""
 
     def __call__(self) -> dict:
         return dict(self._data)
+        """__call__."""
 
 
 class ScanConfig(BaseModel):
-    """Configuration for scan operations."""
-    
+    """Configuration for scan operations.
+
+    The exclusion defaults are *derived* from
+    :data:`cortex_unified.core.config.DEFAULT_CONFIG` rather than restated
+    here. They are safety-critical (they keep cleanup out of ``.git``,
+    ``node_modules``, ``__pycache__`` and editor state), and having two
+    independent copies meant they silently drifted: this class protected
+    ``.vscode``/``.idea`` while the legacy config that every module actually
+    uses did not. One source of truth makes that drift impossible.
+    """
+
     exclude_patterns: List[str] = Field(
-        default=["*.log", "node_modules", ".git", "__pycache__", "*.tmp", "*.temp"],
+        default_factory=lambda: list(_DEFAULTS["exclude_patterns"]),
         description="Glob patterns for files/folders to exclude"
     )
-    
+
     exclude_dirs: List[str] = Field(
-        default=[".git", "__pycache__", "node_modules", ".vscode", ".idea"],
+        default_factory=lambda: list(_DEFAULTS["exclude_dirs"]),
         description="Directory names to always exclude"
     )
-    
+
     exclude_regex_patterns: List[str] = Field(
-        default=[r".*\.log\.\d+$", r".*~$"],
+        default_factory=lambda: list(_DEFAULTS["exclude_regex_patterns"]),
         description="Regex patterns for exclusion"
     )
-    
+
     follow_symlinks: bool = Field(
-        default=False,
+        default_factory=lambda: bool(_DEFAULTS["follow_symlinks"]),
         description="Whether to follow symbolic links during scanning"
     )
-    
+
     min_age_days: int = Field(
-        default=0,
+        default_factory=lambda: int(_DEFAULTS["min_age_days"]),
         ge=0,
         le=3650,
         description="Minimum age in days for files to be considered for deletion"
