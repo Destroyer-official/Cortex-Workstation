@@ -779,10 +779,6 @@ class FileIndexer(QObject):
             self.index_updated.emit()
         """After an incremental scan: rebuild the prefix index and emit
         index_updated only when something actually changed."""
-        if count > 0:
-            self._index.rebuild_prefix_index()
-            self.index_updated.emit()
-        """_on_incr_finished."""
 
     # -- Search API ---------------------------------------------------------
 

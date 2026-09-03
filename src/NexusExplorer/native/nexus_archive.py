@@ -649,7 +649,8 @@ class _ExtractWorker(QThread):
         self._entries = entries
         self._process: subprocess.Popen | None = None
         self._cancelled = threading.Event()
-        """__init__."""
+        """Store archive/dest/password and the optional include-list of
+        entries to extract selectively; no process runs until start()."""
 
     def run(self):
         """Run '7z x' as a live Popen: parse 'Extracting' lines into

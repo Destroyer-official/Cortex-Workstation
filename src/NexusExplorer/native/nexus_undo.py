@@ -334,9 +334,6 @@ class UndoStack:
         if self._on_change:
             self._on_change()
         """Invoke the change callback when one is registered."""
-        if self._on_change:
-            self._on_change()
-        """_notify."""
 
     # ------------------------------------------------------------------
     # Recording operations (called BEFORE the operation executes)

@@ -1,0 +1,82 @@
+# 🚀 Getting Started with Cortex Workstation
+
+Welcome to Cortex Workstation! This guide will walk you through system requirements, installation, and launching the application.
+
+---
+
+## 💻 System Requirements
+
+| Specification | Minimum Requirement | Recommended |
+| :--- | :--- | :--- |
+| **Operating System** | Windows 10 (Build 19041+) or Windows 11 | Windows 11 (22H2+ recommended for DirectStorage & Dev Drives) |
+| **Python Runtime** | Python 3.10 to 3.14 (64-bit) | Python 3.12 or 3.14 |
+| **Processor** | Dual-core x64 CPU | Modern Quad-core or higher (supports multi-threaded hash pipelines) |
+| **Memory (RAM)** | 4 GB RAM | 8 GB+ RAM |
+| **Disk Space** | 500 MB free storage | 2 GB+ (for caches, forensic reports, and index storage) |
+
+---
+
+## 📦 Installation & Setup
+
+### 1. Clone the Repository
+```bash
+git clone https://github.com/Destroyer-official/Cortex-Workstation.git
+cd Cortex-Workstation
+```
+
+### 2. Set Up a Virtual Environment
+```powershell
+# Using standard Python
+python -m venv venv
+.\venv\Scripts\Activate.ps1
+
+# Or using Conda
+conda create -n cortex python=3.12 -y
+conda activate cortex
+```
+
+### 3. Install Dependencies
+```bash
+pip install -r requirements.txt
+pip install -r requirements-dev.txt
+```
+
+---
+
+## 🎮 Launching the Application
+
+### Modern Presentation Shell (Recommended)
+To launch the full 132-tool workstation interface with HiDPI support and modern themes:
+```bash
+python run_gui.py
+```
+
+Or run the one-click Conda launcher:
+```powershell
+.\run_with_conda.ps1
+```
+
+### Command Line Interface (CLI)
+Cortex Workstation includes 21 high-throughput CLI subcommands for headless and server environments:
+```bash
+# View all available CLI tools
+python -m cortex_unified.cli --help
+
+# Run a quick system disk analysis
+python -m cortex_unified.cli analyze-disk --path C:\
+
+# Clean temporary files (dry run by default)
+python -m cortex_unified.cli clean-temp --dry-run
+```
+
+---
+
+## 🛡️ Administrative Privileges
+While basic file analysis, deduplication, and file management run in user-space, certain forensic and repair tools require elevated permissions:
+* **Registry Compaction & Cleaning**
+* **Windows Update (DISM / SFC) Repair**
+* **DirectStorage BypassIO Tuning**
+* **Memory Standby Purging**
+* **VSS Shadow Copy Management**
+
+To access these features, right-click your terminal or launcher and select **"Run as administrator"**.

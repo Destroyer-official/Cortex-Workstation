@@ -1,0 +1,87 @@
+site_name: Cortex Workstation
+site_url: https://destroyer-official.github.io/Cortex-Workstation/
+site_description: "The Ultimate Windows NT Systems Optimization, Forensics & File Management Platform"
+site_author: "Destroyer-official"
+repo_url: https://github.com/Destroyer-official/Cortex-Workstation
+repo_name: Destroyer-official/Cortex-Workstation
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  language: en
+  palette:
+    # Palette toggle for dark mode (Cortex Midnight)
+    - scheme: slate
+      primary: indigo
+      accent: deep purple
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+    # Palette toggle for light mode (Cortex Daylight)
+    - scheme: default
+      primary: indigo
+      accent: deep purple
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+  font:
+    text: Inter
+    code: Roboto Mono
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - navigation.tracking
+    - search.suggest
+    - search.highlight
+    - search.share
+    - content.code.copy
+    - content.tabs.link
+
+extra_css:
+  - stylesheets/extra.css
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - attr_list
+  - tables
+  - def_list
+  - footnotes
+  - toc:
+      permalink: true
+
+nav:
+  - "🌎 Welcome Hub":
+      - "Command Center": index.md
+      - "Feature Directory": FEATURE_DIRECTORY.md
+      - "Quick Reference": quick_reference.md
+  - "📦 User Space":
+      - "Getting Started": user/getting-started.md
+      - "How-To Guides": user/how-to-guides.md
+      - "Configuration Reference": user/configuration.md
+      - "Nexus File Manager": user/nexus-explorer.md
+      - "Troubleshooting": user/troubleshooting.md
+  - "🏗️ Developer Platform":
+      - "Repository Architecture Map": dev/architecture.md
+      - "State Management & Safety": dev/threading-safety.md
+      - "Testing & CI/CD": dev/testing.md
+      - "Release & Review Process": dev/release-process.md
+  - "🔌 API & Subsystems":
+      - "Subsystem Core Overview": api/overview.md
+      - "System Tools Reference": api/system-tools.md
+      - "Analyzers Reference": api/analyzers.md
+      - "Core Engine & Algorithmic Caches": api/core-engine.md

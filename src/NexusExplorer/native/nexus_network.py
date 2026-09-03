@@ -117,11 +117,15 @@ def get_credential(service: str, username: str) -> str:
 
 
 def _path_join(base: str, name: str) -> str:
-    """_path_join."""
+    """Join a path segment using backslashes for UNC (\\\\...) bases and
+    forward slashes for everything else, collapsing duplicate
+    separators."""
     if base.startswith("\\\\"):
         return base.rstrip("\\") + "\\" + name.lstrip("\\")
     return f"{base.rstrip('/')}/{name.lstrip('/')}"
-    """_path_join."""
+    """Join a path segment using backslashes for UNC (\\\\...) bases and
+    forward slashes for everything else, collapsing duplicate
+    separators."""
 
 
 class NetworkFS(ABC):
@@ -188,12 +192,14 @@ class SMBProvider(NetworkFS):
     """
 
     def __init__(self):
-        """__init__."""
+        """Start disconnected with host/share state and a global
+        serialization lock."""
         self._host = ""
         self._share = ""
         self._connected = False
         self._lock = threading.Lock()
-        """__init__."""
+        """Start disconnected with host/share state and a global
+        serialization lock."""
 
     @property
     def protocol(self) -> NetworkProtocol:
@@ -336,7 +342,8 @@ class FTPProvider(NetworkFS):
     """FTP/FTPS file transfer access with automatic reconnection."""
 
     def __init__(self):
-        """__init__."""
+        """Store the FTP connection state, credentials, a serialization
+        lock, and the 3-attempt retry budget."""
         self._conn: ftplib.FTP | None = None
         self._host = ""
         self._port = 21
@@ -345,7 +352,8 @@ class FTPProvider(NetworkFS):
         self._connected = False
         self._lock = threading.Lock()
         self._max_retries = 3
-        """__init__."""
+        """Store the FTP connection state, credentials, a serialization
+        lock, and the 3-attempt retry budget."""
 
     @property
     def protocol(self) -> NetworkProtocol:
@@ -361,7 +369,8 @@ class FTPProvider(NetworkFS):
         return self._reconnect()
 
     def _reconnect(self) -> bool:
-        """_reconnect."""
+        """Retry loop building a fresh ftplib.FTP connection (10 s
+        timeout) with exponential backoff; up to _max_retries attempts."""
         for attempt in range(self._max_retries):
             try:
                 self._close_conn()
@@ -378,10 +387,12 @@ class FTPProvider(NetworkFS):
                     return False
                 time.sleep(2 ** attempt)
         return False
-        """_reconnect."""
+        """Retry loop building a fresh ftplib.FTP connection (10 s
+        timeout) with exponential backoff; up to _max_retries attempts."""
 
     def _close_conn(self) -> None:
-        """_close_conn."""
+        """Quit (or hard-close) the current FTP control connection and
+        clear the reference."""
         if self._conn:
             try:
                 self._conn.quit()
@@ -391,7 +402,8 @@ class FTPProvider(NetworkFS):
                 except Exception:
                     pass
             self._conn = None
-        """_close_conn."""
+        """Quit (or hard-close) the current FTP control connection and
+        clear the reference."""
 
     def disconnect(self) -> None:
         """Close the FTP connection and mark disconnected."""
@@ -404,7 +416,9 @@ class FTPProvider(NetworkFS):
         return self._connected and self._conn is not None
 
     def _safe_operation(self, operation: Callable[[ftplib.FTP], T]) -> T:
-        """_safe_operation."""
+        """Run operation(self._conn) under the lock; on FTP/OSErrors
+        reconnect with backoff and retry (up to _max_retries), re-raising
+        the final failure."""
         for attempt in range(self._max_retries):
             try:
                 with self._lock:
@@ -415,7 +429,9 @@ class FTPProvider(NetworkFS):
                 self._reconnect()
                 time.sleep(2 ** attempt)
         raise RuntimeError("FTP operation failed after retries")
-        """_safe_operation."""
+        """Run operation(self._conn) under the lock; on FTP/OSErrors
+        reconnect with backoff and retry (up to _max_retries), re-raising
+        the final failure."""
 
     def list_files(self, path: str = "/") -> list[NetworkFile]:
         """List FTP directory entries via MLSD."""
@@ -423,7 +439,8 @@ class FTPProvider(NetworkFS):
             return []
         try:
             def _list(ftp: ftplib.FTP) -> list[NetworkFile]:
-                """_list."""
+                """cwd into the path and convert MLSD facts into
+                NetworkFile rows (skipping '.'/'..')."""
                 ftp.cwd(path)
                 entries: list[NetworkFile] = []
                 for name, facts in ftp.mlsd():
@@ -435,11 +452,12 @@ class FTPProvider(NetworkFS):
                         host=self._host,
                         path=_path_join(path, name),
                         name=name,
-                        is_dir=is_dir,
-                        size=int(facts.get("size", 0)),
-                    ))
+                    is_dir=is_dir,
+                    size=int(facts.get("size", 0)),
+                ))
                 return entries
-                """_list."""
+                """cwd into the path and convert MLSD facts into
+                NetworkFile rows (skipping '.'/'..')."""
             return self._safe_operation(_list)
         except Exception as e:
             log.warning("FTP list failed: %s", e)
@@ -452,10 +470,12 @@ class FTPProvider(NetworkFS):
         try:
             tmp_path = local_path + ".tmp"
             def _download(ftp: ftplib.FTP) -> None:
-                """_download."""
+                """Stream RETR into the .tmp file with f.write as the
+                block callback."""
                 with open(tmp_path, "wb") as f:
                     ftp.retrbinary(f"RETR {remote_path}", f.write)
-                """_download."""
+                """Stream RETR into the .tmp file with f.write as the
+                block callback."""
             self._safe_operation(_download)
             os.replace(tmp_path, local_path)
             return True
@@ -469,10 +489,10 @@ class FTPProvider(NetworkFS):
             return False
         try:
             def _upload(ftp: ftplib.FTP) -> None:
-                """_upload."""
+                """Stream the local file out via STOR."""
                 with open(local_path, "rb") as f:
                     ftp.storbinary(f"STOR {remote_path}", f)
-                """_upload."""
+                """Stream the local file out via STOR."""
             self._safe_operation(_upload)
             return True
         except Exception as e:
@@ -514,14 +534,16 @@ class SFTPProvider(NetworkFS):
     """SFTP (SSH) file transfer access with exponential backoff reconnection."""
 
     def __init__(self):
-        """__init__."""
+        """Start disconnected: SSH/SFTP clients unset, retry budget 3,
+        guarded by an RLock."""
         self._client: paramiko.SSHClient | None = None
         self._sftp: paramiko.SFTPClient | None = None
         self._host = ""
         self._connected = False
         self._max_retries = 3
         self._lock = threading.RLock()
-        """__init__."""
+        """Start disconnected: SSH/SFTP clients unset, retry budget 3,
+        guarded by an RLock."""
 
     @property
     def protocol(self) -> NetworkProtocol:
@@ -545,7 +567,9 @@ class SFTPProvider(NetworkFS):
         return self._reconnect()
 
     def _reconnect(self) -> bool:
-        """_reconnect."""
+        """Retry loop: build an SSHClient (known_hosts verified with
+        RejectPolicy when present, else AutoAdd), connect, and open the
+        SFTP channel; exponential backoff between attempts."""
         for attempt in range(self._max_retries):
             try:
                 with self._lock:
@@ -569,10 +593,12 @@ class SFTPProvider(NetworkFS):
                     return False
                 time.sleep(2 ** attempt)
         return False
-        """_reconnect."""
+        """Retry loop: build an SSHClient (known_hosts verified with
+        RejectPolicy when present, else AutoAdd), connect, and open the
+        SFTP channel; exponential backoff between attempts."""
 
     def _close_both(self) -> None:
-        """_close_both."""
+        """Close the SFTP session and its SSH client, swallowing errors."""
         if self._sftp:
             try:
                 self._sftp.close()
@@ -585,7 +611,7 @@ class SFTPProvider(NetworkFS):
             except Exception:
                 pass
             self._client = None
-        """_close_both."""
+        """Close the SFTP session and its SSH client, swallowing errors."""
 
     def disconnect(self) -> None:
         """Close SSH and SFTP handles and mark disconnected."""
@@ -598,7 +624,9 @@ class SFTPProvider(NetworkFS):
         return self._connected and self._sftp is not None
 
     def _safe_operation(self, operation: Callable[[paramiko.SFTPClient], T]) -> T:
-        """_safe_operation."""
+        """Run operation(self._sftp) under the lock; on SSH/EOF/OSErrors
+        reconnect with backoff and retry (up to _max_retries), re-raising
+        the final failure."""
         for attempt in range(self._max_retries):
             try:
                 with self._lock:
@@ -609,7 +637,9 @@ class SFTPProvider(NetworkFS):
                 self._reconnect()
                 time.sleep(2 ** attempt)
         raise RuntimeError("SFTP operation failed after retries")
-        """_safe_operation."""
+        """Run operation(self._sftp) under the lock; on SSH/EOF/OSErrors
+        reconnect with backoff and retry (up to _max_retries), re-raising
+        the final failure."""
 
     def list_files(self, path: str = ".") -> list[NetworkFile]:
         """List entries in an SFTP directory."""
@@ -617,7 +647,8 @@ class SFTPProvider(NetworkFS):
             return []
         try:
             def _list(sftp: paramiko.SFTPClient) -> list[NetworkFile]:
-                """_list."""
+                """Convert listdir_attr results into NetworkFile rows
+                (dir detection via stat.S_ISDIR)."""
                 entries: list[NetworkFile] = []
                 for attr in sftp.listdir_attr(path):
                     entries.append(NetworkFile(
@@ -630,7 +661,8 @@ class SFTPProvider(NetworkFS):
                         modified_ms=int((attr.st_mtime or 0) * 1000),
                     ))
                 return entries
-                """_list."""
+                """Convert listdir_attr results into NetworkFile rows
+                (dir detection via stat.S_ISDIR)."""
             return self._safe_operation(_list)
         except Exception as e:
             log.warning("SFTP list failed: %s", e)
@@ -693,14 +725,14 @@ class WebDAVProvider(NetworkFS):
     """WebDAV file access via webdavclient3."""
 
     def __init__(self):
-        """__init__."""
+        """Start disconnected with no WebDAV client, config, or host."""
         self._client: WebDAVClient | None = None
         self._base_url = ""
         self._connected = False
         self._config: dict[str, str] = {}
         self._host = ""
         self._lock = threading.Lock()
-        """__init__."""
+        """Start disconnected with no WebDAV client, config, or host."""
 
     @property
     def protocol(self) -> NetworkProtocol:
@@ -832,16 +864,18 @@ class ConnectionPool:
     """Thread-safe connection pool with TTL-based expiration."""
 
     def __init__(self, ttl_seconds: int = 300):
-        """__init__."""
+        """Create the connection map with the given idle TTL (default
+        5 minutes)."""
         self._connections: dict[str, tuple[NetworkFS, float]] = {}
         self._ttl = ttl_seconds
         self._lock = threading.Lock()
-        """__init__."""
+        """Create the connection map with the given idle TTL (default
+        5 minutes)."""
 
     def _key(self, protocol: NetworkProtocol, host: str) -> str:
-        """_key."""
+        """Build the cache key '<PROTOCOL>:<host>'."""
         return f"{protocol.name}:{host}"
-        """_key."""
+        """Build the cache key '<PROTOCOL>:<host>'."""
 
     def get(self, protocol: NetworkProtocol, host: str) -> NetworkFS | None:
         """Return a cached connection, evicting it if TTL expired."""
@@ -915,7 +949,8 @@ class NetworkManager(QObject):
     connection_changed = Signal(str, bool)
 
     def __init__(self, parent=None):
-        """__init__."""
+        """Register the provider classes per protocol, the active
+        provider map, the connection pool, and a 50-entry MRU list."""
         super().__init__(parent)
         self._providers: dict[NetworkProtocol, type[NetworkFS]] = {
             NetworkProtocol.SMB: SMBProvider,
@@ -927,10 +962,12 @@ class NetworkManager(QObject):
         self._pool = ConnectionPool()
         self._recent: list[NetworkConnection] = []
         self._MAX_RECENT = 50
-        """__init__."""
+        """Register the provider classes per protocol, the active
+        provider map, the connection pool, and a 50-entry MRU list."""
 
     def _default_port(self, protocol: NetworkProtocol) -> int:
-        """_default_port."""
+        """Return the well-known port per protocol (SMB 445, FTP 21, FTPS
+        990, SFTP 22, WebDAV 443)."""
         return {
             NetworkProtocol.SMB: 445,
             NetworkProtocol.FTP: 21,
@@ -938,7 +975,8 @@ class NetworkManager(QObject):
             NetworkProtocol.SFTP: 22,
             NetworkProtocol.WEBDAV: 443,
         }.get(protocol, 0)
-        """_default_port."""
+        """Return the well-known port per protocol (SMB 445, FTP 21, FTPS
+        990, SFTP 22, WebDAV 443)."""
 
     def get_provider(self, protocol: NetworkProtocol) -> NetworkFS | None:
         """Return the active provider for a protocol."""

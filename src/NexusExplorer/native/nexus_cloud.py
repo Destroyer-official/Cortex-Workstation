@@ -472,11 +472,13 @@ class OneDriveProvider(CloudProvider):
         except Exception as exc:
             log.warning("OneDrive list_files failed: %s", exc)
             return []
-        """list_files."""
+        """List children of a OneDrive path via Graph, following
+        @odata.nextLink pages up to max_results (page size capped at 200)."""
 
     @retry_on_rate_limit()
     def search(self, query: str, max_results: int = 1000) -> list[CloudFile]:
-        """search."""
+        """Search drive items by name via Graph search, deriving each
+        parent path from parentReference."""
         try:
             url = f"{_ONEDRIVE_GRAPH}/me/drive/search(q='{query}')?$top={max_results}"
             data = self._graph_get(url)
@@ -497,11 +499,13 @@ class OneDriveProvider(CloudProvider):
         except Exception as exc:
             log.warning("OneDrive search failed: %s", exc)
             return []
-        """search."""
+        """Search drive items by name via Graph search, deriving each
+        parent path from parentReference."""
 
     @retry_on_rate_limit()
     def download(self, cloud_id: str, local_path: str) -> bool:
-        """download."""
+        """Stream an item's /content endpoint to local_path via a .tmp
+        file (64 KB chunks) and atomically os.replace it into place."""
         try:
             import urllib.request
             url = f"{_ONEDRIVE_GRAPH}/me/drive/items/{cloud_id}/content"
@@ -522,11 +526,13 @@ class OneDriveProvider(CloudProvider):
         except Exception as exc:
             log.warning("OneDrive download failed: %s", exc)
             return False
-        """download."""
+        """Stream an item's /content endpoint to local_path via a .tmp
+        file (64 KB chunks) and atomically os.replace it into place."""
 
     @retry_on_rate_limit()
     def upload(self, local_path: str, cloud_path: str) -> bool:
-        """upload."""
+        """PUT the local file to its Graph ':/content' URL in 64 KB
+        chunks; target parents resolve via the cloud path prefix."""
         try:
             import io
             import urllib.request
@@ -543,7 +549,8 @@ class OneDriveProvider(CloudProvider):
             chunk_size = 65536
             with open(src, "rb") as f:
                 def _upload_chunked():
-                    """_upload_chunked."""
+                    """Repeatedly PUT the next 64 KB chunk of the open file
+                    to the Graph content URL until EOF."""
                     while True:
                         chunk = f.read(chunk_size)
                         if not chunk:
@@ -560,17 +567,19 @@ class OneDriveProvider(CloudProvider):
                         )
                         with urllib.request.urlopen(req, timeout=120):
                             pass
-                    """_upload_chunked."""
+                    """Repeatedly PUT the next 64 KB chunk of the open file
+                    to the Graph content URL until EOF."""
                 _upload_chunked()
             return True
         except Exception as exc:
             log.warning("OneDrive upload failed: %s", exc)
             return False
-        """upload."""
+        """PUT the local file to its Graph ':/content' URL in 64 KB
+        chunks; target parents resolve via the cloud path prefix."""
 
     @retry_on_rate_limit()
     def delete(self, cloud_id: str) -> bool:
-        """delete."""
+        """DELETE the drive item by id via Graph."""
         try:
             import urllib.request
             url = f"{_ONEDRIVE_GRAPH}/me/drive/items/{cloud_id}"
@@ -587,18 +596,20 @@ class OneDriveProvider(CloudProvider):
         except Exception as exc:
             log.warning("OneDrive delete failed: %s", exc)
             return False
-        """delete."""
+        """DELETE the drive item by id via Graph."""
 
     @retry_on_rate_limit()
     def get_quota(self) -> tuple[int, int]:
-        """get_quota."""
+        """Return (used_bytes, total_bytes) from /me/drive quota; (0, 0)
+        on failure."""
         try:
             data = self._graph_get(f"{_ONEDRIVE_GRAPH}/me/drive")
             q = data.get("quota", {})
             return (q.get("used", 0), q.get("total", 0))
         except Exception:
             return (0, 0)
-        """get_quota."""
+        """Return (used_bytes, total_bytes) from /me/drive quota; (0, 0)
+        on failure."""
 
 
 # ---------------------------------------------------------------------------
@@ -618,30 +629,34 @@ class GoogleDriveProvider(CloudProvider):
     _TOKEN_DIR = Path.home() / ".nexus" / "tokens"
 
     def __init__(self, credentials_file: str = "", token_dir: str = ""):
-        """__init__."""
+        """Set the OAuth client-secrets file and the token storage
+        directory (defaults under ~/.nexus)."""
         self._credentials_file = Path(credentials_file) if credentials_file else _GOOGLE_CREDENTIALS_FILE
         self._token_dir = Path(token_dir) if token_dir else self._TOKEN_DIR
         self._service = None
         self._creds: Credentials | None = None
         self._connected: bool = False
         self._account_email: str = ""
-        """__init__."""
+        """Set the OAuth client-secrets file and the token storage
+        directory (defaults under ~/.nexus)."""
 
     @property
     def provider_type(self) -> CloudProviderType:
-        """provider_type."""
+        """Return GOOGLE_DRIVE as this provider's type."""
         return CloudProviderType.GOOGLE_DRIVE
-        """provider_type."""
+        """Return GOOGLE_DRIVE as this provider's type."""
 
     def _token_path(self) -> Path:
-        """_token_path."""
+        """Return the cached token file path, creating the token dir."""
         self._token_dir.mkdir(parents=True, exist_ok=True)
         return self._token_dir / "google_drive_token.json"
-        """_token_path."""
+        """Return the cached token file path, creating the token dir."""
 
     @retry_on_rate_limit()
     def authenticate(self) -> bool:
-        """authenticate."""
+        """Authenticate: reuse the saved token, refresh it when expired,
+        or run the InstalledAppFlow OAuth loop; then build the Drive v3
+        service and capture the account email."""
         if not HAS_GOOGLE:
             log.warning("google-api-python-client / google-auth not installed – Google Drive unavailable")
             return False
@@ -696,10 +711,13 @@ class GoogleDriveProvider(CloudProvider):
         except Exception as exc:
             log.warning("Google Drive service build failed: %s", exc)
             return False
-        """authenticate."""
+        """Authenticate: reuse the saved token, refresh it when expired,
+        or run the InstalledAppFlow OAuth loop; then build the Drive v3
+        service and capture the account email."""
 
     def is_authenticated(self) -> bool:
-        """is_authenticated."""
+        """Verify the service exists and the token is still valid,
+        refreshing (and rebuilding the service) when expired."""
         if self._connected and self._service:
             # Verify token still valid
             if self._creds and not self._creds.valid:
@@ -712,20 +730,21 @@ class GoogleDriveProvider(CloudProvider):
                         return False
             return True
         return False
-        """is_authenticated."""
+        """Verify the service exists and the token is still valid,
+        refreshing (and rebuilding the service) when expired."""
 
     def disconnect(self) -> None:
-        """disconnect."""
+        """Drop the service/creds and delete the stored token file."""
         self._connected = False
         self._service = None
         self._creds = None
         token_path = self._token_path()
         if token_path.exists():
             token_path.unlink(missing_ok=True)
-        """disconnect."""
+        """Drop the service/creds and delete the stored token file."""
 
     def get_account_info(self) -> CloudAccount | None:
-        """get_account_info."""
+        """Fetch user profile and storage quota via about().get."""
         if not self.is_authenticated():
             return None
         try:
@@ -743,11 +762,12 @@ class GoogleDriveProvider(CloudProvider):
         except Exception as exc:
             log.warning("Google Drive account info failed: %s", exc)
             return None
-        """get_account_info."""
+        """Fetch user profile and storage quota via about().get."""
 
     @retry_on_rate_limit()
     def list_files(self, path: str = "/", max_results: int = 1000) -> list[CloudFile]:
-        """list_files."""
+        """List a Drive folder by files().list — root query by parent,
+        non-root by folder name (last path segment), trashed excluded."""
         if not self.is_authenticated():
             return []
         try:
@@ -786,11 +806,12 @@ class GoogleDriveProvider(CloudProvider):
         except Exception as exc:
             log.warning("Google Drive list_files failed: %s", exc)
             return []
-        """list_files."""
+        """List a Drive folder by files().list — root query by parent,
+        non-root by folder name (last path segment), trashed excluded."""
 
     @retry_on_rate_limit()
     def search(self, query: str, max_results: int = 1000) -> list[CloudFile]:
-        """search."""
+        """Search Drive by 'name contains' query (trashed excluded)."""
         if not self.is_authenticated():
             return []
         try:
@@ -823,11 +844,12 @@ class GoogleDriveProvider(CloudProvider):
         except Exception as exc:
             log.warning("Google Drive search failed: %s", exc)
             return []
-        """search."""
+        """Search Drive by 'name contains' query (trashed excluded)."""
 
     @retry_on_rate_limit()
     def download(self, cloud_id: str, local_path: str) -> bool:
-        """download."""
+        """Download via MediaIoBaseDownload (64 KB chunks) into a .tmp
+        file, then atomically move to the destination."""
         if not self.is_authenticated():
             return False
         try:
@@ -847,11 +869,13 @@ class GoogleDriveProvider(CloudProvider):
         except Exception as exc:
             log.warning("Google Drive download failed: %s", exc)
             return False
-        """download."""
+        """Download via MediaIoBaseDownload (64 KB chunks) into a .tmp
+        file, then atomically move to the destination."""
 
     @retry_on_rate_limit()
     def upload(self, local_path: str, cloud_path: str) -> bool:
-        """upload."""
+        """Resumable MediaFileUpload to Drive with the cloud path's last
+        segment as the file name."""
         if not self.is_authenticated():
             return False
         try:
@@ -869,11 +893,12 @@ class GoogleDriveProvider(CloudProvider):
         except Exception as exc:
             log.warning("Google Drive upload failed: %s", exc)
             return False
-        """upload."""
+        """Resumable MediaFileUpload to Drive with the cloud path's last
+        segment as the file name."""
 
     @retry_on_rate_limit()
     def delete(self, cloud_id: str) -> bool:
-        """delete."""
+        """Delete a Drive file by id via files().delete."""
         if not self.is_authenticated():
             return False
         try:
@@ -882,11 +907,12 @@ class GoogleDriveProvider(CloudProvider):
         except Exception as exc:
             log.warning("Google Drive delete failed: %s", exc)
             return False
-        """delete."""
+        """Delete a Drive file by id via files().delete."""
 
     @retry_on_rate_limit()
     def get_quota(self) -> tuple[int, int]:
-        """get_quota."""
+        """Return (used_bytes, total_bytes) from about().storageQuota;
+        (0, 0) on failure or when not connected."""
         if not self.is_authenticated():
             return (0, 0)
         try:
@@ -895,7 +921,8 @@ class GoogleDriveProvider(CloudProvider):
             return (int(q.get("usage", 0)), int(q.get("limit", 0)))
         except Exception:
             return (0, 0)
-        """get_quota."""
+        """Return (used_bytes, total_bytes) from about().storageQuota;
+        (0, 0) on failure or when not connected."""
 
 
 # ---------------------------------------------------------------------------
@@ -906,21 +933,24 @@ class DropboxProvider(CloudProvider):
     """Dropbox integration via the official dropbox SDK."""
 
     def __init__(self, access_token: str = ""):
-        """__init__."""
+        """Load the access token (arg or secure storage) and start
+        disconnected until authenticate() succeeds."""
         self._access_token = access_token or _secure_load("dropbox_token")
         self._dbx: dropbox_sdk.Dropbox | None = None
         self._connected: bool = False
-        """__init__."""
+        """Load the access token (arg or secure storage) and start
+        disconnected until authenticate() succeeds."""
 
     @property
     def provider_type(self) -> CloudProviderType:
-        """provider_type."""
+        """Return DROPBOX as this provider's type."""
         return CloudProviderType.DROPBOX
-        """provider_type."""
+        """Return DROPBOX as this provider's type."""
 
     @retry_on_rate_limit()
     def authenticate(self) -> bool:
-        """authenticate."""
+        """Build a Dropbox client from the stored token, verify it via
+        users_get_current_account, and persist the token on success."""
         if not HAS_DROPBOX:
             log.warning("dropbox SDK not installed – Dropbox unavailable")
             return False
@@ -942,10 +972,12 @@ class DropboxProvider(CloudProvider):
             log.warning("Dropbox auth failed: %s", exc)
             self._connected = False
             return False
-        """authenticate."""
+        """Build a Dropbox client from the stored token, verify it via
+        users_get_current_account, and persist the token on success."""
 
     def is_authenticated(self) -> bool:
-        """is_authenticated."""
+        """Probe the connection with users_get_current_account; a failure
+        marks the provider disconnected."""
         if not self._connected or not self._dbx:
             return False
         try:
@@ -954,19 +986,21 @@ class DropboxProvider(CloudProvider):
         except Exception:
             self._connected = False
             return False
-        """is_authenticated."""
+        """Probe the connection with users_get_current_account; a failure
+        marks the provider disconnected."""
 
     def disconnect(self) -> None:
-        """disconnect."""
+        """Clear the token/client and delete the stored token."""
         self._access_token = ""
         self._connected = False
         self._dbx = None
         _secure_delete("dropbox_token")
-        """disconnect."""
+        """Clear the token/client and delete the stored token."""
 
     @retry_on_rate_limit()
     def get_account_info(self) -> CloudAccount | None:
-        """get_account_info."""
+        """Fetch the current account plus space usage (individual
+        allocation) into a CloudAccount."""
         if not self.is_authenticated():
             return None
         try:
@@ -987,7 +1021,8 @@ class DropboxProvider(CloudProvider):
         except Exception as exc:
             log.warning("Dropbox account info failed: %s", exc)
             return None
-        """get_account_info."""
+        """Fetch the current account plus space usage (individual
+        allocation) into a CloudAccount."""
 
     def _parse_dropbox_entry(self, entry: Any) -> CloudFile:
         """Convert a Dropbox file entry to a CloudFile."""
@@ -1004,7 +1039,8 @@ class DropboxProvider(CloudProvider):
 
     @retry_on_rate_limit()
     def list_files(self, path: str = "/", max_results: int = 1000) -> list[CloudFile]:
-        """list_files."""
+        """List a Dropbox folder via files_list_folder, following the
+        cursor (files_list_folder_continue) up to max_results."""
         if not self.is_authenticated():
             return []
         try:
@@ -1021,11 +1057,13 @@ class DropboxProvider(CloudProvider):
         except Exception as exc:
             log.warning("Dropbox list_files failed: %s", exc)
             return []
-        """list_files."""
+        """List a Dropbox folder via files_list_folder, following the
+        cursor (files_list_folder_continue) up to max_results."""
 
     @retry_on_rate_limit()
     def search(self, query: str, max_results: int = 1000) -> list[CloudFile]:
-        """search."""
+        """Search via files_search_v2 (capped at 200), mapping file and
+        folder metadata matches to CloudFile."""
         if not self.is_authenticated():
             return []
         try:
@@ -1055,11 +1093,13 @@ class DropboxProvider(CloudProvider):
         except Exception as exc:
             log.warning("Dropbox search failed: %s", exc)
             return []
-        """search."""
+        """Search via files_search_v2 (capped at 200), mapping file and
+        folder metadata matches to CloudFile."""
 
     @retry_on_rate_limit()
     def download(self, cloud_id: str, local_path: str) -> bool:
-        """download."""
+        """Download the file content into a .tmp file and atomically move
+        it into place."""
         if not self.is_authenticated():
             return False
         try:
@@ -1074,11 +1114,13 @@ class DropboxProvider(CloudProvider):
         except Exception as exc:
             log.warning("Dropbox download failed: %s", exc)
             return False
-        """download."""
+        """Download the file content into a .tmp file and atomically move
+        it into place."""
 
     @retry_on_rate_limit()
     def upload(self, local_path: str, cloud_path: str, mode: str = "overwrite") -> bool:
-        """upload."""
+        """Upload via files_upload (small files) or a chunked upload
+        session (64 KB pieces, append/finish) with overwrite/add mode."""
         if not self.is_authenticated():
             return False
         try:
@@ -1117,11 +1159,12 @@ class DropboxProvider(CloudProvider):
         except Exception as exc:
             log.warning("Dropbox upload failed: %s", exc)
             return False
-        """upload."""
+        """Upload via files_upload (small files) or a chunked upload
+        session (64 KB pieces, append/finish) with overwrite/add mode."""
 
     @retry_on_rate_limit()
     def delete(self, cloud_id: str) -> bool:
-        """delete."""
+        """Delete a file/folder via files_delete_v2."""
         if not self.is_authenticated():
             return False
         try:
@@ -1130,11 +1173,12 @@ class DropboxProvider(CloudProvider):
         except Exception as exc:
             log.warning("Dropbox delete failed: %s", exc)
             return False
-        """delete."""
+        """Delete a file/folder via files_delete_v2."""
 
     @retry_on_rate_limit()
     def get_quota(self) -> tuple[int, int]:
-        """get_quota."""
+        """Return (used_bytes, total_bytes) from users_get_space_usage
+        (individual allocation); (0, 0) on failure."""
         if not self.is_authenticated():
             return (0, 0)
         try:
@@ -1146,28 +1190,32 @@ class DropboxProvider(CloudProvider):
             return (used, total)
         except Exception:
             return (0, 0)
-        """get_quota."""
+        """Return (used_bytes, total_bytes) from users_get_space_usage
+        (individual allocation); (0, 0) on failure."""
 
 
 class S3Provider(CloudProvider):
     """Amazon S3 / MinIO storage provider using boto3."""
 
     def __init__(self, bucket_name: str = "", region: str = "us-east-1"):
-        """__init__."""
+        """Set the bucket (arg or AWS_S3_BUCKET env) and region (arg or
+        AWS_REGION env); the boto3 client is created at authenticate."""
         self._bucket_name = bucket_name or os.environ.get("AWS_S3_BUCKET", "")
         self._region = region or os.environ.get("AWS_REGION", "us-east-1")
         self._s3 = None
         self._authenticated = False
-        """__init__."""
+        """Set the bucket (arg or AWS_S3_BUCKET env) and region (arg or
+        AWS_REGION env); the boto3 client is created at authenticate."""
 
     @property
     def provider_type(self) -> CloudProviderType:
-        """provider_type."""
+        """Return S3 as this provider's type."""
         return CloudProviderType.S3
-        """provider_type."""
+        """Return S3 as this provider's type."""
 
     def authenticate(self) -> bool:
-        """authenticate."""
+        """Create a boto3 S3 client (shared-credential chain) and verify
+        the configured bucket via head_bucket."""
         try:
             import boto3
             self._s3 = boto3.client("s3", region_name=self._region)
@@ -1179,21 +1227,24 @@ class S3Provider(CloudProvider):
             log.warning("S3 authentication failed: %s", exc)
             self._authenticated = False
             return False
-        """authenticate."""
+        """Create a boto3 S3 client (shared-credential chain) and verify
+        the configured bucket via head_bucket."""
 
     def is_authenticated(self) -> bool:
-        """is_authenticated."""
+        """Return True when the client exists and auth succeeded."""
         return self._authenticated and self._s3 is not None
-        """is_authenticated."""
+        """Return True when the client exists and auth succeeded."""
 
     def disconnect(self) -> None:
-        """disconnect."""
+        """Drop the client and clear the authenticated flag."""
         self._s3 = None
         self._authenticated = False
-        """disconnect."""
+        """Drop the client and clear the authenticated flag."""
 
     def get_account_info(self) -> CloudAccount | None:
-        """get_account_info."""
+        """Return a synthetic account descriptor for the bucket (S3 has
+        no email/quota model); note: field names below don't match the
+        current CloudAccount schema (space_used/space_total)."""
         if not self.is_authenticated():
             return None
         return CloudAccount(
@@ -1205,10 +1256,13 @@ class S3Provider(CloudProvider):
             used_bytes=0,
             connected=True,
         )
-        """get_account_info."""
+        """Return a synthetic account descriptor for the bucket (S3 has
+        no email/quota model); note: field names below don't match the
+        current CloudAccount schema (space_used/space_total)."""
 
     def list_files(self, path: str = "/", max_results: int = 1000) -> list[CloudFile]:
-        """list_files."""
+        """List objects under a key prefix via list_objects_v2 (paths
+        become '/<key>' and names the key's last segment)."""
         if not self.is_authenticated() or not self._bucket_name:
             return []
         prefix = path.lstrip("/")
@@ -1232,17 +1286,20 @@ class S3Provider(CloudProvider):
         except Exception as exc:
             log.warning("S3 list_files failed: %s", exc)
             return []
-        """list_files."""
+        """List objects under a key prefix via list_objects_v2 (paths
+        become '/<key>' and names the key's last segment)."""
 
     def search(self, query: str, max_results: int = 1000) -> list[CloudFile]:
-        """search."""
+        """Client-side substring search over the root listing (S3 has no
+        server-side name search)."""
         all_files = self.list_files("/", max_results=max_results)
         q = query.lower()
         return [f for f in all_files if q in f.name.lower()]
-        """search."""
+        """Client-side substring search over the root listing (S3 has no
+        server-side name search)."""
 
     def download(self, cloud_id: str, local_path: str) -> bool:
-        """download."""
+        """Download an object (cloud_id = key) via download_file."""
         if not self.is_authenticated() or not self._bucket_name:
             return False
         try:
@@ -1252,10 +1309,10 @@ class S3Provider(CloudProvider):
         except Exception as exc:
             log.warning("S3 download failed: %s", exc)
             return False
-        """download."""
+        """Download an object (cloud_id = key) via download_file."""
 
     def upload(self, local_path: str, cloud_path: str) -> bool:
-        """upload."""
+        """Upload a local file to the cloud_path key via upload_file."""
         if not self.is_authenticated() or not self._bucket_name:
             return False
         try:
@@ -1265,10 +1322,10 @@ class S3Provider(CloudProvider):
         except Exception as exc:
             log.warning("S3 upload failed: %s", exc)
             return False
-        """upload."""
+        """Upload a local file to the cloud_path key via upload_file."""
 
     def delete(self, cloud_id: str) -> bool:
-        """delete."""
+        """Delete an object (cloud_id = key) via delete_object."""
         if not self.is_authenticated() or not self._bucket_name:
             return False
         try:
@@ -1277,12 +1334,12 @@ class S3Provider(CloudProvider):
         except Exception as exc:
             log.warning("S3 delete failed: %s", exc)
             return False
-        """delete."""
+        """Delete an object (cloud_id = key) via delete_object."""
 
     def get_quota(self) -> tuple[int, int]:
-        """get_quota."""
+        """Return (0, 0) — S3 exposes no bucket quota."""
         return (0, 0)
-        """get_quota."""
+        """Return (0, 0) — S3 exposes no bucket quota."""
 
 
 # ---------------------------------------------------------------------------
@@ -1298,7 +1355,8 @@ class CloudManager(QObject):
     sync_completed = Signal(str, bool)
 
     def __init__(self, parent=None):
-        """__init__."""
+        """Instantiate all four providers (OneDrive, Google Drive,
+        Dropbox, S3) and prepare the ~/.nexus/cloud_cache directory."""
         super().__init__(parent)
         self._providers: dict[CloudProviderType, CloudProvider] = {
             CloudProviderType.ONEDRIVE: OneDriveProvider(),
@@ -1308,20 +1366,22 @@ class CloudManager(QObject):
         }
         self._cache_dir = Path.home() / ".nexus" / "cloud_cache"
         self._cache_dir.mkdir(parents=True, exist_ok=True)
-        """__init__."""
+        """Instantiate all four providers (OneDrive, Google Drive,
+        Dropbox, S3) and prepare the ~/.nexus/cloud_cache directory."""
 
     def get_provider(self, provider_type: CloudProviderType) -> CloudProvider | None:
-        """get_provider."""
+        """Return the provider instance for a type, or None."""
         return self._providers.get(provider_type)
-        """get_provider."""
+        """Return the provider instance for a type, or None."""
 
     def get_connected_providers(self) -> list[CloudProvider]:
-        """get_connected_providers."""
+        """Return only providers that currently report authenticated."""
         return [p for p in self._providers.values() if p.is_authenticated()]
-        """get_connected_providers."""
+        """Return only providers that currently report authenticated."""
 
     def connect_provider(self, provider_type: CloudProviderType) -> bool:
-        """connect_provider."""
+        """Authenticate a provider and emit account_connected on
+        success."""
         provider = self._providers.get(provider_type)
         if not provider:
             return False
@@ -1329,18 +1389,20 @@ class CloudManager(QObject):
         if ok:
             self.account_connected.emit(provider_type.name)
         return ok
-        """connect_provider."""
+        """Authenticate a provider and emit account_connected on
+        success."""
 
     def disconnect_provider(self, provider_type: CloudProviderType) -> None:
-        """disconnect_provider."""
+        """Disconnect a provider and emit account_disconnected."""
         provider = self._providers.get(provider_type)
         if provider:
             provider.disconnect()
             self.account_disconnected.emit(provider_type.name)
-        """disconnect_provider."""
+        """Disconnect a provider and emit account_disconnected."""
 
     def list_all_cloud_files(self, max_per_provider: int = 1000) -> list[CloudFile]:
-        """list_all_cloud_files."""
+        """List root files from every connected provider in parallel
+        (ThreadPoolExecutor, up to 4 workers) and merge the results."""
         from concurrent.futures import ThreadPoolExecutor, as_completed
 
         connected = self.get_connected_providers()
@@ -1350,23 +1412,25 @@ class CloudManager(QObject):
         results: list[CloudFile] = []
 
         def _fetch(provider: CloudProvider) -> list[CloudFile]:
-            """_fetch."""
+            """List one provider's root, mapping exceptions to []."""
             try:
                 return provider.list_files("/", max_per_provider)
             except Exception as exc:
                 log.warning("Failed to list files from %s: %s", provider.provider_type.name, exc)
                 return []
-            """_fetch."""
+            """List one provider's root, mapping exceptions to []."""
 
         with ThreadPoolExecutor(max_workers=min(len(connected), 4)) as executor:
             futures = {executor.submit(_fetch, p): p for p in connected}
             for future in as_completed(futures):
                 results.extend(future.result())
         return results
-        """list_all_cloud_files."""
+        """List root files from every connected provider in parallel
+        (ThreadPoolExecutor, up to 4 workers) and merge the results."""
 
     def search_all(self, query: str, max_results: int = 1000) -> list[CloudFile]:
-        """search_all."""
+        """Run the name search sequentially across every connected
+        provider, merging (not deduplicating) the results."""
         results: list[CloudFile] = []
         for provider in self.get_connected_providers():
             try:
@@ -1375,4 +1439,5 @@ class CloudManager(QObject):
             except Exception as exc:
                 log.warning("Failed to search %s: %s", provider.provider_type.name, exc)
         return results
-        """search_all."""
+        """Run the name search sequentially across every connected
+        provider, merging (not deduplicating) the results."""

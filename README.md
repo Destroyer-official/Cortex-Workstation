@@ -204,16 +204,29 @@ python scripts/check_all_structure_files.py
 
 ---
 
-## 📚 Documentation Index
+## 🌌 Documentation Hub & Multi-Tiered Architecture
 
-- 🏛️ **[Technical Architecture Specification](docs/ARCHITECTURE.md)**: Deep dive into threading models, VFS transport, Win32 interop, and design tokens.
-- 🛠️ **[Developer Onboarding & Extension Guide](docs/DEVELOPER_GUIDE.md)**: Step-by-step tutorial on building new tools, GUI pages, and unit tests.
-- 📖 **[Core API Reference](docs/API_REFERENCE.md)**: Signatures, methods, and dataclasses for all core modules.
-- 📋 **[Complete Feature Directory (132 Pages)](docs/FEATURE_DIRECTORY.md)**: Detailed catalog of all interactive pages and factory bindings.
-- ✅ **[Master Features Checklist (364 Items)](COMPLETE_FEATURES_CHECKLIST.md)**: Double-checked verification checklist of all 364 capabilities.
-- 🔍 **[One-by-One Verification Report](ONE_BY_ONE_VERIFICATION_REPORT.md)**: Complete audit report covering all 471 program files.
-- 🤝 **[Contributing Guidelines](CONTRIBUTING.md)**: Pull request workflows, code conventions, and commit standards.
-- 🔒 **[Security Policy](SECURITY.md)**: Vulnerability disclosure, least privilege execution, and data safety guarantees.
+Cortex Workstation features a multi-tiered, three-column documentation hub designed to serve everyday users, system administrators, and core contributors alike:
+
+| Documentation Tier | Target Audience | Focus Areas | Documentation Path |
+| :--- | :--- | :--- | :--- |
+| **🌎 Welcome Hub** | Everyone | Project vision, core capabilities, quick-start, and global map | **[`docs/index.md`](docs/index.md)** |
+| **📦 User Space** | End-Users & Integrators | Getting started, step-by-step recipes, configuration reference, and troubleshooting | **[`docs/user/`](docs/user/getting-started.md)** |
+| **🏗️ Developer Platform** | Contributors & Core Team | Repository architecture map, thread safety, testing pipelines, and PR reviews | **[`docs/dev/`](docs/dev/architecture.md)** |
+| **🔌 API & Subsystems** | Systems Engineers | Lifecycle tables, 62 system tools reference, 23 analyzers, and core engine caches | **[`docs/api/`](docs/api/overview.md)** |
+
+> [!TIP]
+> **Online Interactive Documentation**: The complete documentation hub featuring a responsive 3-column layout, tree-structured sidebar, on-page scroll-spy, and real-time instant search is deployed to GitHub Pages at [**https://destroyer-official.github.io/Cortex-Workstation/**](https://destroyer-official.github.io/Cortex-Workstation/).
+
+### Documentation Directory Quick Links
+- 🚀 **[Getting Started & Installation](docs/user/getting-started.md)**: Setup, virtual environments, and prerequisites.
+- 🛠️ **[Step-by-Step How-To Guides](docs/user/how-to-guides.md)**: Real-world operational recipes.
+- 🎛️ **[Configuration Reference](docs/user/configuration.md)**: YAML/JSON schema, CLI flags, and environment variables.
+- 🗂️ **[Nexus File Manager Guide](docs/user/nexus-explorer.md)**: USN Journal, PAR2 recovery, and undo/redo workflows.
+- 🗺️ **[Repository Architecture Map](docs/dev/architecture.md)**: Technical breakdown of modules and subsystems.
+- 🛡️ **[State Management & Thread Safety](docs/dev/threading-safety.md)**: PathGuard security boundaries and worker models.
+- 🧪 **[Testing & CI/CD Pipelines](docs/dev/testing.md)**: Local test validation and production diagnostics.
+- 🔌 **[Core API & Subsystem Specifications](docs/api/overview.md)**: In-depth lifecycle functions and interfaces.
 
 ---
 
