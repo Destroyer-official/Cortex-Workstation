@@ -47,7 +47,9 @@ if _IS_WINDOWS:
     _FILE_ATTRIBUTE_REPARSE_POINT = 0x400
 
     class _WIN32_FIND_DATAW(ctypes.Structure):
-        """_WIN32_FIND_DATAW."""
+        """Mirrors the Win32 WIN32_FIND_DATAW structure filled by
+        FindFirstFileExW/FindNextFileW (attributes, timestamps, size,
+        and the filename buffers; MAX_PATH-truncated)."""
         _fields_ = [
             ("dwFileAttributes", wintypes.DWORD),
             ("ftCreationTime", wintypes.FILETIME),
@@ -60,7 +62,9 @@ if _IS_WINDOWS:
             ("cFileName", wintypes.WCHAR * 260),  # MAX_PATH limit; longer paths truncated
             ("cAlternateFileName", wintypes.WCHAR * 14),
         ]
-        """_WIN32_FIND_DATAW class."""
+        """Mirrors the Win32 WIN32_FIND_DATAW structure filled by
+        FindFirstFileExW/FindNextFileW (attributes, timestamps, size,
+        and the filename buffers; MAX_PATH-truncated)."""
 
     _FindFirstFileExW = _kernel32.FindFirstFileExW
     _FindFirstFileExW.restype = wintypes.HANDLE
@@ -174,17 +178,19 @@ class _PrefixIndex:
     """Sorted array of (lowercase_name, path) for O(log n) prefix search."""
 
     def __init__(self) -> None:
-        """__init__."""
+        """Initialize the entry list, dirty flag, and sorted mirror used
+        for bisect-based prefix search."""
         self._entries: list[tuple[str, str]] = []
         self._dirty = True
         self._sorted: list[tuple[str, str]] = []
-        """__init__."""
+        """Initialize the entry list, dirty flag, and sorted mirror used
+        for bisect-based prefix search."""
 
     def add(self, name: str, path: str) -> None:
-        """add."""
+        """Append a (lowercased name, path) tuple and mark the index dirty."""
         self._entries.append((name.lower(), path))
         self._dirty = True
-        """add."""
+        """Append a (lowercased name, path) tuple and mark the index dirty."""
 
     def remove(self, name: str, path: str) -> None:
         """O(n) pop from list; acceptable for infrequent removals."""
@@ -204,14 +210,15 @@ class _PrefixIndex:
         self._dirty = True
 
     def _ensure_sorted(self) -> None:
-        """_ensure_sorted."""
+        """Re-sort the entries by name (lazy rebuild, only when dirty)."""
         if self._dirty:
             self._sorted = sorted(self._entries, key=lambda x: x[0])
             self._dirty = False
-        """_ensure_sorted."""
+        """Re-sort the entries by name (lazy rebuild, only when dirty)."""
 
     def prefix_search(self, prefix: str, max_results: int = 1000) -> list[str]:
-        """prefix_search."""
+        """Return up to max_results paths whose names start with the prefix
+        (case-insensitive), via a bisect range over the sorted mirror."""
         self._ensure_sorted()
         if not prefix:
             return []
@@ -220,19 +227,22 @@ class _PrefixIndex:
         lo = bisect_left(self._sorted, (lo_prefix,))
         hi = bisect_left(self._sorted, (hi_prefix,))
         return [path for _, path in self._sorted[lo:hi]][:max_results]
-        """prefix_search."""
+        """Return up to max_results paths whose names start with the prefix
+        (case-insensitive), via a bisect range over the sorted mirror."""
 
     def rebuild(self, entries: dict[str, IndexedEntry]) -> None:
-        """rebuild."""
+        """Rebuild from an entry map (name lowercased), then re-sort
+        immediately."""
         self._entries = [(e.name.lower(), e.path) for e in entries.values()]
         self._dirty = True
         self._ensure_sorted()
-        """rebuild."""
+        """Rebuild from an entry map (name lowercased), then re-sort
+        immediately."""
 
     def __len__(self) -> int:
-        """__len__."""
+        """Return the number of indexed names."""
         return len(self._entries)
-        """__len__."""
+        """Return the number of indexed names."""
 
 
 # ---------------------------------------------------------------------------
