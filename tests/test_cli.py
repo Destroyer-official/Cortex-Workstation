@@ -1,3 +1,5 @@
+"""Tests for the Cortex Workstation CLI commands."""
+
 from click.testing import CliRunner
 from cortex_unified.cli.cli import main
 

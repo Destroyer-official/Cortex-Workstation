@@ -1,3 +1,5 @@
+"""Tests for the filesystem Scanner component."""
+
 import os
 from pathlib import Path
 from cortex_unified.core.scanner import Scanner

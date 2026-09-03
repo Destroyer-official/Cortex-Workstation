@@ -1,3 +1,5 @@
+"""Global pytest fixtures and test environment configuration."""
+
 import os
 import shutil
 import pytest

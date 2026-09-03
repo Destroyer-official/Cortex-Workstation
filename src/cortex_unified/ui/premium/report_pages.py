@@ -41,12 +41,12 @@ class HealthReportWorker(QObject):
     failed = Signal(str)
 
     def __init__(self, fmt: str):
-        """__init__."""
+        """Store the report output format ("html", "json", or "text")."""
         super().__init__()
         self._fmt = fmt
 
     def _collect(self) -> dict:
-        """_collect."""
+        """Gather system snapshot and disk health data, capturing per-section errors."""
         data: dict = {}
         try:
             from cortex_unified.system_tools.system_info import SystemInfo
@@ -62,7 +62,7 @@ class HealthReportWorker(QObject):
         return data
 
     def run(self):
-        """run."""
+        """Collect diagnostics, generate the report file, and emit its path and data."""
         try:
             from cortex_unified.reports.reports import ReportsGenerator
             data = self._collect()
@@ -92,7 +92,7 @@ class ManifestListWorker(QObject):
 
     @staticmethod
     def _leftover_sessions() -> list[dict]:
-        """_leftover_sessions."""
+        """Build read-only history rows from leftover-cleanup journals (newest first)."""
         rows: list[dict] = []
         root = Path.home() / "CortexCleanerBackups" / "leftovers"
         try:
@@ -122,7 +122,7 @@ class ManifestListWorker(QObject):
         return rows
 
     def run(self):
-        """run."""
+        """List restore manifests plus leftover sessions and emit the combined rows."""
         try:
             from cortex_unified.reports.restore_manager import RestoreManager
             manifests = list(RestoreManager().list_manifests())
@@ -135,19 +135,22 @@ class ManifestListWorker(QObject):
 
 
 class RestoreWorker(QObject):
-    """RestoreWorker class."""
+    """Restores files from a backup manifest (dry-run or real, optional overwrite).
+
+    Emits ``finished`` with the restore result dict or ``failed`` with an error.
+    """
     finished = Signal(dict)
     failed = Signal(str)
 
     def __init__(self, manifest_file: str, dry_run: bool, overwrite: bool):
-        """__init__."""
+        """Store the manifest path plus dry-run and overwrite flags."""
         super().__init__()
         self._file = manifest_file
         self._dry = dry_run
         self._overwrite = overwrite
 
     def run(self):
-        """run."""
+        """Run the manifest restore via RestoreManager and emit the result."""
         try:
             from cortex_unified.reports.restore_manager import RestoreManager
             res = RestoreManager().restore_from_manifest(
@@ -165,7 +168,7 @@ class HealthReportPage(_Page):
     """Generate an exportable, shareable PC health report."""
 
     def __init__(self, win):
-        """__init__."""
+        """Build the PC Health Report page: export buttons, progress, and preview card."""
         super().__init__(win)
         self.v.addWidget(title_block(
             "PC Health Report",
@@ -212,7 +215,7 @@ class HealthReportPage(_Page):
         self._last_path: str | None = None
 
     def _generate(self, fmt: str):
-        """_generate."""
+        """Disable export buttons and run HealthReportWorker for the given format."""
         for b in (self.html_btn, self.json_btn, self.txt_btn):
             b.setEnabled(False)
         self.state.show_loading("Collecting diagnostics\u2026")
@@ -220,7 +223,7 @@ class HealthReportPage(_Page):
         self.win.run_worker(HealthReportWorker(fmt), self._on_done, self._fail)
 
     def _on_done(self, path: str, data: dict):
-        """_on_done."""
+        """Show a summary preview of the saved report and enable opening it."""
         self.state.clear()
         for b in (self.html_btn, self.json_btn, self.txt_btn):
             b.setEnabled(True)
@@ -245,7 +248,7 @@ class HealthReportPage(_Page):
         self.win.statusBar().showMessage(f"Report written to {path}", 6000)
 
     def _open_last(self):
-        """_open_last."""
+        """Open the most recently generated report with the OS default viewer."""
         if not self._last_path:
             return
         try:
@@ -260,7 +263,7 @@ class HealthReportPage(_Page):
             QMessageBox.warning(self, "Open failed", str(exc))
 
     def _fail(self, msg: str):
-        """_fail."""
+        """Re-enable export buttons and show the report error."""
         for b in (self.html_btn, self.json_btn, self.txt_btn):
             b.setEnabled(True)
         self.state.show_error(msg, on_retry=None)
@@ -274,7 +277,7 @@ class BackupsPage(_Page):
     """List backup manifests and restore files from them."""
 
     def __init__(self, win):
-        """__init__."""
+        """Build the Backups & Restore page: refresh/preview/restore buttons and a manifests table."""
         super().__init__(win)
         self.v.addWidget(title_block(
             "Backups & Restore",
@@ -332,19 +335,19 @@ class BackupsPage(_Page):
         self._loaded = False
 
     def _on_sel(self):
-        """_on_sel."""
+        """Enable Preview/Restore buttons based on table selection."""
         has = bool(self.tbl.selectedIndexes())
         self.preview_btn.setEnabled(has)
         self.restore_btn.setEnabled(has)
 
     def _load(self):
-        """_load."""
+        """Refresh the manifest list via ManifestListWorker."""
         self.refresh_btn.setEnabled(False)
         self.state.show_loading("Loading backups\u2026")
         self.win.run_worker(ManifestListWorker(), self._on_listed, self._fail)
 
     def _on_listed(self, manifests: list):
-        """_on_listed."""
+        """Populate the backups table and show an empty state when none exist."""
         if not manifests:
             self.state.show_empty("No backups found yet. Cortex creates these before "
                                    "cleaning when backups are enabled in Settings.")
@@ -366,7 +369,7 @@ class BackupsPage(_Page):
             self.status.setText(f"{len(manifests)} backup(s) available.")
 
     def _selected_manifest(self) -> str | None:
-        """_selected_manifest."""
+        """Return the file path of the currently selected backup row."""
         sel = self.tbl.selectedIndexes()
         if not sel:
             return None
@@ -374,7 +377,7 @@ class BackupsPage(_Page):
         return item.data(Qt.ItemDataRole.UserRole) if item else None
 
     def _preview(self):
-        """_preview."""
+        """Dry-run the restore of the selected manifest and report what would happen."""
         mf = self._selected_manifest()
         if not mf:
             return
@@ -382,7 +385,7 @@ class BackupsPage(_Page):
         self.win.run_worker(RestoreWorker(mf, True, False), self._on_preview, self._fail)
 
     def _on_preview(self, res: dict):
-        """_on_preview."""
+        """Show dry-run counts (would-restore / skipped / errors) in the status line."""
         self._busy(False)
         self.status.setText(
             f"Dry-run: {res['restored']} file(s) would be restored, "
@@ -390,7 +393,7 @@ class BackupsPage(_Page):
             + (f"First issues: {res['error_details'][0]}" if res.get("error_details") else ""))
 
     def _restore(self):
-        """_restore."""
+        """Confirm overwrite choice, then run the real restore via RestoreWorker."""
         mf = self._selected_manifest()
         if not mf:
             return
@@ -413,7 +416,7 @@ class BackupsPage(_Page):
         self.win.run_worker(RestoreWorker(mf, False, overwrite), self._on_restored, self._fail)
 
     def _on_restored(self, res: dict):
-        """_on_restored."""
+        """Report restore results (restored / skipped / errors) in a dialog and status line."""
         self._busy(False)
         msg = (f"Restored {res['restored']} file(s). "
                f"Skipped {res['skipped']}, {res['errors']} error(s).")
@@ -422,13 +425,13 @@ class BackupsPage(_Page):
         self.win.statusBar().showMessage(msg, 6000)
 
     def _busy(self, on: bool):
-        """_busy."""
+        """Toggle progress bar and action buttons while a worker runs."""
         self.progress.setVisible(on)
         self.refresh_btn.setEnabled(not on)
         self.preview_btn.setEnabled(not on and bool(self.tbl.selectedIndexes()))
         self.restore_btn.setEnabled(not on and bool(self.tbl.selectedIndexes()))
 
     def _fail(self, msg: str):
-        """_fail."""
+        """Clear the busy state and show the worker error with a reload retry."""
         self._busy(False)
         self.state.show_error(msg, on_retry=self._load)

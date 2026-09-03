@@ -1,3 +1,5 @@
+"""Runner script to execute all unit tests and collect failure reports."""
+
 import os
 import sys
 import pytest

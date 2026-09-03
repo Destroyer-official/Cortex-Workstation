@@ -1,3 +1,5 @@
+"""Tests for the safe Deleter component and dry-run safety modes."""
+
 import os
 import pytest
 from pathlib import Path

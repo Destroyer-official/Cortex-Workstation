@@ -130,7 +130,7 @@ class FolderNode:
     extension_stats: Dict[str, int] = field(default_factory=lambda: defaultdict(int))
 
     def add_file(self, rel_path: str, size: int, ext: str) -> None:
-        """add_file."""
+        """Add one file's size to this node and every intermediate folder node."""
         self.size += size
         self.file_count += 1
         self.extension_stats[ext] += size
@@ -150,7 +150,7 @@ class FolderNode:
         """Convert tree to flat list of hierarchy dictionaries for treemaps."""
         result: List[Dict] = []
         def walk(node: "FolderNode", depth: int = 0):
-            """walk."""
+            """Emit one node dict, then recurse into children up to max_depth."""
             if depth >= max_depth:
                 return
             result.append({
@@ -168,7 +168,7 @@ class FolderNode:
         """Convert tree to sunburst parent-child dictionary list."""
         result: List[Dict] = []
         def walk(node: "FolderNode", depth: int = 0, parent: str = ""):
-            """walk."""
+            """Emit id/parent/value rows for sunburst rings, recursing to max_depth."""
             if depth >= max_depth:
                 return
             result.append({
@@ -185,7 +185,7 @@ class FolderNode:
         """Convert tree to top largest folders bar chart format."""
         items = []
         def walk(node: "FolderNode"):
-            """walk."""
+            """Collect non-root folder sizes for the bar chart ranking."""
             if node.path != self.path:
                 items.append({"path": node.path, "size": node.size, "name": node.name})
             for child in node.children.values():
@@ -205,10 +205,10 @@ class FolderNode:
 # ---------------------------------------------------------------------------
 
 class Scanner(ABC):
-    """Scanner."""
+    """Read-only filesystem scanner yielding FileEntry objects with cancellation and progress."""
     def __init__(self, cancel_event: Optional[threading.Event] = None,
                  progress_cb: Optional[Callable[[int, int, str], None]] = None):
-        """__init__."""
+        """Store the cancellation event and progress callback with zeroed counters."""
         self.cancel_event = cancel_event or threading.Event()
         self.progress_cb = progress_cb
         self._scanned_files = 0
@@ -217,17 +217,16 @@ class Scanner(ABC):
 
     @abstractmethod
     def scan(self, root: str) -> Generator[FileEntry, None, None]:
-        """scan."""
+        """Yield every FileEntry under root; implemented by each platform backend."""
         ...
         """scan."""
 
     def _check_cancel(self) -> bool:
-        """_check_cancel."""
+        """True once the caller has signalled the cancel event."""
         return self.cancel_event.is_set()
-        """_check_cancel."""
 
     def _report(self, path: str) -> None:
-        """_report."""
+        """Count the file and invoke progress_cb every 100th entry."""
         self._scanned_files += 1
         if self.progress_cb and self._scanned_files % 100 == 0:
             self.progress_cb(self._scanned_files, self._scanned_bytes, path)
@@ -243,13 +242,12 @@ class NTFSScanner(Scanner):
     """Fast NTFS scanner using direct MFT parsing via Windows API."""
 
     def __init__(self, *args, **kwargs):
-        """__init__."""
+        """Initialize and probe whether raw MFT/volume access is available."""
         super().__init__(*args, **kwargs)
         self._use_mft = self._check_mft_access()
-        """__init__."""
 
     def _check_mft_access(self) -> bool:
-        """_check_mft_access."""
+        """Test raw volume handle access via CreateFileW; needs Administrator."""
         try:
             import ctypes
             kernel32 = ctypes.windll.kernel32
@@ -262,23 +260,20 @@ class NTFSScanner(Scanner):
         except Exception:
             pass
         return False
-        """_check_mft_access."""
 
     def scan(self, root: str) -> Generator[FileEntry, None, None]:
-        """scan."""
+        """Yield entries via MFT parsing when available, else scandir fallback."""
         if self._use_mft:
             yield from self._scan_mft(root)
         else:
             yield from self._scan_walk(root)
-        """scan."""
 
     def _scan_mft(self, root: str) -> Generator[FileEntry, None, None]:
-        """_scan_mft."""
+        """MFT fast path; currently delegates to the scandir walk."""
         yield from self._scan_walk(root)
-        """_scan_mft."""
 
     def _scan_walk(self, root: str) -> Generator[FileEntry, None, None]:
-        """_scan_walk."""
+        """Iterative scandir walk skipping symlinks and unreadable directories."""
         stack = [root]
         while stack and not self._check_cancel():
             current = stack.pop()
@@ -317,9 +312,9 @@ class NTFSScanner(Scanner):
 # ---------------------------------------------------------------------------
 
 class PosixScanner(Scanner):
-    """PosixScanner."""
+    """Linux/macOS scanner using iterative scandir with stat metadata."""
     def scan(self, root: str) -> Generator[FileEntry, None, None]:
-        """scan."""
+        """Yield entries under root via an iterative scandir walk."""
         stack = [root]
         while stack and not self._check_cancel():
             current = stack.pop()
@@ -359,34 +354,31 @@ class PosixScanner(Scanner):
 # ---------------------------------------------------------------------------
 
 class CloudScanner(Scanner):
-    """CloudScanner."""
+    """Cloud target scanner delegating to rclone ``lsf`` per configured remote."""
     def __init__(self, *args, providers: Optional[List[str]] = None, **kwargs):
-        """__init__."""
+        """Store provider list and verify the rclone binary is usable."""
         super().__init__(*args, **kwargs)
         self.providers = providers or ["onedrive", "gdrive", "dropbox", "s3", "azureblob"]
         self._rclone_available = HAS_RCLONE and self._check_rclone()
-        """__init__."""
 
     def _check_rclone(self) -> bool:
-        """_check_rclone."""
+        """Run ``rclone version`` to confirm the binary works; no admin needed."""
         try:
             subprocess.run(["rclone", "version"], capture_output=True, check=True)
             return True
         except Exception:
             return False
-        """_check_rclone."""
 
     def scan(self, root: str) -> Generator[FileEntry, None, None]:
-        """scan."""
+        """Scan each configured ``provider:`` remote, or a single ``root`` remote."""
         if ":" not in root:
             for provider in self.providers:
                 yield from self._scan_remote(f"{provider}:")
         else:
             yield from self._scan_remote(root)
-        """scan."""
 
     def _scan_remote(self, remote: str) -> Generator[FileEntry, None, None]:
-        """_scan_remote."""
+        """List a remote's files via ``rclone lsf`` and convert each line to FileEntry."""
         if not self._rclone_available:
             return
         try:
@@ -430,7 +422,7 @@ class CloudScanner(Scanner):
 # ---------------------------------------------------------------------------
 
 class AdvancedDiskAnalyzer:
-    """AdvancedDiskAnalyzer."""
+    """Disk usage analyzer that scans (local or cloud) and builds FolderNode trees for charts."""
     def __init__(
         self,
         include_cloud: bool = False,
@@ -438,15 +430,14 @@ class AdvancedDiskAnalyzer:
         cancel_event: Optional[threading.Event] = None,
         progress_cb: Optional[Callable[[int, int, str], None]] = None,
     ):
-        """__init__."""
+        """Store cancellation/progress hooks and pick the platform or cloud scanner."""
         self.cancel_event = cancel_event or threading.Event()
         self.progress_cb = progress_cb
         self._scanner = self._create_scanner(include_cloud, cloud_providers)
         self._root_node: Optional[FolderNode] = None
-        """__init__."""
 
     def _create_scanner(self, include_cloud: bool, providers: Optional[List[str]]) -> Scanner:
-        """_create_scanner."""
+        """Choose NTFS/Posix scanner by platform, or CloudScanner when cloud deps exist."""
         import sys
         if sys.platform == "win32":
             base = NTFSScanner
@@ -462,7 +453,7 @@ class AdvancedDiskAnalyzer:
         """_create_scanner."""
 
     async def scan(self, root: str) -> AsyncGenerator[FileEntry, None]:
-        """scan."""
+        """Async wrapper that streams entries from the underlying sync scanner."""
         scanner_iter = self._scanner.scan(root)
         if hasattr(scanner_iter, "__aiter__"):
             async for entry in scanner_iter:
@@ -473,7 +464,7 @@ class AdvancedDiskAnalyzer:
         """scan."""
 
     def build_tree(self, entries: List[FileEntry]) -> FolderNode:
-        """build_tree."""
+        """Fold all file entries into an aggregated FolderNode hierarchy."""
         root = FolderNode(name="", path="")
         for entry in entries:
             if entry.is_dir:
@@ -485,7 +476,7 @@ class AdvancedDiskAnalyzer:
         """build_tree."""
 
     def get_visualizations(self) -> Dict:
-        """get_visualizations."""
+        """Return treemap/sunburst/bar data plus extension and size totals from the last tree."""
         if not self._root_node:
             return {}
         return {
@@ -500,7 +491,7 @@ class AdvancedDiskAnalyzer:
         """get_visualizations."""
 
     def get_stats(self) -> Dict:
-        """get_stats."""
+        """Return files and bytes counted by the scanner so far."""
         return {
             "scanned_files": self._scanner._scanned_files,
             "scanned_bytes": self._scanner._scanned_bytes,
@@ -526,7 +517,7 @@ def scan_sync(
     progress_cb: Optional[Callable[[int, int, str], None]] = None,
     cancel_event: Optional[threading.Event] = None,
 ) -> Tuple[List[FileEntry], FolderNode]:
-    """scan_sync."""
+    """Scan synchronously and return all entries plus the aggregated FolderNode tree."""
     analyzer = AdvancedDiskAnalyzer(
         include_cloud=include_cloud,
         cancel_event=cancel_event,
@@ -538,7 +529,7 @@ def scan_sync(
         import asyncio
 
         async def _collect():
-            """_collect."""
+            """Append every streamed entry into the entries list."""
             async for entry in scanner_iter:
                 entries.append(entry)
             """_collect."""

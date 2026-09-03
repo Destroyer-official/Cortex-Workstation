@@ -1,3 +1,5 @@
+"""Diagnostic script to check for hardcoded Windows paths."""
+
 import os
 import re
 from pathlib import Path

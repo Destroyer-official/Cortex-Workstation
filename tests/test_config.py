@@ -1,3 +1,5 @@
+"""Tests for the Cortex Workstation configuration loader."""
+
 import os
 import yaml
 import pytest

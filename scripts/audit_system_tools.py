@@ -1,3 +1,5 @@
+"""Audit script to inspect classes and functions across all system tools."""
+
 import os
 import inspect
 import importlib

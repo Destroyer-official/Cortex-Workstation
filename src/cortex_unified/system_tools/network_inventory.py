@@ -30,14 +30,14 @@ _MAX_ITEMS_PER_DEVICE = 1024
 
 
 def _text(value: Any, limit: int = 512) -> str:
-    """_text."""
+    """Coerce to a trimmed, length-capped string; empty values become ""."""
     return str(value or "").strip()[:limit]
     """_text."""
     """_text."""
 
 
 def _json_safe(value: Any, depth: int = 0) -> Any:
-    """_json_safe."""
+    """Recursively convert a value into JSON-serializable primitives with depth/size caps."""
     if depth > 6:
         return "<depth-limit>"
     if value is None or isinstance(value, (bool, int, str)):
@@ -66,11 +66,11 @@ class InventoryService:
 
     @property
     def key(self) -> str:
-        """Key."""
+        """Stable dedup key of protocol, port, and lowercase name."""
         return f"{self.protocol.lower()}:{self.port or 0}:{self.name.lower()}"
 
     def to_dict(self) -> dict[str, Any]:
-        """To dict."""
+        """Serialize the service with details made JSON-safe."""
         return {
             "name": self.name,
             "port": self.port,
@@ -89,11 +89,11 @@ class InventoryFinding:
 
     @property
     def key(self) -> str:
-        """Key."""
+        """Dedup key: the code, falling back to the title."""
         return self.code.lower() or self.title.lower()
 
     def to_dict(self) -> dict[str, Any]:
-        """To dict."""
+        """Serialize the finding with details made JSON-safe."""
         return {
             "code": self.code,
             "title": self.title,
@@ -115,7 +115,7 @@ class InventoryDevice:
     is_gateway: bool = False
 
     def to_dict(self) -> dict[str, Any]:
-        """To dict."""
+        """Serialize the device, expanding services and findings."""
         return {
             "ip": self.ip,
             "mac": self.mac,
@@ -139,7 +139,7 @@ class DeviceMetadata:
     updated_at: str = ""
 
     def to_dict(self) -> dict[str, Any]:
-        """To dict."""
+        """Serialize metadata (custom name, trust state, tags, notes)."""
         return {
             "identity_key": self.identity_key,
             "custom_name": self.custom_name,
@@ -162,7 +162,7 @@ class InventoryChange:
     identity_confidence: str = "high"
 
     def to_dict(self) -> dict[str, Any]:
-        """To dict."""
+        """Serialize the change, JSON-sanitizing previous/current values."""
         result = asdict(self)
         result["previous"] = _json_safe(self.previous)
         result["current"] = _json_safe(self.current)
@@ -181,7 +181,7 @@ class InventoryChanges:
     gateway_mac_changes: list[InventoryChange] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
-        """To dict."""
+        """Serialize the change groups as lists of change dicts."""
         return {
             "new_devices": [item.to_dict() for item in self.new_devices],
             "changed_addresses": [item.to_dict() for item in self.changed_addresses],
@@ -209,7 +209,7 @@ class InventorySnapshot:
     )
 
     def to_dict(self) -> dict[str, Any]:
-        """To dict."""
+        """Serialize the snapshot: devices, changes, gateway MAC, identity notice."""
         return {
             "snapshot_id": self.snapshot_id,
             "observed_at": self.observed_at,
@@ -221,7 +221,7 @@ class InventorySnapshot:
 
 
 def _normalize_mac(value: Any) -> str:
-    """_normalize_mac."""
+    """Return a lowercase colon-separated MAC, or "" when malformed."""
     mac = _text(value, 32).lower().replace("-", ":")
     return mac if _MAC_RE.fullmatch(mac) else ""
     """_normalize_mac."""
@@ -229,7 +229,7 @@ def _normalize_mac(value: Any) -> str:
 
 
 def _randomized_mac(mac: str) -> bool:
-    """_randomized_mac."""
+    """Detect a locally-administered (randomized/privacy) MAC via OUI bits."""
     if not mac:
         return False
     first = int(mac.split(":", 1)[0], 16)
@@ -239,7 +239,7 @@ def _randomized_mac(mac: str) -> bool:
 
 
 def _identity(device: InventoryDevice) -> tuple[str, str]:
-    """_identity."""
+    """Pick the best identity key (device_id > stable MAC > IP) plus confidence."""
     if device.device_id:
         return f"id:{device.device_id}", "high"
     if device.mac and not _randomized_mac(device.mac):
@@ -252,7 +252,7 @@ def _identity(device: InventoryDevice) -> tuple[str, str]:
 
 
 def _service(value: Any) -> InventoryService:
-    """_service."""
+    """Coerce a string/int/mapping/object into a validated InventoryService."""
     if isinstance(value, InventoryService):
         return value
     if isinstance(value, int):
@@ -295,7 +295,7 @@ def _service(value: Any) -> InventoryService:
 
 
 def _finding(value: Any) -> InventoryFinding:
-    """_finding."""
+    """Coerce a mapping or finding object into a validated InventoryFinding."""
     if isinstance(value, InventoryFinding):
         return value
     if (not isinstance(value, Mapping)
@@ -320,7 +320,7 @@ def _finding(value: Any) -> InventoryFinding:
 
 
 def _get(value: Any, name: str, default: Any = None) -> Any:
-    """_get."""
+    """Read an attribute mapping-style or object-style, with a default."""
     return value.get(name, default) if isinstance(
         value, Mapping) else getattr(value, name, default)
     """_get."""
@@ -383,7 +383,7 @@ class NetworkInventory:
         path: str | Path | None = None,
         retention: int = 50,
     ) -> None:
-        """Initialize Network Inventory."""
+        """Open (creating parent dirs) the SQLite store, bound retention, and migrate."""
         if path is None:
             path = Path.home() / ".cortex_cleaner" / "netdata" / "network-inventory.sqlite3"
         if str(path) != ":memory:":
@@ -401,26 +401,22 @@ class NetworkInventory:
         self._migrate()
 
     def close(self) -> None:
-        """Close."""
+        """Close the in-memory connection, if any; file DBs close per use."""
         with self._lock:
             if self._memory_connection is not None:
                 self._memory_connection.close()
                 self._memory_connection = None
 
     def __enter__(self) -> "NetworkInventory":
-        """__enter__."""
+        """Return self for context-manager use."""
         return self
-        """__enter__."""
-        """__enter__."""
 
     def __exit__(self, *_args: Any) -> None:
-        """__exit__."""
+        """Close the inventory on context exit."""
         self.close()
-        """__exit__."""
-        """__exit__."""
 
     def _new_connection(self) -> sqlite3.Connection:
-        """_new_connection."""
+        """Open a SQLite connection with row access and FK/busy-timeout pragmas."""
         connection = sqlite3.connect(
             self._database, timeout=5.0, check_same_thread=False)
         connection.row_factory = sqlite3.Row
@@ -431,22 +427,18 @@ class NetworkInventory:
         """_new_connection."""
 
     def _connect(self) -> sqlite3.Connection:
-        """_connect."""
+        """Reuse the memory connection, or open a fresh file connection."""
         if self._memory_connection is not None:
             return self._memory_connection
         return self._new_connection()
-        """_connect."""
-        """_connect."""
 
     def _release(self, connection: sqlite3.Connection) -> None:
-        """_release."""
+        """Close a file connection; keep the shared memory connection open."""
         if connection is not self._memory_connection:
             connection.close()
-        """_release."""
-        """_release."""
 
     def _migrate(self) -> None:
-        """_migrate."""
+        """Create or upgrade the schema version in a transaction (v0 -> v2)."""
         connection = self._connect()
         try:
             version = int(connection.execute(
@@ -683,7 +675,7 @@ class NetworkInventory:
     def _load_previous(
         connection: sqlite3.Connection,
     ) -> tuple[int | None, str, dict[str, dict[str, Any]]]:
-        """_load_previous."""
+        """Load the newest snapshot's observations, services, findings, and gateway."""
         row = connection.execute(
             "SELECT id, gateway_mac FROM snapshots ORDER BY id DESC LIMIT 1"
         ).fetchone()
@@ -735,7 +727,7 @@ class NetworkInventory:
         previous_gateway: str,
         gateway_mac: str,
     ) -> list[InventoryChange]:
-        """_compare."""
+        """Diff current vs previous observations, flagging identity/service/severity changes."""
         changes: list[InventoryChange] = []
         unmatched = set(previous)
         for identity_key, (device, confidence) in current.items():
@@ -861,7 +853,7 @@ class NetworkInventory:
         confidence: str,
         device: InventoryDevice,
     ) -> None:
-        """_store_device."""
+        """Upsert device, observation, service, and finding rows for one snapshot."""
         connection.execute(
             "INSERT INTO devices(identity_key, first_seen, last_seen, "
             "identity_confidence) VALUES (?, ?, ?, ?) "
@@ -919,7 +911,7 @@ class NetworkInventory:
         """_store_device."""
 
     def _enforce_retention(self, connection: sqlite3.Connection) -> None:
-        """_enforce_retention."""
+        """Delete snapshots beyond the retention limit and orphaned catalog rows."""
         connection.execute(
             "DELETE FROM snapshots WHERE id NOT IN "
             "(SELECT id FROM snapshots ORDER BY id DESC LIMIT ?)",
@@ -940,7 +932,7 @@ class NetworkInventory:
 
     @staticmethod
     def _metadata_identity(value: Any) -> str:
-        """_metadata_identity."""
+        """Validate an ``id:/mac:/ip:`` key, or derive one from a device."""
         if isinstance(value, str):
             key = value.strip()
             if (key.startswith(("id:", "mac:", "ip:"))
@@ -960,7 +952,7 @@ class NetworkInventory:
         tags: Iterable[str] | str,
         notes: str,
     ) -> tuple[str, str, tuple[str, ...], str]:
-        """_metadata_values."""
+        """Validate and normalize custom name, trust state, tags, and notes."""
         name = _text(custom_name, 255)
         trust = _text(trust_state, 16).lower() or "unknown"
         if trust not in _TRUST_STATES:
@@ -1014,7 +1006,7 @@ class NetworkInventory:
             key, name, trust, normalized_tags, clean_notes, updated_at)
 
     def get_metadata(self, identity: Any) -> DeviceMetadata | None:
-        """Get metadata."""
+        """Fetch one device's user metadata, or ``None``."""
         key = self._metadata_identity(identity)
         with self._lock:
             connection = self._connect()
@@ -1028,7 +1020,7 @@ class NetworkInventory:
         return self._metadata_from_row(row) if row is not None else None
 
     def list_metadata(self) -> list[DeviceMetadata]:
-        """List metadata."""
+        """Return all device metadata records ordered by identity key."""
         with self._lock:
             connection = self._connect()
             try:
@@ -1041,7 +1033,7 @@ class NetworkInventory:
 
     @staticmethod
     def _metadata_from_row(row: sqlite3.Row) -> DeviceMetadata:
-        """_metadata_from_row."""
+        """Rebuild DeviceMetadata from a database row, tolerating bad tag JSON."""
         try:
             raw_tags = json.loads(str(row["tags_json"]))
         except (json.JSONDecodeError, TypeError):
@@ -1089,7 +1081,7 @@ class NetworkInventory:
 
     @staticmethod
     def _csv_cell(value: Any) -> str:
-        """_csv_cell."""
+        """Escape CSV cells that would parse as spreadsheet formulas."""
         text = str(value or "")
         return "'" + text if text.startswith(_FORMULA_PREFIXES) else text
         """_csv_cell."""
@@ -1097,7 +1089,7 @@ class NetworkInventory:
 
     @staticmethod
     def _csv_value(value: Any) -> str:
-        """_csv_value."""
+        """Strip the formula-escape apostrophe when importing CSV cells."""
         text = str(value or "")
         if len(text) > 1 and text[0] == "'" and text[1] in _FORMULA_PREFIXES:
             return text[1:]
@@ -1222,7 +1214,7 @@ class NetworkInventory:
         return report
 
     def snapshot_count(self) -> int:
-        """Snapshot count."""
+        """Number of retained snapshots in the store."""
         with self._lock:
             connection = self._connect()
             try:
@@ -1246,7 +1238,7 @@ class NetworkInventory:
 
 
 def _timestamp(value: dt.datetime | str | None) -> str:
-    """_timestamp."""
+    """Coerce None/str/datetime to a UTC ISO-8601 timestamp ending in ``Z``."""
     if value is None:
         current = dt.datetime.now(dt.timezone.utc)
     elif isinstance(value, str):

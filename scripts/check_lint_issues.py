@@ -1,3 +1,5 @@
+"""Diagnostic script to check for undefined names and lint anomalies."""
+
 import os
 import ast
 import builtins

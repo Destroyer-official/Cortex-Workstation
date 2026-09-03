@@ -51,7 +51,7 @@ from cortex_unified.system_tools.storage_growth_tracker import StorageGrowthTrac
 
 
 def _fmt_bytes(b: int) -> str:
-    """_fmt_bytes."""
+    """Format a byte count into a human-readable B/KB/MB/GB string."""
     if b < 1024:
         return f"{b} B"
     if b < 1024 * 1024:
@@ -62,7 +62,7 @@ def _fmt_bytes(b: int) -> str:
 
 
 def _PrimaryButton(text: str, parent=None) -> QPushButton:
-    """_PrimaryButton."""
+    """Create a QPushButton styled as the primary (accented) action button."""
     btn = QPushButton(text, parent if isinstance(parent, QWidget) else None)
     btn.setObjectName("Primary")
     btn.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -70,14 +70,14 @@ def _PrimaryButton(text: str, parent=None) -> QPushButton:
 
 
 def _SecondaryButton(text: str, parent=None) -> QPushButton:
-    """_SecondaryButton."""
+    """Create a QPushButton styled as a secondary action button with a pointing-hand cursor."""
     btn = QPushButton(text, parent if isinstance(parent, QWidget) else None)
     btn.setCursor(Qt.CursorShape.PointingHandCursor)
     return btn
 
 
 def _run_task(win: PremiumMainWindow, work_fn, done_fn, err_fn=None):
-    """_run_task."""
+    """Run work_fn on the window's worker runtime, or inline as a fallback, dispatching to done_fn / err_fn."""
     if hasattr(win, "worker_runtime") and getattr(win, "worker_runtime", None) is not None:
         win.worker_runtime.run(work_fn, on_result=done_fn, on_error=err_fn)
     else:
@@ -94,9 +94,9 @@ def _run_task(win: PremiumMainWindow, work_fn, done_fn, err_fn=None):
 # ===========================================================================
 
 class VssManagerPage(_Page):
-    """VssManagerPage class."""
+    """Page for auditing VSS shadow copies, creating snapshots, and purging the oldest shadow."""
     def __init__(self, win: PremiumMainWindow):
-        """__init__."""
+        """Build the VSS page with audit/create/purge buttons, summary label, and shadows table."""
         super().__init__(win)
         self.v.addWidget(title_block("Volume Shadow Copy (VSS) Manager", "Audit VSS snapshots, monitor shadow storage usage, create recovery snapshots, and reclaim space."))
 
@@ -136,12 +136,12 @@ class VssManagerPage(_Page):
         self._mgr = VssManager()
 
     def _on_audit(self):
-        """_on_audit."""
+        """Start an asynchronous VSS audit and show a busy message in the summary label."""
         self.summary_label.setText("Querying vssadmin and WMI shadow copies…")
         _run_task(self.win, self._mgr.audit, self._on_audit_done, self._on_err)
 
     def _on_audit_done(self, rep: VssAuditReport):
-        """_on_audit_done."""
+        """Populate the shadows table and summary from a VssAuditReport."""
         if rep.error:
             self.summary_label.setText(f"VSS Audit Error: {rep.error}")
             return
@@ -157,23 +157,23 @@ class VssManagerPage(_Page):
             self.table.setItem(r, 3, QTableWidgetItem(s.provider))
 
     def _on_create(self):
-        """_on_create."""
+        """Kick off creation of a recovery shadow copy on C: in the background."""
         self.summary_label.setText("Creating recovery snapshot on C:…")
         _run_task(self.win, lambda: self._mgr.create_shadow_copy("C:"), self._on_action_done, self._on_err)
 
     def _on_purge(self):
-        """_on_purge."""
+        """Kick off deletion of the oldest shadow copy on C: in the background."""
         self.summary_label.setText("Purging oldest shadow on C:…")
         _run_task(self.win, lambda: self._mgr.delete_oldest_shadow("C:"), self._on_action_done, self._on_err)
 
     def _on_action_done(self, res: tuple[bool, str]):
-        """_on_action_done."""
+        """Show the result message of a create/purge action, then refresh the audit."""
         ok, msg = res
         self.summary_label.setText(msg)
         self._on_audit()
 
     def _on_err(self, exc):
-        """_on_err."""
+        """Show an error message from a failed worker in the summary label."""
         self.summary_label.setText(f"Error: {exc}")
 
 
@@ -182,9 +182,9 @@ class VssManagerPage(_Page):
 # ===========================================================================
 
 class DevDriveOptimizerPage(_Page):
-    """DevDriveOptimizerPage class."""
+    """Page for auditing ReFS Dev Drives, block-cloning support, and Defender performance mode."""
     def __init__(self, win: PremiumMainWindow):
-        """__init__."""
+        """Build the Dev Drive page with an audit button, summary label, and drives table."""
         super().__init__(win)
         self.v.addWidget(title_block("ReFS Dev Drive & Block-Cloning Optimizer", "Detect ReFS Dev Drives, test Copy-on-Write block cloning, and inspect Defender Performance Mode."))
 
@@ -218,12 +218,12 @@ class DevDriveOptimizerPage(_Page):
         self._opt = DevDriveOptimizer()
 
     def _on_audit(self):
-        """_on_audit."""
+        """Start an asynchronous storage-drive audit and update the summary label."""
         self.summary_label.setText("Querying volume geometry and fsutil devdrv status…")
         _run_task(self.win, self._opt.audit, self._on_audit_done, self._on_err)
 
     def _on_audit_done(self, rep: DevDriveAuditReport):
-        """_on_audit_done."""
+        """Fill the drives table and summary from a DevDriveAuditReport."""
         if rep.error:
             self.summary_label.setText(f"Audit Error: {rep.error}")
             return
@@ -242,7 +242,7 @@ class DevDriveOptimizerPage(_Page):
             self.table.setItem(r, 5, QTableWidgetItem(f"{_fmt_bytes(d.free_space_bytes)} / {_fmt_bytes(d.total_space_bytes)}"))
 
     def _on_err(self, exc):
-        """_on_err."""
+        """Show an error message from a failed worker in the summary label."""
         self.summary_label.setText(f"Error: {exc}")
 
 
@@ -251,9 +251,9 @@ class DevDriveOptimizerPage(_Page):
 # ===========================================================================
 
 class BitLockerAuditorPage(_Page):
-    """BitLockerAuditorPage class."""
+    """Page for auditing volume BitLocker protection, cipher strength, and key protectors."""
     def __init__(self, win: PremiumMainWindow):
-        """__init__."""
+        """Build the BitLocker page with an audit button, summary label, and volumes table."""
         super().__init__(win)
         self.v.addWidget(title_block("BitLocker & Drive Encryption Auditor", "Audit volume encryption protection, cipher strength (XTS-AES), and active TPM key protectors."))
 
@@ -287,12 +287,12 @@ class BitLockerAuditorPage(_Page):
         self._aud = BitLockerAuditor()
 
     def _on_audit(self):
-        """_on_audit."""
+        """Start an asynchronous BitLocker audit and update the summary label."""
         self.summary_label.setText("Querying manage-bde and Win32_EncryptableVolume…")
         _run_task(self.win, self._aud.audit, self._on_audit_done, self._on_err)
 
     def _on_audit_done(self, rep: BitLockerAuditReport):
-        """_on_audit_done."""
+        """Fill the volumes table and compliance summary from a BitLockerAuditReport."""
         if rep.error:
             self.summary_label.setText(f"Audit Error: {rep.error}")
             return
@@ -310,7 +310,7 @@ class BitLockerAuditorPage(_Page):
             self.table.setItem(r, 5, QTableWidgetItem(", ".join(v.key_protectors) or "None"))
 
     def _on_err(self, exc):
-        """_on_err."""
+        """Show an error message from a failed worker in the summary label."""
         self.summary_label.setText(f"Error: {exc}")
 
 
@@ -319,9 +319,9 @@ class BitLockerAuditorPage(_Page):
 # ===========================================================================
 
 class JunctionAuditorPage(_Page):
-    """JunctionAuditorPage class."""
+    """Page for scanning NTFS junctions, symlinks, dead links, and circular reparse traps."""
     def __init__(self, win: PremiumMainWindow):
-        """__init__."""
+        """Build the Junction Auditor page with scan/custom/unlink buttons and a links table."""
         super().__init__(win)
         self.v.addWidget(title_block("NTFS Junction & Reparse Point Auditor", "Identify directory junctions, symbolic links, broken dead links, and circular recursion traps."))
 
@@ -362,19 +362,19 @@ class JunctionAuditorPage(_Page):
         self._aud = JunctionAuditor()
 
     def _on_scan(self):
-        """_on_scan."""
+        """Scan reparse points across the user profile in the background."""
         self.summary_label.setText("Scanning reparse points across user profile…")
         _run_task(self.win, lambda: self._aud.audit(), self._on_scan_done, self._on_err)
 
     def _on_custom(self):
-        """_on_custom."""
+        """Prompt for a folder and scan its reparse points in the background."""
         d = QFileDialog.getExistingDirectory(self.p, "Select Folder to Audit Junctions")
         if d:
             self.summary_label.setText(f"Scanning reparse points in {d}…")
             _run_task(self.win, lambda: self._aud.audit(d), self._on_scan_done, self._on_err)
 
     def _on_scan_done(self, rep: JunctionAuditReport):
-        """_on_scan_done."""
+        """Fill the links table and counters from a JunctionAuditReport."""
         if rep.error:
             self.summary_label.setText(f"Scan Error: {rep.error}")
             return
@@ -392,7 +392,7 @@ class JunctionAuditorPage(_Page):
             self.table.setItem(r, 4, QTableWidgetItem("YES (Recursive Trap)" if item.is_circular else "No"))
 
     def _on_clean_dead(self):
-        """_on_clean_dead."""
+        """Unlink the dead junction selected in the table, then rescan."""
         row = self.table.currentRow()
         if row < 0:
             QMessageBox.information(self.p, "No Selection", "Please select a dead link row to unlink.")
@@ -403,7 +403,7 @@ class JunctionAuditorPage(_Page):
         self._on_scan()
 
     def _on_err(self, exc):
-        """_on_err."""
+        """Show an error message from a failed worker in the summary label."""
         self.summary_label.setText(f"Error: {exc}")
 
 
@@ -412,9 +412,9 @@ class JunctionAuditorPage(_Page):
 # ===========================================================================
 
 class BitRotScrubberPage(_Page):
-    """BitRotScrubberPage class."""
+    """Page for detecting silent bit-rot by comparing files against a SHA-256 baseline."""
     def __init__(self, win: PremiumMainWindow):
-        """__init__."""
+        """Build the BitRot page with a target picker, scrub button, and corrupted-files table."""
         super().__init__(win)
         self.v.addWidget(title_block("Silent BitRot & File Integrity Scrubber", "Detect bit-level silent data corruption and hash mutations across documents, photos, and archives."))
 
@@ -452,13 +452,13 @@ class BitRotScrubberPage(_Page):
         self._scrubber = BitRotScrubber()
 
     def _on_browse(self):
-        """_on_browse."""
+        """Open a directory picker and set it as the scrub target."""
         d = QFileDialog.getExistingDirectory(self.p, "Select Folder to Scrub", self.target_edit.text())
         if d:
             self.target_edit.setText(d)
 
     def _on_scrub(self):
-        """_on_scrub."""
+        """Hash and scrub the chosen folder in the background."""
         d = self.target_edit.text().strip()
         if not d:
             return
@@ -466,7 +466,7 @@ class BitRotScrubberPage(_Page):
         _run_task(self.win, lambda: self._scrubber.scrub(d), self._on_scrub_done, self._on_err)
 
     def _on_scrub_done(self, rep: BitRotScrubReport):
-        """_on_scrub_done."""
+        """Show scrub statistics and list corrupted files from a BitRotScrubReport."""
         if rep.error:
             self.summary_label.setText(f"Scrub Error: {rep.error}")
             return
@@ -482,7 +482,7 @@ class BitRotScrubberPage(_Page):
             self.table.setItem(r, 3, QTableWidgetItem(_fmt_bytes(item.size)))
 
     def _on_err(self, exc):
-        """_on_err."""
+        """Show an error message from a failed worker in the summary label."""
         self.summary_label.setText(f"Error: {exc}")
 
 
@@ -491,9 +491,9 @@ class BitRotScrubberPage(_Page):
 # ===========================================================================
 
 class MemoryCompressionPage(_Page):
-    """MemoryCompressionPage class."""
+    """Page for auditing Windows memory compression and toggling it on or off."""
     def __init__(self, win: PremiumMainWindow):
-        """__init__."""
+        """Build the Memory Compression page with audit/toggle buttons and a metrics table."""
         super().__init__(win)
         self.v.addWidget(title_block("Windows Memory Compression & SysMain Optimizer", "Audit Windows 10/11 Memory Compression (MMAgent), RAM commit ratios, and tune compression overhead."))
 
@@ -528,12 +528,12 @@ class MemoryCompressionPage(_Page):
         self._curr_status = None
 
     def _on_audit(self):
-        """_on_audit."""
+        """Query MMAgent memory status in the background."""
         self.summary_label.setText("Querying Get-MMAgent and memory working sets…")
         _run_task(self.win, self._tuner.audit, self._on_audit_done, self._on_err)
 
     def _on_audit_done(self, rep: MemoryTunerReport):
-        """_on_audit_done."""
+        """Fill the metrics table from a MemoryTunerReport and remember the current status."""
         if rep.error or not rep.status:
             self.summary_label.setText(f"Audit Error: {rep.error or 'Failed to query memory status'}")
             return
@@ -559,7 +559,7 @@ class MemoryCompressionPage(_Page):
             self.table.setItem(r, 1, QTableWidgetItem(v))
 
     def _on_toggle(self):
-        """_on_toggle."""
+        """Flip the memory-compression state to the opposite of the audited status."""
         if not self._curr_status:
             return
         new_state = not self._curr_status.is_enabled
@@ -567,13 +567,13 @@ class MemoryCompressionPage(_Page):
         _run_task(self.win, lambda: self._tuner.set_memory_compression(new_state), self._on_toggle_done, self._on_err)
 
     def _on_toggle_done(self, res: tuple[bool, str]):
-        """_on_toggle_done."""
+        """Report the toggle result, then re-run the audit."""
         ok, msg = res
         QMessageBox.information(self.p, "Memory Tuning", msg)
         self._on_audit()
 
     def _on_err(self, exc):
-        """_on_err."""
+        """Show an error message from a failed worker in the summary label."""
         self.summary_label.setText(f"Error: {exc}")
 
 
@@ -582,9 +582,9 @@ class MemoryCompressionPage(_Page):
 # ===========================================================================
 
 class SandboxCleanerPage(_Page):
-    """SandboxCleanerPage class."""
+    """Page for finding and purging Windows Sandbox, Hyper-V, and WSL2 artifacts."""
     def __init__(self, win: PremiumMainWindow):
-        """__init__."""
+        """Build the Sandbox Cleaner page with scan/clean buttons and an artifacts table."""
         super().__init__(win)
         self.v.addWidget(title_block("Virtual Environment & Sandbox Artifact Purger", "Reclaim storage locked in Windows Sandbox containers, Hyper-V saved states (.vsv), and WSL2 swap disks."))
 
@@ -622,12 +622,12 @@ class SandboxCleanerPage(_Page):
         self._artifacts = []
 
     def _on_scan(self):
-        """_on_scan."""
+        """Scan for discarded virtualization artifacts in the background."""
         self.summary_label.setText("Scanning Windows Sandbox, Hyper-V, and WSL artifacts…")
         _run_task(self.win, self._cleaner.scan, self._on_scan_done, self._on_err)
 
     def _on_scan_done(self, rep: SandboxCleanReport):
-        """_on_scan_done."""
+        """Cache the artifact list and fill the table from a SandboxCleanReport."""
         self._artifacts = rep.artifacts
         self.summary_label.setText(
             f"Artifacts: {len(rep.artifacts)} | Total Reclaimable: {_fmt_bytes(rep.total_reclaimable_bytes)} | Categories: {', '.join(rep.categories_found) or 'None'}"
@@ -641,7 +641,7 @@ class SandboxCleanerPage(_Page):
             self.table.setItem(r, 4, QTableWidgetItem(a.path))
 
     def _on_clean(self):
-        """_on_clean."""
+        """Purge every artifact flagged safe to clean; warn when none exist."""
         targets = [a.path for a in self._artifacts if a.is_safe_to_clean]
         if not targets:
             QMessageBox.information(self.p, "Nothing to Clean", "No safe virtual artifacts found to purge.")
@@ -651,13 +651,13 @@ class SandboxCleanerPage(_Page):
         _run_task(self.win, lambda: self._cleaner.clean(targets), self._on_clean_done, self._on_err)
 
     def _on_clean_done(self, res: tuple[int, list[str]]):
-        """_on_clean_done."""
+        """Report reclaimed bytes, then rescan for remaining artifacts."""
         cleaned_b, errs = res
         self.summary_label.setText(f"Successfully purged {_fmt_bytes(cleaned_b)} of virtual artifact storage.")
         self._on_scan()
 
     def _on_err(self, exc):
-        """_on_err."""
+        """Show an error message from a failed worker in the summary label."""
         self.summary_label.setText(f"Error: {exc}")
 
 
@@ -666,9 +666,9 @@ class SandboxCleanerPage(_Page):
 # ===========================================================================
 
 class SmbShareAuditorPage(_Page):
-    """SmbShareAuditorPage class."""
+    """Page for auditing local SMB shares, admin shares, and SMBv1 exposure."""
     def __init__(self, win: PremiumMainWindow):
-        """__init__."""
+        """Build the SMB Auditor page with an audit button, summary label, and shares table."""
         super().__init__(win)
         self.v.addWidget(title_block("SMB Share & Network Exposure Auditor", "Audit local Windows SMB shares, hidden administrative shares (C$, ADMIN$), and verify SMB security settings."))
 
@@ -701,12 +701,12 @@ class SmbShareAuditorPage(_Page):
         self._aud = SmbShareAuditor()
 
     def _on_audit(self):
-        """_on_audit."""
+        """Start an asynchronous SMB share audit and update the summary label."""
         self.summary_label.setText("Querying Get-SmbShare and SMB security configuration…")
         _run_task(self.win, self._aud.audit, self._on_audit_done, self._on_err)
 
     def _on_audit_done(self, rep: SmbSecurityReport):
-        """_on_audit_done."""
+        """Fill the shares table and risk summary from a SmbSecurityReport."""
         if rep.error:
             self.summary_label.setText(f"Audit Error: {rep.error}")
             return
@@ -724,7 +724,7 @@ class SmbShareAuditorPage(_Page):
             self.table.setItem(r, 4, QTableWidgetItem(s.risk_level))
 
     def _on_err(self, exc):
-        """_on_err."""
+        """Show an error message from a failed worker in the summary label."""
         self.summary_label.setText(f"Error: {exc}")
 
 
@@ -733,9 +733,9 @@ class SmbShareAuditorPage(_Page):
 # ===========================================================================
 
 class ProcessTokenPage(_Page):
-    """ProcessTokenPage class."""
+    """Page for inspecting process token integrity levels, elevation, and privileges."""
     def __init__(self, win: PremiumMainWindow):
-        """__init__."""
+        """Build the Process Token page with an audit button, summary label, and processes table."""
         super().__init__(win)
         self.v.addWidget(title_block("Process Security Token & Integrity Forensics", "Inspect TokenIntegrityLevels (Untrusted to System), token elevation types, and critical sensitive privileges."))
 
@@ -769,12 +769,12 @@ class ProcessTokenPage(_Page):
         self._aud = ProcessTokenAuditor()
 
     def _on_audit(self):
-        """_on_audit."""
+        """Start an asynchronous process token audit and update the summary label."""
         self.summary_label.setText("Querying OpenProcessToken and GetTokenInformation…")
         _run_task(self.win, self._aud.audit, self._on_audit_done, self._on_err)
 
     def _on_audit_done(self, rep: ProcessTokenAuditReport):
-        """_on_audit_done."""
+        """Fill the processes table and privilege summary from a ProcessTokenAuditReport."""
         if rep.error:
             self.summary_label.setText(f"Audit Error: {rep.error}")
             return
@@ -792,7 +792,7 @@ class ProcessTokenPage(_Page):
             self.table.setItem(r, 5, QTableWidgetItem(", ".join(p.privileges) or "Standard"))
 
     def _on_err(self, exc):
-        """_on_err."""
+        """Show an error message from a failed worker in the summary label."""
         self.summary_label.setText(f"Error: {exc}")
 
 
@@ -801,9 +801,9 @@ class ProcessTokenPage(_Page):
 # ===========================================================================
 
 class StorageGrowthTrackerPage(_Page):
-    """StorageGrowthTrackerPage class."""
+    """Page for taking directory snapshots and diffing storage growth between them."""
     def __init__(self, win: PremiumMainWindow):
-        """__init__."""
+        """Build the Growth Tracker page with path picker, snapshot/diff buttons, and a growth table."""
         super().__init__(win)
         self.v.addWidget(title_block("Storage Growth Tracker & Timeline Differ", "Take persistent directory snapshots and track disk usage expansion and folder growth deltas over time."))
 
@@ -846,13 +846,13 @@ class StorageGrowthTrackerPage(_Page):
         self._tracker = StorageGrowthTracker()
 
     def _on_browse(self):
-        """_on_browse."""
+        """Open a directory picker and set it as the snapshot target."""
         d = QFileDialog.getExistingDirectory(self.p, "Select Directory to Snapshot", self.path_edit.text())
         if d:
             self.path_edit.setText(d)
 
     def _on_snapshot(self):
-        """_on_snapshot."""
+        """Capture a storage snapshot of the entered path in the background."""
         p = self.path_edit.text().strip()
         if not p:
             return
@@ -860,13 +860,13 @@ class StorageGrowthTrackerPage(_Page):
         _run_task(self.win, lambda: self._tracker.take_snapshot(p, label=f"Scan of {Path(p).name}"), self._on_snapshot_done, self._on_err)
 
     def _on_snapshot_done(self, s: SnapshotSummary):
-        """_on_snapshot_done."""
+        """Show the captured snapshot id, label, and total footprint."""
         self.summary_label.setText(
             f"Captured Snapshot #{s.snapshot_id} ('{s.label}') | Total Footprint: {_fmt_bytes(s.total_bytes)} ({s.total_files} files, {s.total_folders} folders)"
         )
 
     def _on_diff(self):
-        """_on_diff."""
+        """Compare the two most recent snapshots, or prompt if fewer exist."""
         snaps = self._tracker.list_snapshots()
         if len(snaps) < 2:
             QMessageBox.information(self.p, "Insufficient Snapshots", "Please take at least two snapshots to compare growth deltas.")
@@ -878,7 +878,7 @@ class StorageGrowthTrackerPage(_Page):
         _run_task(self.win, lambda: self._tracker.compare_snapshots(base_id, target_id), self._on_diff_done, self._on_err)
 
     def _on_diff_done(self, rep: StorageGrowthDiffReport):
-        """_on_diff_done."""
+        """Show net growth between snapshots and list the fastest-growing directories."""
         if rep.error:
             self.summary_label.setText(f"Diff Error: {rep.error}")
             return
@@ -896,5 +896,5 @@ class StorageGrowthTrackerPage(_Page):
             self.table.setItem(r, 4, QTableWidgetItem(f"+{d.growth_percent:.1f}%"))
 
     def _on_err(self, exc):
-        """_on_err."""
+        """Show an error message from a failed worker in the summary label."""
         self.summary_label.setText(f"Error: {exc}")

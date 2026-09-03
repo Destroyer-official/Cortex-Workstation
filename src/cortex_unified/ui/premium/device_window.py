@@ -66,7 +66,7 @@ _DASH = "\u2014"
 
 
 def _severity_badge_kind(severity: str) -> str:
-    """_severity_badge_kind."""
+    """Map a finding severity string to its badge kind."""
     return _BADGE_KIND.get(str(severity).lower(), "info")
 
 
@@ -86,7 +86,7 @@ class DeviceDeepScanWorker(QObject):
         nmap_modes=None,
         catalog_path=None,
     ):
-        """__init__."""
+        """Store the device snapshot, authorized networks, and scan options for the worker."""
         super().__init__()
         self._ip = str(getattr(device, "ip", ""))
         self._mac = str(getattr(device, "mac", ""))
@@ -105,15 +105,15 @@ class DeviceDeepScanWorker(QObject):
         self._cancel = threading.Event()
 
     def cancel(self) -> None:
-        """cancel."""
+        """Request cancellation of the running scan."""
         self._cancel.set()
 
     def _say(self, message: str) -> None:
-        """_say."""
+        """Emit a progress message."""
         self.progress.emit(message)
 
     def run(self):  # noqa: C901 - one linear evidence-gathering sequence
-        """run."""
+        """Re-check authorization, scan services, fingerprint, audit, and emit the evidence payload."""
         try:
             from cortex_unified.system_tools.device_fingerprint import (
                 fingerprint_device,
@@ -217,7 +217,7 @@ class DeviceDeepScanWorker(QObject):
             self.failed.emit(str(exc))
 
     def _run_nmap(self, observations, notes) -> dict:
-        """_run_nmap."""
+        """Optionally verify observed TCP ports with local Nmap; merge new observations."""
         from cortex_unified.core import proc
         from cortex_unified.system_tools.nmap_adapter import (
             NmapAdapter,
@@ -271,7 +271,7 @@ class DeviceDeepScanWorker(QObject):
         }
 
     def _ping(self) -> dict:
-        """_ping."""
+        """Ping the device twice and return the reachability dict."""
         if self._cancel.is_set():
             return {"reachable": False, "error": "cancelled"}
         from cortex_unified.system_tools.network_tools import NetworkTools
@@ -285,7 +285,7 @@ class DeviceDeepScanWorker(QObject):
         ).to_dict()
 
     def _reverse_dns(self) -> str:
-        """_reverse_dns."""
+        """Resolve the device IP to a hostname."""
         if self._cancel.is_set():
             return ""
         from cortex_unified.system_tools.network_tools import NetworkTools
@@ -293,7 +293,7 @@ class DeviceDeepScanWorker(QObject):
         return NetworkTools.reverse_dns(self._ip)
 
     def _history(self, device) -> dict:
-        """_history."""
+        """Load inventory metadata, lifetime, and exposure trends for the device."""
         try:
             from cortex_unified.system_tools.network_inventory import (
                 NetworkInventory,
@@ -332,18 +332,18 @@ class DevicePingWorker(QObject):
     failed = Signal(str)
 
     def __init__(self, ip: str, networks):
-        """__init__."""
+        """Store the target IP, authorized networks, and cancel event."""
         super().__init__()
         self._ip = str(ip)
         self._networks = tuple(networks)
         self._cancel = threading.Event()
 
     def cancel(self) -> None:
-        """cancel."""
+        """Request cancellation of the ping check."""
         self._cancel.set()
 
     def run(self) -> None:
-        """run."""
+        """Re-check authorization and emit an ICMP reachability result."""
         try:
             from cortex_unified.system_tools.network_service_scanner import (
                 is_authorized_target,
@@ -389,7 +389,7 @@ class DeviceDetailWindow(QDialog):
         catalog_path=None,
         parent=None,
     ):
-        """__init__."""
+        """Build the non-modal device window with header, actions, stat cards, and evidence tabs."""
         super().__init__(parent or win)
         self.win = win
         self.p = win.palette_tokens
@@ -429,7 +429,7 @@ class DeviceDetailWindow(QDialog):
     # -- construction ------------------------------------------------------
 
     def _build_header(self) -> QWidget:
-        """_build_header."""
+        """Create the device header card with name, identity line, and badges."""
         device = self._device
         card = Card(self.p)
         lay = QVBoxLayout(card)
@@ -456,7 +456,7 @@ class DeviceDetailWindow(QDialog):
         return card
 
     def _header_badges(self) -> list[tuple[str, str]]:
-        """_header_badges."""
+        """Derive header badges for router/self/randomized-MAC/kind flags."""
         device = self._device
         badges: list[tuple[str, str]] = []
         if device.is_gateway:
@@ -471,7 +471,7 @@ class DeviceDetailWindow(QDialog):
         return badges
 
     def _build_actions(self) -> QWidget:
-        """_build_actions."""
+        """Create the primary action row and the collapsible More Actions panel."""
         holder = QWidget()
         layout = QVBoxLayout(holder)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -559,7 +559,7 @@ class DeviceDetailWindow(QDialog):
         return holder
 
     def _toggle_more_actions(self, visible: bool) -> None:
-        """_toggle_more_actions."""
+        """Show or hide the secondary action panel and restyle the disclosure button."""
         self.action_panel.setVisible(visible)
         marker = "\u2304" if visible else "\u203A"
         self.more_actions_btn.setText(f"More Actions  {marker}")
@@ -569,7 +569,7 @@ class DeviceDetailWindow(QDialog):
         style.polish(self.more_actions_btn)
 
     def _build_cards(self) -> QWidget:
-        """_build_cards."""
+        """Create the five stat cards (services, findings, risk, latency, identity)."""
         holder = QWidget()
         lay = QHBoxLayout(holder)
         lay.setContentsMargins(0, 0, 0, 0)
@@ -590,7 +590,7 @@ class DeviceDetailWindow(QDialog):
         return holder
 
     def _build_tabs(self) -> QWidget:
-        """_build_tabs."""
+        """Create the tab widget with overview, services, findings, identity, discovery, history, labels, and raw evidence."""
         self.tabs = QTabWidget()
 
         self.overview = QWidget()
@@ -689,7 +689,7 @@ class DeviceDetailWindow(QDialog):
     # -- scanning ----------------------------------------------------------
 
     def start_scan(self, profile: str = "advanced") -> None:
-        """start_scan."""
+        """Launch a DeviceDeepScanWorker with the chosen Nmap mode and profile."""
         if self._worker is not None:
             return
         modes = (
@@ -714,7 +714,7 @@ class DeviceDetailWindow(QDialog):
         )
 
     def _confirm_all_ports(self) -> None:
-        """_confirm_all_ports."""
+        """Confirm a deep 1-65535 TCP scan before starting it."""
         answer = QMessageBox.question(
             self, "Scan all TCP ports on this device?",
             f"This checks TCP ports 1-65535 on {self._device.ip} only.\n\n"
@@ -727,13 +727,13 @@ class DeviceDetailWindow(QDialog):
             self.start_scan("deep")
 
     def _cancel(self) -> None:
-        """_cancel."""
+        """Ask the active worker to cancel and show a cancelling note."""
         if self._worker is not None:
             self._worker.cancel()
             self.status.setText("Cancelling\u2026")
 
     def _busy(self, busy: bool) -> None:
-        """_busy."""
+        """Track busy state and refresh action availability."""
         self._is_busy = busy
         self._refresh_action_states()
 
@@ -785,7 +785,7 @@ class DeviceDetailWindow(QDialog):
         self.wake_btn.setToolTip(wake_tip)
 
     def _on_failed(self, message: str) -> None:
-        """_on_failed."""
+        """Clear the worker, handle a pending close, and show the failure."""
         self._worker = None
         self._busy(False)
         if self._close_pending:
@@ -795,7 +795,7 @@ class DeviceDetailWindow(QDialog):
         QMessageBox.warning(self, "Device scan failed", message)
 
     def _ping_only(self) -> None:
-        """_ping_only."""
+        """Launch a DevicePingWorker for a quick reachability check."""
         if self._worker is not None:
             return
         self._worker = DevicePingWorker(self._device.ip, self._networks)
@@ -809,7 +809,7 @@ class DeviceDetailWindow(QDialog):
         )
 
     def _on_pinged(self, ping: dict) -> None:
-        """_on_pinged."""
+        """Fold the ping result into the payload and describe the outcome."""
         self._worker = None
         self._busy(False)
         if self._close_pending:
@@ -832,7 +832,7 @@ class DeviceDetailWindow(QDialog):
         self.status.setText(message)
 
     def _finish_pending_close(self) -> None:
-        """_finish_pending_close."""
+        """Close the window now that the worker has finished."""
         self._close_pending = False
         self.close()
 
@@ -872,7 +872,7 @@ class DeviceDetailWindow(QDialog):
         self._load_metadata()
 
     def _on_scanned(self, payload) -> None:
-        """_on_scanned."""
+        """Store the scan payload, render it, and summarize the results."""
         self._worker = None
         self._has_completed_scan = True
         self._busy(False)
@@ -890,7 +890,7 @@ class DeviceDetailWindow(QDialog):
         self.status.setText(summary)
 
     def _render(self, payload: dict, scanned: bool) -> None:
-        """_render."""
+        """Populate every tab, the raw JSON view, and action states from the payload."""
         services = payload.get("services") or []
         findings = payload.get("findings") or []
         self._render_cards(payload, services, findings, scanned)
@@ -905,7 +905,7 @@ class DeviceDetailWindow(QDialog):
         self._refresh_action_states()
 
     def _render_cards(self, payload, services, findings, scanned) -> None:
-        """_render_cards."""
+        """Update the stat cards for services, findings, severity, latency, and identity."""
         open_services = [
             item for item in services if item.get("state", "open") == "open"]
         self.card_ports.set_value(str(len(open_services)))
@@ -928,7 +928,7 @@ class DeviceDetailWindow(QDialog):
             f"{float(confidence) * 100:.0f}%" if confidence else _DASH)
 
     def _render_overview(self, payload, services, findings, scanned) -> None:
-        """_render_overview."""
+        """Rebuild the overview grid rows and the evidence caveat."""
         while self.overview_grid.count():
             item = self.overview_grid.takeAt(0)
             widget = item.widget()
@@ -999,7 +999,7 @@ class DeviceDetailWindow(QDialog):
         self.overview_grid.addWidget(caveat, len(rows), 0, 1, 2)
 
     def _render_services(self, services) -> None:
-        """_render_services."""
+        """Fill the ports/services table sorted by port and transport."""
         self.services_tbl.setRowCount(len(services))
         for row, item in enumerate(sorted(
                 services, key=lambda entry: (
@@ -1034,7 +1034,7 @@ class DeviceDetailWindow(QDialog):
         self.services_tbl.resizeColumnsToContents()
 
     def _render_findings(self, findings, scanned) -> None:
-        """_render_findings."""
+        """Fill the security findings table with severity badges and remediation."""
         self.findings_tbl.setRowCount(len(findings))
         for row, item in enumerate(findings):
             severity = str(item.get("severity", "info"))
@@ -1066,7 +1066,7 @@ class DeviceDetailWindow(QDialog):
         self.findings_tbl.resizeColumnsToContents()
 
     def _render_identity(self, fingerprint) -> None:
-        """_render_identity."""
+        """Fill the identity evidence table from the fingerprint."""
         evidence = (fingerprint or {}).get("evidence", [])
         self.identity_tbl.setRowCount(len(evidence))
         for row, item in enumerate(evidence):
@@ -1083,7 +1083,7 @@ class DeviceDetailWindow(QDialog):
         self.identity_tbl.resizeColumnsToContents()
 
     def _render_discovery(self, payload) -> None:
-        """_render_discovery."""
+        """Write discovery methods and self-advertised services to the Discovery tab."""
         lines = [
             "HOW THIS DEVICE WAS FOUND",
             "  " + (payload.get("device") or {}).get("evidence", ""),
@@ -1113,7 +1113,7 @@ class DeviceDetailWindow(QDialog):
         self.discovery_view.setPlainText("\n".join(lines))
 
     def _render_history(self, payload) -> None:
-        """_render_history."""
+        """Write lifetime, history, and exposure-trend lines to the History tab."""
         lifetime = payload.get("lifetime") or {}
         lines = ["LOCAL HISTORY FOR THIS DEVICE"]
         if payload.get("identity_key"):
@@ -1155,7 +1155,7 @@ class DeviceDetailWindow(QDialog):
     # -- per-device actions ------------------------------------------------
 
     def _load_metadata(self) -> None:
-        """_load_metadata."""
+        """Load saved labels and notes for the device into the form and overview."""
         try:
             from cortex_unified.system_tools.network_inventory import (
                 NetworkInventory,
@@ -1177,7 +1177,7 @@ class DeviceDetailWindow(QDialog):
                 self._payload.get("findings") or [], False)
 
     def _save_metadata(self) -> None:
-        """_save_metadata."""
+        """Save the edited name, trust, tags, and notes to the inventory."""
         try:
             from cortex_unified.system_tools.network_inventory import (
                 NetworkInventory,
@@ -1201,7 +1201,7 @@ class DeviceDetailWindow(QDialog):
                 self._payload.get("findings") or [], False)
 
     def _wake(self) -> None:
-        """_wake."""
+        """Send a Wake-on-LAN magic packet to the device's subnet broadcast."""
         import ipaddress
 
         try:
@@ -1227,7 +1227,7 @@ class DeviceDetailWindow(QDialog):
             "Wake-on-LAN enabled in firmware and the OS.")
 
     def _open_service(self) -> None:
-        """_open_service."""
+        """Open the best http/https/ssh/rdp service in the system handler."""
         services = (self._payload or {}).get("services") or []
         priority = {"https": 0, "http": 1, "ssh": 2, "rdp": 3}
         candidates = [
@@ -1249,7 +1249,7 @@ class DeviceDetailWindow(QDialog):
         self.status.setText(f"Asked the system to open {url}")
 
     def _copy_identity(self) -> None:
-        """_copy_identity."""
+        """Copy the device IP and MAC to the clipboard."""
         clipboard = QGuiApplication.clipboard()
         if clipboard is None:
             return
@@ -1258,7 +1258,7 @@ class DeviceDetailWindow(QDialog):
         self.status.setText("Copied the IP and MAC address to the clipboard.")
 
     def _export(self) -> None:
-        """_export."""
+        """Export the current payload as a JSON, HTML, or PDF report."""
         payload = self._payload
         if payload is None:
             return
@@ -1299,7 +1299,7 @@ class DeviceDetailWindow(QDialog):
         self.status.setText(f"Device report exported to {target}")
 
     def _html_report(self, payload: dict) -> str:
-        """_html_report."""
+        """Build the printable HTML report for the payload."""
         device = payload.get("device") or {}
         rows = "".join(
             "<tr>"

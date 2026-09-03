@@ -59,7 +59,7 @@ from cortex_unified.system_tools.notification_cleaner import NotificationCleaner
 
 
 def _fmt_bytes(b: int) -> str:
-    """_fmt_bytes."""
+    """Format a byte count into a human-readable B/KB/MB/GB string."""
     if b < 1024:
         return f"{b} B"
     if b < 1024 * 1024:
@@ -70,7 +70,7 @@ def _fmt_bytes(b: int) -> str:
 
 
 def _PrimaryButton(text: str, parent=None) -> QPushButton:
-    """_PrimaryButton."""
+    """Create a QPushButton styled as the primary (accented) action button."""
     btn = QPushButton(text, parent if isinstance(parent, QWidget) else None)
     btn.setObjectName("Primary")
     btn.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -78,7 +78,7 @@ def _PrimaryButton(text: str, parent=None) -> QPushButton:
 
 
 def _SecondaryButton(text: str, parent=None) -> QPushButton:
-    """_SecondaryButton."""
+    """Create a QPushButton styled as a secondary action button with a pointing-hand cursor."""
     btn = QPushButton(text, parent if isinstance(parent, QWidget) else None)
     btn.setCursor(Qt.CursorShape.PointingHandCursor)
     return btn
@@ -89,9 +89,9 @@ def _SecondaryButton(text: str, parent=None) -> QPushButton:
 # ===========================================================================
 
 class DriverStoreCleanerPage(_Page):
-    """DriverStoreCleanerPage class."""
+    """Page for enumerating, exporting, and deleting superseded driver packages."""
     def __init__(self, win: PremiumMainWindow):
-        """__init__."""
+        """Build the Driver Store page with enumerate/export/delete buttons and a drivers table."""
         super().__init__(win)
         self.v.addWidget(title_block("Driver Store Explorer (RAPR)", "Enumerate, backup, and delete superseded third-party driver packages (oem*.inf)."))
 
@@ -133,16 +133,16 @@ class DriverStoreCleanerPage(_Page):
         self._drivers: List[DriverPackage] = []
 
     def _on_scan(self):
-        """_on_scan."""
+        """Enumerate driver packages on the worker runtime."""
         self.scan_btn.setEnabled(False)
         self.table.setRowCount(0)
 
         def _work():
-            """_work."""
+            """Enumerate third-party driver packages."""
             return DriverStoreCleaner.enumerate_drivers()
 
         def _done(drivers: List[DriverPackage]):
-            """_done."""
+            """Fill the drivers table and flag superseded packages."""
             self.scan_btn.setEnabled(True)
             self._drivers = drivers
             self.table.setRowCount(len(drivers))
@@ -160,7 +160,7 @@ class DriverStoreCleanerPage(_Page):
         self.win.worker_runtime.run(_work, on_result=_done, on_error=lambda err: self.scan_btn.setEnabled(True))
 
     def _on_export(self):
-        """_on_export."""
+        """Pick a folder and export all drivers into it."""
         folder = QFileDialog.getExistingDirectory(self, "Select Driver Backup Folder")
         if folder:
             ok, msg = DriverStoreCleaner.export_all_drivers(folder)
@@ -170,7 +170,7 @@ class DriverStoreCleanerPage(_Page):
                 QMessageBox.warning(self, "Export Warning", msg)
 
     def _on_delete_superseded(self):
-        """_on_delete_superseded."""
+        """Confirm and force-delete all superseded driver packages, then rescan."""
         superseded = [d for d in self._drivers if d.is_superseded]
         if not superseded:
             QMessageBox.information(self, "Driver Store", "No superseded driver packages detected.")
@@ -196,9 +196,9 @@ class DriverStoreCleanerPage(_Page):
 # ===========================================================================
 
 class ShellbagsCleanerPage(_Page):
-    """ShellbagsCleanerPage class."""
+    """Page for purging Shellbags, Recent Items, and JumpLists activity traces."""
     def __init__(self, win: PremiumMainWindow):
-        """__init__."""
+        """Build the Shellbags page with scan/clean buttons and a traces table."""
         super().__init__(win)
         self.v.addWidget(title_block("Shellbags & JumpLists Activity Purger", "Sanitize Explorer folder view history (BagMRU), Recent Items, and JumpLists."))
 
@@ -234,16 +234,16 @@ class ShellbagsCleanerPage(_Page):
         self._targets: List[ShellbagsTarget] = []
 
     def _on_scan(self):
-        """_on_scan."""
+        """Scan shell activity traces on the worker runtime."""
         self.scan_btn.setEnabled(False)
         self.table.setRowCount(0)
 
         def _work():
-            """_work."""
+            """Scan Shellbag, Recent Items, and JumpLists activity."""
             return ShellbagsPrivacyCleaner.scan_shell_activity()
 
         def _done(targets: List[ShellbagsTarget]):
-            """_done."""
+            """Fill the traces table with category, location, count, and size."""
             self.scan_btn.setEnabled(True)
             self._targets = targets
             self.table.setRowCount(len(targets))
@@ -256,7 +256,7 @@ class ShellbagsCleanerPage(_Page):
         self.win.worker_runtime.run(_work, on_result=_done, on_error=lambda err: self.scan_btn.setEnabled(True))
 
     def _on_clean(self):
-        """_on_clean."""
+        """Confirm and purge all discovered activity traces, then rescan."""
         if not self._targets:
             QMessageBox.information(self, "Activity Purger", "Please scan for activity traces first.")
             return
@@ -277,9 +277,9 @@ class ShellbagsCleanerPage(_Page):
 # ===========================================================================
 
 class PowerPlanOptimizerPage(_Page):
-    """PowerPlanOptimizerPage class."""
+    """Page for unlocking Ultimate Performance and reducing the hibernation footprint."""
     def __init__(self, win: PremiumMainWindow):
-        """__init__."""
+        """Build the Power Plan page with status line, refresh/unlock/hibernate buttons, and a schemes table."""
         super().__init__(win)
         self.v.addWidget(title_block("Windows Power Scheme & Performance Optimizer", "Unlock Ultimate Performance mode and optimize CPU throttling and hibernation."))
 
@@ -321,7 +321,7 @@ class PowerPlanOptimizerPage(_Page):
         self._refresh()
 
     def _refresh(self):
-        """_refresh."""
+        """Refresh the active scheme status and the power plans table."""
         st = PowerPlanOptimizer.get_status()
         self.status_label.setText(
             f"Active Scheme: {st.active_scheme_name}  •  "
@@ -338,7 +338,7 @@ class PowerPlanOptimizerPage(_Page):
             self.table.setItem(r, 2, act_item)
 
     def _on_unlock_ultimate(self):
-        """_on_unlock_ultimate."""
+        """Unlock the hidden Ultimate Performance power plan, then refresh."""
         ok, msg = PowerPlanOptimizer.unlock_ultimate_performance_plan()
         if ok:
             QMessageBox.information(self, "Ultimate Performance", msg)
@@ -347,7 +347,7 @@ class PowerPlanOptimizerPage(_Page):
         self._refresh()
 
     def _on_reduce_hiber(self):
-        """_on_reduce_hiber."""
+        """Shrink the hibernation file to 40% of RAM, then refresh."""
         ok, msg = PowerPlanOptimizer.set_reduced_hibernation()
         if ok:
             QMessageBox.information(self, "Hibernation Configured", msg)
@@ -361,9 +361,9 @@ class PowerPlanOptimizerPage(_Page):
 # ===========================================================================
 
 class HostsFileManagerPage(_Page):
-    """HostsFileManagerPage class."""
+    """Page for inspecting the hosts file and applying an anti-telemetry shield."""
     def __init__(self, win: PremiumMainWindow):
-        """__init__."""
+        """Build the Hosts page with reload/shield buttons and an entries table."""
         super().__init__(win)
         self.v.addWidget(title_block("Hosts File Editor & Anti-Telemetry Shield", "Inspect and edit DNS host mappings and inject Windows anti-telemetry blocks."))
 
@@ -398,7 +398,7 @@ class HostsFileManagerPage(_Page):
         self._on_load()
 
     def _on_load(self):
-        """_on_load."""
+        """Parse the hosts file and list its entries."""
         entries = HostsFileManager.parse_hosts_file()
         self.table.setRowCount(len(entries))
         for r, e in enumerate(entries):
@@ -408,7 +408,7 @@ class HostsFileManagerPage(_Page):
             self.table.setItem(r, 3, QTableWidgetItem(e.comment))
 
     def _on_apply_shield(self):
-        """_on_apply_shield."""
+        """Confirm and add telemetry blocking entries to the hosts file, then reload."""
         confirm = QMessageBox.question(
             self, "Confirm Shield",
             "Block known Windows telemetry and diagnostics tracking servers via Hosts file?\n\n(A backup will be created automatically)",
@@ -428,9 +428,9 @@ class HostsFileManagerPage(_Page):
 # ===========================================================================
 
 class NotificationCleanerPage(_Page):
-    """NotificationCleanerPage class."""
+    """Page for purging the Action Center notification database and badge caches."""
     def __init__(self, win: PremiumMainWindow):
-        """__init__."""
+        """Build the Notification Cleaner page with status line and refresh/clean buttons."""
         super().__init__(win)
         self.v.addWidget(title_block("Action Center Notification Database Cleaner", "Purge stale push notification databases (wpndatabase.db) and badge caches."))
 
@@ -459,7 +459,7 @@ class NotificationCleanerPage(_Page):
         self._refresh()
 
     def _refresh(self):
-        """_refresh."""
+        """Refresh the notification database paths and sizes."""
         st = NotificationCleaner.get_status()
         self.status_label.setText(
             f"Notification DB: {st.database_path}\n"
@@ -469,7 +469,7 @@ class NotificationCleanerPage(_Page):
         )
 
     def _on_clean(self):
-        """_on_clean."""
+        """Confirm and purge notification history and badges, then refresh."""
         confirm = QMessageBox.question(
             self, "Confirm Notification Purge",
             "Purge Action Center notification history and badge caches?",
@@ -489,9 +489,9 @@ class NotificationCleanerPage(_Page):
 # ===========================================================================
 
 class FileSignatureSnifferPage(_Page):
-    """FileSignatureSnifferPage class."""
+    """Page for detecting spoofed file extensions via magic-byte sniffing."""
     def __init__(self, win: PremiumMainWindow):
-        """__init__."""
+        """Build the Signature Sniffer page with folder picker, spoof filter, and results table."""
         super().__init__(win)
         self.v.addWidget(title_block("File Magic Header & Forensics Sniffer", "Detect spoofed file extensions and verify binary file signatures against 100+ magic bytes."))
 
@@ -531,18 +531,18 @@ class FileSignatureSnifferPage(_Page):
         self._scan_path = Path.home()
 
     def _on_choose_folder(self):
-        """_on_choose_folder."""
+        """Pick the directory to sniff."""
         folder = QFileDialog.getExistingDirectory(self, "Select Folder to Scan")
         if folder:
             self._scan_path = Path(folder)
 
     def _on_scan(self):
-        """_on_scan."""
+        """Scan the chosen folder recursively for spoofed files."""
         self.scan_btn.setEnabled(False)
         self.table.setRowCount(0)
 
         def _work():
-            """_work."""
+            """Sniff file headers against known magic bytes."""
             return FileSignatureSniffer.scan_directory(
                 self._scan_path,
                 recursive=True,
@@ -550,7 +550,7 @@ class FileSignatureSnifferPage(_Page):
             )
 
         def _done(results: List[SniffResult]):
-            """_done."""
+            """Fill the results table and flag spoofed extensions."""
             self.scan_btn.setEnabled(True)
             self.table.setRowCount(len(results))
             for r, s in enumerate(results):
@@ -571,9 +571,9 @@ class FileSignatureSnifferPage(_Page):
 # ===========================================================================
 
 class BinaryDifferPage(_Page):
-    """BinaryDifferPage class."""
+    """Page for byte-level comparison of two binary files."""
     def __init__(self, win: PremiumMainWindow):
-        """__init__."""
+        """Build the Binary Differ page with File A/B pickers, compare button, and a hex diff table."""
         super().__init__(win)
         self.v.addWidget(title_block("Binary & Hex File Differ", "Side-by-side byte-level binary comparison and discrepancy offset viewer."))
 
@@ -626,21 +626,21 @@ class BinaryDifferPage(_Page):
         self._path_b: Optional[Path] = None
 
     def _on_select_a(self):
-        """_on_select_a."""
+        """Pick the first file to compare."""
         f, _ = QFileDialog.getOpenFileName(self, "Select First File (A)")
         if f:
             self._path_a = Path(f)
             self.file_a_label.setText(f"File A: {self._path_a.name}")
 
     def _on_select_b(self):
-        """_on_select_b."""
+        """Pick the second file to compare."""
         f, _ = QFileDialog.getOpenFileName(self, "Select Second File (B)")
         if f:
             self._path_b = Path(f)
             self.file_b_label.setText(f"File B: {self._path_b.name}")
 
     def _on_diff(self):
-        """_on_diff."""
+        """Compare the two chosen files in the background."""
         if not self._path_a or not self._path_b:
             QMessageBox.information(self, "Binary Differ", "Please select both File A and File B.")
             return
@@ -649,11 +649,11 @@ class BinaryDifferPage(_Page):
         self.table.setRowCount(0)
 
         def _work():
-            """_work."""
+            """Run the byte-level binary comparison."""
             return BinaryDiffer.compare_binary_files(self._path_a, self._path_b)
 
         def _done(rep: BinaryDiffReport):
-            """_done."""
+            """Show similarity stats and list differing byte chunks."""
             self.diff_btn.setEnabled(True)
             if rep.error:
                 QMessageBox.warning(self, "Diff Error", rep.error)
@@ -681,9 +681,9 @@ class BinaryDifferPage(_Page):
 # ===========================================================================
 
 class UsnJournalPage(_Page):
-    """UsnJournalPage class."""
+    """Page for querying the NTFS USN change journal of a volume."""
     def __init__(self, win: PremiumMainWindow):
-        """__init__."""
+        """Build the USN Journal page with volume combo, query button, and an info label."""
         super().__init__(win)
         self.v.addWidget(title_block("NTFS USN Change Journal Scanner", "Inspect volume change journal state and sub-millisecond MFT update sequence records."))
 
@@ -714,7 +714,7 @@ class UsnJournalPage(_Page):
         self._on_query()
 
     def _on_query(self):
-        """_on_query."""
+        """Query the selected volume's USN journal and show its state."""
         drive = self.drive_combo.currentText()
         st = UsnJournalScanner.query_volume_journal(drive)
         if st.is_active:
@@ -735,9 +735,9 @@ class UsnJournalPage(_Page):
 # ===========================================================================
 
 class Par2RecoveryPage(_Page):
-    """Par2RecoveryPage class."""
+    """Page for inspecting PAR2 recovery sets and their protected files."""
     def __init__(self, win: PremiumMainWindow):
-        """__init__."""
+        """Build the PAR2 page with an open button, summary label, and protected-files table."""
         super().__init__(win)
         self.v.addWidget(title_block("PAR2 (Parchive) Parity & Packet Validator", "Inspect Reed-Solomon PAR2 recovery sets, slice hashes, and file protection packets."))
 
@@ -770,7 +770,7 @@ class Par2RecoveryPage(_Page):
         self.v.addStretch(1)
 
     def _on_open_par2(self):
-        """_on_open_par2."""
+        """Open and parse a .par2 file, listing its recovery set and protected files."""
         f, _ = QFileDialog.getOpenFileName(self, "Open PAR2 File", "", "PAR2 Files (*.par2 *.PAR2)")
         if f:
             rep = Par2RecoveryEngine.inspect_par2_file(f)
@@ -798,9 +798,9 @@ class Par2RecoveryPage(_Page):
 # ===========================================================================
 
 class ImageOptimizerPage(_Page):
-    """ImageOptimizerPage class."""
+    """Page for batch-compressing images and transcoding to WebP."""
     def __init__(self, win: PremiumMainWindow):
-        """__init__."""
+        """Build the Image Optimizer page with picker, format/quality controls, and results table."""
         super().__init__(win)
         self.v.addWidget(title_block("Batch Image Optimizer & WebP Transcoder", "Compress images and convert PNG/JPEG/BMP/TIFF to WebP with EXIF/GPS privacy stripping."))
 
@@ -856,14 +856,14 @@ class ImageOptimizerPage(_Page):
         self._images: List[Path] = []
 
     def _on_add_images(self):
-        """_on_add_images."""
+        """Pick images to optimize and show the selection count."""
         files, _ = QFileDialog.getOpenFileNames(self, "Select Images to Optimize", "", "Images (*.png *.jpg *.jpeg *.bmp *.tiff *.webp)")
         if files:
             self._images = [Path(f) for f in files]
             self.images_label.setText(f"{len(self._images)} images selected")
 
     def _on_start(self):
-        """_on_start."""
+        """Run batch optimization with the chosen format and quality."""
         if not self._images:
             QMessageBox.information(self, "Image Optimizer", "Please select images first.")
             return
@@ -875,7 +875,7 @@ class ImageOptimizerPage(_Page):
         quality = self.quality_spin.value()
 
         def _work():
-            """_work."""
+            """Optimize the selected images in batch."""
             return ImageOptimizer.optimize_batch(
                 self._images,
                 target_format=target_fmt,
@@ -883,7 +883,7 @@ class ImageOptimizerPage(_Page):
             )
 
         def _done(summary: BatchOptimizeSummary):
-            """_done."""
+            """Fill the results table and report total bytes saved."""
             self.start_btn.setEnabled(True)
             self.table.setRowCount(len(summary.results))
             for r, res in enumerate(summary.results):

@@ -127,7 +127,7 @@ class UpgradeWorker(QObject):
     failed = Signal(str)
 
     def __init__(self, package_ids: list[str]):
-        """__init__."""
+        """Store the package IDs to upgrade."""
         super().__init__()
         self._ids = package_ids
 

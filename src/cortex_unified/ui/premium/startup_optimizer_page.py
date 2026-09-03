@@ -47,16 +47,16 @@ class _StartupScanWorker(QObject):
     failed = Signal(str)
 
     def __init__(self):
-        """__init__."""
+        """Create the scan worker with a fresh cancel event."""
         super().__init__()
         self._cancel = threading.Event()
 
     def cancel(self):
-        """cancel."""
+        """Request cooperative cancellation of the running scan."""
         self._cancel.set()
 
     def run(self):
-        """run."""
+        """Enumerate startup entries via StartupOptimizer and emit the list."""
         try:
             from cortex_unified.system_tools.startup_optimizer import StartupOptimizer
 
@@ -78,17 +78,17 @@ class _DisableWorker(QObject):
     failed = Signal(str)
 
     def __init__(self, entries: list):
-        """__init__."""
+        """Store the entries to disable and a cancel event."""
         super().__init__()
         self._entries = entries
         self._cancel = threading.Event()
 
     def cancel(self):
-        """cancel."""
+        """Request cooperative cancellation of the disable loop."""
         self._cancel.set()
 
     def run(self):
-        """run."""
+        """Move each registry Run value into the CortexBackup subkey, emitting disabled entries."""
         try:
             import winreg
 
@@ -140,17 +140,17 @@ class _EnableWorker(QObject):
     failed = Signal(str)
 
     def __init__(self, entries: list):
-        """__init__."""
+        """Store the entries to re-enable and a cancel event."""
         super().__init__()
         self._entries = entries
         self._cancel = threading.Event()
 
     def cancel(self):
-        """cancel."""
+        """Request cooperative cancellation of the enable loop."""
         self._cancel.set()
 
     def run(self):
-        """run."""
+        """Restore each backed-up Run value to its original key, emitting re-enabled entries."""
         try:
             import winreg
 
@@ -207,7 +207,7 @@ _IMPACT_ORDER = {"high": 0, "medium": 1, "low": 2, "unknown": 3}
 
 
 def _entry_type_label(entry) -> str:
-    """_entry_type_label."""
+    """Classify an entry as GUI, Network, Service, or Background from its flags/category."""
     if getattr(entry, "is_gui_heavy", False):
         return "GUI"
     if getattr(entry, "is_network_bound", False):
@@ -221,14 +221,14 @@ def _entry_type_label(entry) -> str:
 
 
 def _entry_matches_filter(entry, type_filter: str) -> bool:
-    """_entry_matches_filter."""
+    """Return True when the entry's type label equals the filter (or filter is "All")."""
     if type_filter == "All":
         return True
     return _entry_type_label(entry) == type_filter
 
 
 def _sort_entries(entries: list, sort_key: str) -> list:
-    """_sort_entries."""
+    """Sort entries by Name, Type, or Impact (high → low); unknown impact sorts last."""
     if sort_key == "Name":
         return sorted(entries, key=lambda e: getattr(e, "name", "").lower())
     if sort_key == "Type":
@@ -252,7 +252,7 @@ class StartupOptimizerPage(_Page):
     """Manage Windows startup entries — enable, disable, and inspect resource impact."""
 
     def __init__(self, win):
-        """__init__."""
+        """Build the Startup Optimizer page: filter/sort bar, summary cards, and results table; auto-scans."""
         super().__init__(win)
         self.v.addWidget(
             title_block(
@@ -410,7 +410,7 @@ class StartupOptimizerPage(_Page):
     # -- scan ---------------------------------------------------------------
 
     def _run_scan(self):
-        """_run_scan."""
+        """Disable buttons, clear the table, and start a _StartupScanWorker."""
         self.refresh_btn.setEnabled(False)
         self.disable_btn.setEnabled(False)
         self.enable_btn.setEnabled(False)
@@ -428,11 +428,11 @@ class StartupOptimizerPage(_Page):
         )
 
     def _on_scan_progress(self, msg: str):
-        """_on_scan_progress."""
+        """Show worker progress text in the status label."""
         self.status.setText(msg)
 
     def _on_scan_done(self, entries: list):
-        """_on_scan_done."""
+        """Store results, refresh table/filters, and show an empty state when nothing found."""
         self._worker = None
         self.progress.setVisible(False)
         self.refresh_btn.setEnabled(True)
@@ -451,7 +451,7 @@ class StartupOptimizerPage(_Page):
         self._update_buttons()
 
     def _on_scan_fail(self, msg: str):
-        """_on_scan_fail."""
+        """Reset buttons and show the scan error with a retry option."""
         self._worker = None
         self.progress.setVisible(False)
         self.refresh_btn.setEnabled(True)
@@ -460,7 +460,7 @@ class StartupOptimizerPage(_Page):
     # -- filtering / sorting ------------------------------------------------
 
     def _apply_filters(self, *_args):
-        """_apply_filters."""
+        """Filter entries by type combo, sort by sort combo, and repopulate the table."""
         type_filter = self.type_combo.currentText()
         sort_key = self.sort_combo.currentText()
         filtered = [
@@ -472,7 +472,7 @@ class StartupOptimizerPage(_Page):
         self._update_buttons()
 
     def _populate_table(self, entries: list):
-        """_populate_table."""
+        """Fill the table rows with name/type/path/command and color-coded impact status."""
         self.tbl.setRowCount(len(entries))
         for r, entry in enumerate(entries):
             self.tbl.setItem(r, 0, QTableWidgetItem(getattr(entry, "name", "")))
@@ -496,7 +496,7 @@ class StartupOptimizerPage(_Page):
     # -- summary cards ------------------------------------------------------
 
     def _update_summary(self):
-        """_update_summary."""
+        """Refresh the Total / Enabled / Disabled / High Impact metric cards."""
         total = len(self._all_entries)
         enabled = sum(1 for e in self._all_entries if getattr(e, "enabled", True))
         disabled = total - enabled
@@ -509,14 +509,14 @@ class StartupOptimizerPage(_Page):
     # -- selection ----------------------------------------------------------
 
     def _selected_entries(self) -> list:
-        """_selected_entries."""
+        """Return the entries behind the currently selected table rows."""
         rows = sorted({idx.row() for idx in self.tbl.selectedIndexes()})
         return [
             self._visible_entries[r] for r in rows if r < len(self._visible_entries)
         ]
 
     def _update_buttons(self):
-        """_update_buttons."""
+        """Enable Disable/Enable buttons only when rows are selected."""
         has_sel = bool(self.tbl.selectedItems())
         self.disable_btn.setEnabled(has_sel)
         self.enable_btn.setEnabled(has_sel)
@@ -524,7 +524,7 @@ class StartupOptimizerPage(_Page):
     # -- disable ------------------------------------------------------------
 
     def _disable_selected(self):
-        """_disable_selected."""
+        """Run _DisableWorker on the selected startup entries."""
         sel = self._selected_entries()
         if not sel:
             return
@@ -543,7 +543,7 @@ class StartupOptimizerPage(_Page):
         )
 
     def _on_disable_done(self, disabled: list):
-        """_on_disable_done."""
+        """Report disabled count and rescan to refresh the table."""
         self._worker = None
         self.progress.setVisible(False)
         self.status.setText(f"Disabled {len(disabled)} entries.")
@@ -553,7 +553,7 @@ class StartupOptimizerPage(_Page):
         self._run_scan()
 
     def _on_disable_fail(self, msg: str):
-        """_on_disable_fail."""
+        """Show the disable error with a retry option."""
         self._worker = None
         self.progress.setVisible(False)
         self.state.show_error(msg, on_retry=self._disable_selected)
@@ -561,7 +561,7 @@ class StartupOptimizerPage(_Page):
     # -- enable -------------------------------------------------------------
 
     def _enable_selected(self):
-        """_enable_selected."""
+        """Run _EnableWorker on the selected startup entries."""
         sel = self._selected_entries()
         if not sel:
             return
@@ -580,7 +580,7 @@ class StartupOptimizerPage(_Page):
         )
 
     def _on_enable_done(self, enabled: list):
-        """_on_enable_done."""
+        """Report re-enabled count and rescan to refresh the table."""
         self._worker = None
         self.progress.setVisible(False)
         self.status.setText(f"Enabled {len(enabled)} entries.")
@@ -590,7 +590,7 @@ class StartupOptimizerPage(_Page):
         self._run_scan()
 
     def _on_enable_fail(self, msg: str):
-        """_on_enable_fail."""
+        """Show the enable error with a retry option."""
         self._worker = None
         self.progress.setVisible(False)
         self.state.show_error(msg, on_retry=self._enable_selected)
@@ -598,5 +598,5 @@ class StartupOptimizerPage(_Page):
     # -- shared action progress ---------------------------------------------
 
     def _on_action_progress(self, msg: str):
-        """_on_action_progress."""
+        """Show enable/disable worker progress in the status label."""
         self.status.setText(msg)

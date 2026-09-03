@@ -48,7 +48,7 @@ from cortex_unified.system_tools.checksum_matrix import ChecksumMatrix, FileChec
 
 
 def _fmt_bytes(b: int) -> str:
-    """_fmt_bytes."""
+    """Format a byte count into a human-readable B/KB/MB/GB string."""
     if b < 1024:
         return f"{b} B"
     if b < 1024 * 1024:
@@ -59,7 +59,7 @@ def _fmt_bytes(b: int) -> str:
 
 
 def _PrimaryButton(text: str) -> QPushButton:
-    """_PrimaryButton."""
+    """Create a QPushButton styled as the primary (accented) action button."""
     btn = QPushButton(text)
     btn.setObjectName("Primary")
     btn.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -67,14 +67,14 @@ def _PrimaryButton(text: str) -> QPushButton:
 
 
 def _SecondaryButton(text: str) -> QPushButton:
-    """_SecondaryButton."""
+    """Create a QPushButton styled as a secondary action button with a pointing-hand cursor."""
     btn = QPushButton(text)
     btn.setCursor(Qt.CursorShape.PointingHandCursor)
     return btn
 
 
 def _run_task(win, work_fn, done_fn, err_fn=None):
-    """_run_task."""
+    """Run work_fn on the window's worker runtime, or inline as a fallback, dispatching to done_fn / err_fn."""
     if hasattr(win, "worker_runtime") and getattr(win, "worker_runtime", None) is not None:
         win.worker_runtime.run(work_fn, on_result=done_fn, on_error=err_fn)
     else:
@@ -91,9 +91,9 @@ def _run_task(win, work_fn, done_fn, err_fn=None):
 # ===========================================================================
 
 class ShaderCachePage(_Page):
-    """ShaderCachePage class."""
+    """Page for auditing and purging stale GPU shader caches by age."""
     def __init__(self, win: PremiumMainWindow):
-        """__init__."""
+        """Build the Shader Cache page with scan/clean buttons, a min-age spinner, and a table."""
         super().__init__(win)
         self.v.addWidget(title_block(
             "GPU & DirectX Shader Cache Cleaner",
@@ -140,16 +140,16 @@ class ShaderCachePage(_Page):
         self.cleaner = ShaderCacheCleaner()
 
     def _on_scan(self):
-        """_on_scan."""
+        """Scan shader cache locations with the configured minimum age."""
         self.summary_label.setText("Scanning shader cache stores...")
         age = self.age_spin.value()
 
         def work():
-            """work."""
+            """Scan shader caches for files older than the minimum age."""
             return self.cleaner.scan(min_age_days=age)
 
         def done(report: ShaderCacheReport):
-            """done."""
+            """List discovered cache locations and stale-file totals."""
             self.table.setRowCount(0)
             for loc in report.locations:
                 r = self.table.rowCount()
@@ -168,16 +168,16 @@ class ShaderCachePage(_Page):
         _run_task(self.win, work, done)
 
     def _on_clean(self):
-        """_on_clean."""
+        """Purge shader binaries older than the minimum age."""
         age = self.age_spin.value()
         self.summary_label.setText("Purging stale shader binaries...")
 
         def work():
-            """work."""
+            """Clean stale shader caches (not a dry run)."""
             return self.cleaner.clean(min_age_days=age, dry_run=False)
 
         def done(result: ShaderCleanResult):
-            """done."""
+            """Report cleaned files, freed bytes, and any locked files, then rescan."""
             msg = f"Cleaned {result.cleaned_files} shader files, freeing {_fmt_bytes(result.freed_bytes)}."
             if result.skipped_locked_files:
                 msg += f" (Skipped {result.skipped_locked_files} currently locked by running games/drivers)."
@@ -193,9 +193,9 @@ class ShaderCachePage(_Page):
 # ===========================================================================
 
 class AiTelemetryCleanerPage(_Page):
-    """AiTelemetryCleanerPage class."""
+    """Page for auditing Copilot/Recall caches and truncating SQLite WAL logs."""
     def __init__(self, win: PremiumMainWindow):
-        """__init__."""
+        """Build the AI Telemetry page with scan/clean buttons and an artifacts table."""
         super().__init__(win)
         self.v.addWidget(title_block(
             "Windows 11 AI & Recall Telemetry Cleaner",
@@ -235,15 +235,15 @@ class AiTelemetryCleanerPage(_Page):
         self.cleaner = AiTelemetryCleaner()
 
     def _on_scan(self):
-        """_on_scan."""
+        """Scan local AI and Recall stores in the background."""
         self.summary_label.setText("Analyzing AI and Recall stores...")
 
         def work():
-            """work."""
+            """Scan AI telemetry artifacts."""
             return self.cleaner.scan()
 
         def done(report: AiTelemetryReport):
-            """done."""
+            """List AI artifacts, sizes, and WAL journal usage."""
             self.table.setRowCount(0)
             for a in report.artifacts:
                 r = self.table.rowCount()
@@ -261,15 +261,15 @@ class AiTelemetryCleanerPage(_Page):
         _run_task(self.win, work, done)
 
     def _on_clean(self):
-        """_on_clean."""
+        """Clean transient AI caches and checkpoint WAL databases."""
         self.summary_label.setText("Optimizing AI stores and truncating WAL logs...")
 
         def work():
-            """work."""
+            """Clean AI caches and truncate SQLite WAL journals."""
             return self.cleaner.clean(checkpoint_wal=True, dry_run=False)
 
         def done(result: AiCleanResult):
-            """done."""
+            """Report cleaned items and checkpointed WALs, then rescan."""
             msg = (
                 f"Cleaned {result.cleaned_items} transient cache items and checkpointed "
                 f"{result.truncated_wal_count} SQLite WAL databases, freeing {_fmt_bytes(result.freed_bytes)}."
@@ -286,9 +286,9 @@ class AiTelemetryCleanerPage(_Page):
 # ===========================================================================
 
 class SsdTrimOptimizerPage(_Page):
-    """SsdTrimOptimizerPage class."""
+    """Page for auditing volume TRIM state and running a ReTrim on a chosen drive."""
     def __init__(self, win: PremiumMainWindow):
-        """__init__."""
+        """Build the SSD TRIM page with audit/trim buttons and a volumes table."""
         super().__init__(win)
         self.v.addWidget(title_block(
             "SSD NVMe TRIM & Wear-Leveling Optimizer",
@@ -325,15 +325,15 @@ class SsdTrimOptimizerPage(_Page):
         self.optimizer = SsdTrimOptimizer()
 
     def _on_audit(self):
-        """_on_audit."""
+        """Audit volumes and filesystem TRIM status in the background."""
         self.summary_label.setText("Querying physical disk controller and filesystem status...")
 
         def work():
-            """work."""
+            """Audit volume media types and TRIM enablement."""
             return self.optimizer.audit_volumes()
 
         def done(report: TrimAuditReport):
-            """done."""
+            """Fill the volumes table and filesystem TRIM summary."""
             self.table.setRowCount(0)
             for v in report.volumes:
                 r = self.table.rowCount()
@@ -354,7 +354,7 @@ class SsdTrimOptimizerPage(_Page):
         _run_task(self.win, work, done)
 
     def _on_trim(self):
-        """_on_trim."""
+        """ReTrim the drive selected in the table."""
         row = self.table.currentRow()
         if row < 0:
             QMessageBox.warning(self.win, "Selection Required", "Please select a drive volume from the table to execute TRIM.")
@@ -366,11 +366,11 @@ class SsdTrimOptimizerPage(_Page):
         self.summary_label.setText(f"Executing non-destructive ReTrim on volume {drive_letter}:...")
 
         def work():
-            """work."""
+            """Execute a non-destructive ReTrim on the chosen volume."""
             return self.optimizer.retrim_volume(drive_letter)
 
         def done(result: TrimExecutionResult):
-            """done."""
+            """Report the ReTrim result, then re-audit."""
             self.summary_label.setText(result.message)
             if result.success:
                 QMessageBox.information(self.win, "TRIM Complete", result.message)
@@ -386,9 +386,9 @@ class SsdTrimOptimizerPage(_Page):
 # ===========================================================================
 
 class RestartManagerUnlockerPage(_Page):
-    """RestartManagerUnlockerPage class."""
+    """Page for finding and killing processes that lock a file via Restart Manager."""
     def __init__(self, win: PremiumMainWindow):
-        """__init__."""
+        """Build the Unlocker page with path input, inspect/unlock buttons, and a processes table."""
         super().__init__(win)
         self.v.addWidget(title_block(
             "Windows Restart Manager File Unlocker",
@@ -431,14 +431,14 @@ class RestartManagerUnlockerPage(_Page):
         self.unlocker = RestartManagerUnlocker()
 
     def _on_browse(self):
-        """_on_browse."""
+        """Pick a file, fill the path input, and inspect it immediately."""
         f, _ = QFileDialog.getOpenFileName(self.win, "Select File to Inspect Locks")
         if f:
             self.path_input.setText(f)
             self._on_inspect()
 
     def _on_inspect(self):
-        """_on_inspect."""
+        """Query Restart Manager for processes locking the entered path."""
         p = self.path_input.text().strip()
         if not p:
             return
@@ -446,11 +446,11 @@ class RestartManagerUnlockerPage(_Page):
         self.summary_label.setText("Querying Windows Restart Manager session...")
 
         def work():
-            """work."""
+            """Inspect which processes lock the file."""
             return self.unlocker.inspect_locks(p)
 
         def done(report: FileLockReport):
-            """done."""
+            """List locking processes or report the file as unlocked/missing."""
             self.table.setRowCount(0)
             if not report.exists:
                 self.summary_label.setText("Specified file does not exist on disk.")
@@ -472,17 +472,17 @@ class RestartManagerUnlockerPage(_Page):
         _run_task(self.win, work, done)
 
     def _on_unlock(self):
-        """_on_unlock."""
+        """Force-terminate the processes locking the entered file."""
         p = self.path_input.text().strip()
         if not p:
             return
 
         def work():
-            """work."""
+            """Unlock the file by terminating locking processes."""
             return self.unlocker.unlock_file(p, force_terminate=True)
 
         def done(result: UnlockResult):
-            """done."""
+            """Report the unlock result, then re-inspect."""
             self.summary_label.setText(result.message)
             QMessageBox.information(self.win, "Unlock Status", result.message)
             self._on_inspect()
@@ -495,9 +495,9 @@ class RestartManagerUnlockerPage(_Page):
 # ===========================================================================
 
 class VssHealthAnalyzerPage(_Page):
-    """VssHealthAnalyzerPage class."""
+    """Page for diagnosing VSS writers and shadow copy storage usage."""
     def __init__(self, win: PremiumMainWindow):
-        """__init__."""
+        """Build the VSS Health page with scan/reset buttons and a writers table."""
         super().__init__(win)
         self.v.addWidget(title_block(
             "VSS Writer Health & Shadow Storage Analyzer",
@@ -537,15 +537,15 @@ class VssHealthAnalyzerPage(_Page):
         self.analyzer = VssHealthAnalyzer()
 
     def _on_scan(self):
-        """_on_scan."""
+        """Inspect VSS writers and shadow storage in the background."""
         self.summary_label.setText("Querying vssadmin writers and shadow storage...")
 
         def work():
-            """work."""
+            """Inspect VSS writer health."""
             return self.analyzer.inspect_health()
 
         def done(report: VssHealthReport):
-            """done."""
+            """List writer states and summarize healthy vs failed writers."""
             self.table.setRowCount(0)
             for w in report.writers:
                 r = self.table.rowCount()
@@ -565,15 +565,15 @@ class VssHealthAnalyzerPage(_Page):
         _run_task(self.win, work, done)
 
     def _on_reset(self):
-        """_on_reset."""
+        """Restart VSS services to clear stalled writer states."""
         self.summary_label.setText("Restarting VSS services and clearing stalled writer states...")
 
         def work():
-            """work."""
+            """Reset stalled VSS writers."""
             return self.analyzer.reset_vss_writers()
 
         def done(result: VssResetResult):
-            """done."""
+            """Report the reset result, then re-scan."""
             self.summary_label.setText(result.message)
             QMessageBox.information(self.win, "VSS Reset Status", result.message)
             self._on_scan()
@@ -586,9 +586,9 @@ class VssHealthAnalyzerPage(_Page):
 # ===========================================================================
 
 class DevPackageCachePage(_Page):
-    """DevPackageCachePage class."""
+    """Page for auditing and purging Winget, Cargo, vcpkg, NuGet, and Pip caches."""
     def __init__(self, win: PremiumMainWindow):
-        """__init__."""
+        """Build the Dev Package Cache page with scan/clean buttons and a stores table."""
         super().__init__(win)
         self.v.addWidget(title_block(
             "Developer Package Caches Cleaner",
@@ -629,15 +629,15 @@ class DevPackageCachePage(_Page):
         self.cleaner = DevPackageCacheCleaner()
 
     def _on_scan(self):
-        """_on_scan."""
+        """Scan developer package stores in the background."""
         self.summary_label.setText("Analyzing developer toolchain directories...")
 
         def work():
-            """work."""
+            """Scan developer package caches."""
             return self.cleaner.scan()
 
         def done(report: DevPackageReport):
-            """done."""
+            """List package stores, counts, sizes, and locations."""
             self.table.setRowCount(0)
             for s in report.stores:
                 r = self.table.rowCount()
@@ -656,15 +656,15 @@ class DevPackageCachePage(_Page):
         _run_task(self.win, work, done)
 
     def _on_clean(self):
-        """_on_clean."""
+        """Purge all discovered developer package stores."""
         self.summary_label.setText("Purging developer package stores...")
 
         def work():
-            """work."""
+            """Clean developer package stores (not a dry run)."""
             return self.cleaner.clean(dry_run=False)
 
         def done(result: DevPackageCleanResult):
-            """done."""
+            """Report stores cleaned and bytes freed, then rescan."""
             msg = f"Cleaned {result.cleaned_stores} stores, removing {result.deleted_packages} packages and freeing {_fmt_bytes(result.freed_bytes)}."
             self.summary_label.setText(msg)
             QMessageBox.information(self.win, "Developer Stores Cleaned", msg)
@@ -678,9 +678,9 @@ class DevPackageCachePage(_Page):
 # ===========================================================================
 
 class ChecksumMatrixPage(_Page):
-    """ChecksumMatrixPage class."""
+    """Page for batch hashing files and generating .sha256 manifests."""
     def __init__(self, win: PremiumMainWindow):
-        """__init__."""
+        """Build the Checksum Matrix page with target input, hash/manifest buttons, and a digests table."""
         super().__init__(win)
         self.v.addWidget(title_block(
             "Forensic Checksum Matrix & Manifest Verifier",
@@ -729,20 +729,20 @@ class ChecksumMatrixPage(_Page):
         self.matrix = ChecksumMatrix()
 
     def _on_browse_file(self):
-        """_on_browse_file."""
+        """Pick a file, fill the target input, and hash it immediately."""
         f, _ = QFileDialog.getOpenFileName(self.win, "Select File to Hash")
         if f:
             self.target_input.setText(f)
             self._on_hash()
 
     def _on_browse_dir(self):
-        """_on_browse_dir."""
+        """Pick a directory to use for manifest generation."""
         d = QFileDialog.getExistingDirectory(self.win, "Select Folder for Manifest")
         if d:
             self.target_input.setText(d)
 
     def _on_hash(self):
-        """_on_hash."""
+        """Compute CRC32, MD5, SHA-1, SHA-256, and SHA-512 for the chosen file."""
         p = Path(self.target_input.text().strip())
         if not p.is_file():
             QMessageBox.warning(self.win, "File Required", "Please select a valid file to calculate checksums.")
@@ -751,11 +751,11 @@ class ChecksumMatrixPage(_Page):
         self.summary_label.setText(f"Streaming {p.name} through hash digest matrix...")
 
         def work():
-            """work."""
+            """Compute all five checksum digests for the file."""
             return self.matrix.hash_file(p, algorithms=["crc32", "md5", "sha1", "sha256", "sha512"])
 
         def done(res: FileChecksumResult):
-            """done."""
+            """Show every computed digest and the hashing duration."""
             self.table.setRowCount(0)
             rows = [
                 ("CRC32", res.crc32),
@@ -778,7 +778,7 @@ class ChecksumMatrixPage(_Page):
         _run_task(self.win, work, done)
 
     def _on_generate_manifest(self):
-        """_on_generate_manifest."""
+        """Write a checksums.sha256 manifest for the chosen directory."""
         p = Path(self.target_input.text().strip())
         if not p.is_dir():
             QMessageBox.warning(self.win, "Directory Required", "Please select a valid directory to generate a manifest.")
@@ -788,11 +788,11 @@ class ChecksumMatrixPage(_Page):
         self.summary_label.setText(f"Generating SHA-256 manifest for {p}...")
 
         def work():
-            """work."""
+            """Generate a SHA-256 manifest for the directory."""
             return self.matrix.generate_manifest(p, out_file, algorithm="sha256")
 
         def done(count: int):
-            """done."""
+            """Report the number of entries written to the manifest."""
             msg = f"Generated checksum manifest with {count} file entries at: {out_file}"
             self.summary_label.setText(msg)
             QMessageBox.information(self.win, "Manifest Created", msg)

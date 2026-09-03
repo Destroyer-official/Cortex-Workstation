@@ -67,12 +67,12 @@ def _windows_only(page: _Page, feature: str) -> bool:
 # =====================================================================
 
 class PrivacyScanWorker(QObject):
-    """PrivacyScanWorker class."""
+    """Background worker scanning browsers and system traces for privacy data."""
     finished = Signal(dict, dict)   # browsers, traces
     failed = Signal(str)
 
     def run(self):
-        """run."""
+        """Scan browser data and system traces; emit both results."""
         try:
             from cortex_unified.analyzers.privacy_cleaner import PrivacyCleaner
             pc = PrivacyCleaner()
@@ -82,18 +82,18 @@ class PrivacyScanWorker(QObject):
 
 
 class PrivacyCleanWorker(QObject):
-    """PrivacyCleanWorker class."""
+    """Background worker deleting selected browser items and system traces."""
     finished = Signal(bool)
     failed = Signal(str)
 
     def __init__(self, to_clean: dict, clean_system: bool):
-        """__init__."""
+        """Store the per-browser item map and the system-traces flag."""
         super().__init__()
         self._to_clean = to_clean
         self._clean_system = clean_system
 
     def run(self):
-        """run."""
+        """Clean the selected browser items (and system traces if requested)."""
         try:
             from cortex_unified.analyzers.privacy_cleaner import PrivacyCleaner
             pc = PrivacyCleaner()
@@ -109,12 +109,12 @@ class PrivacyCleanWorker(QObject):
 
 
 class StartupListWorker(QObject):
-    """StartupListWorker class."""
+    """Background worker listing startup items from the startup manager."""
     finished = Signal(list)
     failed = Signal(str)
 
     def run(self):
-        """run."""
+        """Fetch the startup item list; emit it as a list of dicts."""
         try:
             from cortex_unified.system_tools.startup_manager import StartupManager
             self.finished.emit(StartupManager().list_startup_items())
@@ -129,7 +129,7 @@ class TaskSnapshotWorker(QObject):
     failed = Signal(str)
 
     def run(self):
-        """run."""
+        """Take a task-manager snapshot; emit the error or the snapshot dict."""
         try:
             from cortex_unified.system_tools.task_manager import TaskManager
             snap = TaskManager.instance().snapshot()
@@ -148,7 +148,7 @@ class NetworkWorker(QObject):
     failed = Signal(str)
 
     def run(self):
-        """run."""
+        """Snapshot active connections and emit them with a summary dict."""
         try:
             from cortex_unified.system_tools.network_monitor import NetworkMonitor
             mon = NetworkMonitor()
@@ -166,7 +166,7 @@ class PrivacyPage(_Page):
     """Scan and sweep browser data + system privacy traces."""
 
     def __init__(self, win):
-        """__init__."""
+        """Build the scan/sweep buttons, results tree and state panel."""
         super().__init__(win)
         self.v.addWidget(title_block(
             "Privacy Shield",
@@ -206,7 +206,7 @@ class PrivacyPage(_Page):
         self.v.addWidget(self.state, 1)
 
     def _scan(self):
-        """_scan."""
+        """Launch the privacy scan worker with buttons disabled."""
         self.scan_btn.setEnabled(False)
         self.sweep_btn.setEnabled(False)
         self.state.show_loading("Scanning browsers & traces…")
@@ -214,7 +214,7 @@ class PrivacyPage(_Page):
         self.win.run_worker(PrivacyScanWorker(), self._on_scan, self._fail)
 
     def _on_scan(self, browsers: dict, traces: dict):
-        """_on_scan."""
+        """Populate the checkable results tree from the scan results."""
         self.scan_btn.setEnabled(True)
         self._results = {"browsers": browsers, "traces": traces}
         total = 0
@@ -253,7 +253,7 @@ class PrivacyPage(_Page):
             "No privacy traces found." if total == 0 else f"Found {fmt_bytes(total)} of traces", 5000)
 
     def _sweep(self):
-        """_sweep."""
+        """Confirm and delete the checked browser/system items via a worker."""
         to_clean: dict[str, list[str]] = {}
         clean_system = False
         for i in range(self.tree.topLevelItemCount()):
@@ -283,7 +283,7 @@ class PrivacyPage(_Page):
         self.win.run_worker(PrivacyCleanWorker(to_clean, clean_system), self._on_swept, self._fail)
 
     def _on_swept(self, ok: bool):
-        """_on_swept."""
+        """Report the sweep result, then re-scan."""
         self.progress.setVisible(False)
         msg = "Privacy traces cleared." if ok else "Some items could not be deleted (browser open?)."
         self.win.statusBar().showMessage(msg, 6000)
@@ -291,7 +291,7 @@ class PrivacyPage(_Page):
         self._scan()
 
     def _fail(self, msg: str):
-        """_fail."""
+        """Re-enable the scan button and show the error with a retry."""
         self.scan_btn.setEnabled(True)
         self.state.show_error(msg, on_retry=self._scan)
 
@@ -300,7 +300,7 @@ class StartupPage(_Page):
     """List startup items and disable selected ones."""
 
     def __init__(self, win):
-        """__init__."""
+        """Build the startup table with refresh/disable controls."""
         super().__init__(win)
         self.v.addWidget(title_block(
             "Startup Manager",
@@ -344,13 +344,13 @@ class StartupPage(_Page):
         self._loaded = False
 
     def _load(self):
-        """_load."""
+        """Kick off the startup-items listing worker."""
         self.refresh_btn.setEnabled(False)
         self.state.show_loading("Reading startup items…")
         self.win.run_worker(StartupListWorker(), self._on_loaded, self._fail)
 
     def _on_loaded(self, items: list):
-        """_on_loaded."""
+        """Fill the table with the fetched startup items."""
         self.refresh_btn.setEnabled(True)
         if not items:
             self.state.show_empty("No startup items found.")
@@ -367,7 +367,7 @@ class StartupPage(_Page):
         self.win.statusBar().showMessage(f"{len(items)} startup items", 5000)
 
     def _disable(self):
-        """_disable."""
+        """Confirm and disable each selected startup item, then reload."""
         rows = sorted({idx.row() for idx in self.tbl.selectedIndexes()})
         if not rows:
             QMessageBox.information(self, "No selection", "Select startup items to disable.")
@@ -396,7 +396,7 @@ class StartupPage(_Page):
         self._load()
 
     def _fail(self, msg: str):
-        """_fail."""
+        """Re-enable refresh and show the error with a retry."""
         self.refresh_btn.setEnabled(True)
         self.state.show_error(msg, on_retry=self._load)
 
@@ -406,7 +406,8 @@ class ProcessesPage(_Page):
     process list, with a breakdown reconciling where memory actually goes."""
 
     def __init__(self, win):
-        """__init__."""
+        """Build summary cards, per-core bars, search/live controls and the
+        model/view process table."""
         super().__init__(win)
         self.v.addWidget(title_block(
             "Task Manager",
@@ -540,7 +541,7 @@ class ProcessesPage(_Page):
         a byte count.
         """
         def name_icon(p: dict):
-            """name_icon."""
+            """Return the process's native exe icon, or a placeholder glyph."""
             # Real native icon where available; a token placeholder glyph when
             # the icon is unavailable so the row is never left blank (Req 8.3).
             icon = icon_for_exe(p.get("exe", ""))
@@ -563,13 +564,13 @@ class ProcessesPage(_Page):
 
     # -- live lifecycle --
     def _start_live(self):
-        """_start_live."""
+        """Load once and start the live timer if "Live" is checked."""
         self._load()
         if self.auto_chk.isChecked():
             self._timer.start()
 
     def _toggle_live(self, on: bool):
-        """_toggle_live."""
+        """Start or stop the live refresh timer."""
         if on:
             self._timer.start()
             self._tick()
@@ -577,12 +578,12 @@ class ProcessesPage(_Page):
             self._timer.stop()
 
     def _tick(self):
-        """_tick."""
+        """Reload the snapshot when visible and no load is in flight."""
         if self.isVisible() and not self._loading:
             self._load()
 
     def _load(self):
-        """_load."""
+        """Launch a snapshot worker, skipping if one is already running."""
         if self._loading:
             return
         self._loading = True
@@ -593,7 +594,8 @@ class ProcessesPage(_Page):
 
     # -- render --
     def _on_snapshot(self, snap: dict):
-        """_on_snapshot."""
+        """Update cards, core bars, memory breakdown and the process model
+        from a fresh snapshot."""
         self._loading = False
         self.refresh_btn.setEnabled(True)
         cpu = snap["cpu"]
@@ -618,7 +620,8 @@ class ProcessesPage(_Page):
         self._restore_selection()
 
     def _render_breakdown(self, mem: dict):
-        """_render_breakdown."""
+        """Set the memory one-liner and cache the detailed HTML, pushing it
+        into the label only when expanded and changed."""
         # Always-visible one-liner (cheap).
         self.mem_summary.setText(
             f"<b>Memory:</b> {fmt_bytes(mem['used'])} in use, "
@@ -633,7 +636,8 @@ class ProcessesPage(_Page):
                 self.breakdown.setText(html)
 
     def _build_breakdown_html(self, mem: dict) -> str:
-        """_build_breakdown_html."""
+        """Build the explanatory HTML about hardware-reserved memory and why
+        process working sets don't add up to "in use"."""
         parts = []
         if "hardware_reserved" in mem:
             parts.append(
@@ -657,7 +661,7 @@ class ProcessesPage(_Page):
         return "".join(parts)
 
     def _toggle_why(self, on: bool):
-        """_toggle_why."""
+        """Expand/collapse the detailed memory explanation."""
         self.why_btn.setText(
             "Hide the memory explanation" if on
             else "Why don't these numbers add up?")
@@ -668,7 +672,7 @@ class ProcessesPage(_Page):
             self.breakdown.setText(self._breakdown_html)
 
     def _apply_filter(self):
-        """_apply_filter."""
+        """Forward the search box text to the model's proxy filter."""
         # Search is the proxy's job now. The model keeps the whole snapshot and
         # the view simply stops asking for rows that don't match, so a keystroke
         # costs no list copy and no cell rebuild - and the "Processes" card keeps
@@ -677,7 +681,7 @@ class ProcessesPage(_Page):
         self._restore_selection()
 
     def _on_select(self, *_):
-        """_on_select."""
+        """Enable End Task when a row is selected; remember its PID."""
         record = self.table.selected_record()
         self.kill_btn.setEnabled(record is not None)
         if record is not None:
@@ -686,13 +690,13 @@ class ProcessesPage(_Page):
             self._selected_pid = record["pid"]
 
     def _restore_selection(self):
-        """_restore_selection."""
+        """Reselect the previously selected PID after model/filter changes."""
         if self._selected_pid is None:
             return
         self.table.select_where(lambda p: p["pid"] == self._selected_pid)
 
     def _kill(self):
-        """_kill."""
+        """Confirm and end the selected process's task, then reload."""
         record = self.table.selected_record()
         if record is None:
             return
@@ -715,7 +719,8 @@ class ProcessesPage(_Page):
         self._load()
 
     def _fail(self, msg: str):
-        """_fail."""
+        """Show the snapshot error with retry, or a transient status message
+        if data is already on screen."""
         self._loading = False
         self.refresh_btn.setEnabled(True)
         if not self._has_data:
@@ -728,7 +733,8 @@ class NetworkPage(_Page):
     """Security-minded view of active network connections and their owners."""
 
     def __init__(self, win):
-        """__init__."""
+        """Build summary cards, search/live controls and the risk-coloured
+        connections table."""
         super().__init__(win)
         self.v.addWidget(title_block(
             "Network Monitor",
@@ -816,13 +822,13 @@ class NetworkPage(_Page):
         self._loaded = False
 
     def _start_live(self):
-        """_start_live."""
+        """Load once and start the live timer if "Live" is checked."""
         self._load()
         if self.auto_chk.isChecked():
             self._timer.start()
 
     def _toggle_live(self, on: bool):
-        """_toggle_live."""
+        """Start or stop the live refresh timer."""
         if on:
             self._timer.start()
             self._tick()
@@ -830,12 +836,12 @@ class NetworkPage(_Page):
             self._timer.stop()
 
     def _tick(self):
-        """_tick."""
+        """Reload when visible and no load is in flight."""
         if self.isVisible() and not self._loading:
             self._load()
 
     def _load(self):
-        """_load."""
+        """Launch a connections snapshot worker, skipping if one is running."""
         if self._loading:
             return
         self._loading = True
@@ -845,7 +851,7 @@ class NetworkPage(_Page):
         self.win.run_worker(NetworkWorker(), self._on_loaded, self._fail)
 
     def _on_loaded(self, conns: list, summary: dict):
-        """_on_loaded."""
+        """Update the summary cards and hint, then reapply the filter."""
         self._loading = False
         self.refresh_btn.setEnabled(True)
         self._conns = conns
@@ -869,7 +875,8 @@ class NetworkPage(_Page):
         self._apply_filter()
 
     def _apply_filter(self):
-        """_apply_filter."""
+        """Filter the connections by search term and the risky-only checkbox,
+        then refill the table."""
         term = self.search.text().strip().lower()
         risky_only = self.only_risky.isChecked()
         rows = []

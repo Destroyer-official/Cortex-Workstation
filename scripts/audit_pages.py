@@ -1,3 +1,5 @@
+"""Audit script to verify that all registered pages load their factory classes."""
+
 import sys
 import os
 

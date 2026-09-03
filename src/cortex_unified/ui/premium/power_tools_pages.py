@@ -61,7 +61,7 @@ class HashVerifierPage(_Page):
     """File checksum calculator and manifest validator."""
 
     def __init__(self, win):
-        """__init__."""
+        """Build the Hash Verifier page with file picker, digests table, and manifest actions."""
         super().__init__(win)
         self.v.addWidget(title_block(
             "Checksum & Hash Verifier",
@@ -116,7 +116,7 @@ class HashVerifierPage(_Page):
         self._current_file: Optional[Path] = None
 
     def _pick_file(self):
-        """_pick_file."""
+        """Pick a file to hash and enable computation."""
         fn, _ = QFileDialog.getOpenFileName(self, "Select File to Hash", str(Path.home()))
         if fn:
             self._current_file = Path(fn)
@@ -126,7 +126,7 @@ class HashVerifierPage(_Page):
             self.calc_btn.setEnabled(True)
 
     def _compute_hashes(self):
-        """_compute_hashes."""
+        """Compute MD5, SHA-1, SHA-256, SHA-512, and CRC32 for the chosen file."""
         if not self._current_file or not self._current_file.is_file():
             return
         from NexusExplorer.native.nexus_hash_tool import HashTool, HashAlgorithm
@@ -149,13 +149,13 @@ class HashVerifierPage(_Page):
                 self.table.setCellWidget(row, 2, copy_btn)
 
     def _copy_to_clip(self, text: str):
-        """_copy_to_clip."""
+        """Copy a checksum digest to the clipboard and confirm."""
         from PySide6.QtWidgets import QApplication
         QApplication.clipboard().setText(text)
         QMessageBox.information(self, "Copied", "Checksum copied to clipboard.")
 
     def _verify_manifest(self):
-        """_verify_manifest."""
+        """Verify a .sfv/.md5/.sha256/.sha512 manifest and summarize match results."""
         fn, _ = QFileDialog.getOpenFileName(self, "Open Checksum Manifest", str(Path.home()), "Manifests (*.sfv *.md5 *.sha256 *.sha512);;All Files (*.*)")
         if not fn:
             return
@@ -184,7 +184,7 @@ class BatchRenamerPage(_Page):
     """Regex, token template, and EXIF batch multi-renamer."""
 
     def __init__(self, win):
-        """__init__."""
+        """Build the Batch Renamer page with pattern form, preview table, and apply/undo buttons."""
         super().__init__(win)
         self.v.addWidget(title_block(
             "Batch Multi-Renamer",
@@ -265,7 +265,7 @@ class BatchRenamerPage(_Page):
         self._current_plan = []
 
     def _pick_files(self):
-        """_pick_files."""
+        """Pick files to rename and refresh the preview."""
         files, _ = QFileDialog.getOpenFileNames(self, "Select Files to Rename", str(Path.home()))
         if files:
             self._files = [Path(f) for f in files]
@@ -273,7 +273,7 @@ class BatchRenamerPage(_Page):
             self._update_preview()
 
     def _update_preview(self):
-        """_update_preview."""
+        """Recompute the rename plan and show per-file status in the table."""
         if not self._files:
             return
         from NexusExplorer.native.nexus_batch_renamer import CaseTransformation
@@ -316,7 +316,7 @@ class BatchRenamerPage(_Page):
         self.apply_btn.setEnabled(has_valid_changes)
 
     def _apply_rename(self):
-        """_apply_rename."""
+        """Execute the previewed rename plan and report the outcome."""
         if not self._current_plan:
             return
         count, err_count, errs = self._renamer.execute_rename(self._current_plan)
@@ -328,7 +328,7 @@ class BatchRenamerPage(_Page):
         self._update_preview()
 
     def _undo_rename(self):
-        """_undo_rename."""
+        """Revert the last executed rename."""
         count, errs = self._renamer.undo_last()
         if errs and count == 0:
             QMessageBox.warning(self, "Undo", "\n".join(errs))
@@ -345,7 +345,7 @@ class FolderSyncPage(_Page):
     """Side-by-side folder comparison matrix and 1-click sync engine."""
 
     def __init__(self, win):
-        """__init__."""
+        """Build the Folder Sync page with folder pickers, compare controls, diff table, and sync mode."""
         super().__init__(win)
         self.v.addWidget(title_block(
             "Folder Compare & Sync",
@@ -423,7 +423,7 @@ class FolderSyncPage(_Page):
         self._diff_list = []
 
     def _pick_left(self):
-        """_pick_left."""
+        """Pick the left folder to compare."""
         d = QFileDialog.getExistingDirectory(self, "Select Left Folder", str(Path.home()))
         if d:
             self._left_dir = Path(d)
@@ -432,7 +432,7 @@ class FolderSyncPage(_Page):
             self.left_lbl.setStyleSheet("color: inherit;")
 
     def _pick_right(self):
-        """_pick_right."""
+        """Pick the right folder to compare."""
         d = QFileDialog.getExistingDirectory(self, "Select Right Folder", str(Path.home()))
         if d:
             self._right_dir = Path(d)
@@ -441,7 +441,7 @@ class FolderSyncPage(_Page):
             self.right_lbl.setStyleSheet("color: inherit;")
 
     def _run_compare(self):
-        """_run_compare."""
+        """Compare the two folders and fill the diff table; enable sync."""
         if not self._left_dir or not self._right_dir:
             QMessageBox.warning(self, "Compare", "Please select both Left and Right folders first.")
             return
@@ -474,7 +474,7 @@ class FolderSyncPage(_Page):
         self.sync_btn.setEnabled(len(self._diff_list) > 0)
 
     def _run_sync(self):
-        """_run_sync."""
+        """Confirm and execute the selected sync mode, then re-compare."""
         if not self._diff_list or not self._left_dir or not self._right_dir:
             return
         from NexusExplorer.native.nexus_dir_diff import DirectoryDiffEngine, SyncMode
@@ -513,7 +513,7 @@ class FileSplitterPage(_Page):
     """File chunk splitter and reconstructor with SHA256 integrity check."""
 
     def __init__(self, win):
-        """__init__."""
+        """Build the Splitter/Joiner page with split and join tabs."""
         super().__init__(win)
         self.v.addWidget(title_block(
             "File Splitter & Joiner",
@@ -586,7 +586,7 @@ class FileSplitterPage(_Page):
         self._join_src: Optional[Path] = None
 
     def _pick_split_src(self):
-        """_pick_split_src."""
+        """Pick the file to split and enable the split button."""
         f, _ = QFileDialog.getOpenFileName(self, "Select File to Split", str(Path.home()))
         if f:
             self._split_src = Path(f)
@@ -596,7 +596,7 @@ class FileSplitterPage(_Page):
             self.do_split_btn.setEnabled(True)
 
     def _execute_split(self):
-        """_execute_split."""
+        """Split the source file into preset-sized chunks with a manifest."""
         if not self._split_src:
             return
         from NexusExplorer.native.nexus_file_splitter import FileSplitterJoiner, SplitPreset, PRESET_BYTES
@@ -622,7 +622,7 @@ class FileSplitterPage(_Page):
             QMessageBox.warning(self, "Split Failed", f"Error: {res.error}")
 
     def _pick_join_src(self):
-        """_pick_join_src."""
+        """Pick the first part or manifest to join and enable the join button."""
         f, _ = QFileDialog.getOpenFileName(self, "Select First Part or Manifest", str(Path.home()), "Split Parts (*.001 *.json);;All Files (*.*)")
         if f:
             self._join_src = Path(f)
@@ -632,7 +632,7 @@ class FileSplitterPage(_Page):
             self.do_join_btn.setEnabled(True)
 
     def _execute_join(self):
-        """_execute_join."""
+        """Reassemble the split parts into the original file."""
         if not self._join_src:
             return
         from NexusExplorer.native.nexus_file_splitter import FileSplitterJoiner
@@ -656,7 +656,7 @@ class FileUnlockerPage(_Page):
     """File handle inspector and process unlocker."""
 
     def __init__(self, win):
-        """__init__."""
+        """Build the File Unlocker page with a picker, lock table, and per-process kill actions."""
         super().__init__(win)
         self.v.addWidget(title_block(
             "File Unlocker & Handle Inspector",
@@ -695,7 +695,7 @@ class FileUnlockerPage(_Page):
         self._locking_procs = []
 
     def _pick_file(self):
-        """_pick_file."""
+        """Pick the locked file and immediately inspect its locks."""
         f, _ = QFileDialog.getOpenFileName(self, "Select Locked File", str(Path.home()))
         if f:
             self._current_file = Path(f)
@@ -706,7 +706,7 @@ class FileUnlockerPage(_Page):
             self._inspect_locks()
 
     def _inspect_locks(self):
-        """_inspect_locks."""
+        """List processes holding locks on the chosen file."""
         if not self._current_file:
             return
         from NexusExplorer.native.nexus_unlocker import FileUnlocker
@@ -730,7 +730,7 @@ class FileUnlockerPage(_Page):
             self.table.setCellWidget(row, 4, kill_btn)
 
     def _terminate_proc(self, pid: int):
-        """_terminate_proc."""
+        """Force-terminate a locking process, then re-inspect locks."""
         from NexusExplorer.native.nexus_unlocker import FileUnlocker
         ok, msg = FileUnlocker.unlock_and_terminate(pid, force=True)
         if ok:
@@ -748,7 +748,7 @@ class AdsManagerPage(_Page):
     """NTFS Alternate Data Stream inspector and Zone.Identifier unblocker."""
 
     def __init__(self, win):
-        """__init__."""
+        """Build the ADS Manager page with a file picker, unblock button, and streams table."""
         super().__init__(win)
         self.v.addWidget(title_block(
             "NTFS Alternate Data Streams",
@@ -785,7 +785,7 @@ class AdsManagerPage(_Page):
         self._current_file: Optional[Path] = None
 
     def _pick_file(self):
-        """_pick_file."""
+        """Pick a file and list its alternate data streams."""
         f, _ = QFileDialog.getOpenFileName(self, "Select File with Streams", str(Path.home()))
         if f:
             self._current_file = Path(f)
@@ -795,7 +795,7 @@ class AdsManagerPage(_Page):
             self._refresh_streams()
 
     def _refresh_streams(self):
-        """_refresh_streams."""
+        """List the file's NTFS streams and enable unblocking when a Zone.Identifier exists."""
         if not self._current_file:
             return
         from NexusExplorer.native.nexus_ads_manager import AlternateDataStreamsManager
@@ -816,7 +816,7 @@ class AdsManagerPage(_Page):
             self.table.setCellWidget(row, 3, del_btn)
 
     def _unblock_file(self):
-        """_unblock_file."""
+        """Remove the Zone.Identifier stream to unblock the file."""
         if not self._current_file:
             return
         from NexusExplorer.native.nexus_ads_manager import AlternateDataStreamsManager
@@ -828,7 +828,7 @@ class AdsManagerPage(_Page):
         self._refresh_streams()
 
     def _delete_stream(self, stream_name: str):
-        """_delete_stream."""
+        """Delete the named alternate data stream, then refresh."""
         if not self._current_file:
             return
         from NexusExplorer.native.nexus_ads_manager import AlternateDataStreamsManager
@@ -848,7 +848,7 @@ class EventLogCleanerPage(_Page):
     """Windows Event Log manager and cleaner."""
 
     def __init__(self, win):
-        """__init__."""
+        """Build the Event Log page with stat cards, log table, and refresh/clear actions."""
         super().__init__(win)
         self.v.addWidget(title_block(
             "Windows Event Log Sweeper",
@@ -895,7 +895,7 @@ class EventLogCleanerPage(_Page):
         QTimer.singleShot(100, self._load_logs)
 
     def _load_logs(self):
-        """_load_logs."""
+        """Load all event log channels into the table and stat cards."""
         from cortex_unified.system_tools.event_log_cleaner import EventLogCleaner
         self._logs = EventLogCleaner.list_all_logs()
 
@@ -914,7 +914,7 @@ class EventLogCleanerPage(_Page):
             self.table.setItem(row, 3, QTableWidgetItem("Active" if log.is_enabled else "Disabled"))
 
     def _clear_all_logs(self):
-        """_clear_all_logs."""
+        """Confirm and clear every event log channel, then reload."""
         confirm = QMessageBox.question(
             self,
             "Clear Event Logs",
@@ -938,7 +938,7 @@ class SystemCacheRebuilderPage(_Page):
     """Font, Icon, and Thumbnail cache rebuilder and Shell restarter."""
 
     def __init__(self, win):
-        """__init__."""
+        """Build the Cache Rebuilder page with restart-shell option and rebuild button."""
         super().__init__(win)
         self.v.addWidget(title_block(
             "System Cache & Icon Rebuilder",
@@ -968,7 +968,7 @@ class SystemCacheRebuilderPage(_Page):
         self.v.addStretch(1)
 
     def _execute_rebuild(self):
-        """_execute_rebuild."""
+        """Rebuild font and icon caches and report the outcome."""
         from cortex_unified.system_tools.system_cache_rebuilder import SystemCacheRebuilder
         report = SystemCacheRebuilder.execute_full_cache_rebuild(restart_shell=self.restart_shell_chk.isChecked())
         QMessageBox.information(
@@ -986,7 +986,7 @@ class NetworkOptimizerPage(_Page):
     """DNS Resolver and TCP/IP stack tuning toolkit."""
 
     def __init__(self, win):
-        """__init__."""
+        """Build the Network Optimizer page with TCP status form, tuning buttons, and repair actions."""
         super().__init__(win)
         self.v.addWidget(title_block(
             "Network Stack & DNS Optimizer",
@@ -1053,7 +1053,7 @@ class NetworkOptimizerPage(_Page):
         QTimer.singleShot(100, self._load_tcp_status)
 
     def _load_tcp_status(self):
-        """_load_tcp_status."""
+        """Show current TCP autotuning, RSS, and ECN status."""
         from cortex_unified.system_tools.network_stack_optimizer import NetworkStackOptimizer
         st = NetworkStackOptimizer.get_tcp_settings()
         self.autotuning_lbl.setText(st.autotuning_level)
@@ -1061,32 +1061,32 @@ class NetworkOptimizerPage(_Page):
         self.ecn_lbl.setText(st.ecn_capability)
 
     def _set_autotuning(self, level: str):
-        """_set_autotuning."""
+        """Set the TCP autotuning level, then refresh status."""
         from cortex_unified.system_tools.network_stack_optimizer import NetworkStackOptimizer
         ok, msg = NetworkStackOptimizer.set_tcp_autotuning(level)
         QMessageBox.information(self, "TCP Auto-Tuning", msg)
         self._load_tcp_status()
 
     def _flush_dns(self):
-        """_flush_dns."""
+        """Flush the DNS resolver cache and report."""
         from cortex_unified.system_tools.network_stack_optimizer import NetworkStackOptimizer
         ok, msg = NetworkStackOptimizer.flush_dns()
         QMessageBox.information(self, "DNS", msg)
 
     def _clear_arp(self):
-        """_clear_arp."""
+        """Clear the ARP cache and report."""
         from cortex_unified.system_tools.network_stack_optimizer import NetworkStackOptimizer
         ok, msg = NetworkStackOptimizer.clear_arp_cache()
         QMessageBox.information(self, "ARP", msg)
 
     def _reset_winsock(self):
-        """_reset_winsock."""
+        """Reset the Winsock catalog and report."""
         from cortex_unified.system_tools.network_stack_optimizer import NetworkStackOptimizer
         ok, msg = NetworkStackOptimizer.reset_winsock()
         QMessageBox.information(self, "Winsock", msg)
 
     def _repair_all(self):
-        """_repair_all."""
+        """Run the complete network repair sequence, then refresh status."""
         from cortex_unified.system_tools.network_stack_optimizer import NetworkStackOptimizer
         report = NetworkStackOptimizer.execute_complete_network_repair()
         QMessageBox.information(self, "Network Repair", "\n".join(report.output_messages))
@@ -1101,7 +1101,7 @@ class CrashDumpCleanerPage(_Page):
     """Windows Kernel & User Memory Dump and WER Sanitizer."""
 
     def __init__(self, win):
-        """__init__."""
+        """Build the Crash Dump page with stat cards, dumps table, and scan/clean actions."""
         super().__init__(win)
         self.v.addWidget(title_block(
             "Crash Dumps & Error Reports",
@@ -1147,7 +1147,7 @@ class CrashDumpCleanerPage(_Page):
         QTimer.singleShot(100, self._scan_dumps)
 
     def _scan_dumps(self):
-        """_scan_dumps."""
+        """Scan crash dumps and WER reports, updating table and stat cards."""
         from cortex_unified.system_tools.crash_dump_cleaner import CrashDumpCleaner
         self._dumps = CrashDumpCleaner.scan_dumps()
 
@@ -1164,7 +1164,7 @@ class CrashDumpCleanerPage(_Page):
             self.table.setItem(row, 2, QTableWidgetItem(fmt_bytes(d.size_bytes)))
 
     def _clean_dumps(self):
-        """_clean_dumps."""
+        """Delete all discovered crash dumps, then rescan."""
         if not self._dumps:
             return
         from cortex_unified.system_tools.crash_dump_cleaner import CrashDumpCleaner

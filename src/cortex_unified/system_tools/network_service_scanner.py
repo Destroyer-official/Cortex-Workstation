@@ -92,7 +92,7 @@ class ServiceObservation:
     confidence: float = 0.5
 
     def to_dict(self) -> dict[str, Any]:
-        """To dict."""
+        """Serialize the observation with NaN/Inf-safe latency and confidence."""
         confidence = self.confidence if math.isfinite(self.confidence) else 0.0
         latency = self.latency_ms
         if latency is not None and not math.isfinite(latency):
@@ -115,22 +115,22 @@ class ServiceObservation:
     # Compatibility with the earlier audit draft.
     @property
     def target(self) -> str:
-        """Target."""
+        """Alias for the observed IP."""
         return self.ip
 
     @property
     def service(self) -> str:
-        """Service."""
+        """Alias for the service name."""
         return self.name
 
     @property
     def details(self) -> dict[str, Any]:
-        """Details."""
+        """Alias for the metadata dict."""
         return self.metadata
 
     @property
     def evidence(self) -> list[str]:
-        """Evidence."""
+        """Evidence strings from metadata, always as a list."""
         evidence = self.metadata.get("evidence", [])
         if isinstance(evidence, str):
             return [evidence]
@@ -317,7 +317,7 @@ def parse_custom_port_spec(value: str) -> tuple[int, ...]:
 
 
 def _clean(data: bytes) -> str:
-    """_clean."""
+    """Decode response bytes to printable, length-capped text."""
     text = data[:_MAX_RESPONSE].decode("utf-8", "replace")
     return "".join(
         char if char.isprintable() or char in "\r\n\t" else "."
@@ -328,7 +328,7 @@ def _clean(data: bytes) -> str:
 
 
 def _recv(sock: socket.socket, limit: int = _MAX_RESPONSE) -> bytes:
-    """_recv."""
+    """Bounded non-blocking-ish receive loop capped at ``_MAX_RESPONSE`` bytes."""
     remaining = min(_MAX_RESPONSE, max(0, int(limit)))
     chunks: list[bytes] = []
     while remaining:
@@ -348,7 +348,7 @@ def _recv(sock: socket.socket, limit: int = _MAX_RESPONSE) -> bytes:
 
 
 def _product_version(text: str) -> tuple[str, str]:
-    """_product_version."""
+    """Extract product/version from SSH, FTP, or HTTP banner patterns."""
     for pattern in (
         r"^SSH-[\d.]+-([^\s/_]+)[_/-]?([\w.+-]*)",
         r"^220[- ]([^\s/]+)[ /]?([\w.+-]*)",
@@ -389,13 +389,13 @@ class _RateLimiter:
     """Spaces probe starts at most ``rate`` per second across worker threads."""
 
     def __init__(self, rate: float) -> None:
-        """Initialize _ Rate Limiter."""
+        """Compute the per-probe interval for the given probes-per-second rate."""
         self.interval = 1.0 / rate
         self.next_at = 0.0
         self.lock = threading.Lock()
 
     def acquire(self, cancel: threading.Event) -> bool:
-        """Acquire."""
+        """Wait for the next slot; return False if cancelled while waiting."""
         with self.lock:
             now = time.monotonic()
             delay = max(0.0, self.next_at - now)
@@ -412,7 +412,7 @@ class NetworkServiceScanner:
         workers: int = 32,
         rate_limit: float = 160.0,
     ) -> None:
-        """Initialize Network Service Scanner."""
+        """Clamp socket timeout, worker count, and rate limit into safe bounds."""
         self.timeout = min(_MAX_PROBE_TIMEOUT, max(0.05, float(timeout)))
         self.workers = min(64, max(1, int(workers)))
         self.rate_limit = min(500.0, max(1.0, float(rate_limit)))
@@ -462,7 +462,7 @@ class NetworkServiceScanner:
 
     @staticmethod
     def _progress(progress: ProgressFn | None, message: str) -> None:
-        """_progress."""
+        """Invoke the progress callback, swallowing callback exceptions."""
         if progress:
             try:
                 progress(message)
@@ -476,7 +476,7 @@ class NetworkServiceScanner:
         addresses: Iterable[ipaddress.IPv4Address],
         ports: Iterable[int],
     ) -> Iterator[tuple[str, int]]:
-        """_jobs."""
+        """Yield (ip, port) jobs for every address/port combination."""
         for address in addresses:
             for port in ports:
                 yield str(address), port
@@ -493,7 +493,7 @@ class NetworkServiceScanner:
         observations: list[ServiceObservation],
         progress: ProgressFn | None,
     ) -> None:
-        """_scan_tcp."""
+        """Probe all (address, port) TCP jobs on a bounded thread pool."""
         jobs = self._jobs(addresses, ports)
         pending: set[Future[ServiceObservation | None]] = set()
         exhausted = False
@@ -538,7 +538,7 @@ class NetworkServiceScanner:
         limiter: _RateLimiter,
         cancel: threading.Event,
     ) -> ServiceObservation | None:
-        """_probe_tcp."""
+        """Rate-limited TCP connect plus passive banner read for one port."""
         if not limiter.acquire(cancel):
             return None
         started = time.monotonic()
@@ -581,7 +581,7 @@ class NetworkServiceScanner:
         """_probe_tcp."""
 
     def _connect(self, observation: ServiceObservation) -> socket.socket:
-        """_connect."""
+        """Open a TCP socket to the observed endpoint with the scan timeout."""
         sock = socket.create_connection(
             (observation.ip, observation.port), timeout=self.timeout)
         sock.settimeout(self.timeout)
@@ -595,7 +595,7 @@ class NetworkServiceScanner:
         profile: ScanProfile,
         cancel: threading.Event,
     ) -> None:
-        """_identify."""
+        """Deepen identification via TLS, HTTP, MQTT, or Redis probes by port."""
         if observation.port in _TLS_PORTS and not cancel.is_set():
             self._probe_tls(observation)
         if (observation.port in _HTTP_PORTS or observation.port in _TLS_PORTS) and not cancel.is_set():
@@ -615,7 +615,7 @@ class NetworkServiceScanner:
         """_identify."""
 
     def _probe_tls(self, observation: ServiceObservation) -> None:
-        """_probe_tls."""
+        """TLS handshake (cert unverified) recording version, cipher, and cert hash."""
         context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
         context.check_hostname = False
         context.verify_mode = ssl.CERT_NONE
@@ -639,7 +639,7 @@ class NetworkServiceScanner:
         """_probe_tls."""
 
     def _probe_http(self, observation: ServiceObservation, path: str) -> None:
-        """_probe_http."""
+        """Bounded HEAD/GET request to fingerprint HTTP servers (Docker, ES)."""
         try:
             with self._connect(observation) as raw:
                 stream: socket.socket = raw
@@ -705,7 +705,7 @@ class NetworkServiceScanner:
         """_probe_http."""
 
     def _probe_mqtt(self, observation: ServiceObservation) -> None:
-        """_probe_mqtt."""
+        """Credential-free MQTT CONNECT; flags brokers that accept it (CONNACK 0)."""
         client_id = b"cortex-audit"
         body = b"\x00\x04MQTT\x04\x02\x00\x05" + struct.pack("!H", len(client_id)) + client_id
         try:
@@ -729,7 +729,7 @@ class NetworkServiceScanner:
         """_probe_mqtt."""
 
     def _probe_redis(self, observation: ServiceObservation) -> None:
-        """_probe_redis."""
+        """Redis PING probe detecting unauthenticated access (+PONG vs NOAUTH)."""
         try:
             with self._connect(observation) as sock:
                 sock.sendall(b"*1\r\n$4\r\nPING\r\n")
@@ -758,7 +758,7 @@ class NetworkServiceScanner:
         cancel: threading.Event,
         observations: list[ServiceObservation],
     ) -> None:
-        """_scan_udp."""
+        """Send bounded UDP discovery probes (plus SNMP for advanced/deep)."""
         probes = list(_UDP_PROBES)
         if profile in {ScanProfile.ADVANCED, ScanProfile.DEEP}:
             probes.append((161, "snmp", _SNMP_PROBE))
@@ -779,7 +779,7 @@ class NetworkServiceScanner:
         name: str,
         payload: bytes,
     ) -> ServiceObservation | None:
-        """_probe_udp."""
+        """One UDP probe requiring a unicast reply from the same scoped host."""
         started = time.monotonic()
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         try:
@@ -814,7 +814,7 @@ class NetworkServiceScanner:
 
 # Compatibility name retained for callers that imported this helper directly.
 def validate_private_target(target: str) -> str:
-    """Validate private target."""
+    """Validate a private IPv4 address against standard LAN ranges."""
     private_ranges = ("10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16")
     if not is_authorized_target(target, private_ranges):
         raise ValueError(f"target is not a usable private IPv4 address: {target!r}")

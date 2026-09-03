@@ -61,18 +61,18 @@ class _ScanWorker(QObject):
     failed = Signal(str)
 
     def __init__(self, offline_mode: bool = False, index_path: str | None = None):
-        """__init__."""
+        """Store offline-mode flag, optional index path, and a cancel event."""
         super().__init__()
         self._offline = offline_mode
         self._index_path = index_path
         self._cancel = threading.Event()
 
     def cancel(self):
-        """cancel."""
+        """Request cooperative cancellation of the running scan."""
         self._cancel.set()
 
     def run(self):
-        """run."""
+        """Enumerate PnP devices via DriverManager and emit the driver list."""
         try:
             from cortex_unified.system_tools.driver_manager import DriverManager
 
@@ -97,18 +97,18 @@ class _InstallWorker(QObject):
     failed = Signal(str)
 
     def __init__(self, hardware_ids: list[str], offline_mode: bool = False):
-        """__init__."""
+        """Store target hardware IDs, offline flag, and a cancel event."""
         super().__init__()
         self._hwids = hardware_ids
         self._offline = offline_mode
         self._cancel = threading.Event()
 
     def cancel(self):
-        """cancel."""
+        """Request cooperative cancellation of the running install."""
         self._cancel.set()
 
     def run(self):
-        """run."""
+        """Install updates for the stored hardware IDs (restore point first)."""
         try:
             from cortex_unified.system_tools.driver_manager import DriverManager
 
@@ -132,16 +132,16 @@ class _BackupWorker(QObject):
     failed = Signal(str)
 
     def __init__(self):
-        """__init__."""
+        """Create the backup worker with a fresh cancel event."""
         super().__init__()
         self._cancel = threading.Event()
 
     def cancel(self):
-        """cancel."""
+        """No-op cancel hook (DISM export cannot be interrupted)."""
         self._cancel.set()
 
     def run(self):
-        """run."""
+        """Export all drivers via DISM into ~/CortexBackups/drivers."""
         try:
             import subprocess
             import sys
@@ -176,7 +176,7 @@ class DriverManagerPage(_Page):
     """Scan, update, backup and manage device drivers."""
 
     def __init__(self, win):
-        """__init__."""
+        """Build the Driver Manager page: filter, action buttons, progress, and results table."""
         super().__init__(win)
         self.v.addWidget(
             title_block(
@@ -266,12 +266,12 @@ class DriverManagerPage(_Page):
     # -- helpers -------------------------------------------------------------
 
     def _selected_hwids(self) -> list[str]:
-        """_selected_hwids."""
+        """Return hardware IDs of the currently selected table rows."""
         rows = sorted(set(idx.row() for idx in self.tbl.selectedIndexes()))
         return [self._drivers[r].hardware_id for r in rows if r < len(self._drivers)]
 
     def _populate_table(self, drivers: list) -> None:
-        """_populate_table."""
+        """Fill the results table (class-filtered), flag outdated/missing, and enable Install if any outdated."""
         self._drivers = drivers
         cls_filter = self.class_combo.currentText()
         if cls_filter != "All":
@@ -308,7 +308,7 @@ class DriverManagerPage(_Page):
     # -- actions -------------------------------------------------------------
 
     def _scan(self):
-        """_scan."""
+        """Clear the table and start a _ScanWorker for devices and update checks."""
         self.scan_btn.setEnabled(False)
         self.install_btn.setEnabled(False)
         self.progress.setVisible(True)
@@ -325,11 +325,11 @@ class DriverManagerPage(_Page):
         )
 
     def _on_progress(self, msg: str):
-        """_on_progress."""
+        """Show worker progress text in the status label."""
         self.status.setText(msg)
 
     def _on_scan_done(self, drivers: list):
-        """_on_scan_done."""
+        """Populate the table with scan results and summarize outdated/missing counts."""
         self._scan_worker = None
         self.progress.setVisible(False)
         self.scan_btn.setEnabled(True)
@@ -354,14 +354,14 @@ class DriverManagerPage(_Page):
         self.win.statusBar().showMessage(f"Scan complete: {len(drivers)} devices", 5000)
 
     def _on_scan_fail(self, msg: str):
-        """_on_scan_fail."""
+        """Reset buttons and show the scan error with a retry option."""
         self._scan_worker = None
         self.progress.setVisible(False)
         self.scan_btn.setEnabled(True)
         self.state.show_error(msg, on_retry=self._scan)
 
     def _install(self):
-        """_install."""
+        """Confirm selection, then run _InstallWorker for the selected hardware IDs."""
         hwids = self._selected_hwids()
         if not hwids:
             QMessageBox.information(
@@ -397,7 +397,7 @@ class DriverManagerPage(_Page):
         )
 
     def _on_install_done(self, results: dict):
-        """_on_install_done."""
+        """Report per-ID success/failure counts and show errors if any install failed."""
         self._install_worker = None
         self.progress.setVisible(False)
         self.scan_btn.setEnabled(True)
@@ -418,7 +418,7 @@ class DriverManagerPage(_Page):
             self.state.clear()
 
     def _on_install_fail(self, msg: str):
-        """_on_install_fail."""
+        """Reset buttons and show the install error with a retry option."""
         self._install_worker = None
         self.progress.setVisible(False)
         self.scan_btn.setEnabled(True)
@@ -426,7 +426,7 @@ class DriverManagerPage(_Page):
         self.state.show_error(msg, on_retry=self._install)
 
     def _backup(self):
-        """_backup."""
+        """Disable Backup and run _BackupWorker to DISM-export all drivers."""
         self.backup_btn.setEnabled(False)
         self.progress.setVisible(True)
         self.state.show_loading("Backing up all drivers via DISM\u2026")
@@ -438,7 +438,7 @@ class DriverManagerPage(_Page):
         )
 
     def _on_backup_done(self, path: str):
-        """_on_backup_done."""
+        """Re-enable Backup and report the export directory."""
         self.progress.setVisible(False)
         self.backup_btn.setEnabled(True)
         self.state.clear()
@@ -446,7 +446,7 @@ class DriverManagerPage(_Page):
         self.win.statusBar().showMessage("Driver backup complete", 5000)
 
     def _on_backup_fail(self, msg: str):
-        """_on_backup_fail."""
+        """Re-enable Backup and show the export error with a retry option."""
         self.progress.setVisible(False)
         self.backup_btn.setEnabled(True)
         self.state.show_error(msg, on_retry=self._backup)

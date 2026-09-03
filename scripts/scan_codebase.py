@@ -1,3 +1,5 @@
+"""Scanner script to detect placeholders, TODOs, and mock patterns."""
+
 import os
 import re
 import sys

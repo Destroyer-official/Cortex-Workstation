@@ -1,3 +1,5 @@
+"""Diagnostic script to test UI navigation and theme application."""
+
 import os
 import sys
 

@@ -46,13 +46,17 @@ IS_WINDOWS = sys.platform == "win32"
 # ---------------------------------------------------------------------------
 
 class HubScanWorker(QObject):
-    """HubScanWorker class."""
+    """Scans all cleanup categories via CleanerService.
+
+    Emits ``finished`` with a CleanupReport, ``progress`` with status text,
+    or ``failed`` with an error message.
+    """
     finished = Signal(object)  # CleanupReport
     progress = Signal(str)
     failed = Signal(str)
 
     def __init__(self, max_risk: str = "medium", include_disabled: bool = True):
-        """__init__."""
+        """Store max-risk level, disabled-category flag, and a cancel event."""
         super().__init__()
         self._max_risk = max_risk
         self._include_disabled = include_disabled
@@ -60,11 +64,11 @@ class HubScanWorker(QObject):
         self._cancel = threading.Event()
 
     def cancel(self):
-        """cancel."""
+        """Request cooperative cancellation of the running scan."""
         self._cancel.set()
 
     def run(self):
-        """run."""
+        """Run the category scan and emit the report or a failure."""
         try:
             report = CleanerService().scan_categories(
                 max_risk=RiskLevel(self._max_risk),
@@ -90,12 +94,12 @@ _RISK_STYLE = {
 
 
 def _risk_label(risk: RiskLevel) -> str:
-    """_risk_label."""
+    """Return the display label ("LOW"/"MEDIUM"/"HIGH") for a risk level."""
     return _RISK_STYLE[risk][0]
 
 
 def _risk_color(risk: RiskLevel) -> str:
-    """_risk_color."""
+    """Return the badge hex color for a risk level."""
     return _RISK_STYLE[risk][1]
 
 
@@ -103,7 +107,7 @@ class CleanupHubPage(_Page):
     """Storage Sense-style hub: every CleanupCategory as a card with estimates."""
 
     def __init__(self, win):
-        """__init__."""
+        """Build the Cleanup Hub: scan controls, summary cards, and a card grid."""
         super().__init__(win)
         self.v.addWidget(title_block(
             "Cleanup Hub",
@@ -240,7 +244,7 @@ class CleanupHubPage(_Page):
     # -- scan ---------------------------------------------------------------
 
     def _scan(self):
-        """_scan."""
+        """Disable buttons and start a HubScanWorker (risk level from opt-in checkbox)."""
         self.scan_btn.setEnabled(False)
         self.clean_btn.setEnabled(False)
         self.state.show_loading("Scanning categories…")
@@ -252,11 +256,11 @@ class CleanupHubPage(_Page):
         self.win.run_worker(w, self._on_scanned, self._fail, on_progress=self._on_progress)
 
     def _on_progress(self, msg: str):
-        """_on_progress."""
+        """Show worker progress text in the scan status label."""
         self.scan_status.setText(msg)
 
     def _on_scanned(self, report):
-        """_on_scanned."""
+        """Update summary cards and rebuild the category card grid from the scan report."""
         self._worker = None
         self.progress.setVisible(False)
         self.scan_status.setText("")
@@ -309,7 +313,7 @@ class CleanupHubPage(_Page):
         self._update_clean_enabled()
 
     def _make_card(self, cat: CleanupCategory, est_bytes: int, est_files: int) -> Card:
-        """_make_card."""
+        """Build one category card: risk/reversible badges, paths, globs, estimate, and select checkbox."""
         card = Card(self.p)
         lay = QVBoxLayout(card)
         lay.setContentsMargins(14, 12, 14, 12)
@@ -366,7 +370,7 @@ class CleanupHubPage(_Page):
         self._card_checkboxes[cid] = chk
 
         def _on_toggled(checked, _cid=cid):
-            """_on_toggled."""
+            """Record the card's selection state and refresh the Clean button."""
             self._selected[_cid] = checked
             self._update_clean_enabled()
         chk.toggled.connect(_on_toggled)
@@ -376,20 +380,20 @@ class CleanupHubPage(_Page):
         return card
 
     def _select_all_cards(self, state: bool):
-        """_select_all_cards."""
+        """Check or uncheck every category card checkbox at once."""
         for cid, chk in self._card_checkboxes.items():
             chk.setChecked(state)
             self._selected[cid] = state
         self._update_clean_enabled()
 
     def _update_clean_enabled(self):
-        """_update_clean_enabled."""
+        """Enable the Clean button only when something is selected and a scan has files."""
         any_sel = any(self._selected.values())
         report_ok = self._report is not None and self._report.total_files > 0
         self.clean_btn.setEnabled(any_sel and report_ok)
 
     def _fail(self, msg: str):
-        """_fail."""
+        """Reset UI state after a failed scan/clean and offer retry."""
         self._worker = None
         self.progress.setVisible(False)
         self.scan_status.setText("")
@@ -399,7 +403,7 @@ class CleanupHubPage(_Page):
     # -- pickers ------------------------------------------------------------
 
     def _pick_custom_folder(self):
-        """_pick_custom_folder."""
+        """Add a chosen directory to the scan roots and rescan."""
         folder = QFileDialog.getExistingDirectory(self, "Select Directory to Add to Cleanup Sweep", str(Path.home()))
         if folder:
             p = Path(folder)
@@ -409,7 +413,7 @@ class CleanupHubPage(_Page):
             self._scan()
 
     def _pick_custom_file(self):
-        """_pick_custom_file."""
+        """Add the parent folder of a chosen file to the scan roots and rescan."""
         file_path, _ = QFileDialog.getOpenFileName(self, "Select File to Add Parent Location", str(Path.home()))
         if file_path:
             p = Path(file_path).parent
@@ -419,13 +423,13 @@ class CleanupHubPage(_Page):
             self._scan()
 
     def _clear_custom_roots(self):
-        """_clear_custom_roots."""
+        """Remove all custom scan roots (back to system defaults) and rescan."""
         self._custom_roots.clear()
         self._update_roots_status()
         self._scan()
 
     def _update_roots_status(self):
-        """_update_roots_status."""
+        """Refresh the active-scan-roots label and Reset Roots button visibility."""
         if self._custom_roots:
             roots_str = ", ".join(str(r) for r in self._custom_roots)
             self.target_roots_label.setText(f"Active Scan Roots: System Defaults + {roots_str}")
@@ -437,7 +441,7 @@ class CleanupHubPage(_Page):
     # -- clean --------------------------------------------------------------
 
     def _clean(self):
-        """_clean."""
+        """Confirm selection, then run CleanWorker on the selected categories (Recycle-Bin-safe delete)."""
         if self._report is None:
             return
         selected_ids = [cid for cid, on in self._selected.items() if on]
@@ -471,7 +475,7 @@ class CleanupHubPage(_Page):
         self.win.run_worker(w, self._on_cleaned, self._fail, on_progress=self._on_progress)
 
     def _on_cleaned(self, freed: int, items: int, skipped: int):
-        """_on_cleaned."""
+        """Report freed bytes and item counts after cleanup finishes."""
         self.progress.setVisible(False)
         self.scan_btn.setEnabled(True)
         extra = f" {skipped} blocked/skipped." if skipped else ""

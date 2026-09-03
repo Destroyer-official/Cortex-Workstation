@@ -1,3 +1,5 @@
+"""Diagnostic script to verify offscreen instantiation of all UI pages."""
+
 import os
 import sys
 import traceback
