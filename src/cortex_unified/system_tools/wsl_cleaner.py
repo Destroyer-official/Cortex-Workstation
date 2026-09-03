@@ -54,6 +54,7 @@ class WslDistro:
 
 
 def _fmt_bytes(n: int) -> str:
+    """_fmt_bytes."""
     size = float(n)
     for unit in ("B", "KB", "MB", "GB", "TB"):
         if size < 1024 or unit == "TB":
@@ -65,6 +66,7 @@ def _fmt_bytes(n: int) -> str:
 
 
 def _decode(raw: bytes | str | None) -> str:
+    """_decode."""
     if raw is None:
         return ""
     if isinstance(raw, str):
@@ -247,6 +249,7 @@ class WslCleaner:
 
     @staticmethod
     def _reg_str(key, name: str) -> str:
+        """_reg_str."""
         try:
             import winreg
             value, _ = winreg.QueryValueEx(key, name)
@@ -258,6 +261,7 @@ class WslCleaner:
 
     @staticmethod
     def _reg_int(key, name: str) -> int:
+        """_reg_int."""
         try:
             import winreg
             value, _ = winreg.QueryValueEx(key, name)

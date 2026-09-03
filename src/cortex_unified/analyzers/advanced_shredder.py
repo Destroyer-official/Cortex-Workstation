@@ -52,6 +52,7 @@ class AdvancedShredder:
     ]
 
     def __init__(self):
+        """__init__."""
         self.logger = logging.getLogger("advanced_shredder")
         """__init__."""
         """__init__."""

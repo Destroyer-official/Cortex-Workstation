@@ -30,6 +30,7 @@ class ReportsTab(BaseTab):
     """Tab for reports functionality."""
 
     def __init__(self, config, logger, safety_manager):
+        """__init__."""
         super().__init__(config, logger, safety_manager)
         self.reports_generator = ReportsGenerator(config)
         """__init__."""
@@ -202,24 +203,28 @@ class ReportsTab(BaseTab):
         QTimer.singleShot(100, self.refresh_reports_list)
         
     def _zoom_in(self):
+        """_zoom_in."""
         if hasattr(self, 'has_web_engine') and self.has_web_engine:
             self.web_view.setZoomFactor(self.web_view.zoomFactor() + 0.15)
         """_zoom_in."""
         """_zoom_in."""
             
     def _zoom_out(self):
+        """_zoom_out."""
         if hasattr(self, 'has_web_engine') and self.has_web_engine:
             self.web_view.setZoomFactor(max(0.2, self.web_view.zoomFactor() - 0.15))
         """_zoom_out."""
         """_zoom_out."""
             
     def _zoom_reset(self):
+        """_zoom_reset."""
         if hasattr(self, 'has_web_engine') and self.has_web_engine:
             self.web_view.setZoomFactor(1.0)
         """_zoom_reset."""
         """_zoom_reset."""
 
     def format_bytes(self, size):
+        """format_bytes."""
         for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
             if size < 1024.0:
                 return f"{size:.2f} {unit}"

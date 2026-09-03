@@ -25,6 +25,7 @@ class ResidualCleaner:
     ])
 
     def __init__(self):
+        """__init__."""
         self.logger = logging.getLogger("residual_cleaner")
         self._search_roots = [
             os.environ.get("APPDATA"),

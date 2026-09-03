@@ -14,29 +14,37 @@ except ImportError:
     HAS_PLOTLY = False
     # No-op stand-ins keep method bodies runnable without Plotly
     class go:
+        """go."""
         class Figure:
+            """Figure."""
             def __init__(self, *args, **kwargs):
+                """__init__."""
                 pass
                 """__init__."""
                 """__init__."""
             def add_trace(self, *args, **kwargs):
+                """add_trace."""
                 pass
                 """add_trace."""
                 """add_trace."""
             def update_layout(self, *args, **kwargs):
+                """update_layout."""
                 pass
                 """update_layout."""
             """Figure class."""
         """go class."""
         """go class."""
     class px:
+        """px."""
         @staticmethod
         def treemap(*args, **kwargs):
+            """treemap."""
             return go.Figure()
             """treemap."""
         """px class."""
         """px class."""
     def plot(*args, **kwargs):
+        """plot."""
         pass
         """plot."""
         """plot."""
@@ -179,6 +187,7 @@ class TreeMapGenerator:
         hover_texts = []
         
         def add_node(node: TreeMapNode, parent_id: str = ""):
+            """add_node."""
             node_id = f"{parent_id}/{node.name}" if parent_id else node.name
             
             ids.append(node_id)
@@ -198,6 +207,7 @@ class TreeMapGenerator:
         
         all_sizes = []
         def collect_sizes(nodes_list):
+            """collect_sizes."""
             for node in nodes_list:
                 all_sizes.append(node.size)
                 collect_sizes(node.children)

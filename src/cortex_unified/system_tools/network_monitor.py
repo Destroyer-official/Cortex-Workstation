@@ -93,6 +93,7 @@ class Connection:
 
 
 def _is_private(addr: str) -> bool:
+    """_is_private."""
     try:
         ip = ipaddress.ip_address(addr)
     except ValueError:

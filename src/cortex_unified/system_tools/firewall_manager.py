@@ -91,6 +91,7 @@ class FirewallManager:
 
     def _new_rule(self, action: str, direction: str, label: str,
                   program: str = "", remote_address: str = "") -> tuple[bool, str]:
+        """_new_rule."""
         if not _IS_WINDOWS:
             return False, "Firewall control is only available on Windows."
         if direction not in ("Inbound", "Outbound"):
@@ -157,6 +158,7 @@ class FirewallManager:
 
     @staticmethod
     def _parse_rules(out: str | None) -> list[FirewallRule]:
+        """_parse_rules."""
         if not out:
             return []
         import json
@@ -188,6 +190,7 @@ class FirewallManager:
 
     @staticmethod
     def _valid_address(addr: str) -> bool:
+        """_valid_address."""
         import ipaddress
         addr = (addr or "").strip()
         if not addr:
@@ -213,6 +216,7 @@ class FirewallManager:
         return "'" + str(value).replace("'", "''") + "'"
 
     def _run(self, script: str, want_output: bool = False):
+        """_run."""
         try:
             proc = _proc.run(
                 ["powershell", "-NoProfile", "-NonInteractive", "-Command", script],

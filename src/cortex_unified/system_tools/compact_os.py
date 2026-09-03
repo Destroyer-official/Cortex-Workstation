@@ -347,6 +347,7 @@ class CompactOSManager:
 
     @staticmethod
     def _parse_failure(out: Optional[str]) -> str:
+        """_parse_failure."""
         if not out:
             return "No output from compact."
         low = out.lower()
@@ -366,6 +367,7 @@ class CompactOSManager:
         timeout: int,
         cancel_event: "threading.Event | None" = None,
     ) -> Optional[str]:
+        """_run."""
         try:
             proc = _proc.run(
                 args, text=True, timeout=timeout,

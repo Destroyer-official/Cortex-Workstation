@@ -59,6 +59,7 @@ class PerformanceTuner:
 
     @staticmethod
     def _parse(out: str | None) -> list[PowerPlan]:
+        """_parse."""
         if not out:
             return []
         plans: list[PowerPlan] = []
@@ -94,6 +95,7 @@ class PerformanceTuner:
         return False, "Could not switch power plan (Administrator may be required)."
 
     def _run(self, args: list[str], want_returncode: bool = False):
+        """_run."""
         try:
             proc = _proc.run(args, text=True, timeout=20, creationflags=_NO_WINDOW)
             if want_returncode:

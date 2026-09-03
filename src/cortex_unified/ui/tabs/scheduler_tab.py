@@ -24,7 +24,9 @@ from cortex_unified.scheduler.scheduler import TaskScheduler
 from cortex_unified.scheduler.auto_clean_rules import AutoCleanRules
 
 class AddTaskDialog(QDialog):
+    """AddTaskDialog."""
     def __init__(self, parent=None):
+        """__init__."""
         super().__init__(parent)
         self.setWindowTitle("Schedule New Task")
         self.setMinimumWidth(350)
@@ -59,6 +61,7 @@ class SchedulerTab(BaseTab):
     """Tab for scheduler tab functionality."""
 
     def __init__(self, config, logger, safety_manager):
+        """__init__."""
         super().__init__(config, logger, safety_manager)
         self.task_scheduler = TaskScheduler(config)
         self.auto_rules = AutoCleanRules(config)
@@ -83,6 +86,7 @@ class SchedulerTab(BaseTab):
         scheduler_tab_widget.addTab(rules_tab, 'Auto-Clean Rules')
 
     def create_tasks_subtab(self) -> QWidget:
+        """create_tasks_subtab."""
         tab = QWidget()
         layout = QVBoxLayout(tab)
         
@@ -118,6 +122,7 @@ class SchedulerTab(BaseTab):
         """create_tasks_subtab."""
 
     def _refresh_tasks(self):
+        """_refresh_tasks."""
         tasks = self.task_scheduler.list_scheduled_tasks()
         self.tasks_table.setRowCount(len(tasks))
         
@@ -135,6 +140,7 @@ class SchedulerTab(BaseTab):
         """_refresh_tasks."""
 
     def _add_task(self):
+        """_add_task."""
         dialog = AddTaskDialog(self)
         if dialog.exec() == QDialog.Accepted:
             name = dialog.name_input.text().strip()
@@ -166,6 +172,7 @@ class SchedulerTab(BaseTab):
         """_add_task."""
 
     def _remove_task(self):
+        """_remove_task."""
         row = self.tasks_table.currentRow()
         if row < 0:
             QMessageBox.information(self, "Selection", "Select a task to remove.")
@@ -184,6 +191,7 @@ class SchedulerTab(BaseTab):
         """_remove_task."""
 
     def create_auto_clean_rules_subtab(self) -> QWidget:
+        """create_auto_clean_rules_subtab."""
         tab = QWidget()
         layout = QVBoxLayout(tab)
         
@@ -222,6 +230,7 @@ class SchedulerTab(BaseTab):
         """create_auto_clean_rules_subtab."""
 
     def _apply_rules(self):
+        """_apply_rules."""
         self.auto_rules.rules.clear()
         
         # Drive percentage

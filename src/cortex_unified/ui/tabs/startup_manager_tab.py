@@ -12,16 +12,19 @@ from .base_tab import BaseTab
 from cortex_unified.system_tools.startup_manager import StartupManager
 
 class StartupScanWorker(QThread):
+    """StartupScanWorker."""
     finished = Signal(list)
     error = Signal(str)
     
     def __init__(self, config):
+        """__init__."""
         super().__init__()
         self.manager = StartupManager(config)
         """__init__."""
         """__init__."""
         
     def run(self):
+        """run."""
         try:
             items = self.manager.list_startup_items()
             self.finished.emit(items)
@@ -35,6 +38,7 @@ class StartupManagerTab(BaseTab):
     """Tab for startup manager tab functionality."""
 
     def __init__(self, config, logger, safety_manager):
+        """__init__."""
         super().__init__(config, logger, safety_manager)
         self.manager = StartupManager(config)
         self.worker = None
@@ -76,11 +80,13 @@ class StartupManagerTab(BaseTab):
         layout.addWidget(self.startup_table)
 
     def _on_selection(self):
+        """_on_selection."""
         self.disable_startup_button.setEnabled(len(self.startup_table.selectedItems()) > 0)
         """_on_selection."""
         """_on_selection."""
 
     def refresh_startup_items(self):
+        """refresh_startup_items."""
         if self.worker and self.worker.isRunning():
             return
             
@@ -97,6 +103,7 @@ class StartupManagerTab(BaseTab):
         """refresh_startup_items."""
 
     def _on_scan_finished(self, items: List[Dict]):
+        """_on_scan_finished."""
         self.startup_progress_bar.setVisible(False)
         self.refresh_startup_button.setEnabled(True)
         
@@ -110,6 +117,7 @@ class StartupManagerTab(BaseTab):
         """_on_scan_finished."""
 
     def _on_scan_error(self, err_msg):
+        """_on_scan_error."""
         self.startup_progress_bar.setVisible(False)
         self.refresh_startup_button.setEnabled(True)
         self.logger.error(f"Startup manager scan failed: {err_msg}")
@@ -118,6 +126,7 @@ class StartupManagerTab(BaseTab):
         """_on_scan_error."""
 
     def disable_selected_startup_items(self):
+        """disable_selected_startup_items."""
         row = self.startup_table.currentRow()
         if row < 0: return
         

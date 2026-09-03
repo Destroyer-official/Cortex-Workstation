@@ -57,6 +57,7 @@ class PluginManifest:
 
     @classmethod
     def from_dict(cls, data: dict, plugin_dir: str) -> PluginManifest:
+        """from_dict."""
         missing = REQUIRED_MANIFEST_KEYS - data.keys()
         if missing:
             raise ValueError(f"Manifest missing required keys: {missing}")
@@ -92,6 +93,7 @@ class PluginManifest:
 # ---------------------------------------------------------------------------
 
 class PluginState(Enum):
+    """PluginState."""
     DISCOVERED = auto()
     LOADING = auto()
     ACTIVE = auto()
@@ -116,6 +118,7 @@ class PluginLifecycle:
     __slots__ = ("plugin_id", "state", "error_message", "load_time", "last_error")
 
     def __init__(self, plugin_id: str):
+        """__init__."""
         self.plugin_id = plugin_id
         self.state = PluginState.DISCOVERED
         self.error_message = ""
@@ -124,6 +127,7 @@ class PluginLifecycle:
         """__init__."""
 
     def transition_to(self, new_state: PluginState, error: str = "") -> None:
+        """transition_to."""
         valid = _VALID_TRANSITIONS.get(self.state, [])
         if new_state not in valid:
             raise ValueError(
@@ -136,10 +140,12 @@ class PluginLifecycle:
 
     @property
     def is_active(self) -> bool:
+        """is_active."""
         return self.state is PluginState.ACTIVE
         """is_active."""
 
     def __repr__(self) -> str:
+        """__repr__."""
         return f"<PluginLifecycle {self.plugin_id} state={self.state.name}>"
         """__repr__."""
 
@@ -152,6 +158,7 @@ class ScopedConfig:
     """Per-plugin config namespace isolated to plugin's config directory."""
 
     def __init__(self, plugin_id: str, config_dir: Path):
+        """__init__."""
         self._path = config_dir / f"{plugin_id}.json"
         self._data: dict[str, Any] = {}
         if self._path.exists():
@@ -162,10 +169,12 @@ class ScopedConfig:
         """__init__."""
 
     def get(self, key: str, default: Any = None) -> Any:
+        """get."""
         return self._data.get(key, default)
         """get."""
 
     def set(self, key: str, value: Any) -> None:
+        """set."""
         self._data[key] = value
         self._path.parent.mkdir(parents=True, exist_ok=True)
         self._path.write_text(
@@ -175,6 +184,7 @@ class ScopedConfig:
         """set."""
 
     def all(self) -> dict[str, Any]:
+        """all."""
         return dict(self._data)
         """all."""
 
@@ -183,19 +193,23 @@ class EventBridge:
     """Scoped publish/subscribe for plugin ↔ host communication."""
 
     def __init__(self, event_bus: EventBus, plugin_id: str):
+        """__init__."""
         self._bus = event_bus
         self._plugin_id = plugin_id
         """__init__."""
 
     def emit(self, event: str, data: Any = None) -> None:
+        """emit."""
         self._bus.emit(f"{self._plugin_id}.{event}", data)
         """emit."""
 
     def subscribe(self, event: str, callback: Callable) -> None:
+        """subscribe."""
         self._bus.subscribe(f"*.{event}", callback)
         """subscribe."""
 
     def unsubscribe(self, event: str, callback: Callable) -> None:
+        """unsubscribe."""
         self._bus.unsubscribe(f"*.{event}", callback)
         """unsubscribe."""
 
@@ -204,11 +218,13 @@ class EventBus:
     """Simple thread-safe publish/subscribe event bus."""
 
     def __init__(self):
+        """__init__."""
         self._lock = threading.Lock()
         self._subscribers: dict[str, list[Callable]] = {}
         """__init__."""
 
     def emit(self, event: str, data: Any = None) -> None:
+        """emit."""
         with self._lock:
             callbacks = list(self._subscribers.get(event, []))
             wildcards = list(self._subscribers.get("*", []))
@@ -220,11 +236,13 @@ class EventBus:
         """emit."""
 
     def subscribe(self, pattern: str, callback: Callable) -> None:
+        """subscribe."""
         with self._lock:
             self._subscribers.setdefault(pattern, []).append(callback)
         """subscribe."""
 
     def unsubscribe(self, pattern: str, callback: Callable) -> None:
+        """unsubscribe."""
         with self._lock:
             subs = self._subscribers.get(pattern, [])
             try:
@@ -242,6 +260,7 @@ class PluginContext:
     """
 
     def __init__(self, plugin_id: str, host: PluginHost):
+        """__init__."""
         self._plugin_id = plugin_id
         self._host = host
         self._config_cache = ScopedConfig(plugin_id, host.config_dir)
@@ -249,40 +268,49 @@ class PluginContext:
 
     @property
     def logger(self) -> logging.Logger:
+        """logger."""
         return logging.getLogger(f"nexus.plugin.{self._plugin_id}")
         """logger."""
 
     @property
     def config(self) -> ScopedConfig:
+        """config."""
         return self._config_cache
         """config."""
 
     @property
     def events(self) -> EventBridge:
+        """events."""
         return EventBridge(self._host.event_bus, self._plugin_id)
         """events."""
 
     def get_current_path(self) -> str:
+        """get_current_path."""
         return self._host.get_current_path()
         """get_current_path."""
 
     def get_selected_files(self) -> list[str]:
+        """get_selected_files."""
         return self._host.get_selected_files()
         """get_selected_files."""
 
     def navigate_to(self, path: str) -> None:
+        """navigate_to."""
         self._host.navigate_to(path)
         """navigate_to."""
 
     def refresh(self) -> None:
+        """refresh."""
         self._host.refresh_view()
         """refresh."""
 
     def show_message(self, text: str, timeout_ms: int = 3000) -> None:
+        """show_message."""
         self._host.show_status_message(text, timeout_ms)
         """show_message."""
 
     def add_status_widget(self, widget: QWidget) -> None:
+        """add_status_widget."""
         self._host.add_status_widget(widget)
         """add_status_widget."""
 
@@ -344,12 +372,14 @@ class APIAdapter:
     """
 
     def __init__(self, plugin: NexusPlugin, manifest: PluginManifest):
+        """__init__."""
         self._plugin = plugin
         self._manifest = manifest
         self._validate()
         """__init__."""
 
     def _validate(self) -> None:
+        """_validate."""
         if self._manifest.api_version not in SUPPORTED_API_VERSIONS:
             raise ValueError(
                 f"Plugin {self._manifest.id} requires api_version "
@@ -360,6 +390,7 @@ class APIAdapter:
 
     @property
     def plugin(self) -> NexusPlugin:
+        """plugin."""
         return self._plugin
         """plugin."""
 
@@ -375,12 +406,14 @@ class HotReloadWatcher(QFileSystemWatcher):
     file_added = Signal(str)     # plugin_id
 
     def __init__(self, parent: QObject | None = None):
+        """__init__."""
         super().__init__(parent)
         self._watched: dict[str, Path] = {}
         self.directoryChanged.connect(self._on_dir_change)
         """__init__."""
 
     def watch_plugin(self, plugin_id: str, plugin_dir: Path) -> None:
+        """watch_plugin."""
         dir_str = str(plugin_dir)
         if dir_str not in self._watched:
             self.addPath(dir_str)
@@ -388,12 +421,14 @@ class HotReloadWatcher(QFileSystemWatcher):
         """watch_plugin."""
 
     def unwatch_plugin(self, plugin_id: str) -> None:
+        """unwatch_plugin."""
         dir_str = self._watched.pop(plugin_id, None)
         if dir_str:
             self.removePath(str(dir_str))
         """unwatch_plugin."""
 
     def _on_dir_change(self, path: str) -> None:
+        """_on_dir_change."""
         for pid, pdir in self._watched.items():
             if str(pdir) == path:
                 self.file_changed.emit(pid)
@@ -486,6 +521,7 @@ class PluginHost(QObject):
         config_dir: str = "",
         parent: QObject | None = None,
     ):
+        """__init__."""
         super().__init__(parent)
         self._plugins_dir = Path(plugins_dir or os.path.join(Path.home(), ".nexus", "plugins"))
         self._config_dir = Path(config_dir or os.path.join(Path.home(), ".nexus", "config"))
@@ -526,6 +562,7 @@ class PluginHost(QObject):
         show_status_message: Callable[[str, int], None] | None = None,
         add_status_widget: Callable[[QWidget], None] | None = None,
     ) -> None:
+        """set_host_callbacks."""
         if get_current_path is not None:
             self._get_current_path_fn = get_current_path
         if get_selected_files is not None:
@@ -541,26 +578,32 @@ class PluginHost(QObject):
         """set_host_callbacks."""
 
     def get_current_path(self) -> str:
+        """get_current_path."""
         return self._get_current_path_fn()
         """get_current_path."""
 
     def get_selected_files(self) -> list[str]:
+        """get_selected_files."""
         return self._get_selected_files_fn()
         """get_selected_files."""
 
     def navigate_to(self, path: str) -> None:
+        """navigate_to."""
         self._navigate_to_fn(path)
         """navigate_to."""
 
     def refresh_view(self) -> None:
+        """refresh_view."""
         self._refresh_view_fn()
         """refresh_view."""
 
     def show_status_message(self, text: str, timeout_ms: int = 3000) -> None:
+        """show_status_message."""
         self._show_status_fn(text, timeout_ms)
         """show_status_message."""
 
     def add_status_widget(self, widget: QWidget) -> None:
+        """add_status_widget."""
         self._add_status_widget_fn(widget)
         """add_status_widget."""
 
@@ -568,21 +611,25 @@ class PluginHost(QObject):
 
     @property
     def plugins_dir(self) -> Path:
+        """plugins_dir."""
         return self._plugins_dir
         """plugins_dir."""
 
     @property
     def config_dir(self) -> Path:
+        """config_dir."""
         return self._config_dir
         """config_dir."""
 
     @property
     def loaded_plugins(self) -> MappingProxyType[str, NexusPlugin]:
+        """loaded_plugins."""
         return MappingProxyType(self._plugins)
         """loaded_plugins."""
 
     @property
     def lifecycles(self) -> dict[str, PluginLifecycle]:
+        """lifecycles."""
         return dict(self._lifecycles)
         """lifecycles."""
 
@@ -796,6 +843,7 @@ class PluginHost(QObject):
         return True
 
     def unload_all(self) -> None:
+        """unload_all."""
         for plugin_id in list(self._plugins):
             self.unload_plugin(plugin_id)
         """unload_all."""
@@ -864,20 +912,24 @@ class PluginHost(QObject):
     # -- public aggregation APIs -----------------------------------------------
 
     def get_plugin(self, plugin_id: str) -> NexusPlugin | None:
+        """get_plugin."""
         return self._plugins.get(plugin_id)
         """get_plugin."""
 
     def get_context(self, plugin_id: str) -> PluginContext | None:
+        """get_context."""
         return self._contexts.get(plugin_id)
         """get_context."""
 
     def get_all_plugins(self) -> list[NexusPlugin]:
+        """get_all_plugins."""
         return list(self._plugins.values())
         """get_all_plugins."""
 
     def get_all_context_menu_actions(
         self, paths: list[str]
     ) -> list[tuple[str, Callable[[], None]]]:
+        """get_all_context_menu_actions."""
         actions: list[tuple[str, Callable[[], None]]] = []
         for plugin_id, instance in self._plugins.items():
             lifecycle = self._lifecycles.get(plugin_id)
@@ -891,6 +943,7 @@ class PluginHost(QObject):
         """get_all_context_menu_actions."""
 
     def get_all_toolbar_actions(self) -> list[tuple[str, Callable[[], None]]]:
+        """get_all_toolbar_actions."""
         actions: list[tuple[str, Callable[[], None]]] = []
         for plugin_id, instance in self._plugins.items():
             lifecycle = self._lifecycles.get(plugin_id)
@@ -904,6 +957,7 @@ class PluginHost(QObject):
         """get_all_toolbar_actions."""
 
     def notify_file_open(self, path: str) -> bool:
+        """notify_file_open."""
         for plugin_id, instance in self._plugins.items():
             lifecycle = self._lifecycles.get(plugin_id)
             if lifecycle and not lifecycle.is_active:
@@ -917,6 +971,7 @@ class PluginHost(QObject):
         """notify_file_open."""
 
     def get_preview_widget(self, path: str) -> QWidget | None:
+        """get_preview_widget."""
         for plugin_id, instance in self._plugins.items():
             lifecycle = self._lifecycles.get(plugin_id)
             if lifecycle and not lifecycle.is_active:
@@ -931,6 +986,7 @@ class PluginHost(QObject):
         """get_preview_widget."""
 
     def filter_search_results(self, query: str, results: list) -> list:
+        """filter_search_results."""
         for plugin_id, instance in self._plugins.items():
             lifecycle = self._lifecycles.get(plugin_id)
             if lifecycle and not lifecycle.is_active:

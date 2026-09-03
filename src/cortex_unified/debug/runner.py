@@ -34,36 +34,42 @@ USE_COLOR = sys.stdout.isatty() or os.environ.get("FORCE_COLOR") == "1"
 
 
 def _col(text: str, code: str) -> str:
+    """_col."""
     return f"\033[{code}m{text}\033[0m" if USE_COLOR else text
     """_col."""
     """_col."""
 
 
 def green(text: str) -> str:
+    """green."""
     return _col(text, "32")
     """green."""
     """green."""
 
 
 def red(text: str) -> str:
+    """red."""
     return _col(text, "31")
     """red."""
     """red."""
 
 
 def yellow(text: str) -> str:
+    """yellow."""
     return _col(text, "33")
     """yellow."""
     """yellow."""
 
 
 def cyan(text: str) -> str:
+    """cyan."""
     return _col(text, "36")
     """cyan."""
     """cyan."""
 
 
 def bold(text: str) -> str:
+    """bold."""
     return _col(text, "1")
     """bold."""
     """bold."""
@@ -71,6 +77,7 @@ def bold(text: str) -> str:
 
 @dataclass
 class DiagnosticItem:
+    """DiagnosticItem."""
     name: str
     status: str  # PASS, FAIL, SKIP, WARN
     message: str = ""
@@ -82,6 +89,7 @@ class DiagnosticItem:
 
 @dataclass
 class DiagnosticSection:
+    """DiagnosticSection."""
     title: str
     items: List[DiagnosticItem] = field(default_factory=list)
     passed: int = 0
@@ -91,12 +99,14 @@ class DiagnosticSection:
 
     @property
     def total(self) -> int:
+        """total."""
         return len(self.items)
         """total."""
         """total."""
 
     @property
     def is_success(self) -> bool:
+        """is_success."""
         return self.failed == 0
         """is_success."""
     """DiagnosticSection class."""
@@ -105,6 +115,7 @@ class DiagnosticSection:
 
 @dataclass
 class DiagnosticReport:
+    """DiagnosticReport."""
     timestamp: str
     total_duration_sec: float
     sections: List[DiagnosticSection] = field(default_factory=list)
@@ -115,6 +126,7 @@ class DiagnosticReport:
     is_production_ready: bool = True
 
     def to_dict(self) -> Dict[str, Any]:
+        """to_dict."""
         return {
             "timestamp": self.timestamp,
             "total_duration_sec": self.total_duration_sec,
@@ -142,7 +154,9 @@ class DiagnosticReport:
 
 
 class DiagnosticRunner:
+    """DiagnosticRunner."""
     def __init__(self, verbose: bool = False):
+        """__init__."""
         self.verbose = verbose
         self.report = DiagnosticReport(
             timestamp=time.strftime("%Y-%m-%d %H:%M:%S"),
@@ -154,6 +168,7 @@ class DiagnosticRunner:
     def run_section(
         self, title: str, fn: Callable[[DiagnosticSection], None]
     ) -> DiagnosticSection:
+        """run_section."""
         sec = DiagnosticSection(title=title)
         t0 = time.perf_counter()
         try:
@@ -682,6 +697,7 @@ class DiagnosticRunner:
             sec.failed += 1
 
     def run_all(self) -> DiagnosticReport:
+        """run_all."""
         t_start = time.perf_counter()
 
         # Offscreen Qt platform for headless execution
@@ -756,6 +772,7 @@ class DiagnosticRunner:
         """run_all."""
 
     def _print_section_summary(self, sec: DiagnosticSection) -> None:
+        """_print_section_summary."""
         if sec.is_success:
             print(
                 f"  {green('✓')} {sec.title}: All {sec.passed}/{sec.total} checks passed ({sec.duration_ms:.1f}ms)"
@@ -773,6 +790,7 @@ class DiagnosticRunner:
 
 
 def run_all_diagnostics(verbose: bool = False) -> DiagnosticReport:
+    """run_all_diagnostics."""
     runner = DiagnosticRunner(verbose=verbose)
     return runner.run_all()
     """run_all_diagnostics."""
@@ -780,6 +798,7 @@ def run_all_diagnostics(verbose: bool = False) -> DiagnosticReport:
 
 
 def main() -> int:
+    """main."""
     parser = argparse.ArgumentParser(
         description="Cortex Cleaner Production Diagnostics"
     )

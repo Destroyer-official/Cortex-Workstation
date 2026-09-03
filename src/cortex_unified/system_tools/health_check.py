@@ -88,6 +88,7 @@ class HealthChecker:
 
     @staticmethod
     def _score(checks: list[HealthCheck]) -> tuple[int, str]:
+        """_score."""
         score = 100
         for c in checks:
             score -= _DEDUCT.get(c.severity, 0)
@@ -110,6 +111,7 @@ class HealthChecker:
 
     @staticmethod
     def _check_disk_space() -> HealthCheck:
+        """_check_disk_space."""
         import shutil
         root = str(Path.home().anchor or (os.environ.get("SystemDrive", "C:") + "\\")) if _IS_WINDOWS else "/"
         total, used, free = shutil.disk_usage(root)
@@ -129,6 +131,7 @@ class HealthChecker:
 
     @staticmethod
     def _check_memory() -> HealthCheck:
+        """_check_memory."""
         try:
             import psutil
         except ImportError:
@@ -145,6 +148,7 @@ class HealthChecker:
 
     @staticmethod
     def _check_disk_health() -> HealthCheck | None:
+        """_check_disk_health."""
         if not _IS_WINDOWS:
             return None
         from cortex_unified.system_tools.disk_health import DiskHealthMonitor
@@ -166,6 +170,7 @@ class HealthChecker:
 
     @staticmethod
     def _check_boot() -> HealthCheck | None:
+        """_check_boot."""
         if not _IS_WINDOWS:
             return None
         from cortex_unified.system_tools.boot_performance import BootPerformanceMonitor
@@ -190,6 +195,7 @@ class HealthChecker:
 
     @staticmethod
     def _check_security() -> HealthCheck | None:
+        """_check_security."""
         if not _IS_WINDOWS:
             return None
         from cortex_unified.system_tools.defender import WindowsDefender
@@ -212,6 +218,7 @@ class HealthChecker:
 
     @staticmethod
     def _check_updates() -> HealthCheck | None:
+        """_check_updates."""
         if not _IS_WINDOWS:
             return None
         from cortex_unified.system_tools.windows_update import WindowsUpdate

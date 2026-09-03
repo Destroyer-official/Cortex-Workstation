@@ -118,6 +118,7 @@ class MftSlackScrubber:
             v_str = v.strip()
 
             def _parse_int(s: str) -> int:
+                """_parse_int."""
                 m = re.search(r"(\d+)", s.replace(",", "").replace(".", ""))
                 return int(m.group(1)) if m else 0
                 """_parse_int."""

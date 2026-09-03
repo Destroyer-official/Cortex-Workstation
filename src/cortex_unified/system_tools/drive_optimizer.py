@@ -89,6 +89,7 @@ class DriveOptimizer:
 
     @staticmethod
     def _recommend(kind: StorageKind) -> tuple[OptimizeOp, str]:
+        """_recommend."""
         if kind is StorageKind.HDD:
             return OptimizeOp.DEFRAG, "Rotational drive: defragmentation is appropriate."
         if kind in (StorageKind.SSD, StorageKind.NVME):
@@ -159,6 +160,7 @@ class DriveOptimizer:
 
     def _run_ps(self, script: str, timeout: int,
                cancel_event: "threading.Event | None" = None) -> str | None:
+        """_run_ps."""
         try:
             proc = _proc.run(
                 ["powershell", "-NoProfile", "-NonInteractive", "-Command", script],

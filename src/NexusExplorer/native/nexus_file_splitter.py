@@ -18,6 +18,7 @@ from typing import Callable, List, Optional, Tuple
 
 
 class SplitPreset(Enum):
+    """SplitPreset."""
     CUSTOM = "Custom Size"
     MB_10 = "10 MB"
     MB_50 = "50 MB"
@@ -40,6 +41,7 @@ PRESET_BYTES = {
 
 @dataclass
 class SplitManifest:
+    """SplitManifest."""
     original_filename: str
     original_size: int
     chunk_size: int
@@ -52,6 +54,7 @@ class SplitManifest:
 
 @dataclass
 class SplitResult:
+    """SplitResult."""
     success: bool
     parts_created: List[str]
     manifest_path: str
@@ -62,6 +65,7 @@ class SplitResult:
 
 @dataclass
 class JoinResult:
+    """JoinResult."""
     success: bool
     output_path: str
     total_bytes: int

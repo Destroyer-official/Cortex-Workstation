@@ -10,6 +10,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "native"))
 
 
 def run_smoke_test() -> int:
+    """run_smoke_test."""
     from PySide6.QtCore import QEventLoop, QTimer
     from PySide6.QtWidgets import QApplication
 
@@ -33,6 +34,7 @@ def run_smoke_test() -> int:
     results = []
 
     def test(name, fn):
+        """test."""
         try:
             fn()
             results.append((name, "PASS"))

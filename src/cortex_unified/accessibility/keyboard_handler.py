@@ -69,6 +69,7 @@ class KeyboardHandler(QObject):
         self.focusable_widgets = []
         
         def find_widgets(parent):
+            """find_widgets."""
             for child in parent.findChildren(QWidget):
                 if (child.focusPolicy() != Qt.NoFocus and 
                     child.isVisible() and 
@@ -196,6 +197,7 @@ class KeyboardHandler(QObject):
         self.logger.info("Select all shortcut triggered")
 
     def _show_help(self):
+        """_show_help."""
         self.logger.info("Help shortcut triggered")
         if self.widget and hasattr(self.widget, "_select"):
             self.widget._select("report")
@@ -283,6 +285,7 @@ class KeyboardHandler(QObject):
             self._setup_tab_order()
     
     def remove_widget_from_navigation(self, widget: Any) -> None:
+        """remove_widget_from_navigation."""
         if widget in self.focusable_widgets:
             self.focusable_widgets.remove(widget)
             self._setup_tab_order()

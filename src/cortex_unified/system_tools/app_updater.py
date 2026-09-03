@@ -151,6 +151,7 @@ class AppUpdater:
     # -- helper -------------------------------------------------------------
 
     def _run(self, cmd: list[str], timeout: int) -> str | None:
+        """_run."""
         try:
             # upgrade_all() can run for a long time updating many packages;
             # poll the timeout rather than block uninterruptibly, and kill the

@@ -71,6 +71,7 @@ def normalize(mac: str) -> str:
 
 
 def _first_octet(mac: str) -> int | None:
+    """_first_octet."""
     norm = normalize(mac)
     if not norm:
         return None

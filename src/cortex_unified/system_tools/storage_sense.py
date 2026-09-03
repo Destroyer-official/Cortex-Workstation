@@ -45,6 +45,7 @@ class StorageSense:
         return self._interpret(self._read_values())
 
     def _read_values(self) -> dict[str, int]:
+        """_read_values."""
         values: dict[str, int] = {}
         try:
             import winreg
@@ -89,6 +90,7 @@ class StorageSense:
     # -- write --------------------------------------------------------------
 
     def _write(self, name: str, value: int) -> bool:
+        """_write."""
         if not _IS_WINDOWS:
             return False
         try:

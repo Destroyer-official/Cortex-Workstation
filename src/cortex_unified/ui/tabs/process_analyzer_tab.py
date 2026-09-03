@@ -12,16 +12,19 @@ from .base_tab import BaseTab
 from cortex_unified.system_tools.process_analyzer import ProcessAnalyzer
 
 class ProcessAnalyzerWorker(QThread):
+    """ProcessAnalyzerWorker."""
     finished = Signal(list, list) # processes, services
     error = Signal(str)
     
     def __init__(self, config):
+        """__init__."""
         super().__init__()
         self.analyzer = ProcessAnalyzer(config)
         """__init__."""
         """__init__."""
         
     def run(self):
+        """run."""
         try:
             processes = self.analyzer.list_processes()
             services = self.analyzer.list_services()
@@ -37,6 +40,7 @@ class ProcessAnalyzerTab(BaseTab):
     """Tab for process analyzer tab functionality."""
 
     def __init__(self, config, logger, safety_manager):
+        """__init__."""
         super().__init__(config, logger, safety_manager)
         self.worker = None
         """__init__."""
@@ -89,6 +93,7 @@ class ProcessAnalyzerTab(BaseTab):
         layout.addWidget(splitter)
 
     def refresh_processes(self):
+        """refresh_processes."""
         if self.worker and self.worker.isRunning():
             return
             
@@ -105,6 +110,7 @@ class ProcessAnalyzerTab(BaseTab):
         """refresh_processes."""
 
     def _on_scan_finished(self, processes: List[Dict], services: List[Dict]):
+        """_on_scan_finished."""
         self.processes_progress_bar.setVisible(False)
         self.refresh_processes_button.setEnabled(True)
         
@@ -126,6 +132,7 @@ class ProcessAnalyzerTab(BaseTab):
         """_on_scan_finished."""
             
     def _on_scan_error(self, err_msg):
+        """_on_scan_error."""
         self.processes_progress_bar.setVisible(False)
         self.refresh_processes_button.setEnabled(True)
         self.logger.error(f"Process analysis failed: {err_msg}")

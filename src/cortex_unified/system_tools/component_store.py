@@ -226,6 +226,7 @@ class ComponentStore:
 
         def _bytes_after(label: str) -> int:
             # e.g. "Actual Size of Component Store : 7.32 GB"
+            """_bytes_after."""
             m = re.search(
                 rf"{label}\s*:\s*([\d.,]+)\s*(bytes|kb|mb|gb|tb)", low)
             if not m:
@@ -599,6 +600,7 @@ class ComponentStore:
 
     def _run_dism(self, args: list[str], timeout: int,
                  cancel_event: "threading.Event | None" = None) -> str | None:
+        """_run_dism."""
         try:
             # DISM can run for 10-30 minutes; poll timeout/cancel_event instead
             # of blocking uninterruptibly, and kill the whole tree on either -
@@ -655,6 +657,7 @@ class ComponentStore:
 
     @staticmethod
     def _age_days(path: Path) -> float | None:
+        """_age_days."""
         try:
             return max(0.0, (time.time() - path.stat().st_mtime) / 86400.0)
         except OSError:

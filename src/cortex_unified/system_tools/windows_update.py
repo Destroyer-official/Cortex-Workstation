@@ -67,6 +67,7 @@ class WindowsUpdate:
 
     @staticmethod
     def _read_result_time(sub: str) -> str:
+        """_read_result_time."""
         try:
             import winreg
             with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, _RESULTS_KEY + "\\" + sub) as key:
@@ -97,6 +98,7 @@ class WindowsUpdate:
 
     @staticmethod
     def _parse_pending(out: str | None) -> list[PendingUpdate]:
+        """_parse_pending."""
         if not out:
             return []
         try:
@@ -107,6 +109,7 @@ class WindowsUpdate:
             data = [data]
 
         def _int(v):
+            """_int."""
             try:
                 return int(v) if v is not None else 0
             except (ValueError, TypeError):
@@ -149,6 +152,7 @@ class WindowsUpdate:
 
     @staticmethod
     def _parse_history(out: str | None) -> list[dict[str, Any]]:
+        """_parse_history."""
         if not out:
             return []
         try:
@@ -179,6 +183,7 @@ class WindowsUpdate:
         """_parse_history."""
 
     def _run(self, script: str, timeout: int) -> str | None:
+        """_run."""
         try:
             proc = _proc.run(
                 ["powershell", "-NoProfile", "-NonInteractive", "-Command", script],

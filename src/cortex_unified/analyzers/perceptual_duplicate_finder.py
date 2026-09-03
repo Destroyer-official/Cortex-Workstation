@@ -86,6 +86,7 @@ _AVG_SIZE = 64        # 64x64 -> 64 mean bits (aHash over 4096 px)
 
 
 def _validate_pil() -> None:
+    """_validate_pil."""
     if not HAS_PIL:
         raise ImportError(
             "Perceptual image duplicate detection requires Pillow "
@@ -320,6 +321,7 @@ class PerceptualDuplicateFinder:
         require_all_kinds: bool = False,
         config: Config | None = None,
     ) -> None:
+        """__init__."""
         if not HAS_PIL:
             raise ImportError("Pillow is required for perceptual duplicate detection")
         if isinstance(root_path, (list, tuple)):
@@ -348,6 +350,7 @@ class PerceptualDuplicateFinder:
     # ---------------------------------------------------------------- helpers
 
     def _should_exclude(self, path: Path) -> bool:
+        """_should_exclude."""
         if path.name in self.exclude_dirs:
             return True
         s = str(path)
@@ -359,6 +362,7 @@ class PerceptualDuplicateFinder:
         """_should_exclude."""
 
     def _is_image(self, path: Path) -> bool:
+        """_is_image."""
         return path.suffix.lower() in _RASTER_SUFFIXES
         """_is_image."""
         """_is_image."""
@@ -409,6 +413,7 @@ class PerceptualDuplicateFinder:
         hashes: Dict[Path, Dict[str, int]] = {}
 
         def _hash_one(p: Path) -> Tuple[Path, Optional[Dict[str, int]]]:
+            """_hash_one."""
             try:
                 return p, {kind: _HASHERS[kind](p) for kind in self.kinds}
             except Exception:  # noqa: BLE001
@@ -461,6 +466,7 @@ class PerceptualDuplicateFinder:
         parent: Dict[Path, Path] = {p: p for p in hashes}
 
         def _find(x: Path) -> Path:
+            """_find."""
             while parent[x] != x:
                 parent[x] = parent[parent[x]]
                 x = parent[x]
@@ -469,6 +475,7 @@ class PerceptualDuplicateFinder:
             """_find."""
 
         def _union(a: Path, b: Path) -> None:
+            """_union."""
             ra, rb = _find(a), _find(b)
             if ra != rb:
                 parent[rb] = ra

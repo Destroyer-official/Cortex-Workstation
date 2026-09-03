@@ -148,6 +148,7 @@ def classify_public_ip(value: str | None) -> str:
 
 
 def _local_name(tag: str) -> str:
+    """_local_name."""
     return tag.rsplit("}", 1)[-1]
     """_local_name."""
     """_local_name."""
@@ -176,6 +177,7 @@ def _safe_xml(data: bytes) -> ET.Element:
 
 
 def _child_text(root: ET.Element, name: str) -> str:
+    """_child_text."""
     for element in root.iter():
         if _local_name(element.tag) == name:
             return (element.text or "").strip()
@@ -210,6 +212,7 @@ def _is_trusted_url(
 
 
 def _parse_headers(payload: bytes) -> dict[str, str]:
+    """_parse_headers."""
     text = payload.decode("iso-8859-1", errors="replace")
     headers: dict[str, str] = {}
     for line in text.splitlines()[1:]:
@@ -222,6 +225,7 @@ def _parse_headers(payload: bytes) -> dict[str, str]:
 
 
 def _bounded_int(value: str, minimum: int, maximum: int) -> int:
+    """_bounded_int."""
     try:
         parsed = int(value)
     except (TypeError, ValueError):
@@ -326,12 +330,14 @@ class WanAuditor:
 
     @staticmethod
     def _cancelled(cancel_event: threading.Event | None) -> bool:
+        """_cancelled."""
         return cancel_event is not None and cancel_event.is_set()
         """_cancelled."""
         """_cancelled."""
 
     @staticmethod
     def _progress(progress: ProgressFn | None, message: str) -> None:
+        """_progress."""
         if progress is not None:
             progress(message)
         """_progress."""
@@ -414,6 +420,7 @@ class WanAuditor:
         location: str,
         networks: Iterable[ipaddress.IPv4Network],
     ) -> tuple[str, str]:
+        """_load_igd."""
         trusted_networks = tuple(networks)
         if not _is_trusted_url(location, trusted_networks):
             raise ValueError("untrusted IGD location")
@@ -452,6 +459,7 @@ class WanAuditor:
         cancel_event: threading.Event | None,
         progress: ProgressFn | None,
     ) -> None:
+        """_read_soap_status."""
         if not _is_trusted_url(control_url, networks):
             raise ValueError("untrusted SOAP target")
         self._progress(progress, "Reading the IGD-reported external address")
@@ -506,6 +514,7 @@ class WanAuditor:
         arguments: Mapping[str, str] | None = None,
     ) -> ET.Element:
         # Only these two read-only actions are intentionally reachable.
+        """_soap."""
         if action not in {"GetExternalIPAddress",
                           "GetGenericPortMappingEntry"}:
             raise ValueError("unsupported SOAP action")
@@ -546,6 +555,7 @@ class WanAuditor:
 
     @staticmethod
     def _mapping_from_xml(index: int, root: ET.Element) -> PortMapping:
+        """_mapping_from_xml."""
         protocol = _child_text(root, "NewProtocol").upper()
         if protocol not in {"TCP", "UDP"}:
             protocol = "UNKNOWN"
@@ -691,6 +701,7 @@ class _NoMoreMappings(Exception):
 
 
 def _xml_escape(value: str) -> str:
+    """_xml_escape."""
     return (value.replace("&", "&amp;").replace("<", "&lt;")
             .replace(">", "&gt;").replace('"', "&quot;")
             .replace("'", "&apos;"))

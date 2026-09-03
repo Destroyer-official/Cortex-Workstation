@@ -22,6 +22,7 @@ from typing import Dict, List, Optional, Tuple
 
 
 class FileAttributeFlags(Flag):
+    """FileAttributeFlags."""
     READONLY = 0x00000001
     HIDDEN = 0x00000002
     SYSTEM = 0x00000004
@@ -34,6 +35,7 @@ class FileAttributeFlags(Flag):
 
 @dataclass
 class TimestampInfo:
+    """TimestampInfo."""
     path: str
     filename: str
     created_time: float
@@ -49,6 +51,7 @@ class TimestampInfo:
 
 @dataclass
 class TimestampUpdateResult:
+    """TimestampUpdateResult."""
     path: str
     success: bool
     error: Optional[str] = None
@@ -101,6 +104,7 @@ class TimestampTouchEngine:
             return TimestampUpdateResult(str(p), False, "File does not exist")
 
         def _to_timestamp(val: Optional[float | datetime.datetime]) -> Optional[float]:
+            """_to_timestamp."""
             if val is None:
                 return None
             if isinstance(val, datetime.datetime):
@@ -160,6 +164,7 @@ class TimestampTouchEngine:
 
         try:
             def _to_filetime(ts: Optional[float]) -> Optional[ctypes.c_uint64]:
+                """_to_filetime."""
                 if ts is None:
                     return None
                 # Windows FILETIME is 100-nanosecond intervals since Jan 1, 1601 UTC

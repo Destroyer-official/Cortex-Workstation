@@ -96,6 +96,7 @@ def _build_band_edges() -> List[Tuple[int, int]]:
     # Map Hz -> FFT bin: bin = hz * N / sr  (N=4096, sr=11025)
     # 33 bands → 32 subfingerprint bits (16 intra + 16 inter)
     # Use exponential spacing: f_i = 300 * (3000/300)**(i/32)
+    """_build_band_edges."""
     edges: List[Tuple[int, int]] = []
     low, high = 300.0, 3000.0
     # 33 bands need 34 edges; last edge is high+epsilon
@@ -445,6 +446,7 @@ def compute_audio_fingerprint(path: Path | str) -> List[int]:
 
 
 def _hamming32(a: int, b: int) -> int:
+    """_hamming32."""
     return bin(a ^ b).count("1")
     """_hamming32."""
     """_hamming32."""
@@ -518,6 +520,7 @@ class AudioDuplicateFinder:
         threshold: float = 0.75,
         config: Config | None = None,
     ) -> None:
+        """__init__."""
         if isinstance(root_path, (list, tuple)):
             roots = [normalize_path(p) for p in root_path]
         else:
@@ -539,6 +542,7 @@ class AudioDuplicateFinder:
     # -- helpers
 
     def _should_exclude(self, path: Path) -> bool:
+        """_should_exclude."""
         if path.name in self.exclude_dirs:
             return True
         s = str(path)
@@ -550,6 +554,7 @@ class AudioDuplicateFinder:
         """_should_exclude."""
 
     def _is_audio(self, path: Path) -> bool:
+        """_is_audio."""
         return path.suffix.lower() in _AUDIO_SUFFIXES
         """_is_audio."""
         """_is_audio."""
@@ -597,6 +602,7 @@ class AudioDuplicateFinder:
         fingerprints: Dict[Path, List[int]] = {}
 
         def _fp_one(p: Path) -> Tuple[Path, Optional[List[int]]]:
+            """_fp_one."""
             try:
                 fp = compute_audio_fingerprint(p)
                 return p, fp if fp else None
@@ -659,6 +665,7 @@ class AudioDuplicateFinder:
         parent: Dict[Path, Path] = {p: p for p in fingerprints}
 
         def _find(x: Path) -> Path:
+            """_find."""
             while parent[x] != x:
                 parent[x] = parent[parent[x]]
                 x = parent[x]
@@ -667,6 +674,7 @@ class AudioDuplicateFinder:
             """_find."""
 
         def _union(a: Path, b: Path) -> None:
+            """_union."""
             ra, rb = _find(a), _find(b)
             if ra != rb:
                 parent[rb] = ra
@@ -694,6 +702,7 @@ class AudioDuplicateFinder:
         return result
 
     def get_stats(self) -> dict:
+        """get_stats."""
         total = sum(len(v) for v in self.duplicates.values())
         return {
             "total_audio_scanned": self.file_count,

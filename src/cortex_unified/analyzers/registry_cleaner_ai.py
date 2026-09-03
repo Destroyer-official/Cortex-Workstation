@@ -104,6 +104,7 @@ class RegistryIssue:
     backup_path: Optional[str] = None
 
     def to_dict(self) -> dict:
+        """to_dict."""
         import dataclasses
         return dataclasses.asdict(self)
         """to_dict."""
@@ -112,12 +113,14 @@ class RegistryIssue:
 
 @dataclass(frozen=True, slots=True)
 class ScanResult:
+    """ScanResult."""
     issues: List[RegistryIssue]
     scan_time: float
     categories_scanned: List[str]
     model_version: str
 
     def to_json(self) -> str:
+        """to_json."""
         return json.dumps({
             "scan_time": self.scan_time,
             "categories_scanned": self.categories_scanned,
@@ -131,6 +134,7 @@ class ScanResult:
 
 @dataclass
 class CleanResult:
+    """CleanResult."""
     cleaned: List[RegistryIssue]
     failed: List[Tuple[RegistryIssue, str]]
     restore_point_created: bool
@@ -612,12 +616,14 @@ def _is_authenticode_signed(path: Path) -> bool:
         return False
 
     class GUID(ctypes.Structure):
+        """GUID."""
         _fields_ = [("Data1", wintypes.DWORD), ("Data2", wintypes.WORD),
                     ("Data3", wintypes.WORD), ("Data4", ctypes.c_byte * 8)]
         """GUID class."""
         """GUID class."""
 
     class WINTRUST_FILE_INFO(ctypes.Structure):
+        """WINTRUST_FILE_INFO."""
         _fields_ = [("cbStruct", wintypes.DWORD),
                     ("pcwszFilePath", wintypes.LPCWSTR),
                     ("hFile", wintypes.HANDLE),
@@ -626,6 +632,7 @@ def _is_authenticode_signed(path: Path) -> bool:
         """WINTRUST_FILE_INFO class."""
 
     class WINTRUST_DATA(ctypes.Structure):
+        """WINTRUST_DATA."""
         _fields_ = [("cbStruct", wintypes.DWORD),
                     ("pPolicyCallbackData", ctypes.c_void_p),
                     ("pSIPClientData", ctypes.c_void_p),
@@ -674,6 +681,7 @@ class _MLModel:
     """ONNX model wrapper for risk scoring."""
 
     def __init__(self, model_path: Optional[str] = None):
+        """__init__."""
         self.session = None
         self.input_name = None
         self.output_name = None
@@ -746,6 +754,7 @@ class AIRegistryCleaner:
         progress_callback: Optional[Callable[[str], None]] = None,
         cancel_event: Optional[threading.Event] = None,
     ):
+        """__init__."""
         self.model = _MLModel(model_path)
         self.create_restore_point = create_restore_point
         self.progress = progress_callback or (lambda _: None)
@@ -759,6 +768,7 @@ class AIRegistryCleaner:
     # -- helpers
 
     def _run_ps(self, script: str, timeout: int = 60) -> Tuple[int, str, str]:
+        """_run_ps."""
         try:
             proc = subprocess.run(
                 ["powershell", "-NoProfile", "-Command", script],
@@ -774,6 +784,7 @@ class AIRegistryCleaner:
         """_run_ps."""
 
     def _key_exists(self, path: str) -> bool:
+        """_key_exists."""
         for splitter in (_split, _split32):
             try:
                 parts = splitter(path)
@@ -792,6 +803,7 @@ class AIRegistryCleaner:
         """_key_exists."""
 
     def _get_parent(self, path: str) -> Optional[str]:
+        """_get_parent."""
         parts = path.split("\\")
         if len(parts) <= 2:
             return None
@@ -820,6 +832,7 @@ class AIRegistryCleaner:
         return out
 
     def _enum_values(self, path: str) -> List[Tuple[str, Any, int]]:
+        """_enum_values."""
         return [(n, d, t) for n, (d, t) in self._values_map(path).items()]
         """_enum_values."""
         """_enum_values."""
@@ -1175,6 +1188,7 @@ class AIRegistryCleaner:
         return saved[0]
 
     def _create_restore_point(self) -> bool:
+        """_create_restore_point."""
         try:
             subprocess.run([
                 "powershell", "-NoProfile", "-Command",

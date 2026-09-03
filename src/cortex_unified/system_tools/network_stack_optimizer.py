@@ -34,6 +34,7 @@ class NetworkResetReport:
     output_messages: List[str] = None
 
     def __post_init__(self):
+        """__post_init__."""
         if self.output_messages is None:
             self.output_messages = []
         """__post_init__."""

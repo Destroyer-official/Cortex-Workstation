@@ -75,6 +75,7 @@ class JunctionAuditor:
         visited_paths: set[str] = set()
 
         def _scan(dir_path: Path, depth: int):
+            """_scan."""
             nonlocal dead_cnt, loop_cnt, junc_cnt, sym_cnt
             if depth > max_depth:
                 return

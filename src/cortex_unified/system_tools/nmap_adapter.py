@@ -81,24 +81,28 @@ def _is_windows_admin() -> bool:
 
 
 def _local_name(tag: str) -> str:
+    """_local_name."""
     return tag.rsplit("}", 1)[-1]
     """_local_name."""
     """_local_name."""
 
 
 def _children(element: ET.Element, name: str) -> list[ET.Element]:
+    """_children."""
     return [child for child in element if _local_name(child.tag) == name]
     """_children."""
     """_children."""
 
 
 def _descendants(element: ET.Element, name: str) -> list[ET.Element]:
+    """_descendants."""
     return [item for item in element.iter() if _local_name(item.tag) == name]
     """_descendants."""
     """_descendants."""
 
 
 def _bounded_root(payload: bytes | str) -> ET.Element:
+    """_bounded_root."""
     if isinstance(payload, str):
         data = payload.encode("utf-8")
     elif isinstance(payload, bytes):
@@ -135,6 +139,7 @@ def _normalize_targets(
     targets: Iterable[str],
     allowed_networks: Iterable[str | ipaddress.IPv4Network],
 ) -> tuple[tuple[str, ...], tuple[ipaddress.IPv4Network, ...]]:
+    """_normalize_targets."""
     scopes = parse_allowed_networks(allowed_networks)
     if not scopes:
         raise NmapAuthorizationError(
@@ -162,6 +167,7 @@ def _normalize_targets(
 
 
 def _normalize_ports(ports: Iterable[int]) -> tuple[int, ...]:
+    """_normalize_ports."""
     normalized: list[int] = []
     for value in ports:
         if isinstance(value, bool):
@@ -184,6 +190,7 @@ def _normalize_ports(ports: Iterable[int]) -> tuple[int, ...]:
 
 
 def _normalize_modes(modes: Iterable[str] | str | None) -> tuple[str, ...]:
+    """_normalize_modes."""
     if modes is None:
         values = _DEFAULT_MODES
     elif isinstance(modes, str):
@@ -322,6 +329,7 @@ class NmapAdapter:
         self._requested_executable = executable
 
     def _executable(self) -> str | None:
+        """_executable."""
         return shutil.which(self._requested_executable)
         """_executable."""
         """_executable."""

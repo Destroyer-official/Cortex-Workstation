@@ -20,12 +20,14 @@ from cortex_unified.core.deleter import Deleter
 from cortex_unified.analyzers.deep_cleaner import DeepCleaner
 
 class DeepCleanerWorker(QThread):
+    """DeepCleanerWorker."""
     finished_scan = Signal(list)
     error_occurred = Signal(str)
     status_updated = Signal(str)
     progress_updated = Signal(int)
 
     def __init__(self, config: Config):
+        """__init__."""
         super().__init__()
         self.config = config
         self._is_running = True
@@ -33,11 +35,13 @@ class DeepCleanerWorker(QThread):
         """__init__."""
 
     def run(self):
+        """run."""
         try:
             self.status_updated.emit("Deep scanning disk...")
             cleaner = DeepCleaner(self.config)
             
             def poll_progress():
+                """poll_progress."""
                 while self._is_running:
                     self.progress_updated.emit(0)
                     time.sleep(0.1)
@@ -48,6 +52,7 @@ class DeepCleanerWorker(QThread):
             t.start()
             
             def update_status(msg):
+                """update_status."""
                 self.status_updated.emit(msg)
                 """update_status."""
                 """update_status."""
@@ -68,11 +73,13 @@ class DeepCleanerTab(BaseTab):
     """Tab for deep cleaner functionality (Temp, Cache, Logs, Orphans)."""
 
     def __init__(self, config, logger, safety_manager):
+        """__init__."""
         super().__init__(config, logger, safety_manager)
         """__init__."""
         """__init__."""
 
     def setup_ui(self):
+        """setup_ui."""
         layout = QVBoxLayout(self)
         
         title = QLabel('🧹 Deep Disk Cleaner')
@@ -144,6 +151,7 @@ class DeepCleanerTab(BaseTab):
         """setup_ui."""
 
     def start_scan(self):
+        """start_scan."""
         self.scan_btn.setEnabled(False)
         self.clean_btn.setEnabled(False)
         self.progress_bar.setVisible(True)
@@ -163,6 +171,7 @@ class DeepCleanerTab(BaseTab):
         """start_scan."""
 
     def format_bytes(self, bytes_count: int) -> str:
+        """format_bytes."""
         for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
             if bytes_count < 1024.0:
                 return f"{bytes_count:.1f} {unit}"
@@ -172,6 +181,7 @@ class DeepCleanerTab(BaseTab):
         """format_bytes."""
 
     def scan_finished(self, result):
+        """scan_finished."""
         items, stats = result
         self.tree.blockSignals(True)
         
@@ -254,6 +264,7 @@ class DeepCleanerTab(BaseTab):
             self.update_selection_summary()
 
     def update_selection_summary(self):
+        """update_selection_summary."""
         checked_count = 0
         total_size = 0
         
@@ -270,12 +281,14 @@ class DeepCleanerTab(BaseTab):
         """update_selection_summary."""
 
     def scan_error(self, error):
+        """scan_error."""
         self.lbl_status.setText(f'Error: {error}')
         QMessageBox.critical(self, 'Scan Error', f'An error occurred:\\n{error}')
         """scan_error."""
         """scan_error."""
 
     def start_clean(self):
+        """start_clean."""
         selected_paths = []
         
         root = self.tree.invisibleRootItem()
@@ -332,16 +345,19 @@ class DeepCleanerTab(BaseTab):
         """start_clean."""
 
     def select_all(self):
+        """select_all."""
         self._toggle_checkboxes(Qt.CheckState.Checked)
         """select_all."""
         """select_all."""
 
     def deselect_all(self):
+        """deselect_all."""
         self._toggle_checkboxes(Qt.CheckState.Unchecked)
         """deselect_all."""
         """deselect_all."""
 
     def _toggle_checkboxes(self, state):
+        """_toggle_checkboxes."""
         self.tree.blockSignals(True)
         root = self.tree.invisibleRootItem()
         for i in range(root.childCount()):
@@ -355,6 +371,7 @@ class DeepCleanerTab(BaseTab):
         """_toggle_checkboxes."""
 
     def operation_finished(self, worker):
+        """operation_finished."""
         self.progress_bar.setVisible(False)
         self.scan_btn.setEnabled(True)
         self.remove_worker_thread(worker)

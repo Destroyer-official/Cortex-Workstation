@@ -26,24 +26,31 @@ except ImportError:
     class PackageManagerCleaner:
         """PackageManagerCleaner fallback class."""
         def __init__(self, *args, **kwargs):
+            """__init__."""
             pass
         def detect_package_managers(self):
+            """detect_package_managers."""
             return {}
         def scan_caches(self):
+            """scan_caches."""
             return []
         def cleanup_caches(self):
+            """cleanup_caches."""
             return {}
 
 class PMSearchWorker(QThread):
+    """PMSearchWorker."""
     finished = Signal(dict)
     error = Signal(str)
 
     def __init__(self, config: Config):
+        """__init__."""
         super().__init__()
         self.config = config
         """__init__."""
 
     def run(self):
+        """run."""
         try:
             cleaner = PackageManagerCleaner(self.config)
             managers = cleaner.detect_package_managers()
@@ -54,11 +61,13 @@ class PMSearchWorker(QThread):
     """PMSearchWorker class."""
 
 class PMScanWorker(QThread):
+    """PMScanWorker."""
     finished = Signal(dict)
     error = Signal(str)
 
     def __init__(self, config: Config, managers: dict, target_folders: List[str], 
                  keep_recent: int, orphaned: bool, include_python: bool):
+        """__init__."""
         super().__init__()
         self.config = config
         self.managers = managers
@@ -69,6 +78,7 @@ class PMScanWorker(QThread):
         """__init__."""
 
     def run(self):
+        """run."""
         try:
             cleaner = PackageManagerCleaner(self.config)
             
@@ -94,10 +104,12 @@ class PMScanWorker(QThread):
     """PMScanWorker class."""
 
 class PMCleanWorker(QThread):
+    """PMCleanWorker."""
     finished = Signal(dict)
     error = Signal(str)
 
     def __init__(self, config: Config, resources: list, dry_run: bool):
+        """__init__."""
         super().__init__()
         self.config = config
         self.resources = resources
@@ -105,6 +117,7 @@ class PMCleanWorker(QThread):
         """__init__."""
 
     def run(self):
+        """run."""
         try:
             cleaner = PackageManagerCleaner(self.config)
             results = cleaner.cleanup_caches(self.resources, dry_run=self.dry_run)
@@ -118,6 +131,7 @@ class PackageManagerTab(BaseTab):
     """Tab for package manager tab functionality."""
 
     def __init__(self, config, logger, safety_manager):
+        """__init__."""
         super().__init__(config, logger, safety_manager)
         """__init__."""
 
@@ -311,6 +325,7 @@ class PackageManagerTab(BaseTab):
         self.pm_resources: List[Dict] = []
 
     def detect_package_managers(self):
+        """detect_package_managers."""
         self.pm_summary_label.setText("Detecting Package Managers...")
         self.pm_progress_bar.setVisible(True)
         self.pm_progress_bar.setRange(0, 0)
@@ -326,6 +341,7 @@ class PackageManagerTab(BaseTab):
         """detect_package_managers."""
 
     def _on_detect_finished(self, managers):
+        """_on_detect_finished."""
         self.pm_progress_bar.setVisible(False)
         self.pm_detect_button.setEnabled(True)
         
@@ -345,12 +361,14 @@ class PackageManagerTab(BaseTab):
         """_on_detect_finished."""
 
     def _on_detect_error(self, err):
+        """_on_detect_error."""
         self.pm_progress_bar.setVisible(False)
         self.pm_detect_button.setEnabled(True)
         QMessageBox.warning(self, "Detection Failed", str(err))
         """_on_detect_error."""
     
     def add_folder_to_scan(self):
+        """add_folder_to_scan."""
         folder = QFileDialog.getExistingDirectory(self, 'Select Folder to Scan')
         if folder:
             if folder not in self.pm_folders:
@@ -381,6 +399,7 @@ class PackageManagerTab(BaseTab):
 
     def start_pm_scan(self):
         # Determine which tab is active
+        """start_pm_scan."""
         if self.mode_tabs.currentIndex() == 0:
             # System Package Managers tab
             target_folders = []
@@ -420,6 +439,7 @@ class PackageManagerTab(BaseTab):
         """start_pm_scan."""
 
     def _on_scan_finished(self, data):
+        """_on_scan_finished."""
         self.pm_progress_bar.setVisible(False)
         self.pm_scan_button.setEnabled(True)
         
@@ -456,12 +476,14 @@ class PackageManagerTab(BaseTab):
         """_on_scan_finished."""
 
     def _on_scan_error(self, err):
+        """_on_scan_error."""
         self.pm_progress_bar.setVisible(False)
         self.pm_scan_button.setEnabled(True)
         QMessageBox.warning(self, "Scan Error", str(err))
         """_on_scan_error."""
 
     def start_pm_cleanup(self):
+        """start_pm_cleanup."""
         if not self.pm_resources:
             QMessageBox.warning(self, "No Caches", "No caches to clean. Run 'Scan' first.")
             return
@@ -495,6 +517,7 @@ class PackageManagerTab(BaseTab):
         """start_pm_cleanup."""
 
     def _on_clean_finished(self, data):
+        """_on_clean_finished."""
         self.pm_progress_bar.setVisible(False)
         self.pm_scan_button.setEnabled(True)
         
@@ -520,6 +543,7 @@ class PackageManagerTab(BaseTab):
         """_on_clean_finished."""
 
     def _on_clean_error(self, err):
+        """_on_clean_error."""
         self.pm_progress_bar.setVisible(False)
         self.pm_scan_button.setEnabled(True)
         self.pm_cleanup_button.setEnabled(True)
@@ -527,6 +551,7 @@ class PackageManagerTab(BaseTab):
         """_on_clean_error."""
 
     def _on_worker_finished(self, worker):
+        """_on_worker_finished."""
         self.remove_worker_thread(worker)
         worker.deleteLater()
         """_on_worker_finished."""

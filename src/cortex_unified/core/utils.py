@@ -77,7 +77,9 @@ def setup_logging(verbose: bool = False, log_file: str = None, json_logging: boo
     if json_logging:
         import json
         class JSONFormatter(logging.Formatter):
+            """JSONFormatter."""
             def format(self, record):
+                """format."""
                 log_entry = {
                     "timestamp": self.formatTime(record),
                     "level": record.levelname,
@@ -161,7 +163,9 @@ def setup_logging(verbose: bool = False, log_file: str = None, json_logging: boo
 
     if verbose:
         class PerformanceFilter(logging.Filter):
+            """PerformanceFilter."""
             def filter(self, record):
+                """filter."""
                 if not hasattr(record, 'start_time'):
                     record.start_time = datetime.now()
                 return True
@@ -279,6 +283,7 @@ class DeepCleanerError(Exception):
 
     def __init__(self, message: str, operation: str = None, component: str = None, 
                  error_code: str = None, details: dict = None):
+        """__init__."""
         super().__init__(message)
         self.operation = operation
         self.component = component
@@ -369,6 +374,7 @@ class ResourceManager:
     """Context manager for resource cleanup and monitoring."""
     
     def __init__(self, logger: logging.Logger, operation: str = None):
+        """__init__."""
         self.logger = logger
         self.operation = operation
         self.resources = []
@@ -377,6 +383,7 @@ class ResourceManager:
         """__init__."""
     
     def __enter__(self):
+        """__enter__."""
         self.start_time = datetime.now()
         self.context = log_operation_start(self.logger, self.operation or "resource_operation")
         return self
@@ -385,6 +392,7 @@ class ResourceManager:
     def __exit__(self, exc_type, exc_val, exc_tb):
         # Release in reverse registration order, mirroring how nested
         # resources were acquired. Cleanup failures are logged, never raised.
+        """__exit__."""
         for resource in reversed(self.resources):
             try:
                 if hasattr(resource, 'close'):
@@ -407,6 +415,7 @@ class ResourceManager:
         self.resources.append(resource)
     
     def add_cleanup_function(self, func, *args, **kwargs):
+        """add_cleanup_function."""
         self.resources.append(lambda: func(*args, **kwargs))
         """add_cleanup_function."""
 

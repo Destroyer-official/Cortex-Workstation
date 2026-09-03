@@ -61,6 +61,7 @@ class ProcessCancelled(subprocess.SubprocessError):
     """
 
     def __init__(self, args):
+        """__init__."""
         super().__init__(f"process cancelled: {args!r}")
         self.args_ = args
         """__init__."""

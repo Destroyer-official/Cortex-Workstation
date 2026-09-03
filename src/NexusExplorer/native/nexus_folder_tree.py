@@ -26,6 +26,7 @@ class FolderTreeModel(QStandardItemModel):
     _MAX_DEPTH = 20
 
     def __init__(self, parent=None):
+        """__init__."""
         super().__init__(parent)
         self._loaded: set[str] = set()
         self._provider = QFileIconProvider()
@@ -108,6 +109,7 @@ class FolderTreeModel(QStandardItemModel):
         return item.hasChildren()
 
     def canFetchMore(self, parent: QModelIndex) -> bool:
+        """canFetchMore."""
         if not parent.isValid():
             return False
         item = self.itemFromIndex(parent)
@@ -120,6 +122,7 @@ class FolderTreeModel(QStandardItemModel):
         """canFetchMore."""
 
     def fetchMore(self, parent: QModelIndex):
+        """fetchMore."""
         if not parent.isValid():
             return
         item = self.itemFromIndex(parent)
@@ -190,6 +193,7 @@ class FolderTreeWidget(QWidget):
     navigate_to = Signal(str)  # Emitted when user clicks a folder
 
     def __init__(self, parent=None):
+        """__init__."""
         super().__init__(parent)
         self.setObjectName("FolderTree")
 
@@ -218,6 +222,7 @@ class FolderTreeWidget(QWidget):
         """__init__."""
 
     def _on_clicked(self, idx: QModelIndex):
+        """_on_clicked."""
         item = self.model.itemFromIndex(idx)
         if item:
             path = item.data(Qt.ItemDataRole.UserRole)

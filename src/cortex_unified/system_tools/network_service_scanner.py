@@ -317,6 +317,7 @@ def parse_custom_port_spec(value: str) -> tuple[int, ...]:
 
 
 def _clean(data: bytes) -> str:
+    """_clean."""
     text = data[:_MAX_RESPONSE].decode("utf-8", "replace")
     return "".join(
         char if char.isprintable() or char in "\r\n\t" else "."
@@ -327,6 +328,7 @@ def _clean(data: bytes) -> str:
 
 
 def _recv(sock: socket.socket, limit: int = _MAX_RESPONSE) -> bytes:
+    """_recv."""
     remaining = min(_MAX_RESPONSE, max(0, int(limit)))
     chunks: list[bytes] = []
     while remaining:
@@ -346,6 +348,7 @@ def _recv(sock: socket.socket, limit: int = _MAX_RESPONSE) -> bytes:
 
 
 def _product_version(text: str) -> tuple[str, str]:
+    """_product_version."""
     for pattern in (
         r"^SSH-[\d.]+-([^\s/_]+)[_/-]?([\w.+-]*)",
         r"^220[- ]([^\s/]+)[ /]?([\w.+-]*)",
@@ -459,6 +462,7 @@ class NetworkServiceScanner:
 
     @staticmethod
     def _progress(progress: ProgressFn | None, message: str) -> None:
+        """_progress."""
         if progress:
             try:
                 progress(message)
@@ -472,6 +476,7 @@ class NetworkServiceScanner:
         addresses: Iterable[ipaddress.IPv4Address],
         ports: Iterable[int],
     ) -> Iterator[tuple[str, int]]:
+        """_jobs."""
         for address in addresses:
             for port in ports:
                 yield str(address), port
@@ -488,6 +493,7 @@ class NetworkServiceScanner:
         observations: list[ServiceObservation],
         progress: ProgressFn | None,
     ) -> None:
+        """_scan_tcp."""
         jobs = self._jobs(addresses, ports)
         pending: set[Future[ServiceObservation | None]] = set()
         exhausted = False
@@ -532,6 +538,7 @@ class NetworkServiceScanner:
         limiter: _RateLimiter,
         cancel: threading.Event,
     ) -> ServiceObservation | None:
+        """_probe_tcp."""
         if not limiter.acquire(cancel):
             return None
         started = time.monotonic()
@@ -574,6 +581,7 @@ class NetworkServiceScanner:
         """_probe_tcp."""
 
     def _connect(self, observation: ServiceObservation) -> socket.socket:
+        """_connect."""
         sock = socket.create_connection(
             (observation.ip, observation.port), timeout=self.timeout)
         sock.settimeout(self.timeout)
@@ -587,6 +595,7 @@ class NetworkServiceScanner:
         profile: ScanProfile,
         cancel: threading.Event,
     ) -> None:
+        """_identify."""
         if observation.port in _TLS_PORTS and not cancel.is_set():
             self._probe_tls(observation)
         if (observation.port in _HTTP_PORTS or observation.port in _TLS_PORTS) and not cancel.is_set():
@@ -606,6 +615,7 @@ class NetworkServiceScanner:
         """_identify."""
 
     def _probe_tls(self, observation: ServiceObservation) -> None:
+        """_probe_tls."""
         context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
         context.check_hostname = False
         context.verify_mode = ssl.CERT_NONE
@@ -629,6 +639,7 @@ class NetworkServiceScanner:
         """_probe_tls."""
 
     def _probe_http(self, observation: ServiceObservation, path: str) -> None:
+        """_probe_http."""
         try:
             with self._connect(observation) as raw:
                 stream: socket.socket = raw
@@ -694,6 +705,7 @@ class NetworkServiceScanner:
         """_probe_http."""
 
     def _probe_mqtt(self, observation: ServiceObservation) -> None:
+        """_probe_mqtt."""
         client_id = b"cortex-audit"
         body = b"\x00\x04MQTT\x04\x02\x00\x05" + struct.pack("!H", len(client_id)) + client_id
         try:
@@ -717,6 +729,7 @@ class NetworkServiceScanner:
         """_probe_mqtt."""
 
     def _probe_redis(self, observation: ServiceObservation) -> None:
+        """_probe_redis."""
         try:
             with self._connect(observation) as sock:
                 sock.sendall(b"*1\r\n$4\r\nPING\r\n")
@@ -745,6 +758,7 @@ class NetworkServiceScanner:
         cancel: threading.Event,
         observations: list[ServiceObservation],
     ) -> None:
+        """_scan_udp."""
         probes = list(_UDP_PROBES)
         if profile in {ScanProfile.ADVANCED, ScanProfile.DEEP}:
             probes.append((161, "snmp", _SNMP_PROBE))
@@ -765,6 +779,7 @@ class NetworkServiceScanner:
         name: str,
         payload: bytes,
     ) -> ServiceObservation | None:
+        """_probe_udp."""
         started = time.monotonic()
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         try:

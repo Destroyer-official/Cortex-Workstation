@@ -38,6 +38,7 @@ _LIB_NAME = "nexus_engine.dll"
 
 
 def _dll_candidates() -> list[Path]:
+    """_dll_candidates."""
     repo = Path(__file__).resolve().parent.parent
     return [
         repo / "target" / "release" / _LIB_NAME,
@@ -49,6 +50,7 @@ def _dll_candidates() -> list[Path]:
 
 
 def find_dll() -> Path:
+    """find_dll."""
     for p in _dll_candidates():
         if p.is_file():
             return p
@@ -58,6 +60,7 @@ def find_dll() -> Path:
 
 
 class _FileEntry(ctypes.Structure):
+    """_FileEntry."""
     _fields_ = [
         ("name", c_void_p),
         ("path", c_void_p),
@@ -75,6 +78,7 @@ class _FileEntry(ctypes.Structure):
 
 
 class _DriveInfo(ctypes.Structure):
+    """_DriveInfo."""
     _fields_ = [
         ("path", c_void_p),
         ("label", c_void_p),
@@ -88,6 +92,7 @@ class _DriveInfo(ctypes.Structure):
 
 
 class _SearchOptions(ctypes.Structure):
+    """_SearchOptions."""
     _fields_ = [("recursive", c_int), ("max_results", c_uint), ("include_hidden", c_int)]
     """_SearchOptions class."""
 
@@ -110,6 +115,7 @@ CONFLICT_CALLBACK = ctypes.CFUNCTYPE(
 
 
 def _decode(ptr: int | None) -> str:
+    """_decode."""
     if not ptr:
         return ""
     try:
@@ -120,6 +126,7 @@ def _decode(ptr: int | None) -> str:
 
 
 def _row_from_entry(e: _FileEntry) -> dict:
+    """_row_from_entry."""
     ext = _decode(e.ext).lstrip(".").lower()
     return {
         "name": _decode(e.name),
@@ -140,6 +147,7 @@ class NexusFfi:
     """Owns the DLL context; one instance per process is enough."""
 
     def __init__(self) -> None:
+        """__init__."""
         self._dll_path = find_dll()
         self._lock = threading.Lock()
         self._handle: int | None = None
@@ -152,6 +160,7 @@ class NexusFfi:
 
     # ------------------------------------------------------------------ bind
     def _bind(self) -> None:
+        """_bind."""
         d = self._dll
         d.nexus_init.restype = c_void_p
         d.nexus_init.argtypes = []
@@ -228,16 +237,19 @@ class NexusFfi:
     # ------------------------------------------------------------- lifecycle
     @property
     def dll_path(self) -> Path:
+        """dll_path."""
         return self._dll_path
         """dll_path."""
 
     def version(self) -> str:
         # NOTE: nexus_version returns a static string -- do NOT free it.
+        """version."""
         p = self._dll.nexus_version()
         return _decode(p)
         """version."""
 
     def close(self) -> None:
+        """close."""
         with self._lock:
             if getattr(self, "_handle", None):
                 self._dll.nexus_free(self._handle)
@@ -245,6 +257,7 @@ class NexusFfi:
         """close."""
 
     def set_timeout(self, timeout: float | None) -> None:
+        """set_timeout."""
         self._timeout = timeout
         """set_timeout."""
 
@@ -283,6 +296,7 @@ class NexusFfi:
         return rows
 
     def get_drives(self) -> list[dict]:
+        """get_drives."""
         out = POINTER(_DriveInfo)()
         count = c_size_t(0)
         code = self._dll.nexus_get_drives(self._handle, byref(out), byref(count))
@@ -305,6 +319,7 @@ class NexusFfi:
         """get_drives."""
 
     def home_dir(self) -> str:
+        """home_dir."""
         out = c_void_p(0)
         code = self._dll.nexus_home_dir(self._handle, byref(out))
         if code != 0 or not out:
@@ -336,6 +351,7 @@ class NexusFfi:
         holder: list = []  # keeps callback trampoline alive during the call
 
         def on_batch(_ud, entries_ptr, count, done, err_ptr) -> None:
+            """on_batch."""
             try:
                 if entries_ptr and count:
                     arr = cast(entries_ptr, POINTER(_FileEntry))
@@ -370,11 +386,13 @@ class NexusFfi:
         return sid or "", rows
 
     def cancel_search(self, search_id: str | None = None) -> bool:
+        """cancel_search."""
         raw = search_id.encode("utf-8") if search_id else None
         return self._dll.nexus_cancel_search(self._handle, raw) == 0
         """cancel_search."""
 
     def last_search_id(self) -> str | None:
+        """last_search_id."""
         out = c_void_p(0)
         code = self._dll.nexus_last_search_id(self._handle, byref(out))
         if code != 0 or not out:
@@ -386,18 +404,21 @@ class NexusFfi:
 
     # -------------------------------------------------------------- helpers
     def rename(self, path: str, new_name: str) -> bool:
+        """rename."""
         return self._dll.nexus_rename(
             self._handle, path.encode("utf-8"), new_name.encode("utf-8")
         ) == 0
         """rename."""
 
     def create_folder(self, parent: str, name: str) -> bool:
+        """create_folder."""
         return self._dll.nexus_create_folder(
             self._handle, parent.encode("utf-8"), name.encode("utf-8")
         ) == 0
         """create_folder."""
 
     def read_text_file(self, path: str, max_bytes: int = 65536) -> tuple[str, bool, int]:
+        """read_text_file."""
         out = c_void_p(0)
         truncated = c_int(0)
         size = c_uint64(0)
@@ -421,6 +442,7 @@ class NexusFfi:
     # ------------------------------------------------------------ transfers
     @staticmethod
     def _cstr_array(items: list[str]) -> ctypes.Array[c_char_p]:
+        """_cstr_array."""
         encoded = [s.encode("utf-8") for s in items]
         return (ctypes.c_char_p * len(encoded))(*encoded)
         """_cstr_array."""
@@ -441,6 +463,7 @@ class NexusFfi:
         lock = threading.Lock()
 
         def on_progress(_ud, _jid, done_b, total_b, speed, eta, cur):
+            """on_progress."""
             d_b, t_b = int(done_b), int(total_b)
             sp, et = float(speed), float(eta)
             with lock:
@@ -454,6 +477,7 @@ class NexusFfi:
             """on_progress."""
 
         def on_complete(_ud, _jid, success, err_ptr):
+            """on_complete."""
             result["ok"] = bool(success)
             if err_ptr:
                 result["error"] = err_ptr.decode("utf-8", "replace")
@@ -461,6 +485,7 @@ class NexusFfi:
             """on_complete."""
 
         def on_conflict(_ud, _jid, cid, src, dst, ss, ds, sm, dm, is_dir):
+            """on_conflict."""
             dec = lambda p: p.decode("utf-8", "replace") if p else ""
             info = {"id": dec(cid), "source": dec(src),
                     "destination": dec(dst), "is_dir": bool(is_dir)}
@@ -507,6 +532,7 @@ class NexusFfi:
         hooks: dict | None = None,
         control: dict | None = None,
     ) -> dict:
+        """copy."""
         arr = self._cstr_array(sources)
         dest_b = dest_dir.encode("utf-8")
         keep = list(track or [])
@@ -526,6 +552,7 @@ class NexusFfi:
         hooks: dict | None = None,
         control: dict | None = None,
     ) -> dict:
+        """move."""
         arr = self._cstr_array(sources)
         dest_b = dest_dir.encode("utf-8")
         keep = list(track or [])
@@ -545,6 +572,7 @@ class NexusFfi:
         hooks: dict | None = None,
         control: dict | None = None,
     ) -> dict:
+        """delete_paths."""
         arr = self._cstr_array(paths)
         keep = list(track or [])
         return self._run_job(
@@ -569,14 +597,17 @@ class NexusFfi:
         return json.loads(raw.decode("utf-8", "replace"))
 
     def pause_job(self, handle: int) -> int:
+        """pause_job."""
         return self._dll.nexus_pause_job(handle)
         """pause_job."""
 
     def resume_job(self, handle: int) -> int:
+        """resume_job."""
         return self._dll.nexus_resume_job(handle)
         """resume_job."""
 
     def cancel_job(self, handle: int) -> int:
+        """cancel_job."""
         return self._dll.nexus_cancel_job(handle)
         """cancel_job."""
 
@@ -585,6 +616,7 @@ import weakref
 _ffi_instances: set = weakref.WeakSet()
 
 def _atexit_cleanup() -> None:
+    """_atexit_cleanup."""
     for inst in list(_ffi_instances):
         try:
             inst.close()

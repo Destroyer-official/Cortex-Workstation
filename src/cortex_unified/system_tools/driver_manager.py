@@ -164,6 +164,7 @@ class DriverManager:
     # -- helpers
 
     def _run(self, cmd: List[str], timeout: int = 120) -> Tuple[int, str, str]:
+        """_run."""
         if self.cancel_event.is_set():
             raise RuntimeError("Cancelled")
         try:
@@ -180,11 +181,13 @@ class DriverManager:
         """_run."""
 
     def _run_ps(self, script: str, timeout: int = 120) -> Tuple[int, str, str]:
+        """_run_ps."""
         return self._run(["powershell", "-NoProfile", "-Command", script], timeout=timeout)
         """_run_ps."""
         """_run_ps."""
 
     def _load_index(self, path: str) -> None:
+        """_load_index."""
         try:
             with open(path, "r", encoding="utf-8") as f:
                 data = json.load(f)
@@ -199,6 +202,7 @@ class DriverManager:
         """_load_index."""
 
     def _save_index(self, path: str) -> None:
+        """_save_index."""
         try:
             data = {"packs": [self._pack_to_dict(p) for p in set(self._index.values())]}
             with open(path, "w", encoding="utf-8") as f:
@@ -209,6 +213,7 @@ class DriverManager:
         """_save_index."""
 
     def _pack_to_dict(self, pack: DriverPack) -> dict:
+        """_pack_to_dict."""
         import dataclasses
         return dataclasses.asdict(pack)
         """_pack_to_dict."""

@@ -92,6 +92,7 @@ class DuplicateFinderEngine:
     def __init__(self, workers: int = 0) -> None:
         # I/O-bound: a few more threads than cores keeps disks busy without
         # oversubscribing. Capped to avoid thrashing on spinning media.
+        """__init__."""
         self.workers = workers if workers > 0 else min(32, (os.cpu_count() or 4) + 4)
         self.hash_algorithm = HASH_ALGORITHM
         """__init__."""
@@ -132,6 +133,7 @@ class DuplicateFinderEngine:
         limit: int | None,
         progress: Callable[[int, int], None] | None,
     ) -> dict[str, list[Path]]:
+        """_group_by_hash."""
         groups: dict[str, list[Path]] = defaultdict(list)
         total = len(paths)
         done = 0

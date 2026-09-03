@@ -33,6 +33,7 @@ class SettingsTab(BaseTab):
     """Tab for settings tab functionality."""
 
     def __init__(self, config, logger, safety_manager):
+        """__init__."""
         super().__init__(config, logger, safety_manager)
         """__init__."""
         """__init__."""

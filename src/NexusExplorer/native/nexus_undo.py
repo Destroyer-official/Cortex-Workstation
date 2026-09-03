@@ -41,6 +41,7 @@ def _safe_rmtree(path: str) -> None:
 
 
 class OpKind(Enum):
+    """OpKind."""
     RENAME = auto()
     MOVE = auto()
     COPY = auto()       # records the copy so undo = delete the copy
@@ -56,6 +57,7 @@ class UndoEntry(ABC):
 
     def __init__(self, kind: OpKind, original: str, resulting: str,
                  is_dir: bool = False):
+        """__init__."""
         self.kind = kind
         self.original = original
         self.resulting = resulting
@@ -64,31 +66,38 @@ class UndoEntry(ABC):
 
     @abstractmethod
     def undo(self) -> None:
+        """undo."""
         ...
         """undo."""
 
     @abstractmethod
     def redo(self) -> None:
+        """redo."""
         ...
         """redo."""
 
     def __repr__(self) -> str:
+        """__repr__."""
         return (f"<{self.__class__.__name__} {self.kind.name}: "
                 f"{self.original} -> {self.resulting}>")
         """__repr__."""
 
 
 class RenameEntry(UndoEntry):
+    """RenameEntry."""
     def __init__(self, original: str, resulting: str, is_dir: bool = False):
+        """__init__."""
         super().__init__(OpKind.RENAME, original, resulting, is_dir)
         """__init__."""
 
     def undo(self) -> None:
+        """undo."""
         Path(self.original).parent.mkdir(parents=True, exist_ok=True)
         shutil.move(self.resulting, self.original)
         """undo."""
 
     def redo(self) -> None:
+        """redo."""
         Path(self.resulting).parent.mkdir(parents=True, exist_ok=True)
         shutil.move(self.original, self.resulting)
         """redo."""
@@ -96,17 +105,21 @@ class RenameEntry(UndoEntry):
 
 
 class MoveEntry(UndoEntry):
+    """MoveEntry."""
     def __init__(self, original: str, resulting: str, is_dir: bool = False):
+        """__init__."""
         super().__init__(OpKind.MOVE, original, resulting, is_dir)
         """__init__."""
 
     def undo(self) -> None:
+        """undo."""
         if Path(self.resulting).exists():
             Path(self.original).parent.mkdir(parents=True, exist_ok=True)
             shutil.move(self.resulting, self.original)
         """undo."""
 
     def redo(self) -> None:
+        """redo."""
         if Path(self.original).exists():
             Path(self.resulting).parent.mkdir(parents=True, exist_ok=True)
             shutil.move(self.original, self.resulting)
@@ -115,11 +128,14 @@ class MoveEntry(UndoEntry):
 
 
 class CopyEntry(UndoEntry):
+    """CopyEntry."""
     def __init__(self, original: str, resulting: str, is_dir: bool = False):
+        """__init__."""
         super().__init__(OpKind.COPY, original, resulting, is_dir)
         """__init__."""
 
     def undo(self) -> None:
+        """undo."""
         target = Path(self.resulting)
         if target.is_dir():
             _safe_rmtree(self.resulting)
@@ -128,6 +144,7 @@ class CopyEntry(UndoEntry):
         """undo."""
 
     def redo(self) -> None:
+        """redo."""
         src = Path(self.original)
         if src.is_dir():
             shutil.copytree(self.original, self.resulting)
@@ -138,11 +155,14 @@ class CopyEntry(UndoEntry):
 
 
 class DeleteEntry(UndoEntry):
+    """DeleteEntry."""
     def __init__(self, original: str, resulting: str, is_dir: bool = False):
+        """__init__."""
         super().__init__(OpKind.DELETE, original, resulting, is_dir)
         """__init__."""
 
     def undo(self) -> None:
+        """undo."""
         if not self.resulting or not Path(self.resulting).exists():
             log.warning("Delete undo skipped: backup missing or gone for %s",
                         self.original)
@@ -152,6 +172,7 @@ class DeleteEntry(UndoEntry):
         """undo."""
 
     def redo(self) -> None:
+        """redo."""
         if Path(self.original).is_dir():
             _safe_rmtree(self.original)
         else:
@@ -161,12 +182,15 @@ class DeleteEntry(UndoEntry):
 
 
 class MkdirEntry(UndoEntry):
+    """MkdirEntry."""
     def __init__(self, original: str, created_parents: list[str] | None = None):
+        """__init__."""
         super().__init__(OpKind.MKDIR, original, original, is_dir=True)
         self.created_parents = created_parents or []
         """__init__."""
 
     def undo(self) -> None:
+        """undo."""
         if Path(self.original).is_dir():
             _safe_rmtree(self.original)
         else:
@@ -181,19 +205,23 @@ class MkdirEntry(UndoEntry):
         """undo."""
 
     def redo(self) -> None:
+        """redo."""
         Path(self.original).mkdir(parents=True, exist_ok=True)
         """redo."""
     """MkdirEntry class."""
 
 
 class CreateFileEntry(UndoEntry):
+    """CreateFileEntry."""
     def __init__(self, original: str, content: str = "", created_parents: list[str] | None = None):
+        """__init__."""
         super().__init__(OpKind.CREATE_FILE, original, original, is_dir=False)
         self.content = content
         self.created_parents = created_parents or []
         """__init__."""
 
     def undo(self) -> None:
+        """undo."""
         p = Path(self.original)
         if p.is_file():
             p.unlink(missing_ok=True)
@@ -207,6 +235,7 @@ class CreateFileEntry(UndoEntry):
         """undo."""
 
     def redo(self) -> None:
+        """redo."""
         p = Path(self.original)
         p.parent.mkdir(parents=True, exist_ok=True)
         p.write_text(self.content, encoding="utf-8")
@@ -215,12 +244,15 @@ class CreateFileEntry(UndoEntry):
 
 
 class BatchCreateEntry(UndoEntry):
+    """BatchCreateEntry."""
     def __init__(self, entries: list[UndoEntry], label: str = "Batch creation"):
+        """__init__."""
         super().__init__(OpKind.BATCH_CREATE, label, f"{len(entries)} items", is_dir=True)
         self.entries = entries
         """__init__."""
 
     def undo(self) -> None:
+        """undo."""
         for entry in reversed(self.entries):
             try:
                 entry.undo()
@@ -229,6 +261,7 @@ class BatchCreateEntry(UndoEntry):
         """undo."""
 
     def redo(self) -> None:
+        """redo."""
         for entry in self.entries:
             try:
                 entry.redo()
@@ -244,6 +277,7 @@ class UndoStack:
     MAX_DEPTH = 100
 
     def __init__(self) -> None:
+        """__init__."""
         self._undo: deque[UndoEntry] = deque(maxlen=self.MAX_DEPTH)
         self._redo: deque[UndoEntry] = deque(maxlen=self.MAX_DEPTH)
         self._on_change: Callable[[], None] | None = None
@@ -251,20 +285,24 @@ class UndoStack:
         """__init__."""
 
     def __len__(self) -> int:
+        """__len__."""
         with self._lock:
             return len(self._undo)
         """__len__."""
 
     def __bool__(self) -> bool:
+        """__bool__."""
         with self._lock:
             return bool(self._undo)
         """__bool__."""
 
     def set_on_change(self, fn: Callable[[], None]) -> None:
+        """set_on_change."""
         self._on_change = fn
         """set_on_change."""
 
     def _notify(self) -> None:
+        """_notify."""
         if self._on_change:
             self._on_change()
         """_notify."""
@@ -274,6 +312,7 @@ class UndoStack:
     # ------------------------------------------------------------------
 
     def record_rename(self, old: str, new: str) -> None:
+        """record_rename."""
         entry = RenameEntry(
             original=old,
             resulting=new,
@@ -283,6 +322,7 @@ class UndoStack:
         """record_rename."""
 
     def record_move(self, src: str, dst: str) -> None:
+        """record_move."""
         entry = MoveEntry(
             original=src,
             resulting=dst,
@@ -292,6 +332,7 @@ class UndoStack:
         """record_move."""
 
     def record_copy(self, src: str, dst: str) -> None:
+        """record_copy."""
         entry = CopyEntry(
             original=src,
             resulting=dst,
@@ -311,16 +352,19 @@ class UndoStack:
         self._push(entry)
 
     def record_mkdir(self, path: str, created_parents: list[str] | None = None) -> None:
+        """record_mkdir."""
         entry = MkdirEntry(original=path, created_parents=created_parents)
         self._push(entry)
         """record_mkdir."""
 
     def record_create_file(self, path: str, content: str = "", created_parents: list[str] | None = None) -> None:
+        """record_create_file."""
         entry = CreateFileEntry(original=path, content=content, created_parents=created_parents)
         self._push(entry)
         """record_create_file."""
 
     def record_batch_create(self, entries: list[UndoEntry], label: str = "Batch creation") -> None:
+        """record_batch_create."""
         entry = BatchCreateEntry(entries=entries, label=label)
         self._push(entry)
         """record_batch_create."""
@@ -366,16 +410,19 @@ class UndoStack:
         return f"Redid {entry.kind.name.lower()}: {Path(entry.original).name}"
 
     def can_undo(self) -> bool:
+        """can_undo."""
         with self._lock:
             return len(self._undo) > 0
         """can_undo."""
 
     def can_redo(self) -> bool:
+        """can_redo."""
         with self._lock:
             return len(self._redo) > 0
         """can_redo."""
 
     def undo_description(self) -> str | None:
+        """undo_description."""
         with self._lock:
             if not self._undo:
                 return None
@@ -385,6 +432,7 @@ class UndoStack:
         """undo_description."""
 
     def redo_description(self) -> str | None:
+        """redo_description."""
         with self._lock:
             if not self._redo:
                 return None
@@ -398,6 +446,7 @@ class UndoStack:
     # ------------------------------------------------------------------
 
     def _push(self, entry: UndoEntry) -> None:
+        """_push."""
         with self._lock:
             self._undo.append(entry)
             self._redo.clear()

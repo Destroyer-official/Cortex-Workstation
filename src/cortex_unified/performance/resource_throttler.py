@@ -100,6 +100,7 @@ class ResourceThrottler:
             from ctypes import wintypes
 
             class PROCESS_POWER_THROTTLING_STATE(ctypes.Structure):
+                """PROCESS_POWER_THROTTLING_STATE."""
                 _fields_ = [
                     ("Version", wintypes.ULONG),
                     ("ControlMask", wintypes.ULONG),
@@ -242,6 +243,7 @@ class ResourceThrottler:
         self._monitoring = True
         
         def monitor_loop():
+            """monitor_loop."""
             while self._monitoring:
                 try:
                     self.get_system_load()

@@ -102,6 +102,7 @@ class PerformanceOptimizer:
     
     def _optimize_garbage_collection(self) -> None:
         # Store original thresholds
+        """_optimize_garbage_collection."""
         self.original_gc_thresholds = gc.get_threshold()
         
         # Set more aggressive thresholds for memory-intensive operations
@@ -123,6 +124,7 @@ class PerformanceOptimizer:
         self.memory_monitor_active = True
         
         def monitor_memory():
+            """monitor_memory."""
             while self.memory_monitor_active:
                 try:
                     memory_info = self.process.memory_info()
@@ -172,6 +174,7 @@ class PerformanceOptimizer:
     def _clear_internal_caches(self) -> None:
         # This would clear any internal caches maintained by Cortex Cleaner
         # For now, just log the action
+        """_clear_internal_caches."""
         self.logger.debug("Clearing internal caches")
         """_clear_internal_caches."""
         """_clear_internal_caches."""

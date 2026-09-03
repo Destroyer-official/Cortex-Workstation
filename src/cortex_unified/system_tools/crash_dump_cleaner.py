@@ -34,6 +34,7 @@ class CrashDumpCleanReport:
     errors: List[str] = None
 
     def __post_init__(self):
+        """__post_init__."""
         if self.errors is None:
             self.errors = []
         """__post_init__."""

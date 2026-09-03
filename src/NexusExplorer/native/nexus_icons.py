@@ -558,12 +558,15 @@ _MATERIAL_DIR = next((p for p in _CANDIDATE_ICON_DIRS if p.is_dir()), _CANDIDATE
 
 
 class _LRUCache:
+    """_LRUCache."""
     def __init__(self, maxsize: int = 1000):
+        """__init__."""
         self._data: OrderedDict[str, QIcon] = OrderedDict()
         self._maxsize = maxsize
         """__init__."""
 
     def get(self, key: str) -> QIcon | None:
+        """get."""
         if key in self._data:
             self._data.move_to_end(key)
             return self._data[key]
@@ -571,6 +574,7 @@ class _LRUCache:
         """get."""
 
     def set(self, key: str, value: QIcon) -> None:
+        """set."""
         if key in self._data:
             self._data.move_to_end(key)
         self._data[key] = value
@@ -586,6 +590,7 @@ _RENDERER_CACHE: dict[str, QSvgRenderer] = {}
 
 def _render_svg(path_d: str, size: int, color: str,
                 fill: str | None = None) -> QPixmap:
+    """_render_svg."""
     cache_key = f"{path_d}:{color}:{fill}"
     renderer = _RENDERER_CACHE.get(cache_key)
     if renderer is None:
@@ -635,6 +640,7 @@ _ICON_CACHE_MAX = 512
 
 def icon(name: str, size: int = 20, color: str = _CLR_DEFAULT,
          fill: str | None = None) -> QIcon:
+    """icon."""
     cache_key = (name, size, color, fill)
     cached = _ICON_CACHE.get(cache_key)
     if cached is not None:

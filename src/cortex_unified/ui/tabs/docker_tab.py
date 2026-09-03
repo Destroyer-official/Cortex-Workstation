@@ -31,10 +31,12 @@ except ImportError:
             return False
 
 class DockerScanWorker(QThread):
+    """DockerScanWorker."""
     finished = Signal(dict)
     error = Signal(str)
 
     def __init__(self, scan_images: bool, scan_containers: bool, scan_volumes: bool, scan_networks: bool):
+        """__init__."""
         super().__init__()
         self.scan_images = scan_images
         self.scan_containers = scan_containers
@@ -69,10 +71,12 @@ class DockerScanWorker(QThread):
     """DockerScanWorker class."""
 
 class DockerCleanupWorker(QThread):
+    """DockerCleanupWorker."""
     finished = Signal(object)
     error = Signal(str)
 
     def __init__(self, resources: list, dry_run: bool):
+        """__init__."""
         super().__init__()
         self.resources = resources
         self.dry_run = dry_run
@@ -95,6 +99,7 @@ class DockerTab(BaseTab):
     """Tab for docker tab functionality."""
 
     def __init__(self, config, logger, safety_manager):
+        """__init__."""
         super().__init__(config, logger, safety_manager)
         """__init__."""
 
@@ -202,6 +207,7 @@ class DockerTab(BaseTab):
         worker.start()
 
     def _on_worker_finished(self, worker):
+        """_on_worker_finished."""
         self.remove_worker_thread(worker)
         worker.deleteLater()
         """_on_worker_finished."""
@@ -247,6 +253,7 @@ class DockerTab(BaseTab):
             self.docker_cleanup_button.setEnabled(False)
 
     def docker_scan_error(self, error: str):
+        """docker_scan_error."""
         self.logger.error(f'Docker scan error: {error}')
         self.docker_scan_button.setEnabled(True)
         self.docker_progress_bar.setVisible(False)
@@ -319,6 +326,7 @@ class DockerTab(BaseTab):
         self.docker_cleanup_button.setEnabled(False)
 
     def docker_cleanup_error(self, error: str):
+        """docker_cleanup_error."""
         self.logger.error(f'Docker cleanup error: {error}')
         self.docker_scan_button.setEnabled(True)
         self.docker_cleanup_button.setEnabled(True)

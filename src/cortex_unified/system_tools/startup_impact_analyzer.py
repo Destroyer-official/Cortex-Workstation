@@ -61,6 +61,7 @@ class StartupImpactAnalyzer:
 
     @classmethod
     def _extract_exe_path(cls, command: str) -> str:
+        """_extract_exe_path."""
         cmd = command.strip()
         if not cmd:
             return ""

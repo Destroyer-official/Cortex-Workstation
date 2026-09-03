@@ -364,6 +364,7 @@ class LoadTester:
 
     @staticmethod
     def _run_pool(worker, conc, deadline, cancel, progress, result, start):
+        """_run_pool."""
         threads = [threading.Thread(target=worker, args=(i,), daemon=True)
                    for i in range(conc)]
         for t in threads:
@@ -381,6 +382,7 @@ class LoadTester:
 
     @staticmethod
     def _progress_snapshot(result: LoadResult, start: float, final: bool = False) -> dict:
+        """_progress_snapshot."""
         elapsed = max(1e-6, time.monotonic() - start)
         return {
             "elapsed_s": round(elapsed, 1),
@@ -395,6 +397,7 @@ class LoadTester:
 
     @staticmethod
     def _audit(kind: str, target: str, auth: Authorization, conc: int, dur: int) -> None:
+        """_audit."""
         try:
             _AUDIT_LOG.parent.mkdir(parents=True, exist_ok=True)
             ts = time.strftime("%Y-%m-%d %H:%M:%S")

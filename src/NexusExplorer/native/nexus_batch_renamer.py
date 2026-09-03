@@ -19,6 +19,7 @@ from typing import Callable, Dict, List, Optional, Tuple
 
 
 class CaseTransformation(Enum):
+    """CaseTransformation."""
     NONE = "None"
     UPPERCASE = "UPPERCASE"
     LOWERCASE = "lowercase"
@@ -31,6 +32,7 @@ class CaseTransformation(Enum):
 
 @dataclass
 class RenamePlanItem:
+    """RenamePlanItem."""
     original_path: str
     original_name: str
     new_name: str
@@ -43,6 +45,7 @@ class RenamePlanItem:
 
 @dataclass
 class RenameTransaction:
+    """RenameTransaction."""
     timestamp: float
     items: List[Tuple[str, str]]  # (old_path, new_path)
     """RenameTransaction class."""
@@ -52,11 +55,13 @@ class BatchRenamer:
     """Production multi-file renaming engine with preview and safety checks."""
 
     def __init__(self):
+        """__init__."""
         self._history: List[RenameTransaction] = []
         """__init__."""
 
     @staticmethod
     def _apply_case(text: str, transformation: CaseTransformation) -> str:
+        """_apply_case."""
         if transformation == CaseTransformation.UPPERCASE:
             return text.upper()
         if transformation == CaseTransformation.LOWERCASE:
@@ -81,6 +86,7 @@ class BatchRenamer:
 
     @staticmethod
     def _extract_exif_metadata(file_path: Path) -> Dict[str, str]:
+        """_extract_exif_metadata."""
         meta = {"camera": "", "date": "", "dimensions": ""}
         ext = file_path.suffix.lower()
         if ext not in (".jpg", ".jpeg", ".png", ".webp", ".tiff"):
@@ -106,6 +112,7 @@ class BatchRenamer:
 
     @staticmethod
     def _extract_id3_metadata(file_path: Path) -> Dict[str, str]:
+        """_extract_id3_metadata."""
         meta = {"artist": "", "title": "", "album": "", "track": ""}
         ext = file_path.suffix.lower()
         if ext not in (".mp3", ".flac", ".ogg", ".m4a"):
@@ -193,6 +200,7 @@ class BatchRenamer:
             id3_meta = self._extract_id3_metadata(path_obj)
 
             def _replace_tokens(text: str) -> str:
+                """_replace_tokens."""
                 t = text
                 t = t.replace("<name>", stem)
                 t = t.replace("<ext>", ext.lstrip("."))

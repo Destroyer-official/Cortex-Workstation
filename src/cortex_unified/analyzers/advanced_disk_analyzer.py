@@ -130,6 +130,7 @@ class FolderNode:
     extension_stats: Dict[str, int] = field(default_factory=lambda: defaultdict(int))
 
     def add_file(self, rel_path: str, size: int, ext: str) -> None:
+        """add_file."""
         self.size += size
         self.file_count += 1
         self.extension_stats[ext] += size
@@ -149,6 +150,7 @@ class FolderNode:
         """Convert tree to flat list of hierarchy dictionaries for treemaps."""
         result: List[Dict] = []
         def walk(node: "FolderNode", depth: int = 0):
+            """walk."""
             if depth >= max_depth:
                 return
             result.append({
@@ -166,6 +168,7 @@ class FolderNode:
         """Convert tree to sunburst parent-child dictionary list."""
         result: List[Dict] = []
         def walk(node: "FolderNode", depth: int = 0, parent: str = ""):
+            """walk."""
             if depth >= max_depth:
                 return
             result.append({
@@ -182,6 +185,7 @@ class FolderNode:
         """Convert tree to top largest folders bar chart format."""
         items = []
         def walk(node: "FolderNode"):
+            """walk."""
             if node.path != self.path:
                 items.append({"path": node.path, "size": node.size, "name": node.name})
             for child in node.children.values():
@@ -201,8 +205,10 @@ class FolderNode:
 # ---------------------------------------------------------------------------
 
 class Scanner(ABC):
+    """Scanner."""
     def __init__(self, cancel_event: Optional[threading.Event] = None,
                  progress_cb: Optional[Callable[[int, int, str], None]] = None):
+        """__init__."""
         self.cancel_event = cancel_event or threading.Event()
         self.progress_cb = progress_cb
         self._scanned_files = 0
@@ -211,14 +217,17 @@ class Scanner(ABC):
 
     @abstractmethod
     def scan(self, root: str) -> Generator[FileEntry, None, None]:
+        """scan."""
         ...
         """scan."""
 
     def _check_cancel(self) -> bool:
+        """_check_cancel."""
         return self.cancel_event.is_set()
         """_check_cancel."""
 
     def _report(self, path: str) -> None:
+        """_report."""
         self._scanned_files += 1
         if self.progress_cb and self._scanned_files % 100 == 0:
             self.progress_cb(self._scanned_files, self._scanned_bytes, path)
@@ -234,11 +243,13 @@ class NTFSScanner(Scanner):
     """Fast NTFS scanner using direct MFT parsing via Windows API."""
 
     def __init__(self, *args, **kwargs):
+        """__init__."""
         super().__init__(*args, **kwargs)
         self._use_mft = self._check_mft_access()
         """__init__."""
 
     def _check_mft_access(self) -> bool:
+        """_check_mft_access."""
         try:
             import ctypes
             kernel32 = ctypes.windll.kernel32
@@ -254,6 +265,7 @@ class NTFSScanner(Scanner):
         """_check_mft_access."""
 
     def scan(self, root: str) -> Generator[FileEntry, None, None]:
+        """scan."""
         if self._use_mft:
             yield from self._scan_mft(root)
         else:
@@ -261,10 +273,12 @@ class NTFSScanner(Scanner):
         """scan."""
 
     def _scan_mft(self, root: str) -> Generator[FileEntry, None, None]:
+        """_scan_mft."""
         yield from self._scan_walk(root)
         """_scan_mft."""
 
     def _scan_walk(self, root: str) -> Generator[FileEntry, None, None]:
+        """_scan_walk."""
         stack = [root]
         while stack and not self._check_cancel():
             current = stack.pop()
@@ -303,7 +317,9 @@ class NTFSScanner(Scanner):
 # ---------------------------------------------------------------------------
 
 class PosixScanner(Scanner):
+    """PosixScanner."""
     def scan(self, root: str) -> Generator[FileEntry, None, None]:
+        """scan."""
         stack = [root]
         while stack and not self._check_cancel():
             current = stack.pop()
@@ -343,13 +359,16 @@ class PosixScanner(Scanner):
 # ---------------------------------------------------------------------------
 
 class CloudScanner(Scanner):
+    """CloudScanner."""
     def __init__(self, *args, providers: Optional[List[str]] = None, **kwargs):
+        """__init__."""
         super().__init__(*args, **kwargs)
         self.providers = providers or ["onedrive", "gdrive", "dropbox", "s3", "azureblob"]
         self._rclone_available = HAS_RCLONE and self._check_rclone()
         """__init__."""
 
     def _check_rclone(self) -> bool:
+        """_check_rclone."""
         try:
             subprocess.run(["rclone", "version"], capture_output=True, check=True)
             return True
@@ -358,6 +377,7 @@ class CloudScanner(Scanner):
         """_check_rclone."""
 
     def scan(self, root: str) -> Generator[FileEntry, None, None]:
+        """scan."""
         if ":" not in root:
             for provider in self.providers:
                 yield from self._scan_remote(f"{provider}:")
@@ -366,6 +386,7 @@ class CloudScanner(Scanner):
         """scan."""
 
     def _scan_remote(self, remote: str) -> Generator[FileEntry, None, None]:
+        """_scan_remote."""
         if not self._rclone_available:
             return
         try:
@@ -409,6 +430,7 @@ class CloudScanner(Scanner):
 # ---------------------------------------------------------------------------
 
 class AdvancedDiskAnalyzer:
+    """AdvancedDiskAnalyzer."""
     def __init__(
         self,
         include_cloud: bool = False,
@@ -416,6 +438,7 @@ class AdvancedDiskAnalyzer:
         cancel_event: Optional[threading.Event] = None,
         progress_cb: Optional[Callable[[int, int, str], None]] = None,
     ):
+        """__init__."""
         self.cancel_event = cancel_event or threading.Event()
         self.progress_cb = progress_cb
         self._scanner = self._create_scanner(include_cloud, cloud_providers)
@@ -423,6 +446,7 @@ class AdvancedDiskAnalyzer:
         """__init__."""
 
     def _create_scanner(self, include_cloud: bool, providers: Optional[List[str]]) -> Scanner:
+        """_create_scanner."""
         import sys
         if sys.platform == "win32":
             base = NTFSScanner
@@ -438,6 +462,7 @@ class AdvancedDiskAnalyzer:
         """_create_scanner."""
 
     async def scan(self, root: str) -> AsyncGenerator[FileEntry, None]:
+        """scan."""
         scanner_iter = self._scanner.scan(root)
         if hasattr(scanner_iter, "__aiter__"):
             async for entry in scanner_iter:
@@ -448,6 +473,7 @@ class AdvancedDiskAnalyzer:
         """scan."""
 
     def build_tree(self, entries: List[FileEntry]) -> FolderNode:
+        """build_tree."""
         root = FolderNode(name="", path="")
         for entry in entries:
             if entry.is_dir:
@@ -459,6 +485,7 @@ class AdvancedDiskAnalyzer:
         """build_tree."""
 
     def get_visualizations(self) -> Dict:
+        """get_visualizations."""
         if not self._root_node:
             return {}
         return {
@@ -473,6 +500,7 @@ class AdvancedDiskAnalyzer:
         """get_visualizations."""
 
     def get_stats(self) -> Dict:
+        """get_stats."""
         return {
             "scanned_files": self._scanner._scanned_files,
             "scanned_bytes": self._scanner._scanned_bytes,
@@ -498,6 +526,7 @@ def scan_sync(
     progress_cb: Optional[Callable[[int, int, str], None]] = None,
     cancel_event: Optional[threading.Event] = None,
 ) -> Tuple[List[FileEntry], FolderNode]:
+    """scan_sync."""
     analyzer = AdvancedDiskAnalyzer(
         include_cloud=include_cloud,
         cancel_event=cancel_event,
@@ -509,6 +538,7 @@ def scan_sync(
         import asyncio
 
         async def _collect():
+            """_collect."""
             async for entry in scanner_iter:
                 entries.append(entry)
             """_collect."""

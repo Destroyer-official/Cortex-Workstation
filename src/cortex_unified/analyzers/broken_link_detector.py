@@ -31,6 +31,7 @@ class BrokenSymlink(BrokenLink):
     is_absolute: bool = False
     
     def __post_init__(self):
+        """__post_init__."""
         self.link_type = "symlink"
         """__post_init__."""
         """__post_init__."""
@@ -43,6 +44,7 @@ class BrokenShortcut(BrokenLink):
     icon_path: str = ""
     
     def __post_init__(self):
+        """__post_init__."""
         self.link_type = "shortcut"
         """__post_init__."""
         """__post_init__."""
@@ -54,6 +56,7 @@ class BrokenRegistryRef(BrokenLink):
     registry_value: str = ""
     
     def __post_init__(self):
+        """__post_init__."""
         self.link_type = "registry_ref"
         """__post_init__."""
         """__post_init__."""
@@ -745,6 +748,7 @@ class BrokenLinkDetector:
         return search_locations
     
     def attempt_repair(self, broken_link: BrokenLink) -> RepairResult:
+        """attempt_repair."""
         self.logger.info(f"Attempting to repair broken link: {broken_link.path}")
         
         potential_targets = self.find_moved_targets(broken_link.target)
@@ -982,12 +986,14 @@ class BrokenLinkDetector:
         return self.broken_links.copy()
 
     def _cancelled(self) -> bool:
+        """_cancelled."""
         ev = getattr(self, "_cancel_event", None)
         return ev is not None and ev.is_set()
         """_cancelled."""
         """_cancelled."""
 
     def _emit(self, text: str) -> None:
+        """_emit."""
         cb = getattr(self, "_progress", None)
         if cb is not None:
             try:

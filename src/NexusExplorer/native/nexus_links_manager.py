@@ -19,6 +19,7 @@ from typing import Callable, Dict, List, Optional, Set, Tuple
 
 
 class LinkType(Enum):
+    """LinkType."""
     DIRECTORY_JUNCTION = "Directory Junction"
     DIRECTORY_SYMLINK = "Directory Symlink"
     FILE_SYMLINK = "File Symlink"
@@ -29,6 +30,7 @@ class LinkType(Enum):
 
 @dataclass
 class LinkItem:
+    """LinkItem."""
     path: str
     name: str
     link_type: LinkType
@@ -43,6 +45,7 @@ class LinkItem:
 
 @dataclass
 class LinkOperationResult:
+    """LinkOperationResult."""
     success: bool
     message: str
     created_path: Optional[str] = None

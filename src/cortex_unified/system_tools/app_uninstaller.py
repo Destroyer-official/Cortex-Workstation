@@ -137,6 +137,7 @@ class AppUninstaller:
             return None
 
         def _val(name: str, default=""):
+            """_val."""
             try:
                 return winreg.QueryValueEx(sk, name)[0]
             except (FileNotFoundError, OSError):

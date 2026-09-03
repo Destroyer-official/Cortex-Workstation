@@ -89,6 +89,7 @@ class ScanProgress:
     errors: List[str] = None
     
     def __post_init__(self):
+        """__post_init__."""
         if self.errors is None:
             self.errors = []
         """__post_init__."""
@@ -96,6 +97,7 @@ class ScanProgress:
     
     @property
     def overall_progress(self) -> float:
+        """overall_progress."""
         if self.total_locations == 0:
             return 0.0
         base_progress = (self.completed_locations / self.total_locations) * 100
@@ -489,6 +491,7 @@ class DriveManager:
     """Enhanced drive management with monitoring and network drive support."""
     
     def __init__(self, config: Any = None):
+        """__init__."""
         self.config = config
         self._drive_cache: Dict[str, DriveInfo] = {}
         self._network_credentials: Dict[str, Dict[str, str]] = {}
@@ -600,6 +603,7 @@ class DriveManager:
         return 'fixed'
     
     def _get_drive_label(self, path: str) -> str:
+        """_get_drive_label."""
         try:
             if platform.system().lower() == "windows":
                 import ctypes
@@ -629,6 +633,7 @@ class DriveManager:
         """_get_drive_label."""
     
     def _fallback_drive_detection(self) -> List[DriveInfo]:
+        """_fallback_drive_detection."""
         drives = []
         system = platform.system().lower()
         
@@ -818,6 +823,7 @@ class DriveManager:
             self._connect_unix_network_drive(network_drive, credentials)
     
     def _connect_windows_network_drive(self, network_drive: NetworkDrive, credentials: Dict[str, str]) -> None:
+        """_connect_windows_network_drive."""
         try:
             import subprocess
             
@@ -843,6 +849,7 @@ class DriveManager:
     
     def _connect_unix_network_drive(self, network_drive: NetworkDrive, credentials: Dict[str, str]) -> None:
         # For now, just check if the mount point exists
+        """_connect_unix_network_drive."""
         network_drive.is_connected = os.path.exists(network_drive.path)
         """_connect_unix_network_drive."""
         """_connect_unix_network_drive."""
@@ -1044,6 +1051,7 @@ class MultiDriveScanner:
         
         if not scanner_factory:
             def default_scanner_factory(path: str):
+                """default_scanner_factory."""
                 from cortex_unified.core.scanner import Scanner
                 return Scanner(root_path=path)
                 """default_scanner_factory."""
@@ -1181,6 +1189,7 @@ class MultiDriveScanner:
             raise
     
     def _scan_single_drive(self, drive_path: str, scanner_factory: Callable) -> Dict[str, Any]:
+        """_scan_single_drive."""
         scanner = scanner_factory(drive_path)
         empty_files, empty_dirs = scanner.scan()
         
@@ -1197,11 +1206,13 @@ class MultiDriveScanner:
         return self.drive_manager.handle_network_drives(credentials)
     
     def monitor_drive_changes(self, callback: Callable[[str, str], None]) -> None:
+        """monitor_drive_changes."""
         self.drive_manager.monitor_drive_changes(callback)
         """monitor_drive_changes."""
         """monitor_drive_changes."""
     
     def handle_disconnected_drives(self, drive_id: str) -> Dict[str, Any]:
+        """handle_disconnected_drives."""
         return self.drive_manager.handle_disconnected_drives(drive_id)
         """handle_disconnected_drives."""
         """handle_disconnected_drives."""
@@ -1262,6 +1273,7 @@ class MultiDriveScanner:
         return self.user_scanner.detect_user_profiles()
     
     def add_progress_callback(self, callback: Callable[[str], None]) -> None:
+        """add_progress_callback."""
         self._progress_callbacks.append(callback)
         """add_progress_callback."""
         """add_progress_callback."""
@@ -1305,6 +1317,7 @@ class MultiDriveScanner:
     
     def scan_multiple_locations(self, locations: List[Dict[str, Any]], 
                               parallel: bool = True) -> Dict[str, Any]:
+        """scan_multiple_locations."""
         start_time = datetime.now()
         
         # Initialize progress tracking

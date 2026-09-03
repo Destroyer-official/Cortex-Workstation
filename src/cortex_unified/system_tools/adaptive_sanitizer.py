@@ -265,6 +265,7 @@ class AdaptiveSanitizer:
 
     # PL0 – full block erase / 3-pass overwrite (HDD) or Secure Erase (SSD)
     def _pl0(self, p: Path, kind: StorageKind, verify: bool, force: bool, timeout: int) -> SanitizeResult:
+        """_pl0."""
         if kind.overwrite_effective:
             # HDD: honest overwrites still effective – use SecureDeleter's path
             try:
@@ -301,6 +302,7 @@ class AdaptiveSanitizer:
         # PULSE strategy: sub-block aware, hotness separated, limited overwrite
         # pulses to keep RBER <0.57% FG (paper Table 2). On non-elevated or non-SSD
         # we fall back to 1-pass best-effort overwrite.
+        """_pl1."""
         if p.is_dir():
             # Recurse depth-first (WAS-Deletion: separate hot/cold regions)
             failures: list[str] = []
@@ -380,6 +382,7 @@ class AdaptiveSanitizer:
         # Approximation without TPM: overwrite first 4 KiB with random (destroys
         # header / sack), then rename to random, TRIM. Verifiability via read of
         # corrupted header.
+        """_pl2."""
         try:
             if p.is_dir():
                 # For directories, PL2 = recursive PL2 on children (WAS vertical encryption)
@@ -430,6 +433,7 @@ class AdaptiveSanitizer:
 
     # PL3 – controller lockout / TRIM range (logical unmap)
     def _pl3(self, p: Path, kind: StorageKind, verify: bool, timeout: int) -> SanitizeResult:
+        """_pl3."""
         try:
             # Logical unmap: remove directory entry, issue TRIM on parent FS
             if p.is_dir() and not p.is_symlink():

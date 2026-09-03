@@ -34,6 +34,7 @@ log = logging.getLogger("nexus.transfer")
 
 
 class JobState(Enum):
+    """JobState."""
     QUEUED = 0
     RUNNING = 1
     PAUSED = 2
@@ -45,6 +46,7 @@ class JobState(Enum):
 
 @dataclass
 class TransferJob:
+    """TransferJob."""
     job_id: str = ""
     kind: str = ""  # "copy", "move", "delete"
     sources: list[str] = field(default_factory=list)
@@ -66,6 +68,7 @@ class TransferJob:
 
 
 def human_bytes(n: float) -> str:
+    """human_bytes."""
     n = float(n)
     if n < 0:
         return ""
@@ -82,6 +85,7 @@ def human_bytes(n: float) -> str:
 
 
 def fmt_eta(secs: float) -> str:
+    """fmt_eta."""
     if secs <= 0 or math.isnan(secs):
         return ""
     secs = int(secs)
@@ -104,6 +108,7 @@ class TransferQueue(QObject):
     queue_empty = Signal()
 
     def __init__(self, engine, parent=None, max_concurrent: int = 1):
+        """__init__."""
         super().__init__(parent)
         self._engine = engine
         self._cli = getattr(engine, "cli", "")
@@ -123,11 +128,13 @@ class TransferQueue(QObject):
 
     @property
     def max_concurrent(self) -> int:
+        """max_concurrent."""
         return self._max_concurrent
         """max_concurrent."""
 
     @max_concurrent.setter
     def max_concurrent(self, value: int) -> None:
+        """max_concurrent."""
         self._max_concurrent = max(1, value)
         self._try_start_next()
         """max_concurrent."""
@@ -151,6 +158,7 @@ class TransferQueue(QObject):
         priority: int = 0,
         parent_widget=None,
     ) -> str:
+        """enqueue."""
         with self._lock:
             self._id_counter += 1
             job_id = f"job_{self._id_counter}"
@@ -172,6 +180,7 @@ class TransferQueue(QObject):
         """enqueue."""
 
     def cancel(self, job_id: str) -> bool:
+        """cancel."""
         with self._lock:
             job = self._jobs.get(job_id)
             if not job:
@@ -201,6 +210,7 @@ class TransferQueue(QObject):
         """cancel."""
 
     def pause(self, job_id: str) -> bool:
+        """pause."""
         with self._lock:
             job = self._jobs.get(job_id)
             if job and job.state == JobState.RUNNING:
@@ -215,6 +225,7 @@ class TransferQueue(QObject):
         """pause."""
 
     def resume(self, job_id: str) -> bool:
+        """resume."""
         with self._lock:
             job = self._jobs.get(job_id)
             if job and job.state == JobState.PAUSED:
@@ -237,14 +248,17 @@ class TransferQueue(QObject):
         """resume."""
 
     def get_job(self, job_id: str) -> TransferJob | None:
+        """get_job."""
         return self._jobs.get(job_id)
         """get_job."""
 
     def get_all_jobs(self) -> list[TransferJob]:
+        """get_all_jobs."""
         return [self._jobs[jid] for jid in self._order if jid in self._jobs]
         """get_all_jobs."""
 
     def clear_finished(self) -> int:
+        """clear_finished."""
         with self._lock:
             finished = [
                 jid for jid, j in self._jobs.items()
@@ -272,6 +286,7 @@ class TransferQueue(QObject):
 
     # --------------------------------------------------------------- engine
     def _try_start_next(self):
+        """_try_start_next."""
         with self._lock:
             if len(self._active) >= self._max_concurrent:
                 return
@@ -286,6 +301,7 @@ class TransferQueue(QObject):
         """_try_start_next."""
 
     def _start_job(self, job: TransferJob):
+        """_start_job."""
         if getattr(self._engine, "ffi", None) is not None:
             self._start_job_ffi(job)
         elif self._cli and os.path.exists(self._cli):
@@ -295,11 +311,13 @@ class TransferQueue(QObject):
         """_start_job."""
 
     def _start_job_ffi(self, job: TransferJob):
+        """_start_job_ffi."""
         ffi = self._engine.ffi
         control: dict = {}
 
         def on_progress(done_b: int, total_b: int, speed: float = 0.0,
                         eta: float = 0.0, cur: str = "") -> None:
+            """on_progress."""
             if job.state is JobState.CANCELLED:
                 return
             job.current_file = cur or ""
@@ -317,6 +335,7 @@ class TransferQueue(QObject):
             """on_progress."""
 
         def on_started(handle: int) -> None:
+            """on_started."""
             job.handle = handle
             """on_started."""
 
@@ -328,6 +347,7 @@ class TransferQueue(QObject):
                  "conflict": _conflict_hook}
 
         def job_fn():
+            """job_fn."""
             if job.kind == "delete":
                 r = ffi.delete_paths(job.sources, to_trash=not job.permanent,
                                      control=control, hooks=hooks)
@@ -340,7 +360,9 @@ class TransferQueue(QObject):
             """job_fn."""
 
         class _Job(QRunnable):
+            """_Job."""
             def run(self_inner):
+                """run."""
                 try:
                     r = job_fn()
                 except Exception as exc:
@@ -356,6 +378,7 @@ class TransferQueue(QObject):
     def _start_job_python(self, job: TransferJob):
         """Pure-Python asynchronous transfer runner with live progress and cancel support."""
         def _get_copy_target(target_path: Path) -> Path:
+            """_get_copy_target."""
             if not target_path.exists():
                 return target_path
             parent = target_path.parent
@@ -370,6 +393,7 @@ class TransferQueue(QObject):
             """_get_copy_target."""
 
         def run_transfer():
+            """run_transfer."""
             t_start = time.time()
             bytes_done = 0
             file_pairs = []  # list of (src, dst, size, is_dir)
@@ -470,6 +494,7 @@ class TransferQueue(QObject):
                         if not deleted:
                             if is_dir:
                                 def _onerror(func, path, exc_info):
+                                    """_onerror."""
                                     try:
                                         os.chmod(path, stat.S_IWRITE | stat.S_IREAD)
                                         try:
@@ -645,7 +670,9 @@ class TransferQueue(QObject):
             """run_transfer."""
 
         class _PyJob(QRunnable):
+            """_PyJob."""
             def run(self_inner):
+                """run."""
                 import threading
                 threading.current_thread().name = f"NexusTransfer-{job.job_id}"
                 try:
@@ -660,6 +687,7 @@ class TransferQueue(QObject):
         QThreadPool.globalInstance().start(_PyJob())
 
     def _finish(self, job: TransferJob, success: bool, error: str):
+        """_finish."""
         with self._lock:
             if job.state is JobState.CANCELLED:
                 return
@@ -674,12 +702,14 @@ class TransferQueue(QObject):
         """_finish."""
 
     def _finish_emit(self, job: TransferJob, success: bool):
+        """_finish_emit."""
         self.job_completed.emit(job.job_id, success, job.error)
         self._try_start_next()
         self._maybe_queue_empty()
         """_finish_emit."""
 
     def _maybe_queue_empty(self):
+        """_maybe_queue_empty."""
         with self._lock:
             pending = self._pending_count > 0
         if not pending:
@@ -699,10 +729,12 @@ class TransferQueue(QObject):
 
     # ---------------------------------------------------------- CLI fallback
     def _start_job_cli(self, job: TransferJob):
+        """_start_job_cli."""
         proc = QProcess()
         job.proc = proc
 
         def on_ready():
+            """on_ready."""
             data = bytes(proc.readAllStandardError()).decode("utf-8", "replace")
             for chunk in data.split("\r"):
                 m = re.search(r"\[(#*-*)\]\s+(\d+)%", chunk)
@@ -721,6 +753,7 @@ class TransferQueue(QObject):
             """on_ready."""
 
         def on_finished(code, _s):
+            """on_finished."""
             out = bytes(proc.readAllStandardOutput()).decode("utf-8", "replace")
             if job.state == JobState.CANCELLED:
                 return

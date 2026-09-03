@@ -345,6 +345,7 @@ class TaskScheduler:
             return []
     
     def delete_scheduled_task(self, name: str) -> bool:
+        """delete_scheduled_task."""
         try:
             if self.system == "windows":
                 cmd = ["schtasks", "/delete", "/tn", name, "/f"]

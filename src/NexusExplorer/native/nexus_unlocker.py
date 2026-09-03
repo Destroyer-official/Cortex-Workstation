@@ -23,6 +23,7 @@ if platform.system() == "Windows":
     CCH_RM_MAX_SVC_NAME = 63
 
     class RM_UNIQUE_PROCESS(ctypes.Structure):
+        """RM_UNIQUE_PROCESS."""
         _fields_ = [
             ("dwProcessId", wintypes.DWORD),
             ("ProcessStartTime", wintypes.FILETIME),
@@ -30,10 +31,12 @@ if platform.system() == "Windows":
         """RM_UNIQUE_PROCESS class."""
 
     class RM_APP_TYPE(ctypes.c_int):
+        """RM_APP_TYPE."""
         pass
         """RM_APP_TYPE class."""
 
     class RM_PROCESS_INFO(ctypes.Structure):
+        """RM_PROCESS_INFO."""
         _fields_ = [
             ("Process", RM_UNIQUE_PROCESS),
             ("strAppName", wintypes.WCHAR * (CCH_RM_MAX_APP_NAME + 1)),
@@ -48,6 +51,7 @@ if platform.system() == "Windows":
 
 @dataclass
 class LockingProcessInfo:
+    """LockingProcessInfo."""
     pid: int
     name: str
     executable_path: str

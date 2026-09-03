@@ -67,6 +67,7 @@ class LanScanner:
 
     @classmethod
     def _parse(cls, out: str | None) -> list[LanDevice]:
+        """_parse."""
         if not out:
             return []
         devices: list[LanDevice] = []
@@ -93,6 +94,7 @@ class LanScanner:
         """_parse."""
 
     def _run(self) -> str | None:
+        """_run."""
         try:
             proc = _proc.run(
                 ["arp", "-a"], text=True, timeout=15, creationflags=_NO_WINDOW,

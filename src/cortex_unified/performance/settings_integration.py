@@ -23,6 +23,7 @@ class PerformanceSettingsWidget(QWidget):
     settings_applied = Signal(dict)
     
     def __init__(self, parent=None):
+        """__init__."""
         super().__init__(parent)
         self.logger = logging.getLogger(__name__)
         self.settings = QSettings()
@@ -127,6 +128,7 @@ class PerformanceManager:
     """Singleton context managing throttling endpoints globally."""
     
     def __init__(self):
+        """__init__."""
         self.logger = logging.getLogger(__name__)
         self.settings = QSettings() if HAS_PYSIDE6 else None
         
@@ -138,6 +140,7 @@ class PerformanceManager:
         """__init__."""
 
     def load_saved_settings(self):
+        """load_saved_settings."""
         if not self.settings: return
         try:
             properties = {
@@ -180,6 +183,7 @@ class PerformanceManager:
             self.throttler.stop_monitoring()
 
     def create_settings_widget(self, parent=None):
+        """create_settings_widget."""
         if HAS_PYSIDE6:
             return PerformanceSettingsWidget(parent)
         return None
@@ -188,6 +192,7 @@ class PerformanceManager:
 
 _perf_manager = None
 def get_performance_manager() -> PerformanceManager:
+    """get_performance_manager."""
     global _perf_manager
     if _perf_manager is None:
         _perf_manager = PerformanceManager()

@@ -27,6 +27,7 @@ class Config:
     """
 
     def __init__(self, config_path: str = None):
+        """__init__."""
         self.config_path = config_path or self._get_default_config_path()
         self.config_data = self._load_config()
         """__init__."""
@@ -115,26 +116,31 @@ class Config:
     
     @property
     def default_action(self) -> str:
+        """default_action."""
         return self.config_data.get("default_action", "dry_run")
         """default_action."""
     
     @property
     def log_file(self) -> str:
+        """log_file."""
         return self.config_data.get("log_file", "")
         """log_file."""
     
     @property
     def json_logging(self) -> bool:
+        """json_logging."""
         return self.config_data.get("json_logging", False)
         """json_logging."""
     
     @property
     def threads(self) -> int:
+        """threads."""
         return self.config_data.get("threads", 0)  # 0 means use CPU count
         """threads."""
     
     @property
     def follow_symlinks(self) -> bool:
+        """follow_symlinks."""
         return self.config_data.get("follow_symlinks", False)
         """follow_symlinks."""
     

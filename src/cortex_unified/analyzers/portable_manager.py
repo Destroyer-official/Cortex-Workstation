@@ -71,6 +71,7 @@ except ImportError:
 
 @dataclass(slots=True)
 class PortableApp:
+    """PortableApp."""
     id: str
     name: str
     version: str
@@ -84,6 +85,7 @@ class PortableApp:
     latest_version: Optional[str] = None
 
     def to_dict(self) -> dict:
+        """to_dict."""
         d = {k: v for k, v in self.__dict__.items()}
         d["path"] = str(d["path"])
         d["launch_exe"] = str(d["launch_exe"]) if d["launch_exe"] else None
@@ -97,6 +99,7 @@ class PortableApp:
 # ---------------------------------------------------------------------------
 
 def _find_removable_drives() -> List[Path]:
+    """_find_removable_drives."""
     drives: List[Path] = []
     try:
         if os.name == "nt":
@@ -127,6 +130,7 @@ def _find_removable_drives() -> List[Path]:
     """_find_removable_drives."""
 
 def _find_portable_roots() -> List[Path]:
+    """_find_portable_roots."""
     roots: List[Path] = []
     # env
     for key in ("PORTABLEAPPS", "PORTABLEAPPS_DIR", "LIBERKEY"):
@@ -170,6 +174,7 @@ def _find_portable_roots() -> List[Path]:
 # ---------------------------------------------------------------------------
 
 def _parse_appinfo(ini_path: Path) -> Optional[PortableApp]:
+    """_parse_appinfo."""
     try:
         cfg = configparser.ConfigParser()
         cfg.read(ini_path, encoding="utf-8")
@@ -209,14 +214,17 @@ def _parse_appinfo(ini_path: Path) -> Optional[PortableApp]:
 # ---------------------------------------------------------------------------
 
 class PortableManager:
+    """PortableManager."""
     def __init__(self, progress: Callable[[str], None] | None = None,
                  cancel: threading.Event | None = None):
+        """__init__."""
         self.progress = progress or (lambda _: None)
         self.cancel = cancel or threading.Event()
         """__init__."""
         """__init__."""
 
     def scan_portable_roots(self, roots: List[Path] | None = None) -> List[PortableApp]:
+        """scan_portable_roots."""
         roots = roots or _find_portable_roots()
         apps: List[PortableApp] = []
         for root in roots:

@@ -30,12 +30,14 @@ class GuardVerdict:
     reason: str = ""
 
     def __bool__(self) -> bool:  # allow ``if guard.check(p):``
+        """__bool__."""
         return self.safe
         """__bool__."""
         """__bool__."""
 
 
 def _windows_protected() -> set[Path]:
+    """_windows_protected."""
     system_drive = os.environ.get("SystemDrive", "C:") + "\\"
     roots = {
         Path(system_drive) / "Windows",
@@ -57,6 +59,7 @@ def _windows_protected() -> set[Path]:
 
 
 def _posix_protected() -> set[Path]:
+    """_posix_protected."""
     base = {
         "/", "/bin", "/sbin", "/usr", "/lib", "/lib64", "/etc", "/boot",
         "/dev", "/proc", "/sys", "/run", "/var", "/root",
@@ -73,6 +76,7 @@ class PathGuard:
 
     def __init__(self, sandbox: os.PathLike[str] | str | None = None,
                  allow_system: bool = False) -> None:
+        """__init__."""
         self._system = platform.system()
         self._protected = (
             _windows_protected() if self._system == "Windows" else _posix_protected()

@@ -88,6 +88,7 @@ class CloudFileEntry:
     metadata: Dict[str, str] = field(default_factory=dict)
 
     def to_dict(self) -> dict:
+        """to_dict."""
         import dataclasses
         d = dataclasses.asdict(self)
         d["mtime"] = self.mtime.isoformat()
@@ -98,6 +99,7 @@ class CloudFileEntry:
 
 @dataclass
 class CloudScanStats:
+    """CloudScanStats."""
     total_objects: int = 0
     total_size_bytes: int = 0
     by_storage_class: Dict[str, int] = field(default_factory=lambda: defaultdict(int))
@@ -121,6 +123,7 @@ class DuplicateGroup:
 
     @property
     def wasted_bytes(self) -> int:
+        """wasted_bytes."""
         return self.size * (len(self.entries) + len(self.local_paths) - 1)
         """wasted_bytes."""
         """wasted_bytes."""
@@ -131,6 +134,7 @@ class DuplicateGroup:
 # ---------------------------------------------------------------------------
 
 def _pricing_cache_dir() -> Path:
+    """_pricing_cache_dir."""
     base = os.environ.get("LOCALAPPDATA") or os.environ.get("XDG_CACHE_HOME")
     root = Path(base) if base else (Path.home() / ".cache")
     d = root / "Cortex" / "pricing"
@@ -151,6 +155,7 @@ class PricingCatalog:
     """
 
     def __init__(self, ttl_hours: int = 168, timeout: int = 20):
+        """__init__."""
         self.ttl_seconds = max(1, ttl_hours) * 3600
         self.timeout = timeout
         """__init__."""
@@ -159,12 +164,14 @@ class PricingCatalog:
     # -- cache plumbing
 
     def _cache_file(self, provider: str, region: str) -> Path:
+        """_cache_file."""
         safe = urllib.parse.quote(f"{provider}_{region}", safe="")
         return _pricing_cache_dir() / f"{safe}.json"
         """_cache_file."""
         """_cache_file."""
 
     def _read_cache(self, provider: str, region: str) -> Optional[Dict[str, float]]:
+        """_read_cache."""
         f = self._cache_file(provider, region)
         if not f.exists():
             return None
@@ -180,6 +187,7 @@ class PricingCatalog:
         """_read_cache."""
 
     def _write_cache(self, provider: str, region: str, rates: Dict[str, float]) -> None:
+        """_write_cache."""
         try:
             self._cache_file(provider, region).write_text(
                 json.dumps({"fetched_at": time.time(), "region": region, "rates": rates}, indent=2),
@@ -191,6 +199,7 @@ class PricingCatalog:
         """_write_cache."""
 
     def _http_json(self, url: str) -> Optional[Any]:
+        """_http_json."""
         req = urllib.request.Request(url, headers={"Accept": "application/json",
                                                    "User-Agent": "cortex-cleaner"})
         try:
@@ -205,6 +214,7 @@ class PricingCatalog:
 
     def _fetch_aws(self, region: str) -> Dict[str, float]:
         # Region index published by AWS for the AmazonS3 offer.
+        """_fetch_aws."""
         idx = self._http_json(
             "https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AmazonS3/current/region_index.json"
         )
@@ -247,6 +257,7 @@ class PricingCatalog:
     # -- Azure Blob: Retail Prices API (no credentials required)
 
     def _fetch_azure(self, region: str) -> Dict[str, float]:
+        """_fetch_azure."""
         base = ("https://prices.azure.com/api/retail/prices?$filter="
                 "serviceName eq 'Storage' and priceType eq 'Consumption'"
                 f" and armRegionName eq '{region}'")
@@ -276,6 +287,7 @@ class PricingCatalog:
     # -- public
 
     def rates(self, provider: str, region: str) -> Dict[str, float]:
+        """rates."""
         cached = self._read_cache(provider, region)
         if cached is not None:
             return cached
@@ -292,6 +304,7 @@ class PricingCatalog:
         """rates."""
 
     def rate(self, provider: str, region: str, storage_class: str) -> Optional[float]:
+        """rate."""
         table = self.rates(provider, region)
         if not table:
             return None
@@ -332,6 +345,7 @@ class CloudProvider(ABC):
     pricing_key: str = ""
 
     def __init__(self, config: Dict[str, Any]):
+        """__init__."""
         self.config = config
         self.name = self.__class__.__name__.replace("Provider", "").lower()
         """__init__."""
@@ -344,6 +358,7 @@ class CloudProvider(ABC):
         prefix: str = "",
         max_keys: Optional[int] = None,
     ) -> AsyncGenerator[CloudFileEntry, None]:
+        """list_objects."""
         pass
         """list_objects."""
         """list_objects."""
@@ -378,6 +393,7 @@ class CloudProvider(ABC):
         return total
 
     def validate_config(self) -> Tuple[bool, str]:
+        """validate_config."""
         return True, ""
         """validate_config."""
         """validate_config."""
@@ -388,9 +404,11 @@ class CloudProvider(ABC):
 # ---------------------------------------------------------------------------
 
 class S3Provider(CloudProvider):
+    """S3Provider."""
     pricing_key = "s3"
 
     def __init__(self, config: Dict[str, Any]):
+        """__init__."""
         super().__init__(config)
         self._client = None
         self._resolved_region: Optional[str] = None
@@ -399,6 +417,7 @@ class S3Provider(CloudProvider):
         """__init__."""
 
     def _init_client(self):
+        """_init_client."""
         try:
             import boto3
         except ImportError:
@@ -428,11 +447,13 @@ class S3Provider(CloudProvider):
     @property
     def region(self) -> str:
         # Prefer the bucket's own region so pricing matches where data lives.
+        """region."""
         return self._resolved_region or super().region
         """region."""
         """region."""
 
     def _bucket_region(self, bucket: str) -> Optional[str]:
+        """_bucket_region."""
         if not self._client:
             return None
         try:
@@ -455,6 +476,7 @@ class S3Provider(CloudProvider):
         prefix: str = "",
         max_keys: Optional[int] = None,
     ) -> AsyncGenerator[CloudFileEntry, None]:
+        """list_objects."""
         if not self._client:
             return
         region = self._bucket_region(bucket)
@@ -502,6 +524,7 @@ class S3Provider(CloudProvider):
         """list_objects."""
 
     def estimate_cost(self, stats: CloudScanStats) -> float:
+        """estimate_cost."""
         return super().estimate_cost(stats)
         """estimate_cost."""
     """S3Provider class."""
@@ -513,9 +536,11 @@ class S3Provider(CloudProvider):
 # ---------------------------------------------------------------------------
 
 class AzureBlobProvider(CloudProvider):
+    """AzureBlobProvider."""
     pricing_key = "azure"
 
     def __init__(self, config: Dict[str, Any]):
+        """__init__."""
         super().__init__(config)
         self._client = None
         self._resolved_region: Optional[str] = None
@@ -524,6 +549,7 @@ class AzureBlobProvider(CloudProvider):
         """__init__."""
 
     def _init_client(self):
+        """_init_client."""
         try:
             from azure.storage.blob import BlobServiceClient
         except ImportError:
@@ -549,6 +575,7 @@ class AzureBlobProvider(CloudProvider):
 
     @property
     def region(self) -> str:
+        """region."""
         if self._resolved_region:
             return self._resolved_region
         configured = super().region
@@ -574,6 +601,7 @@ class AzureBlobProvider(CloudProvider):
         prefix: str = "",
         max_keys: Optional[int] = None,
     ) -> AsyncGenerator[CloudFileEntry, None]:
+        """list_objects."""
         if not self._client:
             return
         container_client = self._client.get_container_client(container)
@@ -611,6 +639,7 @@ class AzureBlobProvider(CloudProvider):
         """list_objects."""
 
     def estimate_cost(self, stats: CloudScanStats) -> float:
+        """estimate_cost."""
         return super().estimate_cost(stats)
         """estimate_cost."""
     """AzureBlobProvider class."""
@@ -634,6 +663,7 @@ class GoogleDriveProvider(CloudProvider):
     API = "https://www.googleapis.com/drive/v3/files"
 
     def __init__(self, config: Dict[str, Any]):
+        """__init__."""
         super().__init__(config)
         self._token = (config.get("access_token")
                        or os.environ.get("GOOGLE_OAUTH_ACCESS_TOKEN")
@@ -642,6 +672,7 @@ class GoogleDriveProvider(CloudProvider):
         """__init__."""
 
     def _get(self, params: Dict[str, str]) -> Optional[Dict[str, Any]]:
+        """_get."""
         if not self._token:
             return None
         url = f"{self.API}?{urllib.parse.urlencode(params)}"
@@ -663,6 +694,7 @@ class GoogleDriveProvider(CloudProvider):
         prefix: str = "",
         max_keys: Optional[int] = None,
     ) -> AsyncGenerator[CloudFileEntry, None]:
+        """list_objects."""
         if not self._token:
             return
         folder = bucket or "root"
@@ -730,6 +762,7 @@ class OneDriveProvider(CloudProvider):
     GRAPH = "https://graph.microsoft.com/v1.0"
 
     def __init__(self, config: Dict[str, Any]):
+        """__init__."""
         super().__init__(config)
         self._token = (config.get("access_token")
                        or os.environ.get("MSGRAPH_ACCESS_TOKEN")
@@ -738,6 +771,7 @@ class OneDriveProvider(CloudProvider):
         """__init__."""
 
     def _get(self, url: str) -> Optional[Dict[str, Any]]:
+        """_get."""
         if not self._token:
             return None
         req = urllib.request.Request(url, headers={
@@ -758,6 +792,7 @@ class OneDriveProvider(CloudProvider):
         prefix: str = "",
         max_keys: Optional[int] = None,
     ) -> AsyncGenerator[CloudFileEntry, None]:
+        """list_objects."""
         if not self._token:
             return
         drive = (bucket or "me/drive").strip("/")
@@ -814,6 +849,7 @@ class RcloneProvider(CloudProvider):
     pricing_key = ""  # Backend-specific; rates are attributed to the native provider.
 
     def __init__(self, config: Dict[str, Any]):
+        """__init__."""
         super().__init__(config)
         self.remote = str(config.get("remote", "") or "")
         self.binary = self._locate_binary(config.get("binary"))
@@ -822,6 +858,7 @@ class RcloneProvider(CloudProvider):
 
     @staticmethod
     def _locate_binary(explicit: Optional[str]) -> Optional[str]:
+        """_locate_binary."""
         import shutil as _shutil
         for candidate in (explicit, os.environ.get("RCLONE_BINARY"), "rclone"):
             if not candidate:
@@ -835,6 +872,7 @@ class RcloneProvider(CloudProvider):
 
     @property
     def available(self) -> bool:
+        """available."""
         return self.binary is not None
         """available."""
         """available."""
@@ -858,6 +896,7 @@ class RcloneProvider(CloudProvider):
         prefix: str = "",
         max_keys: Optional[int] = None,
     ) -> AsyncGenerator[CloudFileEntry, None]:
+        """list_objects."""
         if not self.binary:
             return
         remote = self.remote or bucket
@@ -905,6 +944,7 @@ class RcloneProvider(CloudProvider):
 
     def estimate_cost(self, stats: CloudScanStats) -> float:
         # Backends vary; the native provider classes own pricing.
+        """estimate_cost."""
         return 0.0
         """estimate_cost."""
         """estimate_cost."""
@@ -932,6 +972,7 @@ class CloudStorageAnalyzer:
         cancel_event: Optional[threading.Event] = None,
         progress_cb: Optional[Callable[[int, int, str], None]] = None,
     ):
+        """__init__."""
         self.cancel_event = cancel_event or threading.Event()
         self.progress_cb = progress_cb
         self.provider_configs = provider_configs or {}
@@ -941,6 +982,7 @@ class CloudStorageAnalyzer:
         """__init__."""
 
     def _init_providers(self, default: str):
+        """_init_providers."""
         for name, cls in self.PROVIDERS.items():
             config = dict(self.provider_configs.get(name) or {})
             try:
@@ -953,6 +995,7 @@ class CloudStorageAnalyzer:
         """_init_providers."""
 
     def get_provider(self, name: str) -> Optional[CloudProvider]:
+        """get_provider."""
         return self._providers.get(name)
         """get_provider."""
         """get_provider."""
@@ -1046,6 +1089,7 @@ class CloudStorageAnalyzer:
         t0 = time.time()
 
         async def _collect():
+            """_collect."""
             async for entry in self.scan(target, max_objects):
                 entries.append(entry)
                 stats.total_objects += 1

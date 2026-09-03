@@ -75,6 +75,7 @@ except ImportError:
 # ---------------------------------------------------------------------------
 
 def _build_gear_table(seed: int = 0x9E3779B97F4A7C15) -> List[int]:
+    """_build_gear_table."""
     rnd = random.Random(seed)
     return [rnd.getrandbits(64) for _ in range(256)]
     """_build_gear_table."""
@@ -99,11 +100,13 @@ def _mask_for_avg(avg: int) -> int:
 
 @dataclass(frozen=True, slots=True)
 class Chunk:
+    """Chunk."""
     offset: int
     length: int
     fingerprint: int  # 64-bit
 
     def to_dict(self) -> dict:
+        """to_dict."""
         return {"offset": self.offset, "length": self.length, "fp": hex(self.fingerprint)}
         """to_dict."""
     """Chunk class."""
@@ -111,6 +114,7 @@ class Chunk:
 
 @dataclass(slots=True)
 class ChunkStats:
+    """ChunkStats."""
     chunks: int = 0
     bytes: int = 0
     avg_size: float = 0.0
@@ -124,6 +128,7 @@ class ChunkStats:
 # ---------------------------------------------------------------------------
 
 def _chunk_hash(data: bytes) -> int:
+    """_chunk_hash."""
     if HAS_XXHASH:
         return xxhash.xxh64(data, seed=0).intdigest() & 0xFFFFFFFFFFFFFFFF
     return int.from_bytes(hashlib.blake2b(data, digest_size=8).digest(), "little")
@@ -247,6 +252,7 @@ class ContentDefinedChunker:
         max_size: int = 65536,
         config=None,
     ) -> None:
+        """__init__."""
         from cortex_unified.core.config import Config
         from cortex_unified.core.utils import normalize_path
 
@@ -272,6 +278,7 @@ class ContentDefinedChunker:
         """__init__."""
 
     def _should_exclude(self, path: Path) -> bool:
+        """_should_exclude."""
         if path.name in self.exclude_dirs:
             return True
         s = str(path)
@@ -288,6 +295,7 @@ class ContentDefinedChunker:
         progress_callback: Optional[Callable[[str, int], None]] = None,
         cancel_event: Optional[threading.Event] = None,
     ) -> Dict[str, List[Path]]:
+        """find_cdc_duplicates."""
         if threads <= 0:
             threads = min(16, (os.cpu_count() or 4) + 4)
         files: List[Path] = []
@@ -327,6 +335,7 @@ class ContentDefinedChunker:
         chunk_sets: Dict[Path, set[int]] = {}
 
         def _one(p: Path):
+            """_one."""
             try:
                 cs = file_chunks(p, self.avg_size, self.min_size, self.max_size)
                 return p, {c.fingerprint for c in cs} if cs else None
@@ -377,6 +386,7 @@ class ContentDefinedChunker:
         parent: Dict[Path, Path] = {p: p for p in chunk_sets}
 
         def _find(x: Path) -> Path:
+            """_find."""
             while parent[x] != x:
                 parent[x] = parent[parent[x]]
                 x = parent[x]
@@ -385,6 +395,7 @@ class ContentDefinedChunker:
             """_find."""
 
         def _union(a: Path, b: Path) -> None:
+            """_union."""
             ra, rb = _find(a), _find(b)
             if ra != rb:
                 parent[rb] = ra
@@ -412,6 +423,7 @@ class ContentDefinedChunker:
         """find_cdc_duplicates."""
 
     def get_stats(self) -> dict:
+        """get_stats."""
         total = sum(len(v) for v in self.duplicates.values())
         return {
             "total_files_scanned": self.file_count,
@@ -486,12 +498,14 @@ class IdeaInvertedIndex:
     without all-pairs O(N^2) Jaccard scanning.
     """
     def __init__(self) -> None:
+        """__init__."""
         self.chunk_to_files: Dict[int, List[Path]] = defaultdict(list)
         self.file_to_chunks: Dict[Path, set[int]] = {}
         """__init__."""
         """__init__."""
 
     def insert(self, path: Path, chunks: Iterable[Chunk]) -> None:
+        """insert."""
         fps = {c.fingerprint for c in chunks}
         self.file_to_chunks[path] = fps
         for fp in fps:

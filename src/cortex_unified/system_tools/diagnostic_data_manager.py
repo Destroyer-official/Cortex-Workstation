@@ -130,6 +130,7 @@ class DiagnosticDataManager:
 
     @classmethod
     def _read_dword(cls, hive, subkey: str, name: str) -> Optional[int]:
+        """_read_dword."""
         if winreg is None:
             return None
         try:
@@ -143,6 +144,7 @@ class DiagnosticDataManager:
 
     @classmethod
     def _write_dword(cls, hive, subkey: str, name: str, value: int) -> bool:
+        """_write_dword."""
         if winreg is None:
             return False
         try:

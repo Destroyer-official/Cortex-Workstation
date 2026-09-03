@@ -18,6 +18,7 @@ class NavigationController(QWidget):
     tab_requested = Signal(str)  # Emitted when a specific tab is requested
     
     def __init__(self, parent=None):
+        """__init__."""
         super().__init__(parent)
         
         # Internal state

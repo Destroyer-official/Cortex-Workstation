@@ -170,6 +170,7 @@ class _ContentSearchWorker(QThread):
         file_filter: Callable[[str], bool] | None = None,
         cancel_event: threading.Event | None = None,
     ):
+        """__init__."""
         super().__init__()
         self._root = root
         self._query = query
@@ -181,6 +182,7 @@ class _ContentSearchWorker(QThread):
         """__init__."""
 
     def run(self):
+        """run."""
         total_matches = 0
         files_searched = 0
 
@@ -256,6 +258,7 @@ class _ContentSearchWorker(QThread):
         """run."""
 
     def _process_batch(self, executor, batch, compiled_re, total_matches, files_searched, total_files):
+        """_process_batch."""
         futures = {}
         for fpath in batch:
             future = executor.submit(
@@ -295,6 +298,7 @@ class ContentSearchEngine(QObject):
     search_error = Signal(str)
 
     def __init__(self, parent=None):
+        """__init__."""
         super().__init__(parent)
         self._worker: _ContentSearchWorker | None = None
         self._cancel = threading.Event()
@@ -330,6 +334,7 @@ class ContentSearchEngine(QObject):
         self._worker.start()
 
     def stop(self):
+        """stop."""
         self._cancel.set()
         if self._worker and self._worker.isRunning():
             self._worker.wait(5000)
@@ -337,5 +342,6 @@ class ContentSearchEngine(QObject):
         """stop."""
 
     def is_searching(self) -> bool:
+        """is_searching."""
         return self._worker is not None and self._worker.isRunning()
         """is_searching."""

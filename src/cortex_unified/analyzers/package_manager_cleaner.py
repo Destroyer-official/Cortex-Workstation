@@ -31,6 +31,7 @@ class Package:
     manager: str = ""
     
     def __post_init__(self):
+        """__post_init__."""
         if self.dependencies is None:
             self.dependencies = []
         """__post_init__."""
@@ -57,6 +58,7 @@ class CleanupResult:
     backup_path: Optional[str] = None
     
     def __post_init__(self):
+        """__post_init__."""
         if self.errors is None:
             self.errors = []
         """__post_init__."""
@@ -70,6 +72,7 @@ class HealthStatus:
     recommendations: List[str] = None
     
     def __post_init__(self):
+        """__post_init__."""
         if self.issues is None:
             self.issues = []
         """__post_init__."""
@@ -1038,6 +1041,7 @@ class PackageManagerCleaner:
                     pattern_map[pat] = (cat_id, desc)
         
         def _match_dir(d_name: str) -> Optional[tuple]:
+            """_match_dir."""
             if d_name in pattern_map:
                 return pattern_map[d_name]
             for pat, (cat_id, desc) in pattern_map.items():

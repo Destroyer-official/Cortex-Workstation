@@ -271,6 +271,7 @@ class DeepCleaner:
         return self.found_items
     
     def get_stats(self) -> dict:
+        """get_stats."""
         total_size = sum(item["size"] for item in self.found_items)
         return {
             "items_found": len(self.found_items),
@@ -281,6 +282,7 @@ class DeepCleaner:
         """get_stats."""
     
     def _format_bytes(self, bytes_count: int) -> str:
+        """_format_bytes."""
         for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
             if bytes_count < 1024.0:
                 return f"{bytes_count:.1f} {unit}"

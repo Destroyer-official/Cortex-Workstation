@@ -480,6 +480,7 @@ class PrivacyBlocker:
     # -- registry helpers
 
     def _reg_set(self, path: str, value: str, data: Any, dtype: int) -> bool:
+        """_reg_set."""
         if self.dry_run:
             self.progress(f"[DRY-RUN] Set {path}\\{value} = {data} ({dtype})")
             return True
@@ -496,6 +497,7 @@ class PrivacyBlocker:
         """_reg_set."""
 
     def _reg_get(self, path: str, value: str) -> Any:
+        """_reg_get."""
         try:
             hive_str, subkey = path.split("\\", 1)
             hive = getattr(winreg, hive_str)
@@ -522,6 +524,7 @@ class PrivacyBlocker:
     # -- service helpers
 
     def _svc_set_start(self, name: str, start_type: int) -> bool:
+        """_svc_set_start."""
         if self.dry_run:
             self.progress(f"[DRY-RUN] Set service {name} start type = {start_type}")
             return True
@@ -537,6 +540,7 @@ class PrivacyBlocker:
         """_svc_set_start."""
 
     def _svc_get_start(self, name: str) -> Optional[int]:
+        """_svc_get_start."""
         try:
             out = subprocess.run(["sc", "qc", name], capture_output=True, text=True).stdout
             for line in out.splitlines():
@@ -551,6 +555,7 @@ class PrivacyBlocker:
     # -- scheduled task helpers
 
     def _task_set_enabled(self, path: str, enabled: bool) -> bool:
+        """_task_set_enabled."""
         if self.dry_run:
             self.progress(f"[DRY-RUN] Set task {path} enabled = {enabled}")
             return True
@@ -564,6 +569,7 @@ class PrivacyBlocker:
     # -- firewall helpers
 
     def _fw_add_block(self, name: str, direction: str, program: str) -> bool:
+        """_fw_add_block."""
         if self.dry_run:
             self.progress(f"[DRY-RUN] Add firewall block rule {name}")
             return True
@@ -577,6 +583,7 @@ class PrivacyBlocker:
     # -- IFEO helpers
 
     def _ifeo_set(self, target: str, debugger: str) -> bool:
+        """_ifeo_set."""
         if self.dry_run:
             self.progress(f"[DRY-RUN] Set IFEO {target} = {debugger}")
             return True
@@ -586,6 +593,7 @@ class PrivacyBlocker:
         """_ifeo_set."""
 
     def _ifeo_remove(self, target: str) -> bool:
+        """_ifeo_remove."""
         if self.dry_run:
             return True
         path = rf"HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\{target}"

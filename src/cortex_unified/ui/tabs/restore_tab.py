@@ -23,10 +23,12 @@ from cortex_unified.reports.restore_manager import RestoreManager
 
 
 class RestoreWorker(QThread):
+    """RestoreWorker."""
     finished_restore = Signal(dict)
     error_occurred = Signal(str)
 
     def __init__(self, manager: RestoreManager, target_path: str):
+        """__init__."""
         super().__init__()
         self.manager = manager
         self.target_path = target_path
@@ -34,6 +36,7 @@ class RestoreWorker(QThread):
         """__init__."""
 
     def run(self):
+        """run."""
         try:
             res = self.manager.restore_from_manifest(self.target_path, dry_run=False)
             self.finished_restore.emit(res)
@@ -48,6 +51,7 @@ class RestoreTab(BaseTab):
     """Tab for restore functionality and recovery."""
 
     def __init__(self, config, logger, safety_manager):
+        """__init__."""
         super().__init__(config, logger, safety_manager)
         self.restore_manager = RestoreManager(config)
         """__init__."""
@@ -112,6 +116,7 @@ class RestoreTab(BaseTab):
         QTimer.singleShot(100, self.refresh_manifests)
 
     def _on_table_selection(self):
+        """_on_table_selection."""
         has_sel = len(self.manifests_table.selectedItems()) > 0
         self.restore_button.setEnabled(has_sel)
         self.delete_manifest_button.setEnabled(has_sel)
@@ -189,6 +194,7 @@ class RestoreTab(BaseTab):
         worker.start()
 
     def _on_restore_completed(self, results):
+        """_on_restore_completed."""
         restored = results.get("restored", 0)
         errors = results.get("error_details", [])
         
@@ -203,12 +209,14 @@ class RestoreTab(BaseTab):
         """_on_restore_completed."""
 
     def _on_restore_error(self, err_string):
+        """_on_restore_error."""
         self.logger.error(f"Restore Tab Thread Event Crash: {err_string}")
         QMessageBox.critical(self, "Snapshot Error", f"The operation aborted fatally: {err_string}")
         """_on_restore_error."""
         """_on_restore_error."""
         
     def _on_worker_finished(self, worker):
+        """_on_worker_finished."""
         self.restore_progress_bar.setVisible(False)
         self.refresh_manifests_button.setEnabled(True)
         self.remove_worker_thread(worker)
@@ -217,6 +225,7 @@ class RestoreTab(BaseTab):
         """_on_worker_finished."""
 
     def delete_snapshot(self):
+        """delete_snapshot."""
         row = self.manifests_table.currentRow()
         if row < 0: return
         

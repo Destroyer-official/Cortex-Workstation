@@ -162,11 +162,13 @@ _dpi_scale = 1.0
 
 
 def _scaled(px: int) -> int:
+    """_scaled."""
     return int(px * _dpi_scale)
     """_scaled."""
 
 
 def _init_dpi():
+    """_init_dpi."""
     global _dpi_scale
     try:
         hdc = ctypes.windll.user32.GetDC(0)
@@ -790,6 +792,7 @@ class DebugOverlay(QWidget):
     """F12 debug panel: FPS, memory, keyboard log, engine log, feature matrix."""
 
     def __init__(self, parent=None):
+        """__init__."""
         super().__init__(parent)
         self.setObjectName("DebugOverlay")
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.Tool)
@@ -804,6 +807,7 @@ class DebugOverlay(QWidget):
         """__init__."""
 
     def log_event(self, text: str):
+        """log_event."""
         ts = time.strftime("%H:%M:%S")
         self._lines.append(f"[{ts}] {text}")
         if len(self._lines) > self._max_lines:
@@ -812,6 +816,7 @@ class DebugOverlay(QWidget):
         """log_event."""
 
     def tick_fps(self):
+        """tick_fps."""
         self._frame_count += 1
         now = time.monotonic()
         dt = now - self._last_time
@@ -823,6 +828,7 @@ class DebugOverlay(QWidget):
         """tick_fps."""
 
     def paintEvent(self, ev):  # noqa: N802
+        """paintEvent."""
         p = QPainter(self)
         try:
             p.setRenderHint(QPainter.RenderHint.Antialiasing)
@@ -860,6 +866,7 @@ class CrumbBar(QWidget):
     editRequested = Signal()
 
     def __init__(self, parent=None):
+        """__init__."""
         super().__init__(parent)
         self._path = ""
         self._hits: list[tuple[int, int, str]] = []
@@ -874,12 +881,14 @@ class CrumbBar(QWidget):
         """__init__."""
 
     def setPath(self, path: str) -> None:
+        """setPath."""
         self._path = path
         self._hits = []
         self.update()
         """setPath."""
 
     def _segments(self):
+        """_segments."""
         parts = [p for p in self._path.replace("/", "\\").split("\\") if p]
         out, cum = [], ""
         for i, p in enumerate(parts):
@@ -892,14 +901,17 @@ class CrumbBar(QWidget):
         """_segments."""
 
     def mouseMoveEvent(self, ev):  # noqa: N802
+        """mouseMoveEvent."""
         self.update()
         """mouseMoveEvent."""
 
     def leaveEvent(self, ev):  # noqa: N802
+        """leaveEvent."""
         self.update()
         """leaveEvent."""
 
     def paintEvent(self, ev):  # noqa: N802
+        """paintEvent."""
         p = QPainter(self)
         try:
             p.setRenderHint(QPainter.RenderHint.Antialiasing)
@@ -942,6 +954,7 @@ class CrumbBar(QWidget):
         """paintEvent."""
 
     def mouseReleaseEvent(self, ev):
+        """mouseReleaseEvent."""
         x = ev.position().x()
         for x0, x1, target in self._hits:
             if x0 <= x <= x1:
@@ -951,6 +964,7 @@ class CrumbBar(QWidget):
         """mouseReleaseEvent."""
 
     def mouseDoubleClickEvent(self, ev):  # noqa: N802
+        """mouseDoubleClickEvent."""
         self.editRequested.emit()
         """mouseDoubleClickEvent."""
 
@@ -962,6 +976,7 @@ class QuickLookPopup(QWidget):
     """Large floating preview window, toggled by Space bar."""
 
     def __init__(self, icons: IconThumbs, parent=None):
+        """__init__."""
         super().__init__(parent)
         self.setWindowTitle("Quick Look")
         self.setWindowFlags(Qt.WindowType.Popup | Qt.WindowType.FramelessWindowHint)
@@ -993,6 +1008,7 @@ class QuickLookPopup(QWidget):
         """__init__."""
 
     def show_file(self, row: dict, pos=None):
+        """show_file."""
         from PySide6.QtGui import QImageReader, QPixmap
 
         path = row.get("path", "")
@@ -1045,6 +1061,7 @@ class QuickLookPopup(QWidget):
         """show_file."""
 
     def _show_at(self, pos=None):
+        """_show_at."""
         if pos:
             x = pos.x() + 12
             y = pos.y() + 12
@@ -1076,6 +1093,7 @@ class BulkRenameDialog(QDialog):
     ]
 
     def __init__(self, paths: list[str], parent=None):
+        """__init__."""
         super().__init__(parent)
         self.setWindowTitle("Bulk Rename")
         self.setMinimumSize(700, 540)
@@ -1217,6 +1235,7 @@ class BulkRenameDialog(QDialog):
         """__init__."""
 
     def _on_mode_changed(self, idx: int):
+        """_on_mode_changed."""
         self._stack.setCurrentIndex(idx)
         self._update_preview()
         """_on_mode_changed."""
@@ -1224,6 +1243,7 @@ class BulkRenameDialog(QDialog):
     # ── preview / apply per mode ───────────────────────────────────────────
 
     def _rename_for_mode(self, name: str, index: int) -> str:
+        """_rename_for_mode."""
         mode = self.mode_combo.currentIndex()
 
         if mode == 0:
@@ -1294,6 +1314,7 @@ class BulkRenameDialog(QDialog):
         """_rename_for_mode."""
 
     def _update_preview(self):
+        """_update_preview."""
         self._previews = []
         for i, p in enumerate(self._originals):
             name = Path(p).name
@@ -1305,6 +1326,7 @@ class BulkRenameDialog(QDialog):
         """_update_preview."""
 
     def _apply(self):
+        """_apply."""
         from PySide6.QtWidgets import QMessageBox
         folder = Path(self._originals[0]).parent if self._originals else None
         if not folder:
@@ -1343,6 +1365,7 @@ class SearchDialog(QWidget):
     """Full-featured search dialog with real-time streaming results."""
 
     def __init__(self, engine: Engine, start_path: str, parent=None):
+        """__init__."""
         super().__init__(parent)
         self.setWindowTitle("Search Files")
         self.setMinimumSize(680, 520)
@@ -1414,6 +1437,7 @@ class SearchDialog(QWidget):
         """__init__."""
 
     def _start_search(self):
+        """_start_search."""
         query = self.input.text().strip()
         if not query:
             return
@@ -1443,6 +1467,7 @@ class SearchDialog(QWidget):
         """_start_search."""
 
     def _cancel_search(self):
+        """_cancel_search."""
         if self._proc and self._proc.state() == QProcess.ProcessState.Running:
             self._proc.kill()
         self._proc = None
@@ -1451,6 +1476,7 @@ class SearchDialog(QWidget):
         """_cancel_search."""
 
     def _on_search_done(self, code, rows):
+        """_on_search_done."""
         self._results = rows
         self.model.removeRows(0, self.model.rowCount())
         for row in rows:
@@ -1471,6 +1497,7 @@ class SearchDialog(QWidget):
         """_on_search_done."""
 
     def _open_result(self, idx):
+        """_open_result."""
         row = self.model.itemFromIndex(idx.sibling(idx.row(), 0))
         if row:
             data = row.data(Qt.ItemDataRole.UserRole)
@@ -1484,6 +1511,7 @@ class SearchDialog(QWidget):
         """_open_result."""
 
     def _open_selected(self):
+        """_open_selected."""
         for idx in self.table.selectionModel().selectedRows():
             self._open_result(idx)
         """_open_selected."""
@@ -1507,6 +1535,7 @@ class GoToPathDialog(QDialog):
     }
 
     def __init__(self, current_path: str, parent=None):
+        """__init__."""
         super().__init__(parent)
         self.setWindowTitle("Go to Path")
         self.setWindowFlags(Qt.WindowType.Dialog | Qt.WindowType.WindowCloseButtonHint)
@@ -1546,6 +1575,7 @@ class GoToPathDialog(QDialog):
         """__init__."""
 
     def _go(self):
+        """_go."""
         raw = self.path_input.text().strip()
         if not raw:
             return
@@ -1562,6 +1592,7 @@ class GoToPathDialog(QDialog):
         """_go."""
 
     def _resolve(self, text: str) -> str:
+        """_resolve."""
         lower = text.lower().strip()
         if lower in self._SHELL_FOLDERS:
             special = self._SHELL_FOLDERS[lower]
@@ -1582,33 +1613,40 @@ class GoToPathDialog(QDialog):
         """_resolve."""
 
     def result_path(self) -> str:
+        """result_path."""
         return self._result_path
         """result_path."""
 
 
 class _RenamePreviewModel(QAbstractTableModel):
+    """_RenamePreviewModel."""
     HEADERS = ["Original", "Renamed"]
 
     def __init__(self):
+        """__init__."""
         super().__init__()
         self._data: list[tuple[str, str]] = []
         """__init__."""
 
     def set_data(self, data):
+        """set_data."""
         self.beginResetModel()
         self._data = data
         self.endResetModel()
         """set_data."""
 
     def rowCount(self, parent=QModelIndex()):
+        """rowCount."""
         return 0 if parent.isValid() else len(self._data)
         """rowCount."""
 
     def columnCount(self, parent=QModelIndex()):
+        """columnCount."""
         return 2
         """columnCount."""
 
     def data(self, idx, role=Qt.ItemDataRole.DisplayRole):
+        """data."""
         if not idx.isValid():
             return None
         if role == Qt.ItemDataRole.DisplayRole:
@@ -1620,6 +1658,7 @@ class _RenamePreviewModel(QAbstractTableModel):
         """data."""
 
     def headerData(self, sec, orient, role=Qt.ItemDataRole.DisplayRole):
+        """headerData."""
         if role == Qt.ItemDataRole.DisplayRole and orient == Qt.Orientation.Horizontal:
             return self.HEADERS[sec]
         return None
@@ -1635,11 +1674,13 @@ class _FolderSizeWorker(QThread):
     sizes_done = Signal(str, object)
 
     def __init__(self, path: str):
+        """__init__."""
         super().__init__()
         self._path = path
         """__init__."""
 
     def run(self):
+        """run."""
         total = 0
         stack = [self._path]
         try:
@@ -1671,12 +1712,14 @@ class _TextPreviewReader(QThread):
     text_ready = Signal(str)
 
     def __init__(self, path: str, max_lines: int = 60):
+        """__init__."""
         super().__init__()
         self._path = path
         self._max_lines = max_lines
         """__init__."""
 
     def run(self):
+        """run."""
         text = ""
         try:
             if os.path.getsize(self._path) <= 8 * 1024 * 1024:
@@ -1706,11 +1749,13 @@ class _ExtractArchiveWorker(QThread):
     finished_with_result = Signal(bool, str)
 
     def __init__(self, tasks):
+        """__init__."""
         super().__init__()
         self._tasks = tasks
         """__init__."""
 
     def run(self):
+        """run."""
         from nexus_archive import _find_7z
         import re
         progress_re = re.compile(r"^\s*(\d+)%")
@@ -1772,6 +1817,7 @@ class _ExtractEntryWorker(QThread):
     finished_with_result = Signal(bool, str)
 
     def __init__(self, archive_path, entries, dest_dir, password):
+        """__init__."""
         super().__init__()
         self._archive_path = archive_path
         self._entries = entries
@@ -1780,6 +1826,7 @@ class _ExtractEntryWorker(QThread):
         """__init__."""
 
     def run(self):
+        """run."""
         from nexus_archive import _find_7z
         import re
         progress_re = re.compile(r"^\s*(\d+)%")
@@ -1834,12 +1881,14 @@ class _CompressWorker(QThread):
     finished_with_result = Signal(bool, str)
 
     def __init__(self, cmd, name):
+        """__init__."""
         super().__init__()
         self._cmd = cmd
         self._name = name
         """__init__."""
 
     def run(self):
+        """run."""
         import re
         progress_re = re.compile(r"^\s*(\d+)%")
         try:
@@ -1882,6 +1931,7 @@ class FolderSizeCalculator:
     """Background folder size calculation with a single worker thread + queue."""
 
     def __init__(self):
+        """__init__."""
         self._cache: dict[str, int] = {}
         self._queue: deque = deque()
         self._thread = None
@@ -1889,10 +1939,12 @@ class FolderSizeCalculator:
         """__init__."""
 
     def get_size(self, path: str) -> int | None:
+        """get_size."""
         return self._cache.get(path)
         """get_size."""
 
     def calculate(self, path: str, callback):
+        """calculate."""
         if path in self._cache:
             callback(path, self._cache[path])
             return
@@ -1903,6 +1955,7 @@ class FolderSizeCalculator:
         """calculate."""
 
     def _process_next(self):
+        """_process_next."""
         if not self._queue:
             return
         path, cb = self._queue.popleft()
@@ -1918,11 +1971,13 @@ class FolderSizeCalculator:
         """_process_next."""
 
     def _on_done(self, path, size, callback):
+        """_on_done."""
         self._cache[path] = size
         callback(path, size)
         """_on_done."""
 
     def _on_thread_done(self):
+        """_on_thread_done."""
         if self._thread is not None:
             self._thread.deleteLater()
             self._thread = None
@@ -1957,6 +2012,7 @@ class ColorTagManager:
     }
 
     def __init__(self):
+        """__init__."""
         self._settings = QSettings("Nexus", "NexusExplorer")
         self._tags: dict[str, str] = {}
         saved = self._settings.value("colorTags", {})
@@ -1965,10 +2021,12 @@ class ColorTagManager:
         """__init__."""
 
     def get_tag(self, path: str) -> str | None:
+        """get_tag."""
         return self._tags.get(path)
         """get_tag."""
 
     def set_tag(self, path: str, color: str | None):
+        """set_tag."""
         if color:
             self._tags[path] = color
         else:
@@ -1977,10 +2035,12 @@ class ColorTagManager:
         """set_tag."""
 
     def get_all_tags(self) -> dict[str, str]:
+        """get_all_tags."""
         return dict(self._tags)
         """get_all_tags."""
 
     def _save(self):
+        """_save."""
         self._settings.setValue("colorTags", self._tags)
         """_save."""
 
@@ -1992,6 +2052,7 @@ class SmartFolderManager:
     """Persistent smart folders (saved searches)."""
 
     def __init__(self):
+        """__init__."""
         self._settings = QSettings("Nexus", "NexusExplorer")
         self._folders: list[dict] = []
         saved = self._settings.value("smartFolders", [])
@@ -2000,6 +2061,7 @@ class SmartFolderManager:
         """__init__."""
 
     def add(self, name: str, root: str, pattern: str, ext_filter: str = ""):
+        """add."""
         self._folders.append({
             "name": name, "root": root,
             "pattern": pattern, "ext": ext_filter,
@@ -2008,16 +2070,19 @@ class SmartFolderManager:
         """add."""
 
     def remove(self, index: int):
+        """remove."""
         if 0 <= index < len(self._folders):
             self._folders.pop(index)
             self._save()
         """remove."""
 
     def list_all(self) -> list[dict]:
+        """list_all."""
         return list(self._folders)
         """list_all."""
 
     def _save(self):
+        """_save."""
         self._settings.setValue("smartFolders", self._folders)
         """_save."""
 
@@ -2032,16 +2097,19 @@ class _DupScanWorker(QThread):
     scan_done = Signal(list)
 
     def __init__(self, root: str):
+        """__init__."""
         super().__init__()
         self._root = root
         self._running = True
         """__init__."""
 
     def stop(self):
+        """stop."""
         self._running = False
         """stop."""
 
     def run(self):
+        """run."""
         groups: list = []
         try:
             groups = self._scan()
@@ -2055,6 +2123,7 @@ class _DupScanWorker(QThread):
         """run."""
 
     def _scan(self) -> list:
+        """_scan."""
         size_map: dict[int, list[dict]] = {}
         file_count = 0
 
@@ -2118,11 +2187,13 @@ class _DuplicateModel(QAbstractTableModel):
     HEADERS = ["", "Filename", "Size", "Path"]
 
     def __init__(self):
+        """__init__."""
         super().__init__()
         self._rows: list[dict] = []
         """__init__."""
 
     def set_groups(self, groups: list[list[dict]]):
+        """set_groups."""
         self.beginResetModel()
         self._rows = []
         for gi, group in enumerate(groups):
@@ -2142,14 +2213,17 @@ class _DuplicateModel(QAbstractTableModel):
         """set_groups."""
 
     def rowCount(self, parent=QModelIndex()):
+        """rowCount."""
         return 0 if parent.isValid() else len(self._rows)
         """rowCount."""
 
     def columnCount(self, parent=QModelIndex()):
+        """columnCount."""
         return 4
         """columnCount."""
 
     def data(self, idx, role=Qt.ItemDataRole.DisplayRole):
+        """data."""
         row = self._rows[idx.row()]
         col = idx.column()
 
@@ -2183,6 +2257,7 @@ class _DuplicateModel(QAbstractTableModel):
         """data."""
 
     def headerData(self, sec, orient, role=Qt.ItemDataRole.DisplayRole):
+        """headerData."""
         if (role == Qt.ItemDataRole.DisplayRole
                 and orient == Qt.Orientation.Horizontal):
             return self.HEADERS[sec]
@@ -2190,6 +2265,7 @@ class _DuplicateModel(QAbstractTableModel):
         """headerData."""
 
     def flags(self, idx):
+        """flags."""
         if idx.column() == 0:
             return (Qt.ItemFlag.ItemIsEnabled
                     | Qt.ItemFlag.ItemIsUserCheckable)
@@ -2197,6 +2273,7 @@ class _DuplicateModel(QAbstractTableModel):
         """flags."""
 
     def toggle_selected(self, idx):
+        """toggle_selected."""
         row = self._rows[idx.row()]
         row["selected"] = not row["selected"]
         self.dataChanged.emit(
@@ -2206,6 +2283,7 @@ class _DuplicateModel(QAbstractTableModel):
         """toggle_selected."""
 
     def auto_select_duplicates(self):
+        """auto_select_duplicates."""
         groups: dict[int, list[dict]] = {}
         for row in self._rows:
             groups.setdefault(row["group"], []).append(row)
@@ -2224,10 +2302,12 @@ class _DuplicateModel(QAbstractTableModel):
         """auto_select_duplicates."""
 
     def get_selected_rows(self) -> list[dict]:
+        """get_selected_rows."""
         return [r for r in self._rows if r["selected"]]
         """get_selected_rows."""
 
     def total_recoverable(self) -> int:
+        """total_recoverable."""
         return sum(r["size"] for r in self._rows if r["selected"])
         """total_recoverable."""
 
@@ -2236,6 +2316,7 @@ class DuplicateFinderDialog(QDialog):
     """Scan a directory for duplicate files (size pre-filter + MD5)."""
 
     def __init__(self, initial_path: str = "", parent=None):
+        """__init__."""
         super().__init__(parent)
         self.setObjectName("DuplicateFinder")
         self.setWindowTitle("Duplicate Finder")
@@ -2323,10 +2404,12 @@ class DuplicateFinderDialog(QDialog):
         """__init__."""
 
     def set_directory(self, path: str):
+        """set_directory."""
         self.dir_input.setText(path)
         """set_directory."""
 
     def _browse(self):
+        """_browse."""
         d = QFileDialog.getExistingDirectory(
             self, "Scan for duplicates", self.dir_input.text())
         if d:
@@ -2334,6 +2417,7 @@ class DuplicateFinderDialog(QDialog):
         """_browse."""
 
     def _start_scan(self):
+        """_start_scan."""
         path = self.dir_input.text().strip()
         if not path or not os.path.isdir(path):
             self.status_label.setText("Please select a valid directory.")
@@ -2358,12 +2442,14 @@ class DuplicateFinderDialog(QDialog):
         """_start_scan."""
 
     def _on_progress(self, pct: int, name: str):
+        """_on_progress."""
         self.progress_bar.setValue(pct)
         self.progress_bar.setFormat(f"Hashing\u2026 {pct}%")
         self.status_label.setText(f"Hashing: {name}")
         """_on_progress."""
 
     def _on_done(self, groups: list):
+        """_on_done."""
         self.btn_scan.setEnabled(True)
         self.progress_bar.setValue(100)
         self.progress_bar.setFormat("Done")
@@ -2385,23 +2471,27 @@ class DuplicateFinderDialog(QDialog):
         """_on_done."""
 
     def _auto_select(self):
+        """_auto_select."""
         self._model.auto_select_duplicates()
         self._update_space()
         """_auto_select."""
 
     def _update_space(self):
+        """_update_space."""
         rec = self._model.total_recoverable()
         self.space_label.setText(f"{human(rec)} recoverable" if rec else "")
         self.btn_delete.setEnabled(rec > 0)
         """_update_space."""
 
     def _on_click(self, idx):
+        """_on_click."""
         if idx.column() == 0:
             self._model.toggle_selected(idx)
             self._update_space()
         """_on_click."""
 
     def _delete_selected(self):
+        """_delete_selected."""
         rows = self._model.get_selected_rows()
         if not rows:
             return
@@ -2427,6 +2517,7 @@ class DuplicateFinderDialog(QDialog):
         """_delete_selected."""
 
     def closeEvent(self, ev):
+        """closeEvent."""
         if self._thread and self._thread.isRunning():
             self._thread.stop()
             self._thread.wait(2000)
@@ -2446,6 +2537,7 @@ class NexusClipboard(QObject):
     MODE_COPY = "copy"
 
     def __init__(self, parent=None):
+        """__init__."""
         super().__init__(parent)
         self._mode: str | None = None
         self._paths: list[str] = []
@@ -2459,6 +2551,7 @@ class NexusClipboard(QObject):
         """__init__."""
 
     def _get_clipboard(self):
+        """_get_clipboard."""
         try:
             app = QApplication.instance()
             if app is None:
@@ -2473,6 +2566,7 @@ class NexusClipboard(QObject):
         """_get_clipboard."""
 
     def cut(self, paths: list[str]):
+        """cut."""
         self._mode = self.MODE_CUT
         self._paths = list(paths)
         self._sync_to_system_clipboard()
@@ -2480,6 +2574,7 @@ class NexusClipboard(QObject):
         """cut."""
 
     def copy(self, paths: list[str]):
+        """copy."""
         self._mode = self.MODE_COPY
         self._paths = list(paths)
         self._sync_to_system_clipboard()
@@ -2487,12 +2582,14 @@ class NexusClipboard(QObject):
         """copy."""
 
     def paste(self) -> tuple[str, list[str]] | None:
+        """paste."""
         if not self._mode or not self._paths:
             return None
         return (self._mode, list(self._paths))
         """paste."""
 
     def clear(self):
+        """clear."""
         self._mode = None
         self._paths = []
         self.changed.emit("", [])
@@ -2500,10 +2597,12 @@ class NexusClipboard(QObject):
 
     @property
     def has_data(self) -> bool:
+        """has_data."""
         return bool(self._mode and self._paths)
         """has_data."""
 
     def _sync_to_system_clipboard(self):
+        """_sync_to_system_clipboard."""
         if self._syncing:
             return
         self._syncing = True
@@ -2522,12 +2621,14 @@ class NexusClipboard(QObject):
         """_sync_to_system_clipboard."""
 
     def _on_data_changed(self):
+        """_on_data_changed."""
         if self._syncing:
             return
         self._debounce_timer.start()
         """_on_data_changed."""
 
     def _do_external_change(self):
+        """_do_external_change."""
         if self._syncing:
             return
         try:
@@ -2569,6 +2670,7 @@ class StagedItemRow(QWidget):
     remove_clicked = Signal(str)
 
     def __init__(self, path: str, icons: IconThumbs | None = None, parent=None):
+        """__init__."""
         super().__init__(parent)
         self.path = path
         self.setFixedHeight(30)
@@ -2630,12 +2732,14 @@ class StagedItemRow(QWidget):
         """__init__."""
 
     def mousePressEvent(self, ev):
+        """mousePressEvent."""
         if ev.button() == Qt.MouseButton.LeftButton:
             self._drag_start_pos = ev.pos()
         super().mousePressEvent(ev)
         """mousePressEvent."""
 
     def mouseMoveEvent(self, ev):
+        """mouseMoveEvent."""
         if not (ev.buttons() & Qt.MouseButton.LeftButton):
             return
         if self._drag_start_pos is not None:
@@ -2662,6 +2766,7 @@ class StagingListWidget(QListWidget):
     """List widget for staged files with full drag out support."""
 
     def __init__(self, shelf, parent=None):
+        """__init__."""
         super().__init__(parent)
         self.shelf = shelf
         self.setDragEnabled(True)
@@ -2670,12 +2775,14 @@ class StagingListWidget(QListWidget):
         """__init__."""
 
     def mousePressEvent(self, ev):
+        """mousePressEvent."""
         if ev.button() == Qt.MouseButton.LeftButton:
             self._drag_start_pos = ev.pos()
         super().mousePressEvent(ev)
         """mousePressEvent."""
 
     def mouseMoveEvent(self, ev):
+        """mouseMoveEvent."""
         if not (ev.buttons() & Qt.MouseButton.LeftButton):
             return
         if self._drag_start_pos is not None:
@@ -2718,6 +2825,7 @@ class StagingShelfWidget(QFrame):
     add_selected_requested = Signal()
 
     def __init__(self, icons: IconThumbs | None = None, parent=None):
+        """__init__."""
         super().__init__(parent)
         self.setObjectName("StagingShelf")
         self.setAcceptDrops(True)
@@ -2855,6 +2963,7 @@ class StagingShelfWidget(QFrame):
         """__init__."""
 
     def _update_style(self):
+        """_update_style."""
         if self._is_drag_over:
             self.setStyleSheet(
                 "QFrame#StagingShelf { background: rgba(14, 40, 65, 0.95); border: 2px dashed #38bdf8; border-radius: 8px; }"
@@ -2866,6 +2975,7 @@ class StagingShelfWidget(QFrame):
         """_update_style."""
 
     def _update_ui_state(self):
+        """_update_ui_state."""
         count = len(self._staged_paths)
         self.count_lbl.setText(f"({count})")
         has_items = count > 0
@@ -2902,6 +3012,7 @@ class StagingShelfWidget(QFrame):
         """_update_ui_state."""
 
     def _norm(self, p: str) -> str:
+        """_norm."""
         return os.path.normpath(str(p)).replace("\\", "/")
         """_norm."""
 
@@ -2971,6 +3082,7 @@ class StagingShelfWidget(QFrame):
         self.staging_changed.emit([], self._mode)
 
     def _toggle_mode(self):
+        """_toggle_mode."""
         self._mode = "copy" if self._mode == "cut" else "cut"
         if self._staged_paths:
             if self._mode == "cut":
@@ -2982,6 +3094,7 @@ class StagingShelfWidget(QFrame):
         """_toggle_mode."""
 
     def _rebuild_list(self):
+        """_rebuild_list."""
         self.list_widget.clear()
         for path in self._staged_paths:
             row = StagedItemRow(path, self._icons)
@@ -2992,12 +3105,14 @@ class StagingShelfWidget(QFrame):
         """_rebuild_list."""
 
     def _on_paste_clicked(self):
+        """_on_paste_clicked."""
         if self._staged_paths:
             self.paste_requested.emit(self._mode, list(self._staged_paths), self._current_dir)
         """_on_paste_clicked."""
 
     # ── Drag & Drop Events ──────────────────────────────────────────
     def dragEnterEvent(self, ev: QDragEnterEvent):
+        """dragEnterEvent."""
         if ev.mimeData().hasUrls() or ev.mimeData().hasText():
             ev.acceptProposedAction()
             self._is_drag_over = True
@@ -3007,6 +3122,7 @@ class StagingShelfWidget(QFrame):
         """dragEnterEvent."""
 
     def dragMoveEvent(self, ev: QDragMoveEvent):
+        """dragMoveEvent."""
         if ev.mimeData().hasUrls() or ev.mimeData().hasText():
             ev.acceptProposedAction()
         else:
@@ -3014,11 +3130,13 @@ class StagingShelfWidget(QFrame):
         """dragMoveEvent."""
 
     def dragLeaveEvent(self, ev):
+        """dragLeaveEvent."""
         self._is_drag_over = False
         self._update_style()
         """dragLeaveEvent."""
 
     def dropEvent(self, ev):
+        """dropEvent."""
         self._is_drag_over = False
         self._update_style()
         paths = []
@@ -3043,6 +3161,7 @@ class TransferStatusDock(QFrame):
     open_monitor_requested = Signal()
 
     def __init__(self, icons: IconThumbs | None = None, parent=None):
+        """__init__."""
         super().__init__(parent)
         self.setObjectName("TransferStatusDock")
         self._icons = icons or IconThumbs()
@@ -3142,6 +3261,7 @@ class TransferStatusDock(QFrame):
         """__init__."""
 
     def bind_queue(self, tq):
+        """bind_queue."""
         self._tq = tq
         if not tq:
             return
@@ -3153,6 +3273,7 @@ class TransferStatusDock(QFrame):
         """bind_queue."""
 
     def _on_job_added(self, job_id: str):
+        """_on_job_added."""
         self._hide_timer.stop()
         self._current_job_id = job_id
         self._is_paused = False
@@ -3169,12 +3290,14 @@ class TransferStatusDock(QFrame):
         """_on_job_added."""
 
     def _on_job_started(self, job_id: str):
+        """_on_job_started."""
         self._hide_timer.stop()
         self._current_job_id = job_id
         self.setVisible(True)
         """_on_job_started."""
 
     def _on_job_progress(self, job_id: str, percent: int, text: str):
+        """_on_job_progress."""
         self._hide_timer.stop()
         self._current_job_id = job_id
         self.setVisible(True)
@@ -3212,6 +3335,7 @@ class TransferStatusDock(QFrame):
         """_on_job_progress."""
 
     def _on_job_completed(self, job_id: str, success: bool, msg: str):
+        """_on_job_completed."""
         if success:
             self.badge_lbl.setText("DONE")
             self.badge_lbl.setStyleSheet("""
@@ -3243,6 +3367,7 @@ class TransferStatusDock(QFrame):
         """_on_job_completed."""
 
     def _on_job_cancelled(self, job_id: str):
+        """_on_job_cancelled."""
         self.badge_lbl.setText("CANCELLED")
         self.badge_lbl.setStyleSheet("""
             background: #64748B;
@@ -3260,6 +3385,7 @@ class TransferStatusDock(QFrame):
         """_on_job_cancelled."""
 
     def _auto_hide(self):
+        """_auto_hide."""
         try:
             if self._tq and getattr(self._tq, "is_busy", bool(getattr(self._tq, "_active", []))):
                 return
@@ -3269,6 +3395,7 @@ class TransferStatusDock(QFrame):
         """_auto_hide."""
 
     def _toggle_pause(self):
+        """_toggle_pause."""
         if not self._tq or not self._current_job_id:
             return
         if self._is_paused:
@@ -3284,6 +3411,7 @@ class TransferStatusDock(QFrame):
         """_toggle_pause."""
 
     def _on_cancel(self):
+        """_on_cancel."""
         if self._tq and self._current_job_id:
             job = self._tq.get_job(self._current_job_id)
             if job and job.state.name in ("RUNNING", "PAUSED", "QUEUED"):
@@ -3309,6 +3437,7 @@ class PreviewPane(QWidget):
                   ".webp", ".svg", ".tiff", ".tif"}
 
     def __init__(self, icons: IconThumbs | None = None, parent=None):
+        """__init__."""
         super().__init__(parent)
         self.setObjectName("Preview")
         self.setFixedWidth(_scaled(330))
@@ -3411,6 +3540,7 @@ class PreviewPane(QWidget):
         self.staging_shelf.set_staged(mode, paths)
 
     def show_entry(self, row: dict | None) -> None:
+        """show_entry."""
         from PySide6.QtGui import QImageReader, QPixmap
 
         if not row:
@@ -3492,21 +3622,25 @@ class PreviewPane(QWidget):
         """show_entry."""
 
     def _on_open(self):
+        """_on_open."""
         if self._current_path and os.path.isfile(self._current_path):
             os.startfile(self._current_path)
         """_on_open."""
 
     def _on_open_with(self):
+        """_on_open_with."""
         if self._current_path and os.path.isfile(self._current_path):
             os.startfile(self._current_path, "open")
         """_on_open_with."""
 
     def _on_copy_path(self):
+        """_on_copy_path."""
         if self._current_path:
             QApplication.clipboard().setText(self._current_path)
         """_on_copy_path."""
 
     def _on_checksums(self):
+        """_on_checksums."""
         if self._current_path and os.path.isfile(self._current_path):
             FileChecksumDialog(self._current_path, self).exec()
         """_on_checksums."""
@@ -3527,10 +3661,12 @@ class PreviewPane(QWidget):
         self._text_thread.start()
 
     def _on_text_ready(self, text: str):
+        """_on_text_ready."""
         self.text_view.setPlainText(text)
         """_on_text_ready."""
 
     def _big_icon(self, row: dict):
+        """_big_icon."""
         ico = self._icons.icon_for(row)
         return ico.pixmap(96, 96)
         """_big_icon."""
@@ -3543,6 +3679,7 @@ class CommandPalette(QDialog):
     """Ctrl+Shift+P command palette with fuzzy search."""
 
     def __init__(self, parent=None):
+        """__init__."""
         super().__init__(parent)
         self.setObjectName("CommandPalette")
         self.setWindowTitle("Command Palette")
@@ -3574,10 +3711,12 @@ class CommandPalette(QDialog):
         """__init__."""
 
     def register(self, name: str, shortcut: str, callback):
+        """register."""
         self._actions.append((name, shortcut, callback))
         """register."""
 
     def toggle(self):
+        """toggle."""
         if self.isVisible():
             self.hide()
         else:
@@ -3585,6 +3724,7 @@ class CommandPalette(QDialog):
         """toggle."""
 
     def open_palette(self):
+        """open_palette."""
         self.search.clear()
         self._filter("")
         if self.parent():
@@ -3599,6 +3739,7 @@ class CommandPalette(QDialog):
         """open_palette."""
 
     def _filter(self, text: str):
+        """_filter."""
         self.list.clear()
         self._filtered = []
         text_lower = text.lower()
@@ -3612,6 +3753,7 @@ class CommandPalette(QDialog):
         """_filter."""
 
     def _fuzzy_match(self, pattern: str, text: str) -> bool:
+        """_fuzzy_match."""
         pi = 0
         for ch in text:
             if pi < len(pattern) and ch == pattern[pi]:
@@ -3620,6 +3762,7 @@ class CommandPalette(QDialog):
         """_fuzzy_match."""
 
     def _execute_selected(self):
+        """_execute_selected."""
         row = self.list.currentRow()
         if 0 <= row < len(self._filtered):
             idx = self._filtered[row]
@@ -3630,6 +3773,7 @@ class CommandPalette(QDialog):
         """_execute_selected."""
 
     def keyPressEvent(self, ev):
+        """keyPressEvent."""
         if ev.key() == Qt.Key.Key_Escape:
             self.hide()
         elif ev.key() == Qt.Key.Key_Down:
@@ -3652,6 +3796,7 @@ class JobQueueWidget(QWidget):
     """Overlay widget tracking copy/move/delete jobs with progress."""
 
     def __init__(self, parent=None):
+        """__init__."""
         super().__init__(parent)
         self.setObjectName("JobQueueOverlay")
         self.setFixedWidth(_scaled(300))
@@ -3681,6 +3826,7 @@ class JobQueueWidget(QWidget):
         """__init__."""
 
     def add_job(self, name: str, total: int) -> int:
+        """add_job."""
         job_id = self._next_id
         self._next_id += 1
 
@@ -3718,6 +3864,7 @@ class JobQueueWidget(QWidget):
         """add_job."""
 
     def update_job(self, job_id: int, current: int, filename: str = ""):
+        """update_job."""
         job = self._jobs.get(job_id)
         if not job:
             return
@@ -3728,6 +3875,7 @@ class JobQueueWidget(QWidget):
         """update_job."""
 
     def complete_job(self, job_id: int):
+        """complete_job."""
         job = self._jobs.pop(job_id, None)
         if not job:
             return
@@ -3739,16 +3887,19 @@ class JobQueueWidget(QWidget):
         """complete_job."""
 
     def _toggle_collapse(self):
+        """_toggle_collapse."""
         self._collapsed = not self._collapsed
         self.jobs_container.setVisible(not self._collapsed)
         self._update_toggle_text()
         """_toggle_collapse."""
 
     def _update_toggle_text(self):
+        """_update_toggle_text."""
         self.toggle_btn.setText(f"Jobs ({len(self._jobs)})")
         """_update_toggle_text."""
 
     def _reposition(self):
+        """_reposition."""
         parent = self.parent()
         if parent:
             w = self.width()
@@ -3764,6 +3915,7 @@ class TerminalWidget(QWidget):
     """Integrated terminal panel — runs cmd.exe via QProcess."""
 
     def __init__(self, parent=None):
+        """__init__."""
         super().__init__(parent)
         self.setObjectName("TerminalPanel")
         self._process: QProcess | None = None
@@ -3829,6 +3981,7 @@ class TerminalWidget(QWidget):
 
     # ────────────────────────── process lifecycle ─────────────────────────
     def setVisible(self, visible: bool):
+        """setVisible."""
         super().setVisible(visible)
         if visible:
             self._ensure_process()
@@ -3837,6 +3990,7 @@ class TerminalWidget(QWidget):
         """setVisible."""
 
     def _ensure_process(self):
+        """_ensure_process."""
         if self._process is not None and self._process.state() == QProcess.ProcessState.Running:
             return
         from nexus_core import _guarded
@@ -3854,6 +4008,7 @@ class TerminalWidget(QWidget):
         """_ensure_process."""
 
     def _on_output(self):
+        """_on_output."""
         if self._process:
             try:
                 data = bytes(self._process.readAllStandardOutput()).decode(
@@ -3871,6 +4026,7 @@ class TerminalWidget(QWidget):
         """_on_output."""
 
     def shutdown(self):
+        """shutdown."""
         if self._process is not None:
             try:
                 if self._process.state() == QProcess.ProcessState.Running:
@@ -3882,16 +4038,19 @@ class TerminalWidget(QWidget):
         """shutdown."""
 
     def closeEvent(self, event):
+        """closeEvent."""
         self.shutdown()
         super().closeEvent(event)
         """closeEvent."""
 
     def __del__(self):
+        """__del__."""
         self.shutdown()
         """__del__."""
 
     # ────────────────────────── command execution ─────────────────────────
     def _execute(self):
+        """_execute."""
         cmd = self.input.text().strip()
         if not cmd:
             return
@@ -3909,6 +4068,7 @@ class TerminalWidget(QWidget):
         """_execute."""
 
     def _track_cd(self, cmd: str):
+        """_track_cd."""
         lower = cmd.lower().strip()
         if lower.startswith("cd ") and lower != "cd":
             target = cmd[3:].strip().strip('"').strip("'")
@@ -3918,6 +4078,7 @@ class TerminalWidget(QWidget):
         """_track_cd."""
 
     def _resolve_cd(self, target: str):
+        """_resolve_cd."""
         cwd = Path(self._cwd)
         if target == "..":
             parent = cwd.parent
@@ -3933,16 +4094,19 @@ class TerminalWidget(QWidget):
 
     # ────────────────────────── public API ────────────────────────────────
     def set_cwd(self, path: str):
+        """set_cwd."""
         self._cwd = path
         if self._process and self._process.state() == QProcess.ProcessState.Running:
             self._process.setWorkingDirectory(path)
         """set_cwd."""
 
     def _clear_output(self):
+        """_clear_output."""
         self.output.clear()
         """_clear_output."""
 
     def _copy_output(self):
+        """_copy_output."""
         QApplication.clipboard().setText(self.output.toPlainText())
         """_copy_output."""
 
@@ -3954,6 +4118,7 @@ class PropertiesDialog(QDialog):
     """Lightweight properties dialog showing file/folder metadata."""
 
     def __init__(self, row: dict, parent=None):
+        """__init__."""
         super().__init__(parent)
         self.setWindowTitle("Properties")
         self.setMinimumWidth(400)
@@ -4013,15 +4178,18 @@ class PropertiesDialog(QDialog):
 
 
 class _ChecksumWorkerThread(QThread):
+    """_ChecksumWorkerThread."""
     progress = Signal(int)
     done = Signal(object)
 
     def __init__(self, path: str, parent=None):
+        """__init__."""
         super().__init__(parent)
         self._path = path
         """__init__."""
 
     def run(self):
+        """run."""
         import hashlib
         try:
             sz = os.path.getsize(self._path)
@@ -4067,6 +4235,7 @@ class FileChecksumDialog(QDialog):
     """Modern Checksum & Integrity calculator dialog with live comparison."""
 
     def __init__(self, file_path: str, parent=None):
+        """__init__."""
         super().__init__(parent)
         self.setWindowTitle("File Checksums & Integrity")
         self.setMinimumWidth(560)
@@ -4190,6 +4359,7 @@ class FileChecksumDialog(QDialog):
         """__init__."""
 
     def _on_done(self, hashes: dict):
+        """_on_done."""
         self.prog.setValue(100)
         self.prog.setVisible(False)
         self._hashes = hashes
@@ -4202,6 +4372,7 @@ class FileChecksumDialog(QDialog):
         """_on_done."""
 
     def _check_match(self):
+        """_check_match."""
         text = self.verify_input.text().strip().lower()
         if not text:
             self.match_lbl.setText("")
@@ -4218,6 +4389,7 @@ class FileChecksumDialog(QDialog):
         """_check_match."""
 
     def closeEvent(self, event):
+        """closeEvent."""
         if self._worker.isRunning():
             self._worker.requestInterruption()
             self._worker.wait(500)
@@ -4232,6 +4404,7 @@ class ExtractionProgressWidget(QFrame):
     """Frosted-glass extraction progress panel shown at the bottom of the file list."""
 
     def __init__(self, parent=None):
+        """__init__."""
         super().__init__(parent)
         self.setObjectName("ExtractionProgress")
         self.setFixedHeight(_scaled(80))
@@ -4299,6 +4472,7 @@ class ExtractionProgressWidget(QFrame):
         """__init__."""
 
     def start(self, archive_name: str, total_files: int = 0):
+        """start."""
         self._start_time = time.monotonic()
         self._total_files = total_files
         self._processed_bytes = 0.0
@@ -4317,6 +4491,7 @@ class ExtractionProgressWidget(QFrame):
 
     def update_progress(self, percent: int, current_file: str = "", file_count: int = 0,
                         file_size: int = 0):
+        """update_progress."""
         self._progress.setValue(percent)
         elapsed = time.monotonic() - self._start_time
 
@@ -4348,6 +4523,7 @@ class ExtractionProgressWidget(QFrame):
         """update_progress."""
 
     def finish(self, success: bool, message: str = ""):
+        """finish."""
         if success:
             self._progress.setValue(100)
             self._lbl_title.setText("Extraction complete")
@@ -4363,6 +4539,7 @@ class ExtractionProgressWidget(QFrame):
 
 
 def _fmt_duration(seconds: float) -> str:
+    """_fmt_duration."""
     s = int(seconds)
     if s < 60:
         return f"{s}s"
@@ -4375,6 +4552,7 @@ def _fmt_duration(seconds: float) -> str:
 
 
 def _fmt_size(bps: float) -> str:
+    """_fmt_size."""
     for unit in ("B", "KB", "MB", "GB", "TB"):
         if abs(bps) < 1024:
             return f"{bps:.1f} {unit}"
@@ -4394,6 +4572,7 @@ class _ZipEntry:
 
     def __init__(self, archive_path: str, name: str, is_dir: bool,
                  size: int, modified_ms: int):
+        """__init__."""
         self.archive_path = archive_path
         self.name = name
         self.is_dir = is_dir
@@ -4411,11 +4590,13 @@ class ArchiveBrowser:
     """
 
     def __init__(self):
+        """__init__."""
         self._zip_path: str = ""
         self._zip_file: zipfile.ZipFile | None = None
         """__init__."""
 
     def open(self, zip_path: str) -> bool:
+        """open."""
         self.close()
         try:
             self._zip_path = zip_path
@@ -4426,6 +4607,7 @@ class ArchiveBrowser:
         """open."""
 
     def close(self):
+        """close."""
         if self._zip_file:
             try:
                 self._zip_file.close()
@@ -4436,6 +4618,7 @@ class ArchiveBrowser:
         """close."""
 
     def list_entries(self, prefix: str = "") -> list[_ZipEntry]:
+        """list_entries."""
         if not self._zip_file:
             return []
 
@@ -4491,6 +4674,7 @@ class ArchiveBrowser:
         """list_entries."""
 
     def extract_entry(self, entry_path: str, dest_dir: str) -> bool:
+        """extract_entry."""
         if not self._zip_file:
             return False
         try:
@@ -4513,6 +4697,7 @@ class UndoManager:
     MAX_HISTORY = 20
 
     def __init__(self):
+        """__init__."""
         self._settings = QSettings("Nexus", "NexusExplorer")
         self._undo_manager: list[dict] = []
         self._redo_stack: list[dict] = []
@@ -4544,43 +4729,51 @@ class UndoManager:
             "undoManager/redo", self._redo_stack[-self.MAX_HISTORY:])
 
     def record_move(self, src: str, dst: str):
+        """record_move."""
         self._push({"type": "move", "original": src,
                      "resulting": dst, "timestamp": time.time()})
         """record_move."""
 
     def record_copy(self, src: str, dst: str):
+        """record_copy."""
         self._push({"type": "copy", "original": src,
                      "resulting": dst, "timestamp": time.time()})
         """record_copy."""
 
     def record_delete(self, path: str):
+        """record_delete."""
         self._push({"type": "delete", "original": path,
                      "resulting": "", "timestamp": time.time()})
         """record_delete."""
 
     def record_rename(self, old: str, new: str):
+        """record_rename."""
         self._push({"type": "rename", "original": old,
                      "resulting": new, "timestamp": time.time()})
         """record_rename."""
 
     def record_new_folder(self, path: str, created_parents: list[str] | None = None):
+        """record_new_folder."""
         self._push({"type": "new_folder", "original": path,
                      "resulting": path, "created_parents": created_parents or [], "timestamp": time.time()})
         """record_new_folder."""
 
     def record_new_file(self, path: str, content: str = "", created_parents: list[str] | None = None):
+        """record_new_file."""
         self._push({"type": "new_file", "original": path,
                      "resulting": path, "content": content,
                      "created_parents": created_parents or [], "timestamp": time.time()})
         """record_new_file."""
 
     def record_batch_create(self, created_files: list[tuple[str, str]], created_dirs: list[str], label: str = "Batch create"):
+        """record_batch_create."""
         self._push({"type": "batch_create", "original": label,
                      "resulting": f"{len(created_files) + len(created_dirs)} items",
                      "created_files": created_files, "created_dirs": created_dirs, "timestamp": time.time()})
         """record_batch_create."""
 
     def _push(self, op: dict):
+        """_push."""
         self._undo_manager.append(op)
         self._redo_stack.clear()
         if len(self._undo_manager) > self.MAX_HISTORY:
@@ -4589,6 +4782,7 @@ class UndoManager:
         """_push."""
 
     def undo(self) -> str | None:
+        """undo."""
         if not self._undo_manager:
             return None
         op = self._undo_manager.pop()
@@ -4606,6 +4800,7 @@ class UndoManager:
         """undo."""
 
     def redo(self) -> str | None:
+        """redo."""
         if not self._redo_stack:
             return None
         op = self._redo_stack.pop()
@@ -4623,6 +4818,7 @@ class UndoManager:
         """redo."""
 
     def _execute_undo(self, op: dict):
+        """_execute_undo."""
         op_type = op["type"]
         original = op["original"]
         resulting = op["resulting"]
@@ -4680,6 +4876,7 @@ class UndoManager:
         """_execute_undo."""
 
     def _execute_redo(self, op: dict):
+        """_execute_redo."""
         op_type = op["type"]
         original = op["original"]
         resulting = op["resulting"]
@@ -4717,14 +4914,17 @@ class UndoManager:
         """_execute_redo."""
 
     def can_undo(self) -> bool:
+        """can_undo."""
         return len(self._undo_manager) > 0
         """can_undo."""
 
     def can_redo(self) -> bool:
+        """can_redo."""
         return len(self._redo_stack) > 0
         """can_redo."""
 
     def undo_description(self) -> str | None:
+        """undo_description."""
         if not self._undo_manager:
             return None
         op = self._undo_manager[-1]
@@ -4732,6 +4932,7 @@ class UndoManager:
         """undo_description."""
 
     def redo_description(self) -> str | None:
+        """redo_description."""
         if not self._redo_stack:
             return None
         op = self._redo_stack[-1]
@@ -4794,6 +4995,7 @@ class ShortcutsDialog(QDialog):
     ]
 
     def __init__(self, parent=None):
+        """__init__."""
         super().__init__(parent)
         self.setObjectName("ShortcutsDialog")
         self.setWindowTitle("Keyboard Shortcuts")
@@ -4857,6 +5059,7 @@ class NestedFolderDialog(QDialog):
     """Dialog for creating single or deep nested directory paths (e.g. 'src/components/ui')."""
 
     def __init__(self, current_dir: Path, parent=None):
+        """__init__."""
         super().__init__(parent)
         self.setWindowTitle("Create Nested Folders")
         self.setMinimumWidth(540)
@@ -4931,6 +5134,7 @@ class NestedFolderDialog(QDialog):
         """__init__."""
 
     def _update_preview(self):
+        """_update_preview."""
         txt = self.input_path.text().strip().lstrip("/\\")
         if txt:
             target = (self.current_dir / txt).resolve()
@@ -4942,6 +5146,7 @@ class NestedFolderDialog(QDialog):
         """_update_preview."""
 
     def get_target_path(self) -> str:
+        """get_target_path."""
         return self.input_path.text().strip()
         """get_target_path."""
 
@@ -4950,6 +5155,7 @@ class NestedFileDialog(QDialog):
     """Dialog for creating a new file in a nested directory path with template selection."""
 
     def __init__(self, current_dir: Path, parent=None):
+        """__init__."""
         super().__init__(parent)
         self.setWindowTitle("Create New File in Nested Path")
         self.setMinimumWidth(580)
@@ -5034,6 +5240,7 @@ class NestedFileDialog(QDialog):
         """__init__."""
 
     def _on_path_changed(self, text: str):
+        """_on_path_changed."""
         ext = Path(text).suffix.lower()
         if ext in FILE_TEMPLATES:
             idx = self.combo_template.findData(ext)
@@ -5047,6 +5254,7 @@ class NestedFileDialog(QDialog):
         """_on_path_changed."""
 
     def _on_template_selected(self, index: int):
+        """_on_template_selected."""
         ext = self.combo_template.currentData()
         if ext and ext in FILE_TEMPLATES:
             self.content_edit.setPlainText(FILE_TEMPLATES[ext]["content"])
@@ -5058,6 +5266,7 @@ class NestedFileDialog(QDialog):
         """_on_template_selected."""
 
     def _update_preview(self):
+        """_update_preview."""
         txt = self.input_path.text().strip().lstrip("/\\")
         if txt:
             target = (self.current_dir / txt).resolve()
@@ -5069,6 +5278,7 @@ class NestedFileDialog(QDialog):
         """_update_preview."""
 
     def get_result(self) -> tuple[str, str]:
+        """get_result."""
         return self.input_path.text().strip(), self.content_edit.toPlainText()
         """get_result."""
 
@@ -5077,6 +5287,7 @@ class BatchScaffoldDialog(QDialog):
     """Dialog to batch-scaffold entire directory trees and project structures in one click."""
 
     def __init__(self, current_dir: Path, parent=None):
+        """__init__."""
         super().__init__(parent)
         self.setWindowTitle("Batch Scaffold Project / Directory Hierarchy")
         self.setMinimumWidth(660)
@@ -5153,12 +5364,14 @@ class BatchScaffoldDialog(QDialog):
         """__init__."""
 
     def _on_preset_selected(self, index: int):
+        """_on_preset_selected."""
         preset_name = self.combo_presets.currentData()
         if preset_name and preset_name in PROJECT_SCAFFOLD_PRESETS:
             self.spec_edit.setPlainText(PROJECT_SCAFFOLD_PRESETS[preset_name])
         """_on_preset_selected."""
 
     def get_spec_text(self) -> str:
+        """get_spec_text."""
         return self.spec_edit.toPlainText()
         """get_spec_text."""
 
@@ -5170,6 +5383,7 @@ class ExplorerWidget(QWidget):
     """The complete file explorer, embeddable in any PySide6 layout."""
 
     def __init__(self, start_path: str = "", parent=None, root: str = ""):
+        """__init__."""
         super().__init__(parent)
         self.setObjectName("NexusRoot")
         self.engine = Engine()
@@ -5290,6 +5504,7 @@ class ExplorerWidget(QWidget):
         nav_addr_layout.setSpacing(6)
 
         def nav_btn(icon_name, tip, slot):
+            """nav_btn."""
             b = QToolButton()
             b.setIcon(_fluent_icon(icon_name, _scaled(18), _FLUENT_DEFAULT))
             b.setToolTip(tip)
@@ -5299,6 +5514,7 @@ class ExplorerWidget(QWidget):
             """nav_btn."""
 
         def action_btn(icon_name, tip, slot, accent: bool = False) -> QToolButton:
+            """action_btn."""
             b = QToolButton()
             b.setIcon(_fluent_action(icon_name, accent=accent, size=_scaled(18)))
             b.setToolTip(tip)
@@ -5309,6 +5525,7 @@ class ExplorerWidget(QWidget):
             """action_btn."""
 
         def sep() -> QFrame:
+            """sep."""
             s = QFrame()
             s.setFrameShape(QFrame.Shape.VLine)
             s.setFrameShadow(QFrame.Shadow.Sunken)
@@ -5799,6 +6016,7 @@ class ExplorerWidget(QWidget):
             win.set_titlebar_tab_widget(self.tab_container)
 
     def _on_about_to_quit(self) -> None:
+        """_on_about_to_quit."""
         self.save_session(force=True)
         """_on_about_to_quit."""
 
@@ -5882,14 +6100,18 @@ class ExplorerWidget(QWidget):
 
     # ────────────────────────── shortcuts ─────────────────────────────────
     def _bind_shortcuts(self):
+        """_bind_shortcuts."""
         def _text_input_focused():
+            """_text_input_focused."""
             from PySide6.QtWidgets import QLineEdit, QTextEdit, QPlainTextEdit
             w = QApplication.focusWidget()
             return isinstance(w, (QLineEdit, QTextEdit, QPlainTextEdit))
             """_text_input_focused."""
 
         def _wrap(fn, allow_in_text=False):
+            """_wrap."""
             def _handler():
+                """_handler."""
                 if not allow_in_text and _text_input_focused():
                     return
                 fn()
@@ -5953,6 +6175,7 @@ class ExplorerWidget(QWidget):
         """_bind_shortcuts."""
 
     def _register_palette_actions(self):
+        """_register_palette_actions."""
         p = self._palette
         p.register("Navigate Back", "Alt+\u2190", self.go_back)
         p.register("Navigate Forward", "Alt+\u2192", self.go_forward)
@@ -5992,6 +6215,7 @@ class ExplorerWidget(QWidget):
 
     # ────────────────────────── debug ─────────────────────────────────────
     def _toggle_debug(self):
+        """_toggle_debug."""
         self._debug_visible = not self._debug_visible
         if self._debug_visible:
             self._debug.setParent(self)
@@ -6004,6 +6228,7 @@ class ExplorerWidget(QWidget):
         """_toggle_debug."""
 
     def _show_shortcuts(self):
+        """_show_shortcuts."""
         if self._shortcuts_dialog.isVisible():
             self._shortcuts_dialog.raise_()
             self._shortcuts_dialog.activateWindow()
@@ -6013,6 +6238,7 @@ class ExplorerWidget(QWidget):
         """_show_shortcuts."""
 
     def _go_to_path(self):
+        """_go_to_path."""
         dlg = GoToPathDialog(self._tab()["path"], self)
         if dlg.exec() == QDialog.DialogCode.Accepted:
             path = dlg.result_path()
@@ -6047,6 +6273,7 @@ class ExplorerWidget(QWidget):
         QTimer.singleShot(1200, self._update_status)
 
     def _toggle_terminal(self):
+        """_toggle_terminal."""
         vis = not self.terminal_panel.isVisible()
         self.terminal_panel.setVisible(vis)
         if vis:
@@ -6056,6 +6283,7 @@ class ExplorerWidget(QWidget):
         """_toggle_terminal."""
 
     def resizeEvent(self, ev):
+        """resizeEvent."""
         super().resizeEvent(ev)
         if hasattr(self, '_job_queue') and self._job_queue.isVisible():
             w = self._job_queue.width()
@@ -6064,18 +6292,21 @@ class ExplorerWidget(QWidget):
         """resizeEvent."""
 
     def closeEvent(self, ev):
+        """closeEvent."""
         if hasattr(self, "terminal_panel") and self.terminal_panel is not None:
             self.terminal_panel.shutdown()
         super().closeEvent(ev)
         """closeEvent."""
 
     def _log(self, event: str):
+        """_log."""
         self._debug.log_event(event)
         log.debug(event)
         """_log."""
 
     # ────────────────────────── tabs ──────────────────────────────────────
     def add_tab(self, path: str) -> None:
+        """add_tab."""
         self._tabs.append({"path": path, "history": [path], "hindex": 0})
         idx = self.tabbar.addTab(_fluent_action("folder", size=14), Path(path).name or path)
         close_btn = QToolButton(self.tabbar)
@@ -6088,6 +6319,7 @@ class ExplorerWidget(QWidget):
         close_btn.setCursor(Qt.PointingHandCursor)
 
         def _on_close_btn():
+            """_on_close_btn."""
             sender_btn = self.sender()
             for i in range(self.tabbar.count()):
                 if self.tabbar.tabButton(i, QTabBar.RightSide) == sender_btn or self.tabbar.tabButton(i, QTabBar.LeftSide) == sender_btn:
@@ -6102,6 +6334,7 @@ class ExplorerWidget(QWidget):
         """add_tab."""
 
     def _close_tab(self, idx: int) -> None:
+        """_close_tab."""
         if self.tabbar.count() <= 1 or idx < 0 or idx >= len(self._tabs):
             return
         self._tabs.pop(idx)
@@ -6112,6 +6345,7 @@ class ExplorerWidget(QWidget):
         """_close_tab."""
 
     def _on_tab_moved(self, from_pos: int, to_pos: int) -> None:
+        """_on_tab_moved."""
         if 0 <= from_pos < len(self._tabs) and 0 <= to_pos < len(self._tabs):
             tab = self._tabs.pop(from_pos)
             self._tabs.insert(to_pos, tab)
@@ -6124,11 +6358,13 @@ class ExplorerWidget(QWidget):
         """_on_tab_moved."""
 
     def _close_current_tab(self) -> None:
+        """_close_current_tab."""
         if self._current_tab >= 0:
             self._close_tab(self._current_tab)
         """_close_current_tab."""
 
     def _switch_tab(self, idx: int) -> None:
+        """_switch_tab."""
         if idx < 0 or idx >= len(self._tabs):
             return
         self._current_tab = idx
@@ -6138,6 +6374,7 @@ class ExplorerWidget(QWidget):
         """_switch_tab."""
 
     def _tab(self) -> dict:
+        """_tab."""
         if self._current_tab < 0 or self._current_tab >= len(self._tabs):
             return {"path": os.path.expanduser("~"), "history": [os.path.expanduser("~")], "hindex": 0}
         return self._tabs[self._current_tab]
@@ -6145,6 +6382,7 @@ class ExplorerWidget(QWidget):
 
     # ────────────────────────── navigation ────────────────────────────────
     def navigate(self, path: str, push: bool = True) -> None:
+        """navigate."""
         path = os.path.normpath(os.path.expanduser(path))
         if not os.path.isdir(path):
             self.status_items.setText(f"Not a folder: {path}")
@@ -6165,6 +6403,7 @@ class ExplorerWidget(QWidget):
         """navigate."""
 
     def _load(self, path: str) -> None:
+        """_load."""
         self.status_items.setText("Loading\u2026")
         self.crumbs.setPath(path)
         self.preview.set_current_folder(path)
@@ -6183,6 +6422,7 @@ class ExplorerWidget(QWidget):
         seq = self._load_seq
 
         def _deliver(code: int, rows: list[dict], _seq: int = seq) -> None:
+            """_deliver."""
             if _seq == self._load_seq:
                 self._on_rows(code, rows)
             """_deliver."""
@@ -6191,6 +6431,7 @@ class ExplorerWidget(QWidget):
         """_load."""
 
     def _on_rows(self, code: int, rows: list[dict]) -> None:
+        """_on_rows."""
         self.model.update_rows(rows)
         self._update_status()
         self._log(f"Loaded {len(rows)} items (code={code})")
@@ -6214,6 +6455,7 @@ class ExplorerWidget(QWidget):
         """_on_rows."""
 
     def _reload_current(self) -> None:
+        """_reload_current."""
         self._load(self._tab()["path"])
         """_reload_current."""
 
@@ -6282,10 +6524,12 @@ class ExplorerWidget(QWidget):
                 break
 
     def _on_fs_change(self, _path: str) -> None:
+        """_on_fs_change."""
         self._reload_timer.start()
         """_on_fs_change."""
 
     def go_back(self):
+        """go_back."""
         t = self._tab()
         if t["hindex"] > 0:
             t["hindex"] -= 1
@@ -6293,6 +6537,7 @@ class ExplorerWidget(QWidget):
         """go_back."""
 
     def go_forward(self):
+        """go_forward."""
         t = self._tab()
         if t["hindex"] < len(t["history"]) - 1:
             t["hindex"] += 1
@@ -6301,6 +6546,7 @@ class ExplorerWidget(QWidget):
 
     # ── right-pane history (mouse side-buttons route here when over it) ──
     def _right_go_back(self):
+        """_right_go_back."""
         t = self._right_tab()
         if t["hindex"] > 0:
             t["hindex"] -= 1
@@ -6308,6 +6554,7 @@ class ExplorerWidget(QWidget):
         """_right_go_back."""
 
     def _right_go_forward(self):
+        """_right_go_forward."""
         t = self._right_tab()
         if t["hindex"] < len(t["history"]) - 1:
             t["hindex"] += 1
@@ -6356,6 +6603,7 @@ class ExplorerWidget(QWidget):
             vp.installEventFilter(self)
 
     def eventFilter(self, obj, ev):  # noqa: N802
+        """eventFilter."""
         from PySide6.QtCore import QEvent
 
         # 1. Route drag & drop events on all file viewports & trees
@@ -6395,6 +6643,7 @@ class ExplorerWidget(QWidget):
         """eventFilter."""
 
     def _handle_viewport_drop(self, obj, ev) -> bool:
+        """_handle_viewport_drop."""
         mime = ev.mimeData()
         if not mime:
             return False
@@ -6538,6 +6787,7 @@ class ExplorerWidget(QWidget):
             pass
 
     def go_up(self):
+        """go_up."""
         if self._archive_mode:
             self._archive_go_up()
             return
@@ -6547,6 +6797,7 @@ class ExplorerWidget(QWidget):
         """go_up."""
 
     def _start_edit_path(self):
+        """_start_edit_path."""
         self.addr.setText(self._tab()["path"])
         self.crumbs.hide()
         self.addr.show()
@@ -6555,6 +6806,7 @@ class ExplorerWidget(QWidget):
         """_start_edit_path."""
 
     def _commit_edit_path(self):
+        """_commit_edit_path."""
         p = self.addr.text().strip()
         if len(p) == 2 and p[1] == ":":
             p += "\\"
@@ -6565,12 +6817,14 @@ class ExplorerWidget(QWidget):
         """_commit_edit_path."""
 
     def _on_addr_editing_finished(self):
+        """_on_addr_editing_finished."""
         self.addr.hide()
         self.crumbs.show()
         """_on_addr_editing_finished."""
 
     # ────────────────────────── sidebar ───────────────────────────────────
     def _toggle_sidebar(self):
+        """_toggle_sidebar."""
         self._sidebar_visible = not self._sidebar_visible
         if self._sidebar_visible:
             self.side.show()
@@ -6747,6 +7001,7 @@ class ExplorerWidget(QWidget):
         self._extract_worker.start()
 
     def _on_extract_done(self, success: bool, message: str = ""):
+        """_on_extract_done."""
         if hasattr(self, "_extract_progress"):
             self._extract_progress.finish(success, message)
         self._reload_current()
@@ -6809,10 +7064,12 @@ class ExplorerWidget(QWidget):
         self._log(f"Preview pane {'ON' if vis else 'OFF'}")
 
     def _newfolder(self):
+        """_newfolder."""
         self._new_folder()
         """_newfolder."""
 
     def _right_add_tab(self, path: str) -> None:
+        """_right_add_tab."""
         self._right_tabs.append({"path": path, "history": [path], "hindex": 0})
         if self._right_current_tab < 0:
             self._right_current_tab = 0
@@ -6820,12 +7077,14 @@ class ExplorerWidget(QWidget):
         """_right_add_tab."""
 
     def _right_tab(self) -> dict:
+        """_right_tab."""
         if self._right_current_tab < 0 or self._right_current_tab >= len(self._right_tabs):
             return {"path": os.path.expanduser("~"), "history": [os.path.expanduser("~")], "hindex": 0}
         return self._right_tabs[self._right_current_tab]
         """_right_tab."""
 
     def _right_navigate(self, path: str, push: bool = True) -> None:
+        """_right_navigate."""
         path = os.path.normpath(os.path.expanduser(path))
         if not os.path.isdir(path):
             return
@@ -6839,16 +7098,19 @@ class ExplorerWidget(QWidget):
         """_right_navigate."""
 
     def _right_load(self, path: str) -> None:
+        """_right_load."""
         self.engine.list_dir(path, self._right_on_rows)
         """_right_load."""
 
     def _right_on_rows(self, code: int, rows: list[dict]) -> None:
+        """_right_on_rows."""
         self._right_model.update_rows(rows)
         if self._right_stack.currentIndex() == 1:
             self._fill_right_icon_view(rows)
         """_right_on_rows."""
 
     def _fill_right_icon_view(self, rows: list[dict]):
+        """_fill_right_icon_view."""
         self._right_icon_list.blockSignals(True)
         self._right_icon_list.clear()
         for row in rows:
@@ -6860,6 +7122,7 @@ class ExplorerWidget(QWidget):
         """_fill_right_icon_view."""
 
     def _activate_right(self, idx):
+        """_activate_right."""
         row = self._right_proxy.index(idx.row(), 0).data(Qt.ItemDataRole.UserRole)
         if row.get("isDir"):
             self._right_navigate(row.get("path", ""))
@@ -6914,6 +7177,7 @@ class ExplorerWidget(QWidget):
         self._update_status()
 
     def _get_color_tag(self, path: str) -> str | None:
+        """_get_color_tag."""
         return self._color_tags.get_tag(path)
         """_get_color_tag."""
 
@@ -6969,6 +7233,7 @@ class ExplorerWidget(QWidget):
 
     # ────────────────────────── views ─────────────────────────────────────
     def _set_view_mode(self, mode: str):
+        """_set_view_mode."""
         if mode == "icons":
             self.stack.setCurrentIndex(1)
             self._view_mode = "icons"
@@ -6981,6 +7246,7 @@ class ExplorerWidget(QWidget):
         """_set_view_mode."""
 
     def _toggle_view(self):
+        """_toggle_view."""
         if self.stack.currentIndex() == 0:
             self._set_view_mode("icons")
         else:
@@ -7012,6 +7278,7 @@ class ExplorerWidget(QWidget):
 
     # ────────────────────────── selection ─────────────────────────────────
     def _selected_rows(self, sender=None) -> list[dict]:
+        """_selected_rows."""
         rows: list[dict] = []
         src = sender or self.sender()
         if src in (self._right_table, self._right_icon_list):
@@ -7033,15 +7300,18 @@ class ExplorerWidget(QWidget):
         """_selected_rows."""
 
     def _selected_paths(self, sender=None) -> list[str]:
+        """_selected_paths."""
         return [r.get("path", "") for r in self._selected_rows(sender) if r.get("path")]
         """_selected_paths."""
 
     def _activate(self, idx):
+        """_activate."""
         row = self.proxy.index(idx.row(), 0).data(Qt.ItemDataRole.UserRole)
         self._activate_path(row)
         """_activate."""
 
     def _activate_path(self, row_or_path):
+        """_activate_path."""
         row = row_or_path if isinstance(row_or_path, dict) else {"path": str(row_or_path)}
         p = row.get("path", "")
         if self._archive_mode:
@@ -7060,6 +7330,7 @@ class ExplorerWidget(QWidget):
         """_activate_path."""
 
     def _update_status(self, sender=None, *_):
+        """_update_status."""
         total = self.proxy.rowCount()
         folders = sum(1 for r in self.model.rows if r.get("isDir"))
         files = total - folders
@@ -7087,6 +7358,7 @@ class ExplorerWidget(QWidget):
         """_update_status."""
 
     def _cycle_status_mode(self):
+        """_cycle_status_mode."""
         self._status_mode = (self._status_mode + 1) % 3
         if self._status_mode == 2:
             path = self._tab().get("path", "")
@@ -7107,6 +7379,7 @@ class ExplorerWidget(QWidget):
         """_cycle_status_mode."""
 
     def _on_transfer_started(self, job_id: str):
+        """_on_transfer_started."""
         if hasattr(self, "status_items"):
             self.status_items.setText(f"Transfer active ({job_id[:8]}…)")
         """_on_transfer_started."""
@@ -7120,6 +7393,7 @@ class ExplorerWidget(QWidget):
         return
 
     def open_transfer_monitor(self):
+        """open_transfer_monitor."""
         if self._transfer_monitor is None:
             from nexus_transfer_monitor import TransferMonitorDialog
 
@@ -7129,25 +7403,30 @@ class ExplorerWidget(QWidget):
         """open_transfer_monitor."""
 
     def _on_transfer_progress(self, job_id: str, percent: int, text: str):
+        """_on_transfer_progress."""
         if hasattr(self, "status_items"):
             self.status_items.setText(f"Transfer {percent}% — {text}")
         """_on_transfer_progress."""
 
     def _on_transfer_cancelled(self, job_id: str):
+        """_on_transfer_cancelled."""
         if hasattr(self, "status_items"):
             self.status_items.setText("Transfer cancelled")
         self._reload_current()
         """_on_transfer_cancelled."""
 
     def _on_transfer_completed(self, job_id: str, success: bool, message: str):
+        """_on_transfer_completed."""
         self._reload_current()
         """_on_transfer_completed."""
 
     def _on_transfer_queue_empty(self):
+        """_on_transfer_queue_empty."""
         self._reload_current()
         """_on_transfer_queue_empty."""
     # ────────────────────────── operations ────────────────────────────────
     def _unique_name(self, base: str) -> str:
+        """_unique_name."""
         existing = {r.get("name", "").lower() for r in self.model.rows}
         name, i = base, 2
         while name.lower() in existing:
@@ -7330,6 +7609,7 @@ class ExplorerWidget(QWidget):
         self._transfer_queue.enqueue(kind="move", sources=sel, dest=dest)
 
     def _rename(self):
+        """_rename."""
         sel = self._selected_paths()
         if len(sel) != 1:
             return
@@ -7357,6 +7637,7 @@ class ExplorerWidget(QWidget):
         """_rename."""
 
     def _clip(self, mode: str):
+        """_clip."""
         sel = self._selected_paths()
         if sel:
             if mode == "cut":
@@ -7368,6 +7649,7 @@ class ExplorerWidget(QWidget):
         """_clip."""
 
     def _paste(self, target_dest: str | None = None):
+        """_paste."""
         data = _nexus_clipboard.paste()
         if not data and hasattr(self, "preview") and hasattr(self.preview, "staging_shelf"):
             shelf = self.preview.staging_shelf
@@ -7408,6 +7690,7 @@ class ExplorerWidget(QWidget):
         """_paste."""
 
     def _on_staging_paste(self, mode: str, paths: list[str], target_dir: str):
+        """_on_staging_paste."""
         dest = target_dir or self._tab()["path"]
         valid_paths = [p for p in paths if os.path.exists(p)]
         if not valid_paths or not dest:
@@ -7433,6 +7716,7 @@ class ExplorerWidget(QWidget):
         """_on_staging_paste."""
 
     def _on_stage_selected(self):
+        """_on_stage_selected."""
         sel = self._selected_paths()
         if sel:
             self.preview.staging_shelf.add_paths(sel, mode=_nexus_clipboard._mode or "copy")
@@ -7440,6 +7724,7 @@ class ExplorerWidget(QWidget):
         """_on_stage_selected."""
 
     def _delete(self, permanent: bool = False):
+        """_delete."""
         sel = self._selected_paths()
         if not sel:
             return
@@ -7462,6 +7747,7 @@ class ExplorerWidget(QWidget):
         """_delete."""
 
     def _undo(self):
+        """_undo."""
         msg = self._undo_manager.undo()
         if msg:
             self._log(msg)
@@ -7473,6 +7759,7 @@ class ExplorerWidget(QWidget):
         """_undo."""
 
     def _redo(self):
+        """_redo."""
         msg = self._undo_manager.redo()
         if msg:
             self._log(msg)
@@ -7484,6 +7771,7 @@ class ExplorerWidget(QWidget):
         """_redo."""
 
     def _select_all(self):
+        """_select_all."""
         if self.stack.currentIndex() == 0:
             self.table.selectAll()
         else:
@@ -7491,12 +7779,14 @@ class ExplorerWidget(QWidget):
         """_select_all."""
 
     def _on_table_clicked(self, idx):
+        """_on_table_clicked."""
         row = self.proxy.index(idx.row(), 0).data(Qt.ItemDataRole.UserRole)
         if row:
             self.preview.show_entry(row)
         """_on_table_clicked."""
 
     def _on_current_changed(self, current: QModelIndex, _prev: QModelIndex):
+        """_on_current_changed."""
         if current.isValid():
             row = self.proxy.index(current.row(), 0).data(Qt.ItemDataRole.UserRole)
             if row:
@@ -7505,10 +7795,12 @@ class ExplorerWidget(QWidget):
 
     # ────────────────────────── drag and drop ─────────────────────────────
     def dragEnterEvent(self, ev: QDragEnterEvent):
+        """dragEnterEvent."""
         ev.acceptProposedAction()
         """dragEnterEvent."""
 
     def dragMoveEvent(self, ev: QDragMoveEvent):
+        """dragMoveEvent."""
         ev.acceptProposedAction()
         try:
             pos = ev.position().toPoint() if hasattr(ev, "position") else ev.pos()
@@ -7534,6 +7826,7 @@ class ExplorerWidget(QWidget):
         """dragMoveEvent."""
 
     def dragLeaveEvent(self, ev):
+        """dragLeaveEvent."""
         try:
             self._update_status()
         except Exception:
@@ -7541,6 +7834,7 @@ class ExplorerWidget(QWidget):
         """dragLeaveEvent."""
 
     def dropEvent(self, ev):
+        """dropEvent."""
         if not self._handle_viewport_drop(self, ev):
             ev.ignore()
         """dropEvent."""
@@ -7566,12 +7860,14 @@ class ExplorerWidget(QWidget):
         drag.exec(actions)
 
     def _search(self):
+        """_search."""
         dlg = SearchDialog(self.engine, self._tab()["path"], self)
         dlg.show()
         """_search."""
 
     # ────────────────────────── context menu ──────────────────────────────
     def _context_menu(self, pos):
+        """_context_menu."""
         from nexus_archive import is_archive as _is_archive
         menu = QMenu(self)
         sender = self.sender()
@@ -7624,6 +7920,7 @@ class ExplorerWidget(QWidget):
         # Archive mode context menu
         if self._archive_mode:
             def _open_all_archive():
+                """_open_all_archive."""
                 for p in paths:
                     self._archive_activate(p)
                 """_open_all_archive."""
@@ -7642,6 +7939,7 @@ class ExplorerWidget(QWidget):
 
         if sel:
             def _mi(icon_name, text, slot, accent=False):
+                """_mi."""
                 a = QAction(_fluent_action(icon_name, accent=accent, size=_scaled(16)), text, self)
                 a.triggered.connect(slot)
                 menu.addAction(a)
@@ -7649,6 +7947,7 @@ class ExplorerWidget(QWidget):
                 """_mi."""
 
             def _open_all_sel():
+                """_open_all_sel."""
                 for r in sel:
                     self._activate_path(r)
                 """_open_all_sel."""
@@ -7717,6 +8016,7 @@ class ExplorerWidget(QWidget):
                 _mi("expand_right", "Open with\u2026", lambda: self._open_with(paths[0]))
         else:
             def _mi_bg(icon_name, text, slot):
+                """_mi_bg."""
                 a = QAction(_fluent_action(icon_name, size=_scaled(16)), text, self)
                 a.triggered.connect(slot)
                 menu.addAction(a)
@@ -7855,6 +8155,7 @@ class ExplorerWidget(QWidget):
             dlg.exec()
 
     def _open_with(self, path: str):
+        """_open_with."""
         start_dir = str(Path(path).parent) if os.path.isfile(path) else ""
         exe, _ = QFileDialog.getOpenFileName(self, "Open with\u2026",
                                              start_dir,
@@ -7905,11 +8206,13 @@ class ExplorerWidget(QWidget):
 
     # ────────────────────────── sidebar drives ────────────────────────────
     def _load_drives(self):
+        """_load_drives."""
         from PySide6.QtCore import QRunnable, QThreadPool
 
         engine = getattr(self, "engine", None)
 
         def _finish(count: int) -> None:
+            """_finish."""
             if self.folder_tree is not None:
                 self.folder_tree.refresh()
             self._log(f"Drives: {count} found")
@@ -7922,7 +8225,9 @@ class ExplorerWidget(QWidget):
             job_done = {"n": 0}
 
             class _DriveJob(QRunnable):
+                """_DriveJob."""
                 def run(self_inner):
+                    """run."""
                     try:
                         job_done["n"] = len(ffi.get_drives())
                     except (RuntimeError, OSError) as exc:
@@ -7950,6 +8255,7 @@ class ExplorerWidget(QWidget):
         proc = QProcess()
 
         def done():
+            """done."""
             raw = bytes(proc.readAllStandardOutput()).decode("utf-8", "replace")
             try:
                 drives = _json.loads(raw)

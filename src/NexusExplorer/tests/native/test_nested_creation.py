@@ -25,6 +25,7 @@ from nexus_undo import UndoStack, CreateFileEntry, MkdirEntry, BatchCreateEntry
 
 
 def test_create_nested_folder():
+    """test_create_nested_folder."""
     with tempfile.TemporaryDirectory() as tmpdir:
         base = Path(tmpdir)
         target, created = create_nested_folder(base, "components/ui/modals")
@@ -38,6 +39,7 @@ def test_create_nested_folder():
 
 
 def test_create_nested_file():
+    """test_create_nested_file."""
     with tempfile.TemporaryDirectory() as tmpdir:
         base = Path(tmpdir)
         content = "export const Button = () => null;"
@@ -50,6 +52,7 @@ def test_create_nested_file():
 
 
 def test_scaffold_hierarchy_indented():
+    """test_scaffold_hierarchy_indented."""
     with tempfile.TemporaryDirectory() as tmpdir:
         base = Path(tmpdir)
         spec = """
@@ -74,6 +77,7 @@ README.md
 
 
 def test_scaffold_hierarchy_path_list():
+    """test_scaffold_hierarchy_path_list."""
     with tempfile.TemporaryDirectory() as tmpdir:
         base = Path(tmpdir)
         spec = """
@@ -89,6 +93,7 @@ package.json
 
 
 def test_scaffold_presets():
+    """test_scaffold_presets."""
     with tempfile.TemporaryDirectory() as tmpdir:
         base = Path(tmpdir)
         fastapi_preset = PROJECT_SCAFFOLD_PRESETS["FastAPI Microservice"]
@@ -100,6 +105,7 @@ def test_scaffold_presets():
 
 
 def test_undo_redo_create_file():
+    """test_undo_redo_create_file."""
     with tempfile.TemporaryDirectory() as tmpdir:
         base = Path(tmpdir)
         target, created = create_nested_file(base, "deep/folder/structure/script.py", content="print('hello')")
@@ -120,6 +126,7 @@ def test_undo_redo_create_file():
 
 
 def test_undo_redo_batch_create():
+    """test_undo_redo_batch_create."""
     with tempfile.TemporaryDirectory() as tmpdir:
         base = Path(tmpdir)
         spec = "src/a.py\nsrc/b.py"
@@ -143,6 +150,7 @@ def test_undo_redo_batch_create():
 
 @pytest.mark.skipif(os.environ.get("QT_QPA_PLATFORM") != "offscreen" and not sys.platform.startswith("win"), reason="Qt offscreen")
 def test_dialogs_construction():
+    """test_dialogs_construction."""
     from PySide6.QtWidgets import QApplication
     app = QApplication.instance() or QApplication(sys.argv)
     

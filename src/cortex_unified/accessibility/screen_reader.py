@@ -263,6 +263,7 @@ class ScreenReaderSupport:
             return
             
         def on_focus_in():
+            """on_focus_in."""
             self.announce_changes(message)
             """on_focus_in."""
             

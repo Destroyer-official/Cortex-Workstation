@@ -47,6 +47,7 @@ if _IS_WINDOWS:
     _FILE_ATTRIBUTE_REPARSE_POINT = 0x400
 
     class _WIN32_FIND_DATAW(ctypes.Structure):
+        """_WIN32_FIND_DATAW."""
         _fields_ = [
             ("dwFileAttributes", wintypes.DWORD),
             ("ftCreationTime", wintypes.FILETIME),
@@ -173,12 +174,14 @@ class _PrefixIndex:
     """Sorted array of (lowercase_name, path) for O(log n) prefix search."""
 
     def __init__(self) -> None:
+        """__init__."""
         self._entries: list[tuple[str, str]] = []
         self._dirty = True
         self._sorted: list[tuple[str, str]] = []
         """__init__."""
 
     def add(self, name: str, path: str) -> None:
+        """add."""
         self._entries.append((name.lower(), path))
         self._dirty = True
         """add."""
@@ -201,12 +204,14 @@ class _PrefixIndex:
         self._dirty = True
 
     def _ensure_sorted(self) -> None:
+        """_ensure_sorted."""
         if self._dirty:
             self._sorted = sorted(self._entries, key=lambda x: x[0])
             self._dirty = False
         """_ensure_sorted."""
 
     def prefix_search(self, prefix: str, max_results: int = 1000) -> list[str]:
+        """prefix_search."""
         self._ensure_sorted()
         if not prefix:
             return []
@@ -218,12 +223,14 @@ class _PrefixIndex:
         """prefix_search."""
 
     def rebuild(self, entries: dict[str, IndexedEntry]) -> None:
+        """rebuild."""
         self._entries = [(e.name.lower(), e.path) for e in entries.values()]
         self._dirty = True
         self._ensure_sorted()
         """rebuild."""
 
     def __len__(self) -> int:
+        """__len__."""
         return len(self._entries)
         """__len__."""
 
@@ -236,6 +243,7 @@ class FileIndex:
     """Thread-safe file path index backed by in-memory dicts + sorted prefix array."""
 
     def __init__(self) -> None:
+        """__init__."""
         self._lock = threading.RLock()
         self._entries: dict[str, IndexedEntry] = {}
         self._name_index: dict[str, set[str]] = {}
@@ -247,11 +255,13 @@ class FileIndex:
 
     @property
     def stats(self) -> IndexStats:
+        """stats."""
         with self._lock:
             return self._stats
         """stats."""
 
     def add(self, entry: IndexedEntry) -> None:
+        """add."""
         with self._lock:
             self._entries[entry.path] = entry
             name_key = entry.name.lower()
@@ -268,6 +278,7 @@ class FileIndex:
         """add."""
 
     def remove(self, path: str) -> bool:
+        """remove."""
         with self._lock:
             entry = self._entries.pop(path, None)
             if entry is None:
@@ -343,6 +354,7 @@ class FileIndex:
             return [self._entries[p] for p in self._parent_index.get(path, set()) if p in self._entries]
 
     def clear(self) -> None:
+        """clear."""
         with self._lock:
             self._entries.clear()
             self._name_index.clear()
@@ -353,11 +365,13 @@ class FileIndex:
         """clear."""
 
     def entry_count(self) -> int:
+        """entry_count."""
         with self._lock:
             return len(self._entries)
         """entry_count."""
 
     def rebuild_prefix_index(self) -> None:
+        """rebuild_prefix_index."""
         with self._lock:
             self._prefix.rebuild(self._entries)
         """rebuild_prefix_index."""
@@ -501,6 +515,7 @@ class _IndexWorker(QThread):
     error = Signal(str)
 
     def __init__(self, roots: list[str], index: FileIndex, db_conn: Optional[sqlite3.Connection]):
+        """__init__."""
         super().__init__()
         self._roots = roots
         self._index = index
@@ -509,6 +524,7 @@ class _IndexWorker(QThread):
         """__init__."""
 
     def run(self) -> None:
+        """run."""
         t0 = time.perf_counter()
         try:
             for root in self._roots:
@@ -575,6 +591,7 @@ class _IndexWorker(QThread):
             self.progress.emit(self._count, 0)
 
     def _flush_batch(self, batch: list[IndexedEntry]) -> None:
+        """_flush_batch."""
         for ie in batch:
             self._index.add(ie)
         """_flush_batch."""
@@ -591,12 +608,14 @@ class _IncrementalWorker(QThread):
     finished_signal = Signal(int)
 
     def __init__(self, root: str, index: FileIndex):
+        """__init__."""
         super().__init__()
         self._root = root
         self._index = index
         """__init__."""
 
     def run(self) -> None:
+        """run."""
         count = 0
         seen: set[str] = set()
         stack: list[str] = [self._root]
@@ -649,6 +668,7 @@ class FileIndexer(QObject):
     indexing_progress = Signal(int)
 
     def __init__(self, db_path: str | None = None, parent=None):
+        """__init__."""
         super().__init__(parent)
         self._index = FileIndex()
         self._db_path = db_path
@@ -668,6 +688,7 @@ class FileIndexer(QObject):
         """__init__."""
 
     def _open_persistent_db(self) -> None:
+        """_open_persistent_db."""
         try:
             self._db_conn = _open_db(self._db_path)
         except Exception:
@@ -703,17 +724,20 @@ class FileIndexer(QObject):
         self._incr_worker = None
 
     def is_indexing(self) -> bool:
+        """is_indexing."""
         return (self._worker is not None and self._worker.isRunning()) or \
                (self._incr_worker is not None and self._incr_worker.isRunning())
         """is_indexing."""
 
     def _on_worker_finished(self, total: int) -> None:
+        """_on_worker_finished."""
         self._index.rebuild_prefix_index()
         self.indexing_finished.emit(total)
         self.index_updated.emit()
         """_on_worker_finished."""
 
     def _on_incr_finished(self, count: int) -> None:
+        """_on_incr_finished."""
         if count > 0:
             self._index.rebuild_prefix_index()
             self.index_updated.emit()
@@ -737,14 +761,17 @@ class FileIndexer(QObject):
             return _fts5_search(self._db_conn, query, max_results)
 
     def search_extension(self, ext: str, max_results: int = 1000) -> list[IndexedEntry]:
+        """search_extension."""
         return self._index.search_extension(ext, max_results)
         """search_extension."""
 
     def list_directory(self, path: str) -> list[IndexedEntry]:
+        """list_directory."""
         return self._index.list_directory(path)
         """list_directory."""
 
     def get_stats(self) -> IndexStats:
+        """get_stats."""
         return self._index.stats
         """get_stats."""
 
@@ -798,6 +825,7 @@ class FileIndexer(QObject):
             self._db_conn = None
 
     def __del__(self) -> None:
+        """__del__."""
         try:
             log.warning(
                 "FileIndexer garbage collected without explicit shutdown(); "

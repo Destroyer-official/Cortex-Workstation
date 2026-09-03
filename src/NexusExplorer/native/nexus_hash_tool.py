@@ -18,6 +18,7 @@ from typing import Callable, Dict, List, Optional, Tuple
 
 
 class HashAlgorithm(Enum):
+    """HashAlgorithm."""
     MD5 = "MD5"
     SHA1 = "SHA-1"
     SHA256 = "SHA-256"
@@ -30,6 +31,7 @@ class HashAlgorithm(Enum):
 
 @dataclass
 class HashResult:
+    """HashResult."""
     path: str
     filename: str
     size: int
@@ -42,6 +44,7 @@ class HashResult:
 
 @dataclass
 class VerifyItem:
+    """VerifyItem."""
     path: str
     expected_hash: str
     actual_hash: str

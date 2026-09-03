@@ -19,6 +19,7 @@ class ProfileReport:
     custom_metrics: Dict[str, Any] = field(default_factory=dict)
     
     def to_dict(self) -> Dict[str, Any]:
+        """to_dict."""
         return {
             'operation_name': self.operation_name,
             'total_time': self.total_time,
@@ -34,6 +35,7 @@ class OperationProfiler:
     """Profiles operations for performance analysis."""
     
     def __init__(self):
+        """__init__."""
         self.logger = logging.getLogger(__name__)
         self.profiles: List[ProfileReport] = []
         self.current_operation: Optional[str] = None

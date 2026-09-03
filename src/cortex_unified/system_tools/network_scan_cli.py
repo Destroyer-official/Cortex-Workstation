@@ -15,6 +15,7 @@ from cortex_unified.system_tools.network_service_scanner import (
 
 
 def _parser() -> argparse.ArgumentParser:
+    """_parser."""
     parser = argparse.ArgumentParser(
         description="Run a bounded Cortex private-LAN inventory scan")
     parser.add_argument(
@@ -28,6 +29,7 @@ def _parser() -> argparse.ArgumentParser:
 
 
 def _write_atomic(path: str, payload: dict) -> None:
+    """_write_atomic."""
     target = Path(path).expanduser()
     target.parent.mkdir(parents=True, exist_ok=True)
     temporary = target.with_name(target.name + f".{os.getpid()}.tmp")

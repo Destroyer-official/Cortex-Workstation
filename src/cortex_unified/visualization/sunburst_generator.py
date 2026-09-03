@@ -18,29 +18,37 @@ except ImportError:
     HAS_PLOTLY = False
     # No-op stand-ins keep method bodies runnable without Plotly
     class go:
+        """go."""
         class Figure:
+            """Figure."""
             def __init__(self, *args, **kwargs):
+                """__init__."""
                 pass
                 """__init__."""
                 """__init__."""
             def add_trace(self, *args, **kwargs):
+                """add_trace."""
                 pass
                 """add_trace."""
                 """add_trace."""
             def update_layout(self, *args, **kwargs):
+                """update_layout."""
                 pass
                 """update_layout."""
             """Figure class."""
         """go class."""
         """go class."""
     class px:
+        """px."""
         @staticmethod
         def sunburst(*args, **kwargs):
+            """sunburst."""
             return go.Figure()
             """sunburst."""
         """px class."""
         """px class."""
     def plot(*args, **kwargs):
+        """plot."""
         pass
         """plot."""
         """plot."""
@@ -150,6 +158,7 @@ class SunburstGenerator:
                 total_size = sum(child.get('size_bytes', 0) for child in tree_data['children'])
         
         def add_node(node_data: Dict, parent_id: str = "", level: int = 0):
+            """add_node."""
             if level >= max_depth:
                 return
             

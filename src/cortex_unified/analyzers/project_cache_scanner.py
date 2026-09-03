@@ -130,6 +130,7 @@ class ProjectCacheScanner:
         enabled_categories: Optional[List[str]] = None,
         keep_recent_days: int = 7,
     ):
+        """__init__."""
         self.enabled_categories = enabled_categories
         self.keep_recent_days = keep_recent_days
         self.logger = logging.getLogger(__name__)
@@ -195,6 +196,7 @@ class ProjectCacheScanner:
         cutoff_date = _dt.now() - timedelta(days=keep_recent_days) if keep_recent_days > 0 else None
 
         def _match_dir(d_name: str):
+            """_match_dir."""
             if d_name in self._pattern_map:
                 return self._pattern_map[d_name]
             for pat, (cat_id, desc) in self._pattern_map.items():
@@ -214,6 +216,7 @@ class ProjectCacheScanner:
 
         # We use os.scandir for speed, with explicit skip logic
         def _should_skip_dir(name: str) -> bool:
+            """_should_skip_dir."""
             low = name.lower()
             if low in _SKIP_NAMES:
                 return True
@@ -239,6 +242,7 @@ class ProjectCacheScanner:
                         break
                     # Prune skips before descending, but keep any dir that is a cache pattern (e.g. node_modules)
                     def _keep_for_scan(n: str) -> bool:
+                        """_keep_for_scan."""
                         if _match_dir(n):
                             return True
                         if n.lower() in _SKIP_NAMES:
@@ -350,6 +354,7 @@ class ProjectCacheScanner:
         return resources
 
     def _get_dir_size(self, path: Path, cutoff_date: Optional[datetime] = None) -> tuple[int, int]:
+        """_get_dir_size."""
         total = 0
         cnt = 0
         try:
@@ -372,6 +377,7 @@ class ProjectCacheScanner:
 
     @staticmethod
     def _format_bytes(n: int) -> str:
+        """_format_bytes."""
         size = float(n)
         for unit in ('B', 'KB', 'MB', 'GB', 'TB'):
             if size < 1024 or unit == 'PB':

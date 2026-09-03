@@ -24,6 +24,7 @@ from PySide6.QtWidgets import QApplication  # noqa: E402
 
 @pytest.fixture(scope="module")
 def qapp():
+    """qapp."""
     app = QApplication.instance() or QApplication([])
     yield app
 
@@ -34,16 +35,19 @@ class _FakeMenu:
     instances: list = []
 
     def __init__(self, parent=None):
+        """__init__."""
         self.actions_list: list = []
         self.parent = parent
         _FakeMenu.instances.append(self)
 
     @classmethod
     def last_root_for(cls, widget):
+        """last_root_for."""
         roots = [i for i in cls.instances if i.parent is widget]
         return roots[-1] if roots else None
 
     def addAction(self, text_or_action, slot=None):
+        """addAction."""
         from PySide6.QtGui import QAction
         if isinstance(text_or_action, QAction):
             self.actions_list.append((text_or_action.text(), slot))
@@ -51,19 +55,23 @@ class _FakeMenu:
             self.actions_list.append((text_or_action, slot))
 
     def addSeparator(self):
+        """addSeparator."""
         self.actions_list.append(("---", None))
 
     def addMenu(self, title):
+        """addMenu."""
         sub = _FakeMenu(self)
         self.actions_list.append((title + " >", sub))
         return sub
 
     def exec(self, *_a, **_k):
+        """exec."""
         return None
 
 
 @pytest.fixture(scope="module")
 def widget(qapp, tmp_path_factory):
+    """widget."""
     import time
 
     from nexus_explorer import ExplorerWidget
@@ -89,6 +97,7 @@ def widget(qapp, tmp_path_factory):
 
 
 def _select_first_data_row(w):
+    """_select_first_data_row."""
     if w.proxy.rowCount() == 0:
         pytest.skip("no rows in model")
     w.table.selectRow(0)
@@ -96,6 +105,7 @@ def _select_first_data_row(w):
 
 
 def test_selected_paths_are_strings(widget):
+    """test_selected_paths_are_strings."""
     _select_first_data_row(widget)
     paths = widget._selected_paths(widget.table)
     assert paths and all(isinstance(p, str) and p for p in paths)
@@ -104,6 +114,7 @@ def test_selected_paths_are_strings(widget):
 
 
 def test_context_menu_handles_dict_selection(qapp, widget, monkeypatch):
+    """test_context_menu_handles_dict_selection."""
     import nexus_explorer
 
     monkeypatch.setattr(nexus_explorer, "QMenu", _FakeMenu)
@@ -117,6 +128,7 @@ def test_context_menu_handles_dict_selection(qapp, widget, monkeypatch):
 
 
 def test_context_menu_empty_selection(qapp, widget, monkeypatch):
+    """test_context_menu_empty_selection."""
     import nexus_explorer
 
     monkeypatch.setattr(nexus_explorer, "QMenu", _FakeMenu)
@@ -128,20 +140,25 @@ def test_context_menu_empty_selection(qapp, widget, monkeypatch):
 
 
 class _FakeMousePress:
+    """_FakeMousePress."""
     def __init__(self, button):
+        """__init__."""
         from PySide6.QtCore import QEvent
 
         self._type = QEvent.Type.MouseButtonPress
         self._button = button
 
     def type(self):
+        """type."""
         return self._type
 
     def button(self):
+        """button."""
         return self._button
 
 
 def test_mouse_side_buttons_route_history(widget, qapp, tmp_path_factory):
+    """test_mouse_side_buttons_route_history."""
     import time
 
     w = widget
@@ -178,14 +195,18 @@ def test_mouse_side_buttons_route_history(widget, qapp, tmp_path_factory):
 
 
 def test_show_properties_accepts_dict_and_str(widget, monkeypatch):
+    """test_show_properties_accepts_dict_and_str."""
     calls = {}
     from nexus_explorer import PropertiesDialog
 
     class _FakeDlg:
+        """_FakeDlg."""
         def __init__(self, row, parent):
+            """__init__."""
             calls["row"] = row
 
         def exec(self):
+            """exec."""
             return 0
 
     monkeypatch.setattr("nexus_explorer.PropertiesDialog", _FakeDlg)

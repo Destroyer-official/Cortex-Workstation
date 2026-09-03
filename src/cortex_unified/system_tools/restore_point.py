@@ -154,6 +154,7 @@ class RestorePointManager:
 
     @staticmethod
     def _parse_create_output(out: str | None) -> RestorePointResult:
+        """_parse_create_output."""
         if not out:
             return RestorePointResult(
                 RestoreStatus.FAILED,
@@ -227,6 +228,7 @@ class RestorePointManager:
         return s
 
     def _run_ps(self, script: str, timeout: int) -> str | None:
+        """_run_ps."""
         try:
             proc = _proc.run(
                 ["powershell", "-NoProfile", "-NonInteractive", "-Command", script],

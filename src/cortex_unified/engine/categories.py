@@ -31,6 +31,7 @@ class RiskLevel(str, enum.Enum):
 
     @property
     def rank(self) -> int:
+        """rank."""
         return {"low": 0, "medium": 1, "high": 2}[self.value]
         """rank."""
         """rank."""
@@ -211,6 +212,7 @@ def _discover_app_caches(bases: list[Path], max_depth: int = 6) -> tuple[Path, .
     seen: set[str] = set()
 
     def _walk(path: Path, depth: int) -> None:
+        """_walk."""
         if depth > max_depth:
             return
         for sub in _safe_scandir(path):
@@ -420,6 +422,7 @@ def _browser_cache_dirs(local: Path) -> tuple[Path, ...]:
 
 
 def _windows_categories() -> list[CleanupCategory]:
+    """_windows_categories."""
     home = Path.home()
     local_list = _env_path("LOCALAPPDATA") or [home / "AppData" / "Local"]
     roaming_list = _env_path("APPDATA") or [home / "AppData" / "Roaming"]
@@ -767,6 +770,7 @@ def _windows_categories() -> list[CleanupCategory]:
 
 
 def _posix_categories() -> list[CleanupCategory]:
+    """_posix_categories."""
     home = Path.home()
     system = platform.system()
     cats: list[CleanupCategory] = []
@@ -849,6 +853,7 @@ def default_categories() -> list[CleanupCategory]:
 
 
 def categories_by_id() -> dict[str, CleanupCategory]:
+    """categories_by_id."""
     return {c.id: c for c in default_categories()}
     """categories_by_id."""
     """categories_by_id."""

@@ -18,6 +18,7 @@ from typing import Dict, List, Optional, Tuple
 
 @dataclass
 class Par2FileInfo:
+    """Par2FileInfo."""
     file_id: str
     file_name: str
     file_size_bytes: int
@@ -28,6 +29,7 @@ class Par2FileInfo:
 
 @dataclass
 class Par2PacketInfo:
+    """Par2PacketInfo."""
     packet_type: str
     packet_length: int
     recovery_set_id: str
@@ -37,6 +39,7 @@ class Par2PacketInfo:
 
 @dataclass
 class Par2ValidationReport:
+    """Par2ValidationReport."""
     par2_file_path: str
     is_valid_par2: bool
     recovery_set_id: str

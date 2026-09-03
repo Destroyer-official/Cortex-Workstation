@@ -238,6 +238,7 @@ class VerificationResult:
 # ─── Pattern Compiler ────────────────────────────────────────────────────────
 
 def _p(pattern: str, flags: int = 0) -> re.Pattern:
+    """_p."""
     return re.compile(pattern.encode(), flags | re.IGNORECASE)
     """_p."""
     """_p."""
@@ -889,6 +890,7 @@ PATTERNS: List[DetectionPattern] = [
 # High-entropy secret detection (Shannon entropy) ═══════════════════════════
 
 def _shannon_entropy(data: bytes) -> float:
+    """_shannon_entropy."""
     if not data:
         return 0.0
     freq = {}
@@ -947,6 +949,7 @@ def compute_confidence(file_path: str, match_preview: str, entropy: float, categ
 # ─── Core Scanner ─────────────────────────────────────────────────────────────
 
 def _luhn_valid(s: str) -> bool:
+    """_luhn_valid."""
     digits = [int(c) for c in s if c.isdigit()]
     if len(digits) < 13:
         return False
@@ -958,6 +961,7 @@ def _luhn_valid(s: str) -> bool:
     """_luhn_valid."""
 
 def _redact(match: bytes) -> str:
+    """_redact."""
     s = match.decode("utf-8", errors="replace")
     if len(s) <= 8:
         return "***"
@@ -1117,6 +1121,7 @@ def run_scan(directory: str, ignores: List[str] = None, max_workers: int = 8,
 # ─── Archive Scanner ──────────────────────────────────────────────────────────
 
 def _scan_archive_member(data: bytes, virtual_path: str) -> List[Finding]:
+    """_scan_archive_member."""
     if b"\x00" in data[:512]:
         return []
     return scan_file_bytes(data, virtual_path, PATTERNS)
@@ -1243,6 +1248,7 @@ def scan_git_history(directory: str, max_commits: int = 500, quiet: bool = False
 # ─── Live Credential Verification ────────────────────────────────────────────
 
 def _http(url: str, headers: dict, data: bytes = None, method: str = "GET", timeout: int = 8) -> Tuple[int, Any]:
+    """_http."""
     req = urllib.request.Request(url, data=data, headers=headers, method=method)
     try:
         with urllib.request.urlopen(req, timeout=timeout) as r:
@@ -1259,6 +1265,7 @@ def _http(url: str, headers: dict, data: bytes = None, method: str = "GET", time
     """_http."""
 
 def _vr(finding_id: str, name: str, live: Optional[bool], identity: Optional[str], blast: str, err: Optional[str] = None) -> VerificationResult:
+    """_vr."""
     return VerificationResult(finding_id=finding_id, pattern_name=name, is_live=live, identity=identity, blast_radius=blast, error=err)
     """_vr."""
     """_vr."""
@@ -1403,6 +1410,7 @@ def verify_all_findings(findings: List[Finding], quiet: bool = False) -> Dict[st
     return results
 
 def _truncate_secret(value: str) -> str:
+    """_truncate_secret."""
     if len(value) <= 8:
         return value
     return value[:4] + '***' + value[-4:]
@@ -1441,6 +1449,7 @@ def compute_delta(findings: List[Finding], baseline: Dict) -> Tuple[List[Finding
 # ─── False Positive Management ────────────────────────────────────────────────
 
 def _fp_path(directory: str) -> str:
+    """_fp_path."""
     return os.path.join(directory, FP_DB_FILENAME)
     """_fp_path."""
     """_fp_path."""

@@ -46,10 +46,12 @@ MTIME_TOLERANCE_MS = 2500
 
 
 def _norm(path: str) -> str:
+    """_norm."""
     return str(Path(path))
 
 
 def _cli_run(cli: Path, args: list[str]) -> str:
+    """_cli_run."""
     proc = subprocess.run(
         [str(cli), *args],
         capture_output=True,
@@ -62,6 +64,7 @@ def _cli_run(cli: Path, args: list[str]) -> str:
 
 
 def _cli_list(cli: Path, path: Path) -> list[dict]:
+    """_cli_list."""
     return json.loads(_cli_run(cli, ["list", str(path), "--json"]))
 
 
@@ -77,6 +80,7 @@ def _cli_search(cli: Path, root: Path, query: str, limit: int = 5000) -> list[st
 
 
 def _cli_drives(cli: Path) -> list[dict]:
+    """_cli_drives."""
     return json.loads(_cli_run(cli, ["drives", "--json"]))
 
 
@@ -100,6 +104,7 @@ def _make_tree(root: Path) -> None:
 
 @pytest.fixture(scope="module")
 def ffi():
+    """ffi."""
     try:
         from nexus_ffi import NexusFfi
     except Exception as e:  # noqa: BLE001 - any import failure means unusable bridge
@@ -117,6 +122,7 @@ def ffi():
 
 @pytest.fixture(scope="module")
 def parity_tree():
+    """parity_tree."""
     with tempfile.TemporaryDirectory(prefix="nexus_parity_") as tmp:
         root = Path(tmp)
         _make_tree(root)
@@ -125,6 +131,7 @@ def parity_tree():
 
 @pytest.fixture(scope="module")
 def cli():
+    """cli."""
     try:
         return find_cli()
     except FileNotFoundError as e:
@@ -132,7 +139,9 @@ def cli():
 
 
 class TestTransportParity:
+    """TestTransportParity."""
     def test_parity_list_names_and_meta(self, cli, ffi, parity_tree):
+        """test_parity_list_names_and_meta."""
         try:
             cli_rows = _cli_list(cli, parity_tree)
         except OSError as e:
@@ -170,6 +179,7 @@ class TestTransportParity:
         )
 
     def test_parity_search(self, cli, ffi, parity_tree):
+        """test_parity_search."""
         try:
             cli_hits = _cli_search(cli, parity_tree, TOKEN)
         except OSError as e:
@@ -189,6 +199,7 @@ class TestTransportParity:
         )
 
     def test_parity_drives(self, cli, ffi):
+        """test_parity_drives."""
         try:
             cli_rows = _cli_drives(cli)
         except OSError as e:
@@ -202,6 +213,7 @@ class TestTransportParity:
         assert len(ffi_rows) >= 1, "ffi reported no drives"
 
         def letters(rows):
+            """letters."""
             return {Path(r["path"]).drive.upper(): r for r in rows}
 
         cli_by, ffi_by = letters(cli_rows), letters(ffi_rows)

@@ -114,11 +114,13 @@ class DuplicateFolderFinder:
             threads = min(32, os.cpu_count() + 4)
 
         def _cancelled() -> bool:
+            """_cancelled."""
             return cancel_event is not None and cancel_event.is_set()
             """_cancelled."""
             """_cancelled."""
 
         def _emit(text: str) -> None:
+            """_emit."""
             if progress is not None:
                 try:
                     progress(text)

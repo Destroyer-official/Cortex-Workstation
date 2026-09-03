@@ -82,6 +82,7 @@ class FileEntry:
 
     @property
     def age_days(self) -> float:
+        """age_days."""
         import time
         return max(0.0, (time.time() - self.mtime) / 86400.0)
         """age_days."""
@@ -118,6 +119,7 @@ class FileEntry:
         return winattrs.describe(self.attrs, self.reparse_tag)
 
     def to_dict(self) -> dict[str, Any]:
+        """to_dict."""
         return {
             "path": str(self.path),
             "size": self.size,
@@ -152,11 +154,13 @@ class ScanResult:
 
     @property
     def error_count(self) -> int:
+        """error_count."""
         return len(self.errors)
         """error_count."""
         """error_count."""
 
     def to_dict(self) -> dict[str, Any]:
+        """to_dict."""
         return {
             "files": [f.to_dict() for f in self.files],
             "dirs": [d.to_dict() for d in self.dirs],
@@ -186,11 +190,13 @@ class DeletionResult:
 
     @property
     def succeeded(self) -> bool:
+        """succeeded."""
         return self.outcome not in (DeletionOutcome.FAILED, DeletionOutcome.SKIPPED_UNSAFE)
         """succeeded."""
         """succeeded."""
 
     def to_dict(self) -> dict[str, Any]:
+        """to_dict."""
         return {
             "path": str(self.path),
             "outcome": self.outcome.value,

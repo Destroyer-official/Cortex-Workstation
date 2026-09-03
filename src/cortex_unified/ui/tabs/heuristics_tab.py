@@ -26,6 +26,7 @@ class HeuristicsTab(BaseTab):
     """Tab for heuristics tab functionality."""
 
     def __init__(self, config, logger, safety_manager):
+        """__init__."""
         super().__init__(config, logger, safety_manager)
 
         """Create the Heuristics tab."""

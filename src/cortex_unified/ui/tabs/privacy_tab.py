@@ -29,6 +29,7 @@ class BrowserScanWorker(QObject):
     finished = Signal(dict, dict)  # browser_data, system_traces
 
     def run(self):
+        """run."""
         cleaner = PrivacyCleaner()
         browsers = cleaner.scan_browsers()
         traces = cleaner.scan_system_traces()
@@ -45,6 +46,7 @@ class PrivacyTab(BaseTab):
     """Privacy Shield — telemetry blocking and browser data management."""
 
     def __init__(self, config, logger, safety_manager, parent=None):
+        """__init__."""
         self.cleaner = PrivacyCleaner()
         self.telemetry = TelemetryBlocker()
         self._scan_thread = None
@@ -55,6 +57,7 @@ class PrivacyTab(BaseTab):
         """__init__."""
 
     def setup_ui(self):
+        """setup_ui."""
         main_layout = QVBoxLayout(self)
         main_layout.setSpacing(15)
 
@@ -131,6 +134,7 @@ class PrivacyTab(BaseTab):
         """setup_ui."""
 
     def setup_tooltips(self):
+        """setup_tooltips."""
         self.btn_block.setToolTip("Modify registry to disable Windows telemetry (Admin required)")
         self.btn_restore.setToolTip("Remove custom telemetry blocks and restore Windows defaults")
         """setup_tooltips."""
@@ -139,6 +143,7 @@ class PrivacyTab(BaseTab):
     # ── Telemetry ─────────────────────────────────────────────────────
 
     def _refresh_telemetry(self):
+        """_refresh_telemetry."""
         status = self.telemetry.check_status()
         blocked = sum(1 for v in status.values() if v)
         total = len(status)
@@ -170,6 +175,7 @@ class PrivacyTab(BaseTab):
         """_refresh_telemetry."""
 
     def _apply_block(self):
+        """_apply_block."""
         reply = QMessageBox.question(
             self, "Block Telemetry",
             "This will modify Windows Registry settings to disable diagnostic "
@@ -192,6 +198,7 @@ class PrivacyTab(BaseTab):
         """_apply_block."""
 
     def _restore_telemetry(self):
+        """_restore_telemetry."""
         reply = QMessageBox.question(
             self, "Restore Defaults",
             "This will remove all custom telemetry blocks and restore "
@@ -211,6 +218,7 @@ class PrivacyTab(BaseTab):
     # ── Browser Scan ──────────────────────────────────────────────────
 
     def _scan_browsers(self):
+        """_scan_browsers."""
         self.browser_tree.clear()
         self.btn_scan.setEnabled(False)
         self.btn_sweep.setEnabled(False)
@@ -230,6 +238,7 @@ class PrivacyTab(BaseTab):
         """_scan_browsers."""
 
     def _on_scan_done(self, browser_results: dict, system_traces: dict):
+        """_on_scan_done."""
         self._last_browser_results = browser_results
         self.browser_tree.clear()
         self.scan_progress.setVisible(False)
@@ -294,6 +303,7 @@ class PrivacyTab(BaseTab):
 
     def _clean_browsers(self):
         # Gather checked items
+        """_clean_browsers."""
         to_clean = {}
         clean_system = False
 

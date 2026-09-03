@@ -12,6 +12,7 @@ class SystemTrayManager(QObject):
     """Manages the system tray icon, context menu, and background monitoring alerts."""
 
     def __init__(self, main_window, app):
+        """__init__."""
         super().__init__()
         self.main_window = main_window
         self.app = app
@@ -47,6 +48,7 @@ class SystemTrayManager(QObject):
     # ── Menu ──────────────────────────────────────────────────────────
 
     def _setup_menu(self):
+        """_setup_menu."""
         menu = QMenu()
 
         show_action = QAction("Open Cortex Cleaner", self)
@@ -73,12 +75,14 @@ class SystemTrayManager(QObject):
     # ── Slots ─────────────────────────────────────────────────────────
 
     def _on_tray_activated(self, reason):
+        """_on_tray_activated."""
         if reason == QSystemTrayIcon.Trigger:
             self._show_main_window()
         """_on_tray_activated."""
         """_on_tray_activated."""
 
     def _show_main_window(self):
+        """_show_main_window."""
         self.main_window.show()
         self.main_window.raise_()
         self.main_window.activateWindow()
@@ -86,6 +90,7 @@ class SystemTrayManager(QObject):
         """_show_main_window."""
 
     def _run_instant_scan(self):
+        """_run_instant_scan."""
         self._show_main_window()
         if hasattr(self.main_window, "navigation_controller"):
             nc = self.main_window.navigation_controller
@@ -97,6 +102,7 @@ class SystemTrayManager(QObject):
         """_run_instant_scan."""
 
     def _quit_app(self):
+        """_quit_app."""
         self.agent.stop()
         self.agent_thread.quit()
         self.agent_thread.wait(3000)
@@ -108,6 +114,7 @@ class SystemTrayManager(QObject):
     # ── Alert notifications ───────────────────────────────────────────
 
     def _on_high_ram(self, value):
+        """_on_high_ram."""
         self.tray_icon.showMessage(
             "High Memory Usage",
             f"System RAM is at {value:.0f}%.  Click the tray icon to launch Cortex Cleaner and free resources.",
@@ -118,6 +125,7 @@ class SystemTrayManager(QObject):
         """_on_high_ram."""
 
     def _on_high_cpu(self, value):
+        """_on_high_cpu."""
         self.tray_icon.showMessage(
             "High CPU Usage",
             f"CPU is at {value:.0f}%.  Consider disabling startup programs via Cortex Cleaner.",
@@ -128,6 +136,7 @@ class SystemTrayManager(QObject):
         """_on_high_cpu."""
 
     def _on_low_disk(self, free_gb):
+        """_on_low_disk."""
         self.tray_icon.showMessage(
             "Low Disk Space ⚠️",
             f"Only {free_gb:.1f} GB free on your system drive.  "

@@ -19,6 +19,7 @@ from PySide6.QtGui import QImage, QImageReader, QImageWriter
 
 @dataclass
 class ImageOptimizeResult:
+    """ImageOptimizeResult."""
     source_path: str
     output_path: str
     original_size_bytes: int
@@ -32,6 +33,7 @@ class ImageOptimizeResult:
 
 @dataclass
 class BatchOptimizeSummary:
+    """BatchOptimizeSummary."""
     total_images: int
     successful_count: int
     total_original_bytes: int

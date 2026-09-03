@@ -220,12 +220,14 @@ class GameMode:
     # -- context-manager sugar ------------------------------------------------
 
     def __enter__(self) -> "GameMode":
+        """__enter__."""
         self.start()
         return self
         """__enter__."""
         """__enter__."""
 
     def __exit__(self, exc_type, exc, tb) -> None:
+        """__exit__."""
         try:
             self.stop()
         except Exception:  # noqa: BLE001 - restoring must never mask errors

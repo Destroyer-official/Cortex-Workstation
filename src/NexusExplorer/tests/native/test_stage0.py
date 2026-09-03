@@ -25,7 +25,9 @@ from nexus_core import CLI_CANDIDATES, find_cli, fmt_ms, human  # noqa: E402
 
 
 class TestFormatters:
+    """TestFormatters."""
     def test_human_bytes_scale(self):
+        """test_human_bytes_scale."""
         assert human(0) == "0 B"
         assert human(-1) == ""
         assert human(512).endswith("B")
@@ -34,11 +36,13 @@ class TestFormatters:
         assert "GB" in human(3 * 1024**3)
 
     def test_fmt_ms_empty(self):
+        """test_fmt_ms_empty."""
         assert fmt_ms(0) == ""
 
 
 @pytest.mark.skipif(not any(p.is_file() for p in CLI_CANDIDATES), reason="nexus-cli.exe not built")
 def test_find_cli_locates_built_binary():
+    """test_find_cli_locates_built_binary."""
     cli = find_cli()
     assert cli.is_file(), f"nexus-cli.exe not found at {cli}"
 
@@ -47,6 +51,7 @@ class TestOpenWithQuotingRegression:
     """Regression for audit finding B8: os.startfile with embedded quotes."""
 
     def test_open_with_uses_argument_list(self, monkeypatch):
+        """test_open_with_uses_argument_list."""
         import nexus_explorer  # noqa: PLC0415
 
         captured = {}
@@ -54,6 +59,7 @@ class TestOpenWithQuotingRegression:
         fake_path = str(Path.home() / "doc with space.txt")
 
         def fake_popen(args, **kwargs):
+            """fake_popen."""
             captured["args"] = args
             return SimpleNamespace(pid=0)
 
@@ -83,6 +89,7 @@ class TestCliJsonContract:
 
     @pytest.fixture
     def hostile_dir(self):
+        """hostile_dir."""
         with tempfile.TemporaryDirectory(prefix="nexus_test_") as tmp:
             names = ["emoji_📁.txt", "unicode_é中文.txt", "plain.md", "spaced  name.txt"]
             for n in names:
@@ -90,6 +97,7 @@ class TestCliJsonContract:
             yield tmp, names
 
     def test_list_json_round_trip(self, hostile_dir):
+        """test_list_json_round_trip."""
         tmp, names = hostile_dir
         out = subprocess.run(
             [str(find_cli()), "list", tmp, "--json"],
@@ -105,6 +113,7 @@ class TestCliJsonContract:
         assert not missing, f"files vanished from JSON output: {missing}"
 
     def test_list_json_consumer_keys(self, hostile_dir):
+        """test_list_json_consumer_keys."""
         tmp, _ = hostile_dir
         out = subprocess.run(
             [str(find_cli()), "list", tmp, "--json"],

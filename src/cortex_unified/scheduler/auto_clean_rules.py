@@ -161,6 +161,7 @@ class AutoCleanRules:
             self.error_count += 1
     
     def _clean_empty_files(self, params: Dict):
+        """_clean_empty_files."""
         try:
             path = params.get("path", ".")
             dry_run = params.get("dry_run", True)
@@ -321,6 +322,7 @@ class AutoCleanRules:
         self.monitor_thread.start()
     
     def stop_monitoring(self):
+        """stop_monitoring."""
         self.monitoring = False
         if self.monitor_thread:
             self.monitor_thread.join()
@@ -351,6 +353,7 @@ class AutoCleanRules:
         }
     
     def enable_rule(self, rule_index: int):
+        """enable_rule."""
         with self._lock:
             if 0 <= rule_index < len(self.rules):
                 self.rules[rule_index]["active"] = True

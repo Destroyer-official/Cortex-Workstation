@@ -33,6 +33,7 @@ class SieveNode(Generic[K, V]):
         self.next: Optional[SieveNode[K, V]] = None
 
     def __repr__(self) -> str:
+        """__repr__."""
         return f"SieveNode(key={self.key!r}, visited={self.visited})"
         """__repr__."""
         """__repr__."""

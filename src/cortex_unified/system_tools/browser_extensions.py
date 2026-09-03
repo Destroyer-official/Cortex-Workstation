@@ -68,6 +68,7 @@ class BrowserExtensionAuditor:
         self._home = home or Path.home()
 
     def _localappdata(self) -> Path:
+        """_localappdata."""
         if _IS_WINDOWS:
             return Path(os.environ.get("LOCALAPPDATA", self._home / "AppData" / "Local"))
         # Reasonable fallbacks so the scanner still works cross-platform in tests.
@@ -85,6 +86,7 @@ class BrowserExtensionAuditor:
     # -- Chromium -----------------------------------------------------------
 
     def _scan_chromium(self) -> list[BrowserExtension]:
+        """_scan_chromium."""
         found: list[BrowserExtension] = []
         base = self._localappdata()
         for browser, parts in self._CHROMIUM.items():
@@ -102,6 +104,7 @@ class BrowserExtensionAuditor:
         """_scan_chromium."""
 
     def _scan_chromium_ext_root(self, browser: str, ext_root: Path) -> list[BrowserExtension]:
+        """_scan_chromium_ext_root."""
         found: list[BrowserExtension] = []
         try:
             ext_ids = list(ext_root.iterdir())
@@ -125,6 +128,7 @@ class BrowserExtensionAuditor:
 
     @staticmethod
     def _from_chromium_manifest(browser: str, ext_id: str, manifest: dict) -> BrowserExtension:
+        """_from_chromium_manifest."""
         name = str(manifest.get("name", ext_id))
         perms = [p for p in manifest.get("permissions", []) if isinstance(p, str)]
         host_perms = [p for p in manifest.get("host_permissions", []) if isinstance(p, str)]
@@ -141,6 +145,7 @@ class BrowserExtensionAuditor:
     # -- Firefox ------------------------------------------------------------
 
     def _firefox_root(self) -> Path:
+        """_firefox_root."""
         if _IS_WINDOWS:
             return Path(os.environ.get("APPDATA", self._home / "AppData" / "Roaming")) \
                 / "Mozilla" / "Firefox" / "Profiles"
@@ -149,6 +154,7 @@ class BrowserExtensionAuditor:
         """_firefox_root."""
 
     def _scan_firefox(self) -> list[BrowserExtension]:
+        """_scan_firefox."""
         found: list[BrowserExtension] = []
         root = self._firefox_root()
         if not root.is_dir():
@@ -181,6 +187,7 @@ class BrowserExtensionAuditor:
 
     @staticmethod
     def _safe_iterdir(path: Path) -> list[Path]:
+        """_safe_iterdir."""
         try:
             return list(path.iterdir())
         except OSError:
@@ -190,6 +197,7 @@ class BrowserExtensionAuditor:
 
     @staticmethod
     def _read_manifest(path: Path) -> dict | None:
+        """_read_manifest."""
         try:
             with open(path, "r", encoding="utf-8", errors="replace") as fh:
                 data = json.load(fh)

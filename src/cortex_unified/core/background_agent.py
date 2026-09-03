@@ -22,6 +22,7 @@ class BackgroundAgent(QObject):
     status_update = Signal(dict)
 
     def __init__(self, check_interval: int = 10):
+        """__init__."""
         super().__init__()
         self.logger = logging.getLogger("background_agent")
         self.check_interval = check_interval

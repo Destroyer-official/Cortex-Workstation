@@ -546,6 +546,7 @@ def create_help_button(parent, help_text: str) -> 'QPushButton':
     help_button.setToolTip("Click for help")
     
     def show_help():
+        """show_help."""
         QMessageBox.information(parent, "Help", help_text)
         """show_help."""
         """show_help."""

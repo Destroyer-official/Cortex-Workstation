@@ -33,6 +33,7 @@ class DockerImage:
     is_dangling: bool
     
     def __str__(self):
+        """__str__."""
         return f"{self.repository}:{self.tag} ({self.id[:12]})"
         """__str__."""
         """__str__."""
@@ -48,6 +49,7 @@ class DockerContainer:
     created: datetime
     
     def __str__(self):
+        """__str__."""
         return f"{self.name} ({self.id[:12]})"
         """__str__."""
         """__str__."""
@@ -62,6 +64,7 @@ class DockerVolume:
     is_orphaned: bool
     
     def __str__(self):
+        """__str__."""
         return f"{self.name} ({self.driver})"
         """__str__."""
         """__str__."""
@@ -75,6 +78,7 @@ class DockerNetwork:
     is_unused: bool
     
     def __str__(self):
+        """__str__."""
         return f"{self.name} ({self.driver})"
         """__str__."""
         """__str__."""
@@ -91,6 +95,7 @@ class CleanupResult:
     
     @property
     def total_removed(self) -> int:
+        """total_removed."""
         return self.images_removed + self.containers_removed + self.volumes_removed + self.networks_removed
         """total_removed."""
         """total_removed."""

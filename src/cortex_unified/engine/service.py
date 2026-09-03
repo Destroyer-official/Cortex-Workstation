@@ -47,6 +47,7 @@ def _throttle(cb: "Callable[[str], None] | None", interval: float = 0.1):
     last = [0.0]
 
     def wrapped(msg: str) -> None:
+        """wrapped."""
         now = time.monotonic()
         if now - last[0] >= interval:
             last[0] = now
@@ -72,6 +73,7 @@ class CategoryScan:
 
     @property
     def file_count(self) -> int:
+        """file_count."""
         return len(self.entries)
         """file_count."""
         """file_count."""
@@ -114,6 +116,7 @@ class CategoryScan:
         return items[:limit]
 
     def to_dict(self) -> dict:
+        """to_dict."""
         return {
             "id": self.category.id,
             "label": self.category.label,
@@ -137,12 +140,14 @@ class CleanupReport:
 
     @property
     def total_reclaimable_bytes(self) -> int:
+        """total_reclaimable_bytes."""
         return sum(s.total_bytes for s in self.scans)
         """total_reclaimable_bytes."""
         """total_reclaimable_bytes."""
 
     @property
     def total_files(self) -> int:
+        """total_files."""
         return sum(s.file_count for s in self.scans)
         """total_files."""
         """total_files."""
@@ -172,6 +177,7 @@ class CleanupReport:
                 "would delete your cloud copy.")
 
     def to_dict(self) -> dict:
+        """to_dict."""
         return {
             "total_reclaimable_bytes": self.total_reclaimable_bytes,
             "total_files": self.total_files,
@@ -192,6 +198,7 @@ class CleanerService:
         guard: PathGuard | None = None,
         probe: StorageProbe | None = None,
     ) -> None:
+        """__init__."""
         self.guard = guard or PathGuard()
         self.probe = probe or StorageProbe()
         """__init__."""
@@ -285,6 +292,7 @@ class CleanerService:
         entries: list[tuple[Path, int]] = []
         for root in roots:
             def _rep(cur_dir, seen):
+                """_rep."""
                 if emit is not None:
                     emit(f"Indexing files: {len(entries) + seen}\u2026")
                 """_rep."""
@@ -297,6 +305,7 @@ class CleanerService:
             progress(f"Hashing {len(entries)} candidates\u2026")
 
         def _hprog(done, total):
+            """_hprog."""
             if emit is not None:
                 emit(f"Hashing {done}/{total}\u2026")
             """_hprog."""
@@ -320,6 +329,7 @@ class CleanerService:
         entries: list[FileEntry] = []
 
         def _rep(cur_dir, seen):
+            """_rep."""
             if emit is not None:
                 emit(f"Scanning: {seen} files ({len(entries)} large)\u2026")
             """_rep."""
@@ -345,6 +355,7 @@ class CleanerService:
     def _select_categories(
         self, ids: list[str] | None, max_risk: RiskLevel, include_disabled: bool
     ) -> list[CleanupCategory]:
+        """_select_categories."""
         cats = default_categories()
         if ids is not None:
             idset = set(ids)
@@ -356,6 +367,7 @@ class CleanerService:
         """_select_categories."""
 
     def _scan_category(self, cat: CleanupCategory, progress=None, cancel_event=None) -> CategoryScan:
+        """_scan_category."""
         scan = CategoryScan(category=cat)
         opts = WalkOptions(
             exclude_globs=(),
@@ -379,6 +391,7 @@ class CleanerService:
                 continue
 
             def _report(cur_dir, seen, _label=cat.label):
+                """_report."""
                 if progress is not None:
                     progress(f"Scanning {_label}: {scan.file_count + seen} files\u2026")
                 """_report."""
@@ -400,6 +413,7 @@ class CleanerService:
 
 
 def _matches_any(name: str, globs: tuple[str, ...]) -> bool:
+    """_matches_any."""
     import fnmatch
     return any(fnmatch.fnmatch(name, g) for g in globs)
     """_matches_any."""

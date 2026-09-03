@@ -69,11 +69,13 @@ class ScanRun(Base):
     )
     
     def __repr__(self) -> str:
+        """__repr__."""
         return f"<ScanRun(id={self.id}, type={self.scan_type}, started={self.started_at})>"
         """__repr__."""
     
     @property
     def duration_seconds(self) -> Optional[float]:
+        """duration_seconds."""
         if self.finished_at and self.started_at:
             return (self.finished_at - self.started_at).total_seconds()
         return None
@@ -136,6 +138,7 @@ class DeletedItem(Base):
     )
     
     def __repr__(self) -> str:
+        """__repr__."""
         return f"<DeletedItem(id={self.id}, path={self.path}, deleted={self.deleted_at})>"
         """__repr__."""
     
@@ -186,6 +189,7 @@ class ScheduledJob(Base):
     updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
     
     def __repr__(self) -> str:
+        """__repr__."""
         return f"<ScheduledJob(id={self.id}, name={self.name}, enabled={self.enabled})>"
         """__repr__."""
 
@@ -231,6 +235,7 @@ class UserPreference(Base):
     updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
     
     def __repr__(self) -> str:
+        """__repr__."""
         return f"<UserPreference(key={self.key}, value={self.value})>"
         """__repr__."""
 
@@ -321,6 +326,7 @@ class Database:
         health_score_after: Optional[int] = None,
         error_message: Optional[str] = None,
     ) -> None:
+        """update_scan_run."""
         with self.session() as session:
             scan_run = session.query(ScanRun).filter(ScanRun.id == run_id).first()
             if scan_run:
@@ -551,6 +557,7 @@ _db_instance: Optional[Database] = None
 _db_lock = threading.Lock()
 
 def get_database(db_path: Optional[Path] = None) -> Database:
+    """get_database."""
     global _db_instance
     if _db_instance is not None:
         return _db_instance

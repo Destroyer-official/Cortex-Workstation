@@ -23,6 +23,7 @@ except FileNotFoundError:
 
 @pytest.fixture
 def data_dir(tmp_path, monkeypatch):
+    """data_dir."""
     d = tmp_path / "data"
     d.mkdir()
     monkeypatch.setenv("NEXUS_DATA_DIR", str(d))
@@ -31,18 +32,21 @@ def data_dir(tmp_path, monkeypatch):
 
 @pytest.fixture
 def ffi():
+    """ffi."""
     f = nexus_ffi.NexusFfi()
     yield f
     f.close()
 
 
 def _journal_lines(data_dir: Path) -> list[dict]:
+    """_journal_lines."""
     p = data_dir / "jobs.jsonl"
     assert p.is_file(), "journal must be created"
     return [json.loads(l) for l in p.read_text(encoding="utf-8").splitlines() if l.strip()]
 
 
 def test_journal_records_lifecycle(data_dir, ffi, tmp_path):
+    """test_journal_records_lifecycle."""
     src = tmp_path / "src"
     dst = tmp_path / "dst"
     src.mkdir()
@@ -63,6 +67,7 @@ def test_journal_records_lifecycle(data_dir, ffi, tmp_path):
 
 def test_orphans_detects_interrupted_and_ignores_completed(data_dir, ffi, tmp_path):
     # a real completed copy must NOT appear as orphan
+    """test_orphans_detects_interrupted_and_ignores_completed."""
     src = tmp_path / "src"
     dst_ok = tmp_path / "dst_ok"
     src.mkdir()
@@ -101,4 +106,5 @@ def test_orphans_detects_interrupted_and_ignores_completed(data_dir, ffi, tmp_pa
 
 def test_orphan_scan_tolerates_missing_journal(ffi):
     # default LOCALAPPDATA may or may not have a journal; call must not raise
+    """test_orphan_scan_tolerates_missing_journal."""
     assert isinstance(ffi.orphans(), list)

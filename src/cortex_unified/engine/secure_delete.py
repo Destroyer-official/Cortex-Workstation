@@ -90,6 +90,7 @@ class OverwriteNotEffective(RuntimeError):
     """
 
     def __init__(self, kind: StorageKind, path: Path) -> None:
+        """__init__."""
         self.kind = kind
         self.path = path
         super().__init__(
@@ -110,6 +111,7 @@ class SecureDeleter:
         probe: StorageProbe | None = None,
         overwrite_passes: int = 3,
     ) -> None:
+        """__init__."""
         self.guard = guard or PathGuard()
         self.probe = probe or StorageProbe()
         self.overwrite_passes = max(1, overwrite_passes)
@@ -249,6 +251,7 @@ class SecureDeleter:
         dry = method is DeletionMethod.DRY_RUN
 
         def _size(p: Path) -> int:
+            """_size."""
             if sizes is not None:
                 s = sizes.get(str(p))
                 if s is not None:
@@ -308,6 +311,7 @@ class SecureDeleter:
             return [self._recycle(p, self._size_of(p)) for p in items]
 
         def _size(p: Path) -> int:
+            """_size."""
             if sizes is not None:
                 s = sizes.get(str(p))
                 if s is not None:
@@ -360,6 +364,7 @@ class SecureDeleter:
     # -- method implementations --------------------------------------------
 
     def _recycle(self, p: Path, size: int) -> DeletionResult:
+        """_recycle."""
         trash = _resolve_send2trash()
         if trash is None:
             # Honest fallback: don't silently hard-delete when the user asked
@@ -375,6 +380,7 @@ class SecureDeleter:
         """_recycle."""
 
     def _plain_delete(self, p: Path, size: int) -> DeletionResult:
+        """_plain_delete."""
         if p.is_dir() and not p.is_symlink():
             shutil.rmtree(p)
         else:
@@ -398,6 +404,7 @@ class SecureDeleter:
             return False
 
     def _overwrite_delete(self, p: Path, size: int, force: bool) -> DeletionResult:
+        """_overwrite_delete."""
         if self._is_cloud_placeholder(p):
             # Refuse rather than pretend the shred was meaningful.
             return self._record(
@@ -458,6 +465,7 @@ class SecureDeleter:
 
     def _record(self, p: Path, outcome: DeletionOutcome, method: DeletionMethod,
                 size: int, reason: str = "") -> DeletionResult:
+        """_record."""
         res = DeletionResult(p, outcome, method, size=size, reason=reason)
         self.results.append(res)
         return res
@@ -484,6 +492,7 @@ class SecureDeleter:
 
     @staticmethod
     def _size_of(p: Path) -> int:
+        """_size_of."""
         try:
             if p.is_file():
                 return p.stat().st_size

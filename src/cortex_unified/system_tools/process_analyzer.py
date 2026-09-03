@@ -44,6 +44,7 @@ class ProcessAnalyzer:
         return self.processes
     
     def _list_windows_processes(self):
+        """_list_windows_processes."""
         try:
             cmd = ["tasklist", "/fo", "csv", "/v"]
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
@@ -71,6 +72,7 @@ class ProcessAnalyzer:
         """_list_windows_processes."""
     
     def _list_macos_processes(self):
+        """_list_macos_processes."""
         try:
             cmd = ["ps", "aux"]
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
@@ -100,6 +102,7 @@ class ProcessAnalyzer:
         """_list_macos_processes."""
     
     def _list_linux_processes(self):
+        """_list_linux_processes."""
         try:
             cmd = ["ps", "aux"]
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
@@ -177,6 +180,7 @@ class ProcessAnalyzer:
             self.error_count += 1
     
     def _list_macos_services(self):
+        """_list_macos_services."""
         try:
             cmd = ["launchctl", "list"]
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)

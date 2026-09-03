@@ -16,6 +16,7 @@ from typing import Dict, List, Optional, Tuple
 
 @dataclass
 class HexDiffChunk:
+    """HexDiffChunk."""
     offset: int
     left_bytes: bytes
     right_bytes: bytes
@@ -29,6 +30,7 @@ class HexDiffChunk:
 
 @dataclass
 class BinaryDiffReport:
+    """BinaryDiffReport."""
     file_a: str
     file_b: str
     size_a: int

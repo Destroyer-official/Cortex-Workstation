@@ -25,6 +25,7 @@ class SentinelScanWorker(QThread):
 
     def __init__(self, directory: str, scan_archives: bool = False,
                  scan_git: bool = False, max_workers: int = 8):
+        """__init__."""
         super().__init__()
         self.directory = directory
         self.scan_archives = scan_archives
@@ -34,6 +35,7 @@ class SentinelScanWorker(QThread):
         """__init__."""
 
     def run(self):
+        """run."""
         try:
             from cortex_unified.system_tools.secrets_scanner import (
                 run_scan, scan_archives, scan_git_history
@@ -75,6 +77,7 @@ class SecurityScannerTab(BaseTab):
     """Tab for Sentinel Pro security & secrets scanner."""
 
     def __init__(self, config, logger, safety_manager):
+        """__init__."""
         self.scan_stats = None
         super().__init__(config, logger, safety_manager)
         """__init__."""
@@ -178,6 +181,7 @@ class SecurityScannerTab(BaseTab):
         layout.addWidget(detail_group)
 
     def _browse_path(self):
+        """_browse_path."""
         path = QFileDialog.getExistingDirectory(self, "Select Directory to Scan")
         if path:
             self.scan_path_input.setText(path)
@@ -185,6 +189,7 @@ class SecurityScannerTab(BaseTab):
         """_browse_path."""
 
     def start_scan(self):
+        """start_scan."""
         path = self.scan_path_input.text().strip()
         if not path or not os.path.isdir(path):
             QMessageBox.warning(self, "Invalid Path", "Please select a valid directory.")
@@ -215,12 +220,14 @@ class SecurityScannerTab(BaseTab):
         """start_scan."""
 
     def _cleanup_worker(self, worker):
+        """_cleanup_worker."""
         self.remove_worker_thread(worker)
         worker.deleteLater()
         """_cleanup_worker."""
         """_cleanup_worker."""
 
     def _scan_complete(self, stats):
+        """_scan_complete."""
         self.scan_stats = stats
         self.scan_button.setEnabled(True)
         self.export_button.setEnabled(True)
@@ -271,6 +278,7 @@ class SecurityScannerTab(BaseTab):
         """_scan_complete."""
 
     def _scan_error(self, error_msg):
+        """_scan_error."""
         self.scan_button.setEnabled(True)
         self.progress_bar.setVisible(False)
         self.progress_label.setText("")
@@ -279,6 +287,7 @@ class SecurityScannerTab(BaseTab):
         """_scan_error."""
 
     def _on_finding_selected(self, row, col, prev_row, prev_col):
+        """_on_finding_selected."""
         if not self.scan_stats or row < 0 or row >= len(self.scan_stats.findings):
             return
         f = self.scan_stats.findings[row]
@@ -301,6 +310,7 @@ class SecurityScannerTab(BaseTab):
         """_on_finding_selected."""
 
     def export_report(self):
+        """export_report."""
         if not self.scan_stats:
             return
         file_path, _ = QFileDialog.getSaveFileName(

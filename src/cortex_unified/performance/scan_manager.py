@@ -31,6 +31,7 @@ class ScanCheckpoint:
     
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'ScanCheckpoint':
+        """from_dict."""
         data['timestamp'] = datetime.fromisoformat(data['timestamp'])
         return cls(**data)
         """from_dict."""

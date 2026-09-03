@@ -18,6 +18,7 @@ if platform.system() == "Windows":
     from ctypes import wintypes
 
     class WIN32_FIND_STREAM_DATA(ctypes.Structure):
+        """WIN32_FIND_STREAM_DATA."""
         _fields_ = [
             ("StreamSize", ctypes.c_longlong),
             ("cStreamName", wintypes.WCHAR * 296),
@@ -27,6 +28,7 @@ if platform.system() == "Windows":
 
 @dataclass
 class AlternateDataStream:
+    """AlternateDataStream."""
     file_path: str
     stream_full_name: str  # e.g. ":Zone.Identifier:$DATA"
     stream_name: str       # e.g. "Zone.Identifier"

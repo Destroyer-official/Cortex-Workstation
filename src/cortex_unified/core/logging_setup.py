@@ -49,6 +49,7 @@ def censor_sensitive_data(logger: Any, method_name: str, event_dict: EventDict) 
     }
     
     def _censor_dict(d: Dict[str, Any]) -> Dict[str, Any]:
+        """_censor_dict."""
         result = {}
         for key, value in d.items():
             key_lower = key.lower()
@@ -204,6 +205,7 @@ def set_correlation_id(correlation_id: str) -> None:
     correlation_id_var.set(correlation_id)
 
 def clear_correlation_id() -> None:
+    """clear_correlation_id."""
     correlation_id_var.set(None)
     """clear_correlation_id."""
 
@@ -289,6 +291,7 @@ def log_file_operation(
     success: bool,
     **kwargs
 ) -> None:
+    """log_file_operation."""
     level = "info" if success else "warning"
     getattr(logger, level)(
         "file_operation",
@@ -306,6 +309,7 @@ def log_performance_metric(
     unit: str = "seconds",
     **kwargs
 ) -> None:
+    """log_performance_metric."""
     logger.info(
         "performance_metric",
         metric=metric_name,

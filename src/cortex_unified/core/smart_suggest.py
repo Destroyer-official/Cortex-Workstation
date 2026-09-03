@@ -38,6 +38,7 @@ _L2 = 1e-4                  # tiny L2 regularization to keep weights bounded
 
 
 def _sigmoid(z: float) -> float:
+    """_sigmoid."""
     if z >= 0:
         ez = math.exp(-z)
         return 1.0 / (1.0 + ez)
@@ -47,6 +48,7 @@ def _sigmoid(z: float) -> float:
 
 
 def _size_bucket(size_bytes: int) -> str:
+    """_size_bucket."""
     if size_bytes <= 0:
         return "sz:0"
     mb = size_bytes / (1024 * 1024)
@@ -63,6 +65,7 @@ def _size_bucket(size_bytes: int) -> str:
 
 
 def _age_bucket(age_days: float) -> str:
+    """_age_bucket."""
     if age_days < 1:
         return "age:<1d"
     if age_days < 7:
@@ -105,6 +108,7 @@ class SmartSuggester:
     """Online logistic-regression recommender with local JSON persistence."""
 
     def __init__(self, model_path: Path | None = None, learning_rate: float = _DEFAULT_LR):
+        """__init__."""
         self._lock = threading.Lock()
         self._weights: dict[str, float] = {}
         self._lr = learning_rate
@@ -152,6 +156,7 @@ class SmartSuggester:
             self._enforce_cap_locked()
 
     def observe_batch(self, items: list[dict[str, Any]], cleaned: bool) -> None:
+        """observe_batch."""
         for it in items:
             self.observe(it, cleaned)
         """observe_batch."""
@@ -166,6 +171,7 @@ class SmartSuggester:
     # -- persistence --------------------------------------------------------
 
     def _load(self) -> None:
+        """_load."""
         try:
             if self._model_path.exists():
                 data = json.loads(self._model_path.read_text(encoding="utf-8"))
@@ -197,6 +203,7 @@ class SmartSuggester:
             return False
 
     def stats(self) -> dict[str, Any]:
+        """stats."""
         with self._lock:
             return {
                 "updates": self._updates,
@@ -207,6 +214,7 @@ class SmartSuggester:
         """stats."""
 
     def reset(self) -> None:
+        """reset."""
         with self._lock:
             self._weights.clear()
             self._updates = 0

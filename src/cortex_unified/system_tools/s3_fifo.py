@@ -71,6 +71,7 @@ from typing import Any, Deque, Dict, Hashable, Optional, Tuple
 
 @dataclass(slots=True)
 class _Entry:
+    """_Entry."""
     key: Hashable
     value: Any
     freq: int = 0  # 0..3 (2 bits)
@@ -147,11 +148,13 @@ class S3FIFO:
     # -- internal helpers
 
     def _ghost_contains(self, key: Hashable) -> bool:
+        """_ghost_contains."""
         return key in self._ghost_set
         """_ghost_contains."""
         """_ghost_contains."""
 
     def _ghost_add(self, key: Hashable) -> None:
+        """_ghost_add."""
         if key in self._ghost_set:
             # Move to tail (FIFO recency) – remove old position
             try:
@@ -167,6 +170,7 @@ class S3FIFO:
         """_ghost_add."""
 
     def _ghost_remove(self, key: Hashable) -> None:
+        """_ghost_remove."""
         if key in self._ghost_set:
             try:
                 self._ghost.remove(key)
@@ -177,6 +181,7 @@ class S3FIFO:
         """_ghost_remove."""
 
     def _evict_small_if_needed(self) -> None:
+        """_evict_small_if_needed."""
         while len(self._small) > self.small_capacity:
             entry = self._small.popleft()
             # Remove from index (will be re-added if promoted)
@@ -197,6 +202,7 @@ class S3FIFO:
 
     def _evict_main_if_needed(self) -> None:
         # FIFO-Reinsertion: keep looping until within capacity
+        """_evict_main_if_needed."""
         while len(self._main) > self.main_capacity:
             entry = self._main.popleft()
             if entry.freq >= 1:
@@ -284,11 +290,13 @@ class S3FIFO:
             return key in self._index
 
     def __contains__(self, key: object) -> bool:  # type: ignore[override]
+        """__contains__."""
         return self.contains(key)  # type: ignore[arg-type]
         """__contains__."""
         """__contains__."""
 
     def __len__(self) -> int:
+        """__len__."""
         with self._lock:
             return len(self._index)
         """__len__."""

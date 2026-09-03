@@ -115,6 +115,7 @@ _STARTUP_LOCATIONS = [
 ]
 
 def _enumerate_registry() -> List[StartupEntry]:
+    """_enumerate_registry."""
     entries: List[StartupEntry] = []
     for reg_path, category in _STARTUP_LOCATIONS:
         try:
@@ -154,6 +155,7 @@ def _enumerate_registry() -> List[StartupEntry]:
     """_enumerate_registry."""
 
 def _enumerate_startup_folders() -> List[StartupEntry]:
+    """_enumerate_startup_folders."""
     entries: List[StartupEntry] = []
     for env_key in ("APPDATA", "PROGRAMDATA"):
         base = os.environ.get(env_key)
@@ -179,6 +181,7 @@ def _enumerate_startup_folders() -> List[StartupEntry]:
     """_enumerate_startup_folders."""
 
 def _enumerate_scheduled_tasks() -> List[StartupEntry]:
+    """_enumerate_scheduled_tasks."""
     entries: List[StartupEntry] = []
     try:
         rc = subprocess.run(["schtasks", "/Query", "/FO", "CSV", "/V"],
@@ -207,6 +210,7 @@ def _enumerate_scheduled_tasks() -> List[StartupEntry]:
 
 def _classify_entry(entry: StartupEntry) -> StartupEntry:
     # PE header sniff for GUI/network/service hints
+    """_classify_entry."""
     cmd = entry.command.strip().strip('"')
     exe = cmd.split()[0].strip('"')
     p = Path(exe)
@@ -231,6 +235,7 @@ def _classify_entry(entry: StartupEntry) -> StartupEntry:
 # ---------------------------------------------------------------------------
 
 def _config_path() -> Path:
+    """_config_path."""
     base = Path(os.environ.get("LOCALAPPDATA", str(Path.home() / "AppData" / "Local")))
     d = base / "Cortex" / "Cleaner"
     d.mkdir(parents=True, exist_ok=True)
@@ -282,6 +287,7 @@ class StartupOptimizer:
         return entries
 
     def _load_delays(self) -> Dict[str, dict]:
+        """_load_delays."""
         p = _config_path()
         if not p.exists():
             return {}
@@ -293,6 +299,7 @@ class StartupOptimizer:
         """_load_delays."""
 
     def _save_delays(self, delays: Dict[str, dict]) -> None:
+        """_save_delays."""
         p = _config_path()
         p.write_text(json.dumps(delays, indent=2), encoding="utf-8")
         """_save_delays."""
@@ -378,6 +385,7 @@ class StartupOptimizer:
                 self.progress(f"Launch failed {e.name}: {exc}")
 
     def _jitter(self) -> float:
+        """_jitter."""
         import random
         return random.uniform(-1.5, 1.5)
         """_jitter."""

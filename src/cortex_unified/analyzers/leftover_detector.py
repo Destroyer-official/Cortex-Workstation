@@ -33,6 +33,7 @@ class DetectedItem:
     metadata: Dict[str, Any]
     
     def to_dict(self) -> Dict[str, Any]:
+        """to_dict."""
         result = asdict(self)
         result['path'] = str(self.path)
         result['last_modified'] = self.last_modified.isoformat()
@@ -91,6 +92,7 @@ class LeftoverDetector:
     """Advanced heuristics and leftover detection system."""
     
     def __init__(self, config: Config = None):
+        """__init__."""
         self.config = config or Config()
         self.logger = logging.getLogger(__name__)
         
@@ -464,6 +466,7 @@ class LeftoverDetector:
         return name or folder_name
     
     def detect_installer_files(self, paths: List[str] = None) -> List[InstallerFile]:
+        """detect_installer_files."""
         if paths is None:
             # Scan common download and temp directories
             scan_paths = []

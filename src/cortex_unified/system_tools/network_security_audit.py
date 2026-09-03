@@ -26,6 +26,7 @@ class SecurityFinding:
     port: int | None = None
 
     def __post_init__(self) -> None:
+        """__post_init__."""
         self.severity = self.severity.lower()
         if self.severity not in _VALID_SEVERITIES:
             raise ValueError(f"unsupported finding severity: {self.severity!r}")
@@ -71,6 +72,7 @@ class SecurityFinding:
 
 
 def _evidence(observation: ServiceObservation, extra: str = "") -> list[str]:
+    """_evidence."""
     values = observation.evidence
     if observation.banner:
         values.append(f"Bounded banner: {observation.banner[:300]}")
@@ -91,6 +93,7 @@ def _finding(
     confidence: float,
     extra: str = "",
 ) -> SecurityFinding:
+    """_finding."""
     return SecurityFinding(
         code=code,
         severity=severity,
@@ -109,6 +112,7 @@ def _finding(
 def _observation_findings(observation: ServiceObservation) -> list[SecurityFinding]:
     # ACK/firewall-map output and filtered/closed states are evidence, not an
     # open application service and must never trigger service-risk findings.
+    """_observation_findings."""
     if observation.state != "open":
         return []
     findings: list[SecurityFinding] = []
@@ -235,12 +239,14 @@ def analyze_services(
 
 
 def _get(value: Any, name: str, default: Any = None) -> Any:
+    """_get."""
     return value.get(name, default) if isinstance(value, Mapping) else getattr(value, name, default)
     """_get."""
     """_get."""
 
 
 def _device_observations(device: Any) -> list[ServiceObservation]:
+    """_device_observations."""
     for name in ("service_observations", "observations", "scanned_services"):
         values = _get(device, name, None)
         if values is not None:
@@ -254,6 +260,7 @@ def _device_observations(device: Any) -> list[ServiceObservation]:
 
 
 def _deduplicate(findings: Iterable[SecurityFinding]) -> list[SecurityFinding]:
+    """_deduplicate."""
     unique: dict[tuple[str, str, int | None], SecurityFinding] = {}
     for finding in findings:
         key = (finding.code, finding.device_ip, finding.port)

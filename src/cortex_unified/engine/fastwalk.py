@@ -82,6 +82,7 @@ class FastWalker:
     """
 
     def __init__(self, options: WalkOptions | None = None) -> None:
+        """__init__."""
         self.options = options or WalkOptions()
         self._compiled = [re.compile(r) for r in self.options.exclude_regexes]
         self._cancel = threading.Event()
@@ -98,6 +99,7 @@ class FastWalker:
         self._cancel.set()
 
     def reset(self) -> None:
+        """reset."""
         self._cancel.clear()
         self.cloud_skipped = 0
         self.cloud_skipped_bytes = 0
@@ -108,6 +110,7 @@ class FastWalker:
     # -- exclusion rules ----------------------------------------------------
 
     def _excluded_dir(self, name: str, full: str) -> bool:
+        """_excluded_dir."""
         if name in self.options.exclude_dir_names:
             return True
         return self._matches_patterns(name, full)
@@ -115,6 +118,7 @@ class FastWalker:
         """_excluded_dir."""
 
     def _matches_patterns(self, name: str, full: str) -> bool:
+        """_matches_patterns."""
         for g in self.options.exclude_globs:
             if fnmatch.fnmatch(name, g) or fnmatch.fnmatch(full, g):
                 return True
@@ -262,6 +266,7 @@ class FastWalker:
         dirs_post: list[str] = []  # post-order list of directories
 
         def _visit(dpath: str) -> None:
+            """_visit."""
             try:
                 entries = list(os.scandir(dpath))
             except OSError:

@@ -23,6 +23,7 @@ class PrivacyCleaner:
     """
 
     def __init__(self):
+        """__init__."""
         self.logger = logging.getLogger("privacy_cleaner")
         self.local_appdata = os.environ.get("LOCALAPPDATA", "")
         self.appdata = os.environ.get("APPDATA", "")
@@ -217,6 +218,7 @@ class PrivacyCleaner:
     # ──────────────────────────────────────────────────────────────────
 
     def _scan_firefox(self, profiles_path: str, stats: Dict[str, int]):
+        """_scan_firefox."""
         for profile in glob.glob(os.path.join(profiles_path, "*.*")):
             stats["Cookies"] += self._get_file_size(os.path.join(profile, "cookies.sqlite"))
             stats["History"] += self._get_file_size(os.path.join(profile, "places.sqlite"))
@@ -237,6 +239,7 @@ class PrivacyCleaner:
 
     @staticmethod
     def _get_file_size(path: str) -> int:
+        """_get_file_size."""
         try:
             return os.path.getsize(path) if os.path.isfile(path) else 0
         except OSError:
@@ -246,6 +249,7 @@ class PrivacyCleaner:
 
     @staticmethod
     def _get_dir_size(path: str) -> int:
+        """_get_dir_size."""
         total = 0
         if not os.path.isdir(path):
             return 0

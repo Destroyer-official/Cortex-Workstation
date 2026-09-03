@@ -83,15 +83,18 @@ class _YamlConfigSource(PydanticBaseSettingsSource):
     """
 
     def __init__(self, settings_cls, config_file):
+        """__init__."""
         super().__init__(settings_cls)
         self._data = _read_yaml_file(Path(config_file)) if config_file else {}
         """__init__."""
 
     def get_field_value(self, field, field_name):  # pragma: no cover - trivial
+        """get_field_value."""
         return self._data.get(field_name), field_name, False
         """get_field_value."""
 
     def __call__(self) -> dict:
+        """__call__."""
         return dict(self._data)
         """__call__."""
 

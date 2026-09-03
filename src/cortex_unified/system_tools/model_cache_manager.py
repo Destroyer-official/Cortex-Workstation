@@ -172,6 +172,7 @@ class ModelCacheManager:
     ]
     @classmethod
     def _get_comfyui_candidates(cls) -> List[Path]:
+        """_get_comfyui_candidates."""
         candidates = [
             Path.home() / "ComfyUI" / "models" / "checkpoints",
             Path.home() / "ComfyUI" / "models",
@@ -205,6 +206,7 @@ class ModelCacheManager:
     ]
 
     def _first_existing(self, candidates: List[Path | None] | None) -> Path | None:
+        """_first_existing."""
         if not candidates:
             return None
         for p in candidates:

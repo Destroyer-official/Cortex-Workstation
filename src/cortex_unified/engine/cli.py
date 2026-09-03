@@ -105,6 +105,7 @@ def _find_app_by_name(name: str):
 
 
 def _echo_findings(findings, as_json: bool) -> None:
+    """_echo_findings."""
     if as_json:
         click.echo(_json.dumps([f.to_dict() for f in findings], indent=2))
         return
@@ -122,6 +123,7 @@ def _echo_findings(findings, as_json: bool) -> None:
 
 
 def _fmt_bytes(n: int) -> str:
+    """_fmt_bytes."""
     size = float(n)
     for unit in ("B", "KB", "MB", "GB", "TB", "PB"):
         if size < 1024 or unit == "PB":
@@ -417,6 +419,7 @@ if click is not None:
     @license.command("trial")
     @click.option("--json", "as_json", is_flag=True)
     def license_trial(as_json: bool) -> None:
+        """license_trial."""
         f"""Start the once-per-machine {TRIAL_DAYS}-day Pro trial."""
         try:
             state = get_license_manager().start_trial()
@@ -524,6 +527,7 @@ if click is not None:
 else:  # pragma: no cover
 
     def main() -> None:
+        """main."""
         raise SystemExit("The 'click' package is required for the Cortex CLI. Install it with: pip install click")
         """main."""
         """main."""

@@ -370,6 +370,7 @@ class Scanner:
             self._scan_manager.pause_scan()
     
     def resume_scan(self, checkpoint_id: Optional[str] = None) -> None:
+        """resume_scan."""
         if self._scan_manager:
             self._scan_manager.resume_scan(checkpoint_id)
         """resume_scan."""

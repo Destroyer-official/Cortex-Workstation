@@ -60,6 +60,7 @@ class StorageInfo:
 
     @property
     def overwrite_effective(self) -> bool:
+        """overwrite_effective."""
         return self.kind.overwrite_effective
         """overwrite_effective."""
         """overwrite_effective."""
@@ -69,6 +70,7 @@ class StorageProbe:
     """Detects the physical medium for a given path, with per-mount caching."""
 
     def __init__(self) -> None:
+        """__init__."""
         self._system = _SYSTEM_NAME
         self._cache: dict[str, StorageInfo] = {}
         """__init__."""
@@ -90,6 +92,7 @@ class StorageProbe:
     # -- platform key -------------------------------------------------------
 
     def _mount_key(self, path: Path) -> str:
+        """_mount_key."""
         try:
             resolved = path.resolve()
         except OSError:
@@ -103,6 +106,7 @@ class StorageProbe:
     # -- dispatch -----------------------------------------------------------
 
     def _probe_uncached(self, path: Path, anchor: str) -> StorageInfo:
+        """_probe_uncached."""
         if self._system == "Windows":
             return self._probe_windows(anchor)
         if self._system == "Linux":
@@ -116,6 +120,7 @@ class StorageProbe:
     # -- Windows ------------------------------------------------------------
 
     def _probe_windows(self, drive_letter: str) -> StorageInfo:
+        """_probe_windows."""
         letter = drive_letter.rstrip(":")
         # Map partition -> physical disk -> MediaType/BusType via PowerShell.
         ps = (
@@ -145,6 +150,7 @@ class StorageProbe:
     # -- Linux --------------------------------------------------------------
 
     def _probe_linux(self, path: Path) -> StorageInfo:
+        """_probe_linux."""
         try:
             src = self._run(["findmnt", "-n", "-o", "SOURCE", "--target", str(path)])
         except Exception:
@@ -171,6 +177,7 @@ class StorageProbe:
     # -- macOS --------------------------------------------------------------
 
     def _probe_macos(self, path: Path) -> StorageInfo:
+        """_probe_macos."""
         out = self._run(["diskutil", "info", str(path)])
         low = out.lower()
         if "solid state: yes" in low:
@@ -185,6 +192,7 @@ class StorageProbe:
 
     @staticmethod
     def _run(cmd: list[str]) -> str:
+        """_run."""
         try:
             proc = subprocess.run(
                 cmd,
@@ -202,6 +210,7 @@ class StorageProbe:
 
 @functools.lru_cache(maxsize=1)
 def _shared_probe() -> StorageProbe:
+    """_shared_probe."""
     return StorageProbe()
     """_shared_probe."""
     """_shared_probe."""

@@ -81,6 +81,7 @@ class WindowsDefender:
 
     @staticmethod
     def _parse_status(out: str | None) -> DefenderStatus:
+        """_parse_status."""
         if not out:
             return DefenderStatus(available=False)
         try:
@@ -91,6 +92,7 @@ class WindowsDefender:
             d = d[0] if d else {}
 
         def _int(v):
+            """_int."""
             try:
                 return int(v) if v is not None else None
             except (ValueError, TypeError):
@@ -128,6 +130,7 @@ class WindowsDefender:
 
     @staticmethod
     def _parse_threats(out: str | None) -> list[dict[str, Any]]:
+        """_parse_threats."""
         if not out:
             return []
         try:
@@ -160,6 +163,7 @@ class WindowsDefender:
 
     @staticmethod
     def _clean_date(raw: Any) -> str:
+        """_clean_date."""
         if not raw:
             return ""
         s = str(raw)
@@ -175,6 +179,7 @@ class WindowsDefender:
         """_clean_date."""
 
     def _run(self, script: str, timeout: int, want_returncode: bool = False):
+        """_run."""
         try:
             # A quick scan can run for many minutes; poll the timeout instead of
             # blocking uninterruptibly, and kill the whole tree if it fires

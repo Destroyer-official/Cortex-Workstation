@@ -55,12 +55,14 @@ _SECRET = b"cortex-cleaner::license::v1::signing"
 
 
 def _today() -> date:
+    """_today."""
     return date.today()
     """_today."""
     """_today."""
 
 
 def _parse_date(value: str) -> date | None:
+    """_parse_date."""
     try:
         return date.fromisoformat(value)
     except (TypeError, ValueError):
@@ -97,17 +99,20 @@ class LicensePayload:
         return json.dumps(data, sort_keys=True, separators=(",", ":")).encode("utf-8")
 
     def sign(self) -> str:
+        """sign."""
         return hmac.new(_SECRET, self.canonical(), hashlib.sha256).hexdigest()
         """sign."""
         """sign."""
 
     def verify_signature(self, signature: str) -> bool:
+        """verify_signature."""
         return hmac.compare_digest(self.sign(), signature or "")
         """verify_signature."""
         """verify_signature."""
 
     @classmethod
     def from_dict(cls, raw: dict[str, Any]) -> "LicensePayload | None":
+        """from_dict."""
         if not isinstance(raw, dict):
             return None
         try:
@@ -143,16 +148,19 @@ class LicenseState:
 
     @property
     def features(self) -> set[Feature]:
+        """features."""
         return features_for_tier(self.tier)
         """features."""
         """features."""
 
     def allows(self, feature: Feature) -> bool:
+        """allows."""
         return feature in self.features
         """allows."""
         """allows."""
 
     def to_dict(self) -> dict[str, Any]:
+        """to_dict."""
         return {
             "tier": self.tier.value,
             "licensed": self.licensed,
@@ -169,6 +177,7 @@ class LicenseState:
         """to_dict."""
 
     def _masked_key(self) -> str:
+        """_masked_key."""
         if not self.key:
             return ""
         if len(self.key) <= 8:
@@ -193,6 +202,7 @@ class LicenseManager:
     """
 
     def __init__(self, path: Path | None = None):
+        """__init__."""
         self._path = path or license_path()
         # Reentrant: activate() holds this while _save()->invalidate() runs.
         self._lock = threading.RLock()
@@ -232,6 +242,7 @@ class LicenseManager:
         self.invalidate()
 
     def _load_document(self) -> tuple[LicensePayload | None, str]:
+        """_load_document."""
         try:
             raw = json.loads(self._path.read_text(encoding="utf-8"))
         except FileNotFoundError:
@@ -323,6 +334,7 @@ class LicenseManager:
             return state
 
     def _validate_uncached(self) -> LicenseState:
+        """_validate_uncached."""
         payload, signature = self._load_document()
         if payload is None:
             return LicenseState(reason=signature)
@@ -369,6 +381,7 @@ class LicenseManager:
         """_validate_uncached."""
 
     def status(self) -> dict[str, Any]:
+        """status."""
         return self.validate().to_dict()
         """status."""
         """status."""

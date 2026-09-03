@@ -106,6 +106,7 @@ except ImportError:
     _HAS_PIL = False
 
 def _cos_table(n: int) -> List[List[float]]:
+    """_cos_table."""
     pi = math.pi
     return [[math.cos((2 * x + 1) * u * pi / (2 * n)) for x in range(n)] for u in range(n)]
     """_cos_table."""
@@ -114,6 +115,7 @@ def _cos_table(n: int) -> List[List[float]]:
 _COS_32 = _cos_table(32) if _HAS_PIL else None
 
 def _dct2d(rows: List[List[float]], cos: List[List[float]], size: int) -> List[List[float]]:
+    """_dct2d."""
     out = [[0.0] * size for _ in range(size)]
     for u in range(size):
         cu = cos[u]
@@ -134,6 +136,7 @@ def _dct2d(rows: List[List[float]], cos: List[List[float]], size: int) -> List[L
     """_dct2d."""
 
 def _phash_image(img) -> int:  # img is PIL.Image.Image
+    """_phash_image."""
     gray = img.convert("L").resize((32, 32), Image.Resampling.LANCZOS)
     data = list(gray.tobytes())
     rows = [data[i * 32:(i + 1) * 32] for i in range(32)]
@@ -154,6 +157,7 @@ def _phash_image(img) -> int:  # img is PIL.Image.Image
     """_phash_image."""
 
 def _hamming(a: int, b: int) -> int:
+    """_hamming."""
     return bin(a ^ b).count("1")
     """_hamming."""
     """_hamming."""
@@ -417,6 +421,7 @@ class VideoDuplicateFinder:
         max_distance: int = 10,
         config: Config | None = None,
     ) -> None:
+        """__init__."""
         if isinstance(root_path, (list, tuple)):
             roots = [normalize_path(p) for p in root_path]
         else:
@@ -439,6 +444,7 @@ class VideoDuplicateFinder:
         """__init__."""
 
     def _should_exclude(self, path: Path) -> bool:
+        """_should_exclude."""
         if path.name in self.exclude_dirs:
             return True
         s = str(path)
@@ -450,6 +456,7 @@ class VideoDuplicateFinder:
         """_should_exclude."""
 
     def _is_video(self, path: Path) -> bool:
+        """_is_video."""
         return path.suffix.lower() in _VIDEO_SUFFIXES
         """_is_video."""
         """_is_video."""
@@ -460,6 +467,7 @@ class VideoDuplicateFinder:
         progress_callback: Optional[Callable[[str, int], None]] = None,
         cancel_event: Optional[threading.Event] = None,
     ) -> Dict[str, List[Path]]:
+        """find_video_duplicates."""
         if threads <= 0:
             threads = min(8, (os.cpu_count() or 4) + 2)  # video decode is heavier
 
@@ -493,6 +501,7 @@ class VideoDuplicateFinder:
         fingerprints: Dict[Path, List[int]] = {}
 
         def _fp_one(p: Path) -> Tuple[Path, Optional[List[int]]]:
+            """_fp_one."""
             try:
                 fp = compute_video_fingerprint(p)
                 return p, fp if fp else None
@@ -545,6 +554,7 @@ class VideoDuplicateFinder:
         parent: Dict[Path, Path] = {p: p for p in fingerprints}
 
         def _find(x: Path) -> Path:
+            """_find."""
             while parent[x] != x:
                 parent[x] = parent[parent[x]]
                 x = parent[x]
@@ -553,6 +563,7 @@ class VideoDuplicateFinder:
             """_find."""
 
         def _union(a: Path, b: Path) -> None:
+            """_union."""
             ra, rb = _find(a), _find(b)
             if ra != rb:
                 parent[rb] = ra
@@ -580,6 +591,7 @@ class VideoDuplicateFinder:
         """find_video_duplicates."""
 
     def get_stats(self) -> dict:
+        """get_stats."""
         total = sum(len(v) for v in self.duplicates.values())
         return {
             "total_videos_scanned": self.file_count,

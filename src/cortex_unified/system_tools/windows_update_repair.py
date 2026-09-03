@@ -209,6 +209,7 @@ class WindowsUpdateRepair:
     # -- helpers
 
     def _run(self, cmd: List[str], timeout: int = 120, shell: bool = False) -> Tuple[int, str, str]:
+        """_run."""
         if self.cancel_event.is_set():
             raise RuntimeError("Cancelled")
         if self.dry_run:
@@ -228,17 +229,20 @@ class WindowsUpdateRepair:
         """_run."""
 
     def _run_ps(self, script: str, timeout: int = 180) -> Tuple[int, str, str]:
+        """_run_ps."""
         return self._run(["powershell", "-NoProfile", "-Command", script], timeout=timeout)
         """_run_ps."""
         """_run_ps."""
 
     def _sc_query(self, name: str) -> str:
+        """_sc_query."""
         rc, out, _ = self._run(["sc", "query", name])
         return out.strip() if rc == 0 else ""
         """_sc_query."""
         """_sc_query."""
 
     def _service_status(self, name: str) -> str:
+        """_service_status."""
         out = self._sc_query(name)
         for line in out.splitlines():
             if "STATE" in line:
@@ -248,6 +252,7 @@ class WindowsUpdateRepair:
         """_service_status."""
 
     def _stop_service(self, name: str, retries: int = 3) -> bool:
+        """_stop_service."""
         for _ in range(retries):
             rc, _, _ = self._run(["net", "stop", name])
             if rc == 0:
@@ -260,6 +265,7 @@ class WindowsUpdateRepair:
         """_stop_service."""
 
     def _start_service(self, name: str) -> bool:
+        """_start_service."""
         rc, _, _ = self._run(["net", "start", name])
         return rc == 0
         """_start_service."""
@@ -346,6 +352,7 @@ class WindowsUpdateRepair:
     # -- phase implementations
 
     def _phase_stop_services(self) -> PhaseResult:
+        """_phase_stop_services."""
         t0 = time.time()
         changes = []
         for svc in WU_SERVICES:
@@ -361,6 +368,7 @@ class WindowsUpdateRepair:
         """_phase_stop_services."""
 
     def _phase_clear_caches(self) -> PhaseResult:
+        """_phase_clear_caches."""
         t0 = time.time()
         changes = []
         rollback = {}
@@ -400,6 +408,7 @@ class WindowsUpdateRepair:
         """_phase_clear_caches."""
 
     def _phase_reset_registry_policies(self) -> PhaseResult:
+        """_phase_reset_registry_policies."""
         t0 = time.time()
         changes = []
         rollback = {}
@@ -426,6 +435,7 @@ class WindowsUpdateRepair:
         """_phase_reset_registry_policies."""
 
     def _phase_reset_security_descriptors(self) -> PhaseResult:
+        """_phase_reset_security_descriptors."""
         t0 = time.time()
         changes = []
         sd_bits = "D:(A;;CCLCSWRPWPDTLOCRRC;;;SY)(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;BA)(A;;CCLCSWLOCRRC;;;AU)(A;;CCLCSWRPWPDTLOCRRC;;;PU)"
@@ -440,6 +450,7 @@ class WindowsUpdateRepair:
         """_phase_reset_security_descriptors."""
 
     def _phase_reregister_dlls(self) -> PhaseResult:
+        """_phase_reregister_dlls."""
         t0 = time.time()
         changes = []
         system32 = Path(os.environ.get("SYSTEMROOT", "C:\\Windows")) / "System32"
@@ -454,6 +465,7 @@ class WindowsUpdateRepair:
         """_phase_reregister_dlls."""
 
     def _phase_reset_network(self) -> PhaseResult:
+        """_phase_reset_network."""
         t0 = time.time()
         changes = []
         if not self.dry_run:
@@ -479,6 +491,7 @@ class WindowsUpdateRepair:
         """_phase_reset_network."""
 
     def _phase_dism_repair(self) -> PhaseResult:
+        """_phase_dism_repair."""
         t0 = time.time()
         changes = []
         # ScanHealth
@@ -493,6 +506,7 @@ class WindowsUpdateRepair:
         """_phase_dism_repair."""
 
     def _phase_sfc(self) -> PhaseResult:
+        """_phase_sfc."""
         t0 = time.time()
         rc, out, _ = self._run(["sfc.exe", "/scannow"], timeout=1800)
         changes = [out.strip()[:200]] if out else ["SFC completed"]
@@ -512,6 +526,7 @@ class WindowsUpdateRepair:
         return PhaseResult("component_store", True, changes, duration_seconds=time.time()-t0)
 
     def _phase_start_services(self) -> PhaseResult:
+        """_phase_start_services."""
         t0 = time.time()
         changes = []
         for svc in WU_SERVICES:
@@ -527,6 +542,7 @@ class WindowsUpdateRepair:
         """_phase_start_services."""
 
     def _phase_verify(self) -> PhaseResult:
+        """_phase_verify."""
         t0 = time.time()
         changes = []
         # Quick connectivity test

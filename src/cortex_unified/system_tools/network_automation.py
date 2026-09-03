@@ -40,6 +40,7 @@ class NetworkScheduleError(RuntimeError):
 
 
 def _validated(spec: NetworkSchedule) -> NetworkSchedule:
+    """_validated."""
     frequency = spec.frequency.strip().lower()
     if frequency not in {"hourly", "daily", "weekly"}:
         raise ValueError("frequency must be hourly, daily, or weekly")

@@ -162,6 +162,7 @@ class TempCleaner:
         seen: set[str] = set()
 
         def _usable(label: str, path: Path) -> bool:
+            """_usable."""
             try:
                 key = _normalize(path)
                 if key in seen:

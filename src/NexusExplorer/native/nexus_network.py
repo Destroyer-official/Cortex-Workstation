@@ -117,6 +117,7 @@ def get_credential(service: str, username: str) -> str:
 
 
 def _path_join(base: str, name: str) -> str:
+    """_path_join."""
     if base.startswith("\\\\"):
         return base.rstrip("\\") + "\\" + name.lstrip("\\")
     return f"{base.rstrip('/')}/{name.lstrip('/')}"
@@ -187,6 +188,7 @@ class SMBProvider(NetworkFS):
     """
 
     def __init__(self):
+        """__init__."""
         self._host = ""
         self._share = ""
         self._connected = False
@@ -334,6 +336,7 @@ class FTPProvider(NetworkFS):
     """FTP/FTPS file transfer access with automatic reconnection."""
 
     def __init__(self):
+        """__init__."""
         self._conn: ftplib.FTP | None = None
         self._host = ""
         self._port = 21
@@ -358,6 +361,7 @@ class FTPProvider(NetworkFS):
         return self._reconnect()
 
     def _reconnect(self) -> bool:
+        """_reconnect."""
         for attempt in range(self._max_retries):
             try:
                 self._close_conn()
@@ -377,6 +381,7 @@ class FTPProvider(NetworkFS):
         """_reconnect."""
 
     def _close_conn(self) -> None:
+        """_close_conn."""
         if self._conn:
             try:
                 self._conn.quit()
@@ -399,6 +404,7 @@ class FTPProvider(NetworkFS):
         return self._connected and self._conn is not None
 
     def _safe_operation(self, operation: Callable[[ftplib.FTP], T]) -> T:
+        """_safe_operation."""
         for attempt in range(self._max_retries):
             try:
                 with self._lock:
@@ -417,6 +423,7 @@ class FTPProvider(NetworkFS):
             return []
         try:
             def _list(ftp: ftplib.FTP) -> list[NetworkFile]:
+                """_list."""
                 ftp.cwd(path)
                 entries: list[NetworkFile] = []
                 for name, facts in ftp.mlsd():
@@ -445,6 +452,7 @@ class FTPProvider(NetworkFS):
         try:
             tmp_path = local_path + ".tmp"
             def _download(ftp: ftplib.FTP) -> None:
+                """_download."""
                 with open(tmp_path, "wb") as f:
                     ftp.retrbinary(f"RETR {remote_path}", f.write)
                 """_download."""
@@ -461,6 +469,7 @@ class FTPProvider(NetworkFS):
             return False
         try:
             def _upload(ftp: ftplib.FTP) -> None:
+                """_upload."""
                 with open(local_path, "rb") as f:
                     ftp.storbinary(f"STOR {remote_path}", f)
                 """_upload."""
@@ -505,6 +514,7 @@ class SFTPProvider(NetworkFS):
     """SFTP (SSH) file transfer access with exponential backoff reconnection."""
 
     def __init__(self):
+        """__init__."""
         self._client: paramiko.SSHClient | None = None
         self._sftp: paramiko.SFTPClient | None = None
         self._host = ""
@@ -535,6 +545,7 @@ class SFTPProvider(NetworkFS):
         return self._reconnect()
 
     def _reconnect(self) -> bool:
+        """_reconnect."""
         for attempt in range(self._max_retries):
             try:
                 with self._lock:
@@ -561,6 +572,7 @@ class SFTPProvider(NetworkFS):
         """_reconnect."""
 
     def _close_both(self) -> None:
+        """_close_both."""
         if self._sftp:
             try:
                 self._sftp.close()
@@ -586,6 +598,7 @@ class SFTPProvider(NetworkFS):
         return self._connected and self._sftp is not None
 
     def _safe_operation(self, operation: Callable[[paramiko.SFTPClient], T]) -> T:
+        """_safe_operation."""
         for attempt in range(self._max_retries):
             try:
                 with self._lock:
@@ -604,6 +617,7 @@ class SFTPProvider(NetworkFS):
             return []
         try:
             def _list(sftp: paramiko.SFTPClient) -> list[NetworkFile]:
+                """_list."""
                 entries: list[NetworkFile] = []
                 for attr in sftp.listdir_attr(path):
                     entries.append(NetworkFile(
@@ -679,6 +693,7 @@ class WebDAVProvider(NetworkFS):
     """WebDAV file access via webdavclient3."""
 
     def __init__(self):
+        """__init__."""
         self._client: WebDAVClient | None = None
         self._base_url = ""
         self._connected = False
@@ -817,12 +832,14 @@ class ConnectionPool:
     """Thread-safe connection pool with TTL-based expiration."""
 
     def __init__(self, ttl_seconds: int = 300):
+        """__init__."""
         self._connections: dict[str, tuple[NetworkFS, float]] = {}
         self._ttl = ttl_seconds
         self._lock = threading.Lock()
         """__init__."""
 
     def _key(self, protocol: NetworkProtocol, host: str) -> str:
+        """_key."""
         return f"{protocol.name}:{host}"
         """_key."""
 
@@ -898,6 +915,7 @@ class NetworkManager(QObject):
     connection_changed = Signal(str, bool)
 
     def __init__(self, parent=None):
+        """__init__."""
         super().__init__(parent)
         self._providers: dict[NetworkProtocol, type[NetworkFS]] = {
             NetworkProtocol.SMB: SMBProvider,
@@ -912,6 +930,7 @@ class NetworkManager(QObject):
         """__init__."""
 
     def _default_port(self, protocol: NetworkProtocol) -> int:
+        """_default_port."""
         return {
             NetworkProtocol.SMB: 445,
             NetworkProtocol.FTP: 21,

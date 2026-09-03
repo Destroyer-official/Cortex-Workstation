@@ -538,6 +538,7 @@ class VhdxManager:
 
     @staticmethod
     def _decode(raw: bytes | str | None) -> str:
+        """_decode."""
         if raw is None:
             return ""
         if isinstance(raw, str):
@@ -553,6 +554,7 @@ class VhdxManager:
 
     @staticmethod
     def _reg_str(key, name: str) -> str:
+        """_reg_str."""
         try:
             import winreg
             value, _ = winreg.QueryValueEx(key, name)
@@ -564,6 +566,7 @@ class VhdxManager:
 
     @staticmethod
     def _reg_int(key, name: str) -> int:
+        """_reg_int."""
         try:
             import winreg
             value, _ = winreg.QueryValueEx(key, name)

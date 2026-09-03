@@ -189,6 +189,7 @@ class AiTelemetryCleaner:
         description: str,
         is_wal: bool = False,
     ) -> None:
+        """_record_artifact."""
         try:
             stat = path.stat()
             sz = stat.st_size

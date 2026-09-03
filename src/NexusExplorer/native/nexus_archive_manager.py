@@ -19,6 +19,7 @@ from typing import Callable, Dict, List, Optional, Tuple
 
 
 class ArchiveFormat(Enum):
+    """ArchiveFormat."""
     ZIP = "ZIP Archive (.zip)"
     TAR = "Tarball (.tar)"
     TAR_GZ = "Gzipped Tarball (.tar.gz)"
@@ -28,6 +29,7 @@ class ArchiveFormat(Enum):
 
 
 class CompressionLevel(Enum):
+    """CompressionLevel."""
     STORE = 0
     FAST = 1
     NORMAL = 6
@@ -37,6 +39,7 @@ class CompressionLevel(Enum):
 
 @dataclass
 class ArchiveEntryInfo:
+    """ArchiveEntryInfo."""
     filename: str
     uncompressed_size: int
     compressed_size: int
@@ -48,6 +51,7 @@ class ArchiveEntryInfo:
 
 @dataclass
 class ArchiveOperationResult:
+    """ArchiveOperationResult."""
     success: bool
     archive_path: str
     total_files: int

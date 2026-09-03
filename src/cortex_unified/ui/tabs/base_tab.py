@@ -59,6 +59,7 @@ class BaseTab(QWidget):
                 raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
                 
             def lazy_call(*args, **kwargs):
+                """lazy_call."""
                 try:
                     return getattr(top_window, name)(*args, **kwargs)
                 except Exception as e:

@@ -37,18 +37,22 @@ class BenchmarkTimer:
     """Context manager for timing operations."""
 
     def __init__(self, name: str):
+        """__init__."""
         self.name = name
         self.elapsed_ms: float = 0
         self._start: float = 0
 
     def __enter__(self):
+        """__enter__."""
         self._start = time.perf_counter()
         return self
 
     def __exit__(self, *args):
+        """__exit__."""
         self.elapsed_ms = (time.perf_counter() - self._start) * 1000
 
     def __repr__(self):
+        """__repr__."""
         return f"{self.name}: {self.elapsed_ms:.1f}ms"
 
 
@@ -61,6 +65,7 @@ class TestDirectoryListing:
 
     @pytest.fixture(autouse=True)
     def setup(self, tmp_path):
+        """setup."""
         self.root = tmp_path / "bench_tree"
         self.root.mkdir(exist_ok=True)
         _create_test_tree(self.root, depth=3, files_per_dir=100)
@@ -106,6 +111,7 @@ class TestFileOperations:
 
     @pytest.fixture(autouse=True)
     def setup(self, tmp_path):
+        """setup."""
         self.root = tmp_path / "bench_ops"
         self.root.mkdir(exist_ok=True)
         self.src_dir = self.root / "src"
@@ -162,6 +168,7 @@ class TestSearch:
 
     @pytest.fixture(autouse=True)
     def setup(self, tmp_path):
+        """setup."""
         self.root = tmp_path / "bench_search"
         self.root.mkdir(exist_ok=True)
         _create_test_tree(self.root, depth=4, files_per_dir=50)
@@ -192,6 +199,7 @@ class TestHashing:
 
     @pytest.fixture(autouse=True)
     def setup(self, tmp_path):
+        """setup."""
         self.test_file = tmp_path / "hash_test.bin"
         self.test_file.write_bytes(os.urandom(1024 * 1024))  # 1MB
         yield

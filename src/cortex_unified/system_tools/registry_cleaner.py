@@ -64,6 +64,7 @@ class RegistryCleaner:
     # ──────────────────────────────────────────────────────────────────
 
     def _scan_uninstall_entries(self, hive):
+        """_scan_uninstall_entries."""
         import winreg
 
         # Both views must be enumerated: the plain path holds 64-bit installers,
@@ -96,6 +97,7 @@ class RegistryCleaner:
         """_scan_uninstall_entries."""
 
     def _check_uninstall_entry(self, hive, hive_name, full_path, subkey_name):
+        """_check_uninstall_entry."""
         import winreg
         try:
             with winreg.OpenKey(hive, full_path, 0, winreg.KEY_READ | winreg.KEY_WOW64_64KEY) as sk:
@@ -381,6 +383,7 @@ class RegistryCleaner:
 
     @staticmethod
     def _reg_val(winreg, key, name, default=""):
+        """_reg_val."""
         try:
             return winreg.QueryValueEx(key, name)[0]
         except (FileNotFoundError, OSError):

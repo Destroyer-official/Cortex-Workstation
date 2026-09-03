@@ -23,6 +23,7 @@ class ResourceMonitorTab(BaseTab):
     """Tab for resource monitor tab functionality."""
 
     def __init__(self, config, logger, safety_manager):
+        """__init__."""
         self.resource_monitor = None
         super().__init__(config, logger, safety_manager)
         """__init__."""
@@ -162,6 +163,7 @@ class ResourceMonitorTab(BaseTab):
             QMessageBox.critical(self, 'Error', f'Error stopping monitoring:\n{str(e)}')
 
     def update_resource_metrics(self):
+        """update_resource_metrics."""
         try:
             import psutil
             if not self.resource_monitor or not self.resource_monitor.metrics_history:
@@ -216,6 +218,7 @@ class ResourceMonitorTab(BaseTab):
         """update_resource_metrics."""
 
     def check_performance_alerts(self, cpu_percent, memory_percent):
+        """check_performance_alerts."""
         from datetime import datetime
         current_time = datetime.now().strftime('%H:%M:%S')
         cpu_threshold = self.cpu_threshold_spinbox.value()
@@ -260,6 +263,7 @@ class ResourceMonitorTab(BaseTab):
                 self._kill_process(pid, name)
 
     def _kill_process(self, pid: int, name: str):
+        """_kill_process."""
         import psutil
         try:
             p = psutil.Process(pid)

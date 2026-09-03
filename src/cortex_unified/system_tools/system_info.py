@@ -21,6 +21,7 @@ except ImportError:  # pragma: no cover
 
 
 def _fmt_bytes(n: int | float | None) -> str:
+    """_fmt_bytes."""
     if not n:
         return "0 B"
     size = float(n)

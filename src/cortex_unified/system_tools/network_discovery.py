@@ -480,12 +480,14 @@ class NetworkDiscovery:
         oui.ensure_registry_loaded()
 
         def _say(msg: str) -> None:
+            """_say."""
             if progress is not None:
                 progress(msg)
             """_say."""
             """_say."""
 
         def _cancelled() -> bool:
+            """_cancelled."""
             return cancel_event is not None and cancel_event.is_set()
             """_cancelled."""
             """_cancelled."""
@@ -842,6 +844,7 @@ class NetworkDiscovery:
         payload = b"\x00"
 
         def _poke(ip: str) -> None:
+            """_poke."""
             if cancel_event is not None and cancel_event.is_set():
                 return
             try:
@@ -867,6 +870,7 @@ class NetworkDiscovery:
 
     @staticmethod
     def _is_ipv4(value: str) -> bool:
+        """_is_ipv4."""
         try:
             ipaddress.IPv4Address(value)
             return True
@@ -900,6 +904,7 @@ class NetworkDiscovery:
 
     @staticmethod
     def _ip_sort_key(ip: str) -> tuple:
+        """_ip_sort_key."""
         try:
             return (0,) + tuple(int(p) for p in ip.split("."))
         except (ValueError, AttributeError):
@@ -909,6 +914,7 @@ class NetworkDiscovery:
 
     @staticmethod
     def _merge(into: dict[str, Device], found: Iterable[Device]) -> None:
+        """_merge."""
         for device in found:
             existing = into.get(device.ip)
             if existing is None:
@@ -919,6 +925,7 @@ class NetworkDiscovery:
         """_merge."""
 
     def _run_ps(self, script: str, timeout: int = 45) -> str | None:
+        """_run_ps."""
         try:
             res = _proc.run(
                 ["powershell", "-NoProfile", "-NonInteractive", "-Command", script],
@@ -1261,6 +1268,7 @@ class NetworkDiscovery:
 
     @staticmethod
     def _pseudo_uuid() -> str:
+        """_pseudo_uuid."""
         import uuid
         return str(uuid.uuid4())
         """_pseudo_uuid."""
@@ -1286,6 +1294,7 @@ class NetworkDiscovery:
             return
 
         def _resolve(device: Device) -> None:
+            """_resolve."""
             if cancel_event is not None and cancel_event.is_set():
                 return
             # Reverse DNS: names the router's resolver knows about.

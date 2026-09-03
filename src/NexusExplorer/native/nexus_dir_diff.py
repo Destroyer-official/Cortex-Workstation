@@ -18,6 +18,7 @@ from typing import Callable, Dict, List, Optional, Set, Tuple
 
 
 class DiffStatus(Enum):
+    """DiffStatus."""
     IDENTICAL = "Identical"
     LEFT_ONLY = "Left Only"
     RIGHT_ONLY = "Right Only"
@@ -28,6 +29,7 @@ class DiffStatus(Enum):
 
 
 class SyncMode(Enum):
+    """SyncMode."""
     MIRROR_LEFT_TO_RIGHT = "Mirror Left -> Right"
     MIRROR_RIGHT_TO_LEFT = "Mirror Right -> Left"
     TWO_WAY_MERGE = "Two-Way Bidirectional Merge"
@@ -37,6 +39,7 @@ class SyncMode(Enum):
 
 @dataclass
 class DiffEntry:
+    """DiffEntry."""
     relative_path: str
     left_path: Optional[str]
     right_path: Optional[str]
@@ -51,6 +54,7 @@ class DiffEntry:
 
 @dataclass
 class SyncStats:
+    """SyncStats."""
     copied: int = 0
     updated: int = 0
     deleted: int = 0
@@ -59,6 +63,7 @@ class SyncStats:
     errors: List[str] = None
 
     def __post_init__(self):
+        """__post_init__."""
         if self.errors is None:
             self.errors = []
         """__post_init__."""

@@ -18,38 +18,48 @@ except ImportError:
     HAS_PLOTLY = False
     # No-op stand-ins keep method bodies runnable without Plotly
     class go:
+        """go."""
         class Figure:
+            """Figure."""
             def __init__(self, *args, **kwargs):
+                """__init__."""
                 pass
                 """__init__."""
                 """__init__."""
             def add_trace(self, *args, **kwargs):
+                """add_trace."""
                 pass
                 """add_trace."""
                 """add_trace."""
             def update_layout(self, *args, **kwargs):
+                """update_layout."""
                 pass
                 """update_layout."""
             """Figure class."""
         """go class."""
         """go class."""
     class px:
+        """px."""
         @staticmethod
         def bar(*args, **kwargs):
+            """bar."""
             return go.Figure()
             """bar."""
             """bar."""
         @staticmethod
         def pie(*args, **kwargs):
+            """pie."""
             return go.Figure()
             """pie."""
         """px class."""
         """px class."""
     def make_subplots(*args, **kwargs):
+        """make_subplots."""
         return go.Figure()
         """make_subplots."""
         """make_subplots."""
     def plot(*args, **kwargs):
+        """plot."""
         pass
         """plot."""
         """plot."""

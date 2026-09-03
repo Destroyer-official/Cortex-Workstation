@@ -35,6 +35,7 @@ class _JobRow(QWidget):
     """One visual row per transfer job."""
 
     def __init__(self, job_id: str, queue: TransferQueue, parent=None):
+        """__init__."""
         super().__init__(parent)
         self.job_id = job_id
         self.queue = queue
@@ -98,6 +99,7 @@ class _JobRow(QWidget):
     # ------------------------------------------------------------- helpers
     @staticmethod
     def _describe(job) -> str:
+        """_describe."""
         if job is None:
             return "Transfer"
         if job.kind == "delete":
@@ -110,6 +112,7 @@ class _JobRow(QWidget):
         """_describe."""
 
     def _refresh(self, job):
+        """_refresh."""
         if job is None:
             return
         new_progress = job.progress
@@ -155,6 +158,7 @@ class _JobRow(QWidget):
 
     # ------------------------------------------------------------ handlers
     def _toggle_pause(self):
+        """_toggle_pause."""
         job = self.queue.get_job(self.job_id)
         if job is None:
             return
@@ -166,6 +170,7 @@ class _JobRow(QWidget):
         """_toggle_pause."""
 
     def _cancel(self):
+        """_cancel."""
         self.queue.cancel(self.job_id)
         self._refresh(self.queue.get_job(self.job_id))
         """_cancel."""
@@ -175,6 +180,7 @@ class TransferMonitorDialog(QDialog):
     """The transfers window. One instance per ExplorerWidget."""
 
     def __init__(self, queue: TransferQueue, parent=None):
+        """__init__."""
         super().__init__(parent)
         self.setWindowTitle("Nexus Transfers")
         self.setModal(False)
@@ -227,6 +233,7 @@ class TransferMonitorDialog(QDialog):
 
     # ------------------------------------------------------------- slots
     def _on_job_added(self, job_id: str):
+        """_on_job_added."""
         if job_id in self._rows:
             return
         row = _JobRow(job_id, self._queue)
@@ -238,6 +245,7 @@ class TransferMonitorDialog(QDialog):
         """_on_job_added."""
 
     def _on_progress(self, job_id: str, *_a):
+        """_on_progress."""
         row = self._rows.get(job_id)
         if row is not None:
             row._refresh(self._queue.get_job(job_id))
@@ -245,6 +253,7 @@ class TransferMonitorDialog(QDialog):
         """_on_progress."""
 
     def _tick(self):
+        """_tick."""
         for jid, row in list(self._rows.items()):
             job = self._queue.get_job(jid)
             if job is not None and job.state is JobState.RUNNING:
@@ -253,6 +262,7 @@ class TransferMonitorDialog(QDialog):
         """_tick."""
 
     def _update_summary(self):
+        """_update_summary."""
         jobs = self._queue.get_all_jobs()
         active = [j for j in jobs if j.state in (
             JobState.QUEUED, JobState.RUNNING, JobState.PAUSED)]
@@ -269,6 +279,7 @@ class TransferMonitorDialog(QDialog):
         """_update_summary."""
 
     def _clear_finished(self):
+        """_clear_finished."""
         n = self._queue.clear_finished()
         for jid, row in list(self._rows.items()):
             job = self._queue.get_job(jid)
@@ -280,6 +291,7 @@ class TransferMonitorDialog(QDialog):
         """_clear_finished."""
 
     def open_for(self) -> None:
+        """open_for."""
         self.show()
         self.raise_()
         self.activateWindow()
@@ -294,6 +306,7 @@ class TransferMonitorDialog(QDialog):
         self._rows.clear()
 
     def closeEvent(self, event) -> None:
+        """closeEvent."""
         self.cleanup()
         super().closeEvent(event)
         """closeEvent."""

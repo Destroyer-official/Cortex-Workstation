@@ -41,6 +41,7 @@ class EntitlementError(PermissionError):
 
     def __init__(self, feature: Feature, required: Tier, current: Tier,
                  message: str | None = None):
+        """__init__."""
         self.feature = feature
         self.required = required
         self.current = current
@@ -90,7 +91,9 @@ def gate(feature: Feature) -> Callable[[Callable[..., T]], Callable[..., T]]:
     """Decorator form of :func:`require` for whole functions/methods."""
 
     def decorator(func: Callable[..., T]) -> Callable[..., T]:
+        """decorator."""
         def wrapper(*args: object, **kwargs: object) -> T:
+            """wrapper."""
             require(feature)
             return func(*args, **kwargs)
             """wrapper."""

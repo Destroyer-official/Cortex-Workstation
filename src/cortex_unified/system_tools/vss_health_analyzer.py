@@ -168,6 +168,7 @@ class VssHealthAnalyzer:
         return report
 
     def _parse_writers(self, text: str) -> List[VssWriterStatus]:
+        """_parse_writers."""
         writers: List[VssWriterStatus] = []
         current: Dict[str, str] = {}
 
@@ -199,6 +200,7 @@ class VssHealthAnalyzer:
         """_parse_writers."""
 
     def _build_writer_status(self, d: Dict[str, str]) -> VssWriterStatus:
+        """_build_writer_status."""
         name = d.get("name", "Unknown Writer")
         wid = d.get("id", "")
         state_str = d.get("state", "[1] Stable")
@@ -223,6 +225,7 @@ class VssHealthAnalyzer:
         """_build_writer_status."""
 
     def _parse_shadowstorage(self, text: str) -> List[VssStorageAllocation]:
+        """_parse_shadowstorage."""
         allocs: List[VssStorageAllocation] = []
         current: Dict[str, str] = {}
 
@@ -253,8 +256,10 @@ class VssHealthAnalyzer:
         """_parse_shadowstorage."""
 
     def _build_storage_allocation(self, d: Dict[str, str]) -> VssStorageAllocation:
+        """_build_storage_allocation."""
         def _parse_bytes(s: str) -> int:
             # Format: '1.234 GB (1234567890 B)'
+            """_parse_bytes."""
             m = re.search(r"\((\d+)\s*B\)", s)
             if m:
                 return int(m.group(1))

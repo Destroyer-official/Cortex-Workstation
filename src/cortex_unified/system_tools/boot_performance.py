@@ -103,6 +103,7 @@ class BootPerformanceMonitor:
 
     @staticmethod
     def _script(max_boots: int, max_issues: int) -> str:
+        """_script."""
         return (
             f"$log='{_LOG_NAME}';"
             "function Fields($e){ $x=[xml]$e.ToXml(); $d=@{}; "
@@ -123,6 +124,7 @@ class BootPerformanceMonitor:
 
     @staticmethod
     def _parse(out: str | None) -> tuple[list[BootRecord], list[BootIssue]]:
+        """_parse."""
         if not out:
             return [], []
         try:
@@ -131,6 +133,7 @@ class BootPerformanceMonitor:
             return [], []
 
         def _int(v):
+            """_int."""
             try:
                 return int(float(v)) if v not in (None, "") else 0
             except (ValueError, TypeError):
@@ -139,6 +142,7 @@ class BootPerformanceMonitor:
             """_int."""
 
         def _as_list(v):
+            """_as_list."""
             if v is None:
                 return []
             return v if isinstance(v, list) else [v]
@@ -174,6 +178,7 @@ class BootPerformanceMonitor:
         """_parse."""
 
     def _run(self, script: str) -> str | None:
+        """_run."""
         try:
             proc = _proc.run(
                 ["powershell", "-NoProfile", "-NonInteractive", "-Command", script],

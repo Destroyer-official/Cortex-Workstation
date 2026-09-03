@@ -87,6 +87,7 @@ class Cleanable:
 # ---------------------------------------------------------------------------
 
 def _discover_chromium_profiles(base_names: List[str]) -> List[Path]:
+    """_discover_chromium_profiles."""
     roots: List[Path] = []
     if os.name == "nt":
         local = Path(os.environ.get("LOCALAPPDATA", ""))
@@ -122,6 +123,7 @@ _CHROMIUM_MAP = {
 }
 
 def _discover_firefox_profiles() -> List[Path]:
+    """_discover_firefox_profiles."""
     profiles: List[Path] = []
     if os.name == "nt":
         base = Path(os.environ.get("APPDATA", "")) / "Mozilla" / "Firefox" / "Profiles"
@@ -179,6 +181,7 @@ class DeepBrowserCleaner:
         return results
 
     def _scan_chromium_profile(self, profile: Path, browser: str) -> List[Cleanable]:
+        """_scan_chromium_profile."""
         out: List[Cleanable] = []
         # Map of sub-path -> (category, risk, description, can_vacuum)
         targets = {
@@ -220,6 +223,7 @@ class DeepBrowserCleaner:
         """_scan_chromium_profile."""
 
     def _scan_firefox_profile(self, profile: Path) -> List[Cleanable]:
+        """_scan_firefox_profile."""
         out: List[Cleanable] = []
         targets = {
             "storage": ("storage", "medium", "Site storage (IndexedDB)", False),

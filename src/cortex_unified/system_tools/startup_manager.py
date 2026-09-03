@@ -123,6 +123,7 @@ class StartupManager:
             self.error_count += 1
     
     def _list_macos_startup_items(self):
+        """_list_macos_startup_items."""
         try:
             # Launch agents in ~/Library/LaunchAgents
             user_agents = Path.home() / "Library" / "LaunchAgents"
@@ -160,6 +161,7 @@ class StartupManager:
             self.error_count += 1
     
     def _list_linux_startup_items(self):
+        """_list_linux_startup_items."""
         try:
             # Autostart directory items
             autostart_dirs = [
@@ -198,6 +200,7 @@ class StartupManager:
         return Path.home() / "StartupBackup" / "disabled_registry_backup.json"
 
     def _load_registry_backup(self) -> Dict[str, dict]:
+        """_load_registry_backup."""
         try:
             import json
             with open(self._registry_backup_path(), encoding="utf-8") as handle:
@@ -209,6 +212,7 @@ class StartupManager:
         """_load_registry_backup."""
 
     def _save_registry_backup(self, backup: Dict[str, dict]) -> None:
+        """_save_registry_backup."""
         try:
             import json
             self._registry_backup_path().parent.mkdir(exist_ok=True)

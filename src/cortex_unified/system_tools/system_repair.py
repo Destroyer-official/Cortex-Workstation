@@ -82,6 +82,7 @@ class SystemRepair:
 
     @staticmethod
     def _parse_sfc(out: str | None) -> RepairResult:
+        """_parse_sfc."""
         if out is None:
             return RepairResult("SFC", False, "error",
                                 "Could not run SFC (Administrator required).")
@@ -122,6 +123,7 @@ class SystemRepair:
 
     @staticmethod
     def _parse_dism(out: str | None, action: str) -> RepairResult:
+        """_parse_dism."""
         if out is None:
             return RepairResult("DISM", False, "error",
                                 "Could not run DISM (Administrator required).")
@@ -165,6 +167,7 @@ class SystemRepair:
 
     @staticmethod
     def _parse_chkdsk(out: str | None, letter: str) -> RepairResult:
+        """_parse_chkdsk."""
         if out is None:
             return RepairResult("CHKDSK", False, "error",
                                 "Could not run CHKDSK (Administrator required).")
@@ -187,6 +190,7 @@ class SystemRepair:
 
     def _run(self, args: list[str], timeout: int,
             cancel_event: "threading.Event | None" = None) -> str | None:
+        """_run."""
         try:
             # SFC/DISM/CHKDSK can run for many minutes; proc.run() polls the
             # timeout and cancel_event instead of blocking uninterruptibly, and
@@ -216,6 +220,7 @@ class SystemRepair:
 
     @staticmethod
     def _decode(raw: bytes) -> str:
+        """_decode."""
         if not raw:
             return ""
         if b"\x00" in raw:

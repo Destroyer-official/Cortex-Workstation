@@ -22,6 +22,7 @@ from nexus_explorer import DARK_QSS  # noqa: E402
 
 
 def main() -> int:
+    """main."""
     args = [a for a in sys.argv[1:] if not a.startswith("-")]
     app = QApplication(sys.argv)
     app.setApplicationName("Nexus Explorer")
@@ -51,6 +52,7 @@ def main() -> int:
         widget._toggle_sidebar()
 
     def on_quit():
+        """on_quit."""
         settings.setValue("lastPath", widget._tab()["path"])
         settings.setValue("windowGeometry", win.saveGeometry())
         settings.setValue("sidebarVisible", widget._sidebar_visible)

@@ -30,12 +30,14 @@ _MAX_ITEMS_PER_DEVICE = 1024
 
 
 def _text(value: Any, limit: int = 512) -> str:
+    """_text."""
     return str(value or "").strip()[:limit]
     """_text."""
     """_text."""
 
 
 def _json_safe(value: Any, depth: int = 0) -> Any:
+    """_json_safe."""
     if depth > 6:
         return "<depth-limit>"
     if value is None or isinstance(value, (bool, int, str)):
@@ -219,6 +221,7 @@ class InventorySnapshot:
 
 
 def _normalize_mac(value: Any) -> str:
+    """_normalize_mac."""
     mac = _text(value, 32).lower().replace("-", ":")
     return mac if _MAC_RE.fullmatch(mac) else ""
     """_normalize_mac."""
@@ -226,6 +229,7 @@ def _normalize_mac(value: Any) -> str:
 
 
 def _randomized_mac(mac: str) -> bool:
+    """_randomized_mac."""
     if not mac:
         return False
     first = int(mac.split(":", 1)[0], 16)
@@ -235,6 +239,7 @@ def _randomized_mac(mac: str) -> bool:
 
 
 def _identity(device: InventoryDevice) -> tuple[str, str]:
+    """_identity."""
     if device.device_id:
         return f"id:{device.device_id}", "high"
     if device.mac and not _randomized_mac(device.mac):
@@ -247,6 +252,7 @@ def _identity(device: InventoryDevice) -> tuple[str, str]:
 
 
 def _service(value: Any) -> InventoryService:
+    """_service."""
     if isinstance(value, InventoryService):
         return value
     if isinstance(value, int):
@@ -289,6 +295,7 @@ def _service(value: Any) -> InventoryService:
 
 
 def _finding(value: Any) -> InventoryFinding:
+    """_finding."""
     if isinstance(value, InventoryFinding):
         return value
     if (not isinstance(value, Mapping)
@@ -313,6 +320,7 @@ def _finding(value: Any) -> InventoryFinding:
 
 
 def _get(value: Any, name: str, default: Any = None) -> Any:
+    """_get."""
     return value.get(name, default) if isinstance(
         value, Mapping) else getattr(value, name, default)
     """_get."""
@@ -400,16 +408,19 @@ class NetworkInventory:
                 self._memory_connection = None
 
     def __enter__(self) -> "NetworkInventory":
+        """__enter__."""
         return self
         """__enter__."""
         """__enter__."""
 
     def __exit__(self, *_args: Any) -> None:
+        """__exit__."""
         self.close()
         """__exit__."""
         """__exit__."""
 
     def _new_connection(self) -> sqlite3.Connection:
+        """_new_connection."""
         connection = sqlite3.connect(
             self._database, timeout=5.0, check_same_thread=False)
         connection.row_factory = sqlite3.Row
@@ -420,6 +431,7 @@ class NetworkInventory:
         """_new_connection."""
 
     def _connect(self) -> sqlite3.Connection:
+        """_connect."""
         if self._memory_connection is not None:
             return self._memory_connection
         return self._new_connection()
@@ -427,12 +439,14 @@ class NetworkInventory:
         """_connect."""
 
     def _release(self, connection: sqlite3.Connection) -> None:
+        """_release."""
         if connection is not self._memory_connection:
             connection.close()
         """_release."""
         """_release."""
 
     def _migrate(self) -> None:
+        """_migrate."""
         connection = self._connect()
         try:
             version = int(connection.execute(
@@ -669,6 +683,7 @@ class NetworkInventory:
     def _load_previous(
         connection: sqlite3.Connection,
     ) -> tuple[int | None, str, dict[str, dict[str, Any]]]:
+        """_load_previous."""
         row = connection.execute(
             "SELECT id, gateway_mac FROM snapshots ORDER BY id DESC LIMIT 1"
         ).fetchone()
@@ -720,6 +735,7 @@ class NetworkInventory:
         previous_gateway: str,
         gateway_mac: str,
     ) -> list[InventoryChange]:
+        """_compare."""
         changes: list[InventoryChange] = []
         unmatched = set(previous)
         for identity_key, (device, confidence) in current.items():
@@ -845,6 +861,7 @@ class NetworkInventory:
         confidence: str,
         device: InventoryDevice,
     ) -> None:
+        """_store_device."""
         connection.execute(
             "INSERT INTO devices(identity_key, first_seen, last_seen, "
             "identity_confidence) VALUES (?, ?, ?, ?) "
@@ -902,6 +919,7 @@ class NetworkInventory:
         """_store_device."""
 
     def _enforce_retention(self, connection: sqlite3.Connection) -> None:
+        """_enforce_retention."""
         connection.execute(
             "DELETE FROM snapshots WHERE id NOT IN "
             "(SELECT id FROM snapshots ORDER BY id DESC LIMIT ?)",
@@ -922,6 +940,7 @@ class NetworkInventory:
 
     @staticmethod
     def _metadata_identity(value: Any) -> str:
+        """_metadata_identity."""
         if isinstance(value, str):
             key = value.strip()
             if (key.startswith(("id:", "mac:", "ip:"))
@@ -941,6 +960,7 @@ class NetworkInventory:
         tags: Iterable[str] | str,
         notes: str,
     ) -> tuple[str, str, tuple[str, ...], str]:
+        """_metadata_values."""
         name = _text(custom_name, 255)
         trust = _text(trust_state, 16).lower() or "unknown"
         if trust not in _TRUST_STATES:
@@ -1021,6 +1041,7 @@ class NetworkInventory:
 
     @staticmethod
     def _metadata_from_row(row: sqlite3.Row) -> DeviceMetadata:
+        """_metadata_from_row."""
         try:
             raw_tags = json.loads(str(row["tags_json"]))
         except (json.JSONDecodeError, TypeError):
@@ -1068,6 +1089,7 @@ class NetworkInventory:
 
     @staticmethod
     def _csv_cell(value: Any) -> str:
+        """_csv_cell."""
         text = str(value or "")
         return "'" + text if text.startswith(_FORMULA_PREFIXES) else text
         """_csv_cell."""
@@ -1075,6 +1097,7 @@ class NetworkInventory:
 
     @staticmethod
     def _csv_value(value: Any) -> str:
+        """_csv_value."""
         text = str(value or "")
         if len(text) > 1 and text[0] == "'" and text[1] in _FORMULA_PREFIXES:
             return text[1:]
@@ -1223,6 +1246,7 @@ class NetworkInventory:
 
 
 def _timestamp(value: dt.datetime | str | None) -> str:
+    """_timestamp."""
     if value is None:
         current = dt.datetime.now(dt.timezone.utc)
     elif isinstance(value, str):

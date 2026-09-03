@@ -60,6 +60,7 @@ except ImportError:
 # ---------------------------------------------------------------------------
 
 def _temp_dirs() -> List[Path]:
+    """_temp_dirs."""
     dirs: List[Path] = []
     for key in ("TEMP", "TMP", "TMPDIR"):
         v = os.environ.get(key)
@@ -109,6 +110,7 @@ _MAGIC_HEADERS: Dict[bytes, str] = {
 }
 
 def _sniff_extension(path: Path) -> Optional[str]:
+    """_sniff_extension."""
     try:
         head = path.read_bytes()[:16]
         for magic, ext in _MAGIC_HEADERS.items():
@@ -140,6 +142,7 @@ class EmptyResult:
 class EmptyFinder:
     """Walk a root tree collecting zero-byte files and empty folders."""
     def __init__(self, root: str | os.PathLike, config: Config | None = None):
+        """__init__."""
         self.root = normalize_path(root)
         self.config = config or Config()
         self.exclude_dirs = set(self.config.exclude_dirs)
@@ -197,6 +200,7 @@ class SymlinkResult:
 class InvalidSymlinkFinder:
     """Walk a root tree collecting symlinks whose targets no longer exist."""
     def __init__(self, root: str | os.PathLike, config: Config | None = None):
+        """__init__."""
         self.root = normalize_path(root)
         self.config = config or Config()
         self.exclude_dirs = set(self.config.exclude_dirs)
@@ -235,6 +239,7 @@ class InvalidSymlinkFinder:
 class BrokenFileFinder:
     """Detect corrupt images, archives, and PDFs via content verification."""
     def __init__(self, root: str | os.PathLike, config: Config | None = None):
+        """__init__."""
         self.root = normalize_path(root)
         self.config = config or Config()
         self.exclude_dirs = set(self.config.exclude_dirs)
@@ -243,6 +248,7 @@ class BrokenFileFinder:
 
     def _is_broken(self, p: Path) -> bool:
         # image
+        """_is_broken."""
         if p.suffix.lower() in {".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp", ".tiff"}:
             if HAS_PIL:
                 try:
@@ -288,6 +294,7 @@ class BrokenFileFinder:
         broken: List[Path] = []
         lock = threading.Lock()
         def check(p: Path) -> Path | None:
+            """check."""
             return p if self._is_broken(p) else None
             """check."""
             """check."""
@@ -318,6 +325,7 @@ class BadExtResult:
 class BadExtensionFinder:
     """Compare each file's magic-byte type against its claimed extension."""
     def __init__(self, root: str | os.PathLike, config: Config | None = None):
+        """__init__."""
         self.root = normalize_path(root)
         self.config = config or Config()
         self.exclude_dirs = set(self.config.exclude_dirs)
@@ -363,6 +371,7 @@ _BAD_PATTERNS = [
 class BadNamesFinder:
     """Collect files and folders with illegal, reserved, or overlong names."""
     def __init__(self, root: str | os.PathLike, config: Config | None = None):
+        """__init__."""
         self.root = normalize_path(root)
         self.config = config or Config()
         self.exclude_dirs = set(self.config.exclude_dirs)
@@ -388,6 +397,7 @@ class BadNamesFinder:
 class ExifCleaner:
     """Scan images for EXIF metadata and strip it to protect privacy."""
     def __init__(self, root: str | os.PathLike, config: Config | None = None):
+        """__init__."""
         self.root = normalize_path(root)
         self.config = config or Config()
         """__init__."""
@@ -455,12 +465,14 @@ _TEMP_PATTERNS = [
 class TempFileFinder:
     """Locate temp/log/backup files under a root or system temp dirs."""
     def __init__(self, root: str | os.PathLike | None = None, config: Config | None = None):
+        """__init__."""
         self.root = normalize_path(root) if root else None
         self.config = config or Config()
         """__init__."""
         """__init__."""
 
     def find(self, cancel: threading.Event | None = None) -> List[Path]:
+        """find."""
         roots = [Path(self.root)] if self.root else _temp_dirs()
         # also scan user-specified root
         results: List[Path] = []
@@ -490,6 +502,7 @@ class TempFileFinder:
 
 @dataclass(slots=True)
 class VideoInfo:
+    """VideoInfo."""
     path: Path
     width: int
     height: int
@@ -502,7 +515,9 @@ class VideoInfo:
     """VideoInfo class."""
 
 class VideoOptimizer:
+    """VideoOptimizer."""
     def find_static_borders(self, video: Path) -> Optional[VideoInfo]:
+        """find_static_borders."""
         try:
             rc = subprocess.run(
                 ["ffprobe", "-v", "error", "-select_streams", "v:0",

@@ -104,6 +104,7 @@ class AppInfo:
     metadata: Dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict:
+        """to_dict."""
         import dataclasses
         return dataclasses.asdict(self)
         """to_dict."""
@@ -112,6 +113,7 @@ class AppInfo:
 
 @dataclass(frozen=True, slots=True)
 class LeftoverScanResult:
+    """LeftoverScanResult."""
     files: List[str]
     registry_keys: List[str]
     services: List[str]
@@ -123,6 +125,7 @@ class LeftoverScanResult:
     total_size_mb: float
 
     def to_dict(self) -> dict:
+        """to_dict."""
         import dataclasses
         return dataclasses.asdict(self)
         """to_dict."""
@@ -132,6 +135,7 @@ class LeftoverScanResult:
 
 @dataclass
 class UninstallResult:
+    """UninstallResult."""
     app_id: str
     success: bool
     leftovers: LeftoverScanResult
@@ -147,6 +151,7 @@ class UninstallResult:
 # ---------------------------------------------------------------------------
 
 def _normalize_path(path: str) -> str:
+    """_normalize_path."""
     return str(Path(path).resolve()) if path else ""
     """_normalize_path."""
     """_normalize_path."""
@@ -596,6 +601,7 @@ class AdvancedUninstaller:
         progress_callback: Optional[Callable[[str], None]] = None,
         cancel_event: Optional[threading.Event] = None,
     ):
+        """__init__."""
         self.create_restore_point = create_restore_point
         self.progress = progress_callback or (lambda _: None)
         self.cancel_event = cancel_event or threading.Event()
@@ -865,6 +871,7 @@ class AdvancedUninstaller:
             return False
 
     def _kill_processes(self, name: str) -> None:
+        """_kill_processes."""
         try:
             subprocess.run(["taskkill", "/F", "/IM", f"{name}*.exe"],
                            capture_output=True, timeout=30)

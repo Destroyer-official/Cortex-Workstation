@@ -72,12 +72,14 @@ _OS_TERMS = (
 
 
 def _get(value: Any, name: str, default: Any = None) -> Any:
+    """_get."""
     return value.get(name, default) if isinstance(value, Mapping) else getattr(value, name, default)
     """_get."""
     """_get."""
 
 
 def _observations(device: Any) -> list[ServiceObservation]:
+    """_observations."""
     if isinstance(device, ServiceObservation):
         return [device]
     if isinstance(device, Iterable) and not isinstance(device, (str, bytes, Mapping)):
@@ -104,6 +106,7 @@ def _add(
     weight: float,
     detail: str,
 ) -> None:
+    """_add."""
     text = str(value or "").strip()
     if text:
         evidence.append(FingerprintEvidence(
@@ -114,6 +117,7 @@ def _add(
 
 
 def _collect(device: Any, observations: list[ServiceObservation]) -> list[FingerprintEvidence]:
+    """_collect."""
     evidence: list[FingerprintEvidence] = []
     _add(evidence, "vendor", _get(device, "vendor", ""), "medium", 0.5,
          "Vendor was resolved or reported by discovery")
@@ -150,6 +154,7 @@ def _collect(device: Any, observations: list[ServiceObservation]) -> list[Finger
 
 
 def _rank(text: str, rules: tuple[tuple[tuple[str, ...], str], ...]) -> list[tuple[str, float]]:
+    """_rank."""
     scores: dict[str, float] = {}
     lowered = text.casefold()
     for terms, label in rules:
@@ -162,6 +167,7 @@ def _rank(text: str, rules: tuple[tuple[tuple[str, ...], str], ...]) -> list[tup
 
 
 def _product_version(evidence: Iterable[FingerprintEvidence]) -> tuple[str, str]:
+    """_product_version."""
     candidates = sorted(
         (item for item in evidence if item.strength in {"strong", "medium"}),
         key=lambda item: item.weight,

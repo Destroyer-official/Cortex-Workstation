@@ -16,6 +16,7 @@ from typing import Callable, Dict, List, Optional, Tuple
 
 @dataclass
 class FileSignature:
+    """FileSignature."""
     extension: str
     mime_type: str
     description: str
@@ -78,6 +79,7 @@ SIGNATURE_LIBRARY: List[FileSignature] = [
 
 @dataclass
 class SniffResult:
+    """SniffResult."""
     file_path: str
     file_name: str
     declared_extension: str

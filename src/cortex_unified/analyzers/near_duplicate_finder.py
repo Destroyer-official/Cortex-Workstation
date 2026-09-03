@@ -77,6 +77,7 @@ class BloomFilter:
     """
 
     def __init__(self, n: int, p: float = 0.01, k: int = 7) -> None:
+        """__init__."""
         self.k = k
         if n <= 0:
             n = 1024
@@ -89,6 +90,7 @@ class BloomFilter:
 
     def _hashes(self, data: bytes):
         # Double-hashing: h1 + i*h2 (Kirsch & Mitzenmacher)
+        """_hashes."""
         if HAS_XXHASH:
             h1 = xxhash.xxh64(data, seed=0).intdigest()
             h2 = xxhash.xxh64(data, seed=1).intdigest()
@@ -103,6 +105,7 @@ class BloomFilter:
         """_hashes."""
 
     def add(self, data: bytes) -> None:
+        """add."""
         for pos in self._hashes(data):
             self.bits[pos // 8] |= 1 << (pos % 8)
         self._n += 1
@@ -110,6 +113,7 @@ class BloomFilter:
         """add."""
 
     def __contains__(self, data: bytes) -> bool:  # noqa: D105
+        """__contains__."""
         for pos in self._hashes(data):
             if not (self.bits[pos // 8] >> (pos % 8)) & 1:
                 return False
@@ -147,6 +151,7 @@ def _shingle_bytes(data: bytes, k: int = 5) -> Set[bytes]:
 
 
 def _hash_shingle(shingle: bytes, seed: int) -> int:
+    """_hash_shingle."""
     if HAS_XXHASH:
         return xxhash.xxh64(shingle, seed=seed).intdigest()
     # blake2b digest as int (first 8 bytes)
@@ -178,6 +183,7 @@ class NearDuplicateFinder:
         use_bloom: bool = True,
         config: Config | None = None,
     ) -> None:
+        """__init__."""
         self.root_path = normalize_path(root_path)
         self.threshold = threshold
         self.shingle_k = shingle_k
@@ -201,6 +207,7 @@ class NearDuplicateFinder:
     # ---------------------------------------------------------------- helpers
 
     def _should_exclude(self, path: Path) -> bool:
+        """_should_exclude."""
         if path.name in self.exclude_dirs:
             return True
         s = str(path)
@@ -213,6 +220,7 @@ class NearDuplicateFinder:
 
     def _is_text(self, path: Path) -> bool:
         # Treat .py/.js/.java/.txt/.md as text, else bytes
+        """_is_text."""
         return path.suffix.lower() in {
             ".py", ".js", ".ts", ".java", ".c", ".cpp", ".h", ".cs",
             ".txt", ".md", ".rst", ".json", ".xml", ".html", ".css",
@@ -262,6 +270,7 @@ class NearDuplicateFinder:
         return candidates
 
     def _jaccard(self, a: Set[bytes], b: Set[bytes]) -> float:
+        """_jaccard."""
         if not a or not b:
             return 0.0
         inter = len(a & b)
@@ -359,6 +368,7 @@ class NearDuplicateFinder:
         df: Dict[bytes, int] = defaultdict(int)
 
         def _shingle_one(p: Path) -> Tuple[Path, Set[bytes]]:
+            """_shingle_one."""
             try:
                 if self._is_text(p):
                     try:
@@ -399,6 +409,7 @@ class NearDuplicateFinder:
         signatures: Dict[Path, List[int]] = {}
 
         def _minhash_one(item: Tuple[Path, Set[bytes]]) -> Tuple[Path, List[int]]:
+            """_minhash_one."""
             p, sh = item
             return p, self._minhash(sh)
             """_minhash_one."""
@@ -419,6 +430,7 @@ class NearDuplicateFinder:
         parent: Dict[Path, Path] = {p: p for p in signatures}
 
         def _find(x: Path) -> Path:
+            """_find."""
             while parent[x] != x:
                 parent[x] = parent[parent[x]]
                 x = parent[x]
@@ -427,6 +439,7 @@ class NearDuplicateFinder:
             """_find."""
 
         def _union(a: Path, b: Path) -> None:
+            """_union."""
             ra, rb = _find(a), _find(b)
             if ra != rb:
                 parent[rb] = ra

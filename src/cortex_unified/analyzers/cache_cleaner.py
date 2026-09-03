@@ -256,6 +256,7 @@ class CacheCleaner:
         log_patterns = ("*.log", "*.log.*", "*.txt", "*.out", "*.err")
 
         def _is_log(name: str) -> bool:
+            """_is_log."""
             return any(_fnm.fnmatch(name, pat) for pat in log_patterns)
             """_is_log."""
             """_is_log."""

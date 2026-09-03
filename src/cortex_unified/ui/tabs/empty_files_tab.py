@@ -31,6 +31,7 @@ class EmptyFilesWorker(QThread):
     error_occurred = Signal(str)
 
     def __init__(self, config, path, operation="scan", files_to_delete=None, dirs_to_delete=None):
+        """__init__."""
         super().__init__()
         self.config = config
         self.path = path
@@ -41,6 +42,7 @@ class EmptyFilesWorker(QThread):
         """__init__."""
 
     def run(self):
+        """run."""
         try:
             if self.operation == "scan":
                 self.status_updated.emit(
@@ -52,6 +54,7 @@ class EmptyFilesWorker(QThread):
                 import threading
                 
                 def poll_progress():
+                    """poll_progress."""
                     while not getattr(scanner, '_scan_finished', False):
                         prog = scanner.get_scan_progress()
                         if prog:
@@ -92,6 +95,7 @@ class EmptyFilesTab(BaseTab):
     """Tab for empty files cleaning functionality."""
 
     def __init__(self, config, logger, safety_manager):
+        """__init__."""
         super().__init__(config, logger, safety_manager)
         self.empty_files = []
         self.empty_dirs = []
@@ -230,6 +234,7 @@ class EmptyFilesTab(BaseTab):
             self.path_input.setText(path)
 
     def start_scan(self):
+        """start_scan."""
         path = self.path_input.text().strip()
         if not path or not Path(path).exists():
             QMessageBox.warning(self, "Invalid Path",
@@ -348,6 +353,7 @@ class EmptyFilesTab(BaseTab):
         self.delete_button.setEnabled(total_items > 0)
 
     def select_all_items(self):
+        """select_all_items."""
         for row in range(self.results_table.rowCount()):
             checkbox = self.results_table.cellWidget(row, 0)
             if checkbox:
@@ -356,6 +362,7 @@ class EmptyFilesTab(BaseTab):
         """select_all_items."""
 
     def deselect_all_items(self):
+        """deselect_all_items."""
         for row in range(self.results_table.rowCount()):
             checkbox = self.results_table.cellWidget(row, 0)
             if checkbox:
@@ -379,6 +386,7 @@ class EmptyFilesTab(BaseTab):
         self.start_scan()
 
     def handle_error(self, error_message):
+        """handle_error."""
         QMessageBox.critical(
             self, "Error", f"An error occurred: {error_message}")
         self.status_label.setText(f"Error: {error_message}")

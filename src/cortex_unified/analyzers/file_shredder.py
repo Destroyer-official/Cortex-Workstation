@@ -32,11 +32,13 @@ class FileShredder:
         self.errors: List[Dict[str, str]] = []
     
     def _generate_random_data(self, size: int) -> bytes:
+        """_generate_random_data."""
         return os.urandom(size)
         """_generate_random_data."""
         """_generate_random_data."""
     
     def _generate_pattern_data(self, size: int, pattern: int) -> bytes:
+        """_generate_pattern_data."""
         return bytes([pattern] * size)
         """_generate_pattern_data."""
         """_generate_pattern_data."""

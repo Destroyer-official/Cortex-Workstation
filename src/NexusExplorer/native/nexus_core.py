@@ -105,6 +105,7 @@ def fmt_ms(ms: int) -> str:
 
 
 def _parse_json(proc: QProcess) -> list[dict]:
+    """_parse_json."""
     raw = bytes(proc.readAllStandardOutput()).decode("utf-8", "replace")
     try:
         data = json.loads(raw)
@@ -116,6 +117,7 @@ def _parse_json(proc: QProcess) -> list[dict]:
 
 
 def _parse_search_chunk(proc: QProcess) -> list[dict]:
+    """_parse_search_chunk."""
     raw = bytes(proc.readAllStandardOutput()).decode("utf-8", "replace")
     rows = []
     for line in raw.splitlines():
@@ -137,6 +139,7 @@ def _parse_search_chunk(proc: QProcess) -> list[dict]:
 def _guarded(fn):
     """Wrap a QProcess callback so app-exit teardown never raises."""
     def run(*a):
+        """run."""
         try:
             fn(*a)
         except RuntimeError:
@@ -159,6 +162,7 @@ _SHUTTING_DOWN = threading.Event()
 
 
 def _get_marshal() -> _CallMarshal | None:
+    """_get_marshal."""
     global _marshal
     with _marshal_lock:
         if _marshal is None:
@@ -175,6 +179,7 @@ def _get_marshal() -> _CallMarshal | None:
 
 
 def _mark_shutdown() -> None:
+    """_mark_shutdown."""
     _SHUTTING_DOWN.set()
     """_mark_shutdown."""
 
@@ -201,13 +206,16 @@ def marshal_call(fn) -> None:
 
 
 class _FfiJob(QRunnable):
+    """_FfiJob."""
     def __init__(self, fn, done) -> None:
+        """__init__."""
         super().__init__()
         self._fn = fn
         self._done = done
         """__init__."""
 
     def run(self) -> None:  # runs on QThreadPool thread
+        """run."""
         try:
             code, rows = self._fn()
         except Exception as exc:
@@ -245,6 +253,7 @@ class Engine:
             pass
 
     def __init__(self) -> None:
+        """__init__."""
         try:
             self.cli = str(find_cli())
         except FileNotFoundError as exc:
@@ -298,6 +307,7 @@ class Engine:
 
     @staticmethod
     def _python_list_dir(path: str) -> list[dict]:
+        """_python_list_dir."""
         rows = []
         try:
             with os.scandir(path) as it:
@@ -325,6 +335,7 @@ class Engine:
 
     @staticmethod
     def _python_flat_branch(path: str, max_results: int = 10000) -> list[dict]:
+        """_python_flat_branch."""
         rows = []
         try:
             for root, _, files in os.walk(path):
@@ -352,6 +363,7 @@ class Engine:
 
     @staticmethod
     def _python_search(root: str, pattern: str, max_results: int = 5000) -> list[dict]:
+        """_python_search."""
         rows = []
         import fnmatch
         pat = f"*{pattern}*" if not any(c in pattern for c in "*?[]") else pattern
@@ -396,6 +408,7 @@ class Engine:
         """_python_search."""
 
     def _run_ffi(self, job, done):
+        """_run_ffi."""
         QThreadPool.globalInstance().start(_FfiJob(job, done))
         return None
         """_run_ffi."""
@@ -408,6 +421,7 @@ class Engine:
         return self._transfer_cli(kind, sources, dest, parent, on_done)
 
     def _transfer_ffi(self, kind, sources, dest, parent, on_done):
+        """_transfer_ffi."""
         from PySide6.QtWidgets import QLabel, QProgressBar, QProgressDialog
 
         dlg = QProgressDialog(f"{kind}\u2026", "Cancel", 0, 100, parent)
@@ -426,7 +440,9 @@ class Engine:
 
         def on_progress(done_b: int, total_b: int, speed: float = 0.0,
                         eta: float = 0.0) -> None:
+            """on_progress."""
             def apply():
+                """apply."""
                 if total_b > 0:
                     pct = min(100, int(done_b * 100 / total_b))
                     bar.setValue(pct)
@@ -443,6 +459,7 @@ class Engine:
         def hooks_conflict(info) -> int:
             # default policy until the conflict dialog port lands (Stage-2b UI):
             # overwrite, matching the CLI-era silent behavior users saw least.
+            """hooks_conflict."""
             _log = logging.getLogger("nexus")
             dest = info.get("destination", "")
             _log.info("conflict during %s: overwriting %s", kind, dest)
@@ -450,12 +467,14 @@ class Engine:
             """hooks_conflict."""
 
         def start(h):
+            """start."""
             control["handle"] = h
             if state["cancelled"]:
                 self.ffi.cancel_job(h)
             """start."""
 
         def cancel_clicked():
+            """cancel_clicked."""
             state["cancelled"] = True
             h = control.get("handle")
             if h:
@@ -468,6 +487,7 @@ class Engine:
         dlg.canceled.connect(cancel_clicked)
 
         def job():
+            """job."""
             hooks = {"progress": on_progress, "conflict": hooks_conflict,
                      "started": start}
             fn = (self.ffi.move if kind == "move"
@@ -486,6 +506,7 @@ class Engine:
         """_transfer_ffi."""
 
     def _transfer_cli(self, kind, sources, dest, parent, on_done):
+        """_transfer_cli."""
         from PySide6.QtWidgets import QLabel, QProgressBar, QProgressDialog
 
         dlg = QProgressDialog(f"{kind}\u2026", "Cancel", 0, 100, parent)
@@ -502,6 +523,7 @@ class Engine:
         proc = QProcess()
 
         def on_ready():
+            """on_ready."""
             data = bytes(proc.readAllStandardError()).decode("utf-8", "replace")
             for chunk in data.split("\r"):
                 m = re.search(r"\[#+-+\]\s+(\d+)%", chunk)
@@ -516,6 +538,7 @@ class Engine:
             """on_ready."""
 
         def on_finished(code, _s):
+            """on_finished."""
             dlg.cancel()
             out = bytes(proc.readAllStandardOutput()).decode("utf-8", "replace")
             on_done("completed" in out and code == 0, out.strip()[:800])
@@ -530,8 +553,11 @@ class Engine:
         """_transfer_cli."""
 
     def _transfer_python(self, kind, sources, dest, dlg, on_done):
+        """_transfer_python."""
         class _TransJob(QRunnable):
+            """_TransJob."""
             def run(self):
+                """run."""
                 dest_dir = Path(dest)
                 dest_dir.mkdir(parents=True, exist_ok=True)
                 errs = []
@@ -572,8 +598,11 @@ class Engine:
         return self._delete_cli(paths, permanent, parent, on_done)
 
     def _delete_python(self, paths, permanent, on_done):
+        """_delete_python."""
         class _DelJob(QRunnable):
+            """_DelJob."""
             def run(self):
+                """run."""
                 errs = []
                 for p in paths:
                     try:
@@ -604,6 +633,7 @@ class Engine:
         """_delete_python."""
 
     def _delete_ffi(self, paths, permanent, parent, on_done):
+        """_delete_ffi."""
         from PySide6.QtWidgets import QProgressDialog
 
         dlg = QProgressDialog("Deleting\u2026", "Cancel", 0, 0, parent)
@@ -613,6 +643,7 @@ class Engine:
         state = {"cancelled": False}
 
         def cancel_clicked():
+            """cancel_clicked."""
             state["cancelled"] = True
             h = control.get("handle")
             if h:
@@ -625,6 +656,7 @@ class Engine:
         dlg.canceled.connect(cancel_clicked)
 
         def job():
+            """job."""
             r = self.ffi.delete_paths(
                 paths, to_trash=not permanent,
                 control=control,
@@ -640,6 +672,7 @@ class Engine:
         """_delete_ffi."""
 
     def _delete_cli(self, paths, permanent, parent, on_done):
+        """_delete_cli."""
         from PySide6.QtWidgets import QProgressDialog
 
         dlg = QProgressDialog("Deleting\u2026", "Cancel", 0, 0, parent)
@@ -648,6 +681,7 @@ class Engine:
         proc = QProcess()
 
         def fin(code, _s):
+            """fin."""
             dlg.cancel()
             out = bytes(proc.readAllStandardOutput()).decode("utf-8", "replace")
             on_done(code == 0, out)
@@ -677,6 +711,7 @@ class Engine:
 
     @staticmethod
     def _simple_python(args: list[str], on_done):
+        """_simple_python."""
         if not args:
             on_done(True, "", "")
             return None
@@ -768,6 +803,7 @@ class Engine:
 # Native Windows icons + image thumbnails
 # ---------------------------------------------------------------------------
 class _SHFILEINFO(ctypes.Structure):
+    """_SHFILEINFO."""
     _fields_ = [("hIcon", ctypes.c_void_p), ("iIcon", ctypes.c_int),
                 ("dwAttributes", ctypes.c_uint32),
                 ("szDisplayName", ctypes.c_wchar * 260),
@@ -776,6 +812,7 @@ class _SHFILEINFO(ctypes.Structure):
 
 
 class _ICONINFO(ctypes.Structure):
+    """_ICONINFO."""
     _fields_ = [
         ("fIcon", wintypes.BOOL),
         ("xHotspot", wintypes.DWORD),
@@ -787,6 +824,7 @@ class _ICONINFO(ctypes.Structure):
 
 
 class _BMIH(ctypes.Structure):
+    """_BMIH."""
     _fields_ = [
         ("biSize", wintypes.DWORD),
         ("biWidth", wintypes.LONG),
@@ -804,6 +842,7 @@ class _BMIH(ctypes.Structure):
 
 
 def _hicon_to_qicon(hicon, size: int = 32) -> QIcon:
+    """_hicon_to_qicon."""
     info = _ICONINFO()
     if not ctypes.windll.user32.GetIconInfo(hicon, ctypes.byref(info)):
         return QIcon()
@@ -838,6 +877,7 @@ class IconThumbs:
     _SHGFI_SMALLICON = 0x1
 
     def __init__(self) -> None:
+        """__init__."""
         self.provider = QFileIconProvider()
         self._dir: QIcon | None = None
         self._file: QIcon | None = None
@@ -851,6 +891,7 @@ class IconThumbs:
         self._fluent_ext_fn = fn
 
     def dir_icon(self, name: str = "") -> QIcon:
+        """dir_icon."""
         try:
             from nexus_icons import folder_icon
             ico = folder_icon(name, 32)
@@ -865,12 +906,14 @@ class IconThumbs:
         """dir_icon."""
 
     def _file_icon(self) -> QIcon:
+        """_file_icon."""
         if self._file is None:
             self._file = self.provider.icon(QFileIconProvider.IconType.File)
         return self._file
         """_file_icon."""
 
     def ext_icon(self, ext: str) -> QIcon:
+        """ext_icon."""
         key = ext.lower().lstrip(".")
         ico = self._ext.get(key)
         if ico is None:
@@ -902,6 +945,7 @@ class IconThumbs:
         """ext_icon."""
 
     def icon_for(self, row: dict) -> QIcon:
+        """icon_for."""
         if row.get("isDir"):
             return self.dir_icon(row.get("name", ""))
         path = row.get("path", "")
@@ -941,6 +985,7 @@ class IconThumbs:
 
     @staticmethod
     def _thumb_source_ok(path: str) -> bool:
+        """_thumb_source_ok."""
         try:
             return os.path.getsize(path) <= MAX_THUMB_SOURCE_BYTES
         except OSError:
@@ -964,6 +1009,7 @@ class FileTableModel(QAbstractTableModel):
     _ORIENT_HORIZONTAL = Qt.Orientation.Horizontal
 
     def __init__(self, icons: IconThumbs) -> None:
+        """__init__."""
         super().__init__()
         self.rows: list[dict] = []
         self.icons = icons
@@ -976,12 +1022,14 @@ class FileTableModel(QAbstractTableModel):
 
     @staticmethod
     def _precompute(rows: list[dict]) -> None:
+        """_precompute."""
         for row in rows:
             row["modifiedStr"] = fmt_ms(int(row.get("modifiedMs", 0) or 0))
             row["sizeStr"] = human(row.get("size", 0))
         """_precompute."""
 
     def set_rows(self, rows: list[dict]) -> None:
+        """set_rows."""
         self.beginResetModel()
         self._precompute(rows)
         self.rows = rows
@@ -1027,34 +1075,41 @@ class FileTableModel(QAbstractTableModel):
         self.set_rows(rows)
 
     def _emit_changed(self, row_a: int, row_b: int) -> None:
+        """_emit_changed."""
         top = self.index(min(row_a, row_b), 0)
         bottom = self.index(max(row_a, row_b), self.columnCount() - 1)
         self.dataChanged.emit(top, bottom)
         """_emit_changed."""
 
     def rowCount(self, parent=QModelIndex()):
+        """rowCount."""
         return 0 if parent.isValid() else len(self.rows)
         """rowCount."""
 
     def columnCount(self, parent=QModelIndex()):
+        """columnCount."""
         return 4
         """columnCount."""
 
     def headerData(self, section, orient, role=Qt.ItemDataRole.DisplayRole):
+        """headerData."""
         if role == self._ROLE_DISPLAY and orient == self._ORIENT_HORIZONTAL:
             return self.HEADERS[section]
         return None
         """headerData."""
 
     def index(self, r, c, parent=QModelIndex()):
+        """index."""
         return self.createIndex(r, c)
         """index."""
 
     def parent(self, _child=None):
+        """parent."""
         return QModelIndex()
         """parent."""
 
     def data(self, idx, role=Qt.ItemDataRole.DisplayRole):
+        """data."""
         if not idx.isValid():
             return None
         row = self.rows[idx.row()]
@@ -1086,6 +1141,7 @@ class FileTableModel(QAbstractTableModel):
         """data."""
 
     def flags(self, index):
+        """flags."""
         if not index.isValid():
             return Qt.ItemFlag.NoItemFlags
         return (
@@ -1096,10 +1152,12 @@ class FileTableModel(QAbstractTableModel):
         """flags."""
 
     def mimeTypes(self) -> list[str]:
+        """mimeTypes."""
         return ["text/uri-list", "text/plain"]
         """mimeTypes."""
 
     def mimeData(self, indexes: list[QModelIndex]) -> QMimeData:
+        """mimeData."""
         mime = QMimeData()
         urls = []
         paths = []
@@ -1119,6 +1177,7 @@ class FileTableModel(QAbstractTableModel):
         """mimeData."""
 
     def supportedDragActions(self) -> Qt.DropAction:
+        """supportedDragActions."""
         return Qt.DropAction.CopyAction | Qt.DropAction.MoveAction
         """supportedDragActions."""
 
@@ -1126,12 +1185,14 @@ class FileTableModel(QAbstractTableModel):
 class SortProxy(QSortFilterProxyModel):
     """Sort proxy that keeps directories first and sorts by column-specific logic."""
     def __init__(self) -> None:
+        """__init__."""
         super().__init__()
         self.setFilterKeyColumn(0)
         self.setFilterCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
         """__init__."""
 
     def flags(self, index):
+        """flags."""
         if not index.isValid():
             return Qt.ItemFlag.NoItemFlags
         return (
@@ -1142,10 +1203,12 @@ class SortProxy(QSortFilterProxyModel):
         """flags."""
 
     def supportedDragActions(self) -> Qt.DropAction:
+        """supportedDragActions."""
         return Qt.DropAction.CopyAction | Qt.DropAction.MoveAction
         """supportedDragActions."""
 
     def lessThan(self, left, right):
+        """lessThan."""
         m: FileTableModel = self.sourceModel()  # type: ignore[assignment]
         lr, rr = left.row(), right.row()
         if lr >= len(m.rows) or rr >= len(m.rows) or lr < 0 or rr < 0:

@@ -468,6 +468,7 @@ class DuplicateFinder:
         lock = threading.Lock()
 
         def _process_file(p: Path) -> None:
+            """_process_file."""
             try:
                 data = p.read_bytes()
             except OSError:

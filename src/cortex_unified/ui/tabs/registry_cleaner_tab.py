@@ -13,16 +13,19 @@ from .base_tab import BaseTab
 from cortex_unified.system_tools.registry_cleaner import RegistryCleaner
 
 class RegistryScanWorker(QThread):
+    """RegistryScanWorker."""
     finished = Signal(list)
     error = Signal(str)
     
     def __init__(self, config):
+        """__init__."""
         super().__init__()
         self.cleaner = RegistryCleaner(config)
         """__init__."""
         """__init__."""
         
     def run(self):
+        """run."""
         try:
             items = self.cleaner.scan_orphaned_entries()
             self.finished.emit(items)
@@ -33,10 +36,12 @@ class RegistryScanWorker(QThread):
     """RegistryScanWorker class."""
 
 class RegistryCleanWorker(QThread):
+    """RegistryCleanWorker."""
     finished = Signal(int)
     error = Signal(str)
     
     def __init__(self, config, paths_to_remove: List[str]):
+        """__init__."""
         super().__init__()
         self.cleaner = RegistryCleaner(config)
         self.paths_to_remove = paths_to_remove
@@ -44,6 +49,7 @@ class RegistryCleanWorker(QThread):
         """__init__."""
         
     def run(self):
+        """run."""
         try:
             # Always backup first
             self.cleaner.backup_registry()
@@ -63,6 +69,7 @@ class RegistryCleanerTab(BaseTab):
     """Tab for registry cleaner tab functionality."""
 
     def __init__(self, config, logger, safety_manager):
+        """__init__."""
         super().__init__(config, logger, safety_manager)
         self.cleaner = RegistryCleaner(config)
         self.worker = None
@@ -115,6 +122,7 @@ class RegistryCleanerTab(BaseTab):
         layout.addWidget(self.registry_table)
 
     def scan_registry(self):
+        """scan_registry."""
         if self.worker and self.worker.isRunning():
             return
             
@@ -131,6 +139,7 @@ class RegistryCleanerTab(BaseTab):
         """scan_registry."""
 
     def _on_scan_finished(self, items: List[Dict]):
+        """_on_scan_finished."""
         self.registry_progress_bar.setVisible(False)
         self.scan_registry_button.setEnabled(True)
         
@@ -146,6 +155,7 @@ class RegistryCleanerTab(BaseTab):
         """_on_scan_finished."""
 
     def _on_error(self, err_msg):
+        """_on_error."""
         self.registry_progress_bar.setVisible(False)
         self.scan_registry_button.setEnabled(True)
         self.clean_registry_button.setEnabled(self.registry_table.rowCount() > 0)
@@ -156,6 +166,7 @@ class RegistryCleanerTab(BaseTab):
         """_on_error."""
 
     def clean_registry(self):
+        """clean_registry."""
         if self.worker and self.worker.isRunning(): return
         
         items_to_clean = []
@@ -179,6 +190,7 @@ class RegistryCleanerTab(BaseTab):
         """clean_registry."""
 
     def _on_clean_finished(self, count):
+        """_on_clean_finished."""
         self.registry_progress_bar.setVisible(False)
         self.scan_registry_button.setEnabled(True)
         

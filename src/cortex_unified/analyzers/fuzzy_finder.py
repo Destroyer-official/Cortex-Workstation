@@ -96,6 +96,7 @@ _FUZZY_SKIP_EXT = {
 # ---------------------------------------------------------------------------
 
 def _fnv1a(data: bytes) -> int:
+    """_fnv1a."""
     h = 0x811C9DC5
     for b in data:
         h ^= b
@@ -106,6 +107,7 @@ def _fnv1a(data: bytes) -> int:
 
 
 def _chunk_hash(chunk: bytes) -> int:
+    """_chunk_hash."""
     if HAS_XXHASH:
         return xxhash.xxh64(chunk, seed=0xF).intdigest()
     return int.from_bytes(hashlib.blake2b(chunk, digest_size=8).digest(), "little")
@@ -114,6 +116,7 @@ def _chunk_hash(chunk: bytes) -> int:
 
 
 def _to_char(values: int) -> str:
+    """_to_char."""
     return _HASH_ALPHABET[values % 64]
     """_to_char."""
     """_to_char."""
@@ -213,6 +216,7 @@ def fuzzy_compare(sig1: str, sig2: str) -> int:
 
 
 def _parse(sig: str) -> Tuple[int, str, str]:
+    """_parse."""
     head, _, rest = sig.partition(":")
     frags = rest.split(":")
     if len(frags) != 2:
@@ -227,6 +231,7 @@ def _parse(sig: str) -> Tuple[int, str, str]:
 
 
 def _compare_pair(a: str, b: str) -> int:
+    """_compare_pair."""
     bs_a, frag_a, frag_2a = _parse(a)
     bs_b, frag_b, frag_2b = _parse(b)
     if frag_a == frag_b:
@@ -245,6 +250,7 @@ def _compare_pair(a: str, b: str) -> int:
 
 
 def _score_frag(a: str, b: str) -> int:
+    """_score_frag."""
     if not a or not b:
         return 0
     # Length-ratio penalty: very different digest lengths imply different content.
@@ -283,6 +289,7 @@ class FuzzyDuplicateFinder:
         block_size: int = 64,
         config: Config | None = None,
     ) -> None:
+        """__init__."""
         if isinstance(root_path, (list, tuple)):
             roots = [normalize_path(p) for p in root_path]
         else:
@@ -303,6 +310,7 @@ class FuzzyDuplicateFinder:
     # ---------------------------------------------------------------- helpers
 
     def _should_exclude(self, path: Path) -> bool:
+        """_should_exclude."""
         if path.name in self.exclude_dirs:
             return True
         s = str(path)
@@ -314,6 +322,7 @@ class FuzzyDuplicateFinder:
         """_should_exclude."""
 
     def _eligible(self, path: Path) -> bool:
+        """_eligible."""
         return path.suffix.lower() not in _FUZZY_SKIP_EXT
         """_eligible."""
         """_eligible."""
@@ -361,6 +370,7 @@ class FuzzyDuplicateFinder:
         signatures: Dict[Path, str] = {}
 
         def _hash_one(p: Path) -> Tuple[Path, Optional[str]]:
+            """_hash_one."""
             try:
                 return p, fuzzy_hash_file(p, self.block_size)
             except Exception:  # noqa: BLE001
@@ -402,6 +412,7 @@ class FuzzyDuplicateFinder:
         parent: Dict[Path, Path] = {p: p for p in signatures}
 
         def _find(x: Path) -> Path:
+            """_find."""
             while parent[x] != x:
                 parent[x] = parent[parent[x]]
                 x = parent[x]
@@ -410,6 +421,7 @@ class FuzzyDuplicateFinder:
             """_find."""
 
         def _union(a: Path, b: Path) -> None:
+            """_union."""
             ra, rb = _find(a), _find(b)
             if ra != rb:
                 parent[rb] = ra
@@ -437,6 +449,7 @@ class FuzzyDuplicateFinder:
         return result
 
     def get_stats(self) -> dict:
+        """get_stats."""
         total = sum(len(v) for v in self.duplicates.values())
         return {
             "total_files_scanned": self.file_count,

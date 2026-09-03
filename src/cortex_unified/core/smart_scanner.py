@@ -26,6 +26,7 @@ class SmartScanReport:
     """Holds the result of a Smart Scan."""
 
     def __init__(self):
+        """__init__."""
         self.health_score: int = 100
         self.total_junk_mb: float = 0.0
         self.browser_cache_mb: float = 0.0
@@ -43,6 +44,7 @@ class SmartScanReport:
 
     @property
     def total_cleanable_mb(self) -> float:
+        """total_cleanable_mb."""
         return (self.total_junk_mb + self.browser_cache_mb +
                 self.win_update_cache_mb + self.recycle_bin_mb +
                 self.prefetch_mb + self.thumbnail_cache_mb)
@@ -76,6 +78,7 @@ class SmartScannerWorker(QObject):
     progress_updated = Signal(str, int)  # (status_msg, percentage)
 
     def __init__(self, config: Config):
+        """__init__."""
         super().__init__()
         self.config = config
         self.logger = logging.getLogger("smart_scanner")
@@ -83,6 +86,7 @@ class SmartScannerWorker(QObject):
         """__init__."""
 
     def run(self):
+        """run."""
         try:
             report = SmartScanReport()
             start_time = time.time()

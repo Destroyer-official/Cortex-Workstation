@@ -21,6 +21,7 @@ from typing import Callable, Dict, List, Optional, Tuple
 
 
 class CopyMode(Enum):
+    """CopyMode."""
     STANDARD = "Standard Buffered"
     DIRECT_IO = "High Throughput Direct"
     VERIFY_SHA256 = "Copy with SHA-256 Verification"
@@ -29,6 +30,7 @@ class CopyMode(Enum):
 
 @dataclass
 class CopyItemProgress:
+    """CopyItemProgress."""
     current_file: str
     files_completed: int
     total_files: int
@@ -42,6 +44,7 @@ class CopyItemProgress:
 
 @dataclass
 class CopySummary:
+    """CopySummary."""
     success: bool
     files_copied: int
     bytes_transferred: int
@@ -51,6 +54,7 @@ class CopySummary:
     errors: List[str] = None
 
     def __post_init__(self):
+        """__post_init__."""
         if self.errors is None:
             self.errors = []
         """__post_init__."""
@@ -188,6 +192,7 @@ class FastCopier:
             err_msg = ""
             for attempt in range(max_retries):
                 def _file_chunk_cb(chunk_len: int):
+                    """_file_chunk_cb."""
                     nonlocal total_transferred, transferred_since_calc, last_calc_time, current_speed
                     total_transferred += chunk_len
                     transferred_since_calc += chunk_len

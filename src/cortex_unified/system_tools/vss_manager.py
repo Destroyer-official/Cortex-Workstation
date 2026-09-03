@@ -188,6 +188,7 @@ class VssManager:
 
         def _parse_bytes(text: str) -> int:
             # Matches formats like '1.50 GB (1,610,612,736 B)' or '100 MB'
+            """_parse_bytes."""
             m = re.search(r"\(([\d,]+)\s*B\)", text)
             if m:
                 return int(m.group(1).replace(",", ""))

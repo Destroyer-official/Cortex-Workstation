@@ -25,6 +25,7 @@ except FileNotFoundError:
 
 @pytest.fixture(scope="module")
 def ffi():
+    """ffi."""
     f = nexus_ffi.NexusFfi()
     yield f
     f.close()
@@ -32,6 +33,7 @@ def ffi():
 
 @pytest.fixture
 def tree(tmp_path):
+    """tree."""
     (tmp_path / "hello.txt").write_text("abcdef", encoding="utf-8")
     (tmp_path / "emoji_📁.dat").write_bytes(b"x")
     d = tmp_path / "subdir"
@@ -41,15 +43,18 @@ def tree(tmp_path):
 
 
 def test_dll_discovery_paths():
+    """test_dll_discovery_paths."""
     assert _DLL.is_file()
 
 
 def test_version_nonempty(ffi):
+    """test_version_nonempty."""
     v = ffi.version()
     assert isinstance(v, str) and v.strip() != ""
 
 
 def test_read_dir_sync_rows(tree, ffi):
+    """test_read_dir_sync_rows."""
     rows = {r["name"]: r for r in ffi.read_dir_sync(str(tree))}
     assert "hello.txt" in rows and "subdir" in rows
     assert rows["hello.txt"]["isDir"] is False
@@ -61,11 +66,13 @@ def test_read_dir_sync_rows(tree, ffi):
 
 
 def test_read_dir_sync_missing_dir_raises(ffi):
+    """test_read_dir_sync_missing_dir_raises."""
     with pytest.raises(OSError):
         ffi.read_dir_sync(r"C:\__nexus_definitely_missing_xyz__")
 
 
 def test_get_drives(ffi):
+    """test_get_drives."""
     drives = ffi.get_drives()
     assert len(drives) >= 1
     d = drives[0]
@@ -74,11 +81,13 @@ def test_get_drives(ffi):
 
 
 def test_home_dir(ffi):
+    """test_home_dir."""
     home = ffi.home_dir()
     assert home and os.path.isdir(home)
 
 
 def test_search_finds_seeded(ffi):
+    """test_search_finds_seeded."""
     base = Path(tempfile.mkdtemp(prefix="nexus_search_"))
     try:
         for i in range(5):
@@ -97,12 +106,14 @@ def test_search_finds_seeded(ffi):
 
 
 def test_cancel_search_after_completion_is_safe(ffi, tmp_path):
+    """test_cancel_search_after_completion_is_safe."""
     (tmp_path / "z.txt").write_bytes(b"")
     sid, rows = ffi.search(str(tmp_path), "z", max_results=10)
     assert isinstance(ffi.cancel_search(sid), bool)
 
 
 def test_rename_roundtrip(ffi, tmp_path):
+    """test_rename_roundtrip."""
     src = tmp_path / "before.txt"
     src.write_text("", encoding="utf-8")
     assert ffi.rename(str(src), "after.txt") is True
@@ -110,11 +121,13 @@ def test_rename_roundtrip(ffi, tmp_path):
 
 
 def test_create_folder(ffi, tmp_path):
+    """test_create_folder."""
     assert ffi.create_folder(str(tmp_path), "made_by_ffi") is True
     assert (tmp_path / "made_by_ffi").is_dir()
 
 
 def test_read_text_file_content_and_truncation(ffi, tmp_path):
+    """test_read_text_file_content_and_truncation."""
     p = tmp_path / "doc.txt"
     p.write_text("0123456789" * 10, encoding="utf-8")
     content, truncated, size = ffi.read_text_file(str(p), 4096)
@@ -124,6 +137,7 @@ def test_read_text_file_content_and_truncation(ffi, tmp_path):
 
 
 def test_close_idempotent():
+    """test_close_idempotent."""
     f = nexus_ffi.NexusFfi()
     f.close()
     f.close()  # must not raise

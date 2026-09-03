@@ -60,6 +60,7 @@ class ExposureResult:
 
 
 def _public_ipv4(value: str) -> str:
+    """_public_ipv4."""
     try:
         address = ipaddress.ip_address(str(value))
     except ValueError as exc:
@@ -76,6 +77,7 @@ def _public_ipv4(value: str) -> str:
 def _default_transport(
     url: str, headers: Mapping[str, str], timeout: float,
 ) -> Mapping[str, Any]:
+    """_default_transport."""
     request = urllib.request.Request(url, headers=dict(headers), method="GET")
     try:
         with urllib.request.urlopen(request, timeout=timeout) as response:
@@ -150,6 +152,7 @@ class ExternalExposureClient:
 
     @staticmethod
     def _parse_shodan(payload: Mapping[str, Any]) -> list[ExternalService]:
+        """_parse_shodan."""
         services = []
         data = payload.get("data", [])
         if not isinstance(data, list):
@@ -177,6 +180,7 @@ class ExternalExposureClient:
     def _parse_censys(
         payload: Mapping[str, Any],
     ) -> tuple[list[ExternalService], str]:
+        """_parse_censys."""
         result = payload.get("result", {})
         if not isinstance(result, Mapping):
             raise ExposureLookupError("invalid Censys host response")
@@ -211,6 +215,7 @@ class ExternalExposureClient:
 
 
 def _deduplicate(values: list[ExternalService]) -> list[ExternalService]:
+    """_deduplicate."""
     unique = {
         (item.port, item.transport, item.product, item.version): item
         for item in values

@@ -31,8 +31,10 @@ from cortex_unified.system_tools.leftover_cleaner import (
 # ──────────────────────────────────────────────────────────────────────
 
 class AppListWorker(QObject):
+    """AppListWorker."""
     finished = Signal(list)
     def run(self):
+        """run."""
         self.finished.emit(AppUninstaller().get_installed_apps())
         """run."""
     """AppListWorker class."""
@@ -46,6 +48,7 @@ class ResidualScanWorker(QObject):
     failed = Signal(str)
 
     def __init__(self, app_name: str, publisher: str, install_location: str = ""):
+        """__init__."""
         super().__init__()
         self._app_name = app_name
         self._publisher = publisher
@@ -54,6 +57,7 @@ class ResidualScanWorker(QObject):
         """__init__."""
 
     def run(self):
+        """run."""
         try:
             app = InstalledApp(name=self._app_name,
                                publisher=self._publisher,
@@ -73,6 +77,7 @@ class ResidualCleanWorker(QObject):
     failed = Signal(str)
 
     def __init__(self, findings: list[dict], create_restore_point: bool = False):
+        """__init__."""
         super().__init__()
         self._findings = findings
         self._create_restore_point = create_restore_point
@@ -80,6 +85,7 @@ class ResidualCleanWorker(QObject):
         """__init__."""
 
     def run(self):
+        """run."""
         try:
             from cortex_unified.system_tools.leftover_cleaner import (
                 LeftoverCleaner,
@@ -105,6 +111,7 @@ class UninstallerTab(BaseTab):
     """Deep Uninstaller with residual hunting."""
 
     def __init__(self, config, logger, safety_manager, parent=None):
+        """__init__."""
         self.uninstaller = AppUninstaller()
         self.all_apps = []
         self._app_thread = None
@@ -116,6 +123,7 @@ class UninstallerTab(BaseTab):
         """__init__."""
 
     def setup_ui(self):
+        """setup_ui."""
         main_layout = QVBoxLayout(self)
 
         # Header
@@ -233,6 +241,7 @@ class UninstallerTab(BaseTab):
         """setup_ui."""
 
     def setup_tooltips(self):
+        """setup_tooltips."""
         self.btn_uninstall.setToolTip("Launch the application's official uninstaller")
         self.btn_residuals.setToolTip("Search for orphaned folders left behind by this application")
         """setup_tooltips."""
@@ -241,6 +250,7 @@ class UninstallerTab(BaseTab):
     # ── App Loading ───────────────────────────────────────────────────
 
     def _load_apps(self):
+        """_load_apps."""
         self.refresh_btn.setEnabled(False)
         self.app_table.setRowCount(0)
         self.search_input.clear()
@@ -261,6 +271,7 @@ class UninstallerTab(BaseTab):
         """_load_apps."""
 
     def _on_apps_loaded(self, apps):
+        """_on_apps_loaded."""
         self.all_apps = apps
         self._populate_table(apps)
         self.refresh_btn.setEnabled(True)
@@ -270,6 +281,7 @@ class UninstallerTab(BaseTab):
         """_on_apps_loaded."""
 
     def _populate_table(self, apps):
+        """_populate_table."""
         self.app_table.setRowCount(len(apps))
         for row, app in enumerate(apps):
             name_item = QTableWidgetItem(app.get("name", "Unknown"))
@@ -297,6 +309,7 @@ class UninstallerTab(BaseTab):
         """_populate_table."""
 
     def _filter_apps(self, text):
+        """_filter_apps."""
         text = text.lower()
         filtered = [
             a for a in self.all_apps
@@ -310,6 +323,7 @@ class UninstallerTab(BaseTab):
     # ── App Selection ─────────────────────────────────────────────────
 
     def _on_app_selected(self):
+        """_on_app_selected."""
         sel = self.app_table.selectedItems()
         if not sel:
             self.btn_uninstall.setEnabled(False)
@@ -333,6 +347,7 @@ class UninstallerTab(BaseTab):
     # ── Uninstall ─────────────────────────────────────────────────────
 
     def _run_uninstall(self):
+        """_run_uninstall."""
         sel = self.app_table.selectedItems()
         if not sel:
             return
@@ -364,6 +379,7 @@ class UninstallerTab(BaseTab):
     # ── Residual Scan (threaded) ──────────────────────────────────────
 
     def _scan_residuals(self):
+        """_scan_residuals."""
         sel = self.app_table.selectedItems()
         if not sel:
             return
@@ -392,6 +408,7 @@ class UninstallerTab(BaseTab):
         """_scan_residuals."""
 
     def _on_residuals_failed(self, message: str):
+        """_on_residuals_failed."""
         self.btn_residuals.setEnabled(True)
         self.residual_progress.setVisible(False)
         QMessageBox.warning(self, "Scan failed", message)
@@ -400,6 +417,7 @@ class UninstallerTab(BaseTab):
 
     @staticmethod
     def _confidence_label(level: str) -> str:
+        """_confidence_label."""
         return {"VeryGood": "Very good", "Good": "Good",
                 "Questionable": "Questionable", "Bad": "Poor"}.get(
                     level, level or "?")
@@ -407,6 +425,7 @@ class UninstallerTab(BaseTab):
         """_confidence_label."""
 
     def _on_residuals_done(self, leftovers):
+        """_on_residuals_done."""
         self.btn_residuals.setEnabled(True)
         self.residual_progress.setVisible(False)
 
@@ -439,6 +458,7 @@ class UninstallerTab(BaseTab):
     # ── Residual Cleanup ──────────────────────────────────────────────
 
     def _clean_residuals(self):
+        """_clean_residuals."""
         rows = sorted({i.row() for i in self.res_table.selectedIndexes()})
         findings = []
         for row in rows:
@@ -481,6 +501,7 @@ class UninstallerTab(BaseTab):
         """_clean_residuals."""
 
     def _on_clean_failed(self, message: str):
+        """_on_clean_failed."""
         self.residual_progress.setVisible(False)
         self.btn_clean.setEnabled(True)
         QMessageBox.warning(self, "Cleanup failed", message)
@@ -488,6 +509,7 @@ class UninstallerTab(BaseTab):
         """_on_clean_failed."""
 
     def _on_clean_done(self, outcomes):
+        """_on_clean_done."""
         self.residual_progress.setVisible(False)
         ok = [o for o in outcomes if o.get("ok")]
         failed = [o for o in outcomes if not o.get("ok")]

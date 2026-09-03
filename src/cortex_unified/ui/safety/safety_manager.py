@@ -432,6 +432,7 @@ class SafetyManager:
         return ValidationResult.APPROVED
     
     def _validate_delete_operation(self, operation: Operation) -> ValidationResult:
+        """_validate_delete_operation."""
         if not operation.dry_run and self.require_confirmation and not operation.user_confirmed:
             return ValidationResult.REQUIRES_CONFIRMATION
         return ValidationResult.APPROVED
@@ -440,11 +441,13 @@ class SafetyManager:
     
     def _validate_clean_operation(self, operation: Operation) -> ValidationResult:
         # Clean and delete share safety requirements; clean just logs more
+        """_validate_clean_operation."""
         return self._validate_delete_operation(operation)
         """_validate_clean_operation."""
         """_validate_clean_operation."""
     
     def _validate_move_operation(self, operation: Operation) -> ValidationResult:
+        """_validate_move_operation."""
         destination = operation.parameters.get("destination")
         if not destination:
             raise SafetyError("Move operation requires destination parameter")
@@ -462,6 +465,7 @@ class SafetyManager:
     
     def _validate_analyze_operation(self, operation: Operation) -> ValidationResult:
         # Analyze operations are generally safe (read-only)
+        """_validate_analyze_operation."""
         return ValidationResult.APPROVED
         """_validate_analyze_operation."""
         """_validate_analyze_operation."""
@@ -719,6 +723,7 @@ class SafetyManager:
         return result
     
     def _store_dry_run_result(self, operation: Operation, result: OperationResult) -> None:
+        """_store_dry_run_result."""
         if operation.dry_run or result.dry_run_performed:
             dry_run_key = self._get_dry_run_key(operation)
             self._completed_dry_runs[dry_run_key] = result

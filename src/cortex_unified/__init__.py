@@ -80,5 +80,6 @@ def __getattr__(name: str) -> Any:
 
 
 def __dir__() -> list[str]:
+    """__dir__."""
     return sorted(__all__)
     """__dir__."""

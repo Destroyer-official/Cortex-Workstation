@@ -112,6 +112,7 @@ class NetworkTools:
 
     @staticmethod
     def _parse_ping(host: str, out: str) -> PingResult:
+        """_parse_ping."""
         res = PingResult(host, False)
         # Packet stats (Windows: "Sent = 4, Received = 4, Lost = 0 (0% loss)";
         # *nix: "4 packets transmitted, 4 received, 0% packet loss").
@@ -158,6 +159,7 @@ class NetworkTools:
 
     @staticmethod
     def _parse_traceroute(out: str) -> list[Hop]:
+        """_parse_traceroute."""
         hops: list[Hop] = []
         for line in out.splitlines():
             line = line.strip()
@@ -245,6 +247,7 @@ class NetworkTools:
 
     @staticmethod
     def _category(ip) -> str:
+        """_category."""
         if ip.is_loopback:
             return "Loopback (this machine)"
         if ip.is_private:
@@ -269,6 +272,7 @@ class NetworkTools:
         timeout: int = 30,
         cancel_event: threading.Event | None = None,
     ) -> str | None:
+        """_run."""
         try:
             result = _proc.run(
                 args,

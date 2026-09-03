@@ -38,6 +38,7 @@ class ManifestSystem:
         self._current_operations: Dict[str, Dict] = {}
     
     def _get_default_manifest_dir(self) -> Path:
+        """_get_default_manifest_dir."""
         home = Path.home()
         return home / ".cortex_cleaner" / "manifests"
         """_get_default_manifest_dir."""
@@ -110,6 +111,7 @@ class ManifestSystem:
             return {"username": "unknown"}
     
     def _get_os_info(self) -> str:
+        """_get_os_info."""
         try:
             import platform
             return f"{platform.system()} {platform.release()}"

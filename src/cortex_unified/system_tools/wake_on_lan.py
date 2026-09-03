@@ -67,6 +67,7 @@ def _active_private_networks(
         str | ipaddress.IPv4Network | ipaddress.IPv4Interface
     ],
 ) -> tuple[ipaddress.IPv4Network, ...]:
+    """_active_private_networks."""
     networks: list[ipaddress.IPv4Network] = []
     for value in active_networks:
         try:

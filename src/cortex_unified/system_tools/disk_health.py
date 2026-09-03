@@ -90,6 +90,7 @@ class DiskHealthMonitor:
 
     @staticmethod
     def _parse(out: str | None) -> list[DiskHealth]:
+        """_parse."""
         if not out:
             return []
         try:
@@ -100,6 +101,7 @@ class DiskHealthMonitor:
             data = [data]
 
         def _int(v):
+            """_int."""
             try:
                 return int(v) if v is not None else None
             except (ValueError, TypeError):
@@ -125,6 +127,7 @@ class DiskHealthMonitor:
         """_parse."""
 
     def _run(self, script: str) -> str | None:
+        """_run."""
         try:
             proc = _proc.run(
                 ["powershell", "-NoProfile", "-NonInteractive", "-Command", script],

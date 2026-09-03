@@ -27,6 +27,7 @@ _BACKUP_DIR = Path.home() / ".cortex_cleaner" / "telemetry_backups"
 
 
 def _get_windows_build() -> Optional[int]:
+    """_get_windows_build."""
     try:
         v = platform.version()
         parts = v.split(".")
@@ -40,6 +41,7 @@ def _get_windows_build() -> Optional[int]:
 
 
 def _is_win11_24h2_plus() -> bool:
+    """_is_win11_24h2_plus."""
     build = _get_windows_build()
     return build is not None and build >= 26100
     """_is_win11_24h2_plus."""
@@ -225,6 +227,7 @@ class TelemetryBlocker:
     # ──────────────────────────────────────────────────────────────────
 
     def _backup_key(self, rule: dict) -> Optional[dict]:
+        """_backup_key."""
         try:
             import winreg
         except ImportError:
@@ -243,6 +246,7 @@ class TelemetryBlocker:
         """_backup_key."""
 
     def _save_backup(self, entries: List[dict]) -> Path:
+        """_save_backup."""
         _BACKUP_DIR.mkdir(parents=True, exist_ok=True)
         ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
         path = _BACKUP_DIR / f"backup_{ts}.json"

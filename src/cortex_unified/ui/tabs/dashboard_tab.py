@@ -32,6 +32,7 @@ class OptimizerWorker(QObject):
     progress = Signal(str)
 
     def __init__(self):
+        """__init__."""
         super().__init__()
         self.logger = logging.getLogger("optimizer")
         self._should_stop = False
@@ -39,6 +40,7 @@ class OptimizerWorker(QObject):
         """__init__."""
 
     def run(self):
+        """run."""
         cleaned = 0
         errors = 0
 
@@ -111,6 +113,7 @@ class OptimizerWorker(QObject):
         """run."""
 
     def stop(self):
+        """stop."""
         self._should_stop = True
         """stop."""
         """stop."""
@@ -124,6 +127,7 @@ class DashboardTab(BaseTab):
     """Modern dashboard with Smart Scan and real Optimize Now."""
 
     def __init__(self, config, logger, safety_manager, parent=None):
+        """__init__."""
         super().__init__(config, logger, safety_manager)
         self.parent_window = parent
         self.scan_thread = None
@@ -137,6 +141,7 @@ class DashboardTab(BaseTab):
     # ── UI Setup ──────────────────────────────────────────────────────
 
     def setup_ui(self):
+        """setup_ui."""
         layout = QVBoxLayout(self)
         layout.setSpacing(20)
         layout.setContentsMargins(30, 30, 30, 30)
@@ -242,6 +247,7 @@ class DashboardTab(BaseTab):
         """setup_ui."""
 
     def setup_tooltips(self):
+        """setup_tooltips."""
         self.smart_scan_btn.setToolTip("Run a comprehensive system analysis")
         """setup_tooltips."""
         """setup_tooltips."""
@@ -249,6 +255,7 @@ class DashboardTab(BaseTab):
     # ── Smart Scan ────────────────────────────────────────────────────
 
     def run_smart_scan(self):
+        """run_smart_scan."""
         self.smart_scan_btn.setEnabled(False)
         self.progress_bar.setVisible(True)
         self.progress_bar.setValue(0)
@@ -273,12 +280,14 @@ class DashboardTab(BaseTab):
         """run_smart_scan."""
 
     def _on_progress(self, msg, pct):
+        """_on_progress."""
         self.status_label.setText(msg)
         self.progress_bar.setValue(pct)
         """_on_progress."""
         """_on_progress."""
 
     def _on_scan_finished(self, report: SmartScanReport):
+        """_on_scan_finished."""
         self.last_report = report
         self.smart_scan_btn.setEnabled(True)
         self.smart_scan_btn.setText("RESCAN SYSTEM")
@@ -313,6 +322,7 @@ class DashboardTab(BaseTab):
         """_on_scan_finished."""
 
     def _on_scan_error(self, msg):
+        """_on_scan_error."""
         self.smart_scan_btn.setEnabled(True)
         self.progress_bar.setVisible(False)
         self.status_label.setText("Scan failed")
@@ -323,6 +333,7 @@ class DashboardTab(BaseTab):
     # ── Optimize Now (REAL cleaning) ──────────────────────────────────
 
     def run_optimization(self):
+        """run_optimization."""
         if not self.last_report or self.last_report.total_cleanable_mb < 1:
             QMessageBox.information(self, "Nothing to clean",
                                     "No significant junk was found.")
@@ -363,6 +374,7 @@ class DashboardTab(BaseTab):
         """run_optimization."""
 
     def _on_optimize_done(self, result: dict):
+        """_on_optimize_done."""
         mb = result.get("cleaned_mb", 0)
         errs = result.get("errors", 0)
         self.progress_bar.setVisible(False)
@@ -381,6 +393,7 @@ class DashboardTab(BaseTab):
         """_on_optimize_done."""
 
     def _on_optimize_error(self, msg):
+        """_on_optimize_error."""
         self.progress_bar.setVisible(False)
         self.optimize_btn.setText("OPTIMIZE NOW")
         self.optimize_btn.setEnabled(True)
@@ -391,6 +404,7 @@ class DashboardTab(BaseTab):
     # ── Navigation ────────────────────────────────────────────────────
 
     def navigate_to(self, tab_name):
+        """navigate_to."""
         if self.parent_window and hasattr(self.parent_window, "navigation_controller"):
             self.parent_window.navigation_controller.set_current_tab_by_name(tab_name)
         """navigate_to."""

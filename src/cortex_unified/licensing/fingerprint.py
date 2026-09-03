@@ -33,6 +33,7 @@ _FINGERPRINT: str | None = None
 
 
 def _windows_ids() -> list[str]:
+    """_windows_ids."""
     ids: list[str] = []
     try:
         import winreg
@@ -59,6 +60,7 @@ def _windows_ids() -> list[str]:
 
 
 def _macos_ids() -> list[str]:
+    """_macos_ids."""
     ids: list[str] = []
     try:
         import subprocess
@@ -82,6 +84,7 @@ def _macos_ids() -> list[str]:
 
 
 def _linux_ids() -> list[str]:
+    """_linux_ids."""
     ids: list[str] = []
     for candidate in ("/etc/machine-id", "/var/lib/dbus/machine-id"):
         try:

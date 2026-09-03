@@ -19,6 +19,7 @@ from typing import Dict, List, Optional, Tuple
 
 @dataclass
 class UsnJournalStatus:
+    """UsnJournalStatus."""
     drive_letter: str
     is_supported: bool
     is_active: bool
@@ -35,6 +36,7 @@ class UsnJournalStatus:
 
 
 class USN_JOURNAL_DATA_V0(ctypes.Structure):
+    """USN_JOURNAL_DATA_V0."""
     _fields_ = [
         ("UsnJournalID", ctypes.c_uint64),
         ("FirstUsn", ctypes.c_int64),

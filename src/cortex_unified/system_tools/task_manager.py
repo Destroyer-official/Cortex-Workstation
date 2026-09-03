@@ -140,6 +140,7 @@ class TaskManager:
 
     def _collect_processes(self, psutil, cores: int,
                            handles: dict[int, Any]) -> list[dict[str, Any]]:
+        """_collect_processes."""
         procs: list[dict[str, Any]] = []
         for pid, handle in handles.items():
             try:
@@ -179,6 +180,7 @@ class TaskManager:
         """_collect_processes."""
 
     def _collect_memory(self, psutil, processes: list[dict]) -> dict[str, Any]:
+        """_collect_memory."""
         vm = psutil.virtual_memory()
         sum_ws = sum(p["rss"] for p in processes)
         used = vm.total - vm.available

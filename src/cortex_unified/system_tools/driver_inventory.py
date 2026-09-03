@@ -66,6 +66,7 @@ class DriverInventory:
 
     @staticmethod
     def _parse(out: str | None) -> list[DriverInfo]:
+        """_parse."""
         if not out:
             return []
         try:
@@ -102,6 +103,7 @@ class DriverInventory:
 
     @staticmethod
     def _clean_date(raw: Any) -> str:
+        """_clean_date."""
         if not raw:
             return ""
         s = str(raw)
@@ -120,6 +122,7 @@ class DriverInventory:
         """_clean_date."""
 
     def _run(self, script: str) -> str | None:
+        """_run."""
         try:
             proc = _proc.run(
                 ["powershell", "-NoProfile", "-NonInteractive", "-Command", script],
