@@ -33,6 +33,7 @@ def test_elevation_has_four_ordered_levels():
 
 
 def test_elevation_named_levels_present():
+    """test_elevation_named_levels_present."""
     for name in ("BACKGROUND", "SURFACE", "RAISED", "OVERLAY"):
         assert hasattr(Elevation, name)
 
@@ -45,6 +46,7 @@ def test_elevation_named_levels_present():
 @pytest.mark.parametrize("palette", THEME_PALETTES, ids=lambda p: p.name)
 @pytest.mark.parametrize("level", ALL_LEVELS, ids=lambda lv: lv.name)
 def test_elevation_style_returns_valid_style(palette, level):
+    """test_elevation_style_returns_valid_style."""
     style = elevation_style(palette, level)
     assert isinstance(style, ElevationStyle)
     assert isinstance(style.surface, str) and style.surface
@@ -75,6 +77,7 @@ def test_glass_translucency_only_at_higher_levels(palette):
 
 
 def _assert_monotonic_depth(palette) -> None:
+    """_assert_monotonic_depth."""
     styles = [elevation_style(palette, lv) for lv in ALL_LEVELS]
     for lower, higher in zip(styles, styles[1:]):
         # Surface never gets darker as elevation rises.
@@ -127,6 +130,7 @@ def test_elevation_style_tolerates_minimal_palette():
     """Missing optional fields (surface_raised/overlay/glass_*) fall back safely."""
 
     class Bare:
+        """Bare."""
         bg = "#101010"
         surface = "#202020"
         surface_alt = "#303030"

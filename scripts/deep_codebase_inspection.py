@@ -26,6 +26,7 @@ PLACEHOLDER_PATTERNS = [
 ]
 
 def scan_file(filepath: Path) -> dict:
+    """scan_file."""
     rel_path = filepath.relative_to(ROOT)
     results = {
         "file": str(rel_path),
@@ -92,6 +93,7 @@ def scan_file(filepath: Path) -> dict:
     return results
 
 def main():
+    """main."""
     print("=" * 80)
     print("  DEEP EXHAUSTIVE CODEBASE INSPECTION & AUDIT")
     print("=" * 80)

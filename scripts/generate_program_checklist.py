@@ -6,6 +6,7 @@ from pathlib import Path
 
 
 def parse_file(p: Path):
+    """parse_file."""
     try:
         content = p.read_text(encoding="utf-8", errors="ignore")
         tree = ast.parse(content)

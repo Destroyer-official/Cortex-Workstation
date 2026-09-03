@@ -9,6 +9,7 @@ import sys
 import shutil
 
 def build_app():
+    """build_app."""
     print("=" * 60)
     print("Cortex Cleaner Suite - Release Compiler")
     print("=" * 60)

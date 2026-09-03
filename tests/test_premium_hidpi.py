@@ -30,12 +30,14 @@ from PySide6.QtWidgets import QApplication  # noqa: E402
 
 @pytest.fixture(scope="module")
 def app():
+    """app."""
     application = QApplication.instance() or QApplication([])
     yield application
 
 
 @pytest.fixture
 def window(app):
+    """window."""
     from cortex_unified.ui.premium.theme import apply_theme
     from cortex_unified.ui.premium.window import PremiumMainWindow
     apply_theme(app, "dark")

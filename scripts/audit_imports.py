@@ -25,6 +25,7 @@ for p in pkg_root.rglob("*.py"):
 
 # Collect top-level symbols per module (classes, functions, assignments, imports-as)
 def module_symbols(path):
+    """module_symbols."""
     try:
         tree = ast.parse(path.read_text(encoding="utf-8", errors="replace"))
     except SyntaxError:
@@ -73,6 +74,7 @@ def module_symbols(path):
 
 sym_cache = {}
 def get_syms(modname):
+    """get_syms."""
     if modname not in sym_cache:
         path = modules.get(modname)
         sym_cache[modname] = module_symbols(path) if path else None

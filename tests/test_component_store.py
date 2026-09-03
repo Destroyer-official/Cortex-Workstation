@@ -87,6 +87,7 @@ The source files could not be found.
 # ---------------------------------------------------------------------------
 
 def test_parses_windows_own_figures():
+    """test_parses_windows_own_figures."""
     a = ComponentStore._parse_analysis(_ANALYZE_OK)
     assert a.ok is True
     assert a.actual_size == pytest.approx(int(9.73 * 1024 ** 3))
@@ -108,6 +109,7 @@ def test_reclaimable_estimate_excludes_shared_bytes():
 
 
 def test_explains_the_explorer_size_gap():
+    """test_explains_the_explorer_size_gap."""
     a = ComponentStore._parse_analysis(_ANALYZE_OK)
     note = a.explorer_gap_note
     assert "hard links" in note
@@ -117,6 +119,7 @@ def test_explains_the_explorer_size_gap():
 
 
 def test_no_cleanup_needed_is_stated_plainly():
+    """test_no_cleanup_needed_is_stated_plainly."""
     a = ComponentStore._parse_analysis(_ANALYZE_CLEAN)
     assert a.ok is True
     assert a.cleanup_recommended is False
@@ -125,12 +128,14 @@ def test_no_cleanup_needed_is_stated_plainly():
 
 
 def test_dism_error_is_surfaced_with_its_code():
+    """test_dism_error_is_surfaced_with_its_code."""
     a = ComponentStore._parse_analysis(_ANALYZE_ERROR)
     assert a.ok is False
     assert "0x800f081f" in a.message
 
 
 def test_unreadable_report_yields_zero_not_a_guess():
+    """test_unreadable_report_yields_zero_not_a_guess."""
     a = ComponentStore._parse_analysis("something entirely unexpected")
     assert a.actual_size == 0
     assert a.reclaimable_estimate == 0
@@ -138,6 +143,7 @@ def test_unreadable_report_yields_zero_not_a_guess():
 
 
 def test_analysis_to_dict_is_json_ready():
+    """test_analysis_to_dict_is_json_ready."""
     import json
     payload = json.loads(json.dumps(
         ComponentStore._parse_analysis(_ANALYZE_OK).to_dict()))
@@ -146,6 +152,7 @@ def test_analysis_to_dict_is_json_ready():
 
 
 def test_unsupported_platform_is_reported(monkeypatch):
+    """test_unsupported_platform_is_reported."""
     import cortex_unified.system_tools.component_store as mod
     monkeypatch.setattr(mod, "_IS_WINDOWS", False)
     a = ComponentStore().analyze()
@@ -159,6 +166,7 @@ def test_unsupported_platform_is_reported(monkeypatch):
 # ---------------------------------------------------------------------------
 
 def test_windows_managed_items_are_never_removable_here(tmp_path):
+    """test_windows_managed_items_are_never_removable_here."""
     winsxs = Leftover(tmp_path, "Component store (WinSxS)", 1, LeftoverRisk.MANAGED,
                       "hard links", supported_removal="Use DISM.")
     installer = Leftover(tmp_path, "Installer cache", 1, LeftoverRisk.MANAGED,
@@ -170,12 +178,14 @@ def test_windows_managed_items_are_never_removable_here(tmp_path):
 
 
 def test_safe_and_rollback_items_are_removable(tmp_path):
+    """test_safe_and_rollback_items_are_removable."""
     assert Leftover(tmp_path, "Setup logs", 1, LeftoverRisk.SAFE, "logs").removable_here
     assert Leftover(tmp_path, "Windows.old", 1, LeftoverRisk.LOSES_ROLLBACK,
                     "rollback").removable_here
 
 
 def test_rollback_window_is_computed_from_age(tmp_path):
+    """test_rollback_window_is_computed_from_age."""
     fresh = Leftover(tmp_path, "Windows.old", 1, LeftoverRisk.LOSES_ROLLBACK,
                      "rollback", age_days=3.0)
     stale = Leftover(tmp_path, "Windows.old", 1, LeftoverRisk.LOSES_ROLLBACK,
@@ -189,6 +199,7 @@ def test_rollback_window_is_computed_from_age(tmp_path):
 
 @pytest.mark.skipif(not IS_WINDOWS, reason="Windows leftovers only")
 def test_real_leftover_scan_is_readonly_and_sorted():
+    """test_real_leftover_scan_is_readonly_and_sorted."""
     items = ComponentStore().find_leftovers()
     assert isinstance(items, list)
     sizes = [i.size_bytes for i in items]
@@ -220,6 +231,7 @@ def test_winsxs_size_comes_from_dism_not_a_folder_walk():
 
 @pytest.mark.skipif(not IS_WINDOWS, reason="Windows leftovers only")
 def test_installer_cache_is_flagged_managed_when_present():
+    """test_installer_cache_is_flagged_managed_when_present."""
     by_label = {i.label: i for i in ComponentStore().find_leftovers()}
     if "Installer cache" in by_label:
         assert by_label["Installer cache"].risk is LeftoverRisk.MANAGED
@@ -227,6 +239,7 @@ def test_installer_cache_is_flagged_managed_when_present():
 
 
 def test_leftover_scan_is_cancellable(tmp_path, monkeypatch):
+    """test_leftover_scan_is_cancellable."""
     import threading
     event = threading.Event()
     event.set()
@@ -240,10 +253,12 @@ def test_leftover_scan_is_cancellable(tmp_path, monkeypatch):
 
 @pytest.mark.skipif(not IS_WINDOWS, reason="DISM cleanup is Windows-only")
 def test_cleanup_refuses_without_administrator(monkeypatch):
+    """test_cleanup_refuses_without_administrator."""
     store = ComponentStore()
     monkeypatch.setattr(ComponentStore, "is_elevated", staticmethod(lambda: False))
 
     def _boom(*_a, **_k):
+        """_boom."""
         raise AssertionError("DISM must not run without elevation")
 
     monkeypatch.setattr(store, "_run_dism", _boom)
@@ -255,11 +270,13 @@ def test_cleanup_refuses_without_administrator(monkeypatch):
 
 @pytest.mark.skipif(not IS_WINDOWS, reason="DISM cleanup is Windows-only")
 def test_cleanup_reports_measured_delta(monkeypatch):
+    """test_cleanup_reports_measured_delta."""
     store = ComponentStore()
     monkeypatch.setattr(ComponentStore, "is_elevated", staticmethod(lambda: True))
     calls = []
 
     def _fake_dism(args, timeout, cancel_event=None):
+        """_fake_dism."""
         calls.append(args)
         if "/AnalyzeComponentStore" in args:
             # Shrink on the second analysis to simulate a real cleanup.
@@ -280,11 +297,13 @@ def test_cleanup_reports_measured_delta(monkeypatch):
 
 @pytest.mark.skipif(not IS_WINDOWS, reason="DISM cleanup is Windows-only")
 def test_reset_base_is_passed_only_when_requested(monkeypatch):
+    """test_reset_base_is_passed_only_when_requested."""
     store = ComponentStore()
     monkeypatch.setattr(ComponentStore, "is_elevated", staticmethod(lambda: True))
     seen = []
 
     def _fake_dism(args, timeout, cancel_event=None):
+        """_fake_dism."""
         seen.append(args)
         if "/AnalyzeComponentStore" in args:
             return _ANALYZE_OK
@@ -300,6 +319,7 @@ def test_reset_base_is_passed_only_when_requested(monkeypatch):
 
 @pytest.mark.skipif(not IS_WINDOWS, reason="DISM cleanup is Windows-only")
 def test_cleanup_is_honest_when_nothing_shrank(monkeypatch):
+    """test_cleanup_is_honest_when_nothing_shrank."""
     store = ComponentStore()
     monkeypatch.setattr(ComponentStore, "is_elevated", staticmethod(lambda: True))
     monkeypatch.setattr(store, "_run_dism", lambda args, timeout, cancel_event=None: (
@@ -314,6 +334,7 @@ def test_cleanup_is_honest_when_nothing_shrank(monkeypatch):
 
 @pytest.mark.skipif(not IS_WINDOWS, reason="DISM cleanup is Windows-only")
 def test_cleanup_failure_explains_pending_servicing(monkeypatch):
+    """test_cleanup_failure_explains_pending_servicing."""
     store = ComponentStore()
     monkeypatch.setattr(ComponentStore, "is_elevated", staticmethod(lambda: True))
     monkeypatch.setattr(store, "_run_dism", lambda args, timeout, cancel_event=None: (
@@ -328,12 +349,14 @@ def test_cleanup_failure_explains_pending_servicing(monkeypatch):
 
 
 def test_decode_handles_dism_utf16_output():
+    """test_decode_handles_dism_utf16_output."""
     raw = "The operation completed successfully.".encode("utf-16-le")
     assert "completed successfully" in ComponentStore._decode(raw)
     assert ComponentStore._decode(None) == ""
 
 
 def test_dir_size_never_raises_on_unreadable_paths(tmp_path):
+    """test_dir_size_never_raises_on_unreadable_paths."""
     (tmp_path / "a.bin").write_bytes(b"x" * 1000)
     sub = tmp_path / "sub"
     sub.mkdir()

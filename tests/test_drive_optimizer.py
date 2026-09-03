@@ -20,27 +20,35 @@ IS_WINDOWS = platform.system() == "Windows"
 
 
 class TestRecommendation:
+    """TestRecommendation."""
     def test_hdd_recommends_defrag(self):
+        """test_hdd_recommends_defrag."""
         op, note = DriveOptimizer._recommend(StorageKind.HDD)
         assert op is OptimizeOp.DEFRAG
 
     def test_ssd_recommends_trim(self):
+        """test_ssd_recommends_trim."""
         op, note = DriveOptimizer._recommend(StorageKind.SSD)
         assert op is OptimizeOp.TRIM
         assert "never defragment" in note.lower()
 
     def test_nvme_recommends_trim(self):
+        """test_nvme_recommends_trim."""
         assert DriveOptimizer._recommend(StorageKind.NVME)[0] is OptimizeOp.TRIM
 
     def test_unknown_recommends_none(self):
+        """test_unknown_recommends_none."""
         assert DriveOptimizer._recommend(StorageKind.UNKNOWN)[0] is OptimizeOp.NONE
 
 
 class TestSafety:
+    """TestSafety."""
     def test_is_supported_matches_platform(self):
+        """test_is_supported_matches_platform."""
         assert DriveOptimizer.is_supported() == IS_WINDOWS
 
     def test_list_drives_returns_list(self):
+        """test_list_drives_returns_list."""
         assert isinstance(DriveOptimizer().list_drives(), list)
 
     def test_refuses_defrag_on_ssd(self, monkeypatch):
@@ -62,6 +70,7 @@ class TestSafety:
         assert "harmful" in result.message.lower() or "refused" in result.message.lower()
 
     def test_non_windows_returns_unsupported(self):
+        """test_non_windows_returns_unsupported."""
         if IS_WINDOWS:
             import pytest
             pytest.skip("covered elsewhere on Windows")

@@ -38,6 +38,7 @@ from cortex_unified.ui.premium.window import PremiumMainWindow
 
 
 def pump_events(app: QApplication, duration_ms: int = 150) -> None:
+    """pump_events."""
     start = time.monotonic()
     while (time.monotonic() - start) * 1000 < duration_ms:
         app.processEvents()
@@ -45,6 +46,7 @@ def pump_events(app: QApplication, duration_ms: int = 150) -> None:
 
 
 def main():
+    """main."""
     print("=" * 80, flush=True)
     print("  CORTEX CLEANER - COMPREHENSIVE GUI INTERACTIVE STRESS TEST", flush=True)
     print("=" * 80, flush=True)

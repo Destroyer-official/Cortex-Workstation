@@ -11,6 +11,7 @@ from cortex_unified.system_tools.external_exposure import (
 
 
 def test_lookup_requires_consent_and_global_public_ip():
+    """test_lookup_requires_consent_and_global_public_ip."""
     client = ExternalExposureClient(
         "shodan", "secret", transport=lambda *_args: {})
     with pytest.raises(ExposureLookupError, match="consent"):
@@ -21,9 +22,11 @@ def test_lookup_requires_consent_and_global_public_ip():
 
 
 def test_shodan_sends_only_selected_ip_and_normalizes_services():
+    """test_shodan_sends_only_selected_ip_and_normalizes_services."""
     calls = []
 
     def transport(url, headers, timeout):
+        """transport."""
         calls.append((url, headers, timeout))
         return {
             "last_update": "2026-01-01T00:00:00Z",
@@ -46,9 +49,11 @@ def test_shodan_sends_only_selected_ip_and_normalizes_services():
 
 
 def test_censys_credentials_use_header_not_url():
+    """test_censys_credentials_use_header_not_url."""
     calls = []
 
     def transport(url, headers, _timeout):
+        """transport."""
         calls.append((url, headers))
         return {"result": {
             "last_updated_at": "2026-01-01",

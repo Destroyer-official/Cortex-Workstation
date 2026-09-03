@@ -8,6 +8,7 @@ from cortex_unified.system_tools.s3_fifo import S3FIFO
 
 
 def test_basic_put_get():
+    """test_basic_put_get."""
     cache = S3FIFO(capacity=10)
     cache.put("a", 1)
     assert cache.get("a") == 1
@@ -15,6 +16,7 @@ def test_basic_put_get():
 
 
 def test_update_existing_increments_freq():
+    """test_update_existing_increments_freq."""
     cache = S3FIFO(capacity=10)
     cache.put("a", 1)
     cache.put("a", 2)
@@ -24,6 +26,7 @@ def test_update_existing_increments_freq():
 
 def test_ghost_promotion():
     # Small=1, Main=9 for capacity 10. Insert just enough to keep "a" in Ghost
+    """test_ghost_promotion."""
     cache = S3FIFO(capacity=10)
     cache.put("a", 1)
     # 3 more inserts: each evicts previous Small to Ghost, but Ghost capacity 9
@@ -39,6 +42,7 @@ def test_ghost_promotion():
 
 
 def test_freq_bumps_and_main_reinsertion():
+    """test_freq_bumps_and_main_reinsertion."""
     cache = S3FIFO(capacity=10)
     # Fill main via ghost promotion path to exercise reinsertion
     for i in range(20):
@@ -57,6 +61,7 @@ def test_freq_bumps_and_main_reinsertion():
 
 
 def test_capacity_respected():
+    """test_capacity_respected."""
     cache = S3FIFO(capacity=20)
     for i in range(50):
         cache.put(f"k{i}", i)
@@ -66,6 +71,7 @@ def test_capacity_respected():
 
 def test_delete_and_clear():
     # Use larger capacity so both keys survive Small eviction
+    """test_delete_and_clear."""
     cache = S3FIFO(capacity=20)
     cache.put("a", 1)
     cache.put("b", 2)
@@ -79,6 +85,7 @@ def test_delete_and_clear():
 
 
 def test_stats_hit_ratio():
+    """test_stats_hit_ratio."""
     cache = S3FIFO(capacity=10)
     cache.put("a", 1)
     cache.get("a")  # hit
@@ -90,6 +97,7 @@ def test_stats_hit_ratio():
 
 
 def test_invalid_capacity():
+    """test_invalid_capacity."""
     with pytest.raises(ValueError):
         S3FIFO(capacity=5)
     with pytest.raises(ValueError):
@@ -112,6 +120,7 @@ def test_quick_demotion_one_hit_wonders_evicted_early():
 
 
 def test_two_hits_promoted_to_main():
+    """test_two_hits_promoted_to_main."""
     cache = S3FIFO(capacity=10)
     cache.put("popular", 1)
     cache.get("popular")  # freq 1

@@ -15,10 +15,13 @@ IS_WINDOWS = platform.system() == "Windows"
 
 
 class TestGating:
+    """TestGating."""
     def test_is_supported_matches_platform(self):
+        """test_is_supported_matches_platform."""
         assert FreeSpaceWiper.is_supported() == IS_WINDOWS
 
     def test_non_windows_refuses(self):
+        """test_non_windows_refuses."""
         if IS_WINDOWS:
             import pytest
             pytest.skip("covered by validation tests on Windows")
@@ -28,7 +31,9 @@ class TestGating:
 
 
 class TestValidation:
+    """TestValidation."""
     def test_rejects_bad_letter(self):
+        """test_rejects_bad_letter."""
         if not IS_WINDOWS:
             import pytest
             pytest.skip("Windows-only validation path")
@@ -37,6 +42,7 @@ class TestValidation:
         assert "invalid" in r.message.lower()
 
     def test_rejects_empty(self):
+        """test_rejects_empty."""
         if not IS_WINDOWS:
             import pytest
             pytest.skip("Windows-only validation path")
@@ -44,7 +50,9 @@ class TestValidation:
 
 
 class TestMediumHonesty:
+    """TestMediumHonesty."""
     def test_medium_for_reports_effectiveness(self, monkeypatch):
+        """test_medium_for_reports_effectiveness."""
         from cortex_unified.engine.models import StorageKind
         from cortex_unified.engine.storage import StorageInfo
         from cortex_unified.system_tools import free_space_wipe as mod

@@ -185,7 +185,9 @@ def fake_multi_browser(tmp_path, monkeypatch):
 
 
 class TestDeepBrowserCleanerInit:
+    """TestDeepBrowserCleanerInit."""
     def test_default_init(self):
+        """test_default_init."""
         cleaner = DeepBrowserCleaner()
         assert cleaner.keep_cookies == []
         assert callable(cleaner.progress)
@@ -194,23 +196,27 @@ class TestDeepBrowserCleanerInit:
         assert cleaner.expert_mode is False
 
     def test_keep_cookies_compiled(self):
+        """test_keep_cookies_compiled."""
         cleaner = DeepBrowserCleaner(keep_cookies=["example\\.com", ".*google.*"])
         assert len(cleaner.keep_cookies) == 2
         assert all(isinstance(p, re.Pattern) for p in cleaner.keep_cookies)
 
     def test_progress_callback_stored(self):
+        """test_progress_callback_stored."""
         calls = []
         cleaner = DeepBrowserCleaner(progress=lambda msg: calls.append(msg))
         cleaner.progress("hello")
         assert calls == ["hello"]
 
     def test_custom_cancel_event(self):
+        """test_custom_cancel_event."""
         evt = threading.Event()
         evt.set()
         cleaner = DeepBrowserCleaner(cancel=evt)
         assert cleaner.cancel.is_set()
 
     def test_expert_mode_default_off(self):
+        """test_expert_mode_default_off."""
         assert DeepBrowserCleaner().expert_mode is False
 
 
@@ -220,21 +226,26 @@ class TestDeepBrowserCleanerInit:
 
 
 class TestProfileDiscovery:
+    """TestProfileDiscovery."""
     def test_chromium_discovers_default_profile(self, fake_chromium_home):
+        """test_chromium_discovers_default_profile."""
         _, root = fake_chromium_home
         profiles = _discover_chromium_profiles(["Google/Chrome"])
         assert any("Default" in str(p) for p in profiles)
 
     def test_chromium_skips_nonexistent_root(self, fake_chromium_home, monkeypatch):
+        """test_chromium_skips_nonexistent_root."""
         profiles = _discover_chromium_profiles(["Nonexistent/Browser"])
         assert profiles == []
 
     def test_firefox_discovers_profile(self, fake_firefox_home):
+        """test_firefox_discovers_profile."""
         _, profiles_dir = fake_firefox_home
         profiles = _discover_firefox_profiles()
         assert any("default-release" in str(p) for p in profiles)
 
     def test_firefox_profiles_ini_parsing(self, fake_firefox_home, monkeypatch):
+        """test_firefox_profiles_ini_parsing."""
         _, profiles_dir = fake_firefox_home
         parent = profiles_dir.parent
         ini = parent / "profiles.ini"
@@ -251,6 +262,7 @@ class TestProfileDiscovery:
         assert any("custom-profile" in str(p) for p in profiles)
 
     def test_firefox_absolute_profile_in_ini(self, fake_firefox_home, tmp_path):
+        """test_firefox_absolute_profile_in_ini."""
         _, profiles_dir = fake_firefox_home
         parent = profiles_dir.parent
         ini = parent / "profiles.ini"
@@ -267,7 +279,9 @@ class TestProfileDiscovery:
 
 
 class TestCookieCleaning:
+    """TestCookieCleaning."""
     def test_delete_non_matching_cookies(self, fake_chromium_home):
+        """test_delete_non_matching_cookies."""
         _, root = fake_chromium_home
         cookies_db = root / "Default" / "Cookies"
         cleaner = DeepBrowserCleaner(keep_cookies=["example\\.com"])
@@ -283,6 +297,7 @@ class TestCookieCleaning:
         con.close()
 
     def test_keep_all_matching_cookies(self, fake_chromium_home):
+        """test_keep_all_matching_cookies."""
         _, root = fake_chromium_home
         cookies_db = root / "Default" / "Cookies"
         cleaner = DeepBrowserCleaner(keep_cookies=[".*"])
@@ -295,12 +310,14 @@ class TestCookieCleaning:
         assert removed == 0
 
     def test_missing_db_returns_zero(self, fake_chromium_home):
+        """test_missing_db_returns_zero."""
         _, root = fake_chromium_home
         fake_db = root / "Default" / "NoSuchFile.sqlite"
         cleaner = DeepBrowserCleaner()
         assert cleaner.clean_cookies_keep_list(fake_db) == 0
 
     def test_keep_list_regex_case_insensitive(self, fake_chromium_home):
+        """test_keep_list_regex_case_insensitive."""
         _, root = fake_chromium_home
         cookies_db = root / "Default" / "Cookies"
         cleaner = DeepBrowserCleaner(keep_cookies=["EXAMPLE\\.COM"])
@@ -312,6 +329,7 @@ class TestCookieCleaning:
         assert "example.com" in hosts
 
     def test_empty_keep_list_deletes_all(self, fake_chromium_home):
+        """test_empty_keep_list_deletes_all."""
         _, root = fake_chromium_home
         cookies_db = root / "Default" / "Cookies"
         cleaner = DeepBrowserCleaner(keep_cookies=[])
@@ -330,7 +348,9 @@ class TestCookieCleaning:
 
 
 class TestClean:
+    """TestClean."""
     def test_clean_removes_file(self, tmp_path):
+        """test_clean_removes_file."""
         f = tmp_path / "to_delete.txt"
         f.write_bytes(b"data")
         cleaner = DeepBrowserCleaner()
@@ -339,6 +359,7 @@ class TestClean:
         assert not f.exists()
 
     def test_clean_removes_directory(self, tmp_path):
+        """test_clean_removes_directory."""
         d = tmp_path / "cache_dir"
         d.mkdir()
         (d / "file.bin").write_bytes(b"x" * 50)
@@ -348,6 +369,7 @@ class TestClean:
         assert not d.exists()
 
     def test_clean_multiple_paths(self, tmp_path):
+        """test_clean_multiple_paths."""
         files = [tmp_path / f"f{i}.dat" for i in range(5)]
         for f in files:
             f.write_bytes(b"x")
@@ -357,6 +379,7 @@ class TestClean:
         assert all(not f.exists() for f in files)
 
     def test_clean_missing_path_handled_gracefully(self, tmp_path):
+        """test_clean_missing_path_handled_gracefully."""
         missing = tmp_path / "does_not_exist"
         cleaner = DeepBrowserCleaner()
         results = cleaner.clean([missing])
@@ -365,6 +388,7 @@ class TestClean:
         assert results[missing] is True
 
     def test_clean_shred_overwrites(self, tmp_path):
+        """test_clean_shred_overwrites."""
         f = tmp_path / "secret.dat"
         f.write_bytes(b"SENSITIVE" * 100)
         cleaner = DeepBrowserCleaner()
@@ -373,6 +397,7 @@ class TestClean:
         assert not f.exists()
 
     def test_clean_respects_cancel(self, tmp_path):
+        """test_clean_respects_cancel."""
         files = [tmp_path / f"f{i}.dat" for i in range(5)]
         for f in files:
             f.write_bytes(b"x")
@@ -383,6 +408,7 @@ class TestClean:
         assert results == {}
 
     def test_clean_progress_callback(self, tmp_path):
+        """test_clean_progress_callback."""
         f = tmp_path / "tracked.dat"
         f.write_bytes(b"y")
         calls = []
@@ -391,6 +417,7 @@ class TestClean:
         assert any("Cleaned" in c for c in calls)
 
     def test_clean_permission_error(self, tmp_path):
+        """test_clean_permission_error."""
         calls = []
         cleaner = DeepBrowserCleaner(progress=lambda m: calls.append(m))
         # Create a read-only file, then try to shred it (requires write)
@@ -411,7 +438,9 @@ class TestClean:
 
 
 class TestVacuum:
+    """TestVacuum."""
     def test_vacuum_runs_without_error(self, tmp_path):
+        """test_vacuum_runs_without_error."""
         db = _make_sqlite(
             tmp_path / "big.sqlite",
             table="history",
@@ -423,12 +452,14 @@ class TestVacuum:
         assert results[db] >= 0
 
     def test_vacuum_missing_db_no_crash(self, tmp_path):
+        """test_vacuum_missing_db_no_crash."""
         missing = tmp_path / "nope.sqlite"
         cleaner = DeepBrowserCleaner()
         results = cleaner.vacuum_databases([missing])
         assert missing not in results
 
     def test_vacuum_progress_callback(self, tmp_path):
+        """test_vacuum_progress_callback."""
         db = _make_sqlite(tmp_path / "vacuum_test.sqlite", table="history")
         calls = []
         cleaner = DeepBrowserCleaner(progress=lambda m: calls.append(m))
@@ -436,6 +467,7 @@ class TestVacuum:
         assert any("Vacuumed" in c for c in calls)
 
     def test_vacuum_multiple_dbs(self, tmp_path):
+        """test_vacuum_multiple_dbs."""
         dbs = []
         for i in range(3):
             db = _make_sqlite(tmp_path / f"db{i}.sqlite", table="history")
@@ -451,7 +483,9 @@ class TestVacuum:
 
 
 class TestBrowserDetection:
+    """TestBrowserDetection."""
     def test_scan_chromium_profile(self, fake_chromium_home):
+        """test_scan_chromium_profile."""
         _, root = fake_chromium_home
         cleaner = DeepBrowserCleaner()
         items = cleaner._scan_chromium_profile(root / "Default", "chrome")
@@ -463,6 +497,7 @@ class TestBrowserDetection:
         assert "history" in categories
 
     def test_scan_firefox_profile(self, fake_firefox_home):
+        """test_scan_firefox_profile."""
         _, profiles_dir = fake_firefox_home
         profile = next(profiles_dir.iterdir())
         cleaner = DeepBrowserCleaner()
@@ -474,6 +509,7 @@ class TestBrowserDetection:
         assert "indexeddb" in categories
 
     def test_all_browsers_detected(self, fake_multi_browser):
+        """test_all_browsers_detected."""
         cleaner = DeepBrowserCleaner()
         items = cleaner.scan()
         browsers = {i.browser for i in items}
@@ -482,12 +518,14 @@ class TestBrowserDetection:
         assert "brave" in browsers
 
     def test_firefox_browser_label(self, fake_firefox_home):
+        """test_firefox_browser_label."""
         cleaner = DeepBrowserCleaner()
         items = cleaner.scan()
         firefox_items = [i for i in items if i.browser == "firefox"]
         assert len(firefox_items) > 0
 
     def test_vivaldi_not_in_scope(self, fake_multi_browser):
+        """test_vivaldi_not_in_scope."""
         cleaner = DeepBrowserCleaner()
         items = cleaner.scan()
         browsers = {i.browser for i in items}
@@ -500,7 +538,9 @@ class TestBrowserDetection:
 
 
 class TestProgressCallback:
+    """TestProgressCallback."""
     def test_progress_called_during_clean(self, tmp_path):
+        """test_progress_called_during_clean."""
         f = tmp_path / "a.dat"
         f.write_bytes(b"x")
         calls = []
@@ -509,6 +549,7 @@ class TestProgressCallback:
         assert len(calls) >= 1
 
     def test_progress_called_during_vacuum(self, tmp_path):
+        """test_progress_called_during_vacuum."""
         db = _make_sqlite(tmp_path / "p.sqlite", table="history")
         calls = []
         cleaner = DeepBrowserCleaner(progress=lambda m: calls.append(m))
@@ -522,7 +563,9 @@ class TestProgressCallback:
 
 
 class TestCancellation:
+    """TestCancellation."""
     def test_cancel_stops_scan(self, fake_chromium_home):
+        """test_cancel_stops_scan."""
         cancel = threading.Event()
         cleaner = DeepBrowserCleaner(cancel=cancel)
         cancel.set()
@@ -530,6 +573,7 @@ class TestCancellation:
         assert items == []
 
     def test_cancel_stops_clean(self, tmp_path):
+        """test_cancel_stops_clean."""
         files = [tmp_path / f"f{i}.dat" for i in range(5)]
         for f in files:
             f.write_bytes(b"x")
@@ -540,16 +584,19 @@ class TestCancellation:
         assert results == {}
 
     def test_default_cancel_not_set(self):
+        """test_default_cancel_not_set."""
         cleaner = DeepBrowserCleaner()
         assert not cleaner.cancel.is_set()
 
     def test_cancel_event_prevents_scan_iteration(self, fake_chromium_home):
+        """test_cancel_event_prevents_scan_iteration."""
         cancel = threading.Event()
         cleaner = DeepBrowserCleaner(cancel=cancel)
         # Let scan start, then cancel mid-way
         original_scan = cleaner.scan
 
         def interrupting_scan():
+            """interrupting_scan."""
             cancel.set()
             return original_scan()
 
@@ -564,7 +611,9 @@ class TestCancellation:
 
 
 class TestExpertMode:
+    """TestExpertMode."""
     def test_passwords_excluded_by_default(self, fake_chromium_home):
+        """test_passwords_excluded_by_default."""
         _, root = fake_chromium_home
         login_db = root / "Default" / "Login Data"
         _make_sqlite(login_db, table="history")
@@ -574,6 +623,7 @@ class TestExpertMode:
         assert len(password_items) == 0
 
     def test_passwords_included_with_expert_mode(self, fake_chromium_home):
+        """test_passwords_included_with_expert_mode."""
         _, root = fake_chromium_home
         login_db = root / "Default" / "Login Data"
         _make_sqlite(login_db, table="history")
@@ -585,6 +635,7 @@ class TestExpertMode:
         assert password_items[0].risk == "high"
 
     def test_forms_always_included(self, fake_chromium_home):
+        """test_forms_always_included."""
         _, root = fake_chromium_home
         web_data = root / "Default" / "Web Data"
         _make_sqlite(web_data, table="history")
@@ -594,6 +645,7 @@ class TestExpertMode:
         assert len(form_items) == 1
 
     def test_passwords_risk_is_high(self, fake_chromium_home):
+        """test_passwords_risk_is_high."""
         _, root = fake_chromium_home
         login_db = root / "Default" / "Login Data"
         _make_sqlite(login_db, table="history")
@@ -611,13 +663,16 @@ class TestExpertMode:
 
 
 class TestSizeCalculation:
+    """TestSizeCalculation."""
     def test_file_size_reported(self, tmp_path):
+        """test_file_size_reported."""
         f = tmp_path / "big.bin"
         f.write_bytes(b"x" * 1024)
         c = Cleanable(f, f.stat().st_size, "cache", "test", "test", "low")
         assert c.size == 1024
 
     def test_directory_size_summed(self, tmp_path):
+        """test_directory_size_summed."""
         d = tmp_path / "cache"
         d.mkdir()
         for i in range(3):
@@ -626,17 +681,20 @@ class TestSizeCalculation:
         assert total == 300
 
     def test_scan_returns_sizes(self, fake_chromium_home):
+        """test_scan_returns_sizes."""
         cleaner = DeepBrowserCleaner()
         items = cleaner.scan()
         for item in items:
             assert item.size >= 0
 
     def test_nonexistent_profile_returns_empty(self, tmp_path):
+        """test_nonexistent_profile_returns_empty."""
         cleaner = DeepBrowserCleaner()
         items = cleaner._scan_chromium_profile(tmp_path / "nope", "test")
         assert items == []
 
     def test_cleanable_dataclass_fields(self, tmp_path):
+        """test_cleanable_dataclass_fields."""
         p = tmp_path / "test"
         c = Cleanable(p, 42, "cache", "chrome", "HTTP cache", "low", False)
         assert c.path == p
@@ -648,6 +706,7 @@ class TestSizeCalculation:
         assert c.can_vacuum is False
 
     def test_zero_size_item(self):
+        """test_zero_size_item."""
         c = Cleanable(Path("/tmp/x"), 0, "cache", "chrome", "desc", "low")
         assert c.size == 0
 
@@ -658,31 +717,37 @@ class TestSizeCalculation:
 
 
 class TestScanIntegration:
+    """TestScanIntegration."""
     def test_scan_returns_list(self, fake_chromium_home):
+        """test_scan_returns_list."""
         cleaner = DeepBrowserCleaner()
         items = cleaner.scan()
         assert isinstance(items, list)
         assert len(items) > 0
 
     def test_all_items_are_cleanable(self, fake_chromium_home):
+        """test_all_items_are_cleanable."""
         cleaner = DeepBrowserCleaner()
         items = cleaner.scan()
         for item in items:
             assert isinstance(item, Cleanable)
 
     def test_no_duplicate_paths_in_scan(self, fake_chromium_home):
+        """test_no_duplicate_paths_in_scan."""
         cleaner = DeepBrowserCleaner()
         items = cleaner.scan()
         paths = [i.path for i in items]
         assert len(paths) == len(set(paths))
 
     def test_cookie_risk_medium(self, fake_chromium_home):
+        """test_cookie_risk_medium."""
         cleaner = DeepBrowserCleaner()
         items = cleaner.scan()
         cookie_items = [i for i in items if i.category == "cookies"]
         assert all(i.risk == "medium" for i in cookie_items)
 
     def test_cache_risk_low(self, fake_chromium_home):
+        """test_cache_risk_low."""
         cleaner = DeepBrowserCleaner()
         items = cleaner.scan()
         cache_items = [
@@ -693,6 +758,7 @@ class TestScanIntegration:
         assert all(i.risk == "low" for i in cache_items)
 
     def test_vacuumable_items_flagged(self, fake_chromium_home):
+        """test_vacuumable_items_flagged."""
         cleaner = DeepBrowserCleaner()
         items = cleaner.scan()
         vacuumable = [i for i in items if i.can_vacuum]

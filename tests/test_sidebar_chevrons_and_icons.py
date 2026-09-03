@@ -15,6 +15,7 @@ from cortex_unified.ui.premium.window import PremiumMainWindow
 
 @pytest.fixture(scope="module")
 def app():
+    """app."""
     return QApplication.instance() or QApplication([])
 
 

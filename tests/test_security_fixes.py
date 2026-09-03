@@ -10,13 +10,16 @@ from cortex_unified.scheduler.auto_clean_rules import AutoCleanRules
 
 
 class TestCustomCommandHardening:
+    """TestCustomCommandHardening."""
     def test_disabled_by_default(self):
+        """test_disabled_by_default."""
         rules = AutoCleanRules()
         out = rules._custom_clean_action({"command": "echo hi"})
         assert out is not None
         assert "disabled" in out.get("error", "")
 
     def test_runs_without_shell_when_allowed(self):
+        """test_runs_without_shell_when_allowed."""
         rules = AutoCleanRules()
         # A benign, cross-platform command via the interpreter itself.
         out = rules._custom_clean_action({
@@ -42,7 +45,9 @@ class TestCustomCommandHardening:
 
 
 class TestAppUninstallerImportSafe:
+    """TestAppUninstallerImportSafe."""
     def test_import_and_construct(self):
+        """test_import_and_construct."""
         from cortex_unified.system_tools.app_uninstaller import AppUninstaller
         u = AppUninstaller()
         # get_installed_apps is safe/read-only; returns a list (possibly empty
@@ -51,6 +56,7 @@ class TestAppUninstallerImportSafe:
         assert isinstance(apps, list)
 
     def test_uninstall_missing_string_returns_false(self):
+        """test_uninstall_missing_string_returns_false."""
         from cortex_unified.system_tools.app_uninstaller import AppUninstaller
         u = AppUninstaller()
         assert u.uninstall_app({"name": "Nope"}) is False

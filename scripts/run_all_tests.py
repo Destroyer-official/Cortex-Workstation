@@ -5,12 +5,15 @@ import pytest
 sys.path.insert(0, 'src')
 
 class FailureCollector:
+    """FailureCollector."""
     def __init__(self):
+        """__init__."""
         self.failed = []
         self.passed = 0
         self.skipped = 0
 
     def pytest_runtest_logreport(self, report):
+        """pytest_runtest_logreport."""
         if report.when == 'call':
             if report.failed:
                 self.failed.append((report.nodeid, str(report.longrepr)))

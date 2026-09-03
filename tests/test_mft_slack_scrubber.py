@@ -10,6 +10,7 @@ from cortex_unified.system_tools.mft_slack_scrubber import (
 
 
 def test_parse_ntfsinfo():
+    """test_parse_ntfsinfo."""
     sample = """
 NTFS Volume Serial Number :       0x7e89ddb1
 Bytes Per Sector  :                512
@@ -33,6 +34,7 @@ Free Clusters :                    4000000
 
 
 def test_audit_structure():
+    """test_audit_structure."""
     scrubber = MftSlackScrubber("C:")
     report = scrubber.audit()
     assert isinstance(report, MftScrubReport)
@@ -42,6 +44,7 @@ def test_audit_structure():
 
 
 def test_scrub_structure():
+    """test_scrub_structure."""
     scrubber = MftSlackScrubber("C:")
     report = scrubber.scrub()
     assert isinstance(report, MftScrubReport)

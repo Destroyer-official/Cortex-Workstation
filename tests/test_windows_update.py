@@ -10,11 +10,14 @@ IS_WINDOWS = platform.system() == "Windows"
 
 
 class TestPendingParse:
+    """TestPendingParse."""
     def test_empty(self):
+        """test_empty."""
         assert WindowsUpdate._parse_pending(None) == []
         assert WindowsUpdate._parse_pending("bad{") == []
 
     def test_single(self):
+        """test_single."""
         payload = ('{"Title":"2026-07 Cumulative Update","KB":"5001234",'
                    '"Severity":"Critical","Size":123456789}')
         ups = WindowsUpdate._parse_pending(payload)
@@ -26,20 +29,25 @@ class TestPendingParse:
         assert u.size_bytes == 123456789
 
     def test_array(self):
+        """test_array."""
         payload = ('[{"Title":"Update A","KB":"1","Size":10},'
                    '{"Title":"Update B","KB":"2","Size":20}]')
         assert len(WindowsUpdate._parse_pending(payload)) == 2
 
     def test_titleless_skipped(self):
+        """test_titleless_skipped."""
         assert WindowsUpdate._parse_pending('{"Title":"","KB":"1"}') == []
 
     def test_no_kb(self):
+        """test_no_kb."""
         u = WindowsUpdate._parse_pending('{"Title":"Defender def update","Size":0}')[0]
         assert u.kb == ""
 
 
 class TestHistoryParse:
+    """TestHistoryParse."""
     def test_success_and_fail(self):
+        """test_success_and_fail."""
         payload = ('[{"Title":"KB1","Date":"2026-07-01T10:00:00","Result":2},'
                    '{"Title":"KB2","Date":"2026-06-01T10:00:00","Result":4}]')
         rows = WindowsUpdate._parse_history(payload)
@@ -48,27 +56,34 @@ class TestHistoryParse:
         assert rows[1]["result"] == "Failed" and rows[1]["succeeded"] is False
 
     def test_date_formatted(self):
+        """test_date_formatted."""
         rows = WindowsUpdate._parse_history('{"Title":"X","Date":"2026-07-01T10:00:00","Result":2}')
         assert rows[0]["date"] == "2026-07-01 10:00:00"
 
     def test_empty(self):
+        """test_empty."""
         assert WindowsUpdate._parse_history(None) == []
         assert WindowsUpdate._parse_history("") == []
 
 
 class TestGating:
+    """TestGating."""
     def test_is_supported(self):
+        """test_is_supported."""
         assert WindowsUpdate.is_supported() == IS_WINDOWS
 
     def test_last_activity_shape(self):
+        """test_last_activity_shape."""
         a = WindowsUpdate().last_activity()
         assert set(a) == {"last_check", "last_install"}
 
     def test_check_pending_returns_list(self):
         # Off-Windows returns []; on Windows it may query online but must be a list.
+        """test_check_pending_returns_list."""
         result = WindowsUpdate().check_pending() if not IS_WINDOWS else []
         assert isinstance(result, list)
 
     def test_to_dict(self):
+        """test_to_dict."""
         d = PendingUpdate("Title", "KB1", "Important", 100).to_dict()
         assert set(d) == {"title", "kb", "severity", "size_bytes"}

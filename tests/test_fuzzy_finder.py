@@ -15,11 +15,13 @@ from cortex_unified.analyzers.fuzzy_finder import (
 
 
 def _text(n=4000):
+    """_text."""
     base = ("All work and no play makes Jack a dull boy. " * 20).encode()
     return (base * (n // len(base) + 1))[:n]
 
 
 def _noise(n=4000, seed=7):
+    """_noise."""
     import random
 
     rng = random.Random(seed)
@@ -29,16 +31,19 @@ def _noise(n=4000, seed=7):
 # --- primitives -------------------------------------------------------------
 
 def test_fuzzy_hash_is_deterministic():
+    """test_fuzzy_hash_is_deterministic."""
     data = _text()
     assert fuzzy_hash_bytes(data) == fuzzy_hash_bytes(data)
 
 
 def test_identical_content_matches_at_100():
+    """test_identical_content_matches_at_100."""
     data = _text()
     assert fuzzy_compare(fuzzy_hash_bytes(data), fuzzy_hash_bytes(data)) >= 90
 
 
 def test_similar_content_scores_high_pairs():
+    """test_similar_content_scores_high_pairs."""
     a = _text(4000)
     b = a[:2000] + a[2000:-100] + a[-100:] + b" trailing append text " * 5
     score = fuzzy_compare(fuzzy_hash_bytes(a), fuzzy_hash_bytes(b))
@@ -49,6 +54,7 @@ def test_similar_content_scores_high_pairs():
 
 
 def test_unrelated_content_scores_low():
+    """test_unrelated_content_scores_low."""
     a = _text(4000)
     b = _noise(4000)
     score = fuzzy_compare(fuzzy_hash_bytes(a), fuzzy_hash_bytes(b))
@@ -56,12 +62,14 @@ def test_unrelated_content_scores_low():
 
 
 def test_empty_signature():
+    """test_empty_signature."""
     assert fuzzy_compare("3::", "3::") >= 0
 
 
 # --- finder -----------------------------------------------------------------
 
 def test_finder_groups_near_identical_binaries(tmp_path):
+    """test_finder_groups_near_identical_binaries."""
     src = _text(6000)
     (tmp_path / "a.bin").write_bytes(src)
     # near-copy: one small edit inserted in the middle
@@ -77,6 +85,7 @@ def test_finder_groups_near_identical_binaries(tmp_path):
 
 
 def test_finder_skips_incompressible_and_small(tmp_path):
+    """test_finder_skips_incompressible_and_small."""
     (tmp_path / "tiny.log").write_text("x")
     (tmp_path / "a.zip").write_bytes(_noise(1000))
     finder = FuzzyDuplicateFinder(str(tmp_path))
@@ -84,6 +93,7 @@ def test_finder_skips_incompressible_and_small(tmp_path):
 
 
 def test_finder_stats(tmp_path):
+    """test_finder_stats."""
     a = _text(3000)
     (tmp_path / "a.bin").write_bytes(a)
     (tmp_path / "b.bin").write_bytes(a[:1500] + b"edit" + a[1500:])
@@ -95,6 +105,7 @@ def test_finder_stats(tmp_path):
 
 
 def test_fuzzy_hash_file_reads(tmp_path):
+    """test_fuzzy_hash_file_reads."""
     p = tmp_path / "f.txt"
     p.write_bytes(_text())
     sig = fuzzy_hash_file(p)

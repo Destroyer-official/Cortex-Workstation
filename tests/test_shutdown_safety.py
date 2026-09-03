@@ -33,11 +33,13 @@ from PySide6.QtWidgets import QApplication  # noqa: E402
 
 @pytest.fixture(scope="module")
 def app():
+    """app."""
     return QApplication.instance() or QApplication([])
 
 
 @pytest.fixture
 def window(app):
+    """window."""
     from cortex_unified.ui.premium.theme import apply_theme
     from cortex_unified.ui.premium.window import PremiumMainWindow
     apply_theme(app, "dark")
@@ -57,14 +59,17 @@ class _CooperativeWorker(QObject):
     failed = Signal(str)
 
     def __init__(self, poll_s: float = 0.05):
+        """__init__."""
         super().__init__()
         self._cancel = threading.Event()
         self._poll_s = poll_s
 
     def cancel(self) -> None:
+        """cancel."""
         self._cancel.set()
 
     def run(self) -> None:
+        """run."""
         for _ in range(200):  # up to 10s if never cancelled
             if self._cancel.is_set():
                 return
@@ -83,19 +88,23 @@ class _StubbornWorker(QObject):
     failed = Signal(str)
 
     def __init__(self, sleep_s: float = 30.0):
+        """__init__."""
         super().__init__()
         self.cancel_called = threading.Event()
         self._sleep_s = sleep_s
 
     def cancel(self) -> None:
+        """cancel."""
         self.cancel_called.set()
 
     def run(self) -> None:
+        """run."""
         time.sleep(self._sleep_s)
         self.finished.emit("done")
 
 
 def test_cooperative_worker_lets_close_return_promptly(app, window):
+    """test_cooperative_worker_lets_close_return_promptly."""
     worker = _CooperativeWorker()
     window.run_worker(worker, lambda *_: None)
 
@@ -127,6 +136,7 @@ def _wait_for_natural_completion(thread, timeout_s: float = 15.0) -> None:
 def test_uncooperative_worker_is_detached_not_terminated(app, window):
     # Long enough that it is still running at the end of the grace period,
     # short enough that the test doesn't hang waiting for it to finish.
+    """test_uncooperative_worker_is_detached_not_terminated."""
     stub_sleep = window._CLOSE_GRACE_S + 1.0
     worker = _StubbornWorker(sleep_s=stub_sleep)
     window.run_worker(worker, lambda *_: None)
@@ -158,6 +168,7 @@ def test_shutdown_workers_never_calls_terminate(app, window, monkeypatch):
     original = QThread.terminate
 
     def _tracking_terminate(self):
+        """_tracking_terminate."""
         calls.append(self)
         return original(self)
 

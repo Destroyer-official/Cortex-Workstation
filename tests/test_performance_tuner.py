@@ -18,7 +18,9 @@ SAMPLE = (
 
 
 class TestParse:
+    """TestParse."""
     def test_parses_all_plans(self):
+        """test_parses_all_plans."""
         plans = PerformanceTuner._parse(SAMPLE)
         assert len(plans) == 3
         assert all(isinstance(p, PowerPlan) for p in plans)
@@ -26,6 +28,7 @@ class TestParse:
         assert "Balanced" in names and "High performance" in names
 
     def test_marks_active_plan(self):
+        """test_marks_active_plan."""
         plans = PerformanceTuner._parse(SAMPLE)
         active = [p for p in plans if p.active]
         assert len(active) == 1
@@ -33,21 +36,27 @@ class TestParse:
         assert active[0].guid == "381b4222-f694-41f0-9685-ff5bb260df2e"
 
     def test_empty_input(self):
+        """test_empty_input."""
         assert PerformanceTuner._parse(None) == []
         assert PerformanceTuner._parse("") == []
 
 
 class TestSafety:
+    """TestSafety."""
     def test_is_supported_matches_platform(self):
+        """test_is_supported_matches_platform."""
         assert PerformanceTuner.is_supported() == IS_WINDOWS
 
     def test_set_active_rejects_bad_guid(self):
+        """test_set_active_rejects_bad_guid."""
         ok, msg = PerformanceTuner().set_active("not-a-guid")
         assert ok is False
 
     def test_list_plans_returns_list(self):
+        """test_list_plans_returns_list."""
         assert isinstance(PerformanceTuner().list_plans(), list)
 
     def test_to_dict(self):
+        """test_to_dict."""
         p = PowerPlan(guid="g", name="Balanced", active=True)
         assert p.to_dict() == {"guid": "g", "name": "Balanced", "active": True}

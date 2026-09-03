@@ -23,6 +23,7 @@ IS_WINDOWS = platform.system() == "Windows"
 
 
 def test_normal_completion_returns_output():
+    """test_normal_completion_returns_output."""
     result = proc.run(["cmd", "/c", "echo hello"] if IS_WINDOWS else ["echo", "hello"],
                       timeout=10)
     assert result.returncode == 0
@@ -30,12 +31,14 @@ def test_normal_completion_returns_output():
 
 
 def test_nonzero_exit_is_reported_not_raised():
+    """test_nonzero_exit_is_reported_not_raised."""
     result = proc.run(["cmd", "/c", "exit 3"] if IS_WINDOWS else ["sh", "-c", "exit 3"],
                       timeout=10)
     assert result.returncode == 3
 
 
 def test_real_timeout_raises_and_is_prompt():
+    """test_real_timeout_raises_and_is_prompt."""
     cmd = (["ping", "-n", "10", "127.0.0.1"] if IS_WINDOWS
            else ["sleep", "10"])
     t0 = time.perf_counter()
@@ -48,11 +51,13 @@ def test_real_timeout_raises_and_is_prompt():
 
 
 def test_cancel_event_raises_and_is_prompt():
+    """test_cancel_event_raises_and_is_prompt."""
     cmd = (["ping", "-n", "10", "127.0.0.1"] if IS_WINDOWS
            else ["sleep", "10"])
     event = threading.Event()
 
     def _cancel_soon():
+        """_cancel_soon."""
         time.sleep(0.5)
         event.set()
 
@@ -119,6 +124,7 @@ def test_run_never_leaves_output_unread_on_success():
 
 
 def test_text_mode_decodes_output():
+    """test_text_mode_decodes_output."""
     result = proc.run(["cmd", "/c", "echo hi"] if IS_WINDOWS else ["echo", "hi"],
                       timeout=5, text=True)
     assert isinstance(result.stdout, str)
@@ -126,5 +132,6 @@ def test_text_mode_decodes_output():
 
 
 def test_missing_executable_raises_oserror():
+    """test_missing_executable_raises_oserror."""
     with pytest.raises(OSError):
         proc.run(["this-binary-does-not-exist-cortex-test"], timeout=5)

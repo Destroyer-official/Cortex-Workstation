@@ -28,11 +28,13 @@ SCOPES = ("192.168.50.0/24",)
 
 @pytest.fixture(scope="module")
 def app():
+    """app."""
     return QApplication.instance() or QApplication([])
 
 
 @pytest.fixture
 def window(app):
+    """window."""
     from cortex_unified.ui.premium.theme import apply_theme
     from cortex_unified.ui.premium.window import (
         PremiumMainWindow,
@@ -44,6 +46,7 @@ def window(app):
 
 
 def _observation(port=443, name="https", **kwargs):
+    """_observation."""
     metadata = kwargs.pop(
         "metadata",
         {"evidence": ["TCP connection accepted"]},
@@ -54,6 +57,7 @@ def _observation(port=443, name="https", **kwargs):
 
 
 def _device(**kwargs):
+    """_device."""
     payload = dict(
         ip="192.168.50.20",
         mac="00:11:22:33:44:55",
@@ -69,6 +73,7 @@ def _device(**kwargs):
 
 
 def test_window_renders_discovery_evidence_before_any_scan(window):
+    """test_window_renders_discovery_evidence_before_any_scan."""
     win = device_window_module.DeviceDetailWindow(window, _device(), SCOPES)
     try:
         assert "192.168.50.20" in win.windowTitle()
@@ -85,6 +90,7 @@ def test_window_renders_discovery_evidence_before_any_scan(window):
 
 
 def test_window_renders_completed_scan_payload_with_severity_badge(window):
+    """test_window_renders_completed_scan_payload_with_severity_badge."""
     from cortex_unified.system_tools.device_fingerprint import (
         fingerprint_device,
     )
@@ -151,7 +157,9 @@ def test_window_renders_completed_scan_payload_with_severity_badge(window):
 
 
 def test_worker_refuses_target_outside_authorized_scope(monkeypatch):
+    """test_worker_refuses_target_outside_authorized_scope."""
     def fail_scan(*_args, **_kwargs):
+        """fail_scan."""
         raise AssertionError("an out-of-scope device must never be scanned")
 
     from cortex_unified.system_tools import network_service_scanner
@@ -167,6 +175,7 @@ def test_worker_refuses_target_outside_authorized_scope(monkeypatch):
 
 
 def test_worker_collects_services_findings_and_history(monkeypatch):
+    """test_worker_collects_services_findings_and_history."""
     from cortex_unified.system_tools import (
         network_service_scanner,
         network_tools,
@@ -207,6 +216,7 @@ def test_worker_collects_services_findings_and_history(monkeypatch):
 
 
 def test_worker_reports_missing_nmap_without_failing(monkeypatch):
+    """test_worker_reports_missing_nmap_without_failing."""
     from cortex_unified.system_tools import (
         network_service_scanner,
         nmap_adapter,
@@ -240,6 +250,7 @@ def test_worker_reports_missing_nmap_without_failing(monkeypatch):
 
 
 def test_worker_does_not_claim_port_source_without_observation(monkeypatch):
+    """test_worker_does_not_claim_port_source_without_observation."""
     from cortex_unified.system_tools import network_service_scanner
 
     monkeypatch.setattr(
@@ -282,12 +293,14 @@ def test_worker_does_not_claim_port_source_without_observation(monkeypatch):
 
 
 def test_ping_worker_is_scope_checked_and_does_not_scan_ports(monkeypatch):
+    """test_ping_worker_is_scope_checked_and_does_not_scan_ports."""
     from cortex_unified.system_tools import (
         network_service_scanner,
         network_tools,
     )
 
     def fail_scan(*_args, **_kwargs):
+        """fail_scan."""
         raise AssertionError("the Ping action must not start a service scan")
 
     monkeypatch.setattr(
@@ -317,6 +330,7 @@ def test_ping_worker_is_scope_checked_and_does_not_scan_ports(monkeypatch):
 
 
 def test_failed_scan_restores_capability_based_actions(window, monkeypatch):
+    """test_failed_scan_restores_capability_based_actions."""
     device = _device(mac="02:11:22:33:44:55")
     win = device_window_module.DeviceDetailWindow(window, device, SCOPES)
     monkeypatch.setattr(
@@ -342,18 +356,23 @@ def test_lan_page_opens_retains_and_safely_closes_device_window(
     window,
     monkeypatch,
 ):
+    """test_lan_page_opens_retains_and_safely_closes_device_window."""
     from cortex_unified.system_tools.network_discovery import DiscoveryResult
 
     class FakeWorker:
+        """FakeWorker."""
         def __init__(self):
+            """__init__."""
             self.cancelled = False
 
         def cancel(self):
+            """cancel."""
             self.cancelled = True
 
     started: list[tuple[object, str]] = []
 
     def fake_start_scan(detail_window, profile="advanced"):
+        """fake_start_scan."""
         detail_window._worker = FakeWorker()
         detail_window._busy(True)
         started.append((detail_window, profile))

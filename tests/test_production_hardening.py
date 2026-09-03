@@ -41,7 +41,9 @@ def fake_env(monkeypatch, tmp_path):
 # =====================================================================
 
 class TestExclusionsStore:
+    """TestExclusionsStore."""
     def test_add_is_persisted_and_prefix_matched(self, tmp_path):
+        """test_add_is_persisted_and_prefix_matched."""
         from cortex_unified.system_tools.leftover_cleaner import ExclusionsStore
         store = ExclusionsStore(tmp_path / "ex.json")
         target = tmp_path / "roaming" / "ZetaSoft"
@@ -55,6 +57,7 @@ class TestExclusionsStore:
         assert not reloaded.is_excluded(tmp_path / "other")
 
     def test_discard_removes_and_persists(self, tmp_path):
+        """test_discard_removes_and_persists."""
         from cortex_unified.system_tools.leftover_cleaner import ExclusionsStore
         p = tmp_path / "ex.json"
         store = ExclusionsStore(p)
@@ -63,6 +66,7 @@ class TestExclusionsStore:
         assert len(ExclusionsStore(p)) == 0
 
     def test_corrupt_file_degrades_to_empty(self, tmp_path):
+        """test_corrupt_file_degrades_to_empty."""
         from cortex_unified.system_tools.leftover_cleaner import ExclusionsStore
         p = tmp_path / "ex.json"
         p.write_text("{not json", encoding="utf-8")
@@ -72,7 +76,9 @@ class TestExclusionsStore:
 
 
 class TestScannerExclusions:
+    """TestScannerExclusions."""
     def test_scan_app_skips_excluded_folders(self, fake_env):
+        """test_scan_app_skips_excluded_folders."""
         from cortex_unified.system_tools.leftover_cleaner import (
             ExclusionsStore,
             InstalledApp,
@@ -100,6 +106,7 @@ class TestScannerExclusions:
         calls = []
 
         def fake_send2trash(path):  # must never be reached
+            """fake_send2trash."""
             calls.append(path)
 
         import send2trash
@@ -119,7 +126,9 @@ class TestScannerExclusions:
 
 
 class TestCleanCancel:
+    """TestCleanCancel."""
     def test_cancel_event_stops_between_items(self, tmp_path, monkeypatch):
+        """test_cancel_event_stops_between_items."""
         from threading import Event
 
         from cortex_unified.system_tools.leftover_cleaner import (
@@ -129,6 +138,7 @@ class TestCleanCancel:
         processed = []
 
         def fake_send2trash(path):
+            """fake_send2trash."""
             processed.append(path)
             if len(processed) == 1:
                 ev.set()                          # cancel after first item
@@ -156,6 +166,7 @@ class TestCleanCancel:
 # =====================================================================
 
 class TestDisambiguation:
+    """TestDisambiguation."""
     def test_weaker_name_match_penalised(self, fake_env):
         """For app 'ZetaEditor', folder 'ZetaEditor' outranks 'ZetaEditorSuite'
         - the suite folder likely belongs to a different product."""
@@ -189,17 +200,21 @@ class TestDisambiguation:
 # =====================================================================
 
 class TestSettingsConsent:
+    """TestSettingsConsent."""
     def test_update_check_defaults_off(self, tmp_path):
+        """test_update_check_defaults_off."""
         from cortex_unified.ui.premium.settings_store import SettingsStore
         s = SettingsStore(tmp_path / "s.json")
         assert s.update_check is False          # opt-in ONLY
 
     def test_leftover_restore_point_defaults_on(self, tmp_path):
+        """test_leftover_restore_point_defaults_on."""
         from cortex_unified.ui.premium.settings_store import SettingsStore
         s = SettingsStore(tmp_path / "s.json")
         assert s.leftover_restore_point is True  # safe default
 
     def test_fields_roundtrip(self, tmp_path):
+        """test_fields_roundtrip."""
         from cortex_unified.ui.premium.settings_store import SettingsStore
         s = SettingsStore(tmp_path / "s.json")
         s.update_check = True
@@ -209,6 +224,7 @@ class TestSettingsConsent:
         assert reloaded.leftover_restore_point is False
 
     def test_corrupt_file_uses_safe_defaults(self, tmp_path):
+        """test_corrupt_file_uses_safe_defaults."""
         from cortex_unified.ui.premium.settings_store import SettingsStore
         p = tmp_path / "s.json"
         p.write_text("garbage{", encoding="utf-8")
@@ -218,6 +234,7 @@ class TestSettingsConsent:
 
 
 class TestUpdateCheckGate:
+    """TestUpdateCheckGate."""
     def test_scheduler_noops_without_consent(self, monkeypatch):
         """No network call may happen unless the user opted in."""
         import cortex_unified.ui.premium.app as app_mod
@@ -228,9 +245,13 @@ class TestUpdateCheckGate:
                             lambda *a, **k: called.append(1))
 
         class FakeWin:
+            """FakeWin."""
             def statusBar(self):
+                """statusBar."""
                 class SB:
+                    """SB."""
                     def showMessage(self, *a, **k):
+                        """showMessage."""
                         pass
                 return SB()
 
@@ -244,7 +265,9 @@ class TestUpdateCheckGate:
 # =====================================================================
 
 class TestBackupsLeftoverJournals:
+    """TestBackupsLeftoverJournals."""
     def test_worker_lists_journal_sessions(self, tmp_path, monkeypatch):
+        """test_worker_lists_journal_sessions."""
         import cortex_unified.ui.premium.report_pages as rp
 
         session = tmp_path / "CortexCleanerBackups" / "leftovers" / "20260101_120000"
@@ -256,7 +279,9 @@ class TestBackupsLeftoverJournals:
         }), encoding="utf-8")
 
         class FakeRestoreManager:
+            """FakeRestoreManager."""
             def list_manifests(self):
+                """list_manifests."""
                 return [{"backup_name": "op-manifest", "_kind": "manifest"}]
 
         from cortex_unified.reports import restore_manager as rm_mod

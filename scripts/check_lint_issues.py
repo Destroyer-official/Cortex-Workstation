@@ -4,6 +4,7 @@ import builtins
 import sys
 
 def check_undefined_names_in_file(filepath):
+    """check_undefined_names_in_file."""
     with open(filepath, 'r', encoding='utf-8', errors='ignore') as f:
         code = f.read()
     try:
@@ -21,13 +22,18 @@ try:
     import io
 
     class Reporter:
+        """Reporter."""
         def __init__(self):
+            """__init__."""
             self.errors = []
         def unexpectedError(self, filename, msg):
+            """unexpectedError."""
             self.errors.append(f"{filename}: unexpected error: {msg}")
         def syntaxError(self, filename, msg, lineno, offset, text):
+            """syntaxError."""
             self.errors.append(f"{filename}:{lineno}: syntax error: {msg}")
         def flake(self, msg):
+            """flake."""
             self.errors.append(str(msg))
 
     rep = Reporter()

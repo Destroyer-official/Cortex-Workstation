@@ -15,14 +15,18 @@ IS_WINDOWS = platform.system() == "Windows"
 
 
 class TestParse:
+    """TestParse."""
     def test_empty_returns_empty_list(self):
+        """test_empty_returns_empty_list."""
         assert DiskHealthMonitor._parse(None) == []
         assert DiskHealthMonitor._parse("") == []
 
     def test_invalid_json_returns_empty(self):
+        """test_invalid_json_returns_empty."""
         assert DiskHealthMonitor._parse("not json {{{") == []
 
     def test_single_object_becomes_one_disk(self):
+        """test_single_object_becomes_one_disk."""
         payload = (
             '{"Name":"Samsung SSD 980","MediaType":"SSD","Health":"Healthy",'
             '"Op":"OK","Size":1000204886016,"Wear":3,"Temp":41,'
@@ -43,6 +47,7 @@ class TestParse:
         assert d.power_on_hours == 1200
 
     def test_array_of_disks(self):
+        """test_array_of_disks."""
         payload = (
             '[{"Name":"Disk A","MediaType":"HDD","Health":"Healthy","Op":"OK","Size":500},'
             '{"Name":"Disk B","MediaType":"SSD","Health":"Warning","Op":"Degraded","Size":250}]'
@@ -54,6 +59,7 @@ class TestParse:
         assert disks[1].is_healthy is False
 
     def test_missing_reliability_counters_stay_none(self):
+        """test_missing_reliability_counters_stay_none."""
         payload = (
             '{"Name":"Old Disk","MediaType":"HDD","Health":"Healthy","Op":"OK",'
             '"Size":320072933376,"Wear":null,"Temp":null,"Realloc":null,"Hours":null}'
@@ -65,6 +71,7 @@ class TestParse:
         assert d.power_on_hours is None
 
     def test_garbage_numeric_fields_coerce_to_none(self):
+        """test_garbage_numeric_fields_coerce_to_none."""
         payload = (
             '{"Name":"X","MediaType":"SSD","Health":"Healthy","Op":"OK",'
             '"Size":"notanumber","Wear":"n/a"}'
@@ -74,6 +81,7 @@ class TestParse:
         assert d.wear_percent is None
 
     def test_defaults_for_absent_keys(self):
+        """test_defaults_for_absent_keys."""
         d = DiskHealthMonitor._parse('{}')[0]
         assert d.name == "Unknown"
         assert d.media_type == "Unspecified"
@@ -82,7 +90,9 @@ class TestParse:
 
 
 class TestToDict:
+    """TestToDict."""
     def test_to_dict_roundtrip_keys(self):
+        """test_to_dict_roundtrip_keys."""
         d = DiskHealth(
             name="N", media_type="SSD", health_status="Healthy",
             operational_status="OK", size_bytes=1024, wear_percent=1,
@@ -100,11 +110,14 @@ class TestToDict:
 
 
 class TestSupport:
+    """TestSupport."""
     def test_is_supported_matches_platform(self):
+        """test_is_supported_matches_platform."""
         assert DiskHealthMonitor.is_supported() == IS_WINDOWS
 
     def test_get_health_returns_list(self):
         # Never raises; returns [] off-Windows, a list of DiskHealth on Windows.
+        """test_get_health_returns_list."""
         result = DiskHealthMonitor().get_health()
         assert isinstance(result, list)
         assert all(isinstance(d, DiskHealth) for d in result)

@@ -40,6 +40,7 @@ from cortex_unified.analyzers.broken_link_detector import (  # noqa: E402
 
 @pytest.fixture(scope="module")
 def app():
+    """app."""
     return QApplication.instance() or QApplication([])
 
 
@@ -51,12 +52,14 @@ def make_tab(app):
     holder = type("SafetyManagerStub", (), {})()
 
     def _make(tab_cls):
+        """_make."""
         return tab_cls(config, logger, holder)
 
     return _make
 
 
 def _link_item(path: Path) -> BrokenSymlink:
+    """_link_item."""
     return BrokenSymlink(
         path=path,
         target=str(path.parent / "missing_target.bin"),
@@ -69,6 +72,7 @@ def _link_item(path: Path) -> BrokenSymlink:
 
 
 def _registry_item(tmp_path: Path) -> BrokenRegistryRef:
+    """_registry_item."""
     return BrokenRegistryRef(
         path=tmp_path / "Registry:HKCU\\Run\\Ghost",
         target="C:\\nope\\ghost.exe",
@@ -87,6 +91,7 @@ def _registry_item(tmp_path: Path) -> BrokenRegistryRef:
 # ---------------------------------------------------------------------------
 
 def test_free_space_checkbox_disabled_on_free_tier(app, make_tab, monkeypatch):
+    """test_free_space_checkbox_disabled_on_free_tier."""
     monkeypatch.setattr(file_shredder_tab, "allowed", lambda feature: False)
     tab = make_tab(FileShredderTab)
 
@@ -96,6 +101,7 @@ def test_free_space_checkbox_disabled_on_free_tier(app, make_tab, monkeypatch):
 
 
 def test_free_space_checkbox_enabled_when_entitled(app, make_tab, monkeypatch):
+    """test_free_space_checkbox_enabled_when_entitled."""
     monkeypatch.setattr(
         file_shredder_tab, "allowed",
         lambda feature: feature == Feature.FREE_SPACE_WIPE)
@@ -105,6 +111,7 @@ def test_free_space_checkbox_enabled_when_entitled(app, make_tab, monkeypatch):
 
 
 def test_multipass_spinbox_capped_without_entitlement(app, make_tab, monkeypatch):
+    """test_multipass_spinbox_capped_without_entitlement."""
     monkeypatch.setattr(file_shredder_tab, "allowed", lambda feature: False)
     tab = make_tab(FileShredderTab)
 
@@ -119,6 +126,7 @@ def test_multipass_spinbox_capped_without_entitlement(app, make_tab, monkeypatch
 
 
 def test_multipass_allowed_keeps_full_range(app, make_tab, monkeypatch):
+    """test_multipass_allowed_keeps_full_range."""
     monkeypatch.setattr(
         file_shredder_tab, "allowed",
         lambda feature: feature == Feature.SHRED_MULTIPASS)
@@ -132,6 +140,7 @@ def test_multipass_allowed_keeps_full_range(app, make_tab, monkeypatch):
 # ---------------------------------------------------------------------------
 
 def _make_broken_symlink(tmp_path: Path):
+    """_make_broken_symlink."""
     target = tmp_path / "gone.bin"
     link = tmp_path / "dangling.link"
     try:
@@ -142,6 +151,7 @@ def _make_broken_symlink(tmp_path: Path):
 
 
 def test_repair_dry_run_changes_nothing(app, tmp_path):
+    """test_repair_dry_run_changes_nothing."""
     link, _target = _make_broken_symlink(tmp_path)
     items = [_link_item(link), _registry_item(tmp_path)]
 
@@ -162,6 +172,7 @@ def test_repair_dry_run_changes_nothing(app, tmp_path):
 
 
 def test_repair_removes_only_the_link(app, tmp_path, monkeypatch):
+    """test_repair_removes_only_the_link."""
     link, target = _make_broken_symlink(tmp_path)
     keep_me = tmp_path / "keep.txt"
     keep_me.write_text("precious data")
@@ -220,6 +231,7 @@ def test_repair_removes_dangling_junction_link_only(app, tmp_path):
 
 
 def test_repair_excludes_registry_refs(app, tmp_path):
+    """test_repair_excludes_registry_refs."""
     outcomes = repair([_registry_item(tmp_path)], use_trash=True, dry_run=False)
 
     assert len(outcomes) == 1
@@ -230,6 +242,7 @@ def test_repair_excludes_registry_refs(app, tmp_path):
 
 
 def test_repair_recycles_shortcut_via_send2trash(app, tmp_path, monkeypatch):
+    """test_repair_recycles_shortcut_via_send2trash."""
     lnk = tmp_path / "broken.lnk"
     lnk.write_bytes(b"\x00" * 128)
     item = BrokenShortcut(
@@ -245,6 +258,7 @@ def test_repair_recycles_shortcut_via_send2trash(app, tmp_path, monkeypatch):
     sent = []
 
     def fake_trash(p):
+        """fake_trash."""
         sent.append(p)
         os.remove(p)  # same contract as real send2trash
 
@@ -263,6 +277,7 @@ def test_repair_recycles_shortcut_via_send2trash(app, tmp_path, monkeypatch):
 
 
 def test_repair_refuses_real_directory(app, tmp_path):
+    """test_repair_refuses_real_directory."""
     real_dir = tmp_path / "real_dir"
     real_dir.mkdir()
     (real_dir / "data.txt").write_text("not a link")
@@ -283,19 +298,24 @@ def _silence_message_boxes(monkeypatch, module):
     """Replace modal QMessageBox calls so headless tests never block."""
 
     class FakeBoxes:
+        """FakeBoxes."""
         def information(self, *a, **k):
+            """information."""
             return None
 
         def warning(self, *a, **k):
+            """warning."""
             return None
 
         def critical(self, *a, **k):
+            """critical."""
             return None
 
     monkeypatch.setattr(module, "QMessageBox", FakeBoxes())
 
 
 def test_schedule_button_disabled_on_free_tier(app, make_tab, monkeypatch):
+    """test_schedule_button_disabled_on_free_tier."""
     monkeypatch.setattr(reports_tab, "allowed", lambda feature: False)
     tab = make_tab(ReportsTab)
 
@@ -305,14 +325,18 @@ def test_schedule_button_disabled_on_free_tier(app, make_tab, monkeypatch):
 
 
 def test_schedule_button_enabled_and_creates_task(app, make_tab, monkeypatch):
+    """test_schedule_button_enabled_and_creates_task."""
     calls = []
 
     class FakeScheduler:
+        """FakeScheduler."""
         def __init__(self, config=None):
+            """__init__."""
             pass
 
         def create_scheduled_task(self, name, command, schedule_type,
                                   schedule_params=None):
+            """create_scheduled_task."""
             calls.append({
                 "name": name,
                 "command": command,
@@ -342,13 +366,17 @@ def test_schedule_button_enabled_and_creates_task(app, make_tab, monkeypatch):
 
 
 def test_schedule_dialog_cancel_creates_nothing(app, make_tab, monkeypatch):
+    """test_schedule_dialog_cancel_creates_nothing."""
     calls = []
 
     class FakeScheduler:
+        """FakeScheduler."""
         def __init__(self, config=None):
+            """__init__."""
             pass
 
         def create_scheduled_task(self, *args, **kwargs):
+            """create_scheduled_task."""
             calls.append(args)
             return True
 

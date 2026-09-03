@@ -7,6 +7,7 @@ from pathlib import Path
 
 
 def get_module_info(p: Path):
+    """get_module_info."""
     try:
         content = p.read_text(encoding="utf-8", errors="ignore")
         tree = ast.parse(content)

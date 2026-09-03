@@ -20,6 +20,7 @@ IS_WIN = sys.platform == "win32"
 
 
 def _write_text(folder: Path, name: str, size_kb: int = 64):
+    """_write_text."""
     chunk = ("The quick brown fox jumps over the lazy dog. 0123456789\n" * 8).encode()
     data = (chunk * max(1, (size_kb * 1024) // len(chunk)))[: size_kb * 1024]
     (folder / name).write_bytes(data)
@@ -27,6 +28,7 @@ def _write_text(folder: Path, name: str, size_kb: int = 64):
 
 def _write_fill(folder: Path, name: str, size_kb: int = 64):
     # random-looking bytes => low compression (a stand-in for media)
+    """_write_fill."""
     import random
 
     random.seed(0)
@@ -34,11 +36,13 @@ def _write_fill(folder: Path, name: str, size_kb: int = 64):
 
 
 def test_is_supported_reflects_platform():
+    """test_is_supported_reflects_platform."""
     m = CompactOSManager()
     assert m.is_supported() is IS_WIN
 
 
 def test_system_folder_names_are_blocked():
+    """test_system_folder_names_are_blocked."""
     from cortex_unified.system_tools import compact_os
     for name in ("Windows", "Program Files", "$Recycle.Bin",
                  "System Volume Information", "node_modules", ".git"):
@@ -49,6 +53,7 @@ def test_system_folder_names_are_blocked():
 
 
 def test_estimate_text_heavy_folder(tmp_path):
+    """test_estimate_text_heavy_folder."""
     _write_text(tmp_path, "a.log", 128)
     _write_text(tmp_path, "b.json", 128)
     est = CompactOSManager()._estimate_folder(tmp_path)
@@ -60,6 +65,7 @@ def test_estimate_text_heavy_folder(tmp_path):
 
 
 def test_estimate_incompressible_folder(tmp_path):
+    """test_estimate_incompressible_folder."""
     _write_fill(tmp_path, "a.png", 256)
     _write_fill(tmp_path, "b.zip", 256)
     est = CompactOSManager()._estimate_folder(tmp_path)
@@ -69,6 +75,7 @@ def test_estimate_incompressible_folder(tmp_path):
 
 
 def test_find_compressible_folders_respects_min_size(tmp_path):
+    """test_find_compressible_folders_respects_min_size."""
     big = tmp_path / "logs"
     small = tmp_path / "small"
     big.mkdir()
@@ -85,6 +92,7 @@ def test_find_compressible_folders_respects_min_size(tmp_path):
 
 
 def test_find_skips_blocked_and_system_subfolders(tmp_path):
+    """test_find_skips_blocked_and_system_subfolders."""
     for name in ("Windows", "node_modules"):
         (tmp_path / name).mkdir(exist_ok=True)
         _write_text(tmp_path / name, "x.log", 300)
@@ -97,6 +105,7 @@ def test_find_skips_blocked_and_system_subfolders(tmp_path):
 
 def test_compact_folder_refuses_system_tree(tmp_path):
     # Even without admin, we must refuse a protected tree *before* shelling out.
+    """test_compact_folder_refuses_system_tree."""
     m = CompactOSManager()
     res = m.compact_folder(str(tmp_path / "Windows"), recursive=True)
     assert res.success is False
@@ -104,6 +113,7 @@ def test_compact_folder_refuses_system_tree(tmp_path):
 
 
 def test_compact_folder_refuses_drive_root(tmp_path):
+    """test_compact_folder_refuses_drive_root."""
     m = CompactOSManager()
     res = m.compact_folder(str(Path.cwd().anchor), recursive=True)
     assert res.success is False

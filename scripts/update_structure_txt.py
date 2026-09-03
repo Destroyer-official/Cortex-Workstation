@@ -26,6 +26,7 @@ EXCLUDE_FILES = {
 
 
 def build_tree(dir_path: Path, prefix: str = "") -> list[str]:
+    """build_tree."""
     lines = []
     try:
         entries = sorted(list(dir_path.iterdir()), key=lambda e: (not e.is_dir(), e.name.lower()))
@@ -55,6 +56,7 @@ def build_tree(dir_path: Path, prefix: str = "") -> list[str]:
 
 
 def main():
+    """main."""
     header = [
         "CORTEX CLEANER SUITE — PROJECT DIRECTORY STRUCTURE",
         "==================================================",

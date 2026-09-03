@@ -22,12 +22,15 @@ SAMPLE = (
 
 
 class TestParser:
+    """TestParser."""
     def test_parses_all_rows(self):
+        """test_parses_all_rows."""
         apps = AppUpdater.parse_upgrade_output(SAMPLE)
         assert len(apps) == 3
         assert all(isinstance(a, UpgradableApp) for a in apps)
 
     def test_fields_extracted(self):
+        """test_fields_extracted."""
         apps = {a.package_id: a for a in AppUpdater.parse_upgrade_output(SAMPLE)}
         git = apps["Git.Git"]
         assert git.name == "Git"
@@ -36,31 +39,38 @@ class TestParser:
         assert git.source == "winget"
 
     def test_handles_unknown_version(self):
+        """test_handles_unknown_version."""
         apps = {a.package_id: a for a in AppUpdater.parse_upgrade_output(SAMPLE)}
         assert apps["Google.CloudSDK"].current == "Unknown"
         assert apps["Google.CloudSDK"].available == "575.0.0"
 
     def test_skips_spinner_and_footer(self):
+        """test_skips_spinner_and_footer."""
         apps = AppUpdater.parse_upgrade_output(SAMPLE)
         ids = {a.package_id for a in apps}
         assert "" not in ids  # no spinner/footer rows leaked in
 
     def test_empty_or_garbage_returns_empty(self):
+        """test_empty_or_garbage_returns_empty."""
         assert AppUpdater.parse_upgrade_output("") == []
         assert AppUpdater.parse_upgrade_output("no table here\njust text") == []
 
     def test_to_dict(self):
+        """test_to_dict."""
         app = AppUpdater.parse_upgrade_output(SAMPLE)[0]
         d = app.to_dict()
         assert set(d) == {"name", "id", "current", "available", "source"}
 
 
 class TestCapability:
+    """TestCapability."""
     def test_is_available_returns_bool(self):
+        """test_is_available_returns_bool."""
         assert isinstance(AppUpdater.is_available(), bool)
 
     def test_upgrade_requires_id(self):
         # Empty id must fail fast without invoking winget.
+        """test_upgrade_requires_id."""
         updater = AppUpdater()
         if not AppUpdater.is_available():
             ok, msg = updater.upgrade("")

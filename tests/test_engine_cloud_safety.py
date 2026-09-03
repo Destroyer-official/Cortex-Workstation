@@ -33,6 +33,7 @@ IS_WINDOWS = platform.system() == "Windows"
 # ---------------------------------------------------------------------------
 
 def test_recall_attributes_mean_dehydrated():
+    """test_recall_attributes_mean_dehydrated."""
     assert wa.is_dehydrated(wa.FILE_ATTRIBUTE_RECALL_ON_DATA_ACCESS)
     assert wa.is_dehydrated(wa.FILE_ATTRIBUTE_RECALL_ON_OPEN)
     assert wa.is_dehydrated(wa.FILE_ATTRIBUTE_OFFLINE)
@@ -43,6 +44,7 @@ def test_recall_attributes_mean_dehydrated():
 
 def test_cloud_tag_family_is_matched():
     # The cloud filter reserves 0x9000?01A for CLOUD and CLOUD_1..CLOUD_F.
+    """test_cloud_tag_family_is_matched."""
     assert wa.is_cloud_tag(wa.IO_REPARSE_TAG_CLOUD)
     assert wa.is_cloud_tag(0x9000701A)
     assert wa.is_cloud_tag(0x9000F01A)
@@ -51,12 +53,14 @@ def test_cloud_tag_family_is_matched():
 
 
 def test_junction_detected_by_tag_only():
+    """test_junction_detected_by_tag_only."""
     assert wa.is_junction(wa.IO_REPARSE_TAG_MOUNT_POINT)
     assert not wa.is_junction(wa.IO_REPARSE_TAG_SYMLINK)
     assert not wa.is_junction(0)
 
 
 def test_describe_explains_each_special_case():
+    """test_describe_explains_each_special_case."""
     assert "not stored on this disk" in wa.describe(wa.FILE_ATTRIBUTE_OFFLINE)
     assert "junction" in wa.describe(
         wa.FILE_ATTRIBUTE_REPARSE_POINT, wa.IO_REPARSE_TAG_MOUNT_POINT)
@@ -68,6 +72,7 @@ def test_describe_explains_each_special_case():
 def test_pure_helpers_never_raise_on_missing_attributes():
     """Non-Windows stat results have no attribute fields; that must be fine."""
     class Bare:
+        """Bare."""
         pass
 
     assert wa.attrs_of(Bare()) == 0
@@ -109,6 +114,7 @@ def cloud_tree(tmp_path):
 
 @pytest.mark.skipif(not IS_WINDOWS, reason="reparse points are a Windows concept")
 def test_placeholder_excluded_and_reported(cloud_tree):
+    """test_placeholder_excluded_and_reported."""
     root, stub = cloud_tree
     result = FastWalker(WalkOptions()).scan(root)
 
@@ -123,6 +129,7 @@ def test_placeholder_excluded_and_reported(cloud_tree):
 
 @pytest.mark.skipif(not IS_WINDOWS, reason="reparse points are a Windows concept")
 def test_junction_not_descended(cloud_tree):
+    """test_junction_not_descended."""
     root, _ = cloud_tree
     result = FastWalker(WalkOptions()).scan(root)
     # Without junction handling the target's file would be counted twice.
@@ -174,6 +181,7 @@ def test_shredder_refuses_cloud_placeholder(cloud_tree):
 # ---------------------------------------------------------------------------
 
 def test_on_disk_size_matches_a_plain_file(tmp_path):
+    """test_on_disk_size_matches_a_plain_file."""
     f = tmp_path / "plain.bin"
     f.write_bytes(b"x" * 5000)
     measured = wa.on_disk_size(f, 5000)
@@ -183,6 +191,7 @@ def test_on_disk_size_matches_a_plain_file(tmp_path):
 
 
 def test_on_disk_size_returns_none_for_missing_path(tmp_path):
+    """test_on_disk_size_returns_none_for_missing_path."""
     assert wa.on_disk_size(tmp_path / "nope.bin", 0) in (None, 0)
 
 

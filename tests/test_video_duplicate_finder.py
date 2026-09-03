@@ -16,6 +16,7 @@ from cortex_unified.analyzers.video_duplicate_finder import (
 def _make_fake_video(path: Path, payload: bytes, size_kb: int = 128):
     # Create a raw byte payload that the fallback chunker will hash.
     # Repeat payload to reach size_kb
+    """_make_fake_video."""
     chunk = payload * max(1, (size_kb * 1024) // max(1, len(payload)))
     path.write_bytes(chunk[: size_kb * 1024])
 
@@ -23,6 +24,7 @@ def _make_fake_video(path: Path, payload: bytes, size_kb: int = 128):
 # --- primitives ---
 
 def test_fingerprint_is_list(tmp_path: Path):
+    """test_fingerprint_is_list."""
     p = tmp_path / "a.mp4"
     _make_fake_video(p, b"framebytes" * 100)
     fp = compute_video_fingerprint(p)
@@ -31,6 +33,7 @@ def test_fingerprint_is_list(tmp_path: Path):
 
 
 def test_identical_videos_compare_high(tmp_path: Path):
+    """test_identical_videos_compare_high."""
     a = tmp_path / "a.mp4"
     b = tmp_path / "b.mp4"
     _make_fake_video(a, b"identical-video-content" * 50)
@@ -41,6 +44,7 @@ def test_identical_videos_compare_high(tmp_path: Path):
 
 
 def test_different_videos_compare_low(tmp_path: Path):
+    """test_different_videos_compare_low."""
     a = tmp_path / "a.mp4"
     b = tmp_path / "b.mp4"
     _make_fake_video(a, b"video-A-content" * 80)
@@ -55,11 +59,13 @@ def test_different_videos_compare_low(tmp_path: Path):
 
 
 def test_video_compare_empty():
+    """test_video_compare_empty."""
     assert video_compare([], []) == 0.0
     assert video_compare([1, 2], []) == 0.0
 
 
 def test_video_compare_identity():
+    """test_video_compare_identity."""
     fp = [0x12345678, 0x9ABCDEF0, 0x11111111]
     assert video_compare(fp, fp) == 1.0
 
@@ -67,6 +73,7 @@ def test_video_compare_identity():
 # --- finder ---
 
 def test_finder_groups_identical_videos(tmp_path: Path):
+    """test_finder_groups_identical_videos."""
     _make_fake_video(tmp_path / "a.mp4", b"dup-video" * 60)
     _make_fake_video(tmp_path / "b.mp4", b"dup-video" * 60)
     _make_fake_video(tmp_path / "c.mp4", b"other-video-xyz" * 60)
@@ -81,6 +88,7 @@ def test_finder_groups_identical_videos(tmp_path: Path):
 
 
 def test_finder_excludes_non_video(tmp_path: Path):
+    """test_finder_excludes_non_video."""
     (tmp_path / "notes.txt").write_text("hello")
     _make_fake_video(tmp_path / "a.mp4", b"video")
     finder = VideoDuplicateFinder(str(tmp_path))
@@ -88,6 +96,7 @@ def test_finder_excludes_non_video(tmp_path: Path):
 
 
 def test_finder_respects_exclude_dirs(tmp_path: Path):
+    """test_finder_respects_exclude_dirs."""
     sub = tmp_path / "skip"
     sub.mkdir()
     _make_fake_video(sub / "a.mp4", b"dup" * 100)
@@ -105,6 +114,7 @@ def test_finder_respects_exclude_dirs(tmp_path: Path):
 
 
 def test_finder_stats(tmp_path: Path):
+    """test_finder_stats."""
     _make_fake_video(tmp_path / "a.mp4", b"stat-video" * 50)
     _make_fake_video(tmp_path / "b.mp4", b"stat-video" * 50)
     finder = VideoDuplicateFinder(str(tmp_path))

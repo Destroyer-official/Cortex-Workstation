@@ -44,18 +44,23 @@ def manager(tmp_path: Path) -> LicenseManager:
 
 
 class TestFingerprint:
+    """TestFingerprint."""
     def test_stable_across_calls(self):
+        """test_stable_across_calls."""
         assert compute_fingerprint() == compute_fingerprint()
 
     def test_memoised_matches_direct(self):
+        """test_memoised_matches_direct."""
         assert get_fingerprint() == compute_fingerprint()
 
     def test_shape(self):
+        """test_shape."""
         digest = get_fingerprint()
         assert len(digest) == 64
         int(digest, 16)  # hex parseable
 
     def test_identifiers_never_empty(self):
+        """test_identifiers_never_empty."""
         from cortex_unified.licensing import fingerprint as fp
 
         assert fp.collect_identifiers()
@@ -65,22 +70,27 @@ class TestFingerprint:
 
 
 class TestTiers:
+    """TestTiers."""
     def test_rank_ordering(self):
+        """test_rank_ordering."""
         order = [Tier.FREE, Tier.PREMIUM, Tier.PRO, Tier.SUPER, Tier.ENTERPRISE]
         ranks = [t.rank for t in order]
         assert ranks == sorted(ranks)
 
     def test_includes_is_cumulative(self):
+        """test_includes_is_cumulative."""
         assert Tier.ENTERPRISE.includes(Tier.FREE)
         assert Tier.PRO.includes(Tier.PREMIUM)
         assert not Tier.FREE.includes(Tier.PRO)
 
     def test_parse_defaults_to_free_on_garbage(self):
+        """test_parse_defaults_to_free_on_garbage."""
         assert Tier.parse("pro") is Tier.PRO
         assert Tier.parse("GOLD") is Tier.FREE
         assert Tier.parse(None) is Tier.FREE
 
     def test_feature_matrix_cumulative(self):
+        """test_feature_matrix_cumulative."""
         free = features_for_tier(Tier.FREE)
         pro = features_for_tier(Tier.PRO)
         premium = features_for_tier(Tier.PREMIUM)
@@ -95,13 +105,16 @@ class TestTiers:
 
 
 class TestLicenseLifecycle:
+    """TestLicenseLifecycle."""
     def test_fresh_machine_is_free(self, manager: LicenseManager):
+        """test_fresh_machine_is_free."""
         state = manager.validate()
         assert state.tier is Tier.FREE
         assert not state.licensed
         assert not state.trial
 
     def test_activate_and_validate(self, manager: LicenseManager):
+        """test_activate_and_validate."""
         state = manager.activate("TEST-KEY-1", Tier.PRO, name="Tester")
         assert state.tier is Tier.PRO
         assert state.licensed
@@ -109,11 +122,13 @@ class TestLicenseLifecycle:
         assert Feature.SENTINEL_PRO in state.features
 
     def test_key_masked_in_status(self, manager: LicenseManager):
+        """test_key_masked_in_status."""
         manager.activate("VERYSECRET-1234", Tier.PRO)
         raw = json.dumps(manager.status())
         assert "VERYSECRET" not in raw
 
     def test_signature_tamper_rejected(self, manager: LicenseManager):
+        """test_signature_tamper_rejected."""
         manager.activate("K", Tier.SUPER)
         doc = json.loads(manager._path.read_text(encoding="utf-8"))
         doc["payload"]["tier"] = "enterprise"
@@ -123,6 +138,7 @@ class TestLicenseLifecycle:
         assert "signature" in state.reason
 
     def test_payload_tamper_rejected(self, manager: LicenseManager):
+        """test_payload_tamper_rejected."""
         manager.activate("K", Tier.PRO)
         doc = json.loads(manager._path.read_text(encoding="utf-8"))
         doc["signature"] = "0" * 64
@@ -130,6 +146,7 @@ class TestLicenseLifecycle:
         assert manager.validate().tier is Tier.FREE
 
     def test_corrupt_file_degrades_to_free(self, manager: LicenseManager):
+        """test_corrupt_file_degrades_to_free."""
         manager.activate("K", Tier.PRO)
         manager._path.write_text("{not json!!", encoding="utf-8")
         state = manager.validate()
@@ -137,6 +154,7 @@ class TestLicenseLifecycle:
         assert "corrupt" in state.reason
 
     def test_wrong_machine_rejected(self, manager: LicenseManager):
+        """test_wrong_machine_rejected."""
         manager.activate("K", Tier.PRO)
         doc = json.loads(manager._path.read_text(encoding="utf-8"))
         doc["payload"]["fingerprint"] = "f" * 64  # another machine's digest
@@ -150,6 +168,7 @@ class TestLicenseLifecycle:
         assert "machine" in state.reason
 
     def test_expiry_freezes_after_grace(self, tmp_path: Path):
+        """test_expiry_freezes_after_grace."""
         manager = LicenseManager(path=tmp_path / "license.json")
         state = manager.activate("K", Tier.PRO, term_days=1)
         assert state.licensed
@@ -175,6 +194,7 @@ class TestLicenseLifecycle:
         assert "grace period ended" in expired.reason
 
     def test_grace_period_keeps_access(self, tmp_path: Path):
+        """test_grace_period_keeps_access."""
         manager = LicenseManager(path=tmp_path / "license.json")
         from cortex_unified.licensing.license_manager import LicensePayload
 
@@ -196,17 +216,20 @@ class TestLicenseLifecycle:
         assert Feature.SENTINEL_PRO in state.features
 
     def test_trial_once_only(self, manager: LicenseManager):
+        """test_trial_once_only."""
         state = manager.start_trial()
         assert state.trial and state.tier is Tier.PRO
         with pytest.raises(RuntimeError):
             manager.start_trial()
 
     def test_trial_refused_when_licensed(self, manager: LicenseManager):
+        """test_trial_refused_when_licensed."""
         manager.activate("OWNED", Tier.SUPER)
         with pytest.raises(RuntimeError):
             manager.start_trial()
 
     def test_deactivate_returns_to_free(self, manager: LicenseManager):
+        """test_deactivate_returns_to_free."""
         manager.activate("K", Tier.PRO)
         manager.deactivate()
         state = manager.validate()
@@ -214,12 +237,14 @@ class TestLicenseLifecycle:
         assert not manager._path.exists()
 
     def test_activate_rejects_bad_input(self, manager: LicenseManager):
+        """test_activate_rejects_bad_input."""
         with pytest.raises(ValueError):
             manager.activate("", Tier.PRO)
         with pytest.raises(ValueError):
             manager.activate("K", Tier.PRO, term_days=-3)
 
     def test_singleton_resettable(self):
+        """test_singleton_resettable."""
         from cortex_unified.licensing.license_manager import (
             get_license_manager,
             reset_singleton,
@@ -235,6 +260,7 @@ class TestLicenseLifecycle:
 
 
 class TestGating:
+    """TestGating."""
     @pytest.fixture(autouse=True)
     def _licensed_pro(self, monkeypatch, tmp_path):
         """Point the singleton at a temp PRO license for every test here."""
@@ -247,12 +273,14 @@ class TestGating:
         lm_module.reset_singleton()
 
     def test_current_tier_and_features(self):
+        """test_current_tier_and_features."""
         assert current_tier() is Tier.PRO
         feats = effective_features()
         assert Feature.SENTINEL_PRO in feats
         assert Feature.POLICY_FILES not in feats  # enterprise-only
 
     def test_allowed_and_require(self):
+        """test_allowed_and_require."""
         assert allowed(Feature.SENTINEL_PRO)
         require = __import__(
             "cortex_unified.licensing.gating", fromlist=["require"]
@@ -262,6 +290,7 @@ class TestGating:
             require(Feature.POLICY_FILES)
 
     def test_entitlement_error_details(self):
+        """test_entitlement_error_details."""
         require = __import__(
             "cortex_unified.licensing.gating", fromlist=["require"]
         ).require
@@ -271,12 +300,15 @@ class TestGating:
         assert excinfo.value.current is Tier.PRO
 
     def test_gate_decorator_blocks_and_passes(self):
+        """test_gate_decorator_blocks_and_passes."""
         @gate(Feature.SENTINEL_PRO)
         def pro_tool():
+            """pro_tool."""
             return "ran"
 
         @gate(Feature.POLICY_FILES)
         def enterprise_tool():
+            """enterprise_tool."""
             return "ran"
 
         assert pro_tool() == "ran"

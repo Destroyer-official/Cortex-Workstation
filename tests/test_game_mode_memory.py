@@ -27,12 +27,15 @@ IS_WINDOWS = sys.platform == "win32"
 
 
 class TestGameModeLogic:
+    """TestGameModeLogic."""
     def test_protected_never_in_candidates(self):
+        """test_protected_never_in_candidates."""
         assert not (
             _PROTECTED & set(_DEFAULT_SUSPEND_CANDIDATES)
         ), "a suspend candidate must never also be protected"
 
     def test_boost_report_serializes(self):
+        """test_boost_report_serializes."""
         report = BoostReport(ok=True, phase="start", power_to="High")
         report.suspended.append("OneDrive.exe")
         data = report.to_dict()
@@ -41,6 +44,7 @@ class TestGameModeLogic:
         assert "OneDrive.exe" in data["suspended"]
 
     def test_unsupported_reports_cleanly(self, monkeypatch):
+        """test_unsupported_reports_cleanly."""
         game = GameMode()
         if not GameMode.is_supported():
             result = game.start()
@@ -52,6 +56,7 @@ class TestGameModeLogic:
             assert not result.ok
 
     def test_stop_without_start_is_safe(self):
+        """test_stop_without_start_is_safe."""
         game = GameMode(dry_run=True)
         report = game.stop()
         assert report.ok
@@ -62,12 +67,15 @@ class TestGameModeLogic:
     not IS_WINDOWS, reason="power plan + process suspension are Windows-only"
 )
 class TestGameModeWindows:
+    """TestGameModeWindows."""
     def test_preview_is_read_only(self):
+        """test_preview_is_read_only."""
         preview = GameMode().preview()
         assert preview["supported"] is True
         assert "would_suspend" in preview
 
     def test_dry_run_changes_nothing(self):
+        """test_dry_run_changes_nothing."""
         game = GameMode(
             extra_suspend=("nonexistent_noise_process_xyz.exe",), dry_run=True
         )
@@ -78,6 +86,7 @@ class TestGameModeWindows:
         game.stop()
 
     def test_pick_prefers_high_performance(self, tmp_path_factory):
+        """test_pick_prefers_high_performance."""
         from cortex_unified.system_tools.performance_tuner import PowerPlan
 
         game = GameMode(dry_run=True)
@@ -91,6 +100,7 @@ class TestGameModeWindows:
         assert picked.name == "High performance"
 
     def test_candidates_exclude_protected_and_self(self):
+        """test_candidates_exclude_protected_and_self."""
         game = GameMode(
             extra_suspend=("explorer.exe", "svchost.exe"),  # must be ignored
             dry_run=True,
@@ -100,7 +110,9 @@ class TestGameModeWindows:
 
 
 class TestMemoryOptimizer:
+    """TestMemoryOptimizer."""
     def test_stats_shape(self):
+        """test_stats_shape."""
         optimizer = MemoryOptimizer()
         stats = optimizer.get_system_ram_metrics()
         assert isinstance(stats, SystemRamMetrics)
@@ -109,6 +121,7 @@ class TestMemoryOptimizer:
 
     @pytest.mark.skipif(not IS_WINDOWS, reason="trimming is Windows-only")
     def test_optimize_returns_result(self):
+        """test_optimize_returns_result."""
         optimizer = MemoryOptimizer()
         result = optimizer.optimize_all_background_working_sets()
         assert isinstance(result, MemoryOptimizeResult)
@@ -117,6 +130,7 @@ class TestMemoryOptimizer:
         assert isinstance(result.errors, list)
 
     def test_optimize_off_platform_no_crash(self):
+        """test_optimize_off_platform_no_crash."""
         optimizer = MemoryOptimizer()
         result = optimizer.optimize_all_background_working_sets()
         assert isinstance(result, MemoryOptimizeResult)

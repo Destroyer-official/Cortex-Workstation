@@ -45,16 +45,19 @@ from cortex_unified.analyzers.registry_cleaner_ai import (  # noqa: E402
 # ---------------------------------------------------------------------------
 
 def test_resolve_target_keeps_unquoted_path_with_spaces():
+    """test_resolve_target_keeps_unquoted_path_with_spaces."""
     raw = r"C:\Program Files\Example Suite\Editor.exe"
     assert _resolve_target(raw) == raw
 
 
 def test_resolve_target_strips_quotes_and_keeps_args_out():
+    """test_resolve_target_strips_quotes_and_keeps_args_out."""
     raw = r'"C:\Program Files\App\un.exe" /S'
     assert _resolve_target(raw) == r"C:\Program Files\App\un.exe"
 
 
 def test_resolve_target_expands_system_root_prefix():
+    """test_resolve_target_expands_system_root_prefix."""
     raw = r"\SystemRoot\System32\drivers\amdk8.sys"
     resolved = _resolve_target(raw)
     assert resolved is not None
@@ -63,6 +66,7 @@ def test_resolve_target_expands_system_root_prefix():
 
 
 def test_target_candidates_includes_full_path_first_then_prefixes():
+    """test_target_candidates_includes_full_path_first_then_prefixes."""
     raw = r"C:\Program Files\App\tool.exe -flag"
     cands = _target_candidates(raw)
     assert cands[0] == r"C:\Program Files\App\tool.exe -flag"
@@ -72,6 +76,7 @@ def test_target_candidates_includes_full_path_first_then_prefixes():
 
 
 def test_target_candidates_anchors_relative_paths_at_system_roots():
+    """test_target_candidates_anchors_relative_paths_at_system_roots."""
     cands = _target_candidates(r"system32\drivers\cdfs.sys")
     assert len(cands) >= 4
     # Every candidate is absolute (anchored at a real root); the bare
@@ -85,16 +90,19 @@ def test_target_candidates_anchors_relative_paths_at_system_roots():
 
 
 def test_verifiable_true_for_missing_but_listable_parent(tmp_path):
+    """test_verifiable_true_for_missing_but_listable_parent."""
     assert _verifiable(str(tmp_path / "no_such_file.bin")) is True
 
 
 def test_verifiable_true_for_existing_file(tmp_path):
+    """test_verifiable_true_for_existing_file."""
     f = tmp_path / "present.bin"
     f.write_bytes(b"x")
     assert _verifiable(str(f)) is True
 
 
 def test_verifiable_false_when_ancestor_listing_denied(tmp_path, monkeypatch):
+    """test_verifiable_false_when_ancestor_listing_denied."""
     import os
 
     real_stat = os.stat
@@ -102,6 +110,7 @@ def test_verifiable_false_when_ancestor_listing_denied(tmp_path, monkeypatch):
     def fake_stat(p, *a, **k):
         # Simulate an ACL-locked subtree: the target itself raises
         # PermissionError exactly like WindowsApps does.
+        """fake_stat."""
         if str(p).endswith("locked.exe"):
             raise PermissionError(5, "Access is denied")
         return real_stat(p, *a, **k)
@@ -111,11 +120,13 @@ def test_verifiable_false_when_ancestor_listing_denied(tmp_path, monkeypatch):
 
 
 def test_target_exists_treats_unprovable_as_present(tmp_path, monkeypatch):
+    """test_target_exists_treats_unprovable_as_present."""
     import os
 
     real_stat = os.stat
 
     def fake_stat(p, *a, **k):
+        """fake_stat."""
         if str(p).endswith("locked.exe"):
             raise PermissionError(5, "Access is denied")
         return real_stat(p, *a, **k)
@@ -125,16 +136,19 @@ def test_target_exists_treats_unprovable_as_present(tmp_path, monkeypatch):
 
 
 def test_target_exists_false_only_when_provably_missing(tmp_path):
+    """test_target_exists_false_only_when_provably_missing."""
     assert _target_exists(str(tmp_path / "definitely_gone.bin")) is False
 
 
 def test_font_candidates_anchor_relative_names_at_fonts_dir():
+    """test_font_candidates_anchor_relative_names_at_fonts_dir."""
     cands = _font_candidates("segoeui.ttf")
     assert len(cands) == 1
     assert cands[0].lower().endswith(r"\fonts\segoeui.ttf")
 
 
 def test_font_candidates_keep_absolute_paths():
+    """test_font_candidates_keep_absolute_paths."""
     cands = _font_candidates(r"C:\Windows\Fonts\arial.ttf")
     assert cands == [r"C:\Windows\Fonts\arial.ttf"]
 
@@ -144,21 +158,25 @@ def test_font_candidates_keep_absolute_paths():
 # ---------------------------------------------------------------------------
 
 def test_split_returns_64bit_view_for_hklm():
+    """test_split_returns_64bit_view_for_hklm."""
     _hive, _sub, access = _split(r"HKLM\Software")
     assert access & winreg.KEY_WOW64_64KEY
 
 
 def test_split32_returns_32bit_view_for_hklm():
+    """test_split32_returns_32bit_view_for_hklm."""
     parts = _split32(r"HKLM\Software")
     assert parts is not None
     assert parts[2] & winreg.KEY_WOW64_32KEY
 
 
 def test_split32_is_none_for_hkcu():
+    """test_split32_is_none_for_hkcu."""
     assert _split32(r"HKCU\Software") is None
 
 
 def test_split_rejects_unknown_hive():
+    """test_split_rejects_unknown_hive."""
     with pytest.raises(KeyError):
         _split(r"HKXX\Software")
 
@@ -168,11 +186,13 @@ def test_split_rejects_unknown_hive():
 # ---------------------------------------------------------------------------
 
 def test_detect_missing_path_true_when_target_gone(tmp_path):
+    """test_detect_missing_path_true_when_target_gone."""
     values = {"": (str(tmp_path / "gone.exe"), winreg.REG_SZ)}
     assert _detect_missing_path("HKCU\\X\\gone.exe", values, 0) is True
 
 
 def test_detect_missing_path_false_when_target_exists(tmp_path):
+    """test_detect_missing_path_false_when_target_exists."""
     exe = tmp_path / "app.exe"
     exe.write_bytes(b"MZ")
     values = {"": (str(exe), winreg.REG_SZ)}
@@ -180,11 +200,13 @@ def test_detect_missing_path_false_when_target_exists(tmp_path):
 
 
 def test_detect_missing_path_false_when_default_value_empty():
+    """test_detect_missing_path_false_when_default_value_empty."""
     values = {"Path": (r"C:\Windows\System32\cmd.exe", winreg.REG_SZ)}
     assert _detect_missing_path("HKCU\\X\\cmd.exe", values, 0) is False
 
 
 def test_detect_orphaned_service_skips_boot_and_system_start():
+    """test_detect_orphaned_service_skips_boot_and_system_start."""
     image = r"C:\definitely\not\here.sys"
     assert _detect_orphaned_service(
         "HKLM\\X\\svc", {"Start": (0, winreg.REG_DWORD),
@@ -195,6 +217,7 @@ def test_detect_orphaned_service_skips_boot_and_system_start():
 
 
 def test_detect_orphaned_service_true_when_verifiably_missing(tmp_path):
+    """test_detect_orphaned_service_true_when_verifiably_missing."""
     image = str(tmp_path / "gone_driver.sys")
     assert _detect_orphaned_service(
         "HKLM\\X\\svc", {"Start": (3, winreg.REG_DWORD),
@@ -202,6 +225,7 @@ def test_detect_orphaned_service_true_when_verifiably_missing(tmp_path):
 
 
 def test_detect_orphaned_service_false_when_image_missing_but_dll_alive(tmp_path):
+    """test_detect_orphaned_service_false_when_image_missing_but_dll_alive."""
     dll = tmp_path / "svc.dll"
     dll.write_bytes(b"MZ")
     assert _detect_orphaned_service(
@@ -210,6 +234,7 @@ def test_detect_orphaned_service_false_when_image_missing_but_dll_alive(tmp_path
 
 
 def test_detect_orphaned_service_true_when_dll_verifiably_missing(tmp_path):
+    """test_detect_orphaned_service_true_when_dll_verifiably_missing."""
     dll = str(tmp_path / "gone_svc.dll")
     assert _detect_orphaned_service(
         "HKLM\\X\\svc", {"Start": (2, winreg.REG_DWORD),
@@ -217,10 +242,12 @@ def test_detect_orphaned_service_true_when_dll_verifiably_missing(tmp_path):
 
 
 def test_detect_orphaned_service_never_guesses_with_no_targets():
+    """test_detect_orphaned_service_never_guesses_with_no_targets."""
     assert _detect_orphaned_service("HKLM\\X\\svc", {}, 0) is False
 
 
 def test_detect_shared_dll_uses_value_names_as_paths(tmp_path):
+    """test_detect_shared_dll_uses_value_names_as_paths."""
     present = tmp_path / "present.dll"
     present.write_bytes(b"MZ")
     values = {str(present): (1, winreg.REG_DWORD),
@@ -251,6 +278,7 @@ def test_scan_targets_offending_value():
 
 @pytest.mark.live
 def test_scan_service_category_never_flags_boot_drivers():
+    """test_scan_service_category_never_flags_boot_drivers."""
     cleaner = AIRegistryCleaner(create_restore_point=False)
     result = cleaner.scan(["orphaned_service_driver"])
     for issue in result.issues:
@@ -279,6 +307,7 @@ def throwaway_key():
 
 
 def _cleaner(tmp_path):
+    """_cleaner."""
     cleaner = AIRegistryCleaner(create_restore_point=False)
     # Redirect backups to the test directory so runs leave no residue.
     from pathlib import Path as _P
@@ -287,6 +316,7 @@ def _cleaner(tmp_path):
 
 
 def test_clean_deletes_value_level_orphan(throwaway_key, tmp_path):
+    """test_clean_deletes_value_level_orphan."""
     sub = throwaway_key
     with winreg.CreateKey(winreg.HKEY_CURRENT_USER, sub + r"\Orphan") as k:
         winreg.SetValueEx(k, "Path", 0, winreg.REG_SZ,
@@ -305,6 +335,7 @@ def test_clean_deletes_value_level_orphan(throwaway_key, tmp_path):
 
 
 def test_clean_deletes_key_level_orphan(throwaway_key, tmp_path):
+    """test_clean_deletes_key_level_orphan."""
     sub = throwaway_key
     winreg.CreateKey(winreg.HKEY_CURRENT_USER, sub + r"\DeadApp")
     issue = RegistryIssue(
@@ -319,6 +350,7 @@ def test_clean_deletes_key_level_orphan(throwaway_key, tmp_path):
 
 
 def test_clean_backs_up_before_deleting(throwaway_key, tmp_path):
+    """test_clean_backs_up_before_deleting."""
     sub = throwaway_key
     winreg.CreateKey(winreg.HKEY_CURRENT_USER, sub + r"\BackedUp")
     with winreg.OpenKey(winreg.HKEY_CURRENT_USER, sub + r"\BackedUp",
@@ -338,6 +370,7 @@ def test_clean_backs_up_before_deleting(throwaway_key, tmp_path):
 
 
 def test_clean_refuses_delete_when_subkeys_present(throwaway_key, tmp_path):
+    """test_clean_refuses_delete_when_subkeys_present."""
     sub = throwaway_key
     winreg.CreateKey(winreg.HKEY_CURRENT_USER, sub + r"\Parent\\Child")
     issue = RegistryIssue(
@@ -354,6 +387,7 @@ def test_clean_refuses_delete_when_subkeys_present(throwaway_key, tmp_path):
 
 
 def test_clean_keep_recommendation_is_not_deleted(throwaway_key, tmp_path):
+    """test_clean_keep_recommendation_is_not_deleted."""
     sub = throwaway_key
     with winreg.CreateKey(winreg.HKEY_CURRENT_USER, sub + r"\Kept") as k:
         winreg.SetValueEx(k, "Path", 0, winreg.REG_SZ, str(tmp_path / "gone.exe"))

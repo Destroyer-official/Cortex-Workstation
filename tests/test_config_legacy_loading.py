@@ -27,6 +27,7 @@ def test_missing_file_is_silent_and_yields_defaults(tmp_path, caplog):
 
 
 def test_valid_yaml_is_loaded_over_the_defaults(tmp_path):
+    """test_valid_yaml_is_loaded_over_the_defaults."""
     path = tmp_path / "ok.yaml"
     path.write_text("exclude_dirs:\n  - node_modules\n", encoding="utf-8")
     cfg = Config(str(path))
@@ -106,6 +107,7 @@ def test_protected_directories_are_excluded_by_default(tmp_path, name):
 
 
 def test_defaults_are_the_baseline_when_no_file_exists(tmp_path):
+    """test_defaults_are_the_baseline_when_no_file_exists."""
     cfg = Config(str(tmp_path / "absent.yaml"))
     assert cfg.exclude_dirs == DEFAULT_CONFIG["exclude_dirs"]
     assert cfg.exclude_patterns == DEFAULT_CONFIG["exclude_patterns"]

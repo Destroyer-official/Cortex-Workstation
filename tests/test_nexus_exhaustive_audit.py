@@ -27,6 +27,7 @@ from NexusExplorer.native.nexus_explorer import (
 
 @pytest.fixture(scope="session")
 def qapp():
+    """qapp."""
     app = QApplication.instance()
     if app is None:
         app = QApplication([])
@@ -40,6 +41,7 @@ def test_audit_in_place_copy_protection(qapp):
         src.write_text("critical document contents", encoding="utf-8")
 
         class _DummyEngine:
+            """_DummyEngine."""
             ffi = None
             cli = ""
 
@@ -76,6 +78,7 @@ def test_audit_circular_directory_protection(qapp):
         f.write_text("data", encoding="utf-8")
 
         class _DummyEngine:
+            """_DummyEngine."""
             ffi = None
             cli = ""
 
@@ -107,6 +110,7 @@ def test_audit_empty_directory_preservation_on_copy(qapp):
         (Path(src_dir) / "Tree" / "file.txt").write_text("content", encoding="utf-8")
 
         class _DummyEngine:
+            """_DummyEngine."""
             ffi = None
             cli = ""
 

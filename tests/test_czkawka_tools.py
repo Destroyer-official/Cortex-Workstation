@@ -39,12 +39,14 @@ IS_WINDOWS = os.name == "nt"
 
 
 def _touch_empty(path: Path) -> Path:
+    """_touch_empty."""
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_bytes(b"")
     return path
 
 
 def _touch_file(path: Path, content: bytes = b"hello") -> Path:
+    """_touch_file."""
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_bytes(content)
     return path
@@ -58,6 +60,7 @@ def _make_minimal_png(path: Path) -> Path:
     sig = b"\x89PNG\r\n\x1a\n"
 
     def _chunk(ctype: bytes, data: bytes) -> bytes:
+        """_chunk."""
         c = ctype + data
         return len(data).to_bytes(4, "big") + c + zlib.crc32(c).to_bytes(4, "big")
 
@@ -78,12 +81,14 @@ def _make_minimal_jpg(path: Path) -> Path:
 
 
 def _make_minimal_pdf(path: Path) -> Path:
+    """_make_minimal_pdf."""
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_bytes(b"%PDF-1.4 trailer")
     return path
 
 
 def _make_minimal_zip(path: Path) -> Path:
+    """_make_minimal_zip."""
     path.parent.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(str(path), "w") as zf:
         zf.writestr("dummy.txt", "data")
@@ -96,7 +101,9 @@ def _make_minimal_zip(path: Path) -> Path:
 
 
 class TestEmptyFinder:
+    """TestEmptyFinder."""
     def test_finds_empty_files(self, tmp_path: Path):
+        """test_finds_empty_files."""
         _touch_empty(tmp_path / "empty.txt")
         _touch_file(tmp_path / "notempty.txt", b"data")
         result = EmptyFinder(str(tmp_path)).find()
@@ -105,6 +112,7 @@ class TestEmptyFinder:
         assert "notempty.txt" not in names
 
     def test_finds_empty_dirs(self, tmp_path: Path):
+        """test_finds_empty_dirs."""
         empty = tmp_path / "empty_dir"
         empty.mkdir()
         nonempty = tmp_path / "nonempty_dir"
@@ -116,6 +124,7 @@ class TestEmptyFinder:
         assert "nonempty_dir" not in dir_names
 
     def test_returns_empty_when_nothing_empty(self, tmp_path: Path):
+        """test_returns_empty_when_nothing_empty."""
         _touch_file(tmp_path / "a.txt", b"a")
         _touch_file(tmp_path / "b.txt", b"b")
         result = EmptyFinder(str(tmp_path)).find()
@@ -123,6 +132,7 @@ class TestEmptyFinder:
         assert result.empty_folders == []
 
     def test_scanned_count(self, tmp_path: Path):
+        """test_scanned_count."""
         _touch_empty(tmp_path / "e1.txt")
         _touch_empty(tmp_path / "e2.txt")
         _touch_file(tmp_path / "n1.txt", b"data")
@@ -130,11 +140,13 @@ class TestEmptyFinder:
         assert result.scanned == 3
 
     def test_duration_is_non_negative(self, tmp_path: Path):
+        """test_duration_is_non_negative."""
         _touch_empty(tmp_path / "e.txt")
         result = EmptyFinder(str(tmp_path)).find()
         assert result.duration >= 0
 
     def test_cancel_stops_early(self, tmp_path: Path):
+        """test_cancel_stops_early."""
         cancel = threading.Event()
         cancel.set()
         _touch_empty(tmp_path / "e.txt")
@@ -142,6 +154,7 @@ class TestEmptyFinder:
         assert result.scanned == 0
 
     def test_progress_callback_invoked(self, tmp_path: Path):
+        """test_progress_callback_invoked."""
         called = []
         for i in range(1001):
             _touch_empty(tmp_path / f"f{i}.txt")
@@ -149,6 +162,7 @@ class TestEmptyFinder:
         assert len(called) > 0
 
     def test_exclude_dirs(self, tmp_path: Path):
+        """test_exclude_dirs."""
         skip = tmp_path / "skip"
         skip.mkdir()
         _touch_empty(skip / "e.txt")
@@ -161,6 +175,7 @@ class TestEmptyFinder:
         assert "e.txt" not in names
 
     def test_nested_empty_files(self, tmp_path: Path):
+        """test_nested_empty_files."""
         _touch_empty(tmp_path / "a" / "b" / "c" / "deep.txt")
         result = EmptyFinder(str(tmp_path)).find()
         assert len(result.empty_files) == 1
@@ -175,7 +190,9 @@ class TestEmptyFinder:
     IS_WINDOWS, reason="symlinks require elevated privileges on Windows"
 )
 class TestInvalidSymlinkFinder:
+    """TestInvalidSymlinkFinder."""
     def test_finds_broken_symlink(self, tmp_path: Path):
+        """test_finds_broken_symlink."""
         broken = tmp_path / "broken_link"
         broken.symlink_to(tmp_path / "nonexistent_target")
         result = InvalidSymlinkFinder(str(tmp_path)).find()
@@ -183,6 +200,7 @@ class TestInvalidSymlinkFinder:
         assert result.broken[0][0] == broken
 
     def test_ignores_valid_symlink(self, tmp_path: Path):
+        """test_ignores_valid_symlink."""
         target = tmp_path / "real_file.txt"
         _touch_file(target, b"data")
         link = tmp_path / "valid_link"
@@ -191,12 +209,14 @@ class TestInvalidSymlinkFinder:
         assert result.broken == []
 
     def test_empty_when_no_symlinks(self, tmp_path: Path):
+        """test_empty_when_no_symlinks."""
         _touch_file(tmp_path / "file.txt", b"data")
         result = InvalidSymlinkFinder(str(tmp_path)).find()
         assert result.broken == []
         assert result.scanned == 0
 
     def test_scanned_count(self, tmp_path: Path):
+        """test_scanned_count."""
         t1 = tmp_path / "a.txt"
         _touch_file(t1, b"a")
         t2 = tmp_path / "b.txt"
@@ -207,12 +227,14 @@ class TestInvalidSymlinkFinder:
         assert result.scanned == 2
 
     def test_relative_symlink_broken(self, tmp_path: Path):
+        """test_relative_symlink_broken."""
         link = tmp_path / "rel_link"
         link.symlink_to("nonexistent_relative")
         result = InvalidSymlinkFinder(str(tmp_path)).find()
         assert len(result.broken) == 1
 
     def test_relative_symlink_valid(self, tmp_path: Path):
+        """test_relative_symlink_valid."""
         target = tmp_path / "target.txt"
         _touch_file(target, b"ok")
         link = tmp_path / "rel_link"
@@ -221,6 +243,7 @@ class TestInvalidSymlinkFinder:
         assert result.broken == []
 
     def test_cancel_stops_early(self, tmp_path: Path):
+        """test_cancel_stops_early."""
         cancel = threading.Event()
         cancel.set()
         (tmp_path / "link").symlink_to(tmp_path / "missing")
@@ -228,6 +251,7 @@ class TestInvalidSymlinkFinder:
         assert result.scanned == 0
 
     def test_exclude_dirs(self, tmp_path: Path):
+        """test_exclude_dirs."""
         skip = tmp_path / "skip"
         skip.mkdir()
         (skip / "broken").symlink_to(skip / "nope")
@@ -244,31 +268,37 @@ class TestInvalidSymlinkFinder:
 
 
 class TestBrokenFileFinder:
+    """TestBrokenFileFinder."""
     def test_finds_corrupted_zip(self, tmp_path: Path):
+        """test_finds_corrupted_zip."""
         p = tmp_path / "bad.zip"
         _touch_file(p, b"PK\x03\x04" + b"\x00" * 100)
         broken = BrokenFileFinder(str(tmp_path)).find()
         assert p in broken
 
     def test_ignores_valid_zip(self, tmp_path: Path):
+        """test_ignores_valid_zip."""
         p = tmp_path / "good.zip"
         _make_minimal_zip(p)
         broken = BrokenFileFinder(str(tmp_path)).find()
         assert p not in broken
 
     def test_finds_bad_pdf(self, tmp_path: Path):
+        """test_finds_bad_pdf."""
         p = tmp_path / "bad.pdf"
         _touch_file(p, b"not a pdf at all")
         broken = BrokenFileFinder(str(tmp_path)).find()
         assert p in broken
 
     def test_ignores_valid_pdf(self, tmp_path: Path):
+        """test_ignores_valid_pdf."""
         p = tmp_path / "good.pdf"
         _make_minimal_pdf(p)
         broken = BrokenFileFinder(str(tmp_path)).find()
         assert p not in broken
 
     def test_finds_corrupted_png(self, tmp_path: Path):
+        """test_finds_corrupted_png."""
         p = tmp_path / "corrupt.png"
         _touch_file(p, b"\x89PNG\r\n\x1a\n" + b"\xff\xff" * 20)
         broken = BrokenFileFinder(str(tmp_path)).find()
@@ -278,22 +308,26 @@ class TestBrokenFileFinder:
         IS_WINDOWS, reason="minimal PNG without PIL may misbehave on Windows"
     )
     def test_ignores_valid_png(self, tmp_path: Path):
+        """test_ignores_valid_png."""
         p = tmp_path / "valid.png"
         _make_minimal_png(p)
         broken = BrokenFileFinder(str(tmp_path)).find()
         assert p not in broken
 
     def test_ignores_non_supported_extension(self, tmp_path: Path):
+        """test_ignores_non_supported_extension."""
         p = tmp_path / "file.txt"
         _touch_file(p, b"just text")
         broken = BrokenFileFinder(str(tmp_path)).find()
         assert p not in broken
 
     def test_empty_returns_nothing(self, tmp_path: Path):
+        """test_empty_returns_nothing."""
         broken = BrokenFileFinder(str(tmp_path)).find()
         assert broken == []
 
     def test_cancel_stops_early(self, tmp_path: Path):
+        """test_cancel_stops_early."""
         cancel = threading.Event()
         cancel.set()
         _touch_file(tmp_path / "bad.pdf", b"junk")
@@ -301,6 +335,7 @@ class TestBrokenFileFinder:
         assert broken == []
 
     def test_exclude_dirs(self, tmp_path: Path):
+        """test_exclude_dirs."""
         skip = tmp_path / "skip"
         skip.mkdir()
         _touch_file(skip / "bad.pdf", b"junk")
@@ -317,7 +352,9 @@ class TestBrokenFileFinder:
 
 
 class TestBadExtensionFinder:
+    """TestBadExtensionFinder."""
     def test_finds_png_with_wrong_ext(self, tmp_path: Path):
+        """test_finds_png_with_wrong_ext."""
         p = tmp_path / "image.txt"
         _make_minimal_png(p)
         results = BadExtensionFinder(str(tmp_path)).find()
@@ -327,6 +364,7 @@ class TestBadExtensionFinder:
         assert results[0].claimed == ".txt"
 
     def test_finds_jpg_with_wrong_ext(self, tmp_path: Path):
+        """test_finds_jpg_with_wrong_ext."""
         p = tmp_path / "photo.bmp"
         _make_minimal_jpg(p)
         results = BadExtensionFinder(str(tmp_path)).find()
@@ -334,28 +372,33 @@ class TestBadExtensionFinder:
         assert results[0].actual in {".jpg", ".jpeg"}
 
     def test_ignores_correct_extension(self, tmp_path: Path):
+        """test_ignores_correct_extension."""
         p = tmp_path / "image.png"
         _make_minimal_png(p)
         results = BadExtensionFinder(str(tmp_path)).find()
         assert results == []
 
     def test_ignores_extensionless_files(self, tmp_path: Path):
+        """test_ignores_extensionless_files."""
         p = tmp_path / "noext"
         _touch_file(p, b"data")
         results = BadExtensionFinder(str(tmp_path)).find()
         assert results == []
 
     def test_allows_jpg_jpeg_alias(self, tmp_path: Path):
+        """test_allows_jpg_jpeg_alias."""
         p = tmp_path / "photo.jpeg"
         _make_minimal_jpg(p)
         results = BadExtensionFinder(str(tmp_path)).find()
         assert results == []
 
     def test_empty_dir(self, tmp_path: Path):
+        """test_empty_dir."""
         results = BadExtensionFinder(str(tmp_path)).find()
         assert results == []
 
     def test_cancel_stops_early(self, tmp_path: Path):
+        """test_cancel_stops_early."""
         cancel = threading.Event()
         cancel.set()
         p = tmp_path / "bad.txt"
@@ -364,6 +407,7 @@ class TestBadExtensionFinder:
         assert results == []
 
     def test_exclude_dirs(self, tmp_path: Path):
+        """test_exclude_dirs."""
         skip = tmp_path / "skip"
         skip.mkdir()
         _make_minimal_png(skip / "img.txt")
@@ -381,10 +425,12 @@ class TestBadExtensionFinder:
 
 
 class TestBadNamesFinder:
+    """TestBadNamesFinder."""
     @pytest.mark.skipif(
         IS_WINDOWS, reason="null bytes in filenames unsupported on Windows"
     )
     def test_finds_control_chars(self, tmp_path: Path):
+        """test_finds_control_chars."""
         p = tmp_path / "file\x00name.txt"
         _touch_file(p, b"data")
         bad = BadNamesFinder(str(tmp_path)).find()
@@ -394,6 +440,7 @@ class TestBadNamesFinder:
         IS_WINDOWS, reason="reserved chars cannot be created on Windows"
     )
     def test_finds_windows_reserved_chars(self, tmp_path: Path):
+        """test_finds_windows_reserved_chars."""
         for ch in '<>:"|?*':
             name = f"file{ch}name.txt"
             _touch_file(tmp_path / name, b"data")
@@ -402,6 +449,7 @@ class TestBadNamesFinder:
 
     @pytest.mark.skipif(IS_WINDOWS, reason="trailing spaces stripped by Windows")
     def test_finds_leading_space(self, tmp_path: Path):
+        """test_finds_leading_space."""
         p = tmp_path / " leading.txt"
         _touch_file(p, b"data")
         bad = BadNamesFinder(str(tmp_path)).find()
@@ -409,6 +457,7 @@ class TestBadNamesFinder:
 
     @pytest.mark.skipif(IS_WINDOWS, reason="trailing spaces stripped by Windows")
     def test_finds_trailing_space(self, tmp_path: Path):
+        """test_finds_trailing_space."""
         p = tmp_path / "trailing.txt "
         _touch_file(p, b"data")
         bad = BadNamesFinder(str(tmp_path)).find()
@@ -416,6 +465,7 @@ class TestBadNamesFinder:
 
     @pytest.mark.skipif(IS_WINDOWS, reason="trailing dots stripped by Windows")
     def test_finds_trailing_dot(self, tmp_path: Path):
+        """test_finds_trailing_dot."""
         p = tmp_path / "file."
         _touch_file(p, b"data")
         bad = BadNamesFinder(str(tmp_path)).find()
@@ -423,6 +473,7 @@ class TestBadNamesFinder:
 
     def test_finds_reserved_windows_names(self, tmp_path: Path):
         # NUL etc. are device names on Windows — may be created but invisible to os.walk
+        """test_finds_reserved_windows_names."""
         names = ["CON", "PRN", "AUX", "NUL", "COM1", "LPT1"]
         for name in names:
             p = tmp_path / name
@@ -435,6 +486,7 @@ class TestBadNamesFinder:
         assert len(bad) >= 1
 
     def test_ignores_good_names(self, tmp_path: Path):
+        """test_ignores_good_names."""
         for name in ["readme.txt", "data.csv", "image.png"]:
             _touch_file(tmp_path / name, b"data")
         bad = BadNamesFinder(str(tmp_path)).find()
@@ -444,12 +496,14 @@ class TestBadNamesFinder:
         IS_WINDOWS, reason="null bytes in filenames unsupported on Windows"
     )
     def test_finds_bad_dir_names(self, tmp_path: Path):
+        """test_finds_bad_dir_names."""
         d = tmp_path / "bad dir\x00name"
         d.mkdir()
         bad = BadNamesFinder(str(tmp_path)).find()
         assert any(b.name == "bad dir\x00name" for b in bad)
 
     def test_cancel_stops_early(self, tmp_path: Path):
+        """test_cancel_stops_early."""
         cancel = threading.Event()
         cancel.set()
         # Use a file with a trailing dot (creatable on Linux, skip on Windows)
@@ -461,6 +515,7 @@ class TestBadNamesFinder:
         assert bad == []
 
     def test_exclude_dirs(self, tmp_path: Path):
+        """test_exclude_dirs."""
         skip = tmp_path / "skip"
         skip.mkdir()
         if not IS_WINDOWS:
@@ -478,7 +533,9 @@ class TestBadNamesFinder:
 
 
 class TestExifCleaner:
+    """TestExifCleaner."""
     def test_scan_finds_exif_if_pil_available(self, tmp_path: Path):
+        """test_scan_finds_exif_if_pil_available."""
         try:
             from PIL import Image
 
@@ -492,22 +549,26 @@ class TestExifCleaner:
             pytest.skip("PIL not available")
 
     def test_scan_skips_non_image_files(self, tmp_path: Path):
+        """test_scan_skips_non_image_files."""
         _touch_file(tmp_path / "doc.txt", b"no exif here")
         cleaner = ExifCleaner(str(tmp_path))
         results = cleaner.scan()
         assert results == []
 
     def test_scan_empty_dir(self, tmp_path: Path):
+        """test_scan_empty_dir."""
         cleaner = ExifCleaner(str(tmp_path))
         results = cleaner.scan()
         assert results == []
 
     def test_strip_returns_dict_for_empty_list(self, tmp_path: Path):
+        """test_strip_returns_dict_for_empty_list."""
         cleaner = ExifCleaner(str(tmp_path))
         out = cleaner.strip([])
         assert out == {}
 
     def test_cancel_stops_scan_early(self, tmp_path: Path):
+        """test_cancel_stops_scan_early."""
         cancel = threading.Event()
         cancel.set()
         cleaner = ExifCleaner(str(tmp_path))
@@ -515,6 +576,7 @@ class TestExifCleaner:
         assert results == []
 
     def test_exclude_dirs(self, tmp_path: Path):
+        """test_exclude_dirs."""
         skip = tmp_path / "skip"
         skip.mkdir()
         _touch_file(skip / "photo.jpg", b"data")
@@ -532,7 +594,9 @@ class TestExifCleaner:
 
 
 class TestTempFileFinder:
+    """TestTempFileFinder."""
     def test_finds_tmp_extension(self, tmp_path: Path):
+        """test_finds_tmp_extension."""
         _touch_file(tmp_path / "cache.tmp", b"data")
         _touch_file(tmp_path / "keep.txt", b"data")
         results = TempFileFinder(str(tmp_path)).find()
@@ -541,26 +605,31 @@ class TestTempFileFinder:
         assert "keep.txt" not in names
 
     def test_finds_temp_extension(self, tmp_path: Path):
+        """test_finds_temp_extension."""
         _touch_file(tmp_path / "data.temp", b"data")
         results = TempFileFinder(str(tmp_path)).find()
         assert any(p.name == "data.temp" for p in results)
 
     def test_finds_log_files(self, tmp_path: Path):
+        """test_finds_log_files."""
         _touch_file(tmp_path / "app.log", b"data")
         results = TempFileFinder(str(tmp_path)).find()
         assert any(p.name == "app.log" for p in results)
 
     def test_finds_bak_files(self, tmp_path: Path):
+        """test_finds_bak_files."""
         _touch_file(tmp_path / "config.bak", b"data")
         results = TempFileFinder(str(tmp_path)).find()
         assert any(p.name == "config.bak" for p in results)
 
     def test_finds_old_files(self, tmp_path: Path):
+        """test_finds_old_files."""
         _touch_file(tmp_path / "data.old", b"data")
         results = TempFileFinder(str(tmp_path)).find()
         assert any(p.name == "data.old" for p in results)
 
     def test_finds_swap_files(self, tmp_path: Path):
+        """test_finds_swap_files."""
         _touch_file(tmp_path / "file.swp", b"data")
         _touch_file(tmp_path / "file.swo", b"data")
         results = TempFileFinder(str(tmp_path)).find()
@@ -569,40 +638,48 @@ class TestTempFileFinder:
         assert "file.swo" in names
 
     def test_finds_tilde_backup_files(self, tmp_path: Path):
+        """test_finds_tilde_backup_files."""
         _touch_file(tmp_path / "script.py~", b"data")
         results = TempFileFinder(str(tmp_path)).find()
         assert any(p.name == "script.py~" for p in results)
 
     def test_finds_thumbs_db(self, tmp_path: Path):
+        """test_finds_thumbs_db."""
         _touch_file(tmp_path / "Thumbs.db", b"data")
         results = TempFileFinder(str(tmp_path)).find()
         assert any(p.name == "Thumbs.db" for p in results)
 
     def test_finds_ds_store(self, tmp_path: Path):
+        """test_finds_ds_store."""
         _touch_file(tmp_path / ".DS_Store", b"data")
         results = TempFileFinder(str(tmp_path)).find()
         assert any(p.name == ".DS_Store" for p in results)
 
     def test_finds_desktop_ini(self, tmp_path: Path):
+        """test_finds_desktop_ini."""
         _touch_file(tmp_path / "desktop.ini", b"data")
         results = TempFileFinder(str(tmp_path)).find()
         assert any(p.name == "desktop.ini" for p in results)
 
     def test_finds_dmp_files(self, tmp_path: Path):
+        """test_finds_dmp_files."""
         _touch_file(tmp_path / "crash.dmp", b"data")
         results = TempFileFinder(str(tmp_path)).find()
         assert any(p.name == "crash.dmp" for p in results)
 
     def test_ignores_normal_files(self, tmp_path: Path):
+        """test_ignores_normal_files."""
         _touch_file(tmp_path / "readme.md", b"# Hello")
         results = TempFileFinder(str(tmp_path)).find()
         assert results == []
 
     def test_empty_dir(self, tmp_path: Path):
+        """test_empty_dir."""
         results = TempFileFinder(str(tmp_path)).find()
         assert results == []
 
     def test_cancel_stops_early(self, tmp_path: Path):
+        """test_cancel_stops_early."""
         cancel = threading.Event()
         cancel.set()
         _touch_file(tmp_path / "junk.tmp", b"data")
@@ -610,6 +687,7 @@ class TestTempFileFinder:
         assert results == []
 
     def test_exclude_dirs(self, tmp_path: Path):
+        """test_exclude_dirs."""
         skip = tmp_path / "skip"
         skip.mkdir()
         _touch_file(skip / "junk.tmp", b"data")
@@ -620,11 +698,13 @@ class TestTempFileFinder:
         assert all(p.parent.name != "skip" for p in results)
 
     def test_lock_files(self, tmp_path: Path):
+        """test_lock_files."""
         _touch_file(tmp_path / ".~lock.document.xlsx", b"data")
         results = TempFileFinder(str(tmp_path)).find()
         assert any(p.name == ".~lock.document.xlsx" for p in results)
 
     def test_finds_nested_temp_files(self, tmp_path: Path):
+        """test_finds_nested_temp_files."""
         _touch_file(tmp_path / "a" / "b" / "old.tmp", b"data")
         results = TempFileFinder(str(tmp_path)).find()
         assert any("old.tmp" in p.name for p in results)
@@ -636,7 +716,9 @@ class TestTempFileFinder:
 
 
 class TestVideoOptimizer:
+    """TestVideoOptimizer."""
     def test_find_static_borders_returns_none_on_missing_ffprobe(self, tmp_path: Path):
+        """test_find_static_borders_returns_none_on_missing_ffprobe."""
         p = tmp_path / "vid.mp4"
         _touch_file(p, b"not a video")
         opt = VideoOptimizer()
@@ -645,6 +727,7 @@ class TestVideoOptimizer:
         assert result is None
 
     def test_find_static_borders_returns_none_on_nonzero_exit(self, tmp_path: Path):
+        """test_find_static_borders_returns_none_on_nonzero_exit."""
         p = tmp_path / "vid.mp4"
         _touch_file(p, b"data")
         mock_rc = MagicMock(returncode=1, stdout="", stderr="error")
@@ -654,6 +737,7 @@ class TestVideoOptimizer:
         assert result is None
 
     def test_find_static_borders_parses_json(self, tmp_path: Path):
+        """test_find_static_borders_parses_json."""
         import json
 
         p = tmp_path / "vid.mp4"
@@ -684,6 +768,7 @@ class TestVideoOptimizer:
         assert result.path == p
 
     def test_optimize_returns_false_on_ffmpeg_error(self, tmp_path: Path):
+        """test_optimize_returns_false_on_ffmpeg_error."""
         p = tmp_path / "vid.mp4"
         _touch_file(p, b"data")
         mock_rc = MagicMock(returncode=1, stdout=b"", stderr=b"error")
@@ -693,6 +778,7 @@ class TestVideoOptimizer:
         assert result is False
 
     def test_optimize_returns_false_on_exception(self, tmp_path: Path):
+        """test_optimize_returns_false_on_exception."""
         p = tmp_path / "vid.mp4"
         _touch_file(p, b"data")
         opt = VideoOptimizer()
@@ -701,6 +787,7 @@ class TestVideoOptimizer:
         assert result is False
 
     def test_video_info_dataclass(self):
+        """test_video_info_dataclass."""
         vi = VideoInfo(
             path=Path("/test.mp4"),
             width=1280,
@@ -722,23 +809,29 @@ class TestVideoOptimizer:
 
 
 class TestSniffExtension:
+    """TestSniffExtension."""
     def test_sniff_png(self, tmp_path: Path):
+        """test_sniff_png."""
         p = _make_minimal_png(tmp_path / "f.png")
         assert _sniff_extension(p) == ".png"
 
     def test_sniff_jpg(self, tmp_path: Path):
+        """test_sniff_jpg."""
         p = _make_minimal_jpg(tmp_path / "f.jpg")
         assert _sniff_extension(p) == ".jpg"
 
     def test_sniff_pdf(self, tmp_path: Path):
+        """test_sniff_pdf."""
         p = _make_minimal_pdf(tmp_path / "f.pdf")
         assert _sniff_extension(p) == ".pdf"
 
     def test_sniff_zip(self, tmp_path: Path):
+        """test_sniff_zip."""
         p = _make_minimal_zip(tmp_path / "f.zip")
         assert _sniff_extension(p) == ".zip"
 
     def test_sniff_unknown_returns_none(self, tmp_path: Path):
+        """test_sniff_unknown_returns_none."""
         p = _touch_file(tmp_path / "f.xyz", b"\x00\x01\x02\x03")
         result = _sniff_extension(p)
         assert result is None or result != ".xyz"
@@ -750,7 +843,9 @@ class TestSniffExtension:
 
 
 class TestExports:
+    """TestExports."""
     def test_all_exports_present(self):
+        """test_all_exports_present."""
         from cortex_unified.analyzers.czkawka_tools import __all__
 
         expected = [
@@ -771,6 +866,7 @@ class TestExports:
             assert name in __all__
 
     def test_magic_headers_completeness(self):
+        """test_magic_headers_completeness."""
         assert ".jpg" in _MAGIC_HEADERS.values()
         assert ".png" in _MAGIC_HEADERS.values()
         assert ".pdf" in _MAGIC_HEADERS.values()

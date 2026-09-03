@@ -18,6 +18,7 @@ from cortex_unified.system_tools.notification_cleaner import NotificationCleaner
 
 def test_file_signature_sniffer(tmp_path):
     # 1. Test PNG Header
+    """test_file_signature_sniffer."""
     png_file = tmp_path / "test.png"
     png_file.write_bytes(b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR" + b"\x00" * 32)
     res = FileSignatureSniffer.sniff_file(png_file)
@@ -33,6 +34,7 @@ def test_file_signature_sniffer(tmp_path):
 
 
 def test_binary_differ(tmp_path):
+    """test_binary_differ."""
     fa = tmp_path / "file_a.bin"
     fb = tmp_path / "file_b.bin"
 
@@ -48,6 +50,7 @@ def test_binary_differ(tmp_path):
 
 
 def test_usn_journal_scanner():
+    """test_usn_journal_scanner."""
     st = UsnJournalScanner.query_volume_journal("C:")
     assert isinstance(st, UsnJournalStatus)
     assert st.drive_letter == "C:"
@@ -56,6 +59,7 @@ def test_usn_journal_scanner():
 
 
 def test_par2_recovery(tmp_path):
+    """test_par2_recovery."""
     par2_file = tmp_path / "test.par2"
     # Write a mock PAR2 packet header: Magic (8B) + Length (8B) + Hash (16B) + SetID (16B) + Type (16B) + Body
     magic = b"PAR2\x00PKT"
@@ -71,6 +75,7 @@ def test_par2_recovery(tmp_path):
 
 
 def test_image_optimizer(tmp_path):
+    """test_image_optimizer."""
     from PySide6.QtGui import QImage, QColor
 
     img_path = tmp_path / "test.png"
@@ -86,6 +91,7 @@ def test_image_optimizer(tmp_path):
 
 
 def test_driver_store_cleaner():
+    """test_driver_store_cleaner."""
     drivers = DriverStoreCleaner.enumerate_drivers()
     assert isinstance(drivers, list)
     # On Windows test system, verifies driver parse format or empty graceful handling
@@ -95,12 +101,14 @@ def test_driver_store_cleaner():
 
 
 def test_power_plan_optimizer():
+    """test_power_plan_optimizer."""
     st = PowerPlanOptimizer.get_status()
     assert isinstance(st, PowerPlanStatus)
     assert bool(st.active_scheme_name)
 
 
 def test_shellbags_privacy_cleaner():
+    """test_shellbags_privacy_cleaner."""
     targets = ShellbagsPrivacyCleaner.scan_shell_activity()
     assert isinstance(targets, list)
     # Test dry calculation
@@ -110,6 +118,7 @@ def test_shellbags_privacy_cleaner():
 
 
 def test_hosts_file_manager(tmp_path):
+    """test_hosts_file_manager."""
     mock_hosts = tmp_path / "mock_hosts"
     mock_hosts.write_text(
         "127.0.0.1 localhost\n"
@@ -134,6 +143,7 @@ def test_hosts_file_manager(tmp_path):
 
 
 def test_notification_cleaner():
+    """test_notification_cleaner."""
     st = NotificationCleaner.get_status()
     assert hasattr(st, "total_size_bytes")
     assert st.total_size_bytes >= 0

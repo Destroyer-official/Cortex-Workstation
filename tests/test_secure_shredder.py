@@ -32,12 +32,14 @@ from cortex_unified.system_tools.secure_shredder import (
 
 
 def _make_file(base, name: str, content: bytes = b"secret data 12345") -> str:
+    """_make_file."""
     p = base / name
     p.write_bytes(content)
     return str(p)
 
 
 def _read_all(path: str) -> bytes:
+    """_read_all."""
     with open(path, "rb") as f:
         return f.read()
 
@@ -58,7 +60,9 @@ def _patch_storage(monkeypatch):
 
 
 class TestShredStandard:
+    """TestShredStandard."""
     def test_all_expected_standards_exist(self):
+        """test_all_expected_standards_exist."""
         expected = {
             "nist_clear",
             "nist_purge_crypto",
@@ -82,9 +86,11 @@ class TestShredStandard:
         assert expected == actual
 
     def test_member_count_at_least_17(self):
+        """test_member_count_at_least_17."""
         assert len(ShredStandard) >= 17
 
     def test_pass_count_varies(self):
+        """test_pass_count_varies."""
         counts = {s: s.pass_count for s in ShredStandard}
         assert counts[ShredStandard.GUTMANN] == 35
         assert counts[ShredStandard.NIST_CLEAR] == 1
@@ -103,31 +109,37 @@ class TestShredStandard:
         assert counts[ShredStandard.RANDOM_3PASS] == 3
 
     def test_gutmann_has_exactly_35_passes(self):
+        """test_gutmann_has_exactly_35_passes."""
         passes = ShredStandard.GUTMANN.passes
         assert len(passes) == 35
         assert passes[-1]["verify"] is True
         assert passes[-2]["verify"] is False
 
     def test_name_property_returns_human_readable(self):
+        """test_name_property_returns_human_readable."""
         assert ShredStandard.NIST_CLEAR.name == "Nist Clear"
         assert ShredStandard.DOD_5220_22_M.name == "Dod 5220 22 M"
         assert ShredStandard.GUTMANN.name == "Gutmann"
 
     def test_recommended_for_ssd(self):
+        """test_recommended_for_ssd."""
         assert ShredStandard.NIST_CLEAR.recommended_for(StorageType.SSD_NVME)
         assert ShredStandard.RANDOM_1PASS.recommended_for(StorageType.SSD_SATA)
         assert not ShredStandard.GUTMANN.recommended_for(StorageType.SSD_NVME)
 
     def test_recommended_for_hdd(self):
+        """test_recommended_for_hdd."""
         assert ShredStandard.DOD_5220_22_M.recommended_for(StorageType.HDD)
         assert ShredStandard.NIST_CLEAR.recommended_for(StorageType.HDD)
         assert not ShredStandard.GUTMANN.recommended_for(StorageType.HDD)
 
     def test_recommended_for_unknown_always_true(self):
+        """test_recommended_for_unknown_always_true."""
         for std in ShredStandard:
             assert std.recommended_for(StorageType.UNKNOWN)
 
     def test_all_passes_have_pattern_and_verify_keys(self):
+        """test_all_passes_have_pattern_and_verify_keys."""
         for std in ShredStandard:
             for p in std.passes:
                 assert "pattern" in p
@@ -147,11 +159,14 @@ class TestShredStandard:
 
 
 class TestStorageType:
+    """TestStorageType."""
     def test_all_values(self):
+        """test_all_values."""
         expected = {"hdd", "ssd_nvme", "ssd_sata", "usb_flash", "unknown"}
         assert {st.value for st in StorageType} == expected
 
     def test_member_count(self):
+        """test_member_count."""
         assert len(StorageType) == 5
 
 
@@ -161,7 +176,9 @@ class TestStorageType:
 
 
 class TestShredResult:
+    """TestShredResult."""
     def test_success_result_fields(self):
+        """test_success_result_fields."""
         r = ShredResult(
             success=True,
             file_path="x.txt",
@@ -176,6 +193,7 @@ class TestShredResult:
         assert r.error is None
 
     def test_failure_result_with_error(self):
+        """test_failure_result_with_error."""
         r = ShredResult(
             success=False,
             file_path="x.txt",
@@ -189,6 +207,7 @@ class TestShredResult:
         assert r.error == "File not found"
 
     def test_to_dict_serializes_standard(self):
+        """test_to_dict_serializes_standard."""
         r = ShredResult(
             success=True,
             file_path="x.txt",
@@ -204,6 +223,7 @@ class TestShredResult:
         assert d["passes_completed"] == 35
 
     def test_to_dict_all_expected_keys(self):
+        """test_to_dict_all_expected_keys."""
         r = ShredResult(
             success=True,
             file_path="x.txt",
@@ -226,6 +246,7 @@ class TestShredResult:
         }
 
     def test_frozen_dataclass(self):
+        """test_frozen_dataclass."""
         r = ShredResult(
             success=True,
             file_path="x.txt",
@@ -245,7 +266,9 @@ class TestShredResult:
 
 
 class TestSecureShredderInit:
+    """TestSecureShredderInit."""
     def test_default_init(self):
+        """test_default_init."""
         s = SecureShredder()
         assert s.verify_passes is True
         assert s.dry_run is False
@@ -253,6 +276,7 @@ class TestSecureShredderInit:
         assert s.cancel_event is not None
 
     def test_custom_init(self):
+        """test_custom_init."""
         evt = threading.Event()
         s = SecureShredder(
             progress_callback=lambda *a: None,
@@ -273,13 +297,16 @@ class TestSecureShredderInit:
 
 
 class TestShredFileBasic:
+    """TestShredFileBasic."""
     def test_shred_nonexistent_file_returns_failure(self):
+        """test_shred_nonexistent_file_returns_failure."""
         s = SecureShredder()
         r = s.shred_file("/nonexistent/file.txt")
         assert r.success is False
         assert "not found" in r.error.lower()
 
     def test_shred_zero_byte_file(self, tmp_path):
+        """test_shred_zero_byte_file."""
         p = _make_file(tmp_path, "empty.bin", b"")
         s = SecureShredder()
         r = s.shred_file(p)
@@ -289,29 +316,34 @@ class TestShredFileBasic:
         assert not os.path.exists(p)
 
     def test_shred_reports_correct_byte_count(self, tmp_path):
+        """test_shred_reports_correct_byte_count."""
         content = b"X" * 512
         p = _make_file(tmp_path, "data.bin", content)
         r = SecureShredder().shred_file(p, ShredStandard.RANDOM_1PASS)
         assert r.bytes_shredded == 512
 
     def test_shred_duration_non_negative(self, tmp_path):
+        """test_shred_duration_non_negative."""
         p = _make_file(tmp_path, "t.bin")
         r = SecureShredder().shred_file(p, ShredStandard.RANDOM_1PASS)
         assert r.duration_seconds >= 0
 
     def test_shred_random_1pass_removes_file(self, tmp_path):
+        """test_shred_random_1pass_removes_file."""
         p = _make_file(tmp_path, "secret.bin")
         r = SecureShredder().shred_file(p, ShredStandard.RANDOM_1PASS)
         assert r.success is True
         assert not os.path.exists(p)
 
     def test_shred_nist_clear_removes_file(self, tmp_path):
+        """test_shred_nist_clear_removes_file."""
         p = _make_file(tmp_path, "nist.bin")
         r = SecureShredder().shred_file(p, ShredStandard.NIST_CLEAR)
         assert r.success is True
         assert not os.path.exists(p)
 
     def test_shred_random_3pass_removes_file(self, tmp_path):
+        """test_shred_random_3pass_removes_file."""
         p = _make_file(tmp_path, "r3.bin")
         r = SecureShredder().shred_file(p, ShredStandard.RANDOM_3PASS)
         assert r.success is True
@@ -327,12 +359,14 @@ class TestShredRandomOnlyStandards:
     """Standards with only random patterns work; byte-pattern standards crash."""
 
     def test_nist_clear_1_pass(self, tmp_path):
+        """test_nist_clear_1_pass."""
         p = _make_file(tmp_path, "nist.bin")
         r = SecureShredder(verify_passes=False).shred_file(p, ShredStandard.NIST_CLEAR)
         assert r.passes_completed == 1
         assert r.success is True
 
     def test_random_1pass(self, tmp_path):
+        """test_random_1pass."""
         p = _make_file(tmp_path, "r1.bin")
         r = SecureShredder(verify_passes=False).shred_file(
             p, ShredStandard.RANDOM_1PASS
@@ -341,6 +375,7 @@ class TestShredRandomOnlyStandards:
         assert r.success is True
 
     def test_random_3pass(self, tmp_path):
+        """test_random_3pass."""
         p = _make_file(tmp_path, "r3.bin")
         r = SecureShredder(verify_passes=False).shred_file(
             p, ShredStandard.RANDOM_3PASS
@@ -373,6 +408,7 @@ class TestBytePatternStandards:
     """These standards crash due to _pattern_bytes operator-precedence bug."""
 
     def test_shred_fails_with_type_error(self, tmp_path, standard):
+        """test_shred_fails_with_type_error."""
         p = _make_file(tmp_path, f"{standard.value}.bin")
         r = SecureShredder().shred_file(p, standard)
         assert r.success is False
@@ -385,6 +421,7 @@ class TestBytePatternStandards:
 
 
 class TestGutmannPartialProgress:
+    """TestGutmannPartialProgress."""
     def test_gutmann_fails_after_4_random_passes(self, tmp_path):
         """Gutmann has 4 random passes before first byte pattern."""
         p = _make_file(tmp_path, "gut.bin", b"G" * 1024)
@@ -400,7 +437,9 @@ class TestGutmannPartialProgress:
 
 
 class TestVerifyOption:
+    """TestVerifyOption."""
     def test_verify_disabled_random_1pass_succeeds(self, tmp_path):
+        """test_verify_disabled_random_1pass_succeeds."""
         p = _make_file(tmp_path, "nv.bin")
         r = SecureShredder(verify_passes=False).shred_file(
             p, ShredStandard.RANDOM_1PASS
@@ -427,7 +466,9 @@ class TestVerifyOption:
 
 
 class TestProgressCallback:
+    """TestProgressCallback."""
     def test_progress_called_for_random_1pass(self, tmp_path):
+        """test_progress_called_for_random_1pass."""
         p = _make_file(tmp_path, "prog.bin", b"P" * 1024)
         calls = []
         shredder = SecureShredder(
@@ -439,6 +480,7 @@ class TestProgressCallback:
         assert calls[0] == ("Pass 1/1: Random 1Pass", 1, 1)
 
     def test_progress_called_for_random_3pass(self, tmp_path):
+        """test_progress_called_for_random_3pass."""
         p = _make_file(tmp_path, "prog3.bin", b"P" * 1024)
         calls = []
         shredder = SecureShredder(
@@ -452,6 +494,7 @@ class TestProgressCallback:
         assert calls[2][1] == 3
 
     def test_progress_totals_match_standard(self, tmp_path):
+        """test_progress_totals_match_standard."""
         p = _make_file(tmp_path, "pt.bin")
         calls = []
         shredder = SecureShredder(
@@ -478,7 +521,9 @@ class TestProgressCallback:
 
 
 class TestCancellation:
+    """TestCancellation."""
     def test_cancel_before_start_prevents_shred(self, tmp_path):
+        """test_cancel_before_start_prevents_shred."""
         p = _make_file(tmp_path, "cancel.bin", b"C" * 256)
         cancel = threading.Event()
         cancel.set()
@@ -489,11 +534,13 @@ class TestCancellation:
         assert "cancel" in r.error.lower()
 
     def test_cancel_during_shred_stops_early(self, tmp_path):
+        """test_cancel_during_shred_stops_early."""
         p = _make_file(tmp_path, "cancel_mid.bin", b"M" * 1024)
         cancel = threading.Event()
         call_count = [0]
 
         def progress_fn(msg, cur, total):
+            """progress_fn."""
             call_count[0] += 1
             if call_count[0] == 2:
                 cancel.set()
@@ -509,6 +556,7 @@ class TestCancellation:
         assert r.passes_completed < 3
 
     def test_cancel_in_shred_files_stops_batch(self, tmp_path):
+        """test_cancel_in_shred_files_stops_batch."""
         files = [_make_file(tmp_path, f"batch_{i}.bin") for i in range(5)]
         cancel = threading.Event()
         cancel.set()
@@ -524,7 +572,9 @@ class TestCancellation:
 
 
 class TestShredFilesBatch:
+    """TestShredFilesBatch."""
     def test_batch_shreds_all_random_1pass(self, tmp_path):
+        """test_batch_shreds_all_random_1pass."""
         files = [_make_file(tmp_path, f"b{i}.bin") for i in range(5)]
         results = SecureShredder(verify_passes=False).shred_files(
             files, ShredStandard.RANDOM_1PASS
@@ -534,10 +584,12 @@ class TestShredFilesBatch:
         assert all(not os.path.exists(f) for f in files)
 
     def test_batch_empty_list(self):
+        """test_batch_empty_list."""
         results = SecureShredder().shred_files([], ShredStandard.RANDOM_1PASS)
         assert results == []
 
     def test_batch_cancelled_event_returns_empty(self, tmp_path):
+        """test_batch_cancelled_event_returns_empty."""
         files = [_make_file(tmp_path, f"c{i}.bin") for i in range(3)]
         cancel = threading.Event()
         cancel.set()
@@ -554,7 +606,9 @@ class TestShredFilesBatch:
 
 
 class TestDryRun:
+    """TestDryRun."""
     def test_dry_run_does_not_remove_random_standard(self, tmp_path):
+        """test_dry_run_does_not_remove_random_standard."""
         p = _make_file(tmp_path, "dry.bin", b"KEEP")
         r = SecureShredder(dry_run=True, verify_passes=False).shred_file(
             p, ShredStandard.RANDOM_1PASS
@@ -571,6 +625,7 @@ class TestDryRun:
         assert os.path.exists(p)
 
     def test_dry_run_nonzero_byte_file_size_unchanged(self, tmp_path):
+        """test_dry_run_nonzero_byte_file_size_unchanged."""
         content = b"X" * 1024
         p = _make_file(tmp_path, "dry_size.bin", content)
         SecureShredder(dry_run=True, verify_passes=False).shred_file(
@@ -585,6 +640,7 @@ class TestDryRun:
 
 
 class TestAutoDetect:
+    """TestAutoDetect."""
     def test_auto_detect_uses_hdd_standard(self, tmp_path):
         """With HDD monkeypatched, auto-detect should pick DoD 3-pass."""
         p = _make_file(tmp_path, "auto.bin")
@@ -593,6 +649,7 @@ class TestAutoDetect:
         assert r.standard == ShredStandard.DOD_5220_22_M
 
     def test_auto_detect_disabled_defaults_to_nist_clear(self, tmp_path):
+        """test_auto_detect_disabled_defaults_to_nist_clear."""
         p = _make_file(tmp_path, "autod_off.bin")
         r = SecureShredder(verify_passes=False).shred_file(
             p, standard=None, auto_detect=False
@@ -607,30 +664,38 @@ class TestAutoDetect:
 
 
 class TestPatternBytes:
+    """TestPatternBytes."""
     def test_random_returns_correct_length(self):
+        """test_random_returns_correct_length."""
         data = _pattern_bytes("random", 512)
         assert len(data) == 512
 
     def test_random_returns_different_bytes(self):
+        """test_random_returns_different_bytes."""
         a = _pattern_bytes("random", 64)
         b = _pattern_bytes("random", 64)
         assert a != b
 
     def test_int_pattern(self):
+        """test_int_pattern."""
         data = _pattern_bytes(0x00, 100)
         assert data == b"\x00" * 100
 
     def test_int_pattern_0xff(self):
+        """test_int_pattern_0xff."""
         data = _pattern_bytes(0xFF, 50)
         assert data == b"\xff" * 50
 
     def test_crypto_erase_returns_empty(self):
+        """test_crypto_erase_returns_empty."""
         assert _pattern_bytes("crypto_erase", 1024) == b""
 
     def test_block_erase_returns_empty(self):
+        """test_block_erase_returns_empty."""
         assert _pattern_bytes("block_erase", 1024) == b""
 
     def test_random_prefix_pattern(self):
+        """test_random_prefix_pattern."""
         data = _pattern_bytes("random_foo", 256)
         assert len(data) == 256
 
@@ -640,10 +705,12 @@ class TestPatternBytes:
             _pattern_bytes(b"\xaa", 10)
 
     def test_bytes_multibyte_pattern_raises_type_error(self):
+        """test_bytes_multibyte_pattern_raises_type_error."""
         with pytest.raises(TypeError, match="'int' object is not subscriptable"):
             _pattern_bytes(b"\x92\x49\x24", 9)
 
     def test_bytes_pattern_single_byte_also_raises(self):
+        """test_bytes_pattern_single_byte_also_raises."""
         with pytest.raises(TypeError):
             _pattern_bytes(b"\x00", 100)
 
@@ -654,10 +721,13 @@ class TestPatternBytes:
 
 
 class TestVerifyPattern:
+    """TestVerifyPattern."""
     def test_crypto_erase_always_true(self, tmp_path):
+        """test_crypto_erase_always_true."""
         assert _verify_pattern("dummy", "crypto_erase", 100) is True
 
     def test_block_erase_always_true(self, tmp_path):
+        """test_block_erase_always_true."""
         assert _verify_pattern("dummy", "block_erase", 100) is True
 
     def test_random_on_small_file_returns_false(self, tmp_path):
@@ -667,6 +737,7 @@ class TestVerifyPattern:
         assert _verify_pattern(str(p), "random", 4096, sample_pct=1.0) is False
 
     def test_nonexistent_file_returns_false(self):
+        """test_nonexistent_file_returns_false."""
         assert _verify_pattern("/nonexistent/file", b"\x00", 100) is False
 
     def test_byte_pattern_verify_returns_false(self, tmp_path):
@@ -681,7 +752,9 @@ class TestVerifyPattern:
 
 
 class TestFileSizeEdgeCases:
+    """TestFileSizeEdgeCases."""
     def test_single_byte_file_random(self, tmp_path):
+        """test_single_byte_file_random."""
         p = _make_file(tmp_path, "one.bin", b"Z")
         r = SecureShredder(verify_passes=False).shred_file(
             p, ShredStandard.RANDOM_1PASS
@@ -690,6 +763,7 @@ class TestFileSizeEdgeCases:
         assert r.bytes_shredded == 1
 
     def test_64k_file_random_3pass(self, tmp_path):
+        """test_64k_file_random_3pass."""
         p = _make_file(tmp_path, "64k.bin", b"L" * 65536)
         r = SecureShredder(verify_passes=False).shred_file(
             p, ShredStandard.RANDOM_3PASS
@@ -699,6 +773,7 @@ class TestFileSizeEdgeCases:
         assert r.passes_completed == 3
 
     def test_1mb_file_nist_clear(self, tmp_path):
+        """test_1mb_file_nist_clear."""
         p = _make_file(tmp_path, "1mb.bin", b"M" * (1024 * 1024))
         r = SecureShredder(verify_passes=False).shred_file(p, ShredStandard.NIST_CLEAR)
         assert r.success is True
@@ -711,20 +786,25 @@ class TestFileSizeEdgeCases:
 
 
 class TestGutmannStructure:
+    """TestGutmannStructure."""
     def test_first_four_passes_are_random(self):
+        """test_first_four_passes_are_random."""
         for i in range(4):
             assert ShredStandard.GUTMANN.passes[i]["pattern"] == "random"
 
     def test_passes_5_to_31_are_deterministic_bytes(self):
+        """test_passes_5_to_31_are_deterministic_bytes."""
         for i in range(4, 31):
             p = ShredStandard.GUTMANN.passes[i]["pattern"]
             assert isinstance(p, bytes)
 
     def test_last_four_passes_are_random(self):
+        """test_last_four_passes_are_random."""
         for i in range(31, 35):
             assert ShredStandard.GUTMANN.passes[i]["pattern"] == "random"
 
     def test_only_final_pass_verifies(self):
+        """test_only_final_pass_verifies."""
         verifies = [p["verify"] for p in ShredStandard.GUTMANN.passes]
         assert verifies[-1] is True
         assert all(v is False for v in verifies[:-1])

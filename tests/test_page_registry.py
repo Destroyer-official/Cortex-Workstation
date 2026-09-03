@@ -43,6 +43,7 @@ def test_every_declared_factory_actually_resolves():
 
 
 def test_malformed_factory_is_rejected_with_a_clear_message():
+    """test_malformed_factory_is_rejected_with_a_clear_message."""
     bad = registry.PageSpec("x", "X", "!", registry.GROUPS[0].id, "no-colon")
     with pytest.raises(ValueError, match="malformed factory"):
         bad.load()
@@ -59,6 +60,7 @@ def test_ordering_is_group_order_then_declaration_order():
 
 
 def test_grouped_covers_every_page_exactly_once():
+    """test_grouped_covers_every_page_exactly_once."""
     seen: list[str] = []
     for group, specs in registry.grouped():
         assert specs, f"group {group.id} has no pages"
@@ -67,12 +69,14 @@ def test_grouped_covers_every_page_exactly_once():
 
 
 def test_by_id_and_group_of_agree_with_pages():
+    """test_by_id_and_group_of_agree_with_pages."""
     for spec in registry.PAGES:
         assert registry.BY_ID[spec.id] is spec
         assert registry.group_of(spec.id) == spec.group
 
 
 def test_default_page_exists_and_is_reachable():
+    """test_default_page_exists_and_is_reachable."""
     assert registry.DEFAULT_PAGE_ID in registry.BY_ID
 
 

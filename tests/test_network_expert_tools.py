@@ -21,6 +21,7 @@ version='2.7' tunnel='ssl' conf='10'/></port></ports><os>
 
 
 def _available(monkeypatch: pytest.MonkeyPatch) -> nmap_adapter.NmapAdapter:
+    """_available."""
     monkeypatch.setattr(
         nmap_adapter.shutil, "which", lambda _name: "C:/nmap.exe"
     )
@@ -28,6 +29,7 @@ def _available(monkeypatch: pytest.MonkeyPatch) -> nmap_adapter.NmapAdapter:
 
 
 def test_nmap_status_does_not_execute(monkeypatch: pytest.MonkeyPatch) -> None:
+    """test_nmap_status_does_not_execute."""
     adapter = _available(monkeypatch)
     monkeypatch.setattr(
         nmap_adapter.proc, "run",
@@ -41,6 +43,7 @@ def test_nmap_status_does_not_execute(monkeypatch: pytest.MonkeyPatch) -> None:
 def test_nmap_missing_executable_has_clear_error(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """test_nmap_missing_executable_has_clear_error."""
     monkeypatch.setattr(
         nmap_adapter.shutil, "which", lambda _name: None
     )
@@ -55,6 +58,7 @@ def test_nmap_missing_executable_has_clear_error(
 def test_nmap_builds_safe_deterministic_argument_list(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """test_nmap_builds_safe_deterministic_argument_list."""
     adapter = _available(monkeypatch)
     arguments, _scopes = adapter.build_arguments(
         ["192.168.50.10", "192.168.50.2"], SCOPES, [443, 80, 443]
@@ -73,6 +77,7 @@ def test_nmap_builds_safe_deterministic_argument_list(
 def test_nmap_rejects_every_unauthorized_target(
     monkeypatch: pytest.MonkeyPatch, target: str,
 ) -> None:
+    """test_nmap_rejects_every_unauthorized_target."""
     adapter = _available(monkeypatch)
     with pytest.raises(nmap_adapter.NmapAuthorizationError):
         adapter.build_arguments(["192.168.50.10", target], SCOPES, [80])
@@ -81,6 +86,7 @@ def test_nmap_rejects_every_unauthorized_target(
 def test_nmap_expert_modes_require_windows_admin(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """test_nmap_expert_modes_require_windows_admin."""
     adapter = _available(monkeypatch)
     monkeypatch.setattr(nmap_adapter, "_is_windows_admin", lambda: False)
     with pytest.raises(nmap_adapter.NmapPrivilegeError, match="administrator"):
@@ -95,10 +101,12 @@ def test_nmap_expert_modes_require_windows_admin(
 def test_nmap_scan_uses_proc_and_parses_observation(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """test_nmap_scan_uses_proc_and_parses_observation."""
     adapter = _available(monkeypatch)
     calls = []
 
     def fake_run(arguments, **kwargs):
+        """fake_run."""
         calls.append((arguments, kwargs))
         return subprocess.CompletedProcess(arguments, 0, NMAP_XML, b"")
 
@@ -123,6 +131,7 @@ def test_nmap_scan_uses_proc_and_parses_observation(
 def test_nmap_cancellation_before_launch_skips_proc(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """test_nmap_cancellation_before_launch_skips_proc."""
     adapter = _available(monkeypatch)
     monkeypatch.setattr(
         nmap_adapter.proc, "run",
@@ -138,18 +147,21 @@ def test_nmap_cancellation_before_launch_skips_proc(
 
 @pytest.mark.parametrize("declaration", [b"<!DOCTYPE x>", b"<!ENTITY x 'y'>"])
 def test_nmap_xml_rejects_dtd_and_entities(declaration: bytes) -> None:
+    """test_nmap_xml_rejects_dtd_and_entities."""
     payload = b"<?xml version='1.0'?>" + declaration + b"<nmaprun/>"
     with pytest.raises(nmap_adapter.NmapOutputError, match="forbidden"):
         nmap_adapter.parse_nmap_xml(payload, SCOPES)
 
 
 def test_nmap_xml_enforces_depth_limit() -> None:
+    """test_nmap_xml_enforces_depth_limit."""
     payload = b"<nmaprun>" + b"<x>" * 40 + b"</x>" * 40 + b"</nmaprun>"
     with pytest.raises(nmap_adapter.NmapOutputError, match="depth"):
         nmap_adapter.parse_nmap_xml(payload, SCOPES)
 
 
 def test_nmap_xml_rejects_public_result() -> None:
+    """test_nmap_xml_rejects_public_result."""
     payload = NMAP_XML.replace(b"192.168.50.10", b"8.8.8.8")
     with pytest.raises(nmap_adapter.NmapOutputError, match="unauthorized"):
         nmap_adapter.parse_nmap_xml(payload, SCOPES)
@@ -160,11 +172,13 @@ def test_nmap_xml_rejects_public_result() -> None:
     "02:11:22:33:44:55", "00-11-22-33-44-55", "001122334455",
 ])
 def test_wol_rejects_invalid_or_non_unicast_mac(mac: str) -> None:
+    """test_wol_rejects_invalid_or_non_unicast_mac."""
     with pytest.raises(wake_on_lan.InvalidMacAddress):
         wake_on_lan.validate_mac(mac)
 
 
 def test_wol_builds_standard_magic_packet() -> None:
+    """test_wol_builds_standard_magic_packet."""
     raw = bytes.fromhex("001122334455")
     packet = wake_on_lan.build_magic_packet("00:11:22:33:44:55")
     assert packet == b"\xff" * 6 + raw * 16
@@ -181,34 +195,42 @@ def test_wol_builds_standard_magic_packet() -> None:
 def test_wol_rejects_broadcast_outside_active_private_lan(
     broadcast: str, networks: tuple[str, ...],
 ) -> None:
+    """test_wol_rejects_broadcast_outside_active_private_lan."""
     with pytest.raises(wake_on_lan.InvalidBroadcastAddress):
         wake_on_lan.validate_broadcast(broadcast, networks)
 
 
 class _Socket:
+    """_Socket."""
     def __init__(self) -> None:
+        """__init__."""
         self.timeout = None
         self.options = []
         self.sent = []
         self.closed = False
 
     def settimeout(self, value: float) -> None:
+        """settimeout."""
         self.timeout = value
 
     def setsockopt(self, *value) -> None:
+        """setsockopt."""
         self.options.append(value)
 
     def sendto(self, payload: bytes, destination: tuple[str, int]) -> int:
+        """sendto."""
         self.sent.append((payload, destination))
         return len(payload)
 
     def close(self) -> None:
+        """close."""
         self.closed = True
 
 
 def test_wol_sends_one_bounded_udp_broadcast(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """test_wol_sends_one_bounded_udp_broadcast."""
     fake = _Socket()
     monkeypatch.setattr(wake_on_lan.socket, "socket", lambda *_args: fake)
     sent = wake_on_lan.send_magic_packet(
@@ -225,6 +247,7 @@ def test_wol_sends_one_bounded_udp_broadcast(
 
 
 def test_wol_rejects_nonpositive_or_nonfinite_timeout() -> None:
+    """test_wol_rejects_nonpositive_or_nonfinite_timeout."""
     for timeout in (0, -1, float("nan"), float("inf")):
         with pytest.raises(ValueError, match="finite positive"):
             wake_on_lan.send_magic_packet(
@@ -236,9 +259,11 @@ def test_wol_rejects_nonpositive_or_nonfinite_timeout() -> None:
 def test_wol_wraps_socket_error_and_closes(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """test_wol_wraps_socket_error_and_closes."""
     fake = _Socket()
 
     def fail_send(_payload, _destination):
+        """fail_send."""
         raise OSError("synthetic failure")
 
     fake.sendto = fail_send

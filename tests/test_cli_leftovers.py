@@ -21,15 +21,20 @@ def fake_scan(monkeypatch):
     from cortex_unified.system_tools import leftover_cleaner as lc
 
     def _make(findings):
+        """_make."""
         class FakeScanner:
+            """FakeScanner."""
             def __init__(self, *a, **k):
+                """__init__."""
                 pass
 
             def scan_app(self, app):
+                """scan_app."""
                 assert app.name
                 return findings
 
             def scan_orphans(self):
+                """scan_orphans."""
                 return findings
 
         monkeypatch.setattr(lc, "LeftoverScanner", FakeScanner)
@@ -39,7 +44,9 @@ def fake_scan(monkeypatch):
 
 
 class TestLeftoversScan:
+    """TestLeftoversScan."""
     def test_scan_json_emits_dicts(self, fake_scan):
+        """test_scan_json_emits_dicts."""
         findings = fake_scan([
             LeftoverFinding(kind="folder", path=r"C:\x\Zeta",
                             size_bytes=2048, score=8, level="VeryGood",
@@ -53,6 +60,7 @@ class TestLeftoversScan:
         assert payload[0]["level"] == "VeryGood"
 
     def test_scan_human_output_shows_confidence(self, fake_scan):
+        """test_scan_human_output_shows_confidence."""
         fake_scan([
             LeftoverFinding(kind="folder", path=r"C:\x\Zeta",
                             size_bytes=1, score=6, level="Good"),
@@ -63,6 +71,7 @@ class TestLeftoversScan:
         assert result.output.count("C:\\x\\Zeta") == 1
 
     def test_scan_clean_system_reports_nothing(self, fake_scan):
+        """test_scan_clean_system_reports_nothing."""
         fake_scan([])
         result = CliRunner().invoke(main, ["leftovers", "scan", "Ghost"])
         assert result.exit_code == 0
@@ -70,8 +79,10 @@ class TestLeftoversScan:
 
 
 class TestLeftoversClean:
+    """TestLeftoversClean."""
     def test_dry_run_is_default_and_deletes_nothing(self, fake_scan,
                                                     tmp_path):
+        """test_dry_run_is_default_and_deletes_nothing."""
         target = tmp_path / "Zeta"
         target.mkdir()
         fake_scan([LeftoverFinding(kind="folder", path=str(target),
@@ -83,6 +94,7 @@ class TestLeftoversClean:
 
     def test_min_level_filters_questionable_by_default(self, fake_scan,
                                                        tmp_path):
+        """test_min_level_filters_questionable_by_default."""
         low = tmp_path / "LowConf"
         low.mkdir()
         high = tmp_path / "HighConf"
@@ -103,6 +115,7 @@ class TestLeftoversClean:
 
     def test_apply_recycles_and_reports_freed_bytes(self, fake_scan,
                                                     tmp_path, monkeypatch):
+        """test_apply_recycles_and_reports_freed_bytes."""
         target = tmp_path / "Gone"
         target.mkdir()
         fake_scan([LeftoverFinding(kind="folder", path=str(target),
@@ -112,7 +125,9 @@ class TestLeftoversClean:
         from cortex_unified.system_tools import leftover_cleaner as lc
 
         class FakeCleaner:
+            """FakeCleaner."""
             def clean(self, models, create_restore_point=False):
+                """clean."""
                 assert create_restore_point is False
                 return [lc.CleanOutcome(models[0].path, models[0].kind, True,
                                         "recycled")]
@@ -126,6 +141,7 @@ class TestLeftoversClean:
 
     def test_apply_failure_exits_nonzero(self, fake_scan, tmp_path,
                                          monkeypatch):
+        """test_apply_failure_exits_nonzero."""
         target = tmp_path / "Boom"
         target.mkdir()
         fake_scan([LeftoverFinding(kind="folder", path=str(target),
@@ -133,7 +149,9 @@ class TestLeftoversClean:
         from cortex_unified.system_tools import leftover_cleaner as lc
 
         class FailingCleaner:
+            """FailingCleaner."""
             def clean(self, models, create_restore_point=False):
+                """clean."""
                 return [lc.CleanOutcome(models[0].path, models[0].kind,
                                         False, "failed", "denied")]
 
@@ -146,7 +164,9 @@ class TestLeftoversClean:
 
 
 class TestLeftoversOrphans:
+    """TestLeftoversOrphans."""
     def test_orphans_lists_findings(self, fake_scan):
+        """test_orphans_lists_findings."""
         fake_scan([LeftoverFinding(kind="folder", path=r"C:\PF\Ghost",
                                    size_bytes=0, score=6, level="Good")])
         result = CliRunner().invoke(main, ["leftovers", "orphans"])

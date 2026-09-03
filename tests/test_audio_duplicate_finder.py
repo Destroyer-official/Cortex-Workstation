@@ -17,6 +17,7 @@ from cortex_unified.analyzers.audio_duplicate_finder import (
 
 
 def _make_wav(path: Path, freq: float = 440.0, duration: float = 1.0, sr: int = 11025):
+    """_make_wav."""
     n = int(sr * duration)
     with wave.open(str(path, ), "w") as wf:
         wf.setnchannels(1)
@@ -30,6 +31,7 @@ def _make_wav(path: Path, freq: float = 440.0, duration: float = 1.0, sr: int = 
 
 
 def _make_noise_wav(path: Path, duration: float = 1.0, sr: int = 11025):
+    """_make_noise_wav."""
     import random
     rnd = random.Random(12345)
     n = int(sr * duration)
@@ -44,6 +46,7 @@ def _make_noise_wav(path: Path, duration: float = 1.0, sr: int = 11025):
 # --- fingerprint primitives ---
 
 def test_fingerprint_is_list_of_ints(tmp_path: Path):
+    """test_fingerprint_is_list_of_ints."""
     p = tmp_path / "tone.wav"
     _make_wav(p)
     fp = compute_audio_fingerprint(p)
@@ -53,6 +56,7 @@ def test_fingerprint_is_list_of_ints(tmp_path: Path):
 
 
 def test_identical_wavs_compare_high(tmp_path: Path):
+    """test_identical_wavs_compare_high."""
     a = tmp_path / "a.wav"
     b = tmp_path / "b.wav"
     _make_wav(a, freq=440)
@@ -63,6 +67,7 @@ def test_identical_wavs_compare_high(tmp_path: Path):
 
 
 def test_different_tones_compare_low(tmp_path: Path):
+    """test_different_tones_compare_low."""
     a = tmp_path / "a.wav"
     b = tmp_path / "b.wav"
     _make_wav(a, freq=440)
@@ -78,6 +83,7 @@ def test_different_tones_compare_low(tmp_path: Path):
 
 
 def test_audio_compare_empty():
+    """test_audio_compare_empty."""
     assert audio_compare([], []) == 0.0
     assert audio_compare([1], []) == 0.0
 
@@ -85,6 +91,7 @@ def test_audio_compare_empty():
 # --- finder ---
 
 def test_finder_groups_identical_audio(tmp_path: Path):
+    """test_finder_groups_identical_audio."""
     _make_wav(tmp_path / "a.wav", freq=440)
     _make_wav(tmp_path / "b.wav", freq=440)
     _make_wav(tmp_path / "c.wav", freq=880)
@@ -102,6 +109,7 @@ def test_finder_groups_identical_audio(tmp_path: Path):
 
 
 def test_finder_excludes_non_audio(tmp_path: Path):
+    """test_finder_excludes_non_audio."""
     (tmp_path / "notes.txt").write_text("hello")
     _make_wav(tmp_path / "a.wav")
     finder = AudioDuplicateFinder(str(tmp_path))
@@ -110,6 +118,7 @@ def test_finder_excludes_non_audio(tmp_path: Path):
 
 
 def test_finder_respects_exclude_dirs(tmp_path: Path):
+    """test_finder_respects_exclude_dirs."""
     sub = tmp_path / "skip"
     sub.mkdir()
     _make_wav(sub / "a.wav", freq=440)
@@ -127,6 +136,7 @@ def test_finder_respects_exclude_dirs(tmp_path: Path):
 
 
 def test_finder_stats(tmp_path: Path):
+    """test_finder_stats."""
     _make_wav(tmp_path / "a.wav", freq=440)
     _make_wav(tmp_path / "b.wav", freq=440)
     finder = AudioDuplicateFinder(str(tmp_path))
@@ -138,6 +148,7 @@ def test_finder_stats(tmp_path: Path):
 
 def test_fallback_raw_fingerprint_for_mp3(tmp_path: Path):
     # Without decoders, MP3 fallback should still produce a fingerprint
+    """test_fallback_raw_fingerprint_for_mp3."""
     p = tmp_path / "fake.mp3"
     p.write_bytes(b"\x00\x01\x02" * 5000 + b"audio-like-bytes" * 1000)
     fp = compute_audio_fingerprint(p)

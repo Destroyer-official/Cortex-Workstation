@@ -16,6 +16,7 @@ from cortex_unified.system_tools.event_log_monitor import EventLogMonitor, Anoma
 
 
 def test_env_variable_manager():
+    """test_env_variable_manager."""
     rep = EnvironmentVariableManager.analyze_path()
     assert isinstance(rep, PathAnalysisReport)
     assert rep.total_entries >= 0
@@ -23,6 +24,7 @@ def test_env_variable_manager():
 
 
 def test_service_manager():
+    """test_service_manager."""
     services = WindowsServiceManager.enumerate_services()
     assert isinstance(services, list)
     if services:
@@ -32,6 +34,7 @@ def test_service_manager():
 
 
 def test_font_cache_manager():
+    """test_font_cache_manager."""
     rep = FontCacheManager.analyze()
     assert isinstance(rep, FontAnalysisReport)
     assert rep.total_fonts >= 0
@@ -39,6 +42,7 @@ def test_font_cache_manager():
 
 
 def test_temp_folder_cleaner():
+    """test_temp_folder_cleaner."""
     rep = TempFolderCleaner.scan(stale_hours=48)
     assert isinstance(rep, TempScanReport)
     assert len(rep.locations) > 0
@@ -46,12 +50,14 @@ def test_temp_folder_cleaner():
 
 
 def test_context_menu_manager():
+    """test_context_menu_manager."""
     rep = ContextMenuManager.analyze()
     assert isinstance(rep, ContextMenuReport)
     assert rep.total_entries >= 0
 
 
 def test_pagefile_optimizer():
+    """test_pagefile_optimizer."""
     st = PagefileOptimizer.get_status()
     assert isinstance(st, VirtualMemoryStatus)
     assert st.total_physical_bytes > 0
@@ -60,6 +66,7 @@ def test_pagefile_optimizer():
 
 
 def test_diagnostic_data_manager():
+    """test_diagnostic_data_manager."""
     rep = DiagnosticDataManager.audit_telemetry()
     assert isinstance(rep, TelemetryAuditReport)
     assert rep.total_settings > 0
@@ -67,6 +74,7 @@ def test_diagnostic_data_manager():
 
 
 def test_startup_impact_analyzer():
+    """test_startup_impact_analyzer."""
     rep = StartupImpactAnalyzer.analyze_startup()
     assert isinstance(rep, StartupImpactReport)
     assert rep.total_startup_items >= 0
@@ -75,6 +83,7 @@ def test_startup_impact_analyzer():
 
 def test_slack_space_analyzer(tmp_path):
     # Create test files with distinct sizes
+    """test_slack_space_analyzer."""
     f1 = tmp_path / "small.txt"
     f1.write_bytes(b"A" * 100)
     f2 = tmp_path / "medium.txt"
@@ -89,6 +98,7 @@ def test_slack_space_analyzer(tmp_path):
 
 
 def test_event_log_monitor():
+    """test_event_log_monitor."""
     rep = EventLogMonitor.query_anomalies(max_events_per_category=2)
     assert isinstance(rep, AnomalyScanReport)
     assert rep.total_anomalies >= 0

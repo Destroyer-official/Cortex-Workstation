@@ -14,31 +14,39 @@ IS_WINDOWS = platform.system() == "Windows"
 
 
 def _c(sev):
+    """_c."""
     return HealthCheck("x", "X", sev, "detail")
 
 
 class TestScoring:
+    """TestScoring."""
     def test_all_good_is_a(self):
+        """test_all_good_is_a."""
         score, grade = HealthChecker._score([_c("good"), _c("good"), _c("good")])
         assert score == 100 and grade == "A"
 
     def test_info_does_not_deduct(self):
+        """test_info_does_not_deduct."""
         score, grade = HealthChecker._score([_c("info"), _c("info")])
         assert score == 100 and grade == "A"
 
     def test_one_warning(self):
+        """test_one_warning."""
         score, _ = HealthChecker._score([_c("warning")])
         assert score == 88  # 100 - 12
 
     def test_one_critical(self):
+        """test_one_critical."""
         score, grade = HealthChecker._score([_c("critical")])
         assert score == 70 and grade == "C"
 
     def test_multiple_criticals_floor_at_zero(self):
+        """test_multiple_criticals_floor_at_zero."""
         score, grade = HealthChecker._score([_c("critical")] * 10)
         assert score == 0 and grade == "F"
 
     def test_grade_boundaries(self):
+        """test_grade_boundaries."""
         assert HealthChecker._score([])[1] == "A"
         # 100 - 12 - 12 = 76 -> B
         assert HealthChecker._score([_c("warning"), _c("warning")])[1] == "B"
@@ -47,7 +55,9 @@ class TestScoring:
 
 
 class TestRun:
+    """TestRun."""
     def test_run_returns_report(self):
+        """test_run_returns_report."""
         report = HealthChecker().run()
         assert isinstance(report, HealthReport)
         assert 0 <= report.score <= 100
@@ -58,16 +68,19 @@ class TestRun:
         assert "memory" in ids
 
     def test_progress_called(self):
+        """test_progress_called."""
         msgs = []
         HealthChecker().run(progress=msgs.append)
         assert len(msgs) >= 2
 
     def test_checks_have_valid_severity(self):
+        """test_checks_have_valid_severity."""
         report = HealthChecker().run()
         for c in report.checks:
             assert c.severity in {"good", "warning", "critical", "info"}
 
     def test_to_dict(self):
+        """test_to_dict."""
         report = HealthChecker().run()
         d = report.to_dict()
         assert set(d) == {"checks", "score", "grade"}
@@ -75,7 +88,9 @@ class TestRun:
 
 
 class TestDiskSpaceCheck:
+    """TestDiskSpaceCheck."""
     def test_disk_space_check_runs(self):
+        """test_disk_space_check_runs."""
         c = HealthChecker._check_disk_space()
         assert c.id == "disk_space"
         assert c.severity in {"good", "warning", "critical"}

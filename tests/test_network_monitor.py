@@ -14,45 +14,56 @@ from cortex_unified.system_tools.network_monitor import (
 
 
 class TestClassification:
+    """TestClassification."""
     def test_loopback_is_private(self):
+        """test_loopback_is_private."""
         assert _is_private("127.0.0.1") is True
         assert _is_private("::1") is True
 
     def test_lan_is_private(self):
+        """test_lan_is_private."""
         assert _is_private("192.168.1.10") is True
         assert _is_private("10.0.0.5") is True
         assert _is_private("172.16.3.4") is True
 
     def test_public_is_not_private(self):
+        """test_public_is_not_private."""
         assert _is_private("8.8.8.8") is False
         assert _is_private("140.82.112.3") is False
 
     def test_unparseable_defaults_private(self):
         # Can't classify -> must not falsely flag as external.
+        """test_unparseable_defaults_private."""
         assert _is_private("not-an-ip") is True
 
 
 class TestConnectionFlags:
+    """TestConnectionFlags."""
     def test_public_listener_flagged(self):
+        """test_public_listener_flagged."""
         c = Connection("TCP", "0.0.0.0", 445, "", 0, "LISTEN", 4, "System")
         assert c.listening_public is True
         assert c.remote_external is False
 
     def test_localhost_listener_not_public(self):
+        """test_localhost_listener_not_public."""
         c = Connection("TCP", "127.0.0.1", 5432, "", 0, "LISTEN", 100, "postgres")
         assert c.listening_public is False
 
     def test_external_established_flagged(self):
+        """test_external_established_flagged."""
         c = Connection("TCP", "192.168.1.5", 55000, "8.8.8.8", 443,
                        "ESTABLISHED", 200, "chrome.exe")
         assert c.remote_external is True
 
     def test_internal_established_not_external(self):
+        """test_internal_established_not_external."""
         c = Connection("TCP", "192.168.1.5", 55000, "192.168.1.1", 443,
                        "ESTABLISHED", 200, "chrome.exe")
         assert c.remote_external is False
 
     def test_to_dict_shape(self):
+        """test_to_dict_shape."""
         c = Connection("TCP", "0.0.0.0", 80, "", 0, "LISTEN", 4, "svc", "HTTP")
         d = c.to_dict()
         assert d["protocol"] == "TCP"
@@ -64,12 +75,15 @@ class TestConnectionFlags:
 
 
 class TestMonitor:
+    """TestMonitor."""
     def test_connections_returns_list(self):
+        """test_connections_returns_list."""
         conns = NetworkMonitor().connections()
         assert isinstance(conns, list)
         assert all(isinstance(c, Connection) for c in conns)
 
     def test_summarize_counts(self):
+        """test_summarize_counts."""
         conns = [
             Connection("TCP", "0.0.0.0", 445, "", 0, "LISTEN", 4, "System"),
             Connection("TCP", "192.168.1.5", 5000, "8.8.8.8", 443,

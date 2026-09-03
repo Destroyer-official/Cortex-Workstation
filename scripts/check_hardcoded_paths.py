@@ -3,6 +3,7 @@ import re
 from pathlib import Path
 
 def analyze_paths():
+    """analyze_paths."""
     print("=== Analyzing Hardcoded Paths across src/ ===")
     hardcoded_re = re.compile(r'["\'](C:[/\\][^"\']*)["\']', re.I)
     

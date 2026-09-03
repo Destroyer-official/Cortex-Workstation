@@ -4,6 +4,7 @@ from __future__ import annotations
 
 
 def test_run_scan_detects_planted_aws_key(tmp_path):
+    """test_run_scan_detects_planted_aws_key."""
     from cortex_unified.system_tools.secrets_scanner import run_scan
 
     # Plant an obvious fake AWS access key id (matches the AKIA... pattern).
@@ -24,6 +25,7 @@ def test_run_scan_detects_planted_aws_key(tmp_path):
 
 
 def test_worker_emits_offline(tmp_path):
+    """test_worker_emits_offline."""
     import os
     os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
     import pytest
@@ -47,6 +49,7 @@ def test_secrets_scan_makes_no_network_calls(tmp_path, monkeypatch):
     from cortex_unified.system_tools import secrets_scanner
 
     def _blocked(*args, **kwargs):
+        """_blocked."""
         raise AssertionError("network access attempted during offline scan!")
 
     monkeypatch.setattr(urllib.request, "urlopen", _blocked)

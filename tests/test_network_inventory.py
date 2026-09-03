@@ -23,6 +23,7 @@ def device(
     findings=(),
     **kwargs,
 ):
+    """device."""
     return InventoryDevice(
         ip=ip,
         mac=mac,
@@ -33,10 +34,12 @@ def device(
 
 
 def kinds(snapshot):
+    """kinds."""
     return [change.kind for change in snapshot.changes]
 
 
 def test_first_snapshot_reports_new_device_and_is_json_safe(tmp_path):
+    """test_first_snapshot_reports_new_device_and_is_json_safe."""
     inventory = NetworkInventory(tmp_path / "inventory.sqlite3")
     snapshot = inventory.record_snapshot(
         [device(services=[InventoryService("https", 443)])],
@@ -49,6 +52,7 @@ def test_first_snapshot_reports_new_device_and_is_json_safe(tmp_path):
 
 
 def test_emits_new_service_and_severity_change(tmp_path):
+    """test_emits_new_service_and_severity_change."""
     inventory = NetworkInventory(tmp_path / "inventory.db")
     old_finding = InventoryFinding("tls", "Weak TLS", "low")
     inventory.record_snapshot(
@@ -73,6 +77,7 @@ def test_emits_new_service_and_severity_change(tmp_path):
 
 
 def test_mac_and_gateway_mac_changes_are_distinct(tmp_path):
+    """test_mac_and_gateway_mac_changes_are_distinct."""
     inventory = NetworkInventory(tmp_path / "inventory.db")
     inventory.record_snapshot(
         [device(mac="00:11:22:33:44:55")],
@@ -89,6 +94,7 @@ def test_mac_and_gateway_mac_changes_are_distinct(tmp_path):
 
 
 def test_disappearance_is_relative_to_previous_snapshot(tmp_path):
+    """test_disappearance_is_relative_to_previous_snapshot."""
     inventory = NetworkInventory(tmp_path / "inventory.db")
     inventory.record_snapshot([
         device(),
@@ -100,6 +106,7 @@ def test_disappearance_is_relative_to_previous_snapshot(tmp_path):
 
 
 def test_randomized_mac_uses_low_confidence_ip_identity(tmp_path):
+    """test_randomized_mac_uses_low_confidence_ip_identity."""
     inventory = NetworkInventory(tmp_path / "inventory.db")
     snapshot = inventory.record_snapshot([
         device(mac="36:fe:fa:8b:25:6b"),
@@ -109,6 +116,7 @@ def test_randomized_mac_uses_low_confidence_ip_identity(tmp_path):
 
 
 def test_first_last_seen_and_catalogs_are_persisted(tmp_path):
+    """test_first_last_seen_and_catalogs_are_persisted."""
     path = tmp_path / "inventory.db"
     inventory = NetworkInventory(path)
     observed = device(
@@ -130,6 +138,7 @@ def test_first_last_seen_and_catalogs_are_persisted(tmp_path):
 
 
 def test_retention_removes_old_snapshots_and_orphan_catalogs(tmp_path):
+    """test_retention_removes_old_snapshots_and_orphan_catalogs."""
     path = tmp_path / "inventory.db"
     inventory = NetworkInventory(path, retention=2)
     inventory.record_snapshot([device(ip="192.168.1.1", mac="00:11:22:33:44:01")])
@@ -141,6 +150,7 @@ def test_retention_removes_old_snapshots_and_orphan_catalogs(tmp_path):
 
 
 def test_duplicate_identity_rejected_without_partial_snapshot(tmp_path):
+    """test_duplicate_identity_rejected_without_partial_snapshot."""
     inventory = NetworkInventory(tmp_path / "inventory.db")
     same_mac = "00:11:22:33:44:55"
     with pytest.raises(ValueError, match="duplicate"):
@@ -152,6 +162,7 @@ def test_duplicate_identity_rejected_without_partial_snapshot(tmp_path):
 
 
 def test_normalizes_discovery_style_mapping_and_validates_ip():
+    """test_normalizes_discovery_style_mapping_and_validates_ip."""
     observed = normalize_device({
         "ip": "192.168.1.20",
         "mac": "00-11-22-33-44-55",
@@ -167,6 +178,7 @@ def test_normalizes_discovery_style_mapping_and_validates_ip():
 
 
 def test_schema_version_and_future_version_guard(tmp_path):
+    """test_schema_version_and_future_version_guard."""
     path = tmp_path / "inventory.db"
     NetworkInventory(path).close()
     with sqlite3.connect(path) as connection:
@@ -180,12 +192,14 @@ def test_schema_version_and_future_version_guard(tmp_path):
 
 
 def test_memory_database_supported():
+    """test_memory_database_supported."""
     with NetworkInventory(":memory:") as inventory:
         inventory.record_snapshot([device()])
         assert inventory.snapshot_count() == 1
 
 
 def test_schema_v1_migrates_metadata_table_atomically(tmp_path):
+    """test_schema_v1_migrates_metadata_table_atomically."""
     path = tmp_path / "legacy.db"
     NetworkInventory(path).close()
     with sqlite3.connect(path) as connection:
@@ -198,6 +212,7 @@ def test_schema_v1_migrates_metadata_table_atomically(tmp_path):
 
 
 def test_metadata_trends_and_csv_round_trip_are_safe(tmp_path):
+    """test_metadata_trends_and_csv_round_trip_are_safe."""
     path = tmp_path / "inventory.db"
     inventory = NetworkInventory(path)
     observed = device(
@@ -238,6 +253,7 @@ def test_metadata_trends_and_csv_round_trip_are_safe(tmp_path):
 
 
 def test_invalid_csv_rolls_back_all_metadata(tmp_path):
+    """test_invalid_csv_rolls_back_all_metadata."""
     inventory = NetworkInventory(tmp_path / "inventory.db")
     path = tmp_path / "bad.csv"
     path.write_text(

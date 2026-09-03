@@ -11,6 +11,7 @@ from cortex_unified.system_tools.memory_standby_purger import (
 
 
 def test_memory_snapshot():
+    """test_memory_snapshot."""
     purger = MemoryStandbyPurger()
     snap = purger.get_memory_snapshot()
     assert isinstance(snap, MemorySnapshot)
@@ -23,6 +24,7 @@ def test_memory_snapshot():
 
 
 def test_privilege_enable():
+    """test_privilege_enable."""
     purger = MemoryStandbyPurger()
     if sys.platform == "win32":
         # Does not crash regardless of whether process is elevated or not
@@ -31,6 +33,7 @@ def test_privilege_enable():
 
 
 def test_purge_actions_safe():
+    """test_purge_actions_safe."""
     purger = MemoryStandbyPurger()
     res1 = purger.purge_standby_list()
     assert isinstance(res1, PurgeResult)

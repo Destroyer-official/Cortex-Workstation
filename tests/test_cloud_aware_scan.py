@@ -26,6 +26,7 @@ _MARK_MTIME = 946_684_800.0  # 2000-01-01T00:00:00Z
 
 
 def _mark_as_online(path: Path) -> None:
+    """_mark_as_online."""
     os.utime(path, (_MARK_MTIME, _MARK_MTIME))
 
 
@@ -41,6 +42,7 @@ def cloud_attrs(monkeypatch):
 # -- classification ---------------------------------------------------------
 
 def test_dehydrated_detects_all_recall_flags():
+    """test_dehydrated_detects_all_recall_flags."""
     for bit in (winattrs.FILE_ATTRIBUTE_OFFLINE,
                 winattrs.FILE_ATTRIBUTE_RECALL_ON_OPEN,
                 winattrs.FILE_ATTRIBUTE_RECALL_ON_DATA_ACCESS):
@@ -51,6 +53,7 @@ def test_dehydrated_detects_all_recall_flags():
 
 
 def test_cloud_tag_covers_the_provider_range():
+    """test_cloud_tag_covers_the_provider_range."""
     assert winattrs.is_cloud_tag(0x9000001A) is True
     assert winattrs.is_cloud_tag(0x9000101A) is True   # provider variant 1
     assert winattrs.is_cloud_tag(0x9000F01A) is True   # provider variant 15
@@ -64,6 +67,7 @@ def test_junction_is_distinct_from_symlink():
 
 
 def test_attribute_readers_tolerate_a_posix_stat(tmp_path):
+    """test_attribute_readers_tolerate_a_posix_stat."""
     f = tmp_path / "plain.txt"
     f.write_text("x")
     st = f.stat()
@@ -73,6 +77,7 @@ def test_attribute_readers_tolerate_a_posix_stat(tmp_path):
 
 
 def test_describe_explains_special_entries():
+    """test_describe_explains_special_entries."""
     assert "cloud" in winattrs.describe(ONLINE, 0)
     assert "junction" in winattrs.describe(0, winattrs.IO_REPARSE_TAG_MOUNT_POINT)
     assert winattrs.describe(0, 0) == ""
@@ -81,6 +86,7 @@ def test_describe_explains_special_entries():
 # -- FileEntry honesty ------------------------------------------------------
 
 def test_placeholder_entry_reclaims_nothing():
+    """test_placeholder_entry_reclaims_nothing."""
     e = FileEntry(Path("x"), size=5 * 1024 ** 3, mtime=0.0, attrs=ONLINE)
     assert e.is_cloud_placeholder is True
     # A 5 GB online-only file frees zero local bytes.
@@ -88,6 +94,7 @@ def test_placeholder_entry_reclaims_nothing():
 
 
 def test_measured_on_disk_size_wins_over_logical():
+    """test_measured_on_disk_size_wins_over_logical."""
     sparse = FileEntry(Path("x"), size=1_000_000, mtime=0.0,
                        attrs=winattrs.FILE_ATTRIBUTE_SPARSE_FILE, on_disk=4096)
     assert sparse.reclaimable_size == 4096
@@ -96,6 +103,7 @@ def test_measured_on_disk_size_wins_over_logical():
 
 
 def test_to_dict_reports_cloud_state():
+    """test_to_dict_reports_cloud_state."""
     d = FileEntry(Path("x"), 10, 0.0, attrs=winattrs.FILE_ATTRIBUTE_OFFLINE).to_dict()
     assert d["cloud_placeholder"] is True
     assert "cloud" in d["note"]
@@ -104,6 +112,7 @@ def test_to_dict_reports_cloud_state():
 # -- walker policy ----------------------------------------------------------
 
 def test_walker_skips_placeholders_and_reports_the_omission(tmp_path, cloud_attrs):
+    """test_walker_skips_placeholders_and_reports_the_omission."""
     (tmp_path / "real.bin").write_bytes(b"a" * 128)
     online = tmp_path / "online.bin"
     online.write_bytes(b"b" * 64)
@@ -121,6 +130,7 @@ def test_walker_skips_placeholders_and_reports_the_omission(tmp_path, cloud_attr
 
 
 def test_placeholders_can_be_included_on_request(tmp_path, cloud_attrs):
+    """test_placeholders_can_be_included_on_request."""
     (tmp_path / "real.bin").write_bytes(b"a" * 128)
     online = tmp_path / "online.bin"
     online.write_bytes(b"b" * 64)
@@ -134,6 +144,7 @@ def test_placeholders_can_be_included_on_request(tmp_path, cloud_attrs):
 
 
 def test_find_empty_never_offers_a_placeholder_for_deletion(tmp_path, cloud_attrs):
+    """test_find_empty_never_offers_a_placeholder_for_deletion."""
     real_empty = tmp_path / "truly_empty.txt"
     real_empty.touch()
     online_empty = tmp_path / "online.txt"
@@ -148,6 +159,7 @@ def test_find_empty_never_offers_a_placeholder_for_deletion(tmp_path, cloud_attr
 
 
 def test_walker_still_reports_plain_trees_unchanged(tmp_path):
+    """test_walker_still_reports_plain_trees_unchanged."""
     (tmp_path / "a.txt").write_text("hello")
     (tmp_path / "sub").mkdir()
     (tmp_path / "sub" / "b.txt").write_text("world")
@@ -162,18 +174,21 @@ def test_walker_still_reports_plain_trees_unchanged(tmp_path):
 
 @pytest.mark.skipif(os.name != "nt", reason="allocated size query is Windows-specific")
 def test_on_disk_size_for_a_plain_file(tmp_path):
+    """test_on_disk_size_for_a_plain_file."""
     f = tmp_path / "plain.bin"
     f.write_bytes(b"z" * 8192)
     assert winattrs.on_disk_size(f, 8192) >= 8192
 
 
 def test_on_disk_size_falls_back_when_the_path_is_gone():
+    """test_on_disk_size_falls_back_when_the_path_is_gone."""
     assert winattrs.on_disk_size("Z:/does/not/exist.bin", 777) in (None, 0, 777)
 
 
 # -- shredder refuses placeholders -----------------------------------------
 
 def test_shredder_refuses_to_overwrite_a_placeholder(tmp_path, monkeypatch):
+    """test_shredder_refuses_to_overwrite_a_placeholder."""
     from cortex_unified.engine.models import DeletionMethod, DeletionOutcome
     from cortex_unified.engine.secure_delete import SecureDeleter
 

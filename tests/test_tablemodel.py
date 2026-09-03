@@ -35,10 +35,12 @@ from cortex_unified.ui.premium.tablemodel import (  # noqa: E402
 
 @pytest.fixture(scope="module")
 def app():
+    """app."""
     return QApplication.instance() or QApplication([])
 
 
 def _records(count=6):
+    """_records."""
     return [
         {"pid": pid, "name": f"proc{pid}", "rss": pid * 1_048_576, "cpu": pid / 2}
         for pid in (9, 10, 2, 100, 33, 1)[:count]
@@ -46,6 +48,7 @@ def _records(count=6):
 
 
 def _columns():
+    """_columns."""
     return [
         Column("PID", "pid", sort_key=lambda r: r["pid"]),
         Column("Name", "name", stretch=True),
@@ -60,6 +63,7 @@ def _columns():
 
 @pytest.fixture
 def binding(app):
+    """binding."""
     view = QTableView()
     bound = bind_table(
         view, _columns(), sort_column=0, sort_order=Qt.SortOrder.AscendingOrder
@@ -72,6 +76,7 @@ def binding(app):
 
 
 def test_model_reports_shape_from_records_and_columns(binding):
+    """test_model_reports_shape_from_records_and_columns."""
     assert binding.proxy.rowCount() == 6
     assert binding.proxy.columnCount() == 3
     model = binding.model
@@ -82,6 +87,7 @@ def test_model_reports_shape_from_records_and_columns(binding):
 
 
 def test_display_supports_field_names_and_callables(binding):
+    """test_display_supports_field_names_and_callables."""
     model = binding.model
     row = 0
     assert model.data(model.index(row, 0), Qt.ItemDataRole.DisplayRole) == "9"
@@ -90,12 +96,14 @@ def test_display_supports_field_names_and_callables(binding):
 
 
 def test_missing_field_renders_empty_not_none(app):
+    """test_missing_field_renders_empty_not_none."""
     model = RecordTableModel([Column("Nope", "absent")])
     model.set_records([{"present": 1}])
     assert model.data(model.index(0, 0), Qt.ItemDataRole.DisplayRole) == ""
 
 
 def test_cells_are_read_only(binding):
+    """test_cells_are_read_only."""
     flags = binding.model.flags(binding.model.index(0, 0))
     assert not (flags & Qt.ItemFlag.ItemIsEditable)
     assert flags & Qt.ItemFlag.ItemIsSelectable
@@ -115,6 +123,7 @@ def test_sorting_uses_the_typed_key_not_the_display_string(binding):
 
 
 def test_sort_role_exposes_the_raw_value(binding):
+    """test_sort_role_exposes_the_raw_value."""
     model = binding.model
     raw = model.data(model.index(0, 2), SORT_ROLE)
     assert isinstance(raw, int) and raw == 9 * 1_048_576
@@ -124,6 +133,7 @@ def test_sort_role_exposes_the_raw_value(binding):
 
 
 def test_filter_matches_searchable_columns_only(binding):
+    """test_filter_matches_searchable_columns_only."""
     binding.set_filter_text("proc1")
     visible = {
         binding.proxy.data(binding.proxy.index(r, 1))
@@ -136,6 +146,7 @@ def test_filter_matches_searchable_columns_only(binding):
 
 
 def test_filter_is_case_insensitive_and_clearable(binding):
+    """test_filter_is_case_insensitive_and_clearable."""
     binding.set_filter_text("PROC2")
     assert binding.proxy.rowCount() == 1
     binding.set_filter_text("")
@@ -143,6 +154,7 @@ def test_filter_is_case_insensitive_and_clearable(binding):
 
 
 def test_filtering_does_not_discard_the_records(binding):
+    """test_filtering_does_not_discard_the_records."""
     binding.set_filter_text("nothing-matches-this")
     assert binding.proxy.rowCount() == 0
     assert len(binding.model.records) == 6, "source data must be preserved"
@@ -163,11 +175,13 @@ def test_selected_record_is_correct_under_sorting(binding):
 
 
 def test_selected_record_is_none_without_selection(binding):
+    """test_selected_record_is_none_without_selection."""
     binding.view.clearSelection()
     assert binding.selected_record() is None
 
 
 def test_select_where_reselects_by_identity(binding):
+    """test_select_where_reselects_by_identity."""
     assert binding.select_where(lambda r: r["pid"] == 33)
     assert binding.selected_record()["pid"] == 33
     # Survives a records swap, which is how a live refresh keeps its selection.
@@ -177,10 +191,12 @@ def test_select_where_reselects_by_identity(binding):
 
 
 def test_select_where_returns_false_when_absent(binding):
+    """test_select_where_returns_false_when_absent."""
     assert binding.select_where(lambda r: r["pid"] == 999999) is False
 
 
 def test_record_role_returns_the_object_itself(binding):
+    """test_record_role_returns_the_object_itself."""
     model = binding.model
     record = model.data(model.index(0, 0), RECORD_ROLE)
     assert record is model.records[0]
@@ -190,26 +206,32 @@ def test_record_role_returns_the_object_itself(binding):
 
 
 def test_set_records_replaces_everything(binding):
+    """test_set_records_replaces_everything."""
     binding.set_records([{"pid": 7, "name": "solo", "rss": 1, "cpu": 0.0}])
     assert binding.proxy.rowCount() == 1
     assert binding.proxy.data(binding.proxy.index(0, 1)) == "solo"
 
 
 def test_clear_empties_the_model(binding):
+    """test_clear_empties_the_model."""
     binding.model.clear()
     assert binding.proxy.rowCount() == 0
     assert binding.selected_record() is None
 
 
 def test_record_at_is_bounds_safe(binding):
+    """test_record_at_is_bounds_safe."""
     assert binding.model.record_at(0) is not None
     assert binding.model.record_at(999) is None
     assert binding.model.record_at(-1) is None
 
 
 def test_works_with_attribute_records_not_just_dicts(app):
+    """test_works_with_attribute_records_not_just_dicts."""
     class Device:
+        """Device."""
         def __init__(self, ip):
+            """__init__."""
             self.ip = ip
 
     model = RecordTableModel([Column("IP", "ip")])

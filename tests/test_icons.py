@@ -27,12 +27,14 @@ from cortex_unified.ui.premium import icons, registry  # noqa: E402
 
 @pytest.fixture(scope="module")
 def app():
+    """app."""
     return QApplication.instance() or QApplication([])
 
 
 # --- asset coverage --------------------------------------------------------
 
 def test_every_page_has_its_own_icon_asset():
+    """test_every_page_has_its_own_icon_asset."""
     missing = [s.id for s in registry.PAGES if not icons.has_icon(s.icon)]
     assert missing == [], f"pages without an icon asset: {missing}"
 
@@ -53,6 +55,7 @@ def test_registry_icons_are_asset_names_not_glyphs():
 
 
 def test_window_chrome_and_status_icons_are_shipped():
+    """test_window_chrome_and_status_icons_are_shipped."""
     for name in ("brand", "win-minimize", "win-maximize", "win-restore",
                  "win-close", "info", "warning", "success", "error"):
         assert icons.has_icon(name), name
@@ -61,6 +64,7 @@ def test_window_chrome_and_status_icons_are_shipped():
 # --- rendering quality -----------------------------------------------------
 
 def test_every_shipped_icon_renders(app):
+    """test_every_shipped_icon_renders."""
     failed = [n for n in sorted(icons.available())
               if icons.pixmap(n, 18, "#DCE3F0").isNull()]
     assert failed == [], f"icons that failed to render: {failed}"
@@ -83,6 +87,7 @@ def test_rasterises_at_device_resolution(app, dpr_x100, expected):
 
 
 def test_icons_are_tinted_to_the_requested_colour(app):
+    """test_icons_are_tinted_to_the_requested_colour."""
     image = icons.pixmap("firewall", 32, "#FF0000").toImage()
     opaque = {
         image.pixelColor(x, y).name()
@@ -95,6 +100,7 @@ def test_icons_are_tinted_to_the_requested_colour(app):
 
 
 def test_icon_exposes_a_larger_variant_so_qt_never_upscales(app):
+    """test_icon_exposes_a_larger_variant_so_qt_never_upscales."""
     sizes = icons.icon("dashboard", 18, "#FFFFFF").availableSizes()
     assert sizes, "QIcon carries no pixmaps"
     assert max(s.width() for s in sizes) >= 36
@@ -109,6 +115,7 @@ def test_missing_icon_degrades_to_empty_without_raising(app):
 
 
 def test_clear_cache_allows_retinting(app):
+    """test_clear_cache_allows_retinting."""
     first = icons.pixmap("settings", 16, "#112233")
     icons.clear_cache()
     second = icons.pixmap("settings", 16, "#445566")
@@ -119,6 +126,7 @@ def test_clear_cache_allows_retinting(app):
 # --- integration with the shell -------------------------------------------
 
 def test_navigation_uses_real_icons_and_clean_labels(app):
+    """test_navigation_uses_real_icons_and_clean_labels."""
     from cortex_unified.ui.premium.theme import apply_theme
     from cortex_unified.ui.premium.window import PremiumMainWindow
 
@@ -137,6 +145,7 @@ def test_navigation_uses_real_icons_and_clean_labels(app):
 
 
 def test_theme_switch_retints_navigation_icons(app):
+    """test_theme_switch_retints_navigation_icons."""
     from cortex_unified.ui.premium.theme import apply_theme
     from cortex_unified.ui.premium.window import PremiumMainWindow
 
@@ -154,6 +163,7 @@ def test_theme_switch_retints_navigation_icons(app):
 
 
 def test_title_bar_controls_have_icons_and_accessible_names(app):
+    """test_title_bar_controls_have_icons_and_accessible_names."""
     from cortex_unified.ui.premium.theme import apply_theme
     from cortex_unified.ui.premium.window import PremiumMainWindow
 
@@ -215,6 +225,7 @@ def test_no_symbol_glyphs_remain_in_the_premium_ui():
 
 
 def test_status_note_pairs_an_icon_with_accessible_text(app):
+    """test_status_note_pairs_an_icon_with_accessible_text."""
     from cortex_unified.ui.premium.theme import THEMES
     from cortex_unified.ui.premium.widgets import status_note
 

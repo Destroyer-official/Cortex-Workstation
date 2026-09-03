@@ -42,6 +42,7 @@ def fake_vhdx(tmp_path):
 # ---------------------------------------------------------------------------
 
 def test_saving_is_unknown_without_a_guest_measurement(fake_vhdx):
+    """test_saving_is_unknown_without_a_guest_measurement."""
     disk = VirtualDisk(fake_vhdx, DiskKind.WSL, "Ubuntu", 8192, 8192)
     # No guest df was run, so there is no defensible number to show.
     assert disk.used_inside_bytes is None
@@ -50,6 +51,7 @@ def test_saving_is_unknown_without_a_guest_measurement(fake_vhdx):
 
 
 def test_saving_is_host_size_minus_guest_usage(fake_vhdx):
+    """test_saving_is_host_size_minus_guest_usage."""
     disk = VirtualDisk(fake_vhdx, DiskKind.WSL, "Ubuntu", 8192, 8192,
                        used_inside_bytes=2048)
     assert disk.potential_saving_bytes == 6144
@@ -64,6 +66,7 @@ def test_saving_never_goes_negative(fake_vhdx):
 
 
 def test_running_disk_names_the_blocking_process(fake_vhdx):
+    """test_running_disk_names_the_blocking_process."""
     disk = VirtualDisk(fake_vhdx, DiskKind.DOCKER, "Docker Desktop", 8192, 8192,
                        running=True, blockers=("com.docker.backend.exe",))
     assert disk.can_compact is False
@@ -72,12 +75,14 @@ def test_running_disk_names_the_blocking_process(fake_vhdx):
 
 
 def test_missing_file_is_reported_not_offered(tmp_path):
+    """test_missing_file_is_reported_not_offered."""
     disk = VirtualDisk(tmp_path / "gone.vhdx", DiskKind.WSL, "Ghost")
     assert disk.can_compact is False
     assert "no longer exists" in disk.status_note
 
 
 def test_disk_to_dict_is_json_ready(fake_vhdx):
+    """test_disk_to_dict_is_json_ready."""
     import json
     disk = VirtualDisk(fake_vhdx, DiskKind.WSL, "Ubuntu", 8192, 8192,
                        used_inside_bytes=1024)
@@ -92,6 +97,7 @@ def test_disk_to_dict_is_json_ready(fake_vhdx):
 # ---------------------------------------------------------------------------
 
 def test_list_disks_dedupes_sorts_and_flags_blockers(monkeypatch, tmp_path):
+    """test_list_disks_dedupes_sorts_and_flags_blockers."""
     small = tmp_path / "small.vhdx"
     small.write_bytes(b"\0" * 1024)
     big = tmp_path / "big.vhdx"
@@ -133,6 +139,7 @@ def test_real_discovery_never_raises():
 
 
 def test_unsupported_platform_returns_empty(monkeypatch):
+    """test_unsupported_platform_returns_empty."""
     import cortex_unified.system_tools.vhdx_manager as mod
     monkeypatch.setattr(mod, "_IS_WINDOWS", False)
     assert VhdxManager().list_disks() == []
@@ -151,6 +158,7 @@ def test_compact_refuses_while_runtime_holds_the_disk(monkeypatch, fake_vhdx):
                         staticmethod(lambda: {"wslservice.exe"}))
 
     def _boom(*_a, **_k):
+        """_boom."""
         raise AssertionError("diskpart must not run while the disk is in use")
 
     monkeypatch.setattr(mgr, "_run_diskpart", _boom)
@@ -164,10 +172,12 @@ def test_compact_refuses_while_runtime_holds_the_disk(monkeypatch, fake_vhdx):
 
 @pytest.mark.skipif(not IS_WINDOWS, reason="compaction is a Windows operation")
 def test_compact_reports_measured_delta(monkeypatch, fake_vhdx):
+    """test_compact_reports_measured_delta."""
     mgr = VhdxManager()
     monkeypatch.setattr(VhdxManager, "_running_processes", staticmethod(set))
 
     def _shrink(script, timeout, cancel_event=None):
+        """_shrink."""
         assert "attach vdisk readonly" in script, "must attach read-only"
         assert "compact vdisk" in script
         assert "detach vdisk" in script
@@ -185,6 +195,7 @@ def test_compact_reports_measured_delta(monkeypatch, fake_vhdx):
 
 @pytest.mark.skipif(not IS_WINDOWS, reason="compaction is a Windows operation")
 def test_compact_is_honest_when_nothing_was_reclaimed(monkeypatch, fake_vhdx):
+    """test_compact_is_honest_when_nothing_was_reclaimed."""
     mgr = VhdxManager()
     monkeypatch.setattr(VhdxManager, "_running_processes", staticmethod(set))
     monkeypatch.setattr(mgr, "_run_diskpart",
@@ -198,6 +209,7 @@ def test_compact_is_honest_when_nothing_was_reclaimed(monkeypatch, fake_vhdx):
 
 @pytest.mark.skipif(not IS_WINDOWS, reason="compaction is a Windows operation")
 def test_compact_surfaces_permission_failure(monkeypatch, fake_vhdx):
+    """test_compact_surfaces_permission_failure."""
     mgr = VhdxManager()
     monkeypatch.setattr(VhdxManager, "_running_processes", staticmethod(set))
     monkeypatch.setattr(mgr, "_run_diskpart",
@@ -210,6 +222,7 @@ def test_compact_surfaces_permission_failure(monkeypatch, fake_vhdx):
 
 
 def test_compact_missing_file_fails_clearly(tmp_path):
+    """test_compact_missing_file_fails_clearly."""
     result = VhdxManager().compact(
         VirtualDisk(tmp_path / "gone.vhdx", DiskKind.WSL, "Ghost"))
     assert result.success is False
@@ -217,6 +230,7 @@ def test_compact_missing_file_fails_clearly(tmp_path):
 
 
 def test_failure_messages_are_actionable():
+    """test_failure_messages_are_actionable."""
     explain = VhdxManager._explain_failure
     assert "Administrator" in explain("Access is denied.")
     assert "Stop WSL" in explain("The virtual disk is currently in use.")
@@ -238,6 +252,7 @@ def test_decode_handles_utf16_console_output():
 
 
 def test_sparse_mode_is_wsl_only(fake_vhdx):
+    """test_sparse_mode_is_wsl_only."""
     ok, msg = VhdxManager().set_sparse(
         VirtualDisk(fake_vhdx, DiskKind.HYPERV, "VM"))
     assert ok is False

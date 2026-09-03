@@ -20,6 +20,7 @@ from PySide6.QtWidgets import QApplication, QMessageBox  # noqa: E402
 
 @pytest.fixture(scope="module")
 def app():
+    """app."""
     application = QApplication.instance() or QApplication([])
     yield application
 
@@ -38,6 +39,7 @@ def isolated_license(monkeypatch, tmp_path):
 
 @pytest.fixture
 def window(app, isolated_license):
+    """window."""
     from cortex_unified.ui.premium.theme import apply_theme
     from cortex_unified.ui.premium.window import PremiumMainWindow
 
@@ -72,6 +74,7 @@ def _click_trial_buttons(monkeypatch):
 # -- 1. page loads; Free tier when unlicensed ---------------------------------
 
 def test_license_page_shows_free_when_unlicensed(window):
+    """test_license_page_shows_free_when_unlicensed."""
     page = window._pages["license"]
     assert page.tier_label.text() == "Free"
     assert page.key_label.text() == "No key installed"
@@ -90,6 +93,7 @@ def test_license_page_shows_free_when_unlicensed(window):
 
 
 def test_activate_with_empty_key_warns_and_stays_free(window, monkeypatch):
+    """test_activate_with_empty_key_warns_and_stays_free."""
     warnings = []
     monkeypatch.setattr(QMessageBox, "warning",
                         staticmethod(lambda *a, **k: warnings.append(a)))
@@ -102,6 +106,7 @@ def test_activate_with_empty_key_warns_and_stays_free(window, monkeypatch):
 # -- 2. activation flows into the UI ------------------------------------------
 
 def test_page_shows_pro_after_activation_and_refresh(window, isolated_license):
+    """test_page_shows_pro_after_activation_and_refresh."""
     from cortex_unified.licensing import Tier
 
     isolated_license.activate("PROK-1234-ABCD", Tier.PRO,
@@ -130,6 +135,7 @@ def test_page_shows_pro_after_activation_and_refresh(window, isolated_license):
 # -- 3. require_feature -------------------------------------------------------
 
 def test_require_feature_allows_licensed_feature(window, isolated_license):
+    """test_require_feature_allows_licensed_feature."""
     from cortex_unified.licensing import Feature, Tier
     from cortex_unified.ui.premium.widgets import require_feature
 
@@ -169,6 +175,7 @@ def test_require_feature_reports_refused_trial(window, isolated_license,
                         staticmethod(lambda *a, **k: infos.append(a)))
 
     def refused():
+        """refused."""
         raise RuntimeError("Trial already used.")
 
     monkeypatch.setattr(isolated_license, "start_trial", refused)
@@ -195,6 +202,7 @@ def test_registry_declares_the_license_page():
 
 
 def test_window_nav_reaches_the_license_page(window):
+    """test_window_nav_reaches_the_license_page."""
     assert window._nav_sections_by_page.get("license") == "recovery"
     window._select("license")
     assert window._stack.currentWidget() is window._pages["license"]

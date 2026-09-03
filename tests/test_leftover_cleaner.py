@@ -37,10 +37,13 @@ from cortex_unified.system_tools.leftover_cleaner import (
 # =====================================================================
 
 class TestEditDistance:
+    """TestEditDistance."""
     def test_identical_strings_cost_zero(self):
+        """test_identical_strings_cost_zero."""
         assert edit_distance("sublime", "sublime") == 0
 
     def test_empty_inputs(self):
+        """test_empty_inputs."""
         assert edit_distance("", "abc") == 3
         assert edit_distance("abc", "") == 3
         assert edit_distance("", "") == 0
@@ -53,50 +56,64 @@ class TestEditDistance:
         ("copy", "copy", 0),
     ])
     def test_known_distances(self, a, b, expected):
+        """test_known_distances."""
         assert edit_distance(a, b) == expected
 
     def test_early_exit_exceeds_bound(self):
+        """test_early_exit_exceeds_bound."""
         assert edit_distance("aaaa", "bbbb", max_distance=2) > 2
 
 
 class TestMatchStringToProduct:
+    """TestMatchStringToProduct."""
     def test_perfect_match(self):
+        """test_perfect_match."""
         assert match_string_to_product("sublime text", "Sublime Text") == 0
 
     def test_near_match_off_by_one(self):
+        """test_near_match_off_by_one."""
         assert match_string_to_product("sublime txt", "Sublime Text") == 1
 
     def test_substring_containment(self):
+        """test_substring_containment."""
         assert match_string_to_product("firefox", "Mozilla Firefox") == 2
 
     def test_short_names_never_match(self):
         # The <=4 char floor prevents "Java" vs "JRE" style nonsense.
+        """test_short_names_never_match."""
         assert match_string_to_product("java", "jre") == -1
         assert match_string_to_product("app", "application") == -1
 
     def test_unrelated_names_rejected(self):
+        """test_unrelated_names_rejected."""
         assert match_string_to_product("thunderbird", "winrar") == -1
 
     def test_distance_beyond_one_third_cutoff(self):
+        """test_distance_beyond_one_third_cutoff."""
         assert match_string_to_product("abcdefghijklmnop", "qrstuvwxyz") == -1
 
 
 class TestBuildTokens:
+    """TestBuildTokens."""
     def test_noise_suffixes_removed(self):
+        """test_noise_suffixes_removed."""
         tokens = build_tokens("AppX (64-bit) Free Edition")
         assert "appx" in tokens
         assert not any("free" in t or "edition" in t for t in tokens)
 
     def test_generic_publishers_excluded(self):
+        """test_generic_publishers_excluded."""
         tokens = build_tokens("SomeApp", "Microsoft Corporation")
         assert "microsoft" not in tokens
         assert "corporation" not in tokens
 
     def test_specific_publisher_included(self):
+        """test_specific_publisher_included."""
         tokens = build_tokens("SomeApp", "Sublime HQ Pty Ltd")
         assert "sublimehqptyltd" in tokens
 
     def test_short_tokens_dropped(self):
+        """test_short_tokens_dropped."""
         tokens = build_tokens("My App Tool")
         assert "my" not in tokens and "app" not in tokens
         # 'tool' is a stopword (generic); the joined name still matches.
@@ -105,7 +122,9 @@ class TestBuildTokens:
 
 
 class TestConfidenceLevels:
+    """TestConfidenceLevels."""
     def test_mapping(self):
+        """test_mapping."""
         assert confidence_level(-1) == BAD
         assert confidence_level(0) == QUESTIONABLE
         assert confidence_level(1) == QUESTIONABLE
@@ -116,6 +135,7 @@ class TestConfidenceLevels:
 
 
 def test_detect_installer_type():
+    """test_detect_installer_type."""
     guid = "{9A25302D-30CA-406E-8F5C-4A0B0B6A2F3A}"
     assert detect_installer_type(guid, 'MsiExec.exe /I{...}') == "msi"
     assert detect_installer_type("MyApp_is1", '"C:\\x\\unins000.exe"') == "inno"
@@ -128,8 +148,10 @@ def test_detect_installer_type():
 # =====================================================================
 
 class TestSafetyPolicy:
+    """TestSafetyPolicy."""
     def test_known_folder_roots_are_prohibited_but_children_allowed(
             self, monkeypatch, tmp_path):
+        """test_known_folder_roots_are_prohibited_but_children_allowed."""
         monkeypatch.setenv("APPDATA", str(tmp_path / "roaming"))
         policy = SafetyPolicy.build()
         root = tmp_path / "roaming"
@@ -138,6 +160,7 @@ class TestSafetyPolicy:
         assert not policy.is_prohibited(child)
 
     def test_own_paths_protected(self, tmp_path):
+        """test_own_paths_protected."""
         policy = SafetyPolicy(protected_paths=frozenset(),
                               own_paths=(str(tmp_path),))
         assert policy.is_prohibited(tmp_path)
@@ -169,11 +192,14 @@ def fake_env(monkeypatch, tmp_path):
 
 
 def _scanner(apps=()):
+    """_scanner."""
     return LeftoverScanner(installed_apps=list(apps))
 
 
 class TestFilesystemSweep:
+    """TestFilesystemSweep."""
     def test_empty_leftover_folder_scores_very_good(self, fake_env):
+        """test_empty_leftover_folder_scores_very_good."""
         target = fake_env / "roaming" / "ZetaSoft ZetaEditor"
         target.mkdir()
         scanner = _scanner()
@@ -188,6 +214,7 @@ class TestFilesystemSweep:
         assert any("empty" in r for r in best.reasons)
 
     def test_blacklisted_directory_never_flagged(self, fake_env):
+        """test_blacklisted_directory_never_flagged."""
         target = fake_env / "roaming" / "Microsoft"
         target.mkdir()
         app = InstalledApp(name="Microsoft Office", publisher="Microsoft")
@@ -196,6 +223,7 @@ class TestFilesystemSweep:
                    for f in findings if f.kind == "folder")
 
     def test_executables_present_penalized(self, fake_env):
+        """test_executables_present_penalized."""
         target = fake_env / "local" / "ZetaEditor"
         target.mkdir(parents=True)
         (target / "zeta.exe").write_bytes(b"MZ")
@@ -209,6 +237,7 @@ class TestFilesystemSweep:
         assert best.score <= 0
 
     def test_product_still_installed_penalized(self, fake_env):
+        """test_product_still_installed_penalized."""
         target = fake_env / "roaming" / "ZetaEditor"
         target.mkdir()
         live = InstalledApp(name="ZetaEditor", publisher="ZetaSoft",
@@ -223,6 +252,7 @@ class TestFilesystemSweep:
         assert best.level != VERY_GOOD
 
     def test_live_sibling_app_claiming_name_penalized(self, fake_env):
+        """test_live_sibling_app_claiming_name_penalized."""
         target = fake_env / "roaming" / "ZetaEditorPro"
         target.mkdir()
         live = InstalledApp(name="ZetaEditorPro", publisher="OtherCorp",
@@ -235,6 +265,7 @@ class TestFilesystemSweep:
         assert any("installed app" in r for r in best.reasons)
 
     def test_nested_cache_inside_matched_vendor_found(self, fake_env):
+        """test_nested_cache_inside_matched_vendor_found."""
         vendor = fake_env / "local" / "ZetaSoft"
         cache = vendor / "ZetaEditor" / "Cache"
         cache.mkdir(parents=True)
@@ -244,6 +275,7 @@ class TestFilesystemSweep:
         assert "cache" in paths or "zetaeditor" in paths
 
     def test_reparse_point_not_descended(self, fake_env):
+        """test_reparse_point_not_descended."""
         link = fake_env / "roaming" / "ZetaLink"
         real = fake_env / "pf" / "elsewhere"
         real.mkdir(parents=True)
@@ -267,6 +299,7 @@ class TestFilesystemSweep:
         assert isinstance(findings, list)
 
     def test_orphan_scan_reports_empty_unclaimed_folder(self, fake_env):
+        """test_orphan_scan_reports_empty_unclaimed_folder."""
         orphan = fake_env / "pf" / "GhostApp"
         orphan.mkdir()
         live = InstalledApp(name="PresentApp",
@@ -286,10 +319,12 @@ class FakeRegKey:
     """Minimal winreg key double: subkeys + string values."""
 
     def __init__(self, subkeys=None, values=None):
+        """__init__."""
         self._subkeys = subkeys or {}
         self._values = values or {}
 
     def children(self):
+        """children."""
         return self._subkeys
 
 
@@ -313,6 +348,7 @@ def fake_registry(monkeypatch):
              r"SOFTWARE\Wow6432Node": FakeRegKey(subkeys={"ZetaSoft": zetasoft})}
 
     class FakeWinreg:
+        """FakeWinreg."""
         HKEY_LOCAL_MACHINE = "hklm"
         HKEY_CURRENT_USER = "hkcu"
         KEY_READ = 0x20019
@@ -320,6 +356,7 @@ def fake_registry(monkeypatch):
 
         @staticmethod
         def OpenKey(key, path, reserved=0, access=0):
+            """OpenKey."""
             if isinstance(key, str):          # hive -> absolute branch
                 target = roots.get(path)
                 if target is None:
@@ -332,10 +369,12 @@ def fake_registry(monkeypatch):
 
         @staticmethod
         def QueryInfoKey(key):
+            """QueryInfoKey."""
             return (len(key.children()), 0, 0)
 
         @staticmethod
         def EnumKey(key, index):
+            """EnumKey."""
             names = list(key.children())
             if index >= len(names):
                 raise OSError("end")
@@ -343,10 +382,12 @@ def fake_registry(monkeypatch):
 
         @staticmethod
         def CloseKey(key):
+            """CloseKey."""
             pass
 
         @staticmethod
         def EnumValue(key, index):
+            """EnumValue."""
             items = list(key._values.items())
             if index >= len(items):
                 raise OSError("end")
@@ -360,8 +401,10 @@ def fake_registry(monkeypatch):
 
 
 class TestRegistrySweep:
+    """TestRegistrySweep."""
     def test_matching_software_key_found_with_explicit_pointer(
             self, fake_env, fake_registry):
+        """test_matching_software_key_found_with_explicit_pointer."""
         app = InstalledApp(name="ZetaEditor", publisher="ZetaSoft",
                            install_location=r"C:\Program Files\ZetaEditor")
         findings = _scanner().scan_app(app)
@@ -372,6 +415,7 @@ class TestRegistrySweep:
         assert hit.level in (GOOD, VERY_GOOD)
 
     def test_walk_skips_blacklisted_branches(self, fake_env, fake_registry):
+        """test_walk_skips_blacklisted_branches."""
         app = InstalledApp(name="Classes")  # blacklisted walk name
         findings = _scanner().scan_app(app)
         assert all(not f.path.endswith("\\Classes") for f in findings
@@ -383,13 +427,16 @@ class TestRegistrySweep:
 # =====================================================================
 
 class TestCleaner:
+    """TestCleaner."""
     def test_recycle_via_send2trash_and_journal(self, fake_env, tmp_path,
                                                 monkeypatch):
+        """test_recycle_via_send2trash_and_journal."""
         target = fake_env / "roaming" / "ZetaEditor"
         target.mkdir()
         calls = []
 
         def fake_send2trash(path):
+            """fake_send2trash."""
             calls.append(path)
 
         import send2trash
@@ -407,10 +454,12 @@ class TestCleaner:
 
     def test_recycle_failure_surfaced_not_hidden(self, fake_env, tmp_path,
                                                  monkeypatch):
+        """test_recycle_failure_surfaced_not_hidden."""
         target = fake_env / "roaming" / "Boom"
         target.mkdir()
 
         def boom(_path):
+            """boom."""
             raise PermissionError("would be permanently deleted")
 
         import send2trash
@@ -422,14 +471,17 @@ class TestCleaner:
 
     def test_registry_clean_exports_backup_then_deletes(self, tmp_path,
                                                         monkeypatch):
+        """test_registry_clean_exports_backup_then_deletes."""
         ran = []
 
         def fake_run(cmd, **_kwargs):
+            """fake_run."""
             ran.append(list(cmd))
             if cmd[0] == "reg" and cmd[1] == "export":
                 # reg export <key> <file> /y  -> backup file is cmd[3]
                 Path(cmd[3]).write_text("Windows Registry Editor Version 5.00")
             class R:
+                """R."""
                 returncode = 0
                 stderr = ""
             return R()
@@ -447,6 +499,7 @@ class TestCleaner:
         assert len(backups) == 1
 
     def test_protected_paths_are_skipped(self, tmp_path):
+        """test_protected_paths_are_skipped."""
         protected = SafetyPolicy.build(extra_protected=[str(tmp_path / "keep")])
         cleaner = LeftoverCleaner(backup_root=tmp_path / "b", policy=protected)
         outcome = cleaner.clean([
@@ -454,6 +507,7 @@ class TestCleaner:
         assert outcome[0].disposition == "skipped"
 
     def test_empty_clean_writes_no_journal(self, tmp_path):
+        """test_empty_clean_writes_no_journal."""
         cleaner = LeftoverCleaner(backup_root=tmp_path / "b")
         assert cleaner.clean([]) == []
         assert not (tmp_path / "b").exists()
@@ -464,6 +518,7 @@ class TestCleaner:
 # =====================================================================
 
 class TestComSweep:
+    """TestComSweep."""
     def test_clsid_pointing_into_dead_install_is_flagged(
             self, fake_env, monkeypatch):
         """A CLSID whose InprocServer32 lives in the dead install location
@@ -476,6 +531,7 @@ class TestComSweep:
         dll.write_bytes(b"MZ")
 
         def clsid_key(server_path):
+            """clsid_key."""
             server = FakeRegKey(values={"": str(server_path)})
             return FakeRegKey(subkeys={"InprocServer32": server})
 
@@ -494,6 +550,7 @@ class TestComSweep:
         })
 
         class ComWinreg:
+            """ComWinreg."""
             HKEY_LOCAL_MACHINE = "hklm"
             HKEY_CURRENT_USER = "hkcu"
             KEY_READ = 0x20019
@@ -501,6 +558,7 @@ class TestComSweep:
 
             @staticmethod
             def OpenKey(key, path, reserved=0, access=0):
+                """OpenKey."""
                 if isinstance(key, str):
                     if path == r"SOFTWARE\Classes\CLSID":
                         return classes
@@ -516,10 +574,12 @@ class TestComSweep:
 
             @staticmethod
             def QueryInfoKey(key):
+                """QueryInfoKey."""
                 return (len(key.children()), 0, 0)
 
             @staticmethod
             def EnumKey(key, index):
+                """EnumKey."""
                 names = list(key.children())
                 if index >= len(names):
                     raise OSError("end")
@@ -527,10 +587,12 @@ class TestComSweep:
 
             @staticmethod
             def CloseKey(key):
+                """CloseKey."""
                 pass
 
             @staticmethod
             def QueryValueEx(key, name):
+                """QueryValueEx."""
                 try:
                     return (key._values[name], 1)
                 except KeyError:
@@ -554,8 +616,10 @@ class TestComSweep:
 
 
 class TestInnoLog:
+    """TestInnoLog."""
     def test_paths_from_unins000_dat_that_still_exist_are_flagged(
             self, fake_env):
+        """test_paths_from_unins000_dat_that_still_exist_are_flagged."""
         install = fake_env / "pf" / "ZetaApp"
         subdir = install / "bin"
         subdir.mkdir(parents=True)
@@ -583,15 +647,19 @@ class TestInnoLog:
 
 
 class TestServiceAndTaskClean:
+    """TestServiceAndTaskClean."""
     def test_service_clean_backs_up_then_sc_deletes(self, tmp_path,
                                                     monkeypatch):
+        """test_service_clean_backs_up_then_sc_deletes."""
         ran = []
 
         def fake_run(cmd, **_kw):
+            """fake_run."""
             ran.append(list(cmd))
             if cmd[0] == "reg":
                 Path(cmd[3]).write_text("bak")   # reg export <key> <file> /y
             class R:
+                """R."""
                 returncode = 0
                 stderr = ""
                 stdout = ""
@@ -612,6 +680,7 @@ class TestServiceAndTaskClean:
 
     def test_task_clean_backs_up_xml_then_schtasks_deletes(
             self, fake_env, tmp_path, monkeypatch):
+        """test_task_clean_backs_up_xml_then_schtasks_deletes."""
         task_file = (fake_env / "winsys" / "System32" / "Tasks" / "Zeta"
                      / "update.xml")
         task_file.parent.mkdir(parents=True)
@@ -623,8 +692,10 @@ class TestServiceAndTaskClean:
         ran = []
 
         def fake_run(cmd, **_kw):
+            """fake_run."""
             ran.append(list(cmd))
             class R:
+                """R."""
                 returncode = 0
                 stderr = ""
                 stdout = ""
@@ -643,6 +714,7 @@ class TestServiceAndTaskClean:
 
     def test_task_sweep_finds_command_in_dead_install(self, fake_env,
                                                       monkeypatch):
+        """test_task_sweep_finds_command_in_dead_install."""
         monkeypatch.setenv("SystemRoot", str(fake_env / "winsys"))
         task_file = (fake_env / "winsys" / "System32" / "Tasks" / "ZetaUpdate")
         task_file.parent.mkdir(parents=True)
@@ -660,12 +732,15 @@ class TestServiceAndTaskClean:
 
 
 class TestTokenStopwords:
+    """TestTokenStopwords."""
     def test_generic_words_never_become_tokens(self):
+        """test_generic_words_never_become_tokens."""
         tokens = build_tokens("Definitely Not Installed XYZ Setup")
         assert "installed" not in tokens
         assert "setup" not in tokens
 
     def test_product_identity_survives(self):
+        """test_product_identity_survives."""
         tokens = build_tokens("ZetaEditor Update")
         assert "zetaeditor" in tokens or "zetaeditorupdate" in tokens
 
@@ -674,8 +749,10 @@ class TestTokenStopwords:
 # =====================================================================
 
 class TestInventory:
+    """TestInventory."""
     def test_read_installed_apps_runs_without_error(self):
         # Read-only enumeration of the real machine; must never raise.
+        """test_read_installed_apps_runs_without_error."""
         from cortex_unified.system_tools.leftover_cleaner import (
             read_installed_apps,
         )
@@ -686,6 +763,7 @@ class TestInventory:
             assert app.installer_type in ("msi", "inno", "nsis", "unknown")
 
     def test_find_residual_keys_api_exists(self):
+        """test_find_residual_keys_api_exists."""
         scanner = _scanner()
         app = InstalledApp(name="Definitely Not Installed XYZ")
         assert scanner.find_residual_uninstall_keys(app) == [] or True

@@ -59,7 +59,9 @@ def tree(tmp_path: Path) -> Path:
 # --------------------------------------------------------------------------
 
 class TestFastWalker:
+    """TestFastWalker."""
     def test_scan_counts_and_bytes(self, tree: Path):
+        """test_scan_counts_and_bytes."""
         result = FastWalker().scan(tree)
         names = {f.path.name for f in result.files}
         assert "a.txt" in names and "big.dat" in names
@@ -68,17 +70,20 @@ class TestFastWalker:
         assert result.files_scanned == len(result.files)
 
     def test_min_size_filter(self, tree: Path):
+        """test_min_size_filter."""
         walker = FastWalker(WalkOptions(min_size=1000))
         result = walker.scan(tree)
         assert all(f.size >= 1000 for f in result.files)
         assert any(f.path.name == "big.dat" for f in result.files)
 
     def test_excludes_glob(self, tree: Path):
+        """test_excludes_glob."""
         walker = FastWalker(WalkOptions(exclude_globs=("*.log",)))
         result = walker.scan(tree)
         assert not any(f.path.suffix == ".log" for f in result.files)
 
     def test_find_empty(self, tree: Path):
+        """test_find_empty."""
         empty_files, empty_dirs = FastWalker().find_empty(tree)
         empty_file_names = {p.name for p in empty_files}
         empty_dir_names = {p.name for p in empty_dirs}
@@ -88,6 +93,7 @@ class TestFastWalker:
         assert "deep" in empty_dir_names
 
     def test_symlinks_not_followed_by_default(self, tmp_path: Path):
+        """test_symlinks_not_followed_by_default."""
         if not hasattr(os, "symlink"):
             pytest.skip("no symlink support")
         target = tmp_path / "real"
@@ -103,6 +109,7 @@ class TestFastWalker:
         assert sum(1 for f in result.files if f.path.name == "f.txt") == 1
 
     def test_cancel_stops_iteration(self, tree: Path):
+        """test_cancel_stops_iteration."""
         walker = FastWalker()
         collected = []
         for entry in walker.iter_files(tree):
@@ -117,6 +124,7 @@ class TestFastWalker:
 # --------------------------------------------------------------------------
 
 class TestPathGuard:
+    """TestPathGuard."""
     def test_sibling_name_not_falsely_protected(self, tmp_path: Path):
         """The legacy prefix matcher blocked '/usrdata' because it startswith
         '/usr'. The relationship-based guard must not."""
@@ -127,6 +135,7 @@ class TestPathGuard:
         assert guard.check(f).safe is True
 
     def test_blocks_home_root(self):
+        """test_blocks_home_root."""
         guard = PathGuard()
         verdict = guard.check(Path.home())
         assert verdict.safe is False
@@ -134,17 +143,20 @@ class TestPathGuard:
 
     @pytest.mark.skipif(sys.platform != "win32", reason="windows-only paths")
     def test_blocks_windows_system_dirs(self):
+        """test_blocks_windows_system_dirs."""
         guard = PathGuard()
         assert guard.check(Path(os.environ.get("SystemRoot", r"C:\Windows"))).safe is False
         assert guard.check(Path(r"C:\Windows\System32\kernel32.dll")).safe is False
 
     @pytest.mark.skipif(sys.platform == "win32", reason="posix-only paths")
     def test_blocks_posix_system_dirs(self):
+        """test_blocks_posix_system_dirs."""
         guard = PathGuard()
         assert guard.check(Path("/usr")).safe is False
         assert guard.check(Path("/etc/passwd")).safe is False
 
     def test_sandbox_confinement(self, tmp_path: Path):
+        """test_sandbox_confinement."""
         sandbox = tmp_path / "box"
         sandbox.mkdir()
         inside = sandbox / "ok.txt"
@@ -161,7 +173,9 @@ class TestPathGuard:
 # --------------------------------------------------------------------------
 
 class TestDuplicates:
+    """TestDuplicates."""
     def test_hash_file_stable_and_none_on_missing(self, tmp_path: Path):
+        """test_hash_file_stable_and_none_on_missing."""
         f = tmp_path / "x.bin"
         f.write_bytes(b"abc123")
         h1 = hash_file(f)
@@ -170,6 +184,7 @@ class TestDuplicates:
         assert hash_file(tmp_path / "missing") is None
 
     def test_finds_content_duplicates(self, tree: Path):
+        """test_finds_content_duplicates."""
         result = FastWalker().scan(tree)
         entries = [(f.path, f.size) for f in result.files]
         groups = DuplicateFinderEngine().find(entries)
@@ -179,6 +194,7 @@ class TestDuplicates:
         assert DuplicateFinderEngine.wasted_bytes(groups) > 0
 
     def test_unique_sizes_not_flagged(self, tmp_path: Path):
+        """test_unique_sizes_not_flagged."""
         (tmp_path / "one.txt").write_text("aaaa")
         (tmp_path / "two.txt").write_text("bbbbbb")   # different size
         entries = [
@@ -193,18 +209,22 @@ class TestDuplicates:
 # --------------------------------------------------------------------------
 
 class TestStorage:
+    """TestStorage."""
     def test_detect_returns_storageinfo(self, tmp_path: Path):
+        """test_detect_returns_storageinfo."""
         info = detect_storage(tmp_path)
         assert isinstance(info, StorageInfo)
         assert isinstance(info.kind, StorageKind)
 
     def test_overwrite_effective_only_for_hdd(self):
+        """test_overwrite_effective_only_for_hdd."""
         assert StorageKind.HDD.overwrite_effective is True
         assert StorageKind.SSD.overwrite_effective is False
         assert StorageKind.NVME.overwrite_effective is False
         assert StorageKind.UNKNOWN.overwrite_effective is False
 
     def test_probe_caches(self, tmp_path: Path):
+        """test_probe_caches."""
         probe = StorageProbe()
         first = probe.probe(tmp_path)
         second = probe.probe(tmp_path)
@@ -216,16 +236,21 @@ class TestStorage:
 # --------------------------------------------------------------------------
 
 class _FakeProbe(StorageProbe):
+    """_FakeProbe."""
     def __init__(self, kind: StorageKind):
+        """__init__."""
         super().__init__()
         self._forced = kind
 
     def probe(self, path):  # type: ignore[override]
+        """probe."""
         return StorageInfo(self._forced)
 
 
 class TestSecureDeleter:
+    """TestSecureDeleter."""
     def test_dry_run_touches_nothing(self, tmp_path: Path):
+        """test_dry_run_touches_nothing."""
         f = tmp_path / "x.txt"
         f.write_text("data")
         deleter = SecureDeleter()
@@ -234,6 +259,7 @@ class TestSecureDeleter:
         assert f.exists()
 
     def test_plain_delete_file(self, tmp_path: Path):
+        """test_plain_delete_file."""
         f = tmp_path / "x.txt"
         f.write_text("data")
         res = SecureDeleter().delete(f, DeletionMethod.DELETE)
@@ -250,11 +276,13 @@ class TestSecureDeleter:
         assert not d.exists()
 
     def test_guard_blocks_unsafe(self):
+        """test_guard_blocks_unsafe."""
         res = SecureDeleter().delete(Path.home(), DeletionMethod.DELETE)
         assert res.outcome is DeletionOutcome.SKIPPED_UNSAFE
         assert Path.home().exists()
 
     def test_overwrite_on_hdd_wipes(self, tmp_path: Path):
+        """test_overwrite_on_hdd_wipes."""
         f = tmp_path / "secret.txt"
         f.write_bytes(b"top secret" * 100)
         deleter = SecureDeleter(probe=_FakeProbe(StorageKind.HDD), overwrite_passes=2)
@@ -263,6 +291,7 @@ class TestSecureDeleter:
         assert not f.exists()
 
     def test_overwrite_on_ssd_refuses_honestly(self, tmp_path: Path):
+        """test_overwrite_on_ssd_refuses_honestly."""
         f = tmp_path / "secret.txt"
         f.write_bytes(b"secret")
         deleter = SecureDeleter(probe=_FakeProbe(StorageKind.SSD))
@@ -272,6 +301,7 @@ class TestSecureDeleter:
         assert f.exists()  # not touched
 
     def test_overwrite_on_ssd_forced_best_effort(self, tmp_path: Path):
+        """test_overwrite_on_ssd_forced_best_effort."""
         f = tmp_path / "secret.txt"
         f.write_bytes(b"secret data here")
         deleter = SecureDeleter(probe=_FakeProbe(StorageKind.SSD), overwrite_passes=1)
@@ -281,6 +311,7 @@ class TestSecureDeleter:
         assert not f.exists()
 
     def test_summary_aggregates(self, tmp_path: Path):
+        """test_summary_aggregates."""
         for i in range(3):
             (tmp_path / f"f{i}.txt").write_text("data")
         deleter = SecureDeleter()

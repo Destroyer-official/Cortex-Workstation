@@ -25,7 +25,9 @@ from cortex_unified.analyzers.portable_manager import (
 
 
 class TestPortableApp:
+    """TestPortableApp."""
     def test_basic_construction(self, tmp_path):
+        """test_basic_construction."""
         app = PortableApp(
             id="notepad-plus-plus",
             name="Notepad++",
@@ -43,6 +45,7 @@ class TestPortableApp:
         assert app.launch_exe is None
 
     def test_to_dict_slots_incompatibility(self, tmp_path):
+        """test_to_dict_slots_incompatibility."""
         app = PortableApp(
             id="7zip",
             name="7-Zip",
@@ -63,12 +66,15 @@ class TestPortableApp:
 
 
 class TestParseAppinfo:
+    """TestParseAppinfo."""
     def _write_appinfo(self, root: Path, content: str) -> Path:
+        """_write_appinfo."""
         ini = root / "appinfo.ini"
         ini.write_text(content, encoding="utf-8")
         return ini
 
     def test_valid_appinfo(self, tmp_path):
+        """test_valid_appinfo."""
         content = (
             "[Details]\n"
             "Name=MyTool\n"
@@ -87,14 +93,17 @@ class TestParseAppinfo:
         assert app.launch_exe == tmp_path / "MyTool.exe"
 
     def test_missing_ini_returns_none(self, tmp_path):
+        """test_missing_ini_returns_none."""
         assert _parse_appinfo(tmp_path / "nope.ini") is None
 
     def test_garbage_ini_returns_none(self, tmp_path):
+        """test_garbage_ini_returns_none."""
         ini = tmp_path / "appinfo.ini"
         ini.write_text("this is not an ini", encoding="utf-8")
         assert _parse_appinfo(ini) is None
 
     def test_launch_exe_fallback_to_first_exe(self, tmp_path):
+        """test_launch_exe_fallback_to_first_exe."""
         content = "[Details]\nName=Tool\nDisplayVersion=1.0\n"
         self._write_appinfo(tmp_path, content)
         (tmp_path / "something_else.exe").touch()
@@ -104,6 +113,7 @@ class TestParseAppinfo:
         assert app.launch_exe == tmp_path / "something_else.exe"
 
     def test_no_exe(self, tmp_path):
+        """test_no_exe."""
         content = "[Details]\nName=Tool\nDisplayVersion=1.0\n"
         self._write_appinfo(tmp_path, content)
         app = _parse_appinfo(tmp_path / "appinfo.ini")
@@ -111,6 +121,7 @@ class TestParseAppinfo:
         assert app.launch_exe is None
 
     def test_fallback_to_first_section(self, tmp_path):
+        """test_fallback_to_first_section."""
         content = "[MySection]\nName=Fallback\nDisplayVersion=0.5\n"
         self._write_appinfo(tmp_path, content)
         (tmp_path / "Fallback.exe").touch()
@@ -126,19 +137,23 @@ class TestParseAppinfo:
 
 
 class TestPortableManagerInit:
+    """TestPortableManagerInit."""
     def test_default_init(self):
+        """test_default_init."""
         mgr = PortableManager()
         assert callable(mgr.progress)
         assert isinstance(mgr.cancel, threading.Event)
         assert not mgr.cancel.is_set()
 
     def test_custom_progress(self):
+        """test_custom_progress."""
         log = []
         mgr = PortableManager(progress=log.append)
         mgr.progress("hello")
         assert log == ["hello"]
 
     def test_custom_cancel_event(self):
+        """test_custom_cancel_event."""
         evt = threading.Event()
         evt.set()
         mgr = PortableManager(cancel=evt)
@@ -151,7 +166,9 @@ class TestPortableManagerInit:
 
 
 class TestScanPortableRoots:
+    """TestScanPortableRoots."""
     def _build_paf_app(self, root: Path, name: str, version: str = "1.0"):
+        """_build_paf_app."""
         app_dir = root / name
         app_dir.mkdir()
         ini = (
@@ -163,6 +180,7 @@ class TestScanPortableRoots:
         return app_dir
 
     def test_scan_paf_apps(self, tmp_path):
+        """test_scan_paf_apps."""
         self._build_paf_app(tmp_path, "ToolA", "2.0")
         self._build_paf_app(tmp_path, "ToolB", "3.1")
 
@@ -173,14 +191,17 @@ class TestScanPortableRoots:
         assert "toolb" in ids
 
     def test_scan_empty_root(self, tmp_path):
+        """test_scan_empty_root."""
         mgr = PortableManager()
         assert mgr.scan_portable_roots([tmp_path]) == []
 
     def test_scan_nonexistent_root(self, tmp_path):
+        """test_scan_nonexistent_root."""
         mgr = PortableManager()
         assert mgr.scan_portable_roots([tmp_path / "nope"]) == []
 
     def test_scan_liberkey_heuristic(self, tmp_path):
+        """test_scan_liberkey_heuristic."""
         app_dir = tmp_path / "MyLiberApp"
         app_dir.mkdir()
         (app_dir / "app.exe").touch()
@@ -193,11 +214,13 @@ class TestScanPortableRoots:
         assert apps[0].version == ""
 
     def test_scan_skips_files(self, tmp_path):
+        """test_scan_skips_files."""
         (tmp_path / "readme.txt").write_text("hello")
         mgr = PortableManager()
         assert mgr.scan_portable_roots([tmp_path]) == []
 
     def test_scan_cancellation(self, tmp_path):
+        """test_scan_cancellation."""
         self._build_paf_app(tmp_path, "ToolA")
         evt = threading.Event()
         evt.set()
@@ -212,9 +235,11 @@ class TestScanPortableRoots:
 
 
 class TestCheckUpdates:
+    """TestCheckUpdates."""
     def _make_app_with_ini(
         self, root: Path, name: str, version: str, update_url: str | None = None
     ):
+        """_make_app_with_ini."""
         app_dir = root / name
         app_dir.mkdir()
         lines = [
@@ -240,6 +265,7 @@ class TestCheckUpdates:
         )
 
     def test_no_update_url_skipped(self, tmp_path):
+        """test_no_update_url_skipped."""
         app = self._make_app_with_ini(tmp_path, "Tool", "1.0")
         mgr = PortableManager()
         updated = mgr.check_updates([app])
@@ -247,6 +273,7 @@ class TestCheckUpdates:
         assert app.update_available is False
 
     def test_update_available(self, tmp_path):
+        """test_update_available."""
         remote_ini = "[Details]\nDisplayVersion=2.0\n"
         with patch(
             "cortex_unified.analyzers.portable_manager.urllib.request.urlopen"
@@ -268,6 +295,7 @@ class TestCheckUpdates:
             assert updated[0].latest_version == "2.0"
 
     def test_no_update_when_current(self, tmp_path):
+        """test_no_update_when_current."""
         remote_ini = "[Details]\nDisplayVersion=1.0\n"
         with patch(
             "cortex_unified.analyzers.portable_manager.urllib.request.urlopen"
@@ -288,6 +316,7 @@ class TestCheckUpdates:
             assert app.update_available is False
 
     def test_network_failure_continues(self, tmp_path):
+        """test_network_failure_continues."""
         with patch(
             "cortex_unified.analyzers.portable_manager.urllib.request.urlopen",
             side_effect=Exception("network down"),
@@ -303,6 +332,7 @@ class TestCheckUpdates:
             assert any("failed" in msg.lower() for msg in log)
 
     def test_non_ini_response_skipped(self, tmp_path):
+        """test_non_ini_response_skipped."""
         with patch(
             "cortex_unified.analyzers.portable_manager.urllib.request.urlopen"
         ) as mock_urlopen:
@@ -321,6 +351,7 @@ class TestCheckUpdates:
             assert updated == []
 
     def test_empty_version_no_update(self, tmp_path):
+        """test_empty_version_no_update."""
         remote_ini = "[Details]\nDisplayVersion=2.0\n"
         with patch(
             "cortex_unified.analyzers.portable_manager.urllib.request.urlopen"
@@ -361,7 +392,9 @@ class TestCheckUpdates:
 
 
 class TestUpdateApp:
+    """TestUpdateApp."""
     def test_update_no_installer_returns_false(self, tmp_path):
+        """test_update_no_installer_returns_false."""
         app_dir = tmp_path / "Tool"
         app_dir.mkdir()
         app = PortableApp(
@@ -379,6 +412,7 @@ class TestUpdateApp:
         assert any("no bundled installer" in m for m in log)
 
     def test_update_with_installer(self, tmp_path):
+        """test_update_with_installer."""
         app_dir = tmp_path / "Tool"
         app_dir.mkdir()
         installer = app_dir / "PortableApps.comInstaller.exe"
@@ -409,6 +443,7 @@ class TestUpdateApp:
             assert str(installer) in args
 
     def test_update_installer_failure(self, tmp_path):
+        """test_update_installer_failure."""
         app_dir = tmp_path / "Tool"
         app_dir.mkdir()
         installer = app_dir / "App" / "AppInfo" / "installer.exe"
@@ -433,6 +468,7 @@ class TestUpdateApp:
             assert mgr.update_app(app) is False
 
     def test_update_subprocess_exception(self, tmp_path):
+        """test_update_subprocess_exception."""
         app_dir = tmp_path / "Tool"
         app_dir.mkdir()
         installer = app_dir / "ToolInstaller.exe"
@@ -463,7 +499,9 @@ class TestUpdateApp:
 
 
 class TestSysinternalsDownload:
+    """TestSysinternalsDownload."""
     def test_download_success(self, tmp_path):
+        """test_download_success."""
         dest = tmp_path / "Autoruns.exe"
         fake_pe = b"MZ" + b"\x00" * 200
 
@@ -484,6 +522,7 @@ class TestSysinternalsDownload:
             assert dest.read_bytes()[:2] == b"MZ"
 
     def test_download_not_pe_rejected(self, tmp_path):
+        """test_download_not_pe_rejected."""
         dest = tmp_path / "bad.exe"
         fake_html = b"<html>Error 404</html>"
 
@@ -492,20 +531,25 @@ class TestSysinternalsDownload:
         ) as mock_urlopen:
 
             class FakeResp:
+                """FakeResp."""
                 def __init__(self, data):
+                    """__init__."""
                     self._data = data
                     self._read = False
 
                 def read(self, n=-1):
+                    """read."""
                     if self._read:
                         return b""
                     self._read = True
                     return self._data
 
                 def __enter__(self):
+                    """__enter__."""
                     return self
 
                 def __exit__(self, *a):
+                    """__exit__."""
                     return False
 
             mock_urlopen.return_value = FakeResp(fake_html)
@@ -518,6 +562,7 @@ class TestSysinternalsDownload:
             assert result is False
 
     def test_download_network_error(self, tmp_path):
+        """test_download_network_error."""
         dest = tmp_path / "procmon.exe"
 
         with patch(
@@ -539,7 +584,9 @@ class TestSysinternalsDownload:
 
 
 class TestExportToolkit:
+    """TestExportToolkit."""
     def _build_paf_app(self, root: Path, name: str):
+        """_build_paf_app."""
         app_dir = root / name
         app_dir.mkdir()
         ini = "[Details]\nName=" + name + "\nDisplayVersion=1.0\n"
@@ -548,6 +595,7 @@ class TestExportToolkit:
 
     @patch("cortex_unified.analyzers.portable_manager._find_portable_roots")
     def test_export_copies_paf_apps(self, mock_roots, tmp_path):
+        """test_export_copies_paf_apps."""
         source = tmp_path / "source"
         source.mkdir()
         self._build_paf_app(source, "ToolA")
@@ -562,6 +610,7 @@ class TestExportToolkit:
 
     @patch("cortex_unified.analyzers.portable_manager._find_portable_roots")
     def test_export_skips_existing(self, mock_roots, tmp_path):
+        """test_export_skips_existing."""
         source = tmp_path / "source"
         source.mkdir()
         self._build_paf_app(source, "ToolA")
@@ -579,6 +628,7 @@ class TestExportToolkit:
     @patch("cortex_unified.analyzers.portable_manager._find_portable_roots")
     @patch.object(PortableManager, "_download_sysinternals")
     def test_export_sysinternals(self, mock_dl, mock_roots, tmp_path):
+        """test_export_sysinternals."""
         mock_roots.return_value = []
         mock_dl.return_value = True
 
@@ -593,6 +643,7 @@ class TestExportToolkit:
     @patch("cortex_unified.analyzers.portable_manager._find_portable_roots")
     @patch.object(PortableManager, "_download_sysinternals")
     def test_export_sysinternals_custom_tools(self, mock_dl, mock_roots, tmp_path):
+        """test_export_sysinternals_custom_tools."""
         mock_roots.return_value = []
         mock_dl.return_value = True
 
@@ -612,6 +663,7 @@ class TestExportToolkit:
     @patch("cortex_unified.analyzers.portable_manager._find_portable_roots")
     @patch.object(PortableManager, "_download_sysinternals")
     def test_export_skips_existing_sysinternals(self, mock_dl, mock_roots, tmp_path):
+        """test_export_skips_existing_sysinternals."""
         mock_roots.return_value = []
 
         target = tmp_path / "usb"
@@ -633,7 +685,9 @@ class TestExportToolkit:
 
 
 class TestProgressCallback:
+    """TestProgressCallback."""
     def test_progress_called_on_update_failure(self, tmp_path):
+        """test_progress_called_on_update_failure."""
         app_dir = tmp_path / "Tool"
         app_dir.mkdir()
         ini = (
@@ -663,6 +717,7 @@ class TestProgressCallback:
             assert "failed" in log[0].lower()
 
     def test_progress_called_on_export(self, mock_find_roots=None):
+        """test_progress_called_on_export."""
         log = []
         mgr = PortableManager(progress=log.append)
         mgr.progress("test message")
@@ -675,7 +730,9 @@ class TestProgressCallback:
 
 
 class TestCancellation:
+    """TestCancellation."""
     def _build_paf_app(self, root: Path, name: str):
+        """_build_paf_app."""
         app_dir = root / name
         app_dir.mkdir()
         ini = "[Details]\nName=" + name + "\nDisplayVersion=1.0\n"
@@ -683,6 +740,7 @@ class TestCancellation:
         (app_dir / f"{name}.exe").touch()
 
     def test_scan_respects_cancel(self, tmp_path):
+        """test_scan_respects_cancel."""
         self._build_paf_app(tmp_path, "ToolA")
         self._build_paf_app(tmp_path, "ToolB")
 
@@ -690,6 +748,7 @@ class TestCancellation:
         original_iterdir = Path.iterdir
 
         def counting_iterdir(self_inner):
+            """counting_iterdir."""
             nonlocal call_count
             for item in original_iterdir(self_inner):
                 call_count += 1
@@ -700,6 +759,7 @@ class TestCancellation:
             mgr = PortableManager(cancel=evt)
 
             def set_cancel_after_one(*a, **kw):
+                """set_cancel_after_one."""
                 evt.set()
                 return []
 
@@ -717,10 +777,13 @@ class TestCancellation:
 
 
 class TestPAFSilentFlag:
+    """TestPAFSilentFlag."""
     def test_silent_flag_value(self):
+        """test_silent_flag_value."""
         assert PortableManager._PAF_SILENT_FLAG == "/SILENT"
 
     def test_sysinternals_live_url(self):
+        """test_sysinternals_live_url."""
         assert PortableManager._SYSINTERNALS_LIVE == "https://live.sysinternals.com"
 
 
@@ -730,8 +793,10 @@ class TestPAFSilentFlag:
 
 
 class TestExportToolkitIntegration:
+    """TestExportToolkitIntegration."""
     @patch("cortex_unified.analyzers.portable_manager._find_portable_roots")
     def test_export_creates_directory(self, mock_roots, tmp_path):
+        """test_export_creates_directory."""
         mock_roots.return_value = []
         target = tmp_path / "new_usb"
         mgr = PortableManager()
@@ -741,6 +806,7 @@ class TestExportToolkitIntegration:
 
     @patch("cortex_unified.analyzers.portable_manager._find_portable_roots")
     def test_export_returns_true(self, mock_roots, tmp_path):
+        """test_export_returns_true."""
         mock_roots.return_value = []
         mgr = PortableManager()
         assert mgr.export_toolkit(tmp_path / "x", include_sysinternals=False) is True
@@ -750,6 +816,7 @@ class TestExportToolkitIntegration:
         side_effect=Exception("disk full"),
     )
     def test_export_failure_returns_false(self, mock_roots, tmp_path):
+        """test_export_failure_returns_false."""
         log = []
         mgr = PortableManager(progress=log.append)
         result = mgr.export_toolkit(tmp_path / "x", include_sysinternals=False)

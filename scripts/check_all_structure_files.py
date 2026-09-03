@@ -100,6 +100,7 @@ def verify_file(p: Path):
 
 
 def main():
+    """main."""
     print("=" * 80)
     print("  DEEP ONE-BY-ONE VERIFICATION OF ALL PROGRAM FILES IN REPOSITORY")
     print("=" * 80)

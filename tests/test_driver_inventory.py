@@ -10,12 +10,15 @@ IS_WINDOWS = platform.system() == "Windows"
 
 
 class TestParse:
+    """TestParse."""
     def test_empty(self):
+        """test_empty."""
         assert DriverInventory._parse(None) == []
         assert DriverInventory._parse("") == []
         assert DriverInventory._parse("garbage{{") == []
 
     def test_single_object(self):
+        """test_single_object."""
         payload = (
             '{"DeviceName":"NVIDIA GeForce","DriverProviderName":"NVIDIA",'
             '"DriverVersion":"31.0.15.3623","DriverDate":"/Date(1690000000000)/",'
@@ -32,6 +35,7 @@ class TestParse:
         assert d.date  # date parsed to some YYYY-MM-DD
 
     def test_dedupes_identical_name_version(self):
+        """test_dedupes_identical_name_version."""
         payload = (
             '[{"DeviceName":"USB Hub","DriverVersion":"1.0","DriverProviderName":"MS"},'
             '{"DeviceName":"USB Hub","DriverVersion":"1.0","DriverProviderName":"MS"},'
@@ -41,26 +45,32 @@ class TestParse:
         assert len(drivers) == 2
 
     def test_skips_nameless(self):
+        """test_skips_nameless."""
         payload = '[{"DriverVersion":"1.0"},{"DeviceName":"","DriverVersion":"2"}]'
         assert DriverInventory._parse(payload) == []
 
     def test_yyyymmdd_date(self):
+        """test_yyyymmdd_date."""
         payload = '{"DeviceName":"X","DriverDate":"20230115000000.000000-000"}'
         d = DriverInventory._parse(payload)[0]
         assert d.date == "2023-01-15"
 
 
 class TestSupport:
+    """TestSupport."""
     def test_is_supported_matches_platform(self):
+        """test_is_supported_matches_platform."""
         assert DriverInventory.is_supported() == IS_WINDOWS
 
     def test_list_drivers_returns_list(self):
+        """test_list_drivers_returns_list."""
         result = DriverInventory().list_drivers()
         assert isinstance(result, list)
         if not IS_WINDOWS:
             assert result == []
 
     def test_to_dict(self):
+        """test_to_dict."""
         d = DriverInfo("Dev", "Prov", "1.0", "2023-01-01", "NET")
         out = d.to_dict()
         assert out["device_name"] == "Dev"
