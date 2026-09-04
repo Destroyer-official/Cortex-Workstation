@@ -25,7 +25,7 @@ Combining the **Cortex Unified Optimization Engine** with the high-performance *
 ## 📑 Table of Contents
 
 - [Key Capabilities & Feature Highlights](#-key-capabilities--feature-highlights)
-- [Live UI Demo & Visual Tour](#-live-ui-demo--visual-tour)
+- [Enterprise Workstation Interface & Visual Tour](#-enterprise-workstation-interface--visual-tour)
 - [System Architecture](#-system-architecture)
 - [Interactive Navigation & UI Pages](#-interactive-navigation--ui-pages)
 - [Quickstart & Installation](#-quickstart--installation)
@@ -76,13 +76,13 @@ Combining the **Cortex Unified Optimization Engine** with the high-performance *
 
 ---
 
-## 🖥️ Live UI Demo & Visual Tour
+## 🖥️ Enterprise Workstation Interface & Visual Tour
 
-Experience the look, feel, and performance of Cortex Workstation:
+Experience the production user interface of Cortex Workstation:
 
 <div align="center">
   <img src="assets/screenshots/dashboard_simulated_demo.png" alt="Cortex Workstation Command Center" width="95%">
-  <p><em>Figure 1: Cortex Command Center in Live Simulation Mode with Circular Hero Gauge, Engine Telemetry & SAFE / REVIEW Risk Profiling.</em></p>
+  <p><em>Figure 1: Cortex Command Center Dashboard — Real-Time Live System Telemetry, Circular Hero Storage Gauge & Enterprise Risk Profiling.</em></p>
 </div>
 
 <br>
@@ -116,17 +116,17 @@ Experience the look, feel, and performance of Cortex Workstation:
   </table>
 </div>
 
-### 🎮 Safe Interactive Simulation / Demo Mode
+### 🧪 Optional Safe Evaluation / Sandbox Mode
 
-Curious to explore Cortex Workstation before performing real system modifications? Cortex includes a built-in **Simulation & Demo Mode** that populates realistic mock scan telemetry, safe system metrics, and non-destructive dry-run cleaning:
+By default, Cortex Workstation operates in **100% live production mode**, communicating directly with Windows NT kernel APIs, NTFS/ReFS filesystems, and hardware controllers.
+
+For enterprise software evaluators, IT administrators, or CI/CD test pipelines wishing to audit the complete UI surface and navigation without committing changes to disk:
 
 ```powershell
-# Launch the full PySide6 GUI in safe simulation/demo mode:
+# Launch GUI in non-destructive sandbox evaluation mode:
 python run_gui.py --demo
-# or
-python run_gui.py --simulation
 
-# Run CLI interactive simulation demo:
+# Launch CLI in non-destructive evaluation mode:
 python -m cortex_unified.cli.cli demo
 ```
 

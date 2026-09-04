@@ -64,15 +64,13 @@ To launch the full 132-tool workstation interface with HiDPI support and modern 
 python run_gui.py
 ```
 
-### Safe Simulation & Demo Mode
-To safely explore all 132 GUI tools, realistic mock scan telemetry, and non-destructive dry-run cleaning without modifying your system:
+### Optional Non-Destructive Evaluation Mode (Sandbox)
+For automated CI/CD runs, headless test environments, or non-destructive evaluation without disk writes:
 ```bash
-# GUI Demo Mode:
+# GUI Evaluation Mode:
 python run_gui.py --demo
-# or
-python run_gui.py --simulation
 
-# CLI Demo Mode:
+# CLI Evaluation Mode:
 python -m cortex_unified.cli demo
 ```
 

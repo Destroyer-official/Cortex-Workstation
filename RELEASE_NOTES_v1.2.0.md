@@ -12,11 +12,11 @@ The Ultimate Windows NT Systems, Forensics, File Management & Optimization Platf
 - No Python, Rust, compilers, or developer tools required.
 - Native UAC integration prompts for elevation automatically when interacting with kernel and driver-level components.
 
-### 2. ⚡ Interactive Demo & Safe Simulation Mode
-- **Safe Sandbox Exploration**: Explore all 132 tools and UI pages safely without modifying any files on disk:
-  - Run GUI in Demo Mode: `python run_gui.py --demo` (or `CortexCleaner.exe --demo`). Pre-populates 13.9 GB in simulated scan metrics with live interactive gauge.
-  - Run Terminal CLI Demo: `python -m cortex_unified.cli.cli demo` (or `cortex demo`).
-- **Zero Risk**: All cleanup passes in simulation mode operate purely as a safe preview.
+### 2. 🧪 Non-Destructive Evaluation Sandbox Mode
+- **Optional Enterprise Sandbox**: For IT administrators, software evaluators, and automated test runners wishing to audit UI layout, telemetry widgets, and navigation without modifying files on disk:
+  - Run GUI in Sandbox Mode: `python run_gui.py --demo` (or `CortexCleaner.exe --demo`). Pre-populates 13.9 GB in simulated scan telemetry with live gauge preview.
+  - Run Terminal CLI Sandbox: `python -m cortex_unified.cli.cli demo` (or `cortex demo`).
+- **100% Live Production by Default**: Normal execution without `--demo` operates in live production mode, executing against real Windows NT APIs, filesystems, and hardware controllers.
 
 ### 3. 🖥️ 132 Interactive GUI Pages & 62 Specialized System Engines
 - **System Performance & Kernel Management**:
