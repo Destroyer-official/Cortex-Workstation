@@ -25,6 +25,7 @@ Combining the **Cortex Unified Optimization Engine** with the high-performance *
 ## 📑 Table of Contents
 
 - [Key Capabilities & Feature Highlights](#-key-capabilities--feature-highlights)
+- [Live UI Demo & Visual Tour](#-live-ui-demo--visual-tour)
 - [System Architecture](#-system-architecture)
 - [Interactive Navigation & UI Pages](#-interactive-navigation--ui-pages)
 - [Quickstart & Installation](#-quickstart--installation)
@@ -72,6 +73,62 @@ Combining the **Cortex Unified Optimization Engine** with the high-performance *
 - **Native C/Rust FFI Bridge**: Hardware-accelerated transport bridge with seamless pure Python fallbacks.
 - **NTFS USN Change Journal Indexer**: Queries FSCTL_READ_USN_JOURNAL for sub-second file indexing across millions of files without recursive directory walking.
 - **PAR2 Reed-Solomon Error Correction**: Creates packet-based parity volumes for mission-critical archives, verifying cryptographic blocks and repairing corrupted sectors.
+
+---
+
+## 🖥️ Live UI Demo & Visual Tour
+
+Experience the look, feel, and performance of Cortex Workstation:
+
+<div align="center">
+  <img src="assets/screenshots/dashboard_simulated_demo.png" alt="Cortex Workstation Command Center" width="95%">
+  <p><em>Figure 1: Cortex Command Center in Live Simulation Mode with Circular Hero Gauge, Engine Telemetry & SAFE / REVIEW Risk Profiling.</em></p>
+</div>
+
+<br>
+
+<div align="center">
+  <table width="100%">
+    <tr>
+      <td width="50%" align="center">
+        <img src="assets/screenshots/cleanuphub_demo.png" alt="Cleanup Hub" width="100%"><br>
+        <strong>🧹 One-Click Deep Cleanup Hub</strong><br>
+        <em>Winapp2.ini deep cleaning, shader caches, dev package purger</em>
+      </td>
+      <td width="50%" align="center">
+        <img src="assets/screenshots/nexus_explorer_demo.png" alt="Nexus Explorer" width="100%"><br>
+        <strong>📁 Nexus Dual-Pane VFS Explorer</strong><br>
+        <em>Instant USN Journal indexer, PAR2 parity codec, tabbed queues</em>
+      </td>
+    </tr>
+    <tr>
+      <td width="50%" align="center">
+        <img src="assets/screenshots/directstorage_demo.png" alt="DirectStorage BypassIO" width="100%"><br>
+        <strong>⚡ DirectStorage & BypassIO Auditor</strong><br>
+        <em>Validate NVMe-to-GPU paths and storage minifilter drivers</em>
+      </td>
+      <td width="50%" align="center">
+        <img src="assets/screenshots/vssmanager_demo.png" alt="VSS Shadow Copy Manager" width="100%"><br>
+        <strong>🛡️ VSS Shadow Copy & Snapshot Manager</strong><br>
+        <em>Volume shadow auditing, snapshot creation, and writer health resets</em>
+      </td>
+    </tr>
+  </table>
+</div>
+
+### 🎮 Safe Interactive Simulation / Demo Mode
+
+Curious to explore Cortex Workstation before performing real system modifications? Cortex includes a built-in **Simulation & Demo Mode** that populates realistic mock scan telemetry, safe system metrics, and non-destructive dry-run cleaning:
+
+```powershell
+# Launch the full PySide6 GUI in safe simulation/demo mode:
+python run_gui.py --demo
+# or
+python run_gui.py --simulation
+
+# Run CLI interactive simulation demo:
+python -m cortex_unified.cli.cli demo
+```
 
 ---
 
@@ -138,13 +195,14 @@ Cortex Workstation features **132 interactive GUI pages** organized into **10 in
 
 ### 📦 Windows Standalone Executables & Architecture Support
 
-For non-technical users, Cortex Workstation is distributed as a self-contained portable package that requires **no Python or Rust installation**:
+For non-technical users, Cortex Workstation is distributed as pre-compiled standalone packages that require **no Python or Rust installation**:
 
-| Architecture / Platform | Support Status | Distribution & Execution Method |
-| :--- | :--- | :--- |
-| **Windows 10/11 x64 (AMD64)** | ✅ **Fully Supported** | Pre-compiled standalone portable release available in [**GitHub Release v1.2.0**](https://github.com/Destroyer-official/Cortex-Workstation/releases/tag/v1.2.0). Requires no Python or Rust installation. Download [**`Cortex-Workstation-v1.2.0-Windows-x64.zip`**](https://github.com/Destroyer-official/Cortex-Workstation/releases/download/v1.2.0/Cortex-Workstation-v1.2.0-Windows-x64.zip), extract, and run `CortexCleaner.exe`. |
-| **Windows 11 ARM64**<br>*(Snapdragon X Elite / Copilot+ PCs)* | ✅ **Natively Supported** | Natively supported via Windows 11 Microsoft Prism x64 emulation. Runs seamlessly with zero setup. |
-| **Windows 32-bit (x86)** | ❌ **Not Supported** | PySide6 / Qt 6 officially dropped 32-bit Windows support upstream in Qt 6.0; Windows 11 itself strictly requires a 64-bit architecture. |
+| Architecture / Distribution | Format | Support Status | Download & Execution Method |
+| :--- | :--- | :--- | :--- |
+| **Windows 10/11 x64 Setup Installer**<br>*(Recommended)* | `.exe` | ✅ **Fully Supported** | Download [**`Cortex-Workstation-v1.2.0-Setup.exe`**](https://github.com/Destroyer-official/Cortex-Workstation/releases/download/v1.2.0/Cortex-Workstation-v1.2.0-Setup.exe) (388 MB) from [**GitHub Release v1.2.0**](https://github.com/Destroyer-official/Cortex-Workstation/releases/tag/v1.2.0). 1-click installer with desktop & Start Menu shortcuts and clean uninstaller. |
+| **Windows 10/11 x64 Standalone Portable** | `.zip` | ✅ **Fully Supported** | Download [**`Cortex-Workstation-v1.2.0-Windows-x64.zip`**](https://github.com/Destroyer-official/Cortex-Workstation/releases/download/v1.2.0/Cortex-Workstation-v1.2.0-Windows-x64.zip) (380 MB). Extract anywhere and run `CortexCleaner.exe`. Zero installation required. |
+| **Windows 11 ARM64**<br>*(Snapdragon X Elite / Copilot+ PCs)* | `.exe` / `.zip` | ✅ **Natively Supported** | Natively supported via Windows 11 Microsoft Prism x64 emulation. Runs seamlessly with zero setup. |
+| **Windows 32-bit (x86)** | — | ❌ **Not Supported** | PySide6 / Qt 6 officially dropped 32-bit Windows support upstream in Qt 6.0; Windows 11 itself strictly requires a 64-bit architecture. |
 
 ---
 
@@ -190,6 +248,9 @@ python -m cortex_unified.cli.cli scan
 
 # Clean temporary files with dry-run preview
 python -m cortex_unified.cli.cli clean --dry-run
+
+# Run interactive simulation demo (safe sandbox mode)
+python -m cortex_unified.cli.cli demo
 
 # Run full production readiness verification
 python -m cortex_unified.debug.runner

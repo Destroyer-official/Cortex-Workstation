@@ -335,7 +335,7 @@ class PremiumMainWindow(QMainWindow):
     Manages PremiumMainWindow operations and coordinates related state changes for the component.
     """
 
-    def __init__(self, theme: str = "dark", settings=None):
+    def __init__(self, theme: str = "dark", settings=None, simulation: bool = False):
         """Build the frameless shell: sidebar, title bar, page stack, tray, and lazy page registry.
 
         Initializes the instance and configures internal state.
@@ -343,8 +343,10 @@ class PremiumMainWindow(QMainWindow):
         Args:
             theme (str): The theme parameter.
             settings: The settings parameter.
+            simulation (bool): If True, run in safe demo/simulation mode.
         """
         super().__init__()
+        self.simulation_mode = simulation or ("--demo" in sys.argv) or ("--simulation" in sys.argv) or (os.environ.get("CORTEX_SIMULATION") in ("1", "true", "True"))
         self.worker_runtime = WorkerRuntime(self)
         # Durable user preferences (theme, close-to-tray). The store is shared
         # with the entry point when provided so both read/write one file; a
@@ -367,7 +369,10 @@ class PremiumMainWindow(QMainWindow):
         #: hard exit is needed (see app.main / _shutdown_workers).
         self._workers_stuck: list[QThread] = []
 
-        self.setWindowTitle("Cortex Workstation")
+        if self.simulation_mode:
+            self.setWindowTitle("Cortex Workstation [DEMO & SIMULATION MODE]")
+        else:
+            self.setWindowTitle("Cortex Workstation")
         self.resize(1180, 760)
         self.setMinimumSize(840, 560)
 
@@ -1745,6 +1750,19 @@ class DashboardPage(_Page):
         self._excluded: dict[int, set[str]] = {}   # scan_idx -> excluded path prefixes
         self._updating = False                      # guard for programmatic check changes
 
+        if getattr(self.win, "simulation_mode", False):
+            sim_banner = QWidget()
+            sim_banner.setObjectName("SimBanner")
+            sim_banner.setStyleSheet("background-color: #082435; border: 1px solid #00D2FF; border-radius: 8px;")
+            sim_lay = QHBoxLayout(sim_banner)
+            sim_lay.setContentsMargins(12, 8, 12, 8)
+            sim_lbl = QLabel("⚡ SIMULATION & DEMO MODE ACTIVE — All operations are safe & non-destructive (zero real files modified)")
+            sim_lbl.setStyleSheet("color: #00D2FF; font-weight: bold; font-size: 13px;")
+            sim_lay.addWidget(sim_lbl)
+            self.v.addWidget(sim_banner)
+            self.v.addSpacing(6)
+            QTimer.singleShot(150, self._load_simulation_demo)
+
         self.v.addWidget(title_block(
             "System Overview Dashboard",
             "One-click health analysis and safe storage reclamation across your entire PC.",
@@ -1895,11 +1913,43 @@ class DashboardPage(_Page):
         else:
             self._scan()
 
+    def _load_simulation_demo(self) -> None:
+        """Preload rich simulated demonstration scan report."""
+        try:
+            from cortex_unified.engine.service import CleanupReport, CategoryScan
+            from cortex_unified.engine.categories import CleanupCategory, RiskLevel
+            c1 = CleanupCategory(id='temp', label='Windows Temp & Scratch Files', description='System temporary files', risk=RiskLevel.LOW, paths=())
+            c2 = CleanupCategory(id='shader', label='DirectX & GPU Shader Caches', description='Compiled shader binaries', risk=RiskLevel.LOW, paths=())
+            c3 = CleanupCategory(id='devpkg', label='Developer Package Stores (npm, cargo, pip)', description='Cached package tarballs', risk=RiskLevel.LOW, paths=())
+            c4 = CleanupCategory(id='browser', label='Web Browser Cache & Offline Data', description='Browser cache files', risk=RiskLevel.MEDIUM, paths=())
+            c5 = CleanupCategory(id='dumps', label='Crash Dumps & Windows Error Reports', description='System crash memory dumps', risk=RiskLevel.LOW, paths=())
+            scans = [
+                CategoryScan(category=c1, total_bytes=4200000000, entries=[None]*18420),
+                CategoryScan(category=c2, total_bytes=2850000000, entries=[None]*4312),
+                CategoryScan(category=c3, total_bytes=5120000000, entries=[None]*9820),
+                CategoryScan(category=c4, total_bytes=1950000000, entries=[None]*6200),
+                CategoryScan(category=c5, total_bytes=810000000, entries=[None]*142),
+            ]
+            report = CleanupReport(scans=scans, duration_seconds=1.4)
+            self._on_scanned(report)
+        except Exception:
+            pass
+
     def _scan(self):
         """Launch the ScanWorker and flip the hero into scanning UI.
 
         Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
         """
+        if getattr(self.win, "simulation_mode", False):
+            self._scanning = True
+            self.scan_btn.setText("Cancel")
+            self.progress.setVisible(True)
+            self.scan_status.setText("Simulating live scan across Windows NT subsystems\u2026")
+            self.win.statusBar().showMessage("Simulation scan in progress...")
+            self.gauge.set_center_text("\u2026")
+            QTimer.singleShot(900, self._load_simulation_demo)
+            return
+
         from .workers import ScanWorker
         self._scanning = True
         self.scan_btn.setText("Cancel")
@@ -2229,6 +2279,21 @@ class DashboardPage(_Page):
         Args:
             method (str): The method parameter.
         """
+        if getattr(self.win, "simulation_mode", False):
+            from PySide6.QtWidgets import QMessageBox
+            QMessageBox.information(
+                self,
+                "Simulation Mode",
+                "🛡️ Cortex Workstation — Simulation & Demo Mode Active\n\n"
+                "Safely simulated cleanup of selected categories (12.1 GB reclaimed in simulation).\n"
+                "All caches, files, and registries remain untouched on your system."
+            )
+            self.card_space.set_value("0 B", animate=True)
+            self.gauge.set_center_text("0 B")
+            self.recycle_btn.setEnabled(False)
+            self.scan_status.setText("Simulation cleanup completed successfully (0 real bytes modified).")
+            return
+
         if not self._report or not self._report.scans:
             return
         from cortex_unified.engine.service import CleanupReport

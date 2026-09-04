@@ -315,6 +315,7 @@ def main() -> int:
         int: Result of the operation.
     """
     debug = ("--debug" in sys.argv) or os.environ.get("CORTEX_DEBUG") in ("1", "true", "True")
+    simulation = ("--demo" in sys.argv) or ("--simulation" in sys.argv) or (os.environ.get("CORTEX_SIMULATION") in ("1", "true", "True"))
     log_file = setup_logging(debug)
 
     # Declare DPI awareness to Windows *first*, before Qt is even imported, so
@@ -356,7 +357,7 @@ def main() -> int:
     theme = settings.theme
     apply_theme(app, theme)
 
-    window = PremiumMainWindow(theme=theme, settings=settings)
+    window = PremiumMainWindow(theme=theme, settings=settings, simulation=simulation)
     window.show()
     _LOG.info("main window shown; entering event loop")
     _schedule_update_check(window, settings)

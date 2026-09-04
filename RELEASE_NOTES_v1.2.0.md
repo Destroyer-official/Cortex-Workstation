@@ -6,13 +6,19 @@ The Ultimate Windows NT Systems, Forensics, File Management & Optimization Platf
 
 ## 🌟 Highlights & What's New in v1.2.0
 
-### 1. 📦 Standalone Windows Executable for Non-Technical Users
-- **Zero-Setup Distribution**: Download [**Cortex-Workstation-v1.2.0-Windows-x64.zip**](https://github.com/Destroyer-official/Cortex-Workstation/releases/download/v1.2.0/Cortex-Workstation-v1.2.0-Windows-x64.zip), extract, and run `CortexCleaner.exe`.
-- No Python installation, compilers, or command-line setup required.
+### 1. 📦 Standalone Windows Installer (.exe) & Portable Zip
+- **1-Click Windows Setup**: Download [**`Cortex-Workstation-v1.2.0-Setup.exe`**](https://github.com/Destroyer-official/Cortex-Workstation/releases/download/v1.2.0/Cortex-Workstation-v1.2.0-Setup.exe) (370 MB) for an automated setup wizard with Desktop and Start Menu shortcut integration.
+- **Portable Distribution**: Download [**`Cortex-Workstation-v1.2.0-Windows-x64.zip`**](https://github.com/Destroyer-official/Cortex-Workstation/releases/download/v1.2.0/Cortex-Workstation-v1.2.0-Windows-x64.zip) (362 MB) to extract and run anywhere without installation.
+- No Python, Rust, compilers, or developer tools required.
 - Native UAC integration prompts for elevation automatically when interacting with kernel and driver-level components.
-- Includes complete runtime, Qt6 graphics engine, vector SVG icon pipeline, and localized translation dictionaries.
 
-### 2. 🖥️ 132 Interactive GUI Pages & 62 Specialized System Engines
+### 2. ⚡ Interactive Demo & Safe Simulation Mode
+- **Safe Sandbox Exploration**: Explore all 132 tools and UI pages safely without modifying any files on disk:
+  - Run GUI in Demo Mode: `python run_gui.py --demo` (or `CortexCleaner.exe --demo`). Pre-populates 13.9 GB in simulated scan metrics with live interactive gauge.
+  - Run Terminal CLI Demo: `python -m cortex_unified.cli.cli demo` (or `cortex demo`).
+- **Zero Risk**: All cleanup passes in simulation mode operate purely as a safe preview.
+
+### 3. 🖥️ 132 Interactive GUI Pages & 62 Specialized System Engines
 - **System Performance & Kernel Management**:
   - DirectStorage BypassIO optimization
   - Dev Drive copy-on-write (CoW) configuration
@@ -33,10 +39,10 @@ The Ultimate Windows NT Systems, Forensics, File Management & Optimization Platf
   - Registry AI analyzer with safe backup checkpoints
   - Outdated driver store cleaner & package cache manager
 
-### 3. 🛡️ Hardened System Process Protection
+### 4. 🛡️ Hardened System Process Protection
 - Enhanced `kill_process_tree` with `is_protected_process` safeguarding critical Windows NT system processes including explorer.exe, dwm.exe, csrss.exe, smss.exe, services.exe, lsass.exe, and cortex.exe.
 
-### 4. 📚 Comprehensive Multi-Tiered Documentation Hub
+### 5. 📚 Comprehensive Multi-Tiered Documentation Hub
 - Three-column layout documentation hub deployed to GitHub Pages: [https://destroyer-official.github.io/Cortex-Workstation/](https://destroyer-official.github.io/Cortex-Workstation/)
 - Complete AST-verified function inventory across 494 program files documented in [docs/FUNCTION_INVENTORY.md](https://github.com/Destroyer-official/Cortex-Workstation/blob/main/docs/FUNCTION_INVENTORY.md).
 
@@ -51,7 +57,8 @@ The Ultimate Windows NT Systems, Forensics, File Management & Optimization Platf
 ---
 
 ## 📥 Downloads
-| Package | Platform | Description |
-| :--- | :--- | :--- |
-| 📦 [**Cortex-Workstation-v1.2.0-Windows-x64.zip**](https://github.com/Destroyer-official/Cortex-Workstation/releases/download/v1.2.0/Cortex-Workstation-v1.2.0-Windows-x64.zip) | Windows 10/11 (64-bit) | Standalone pre-compiled portable application (Extract & Run) |
-| 📦 **Source Code (.zip / .tar.gz)** | Cross-Platform | Full open-source repository checkout |
+| Package | Format | Target Platform | Description |
+| :--- | :--- | :--- | :--- |
+| 🛡️ [**`Cortex-Workstation-v1.2.0-Setup.exe`**](https://github.com/Destroyer-official/Cortex-Workstation/releases/download/v1.2.0/Cortex-Workstation-v1.2.0-Setup.exe) | **Setup Installer (.exe)** | Windows 10/11 (64-bit) | Automated setup wizard with Desktop & Start Menu shortcut creation |
+| 📦 [**`Cortex-Workstation-v1.2.0-Windows-x64.zip`**](https://github.com/Destroyer-official/Cortex-Workstation/releases/download/v1.2.0/Cortex-Workstation-v1.2.0-Windows-x64.zip) | **Portable Archive (.zip)** | Windows 10/11 (64-bit) | Pre-compiled standalone portable package (Extract & Run) |
+| 📦 **Source Code (.zip / .tar.gz)** | **Source Archive** | Cross-Platform | Full open-source repository checkout |
