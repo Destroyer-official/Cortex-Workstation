@@ -31,8 +31,11 @@ Before diving into the code, here is how the core repository directories are arr
 
 *This space is dedicated to getting up and running quickly. It treats the project as a high-performance, turnkey workstation application.*
 
+> [!TIP]
+> **Standalone Windows Executable (No Python or Rust Required)**: Pre-compiled standalone portable release is available in [**GitHub Release v1.2.0**](https://github.com/Destroyer-official/Cortex-Workstation/releases/tag/v1.2.0). Download [**`Cortex-Workstation-v1.2.0-Windows-x64.zip`**](https://github.com/Destroyer-official/Cortex-Workstation/releases/download/v1.2.0/Cortex-Workstation-v1.2.0-Windows-x64.zip), extract, and run `CortexCleaner.exe`. Supported on Windows 10/11 x64 and Windows 11 ARM64 (via Prism emulation).
+
 ### Quick Start
-* **[Installation & Requirements](user/getting-started.md):** Python 3.10–3.14 prerequisites, virtual environments, Git setup, and desktop shortcuts.
+* **[Installation & Requirements](user/getting-started.md):** Standalone executables, Python 3.10–3.14 prerequisites, virtual environments, Git setup, and desktop shortcuts.
 * **[Configuration Engine](user/configuration.md):** Complete reference of runtime parameters, safety override flags, and config files.
 
 ### Real-World Recipes

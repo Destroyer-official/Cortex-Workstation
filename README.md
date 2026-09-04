@@ -136,11 +136,23 @@ Cortex Workstation features **132 interactive GUI pages** organized into **10 in
 
 ## 🚀 Quickstart & Installation
 
-### Prerequisites
+### 📦 Windows Standalone Executables & Architecture Support
+
+For non-technical users, Cortex Workstation is distributed as a self-contained portable package that requires **no Python or Rust installation**:
+
+| Architecture / Platform | Support Status | Distribution & Execution Method |
+| :--- | :--- | :--- |
+| **Windows 10/11 x64 (AMD64)** | ✅ **Fully Supported** | Pre-compiled standalone portable release available in [**GitHub Release v1.2.0**](https://github.com/Destroyer-official/Cortex-Workstation/releases/tag/v1.2.0). Requires no Python or Rust installation. Download [**`Cortex-Workstation-v1.2.0-Windows-x64.zip`**](https://github.com/Destroyer-official/Cortex-Workstation/releases/download/v1.2.0/Cortex-Workstation-v1.2.0-Windows-x64.zip), extract, and run `CortexCleaner.exe`. |
+| **Windows 11 ARM64**<br>*(Snapdragon X Elite / Copilot+ PCs)* | ✅ **Natively Supported** | Natively supported via Windows 11 Microsoft Prism x64 emulation. Runs seamlessly with zero setup. |
+| **Windows 32-bit (x86)** | ❌ **Not Supported** | PySide6 / Qt 6 officially dropped 32-bit Windows support upstream in Qt 6.0; Windows 11 itself strictly requires a 64-bit architecture. |
+
+---
+
+### 💻 Developer & Source Code Setup
+
+#### Prerequisites
 - **Operating System**: Windows 10 (Build 19041+) or Windows 11 (64-bit).
 - **Python**: Version 3.10 through 3.14 (64-bit).
-
-### Development Setup
 
 ```powershell
 # 1. Clone the repository

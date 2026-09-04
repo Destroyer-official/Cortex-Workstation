@@ -7,8 +7,8 @@ The Ultimate Windows NT Systems, Forensics, File Management & Optimization Platf
 ## 🌟 Highlights & What's New in v1.2.0
 
 ### 1. 📦 Standalone Windows Executable for Non-Technical Users
-- **Zero-Setup Distribution**: Download [`Cortex-Workstation-v1.2.0-Windows-x64.zip`](https://github.com/Destroyer-official/Cortex-Workstation/releases/download/v1.2.0/Cortex-Workstation-v1.2.0-Windows-x64.zip), extract, and run `CortexCleaner.exe`.
-- No Python installation, compilers, or command-line execution required.
+- **Zero-Setup Distribution**: Download [**Cortex-Workstation-v1.2.0-Windows-x64.zip**](https://github.com/Destroyer-official/Cortex-Workstation/releases/download/v1.2.0/Cortex-Workstation-v1.2.0-Windows-x64.zip), extract, and run `CortexCleaner.exe`.
+- No Python installation, compilers, or command-line setup required.
 - Native UAC integration prompts for elevation automatically when interacting with kernel and driver-level components.
 - Includes complete runtime, Qt6 graphics engine, vector SVG icon pipeline, and localized translation dictionaries.
 
@@ -34,11 +34,11 @@ The Ultimate Windows NT Systems, Forensics, File Management & Optimization Platf
   - Outdated driver store cleaner & package cache manager
 
 ### 3. 🛡️ Hardened System Process Protection
-- Enhanced `kill_process_tree` with `is_protected_process` safeguarding critical Windows NT system processes (`explorer.exe`, `dwm.exe`, `csrss.exe`, `smss.exe`, `services.exe`, `lsass.exe`, `cortex.exe`).
+- Enhanced `kill_process_tree` with `is_protected_process` safeguarding critical Windows NT system processes including explorer.exe, dwm.exe, csrss.exe, smss.exe, services.exe, lsass.exe, and cortex.exe.
 
 ### 4. 📚 Comprehensive Multi-Tiered Documentation Hub
 - Three-column layout documentation hub deployed to GitHub Pages: [https://destroyer-official.github.io/Cortex-Workstation/](https://destroyer-official.github.io/Cortex-Workstation/)
-- Complete AST-verified function inventory across 494 program files (`docs/FUNCTION_INVENTORY.md`).
+- Complete AST-verified function inventory across 494 program files documented in [docs/FUNCTION_INVENTORY.md](https://github.com/Destroyer-official/Cortex-Workstation/blob/main/docs/FUNCTION_INVENTORY.md).
 
 ---
 
@@ -51,7 +51,7 @@ The Ultimate Windows NT Systems, Forensics, File Management & Optimization Platf
 ---
 
 ## 📥 Downloads
-| Asset | Platform | Description |
+| Package | Platform | Description |
 | :--- | :--- | :--- |
-| **`Cortex-Workstation-v1.2.0-Windows-x64.zip`** | Windows 10/11 (64-bit) | Standalone pre-compiled portable application |
-| **Source Code (`.zip` / `.tar.gz`)** | Cross-Platform | Full open-source repository checkout |
+| 📦 [**Cortex-Workstation-v1.2.0-Windows-x64.zip**](https://github.com/Destroyer-official/Cortex-Workstation/releases/download/v1.2.0/Cortex-Workstation-v1.2.0-Windows-x64.zip) | Windows 10/11 (64-bit) | Standalone pre-compiled portable application (Extract & Run) |
+| 📦 **Source Code (.zip / .tar.gz)** | Cross-Platform | Full open-source repository checkout |
