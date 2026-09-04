@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="assets/icons/cortex_logo.png" alt="Cortex Workstation Logo" width="140">
+  <img src="assets/icons/cortex_logo.png" alt="Cortex Workstation Logo" width="240">
 </div>
 
 # 🌌 Cortex Workstation Documentation Hub
