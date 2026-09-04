@@ -40,26 +40,50 @@ from cortex_unified.analyzers.broken_link_detector import (  # noqa: E402
 
 @pytest.fixture(scope="module")
 def app():
-    """app."""
+    """App.
+
+    Manages app operations and coordinates related state changes for the component.
+    """
     return QApplication.instance() or QApplication([])
 
 
 @pytest.fixture
 def make_tab(app):
-    """Factory building a tab without touching the real license manager."""
+    """Factory building a tab without touching the real license manager.
+
+    Manages make tab operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+    """
     logger = logging.getLogger("test-tabs-gating")
     config = Config()
     holder = type("SafetyManagerStub", (), {})()
 
     def _make(tab_cls):
-        """_make."""
+        """Make.
+
+        Manages make operations and coordinates related state changes for the component.
+
+        Args:
+            tab_cls: The tab cls parameter.
+        """
         return tab_cls(config, logger, holder)
 
     return _make
 
 
 def _link_item(path: Path) -> BrokenSymlink:
-    """_link_item."""
+    """_link_item.
+
+    Manages link item operations and coordinates related state changes for the component.
+
+    Args:
+        path (Path): Filesystem path to the target file or directory.
+
+    Returns:
+        BrokenSymlink: Result of the operation.
+    """
     return BrokenSymlink(
         path=path,
         target=str(path.parent / "missing_target.bin"),
@@ -72,7 +96,16 @@ def _link_item(path: Path) -> BrokenSymlink:
 
 
 def _registry_item(tmp_path: Path) -> BrokenRegistryRef:
-    """_registry_item."""
+    """_registry_item.
+
+    Manages registry item operations and coordinates related state changes for the component.
+
+    Args:
+        tmp_path (Path): Filesystem path to the target file or directory.
+
+    Returns:
+        BrokenRegistryRef: Formatted string or path.
+    """
     return BrokenRegistryRef(
         path=tmp_path / "Registry:HKCU\\Run\\Ghost",
         target="C:\\nope\\ghost.exe",
@@ -91,7 +124,15 @@ def _registry_item(tmp_path: Path) -> BrokenRegistryRef:
 # ---------------------------------------------------------------------------
 
 def test_free_space_checkbox_disabled_on_free_tier(app, make_tab, monkeypatch):
-    """test_free_space_checkbox_disabled_on_free_tier."""
+    """test_free_space_checkbox_disabled_on_free_tier.
+
+    Manages test free space checkbox disabled on free tier operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+        make_tab: The make tab parameter.
+        monkeypatch: The monkeypatch parameter.
+    """
     monkeypatch.setattr(file_shredder_tab, "allowed", lambda feature: False)
     tab = make_tab(FileShredderTab)
 
@@ -101,7 +142,15 @@ def test_free_space_checkbox_disabled_on_free_tier(app, make_tab, monkeypatch):
 
 
 def test_free_space_checkbox_enabled_when_entitled(app, make_tab, monkeypatch):
-    """test_free_space_checkbox_enabled_when_entitled."""
+    """test_free_space_checkbox_enabled_when_entitled.
+
+    Manages test free space checkbox enabled when entitled operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+        make_tab: The make tab parameter.
+        monkeypatch: The monkeypatch parameter.
+    """
     monkeypatch.setattr(
         file_shredder_tab, "allowed",
         lambda feature: feature == Feature.FREE_SPACE_WIPE)
@@ -111,7 +160,15 @@ def test_free_space_checkbox_enabled_when_entitled(app, make_tab, monkeypatch):
 
 
 def test_multipass_spinbox_capped_without_entitlement(app, make_tab, monkeypatch):
-    """test_multipass_spinbox_capped_without_entitlement."""
+    """test_multipass_spinbox_capped_without_entitlement.
+
+    Manages test multipass spinbox capped without entitlement operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+        make_tab: The make tab parameter.
+        monkeypatch: The monkeypatch parameter.
+    """
     monkeypatch.setattr(file_shredder_tab, "allowed", lambda feature: False)
     tab = make_tab(FileShredderTab)
 
@@ -126,7 +183,15 @@ def test_multipass_spinbox_capped_without_entitlement(app, make_tab, monkeypatch
 
 
 def test_multipass_allowed_keeps_full_range(app, make_tab, monkeypatch):
-    """test_multipass_allowed_keeps_full_range."""
+    """test_multipass_allowed_keeps_full_range.
+
+    Manages test multipass allowed keeps full range operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+        make_tab: The make tab parameter.
+        monkeypatch: The monkeypatch parameter.
+    """
     monkeypatch.setattr(
         file_shredder_tab, "allowed",
         lambda feature: feature == Feature.SHRED_MULTIPASS)
@@ -140,7 +205,13 @@ def test_multipass_allowed_keeps_full_range(app, make_tab, monkeypatch):
 # ---------------------------------------------------------------------------
 
 def _make_broken_symlink(tmp_path: Path):
-    """_make_broken_symlink."""
+    """_make_broken_symlink.
+
+    Manages make broken symlink operations and coordinates related state changes for the component.
+
+    Args:
+        tmp_path (Path): Filesystem path to the target file or directory.
+    """
     target = tmp_path / "gone.bin"
     link = tmp_path / "dangling.link"
     try:
@@ -151,7 +222,14 @@ def _make_broken_symlink(tmp_path: Path):
 
 
 def test_repair_dry_run_changes_nothing(app, tmp_path):
-    """test_repair_dry_run_changes_nothing."""
+    """test_repair_dry_run_changes_nothing.
+
+    Manages test repair dry run changes nothing operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+        tmp_path: Filesystem path to the target file or directory.
+    """
     link, _target = _make_broken_symlink(tmp_path)
     items = [_link_item(link), _registry_item(tmp_path)]
 
@@ -172,7 +250,15 @@ def test_repair_dry_run_changes_nothing(app, tmp_path):
 
 
 def test_repair_removes_only_the_link(app, tmp_path, monkeypatch):
-    """test_repair_removes_only_the_link."""
+    """test_repair_removes_only_the_link.
+
+    Manages test repair removes only the link operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+        tmp_path: Filesystem path to the target file or directory.
+        monkeypatch: The monkeypatch parameter.
+    """
     link, target = _make_broken_symlink(tmp_path)
     keep_me = tmp_path / "keep.txt"
     keep_me.write_text("precious data")
@@ -187,7 +273,15 @@ def test_repair_removes_only_the_link(app, tmp_path, monkeypatch):
 
 
 def test_repair_dry_run_plans_without_touching_fs(app, tmp_path, monkeypatch):
-    """Planning path covered without needing OS link privileges."""
+    """Planning path covered without needing OS link privileges.
+
+    Manages test repair dry run plans without touching fs operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+        tmp_path: Filesystem path to the target file or directory.
+        monkeypatch: The monkeypatch parameter.
+    """
     ghost = tmp_path / "ghost.link"
     monkeypatch.setattr(
         "cortex_unified.analyzers.broken_link_detector._is_reparse_link",
@@ -206,7 +300,14 @@ def test_repair_dry_run_plans_without_touching_fs(app, tmp_path, monkeypatch):
 @pytest.mark.skipif(not sys.platform.startswith("win"),
                     reason="NTFS junctions")
 def test_repair_removes_dangling_junction_link_only(app, tmp_path):
-    """Junctions need no admin rights; removal must take the link only."""
+    """Junctions need no admin rights; removal must take the link only.
+
+    Manages test repair removes dangling junction link only operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+        tmp_path: Filesystem path to the target file or directory.
+    """
     import _winapi
 
     target_dir = tmp_path / "vanished_target"
@@ -231,7 +332,14 @@ def test_repair_removes_dangling_junction_link_only(app, tmp_path):
 
 
 def test_repair_excludes_registry_refs(app, tmp_path):
-    """test_repair_excludes_registry_refs."""
+    """test_repair_excludes_registry_refs.
+
+    Manages test repair excludes registry refs operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+        tmp_path: Filesystem path to the target file or directory.
+    """
     outcomes = repair([_registry_item(tmp_path)], use_trash=True, dry_run=False)
 
     assert len(outcomes) == 1
@@ -242,7 +350,15 @@ def test_repair_excludes_registry_refs(app, tmp_path):
 
 
 def test_repair_recycles_shortcut_via_send2trash(app, tmp_path, monkeypatch):
-    """test_repair_recycles_shortcut_via_send2trash."""
+    """test_repair_recycles_shortcut_via_send2trash.
+
+    Manages test repair recycles shortcut via send2trash operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+        tmp_path: Filesystem path to the target file or directory.
+        monkeypatch: The monkeypatch parameter.
+    """
     lnk = tmp_path / "broken.lnk"
     lnk.write_bytes(b"\x00" * 128)
     item = BrokenShortcut(
@@ -258,7 +374,13 @@ def test_repair_recycles_shortcut_via_send2trash(app, tmp_path, monkeypatch):
     sent = []
 
     def fake_trash(p):
-        """fake_trash."""
+        """fake_trash.
+
+        Manages fake trash operations and coordinates related state changes for the component.
+
+        Args:
+            p: The p parameter.
+        """
         sent.append(p)
         os.remove(p)  # same contract as real send2trash
 
@@ -277,7 +399,14 @@ def test_repair_recycles_shortcut_via_send2trash(app, tmp_path, monkeypatch):
 
 
 def test_repair_refuses_real_directory(app, tmp_path):
-    """test_repair_refuses_real_directory."""
+    """test_repair_refuses_real_directory.
+
+    Manages test repair refuses real directory operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+        tmp_path: Filesystem path to the target file or directory.
+    """
     real_dir = tmp_path / "real_dir"
     real_dir.mkdir()
     (real_dir / "data.txt").write_text("not a link")
@@ -295,27 +424,54 @@ def test_repair_refuses_real_directory(app, tmp_path):
 # ---------------------------------------------------------------------------
 
 def _silence_message_boxes(monkeypatch, module):
-    """Replace modal QMessageBox calls so headless tests never block."""
+    """Replace modal QMessageBox calls so headless tests never block.
+
+    Manages silence message boxes operations and coordinates related state changes for the component.
+
+    Args:
+        monkeypatch: The monkeypatch parameter.
+        module: The module parameter.
+    """
 
     class FakeBoxes:
-        """FakeBoxes."""
+        """Fakeboxes.
+
+        Manages FakeBoxes operations and coordinates related state changes for the component.
+        """
         def information(self, *a, **k):
-            """information."""
+            """information.
+
+            Converts raw numeric values into formatted, localized, and human-readable string representations.
+            """
             return None
 
         def warning(self, *a, **k):
-            """warning."""
+            """Warning.
+
+            Manages warning operations and coordinates related state changes for the component.
+            """
             return None
 
         def critical(self, *a, **k):
-            """critical."""
+            """Critical.
+
+            Manages critical operations and coordinates related state changes for the component.
+            """
             return None
 
     monkeypatch.setattr(module, "QMessageBox", FakeBoxes())
 
 
 def test_schedule_button_disabled_on_free_tier(app, make_tab, monkeypatch):
-    """test_schedule_button_disabled_on_free_tier."""
+    """test_schedule_button_disabled_on_free_tier.
+
+    Manages test schedule button disabled on free tier operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+        make_tab: The make tab parameter.
+        monkeypatch: The monkeypatch parameter.
+    """
     monkeypatch.setattr(reports_tab, "allowed", lambda feature: False)
     tab = make_tab(ReportsTab)
 
@@ -325,18 +481,44 @@ def test_schedule_button_disabled_on_free_tier(app, make_tab, monkeypatch):
 
 
 def test_schedule_button_enabled_and_creates_task(app, make_tab, monkeypatch):
-    """test_schedule_button_enabled_and_creates_task."""
+    """test_schedule_button_enabled_and_creates_task.
+
+    Manages test schedule button enabled and creates task operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+        make_tab: The make tab parameter.
+        monkeypatch: The monkeypatch parameter.
+    """
     calls = []
 
     class FakeScheduler:
-        """FakeScheduler."""
+        """Fakescheduler.
+
+        Manages FakeScheduler operations and coordinates related state changes for the component.
+        """
         def __init__(self, config=None):
-            """__init__."""
+            """__init__.
+
+            Initializes the instance and configures internal state.
+
+            Args:
+                config: The config parameter.
+            """
             pass
 
         def create_scheduled_task(self, name, command, schedule_type,
                                   schedule_params=None):
-            """create_scheduled_task."""
+            """create_scheduled_task.
+
+            Manages create scheduled task operations and coordinates related state changes for the component.
+
+            Args:
+                name: The name parameter.
+                command: The command parameter.
+                schedule_type: The schedule type parameter.
+                schedule_params: The schedule params parameter.
+            """
             calls.append({
                 "name": name,
                 "command": command,
@@ -366,17 +548,37 @@ def test_schedule_button_enabled_and_creates_task(app, make_tab, monkeypatch):
 
 
 def test_schedule_dialog_cancel_creates_nothing(app, make_tab, monkeypatch):
-    """test_schedule_dialog_cancel_creates_nothing."""
+    """test_schedule_dialog_cancel_creates_nothing.
+
+    Manages test schedule dialog cancel creates nothing operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+        make_tab: The make tab parameter.
+        monkeypatch: The monkeypatch parameter.
+    """
     calls = []
 
     class FakeScheduler:
-        """FakeScheduler."""
+        """Fakescheduler.
+
+        Manages FakeScheduler operations and coordinates related state changes for the component.
+        """
         def __init__(self, config=None):
-            """__init__."""
+            """__init__.
+
+            Initializes the instance and configures internal state.
+
+            Args:
+                config: The config parameter.
+            """
             pass
 
         def create_scheduled_task(self, *args, **kwargs):
-            """create_scheduled_task."""
+            """create_scheduled_task.
+
+            Manages create scheduled task operations and coordinates related state changes for the component.
+            """
             calls.append(args)
             return True
 

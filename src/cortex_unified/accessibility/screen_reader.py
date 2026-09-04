@@ -40,7 +40,13 @@ class ScreenReaderSupport:
     """
     
     def __init__(self, widget: Any = None):
-        """Attach to ``widget``; logging-only degradation without Qt."""
+        """Attach to ``widget``; logging-only degradation without Qt.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            widget (Any): The widget parameter.
+        """
         self.widget = widget
         self.logger = logging.getLogger(__name__)
         self.announcement_timer = None
@@ -51,7 +57,10 @@ class ScreenReaderSupport:
         self._init_platform_accessibility()
     
     def _init_platform_accessibility(self) -> None:
-        """Load platform hooks; unimplemented platforms just log."""
+        """Load platform hooks; unimplemented platforms just log.
+
+        Manages init platform accessibility operations and coordinates related state changes for the component.
+        """
         if platform.system() == "Windows" and HAS_WINDOWS_ACCESSIBILITY:
             try:
                 self.user32 = ctypes.windll.user32
@@ -65,7 +74,13 @@ class ScreenReaderSupport:
             self.logger.debug("Linux accessibility bridge: Qt accessibility active")
     
     def add_aria_labels(self, elements: List[Any]) -> None:
-        """Set name, description, and role properties on each QWidget."""
+        """Set name, description, and role properties on each QWidget.
+
+        Manages add aria labels operations and coordinates related state changes for the component.
+
+        Args:
+            elements (List[Any]): The elements parameter.
+        """
         if not HAS_PYSIDE6:
             return
             
@@ -94,7 +109,16 @@ class ScreenReaderSupport:
             self.logger.error(f"Error adding ARIA labels: {e}")
     
     def _generate_accessible_name(self, widget: QWidget) -> str:
-        """First non-empty of text/title/toolTip, else '<Type> <objectName>'."""
+        """First non-empty of text/title/toolTip, else '<Type> <objectName>'.
+
+        Manages generate accessible name operations and coordinates related state changes for the component.
+
+        Args:
+            widget (QWidget): The widget parameter.
+
+        Returns:
+            str: Formatted string or path.
+        """
         if hasattr(widget, 'text') and widget.text():
             return widget.text()
         elif hasattr(widget, 'title') and widget.title():
@@ -108,7 +132,16 @@ class ScreenReaderSupport:
         return f"{widget_type} {object_name}"
     
     def _generate_accessible_description(self, widget: QWidget) -> str:
-        """Type-specific usage hint, suffixed with disabled/checked state."""
+        """Type-specific usage hint, suffixed with disabled/checked state.
+
+        Manages generate accessible description operations and coordinates related state changes for the component.
+
+        Args:
+            widget (QWidget): The widget parameter.
+
+        Returns:
+            str: Formatted string or path.
+        """
         descriptions = {
             QPushButton: "Button - Press to activate",
             QLineEdit: "Text input field",
@@ -136,7 +169,16 @@ class ScreenReaderSupport:
         return base_description
     
     def _get_accessible_role(self, widget: QWidget) -> str:
-        """Map Qt widget class to the nearest WAI-ARIA role name."""
+        """Map Qt widget class to the nearest WAI-ARIA role name.
+
+        Manages get accessible role operations and coordinates related state changes for the component.
+
+        Args:
+            widget (QWidget): The widget parameter.
+
+        Returns:
+            str: Formatted string or path.
+        """
         role_mapping = {
             QPushButton: "button",
             QLineEdit: "textbox",
@@ -157,7 +199,13 @@ class ScreenReaderSupport:
         return role_mapping.get(type(widget), "generic")
     
     def announce_changes(self, message: str) -> None:
-        """Fire a Qt alert accessibility event plus platform announcements."""
+        """Fire a Qt alert accessibility event plus platform announcements.
+
+        Manages announce changes operations and coordinates related state changes for the component.
+
+        Args:
+            message (str): Informational or progress status message.
+        """
         if not message:
             return
             
@@ -179,7 +227,13 @@ class ScreenReaderSupport:
             self.logger.error(f"Error announcing message: {e}")
     
     def _announce_windows(self, message: str) -> None:
-        """Announce text using Windows SAPI voice synthesizer if available."""
+        """Announce text using Windows SAPI voice synthesizer if available.
+
+        Manages announce windows operations and coordinates related state changes for the component.
+
+        Args:
+            message (str): Informational or progress status message.
+        """
         if not HAS_WINDOWS_ACCESSIBILITY:
             return
             
@@ -194,21 +248,36 @@ class ScreenReaderSupport:
             self.logger.debug(f"Windows accessibility announcement: {message}")
     
     def _announce_macos(self, message: str) -> None:
-        """Unimplemented; debug-logged only."""
+        """Unimplemented; debug-logged only.
+
+        Manages announce macos operations and coordinates related state changes for the component.
+
+        Args:
+            message (str): Informational or progress status message.
+        """
         try:
             self.logger.debug(f"macOS announcement: {message}")
         except Exception as e:
             self.logger.error(f"macOS announcement failed: {e}")
     
     def _announce_linux(self, message: str) -> None:
-        """Unimplemented; debug-logged only."""
+        """Unimplemented; debug-logged only.
+
+        Manages announce linux operations and coordinates related state changes for the component.
+
+        Args:
+            message (str): Informational or progress status message.
+        """
         try:
             self.logger.debug(f"Linux announcement: {message}")
         except Exception as e:
             self.logger.error(f"Linux announcement failed: {e}")
     
     def setup_accessible_descriptions(self) -> None:
-        """Annotate all descendants, then mark live regions and landmarks."""
+        """Annotate all descendants, then mark live regions and landmarks.
+
+        Manages setup accessible descriptions operations and coordinates related state changes for the component.
+        """
         if not HAS_PYSIDE6 or not self.widget:
             return
             
@@ -226,7 +295,10 @@ class ScreenReaderSupport:
             self.logger.error(f"Error setting up accessible descriptions: {e}")
     
     def _setup_live_regions(self) -> None:
-        """Flag progress bars and status/progress labels as polite live regions."""
+        """Flag progress bars and status/progress labels as polite live regions.
+
+        Manages setup live regions operations and coordinates related state changes for the component.
+        """
         if not self.widget:
             return
             
@@ -240,7 +312,10 @@ class ScreenReaderSupport:
                 label.setProperty("accessibleLive", "polite")
     
     def _setup_landmarks(self) -> None:
-        """Tag the central widget as main and tab containers as navigation."""
+        """Tag the central widget as main and tab containers as navigation.
+
+        Manages setup landmarks operations and coordinates related state changes for the component.
+        """
         if not self.widget:
             return
             
@@ -263,9 +338,11 @@ class ScreenReaderSupport:
             return
             
         def on_focus_in():
-            """on_focus_in."""
+            """on_focus_in.
+
+            Manages on focus in operations and coordinates related state changes for the component.
+            """
             self.announce_changes(message)
-            """on_focus_in."""
             
         widget.focusInEvent = lambda event: (
             QWidget.focusInEvent(widget, event),
@@ -273,7 +350,13 @@ class ScreenReaderSupport:
         )
     
     def create_accessible_table(self, table_widget: Any) -> None:
-        """Name headers and describe dimensions for assistive tech."""
+        """Name headers and describe dimensions for assistive tech.
+
+        Manages create accessible table operations and coordinates related state changes for the component.
+
+        Args:
+            table_widget (Any): The table widget parameter.
+        """
         if not HAS_PYSIDE6 or not isinstance(table_widget, QTableWidget):
             return
             
@@ -294,7 +377,13 @@ class ScreenReaderSupport:
             self.logger.error(f"Error setting up accessible table: {e}")
     
     def create_accessible_tree(self, tree_widget: Any) -> None:
-        """Add a keyboard-navigation hint to the tree's description."""
+        """Add a keyboard-navigation hint to the tree's description.
+
+        Manages create accessible tree operations and coordinates related state changes for the component.
+
+        Args:
+            tree_widget (Any): The tree widget parameter.
+        """
         if not HAS_PYSIDE6 or not isinstance(tree_widget, QTreeWidget):
             return
             
@@ -307,7 +396,14 @@ class ScreenReaderSupport:
             self.logger.error(f"Error setting up accessible tree: {e}")
     
     def announce_progress(self, percentage: int, message: str = "") -> None:
-        """Throttled progress speech, emitted only at 10% multiples."""
+        """Throttled progress speech, emitted only at 10% multiples.
+
+        Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
+
+        Args:
+            percentage (int): The percentage parameter.
+            message (str): Informational or progress status message.
+        """
         if percentage % 10 == 0:
             announcement = f"Progress: {percentage}%"
             if message:
@@ -315,15 +411,33 @@ class ScreenReaderSupport:
             self.announce_changes(announcement)
     
     def announce_error(self, error_message: str) -> None:
-        """announce_changes wrapped with an 'Error:' prefix."""
+        """announce_changes wrapped with an 'Error:' prefix.
+
+        Manages announce error operations and coordinates related state changes for the component.
+
+        Args:
+            error_message (str): Informational or progress status message.
+        """
         self.announce_changes(f"Error: {error_message}")
     
     def announce_success(self, success_message: str) -> None:
-        """announce_changes wrapped with a 'Success:' prefix."""
+        """announce_changes wrapped with a 'Success:' prefix.
+
+        Manages announce success operations and coordinates related state changes for the component.
+
+        Args:
+            success_message (str): Informational or progress status message.
+        """
         self.announce_changes(f"Success: {success_message}")
     
     def get_accessibility_info(self) -> Dict[str, Any]:
-        """Capability report for diagnostics and UI toggles."""
+        """Capability report for diagnostics and UI toggles.
+
+        Manages get accessibility info operations and coordinates related state changes for the component.
+
+        Returns:
+            Dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         return {
             "screen_reader_support": HAS_PYSIDE6,
             "platform": platform.system(),

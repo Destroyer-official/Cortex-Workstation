@@ -117,7 +117,16 @@ _SHADOW_ALPHA: tuple[int, ...] = (0, 45, 80, 120)
 
 
 def _parse_hex(color: str) -> tuple[int, int, int] | None:
-    """Parse ``#RGB`` / ``#RRGGBB`` into an ``(r, g, b)`` triple, else ``None``."""
+    """Parse ``#RGB`` / ``#RRGGBB`` into an ``(r, g, b)`` triple, else ``None``.
+
+    Manages parse hex operations and coordinates related state changes for the component.
+
+    Args:
+        color (str): The color parameter.
+
+    Returns:
+        tuple[int, int, int] | None: Result of the operation.
+    """
     if not isinstance(color, str):
         return None
     s = color.strip().lstrip("#")
@@ -142,7 +151,16 @@ def _rel_luminance(color: str) -> float:
         return 0.0
 
     def _lin(channel: int) -> float:
-        """_lin."""
+        """Lin.
+
+        Manages lin operations and coordinates related state changes for the component.
+
+        Args:
+            channel (int): The channel parameter.
+
+        Returns:
+            float: Result of the operation.
+        """
         c = channel / 255.0
         return c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4
 

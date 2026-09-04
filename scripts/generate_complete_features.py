@@ -7,7 +7,13 @@ from pathlib import Path
 
 
 def get_module_info(p: Path):
-    """get_module_info."""
+    """get_module_info.
+
+    Manages get module info operations and coordinates related state changes for the component.
+
+    Args:
+        p (Path): The p parameter.
+    """
     try:
         content = p.read_text(encoding="utf-8", errors="ignore")
         tree = ast.parse(content)

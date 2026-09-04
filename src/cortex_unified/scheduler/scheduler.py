@@ -16,7 +16,10 @@ from ..core import proc as _proc
 from ..core.config import Config
 
 class TaskScheduler:
-    """Creates, lists, and removes cleanup jobs in the OS-native scheduler."""
+    """Taskscheduler.
+
+    Manages TaskScheduler operations and coordinates related state changes for the component.
+    """
     
     def __init__(self, config: Config = None):
         """Detect the host OS and prepare task tracking.
@@ -68,7 +71,19 @@ class TaskScheduler:
         schedule_type: str, 
         schedule_params: Dict = None
     ) -> bool:
-        """Create a Windows scheduled task using schtasks."""
+        """Create a Windows scheduled task using schtasks.
+
+        Manages create windows task operations and coordinates related state changes for the component.
+
+        Args:
+            name (str): The name parameter.
+            command (str): The command parameter.
+            schedule_type (str): The schedule type parameter.
+            schedule_params (Dict): The schedule params parameter.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         try:
             schedule_params = schedule_params or {}
             
@@ -109,7 +124,19 @@ class TaskScheduler:
         schedule_type: str, 
         schedule_params: Dict = None
     ) -> bool:
-        """Create a macOS scheduled task using launchd."""
+        """Create a macOS scheduled task using launchd.
+
+        Manages create macos task operations and coordinates related state changes for the component.
+
+        Args:
+            name (str): The name parameter.
+            command (str): The command parameter.
+            schedule_type (str): The schedule type parameter.
+            schedule_params (Dict): The schedule params parameter.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         try:
             plist_content = self._generate_launchd_plist(name, command, schedule_type, schedule_params)
 
@@ -134,7 +161,19 @@ class TaskScheduler:
         schedule_type: str, 
         schedule_params: Dict = None
     ) -> str:
-        """Render schedule params as a launchd property-list string."""
+        """Render schedule params as a launchd property-list string.
+
+        Manages generate launchd plist operations and coordinates related state changes for the component.
+
+        Args:
+            name (str): The name parameter.
+            command (str): The command parameter.
+            schedule_type (str): The schedule type parameter.
+            schedule_params (Dict): The schedule params parameter.
+
+        Returns:
+            str: Formatted string or path.
+        """
         schedule_params = schedule_params or {}
         
         escaped_name = xml.sax.saxutils.escape(name)
@@ -213,7 +252,19 @@ class TaskScheduler:
         schedule_type: str, 
         schedule_params: Dict = None
     ) -> bool:
-        """Create a Linux scheduled task using cron."""
+        """Create a Linux scheduled task using cron.
+
+        Manages create linux task operations and coordinates related state changes for the component.
+
+        Args:
+            name (str): The name parameter.
+            command (str): The command parameter.
+            schedule_type (str): The schedule type parameter.
+            schedule_params (Dict): The schedule params parameter.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         try:
             command = command.replace('\n', '').replace('\r', '')
 
@@ -237,7 +288,17 @@ class TaskScheduler:
             return False
     
     def _generate_cron_expression(self, schedule_type: str, schedule_params: Dict = None) -> str:
-        """Translate schedule type/params into five cron fields."""
+        """Translate schedule type/params into five cron fields.
+
+        Manages generate cron expression operations and coordinates related state changes for the component.
+
+        Args:
+            schedule_type (str): The schedule type parameter.
+            schedule_params (Dict): The schedule params parameter.
+
+        Returns:
+            str: Formatted string or path.
+        """
         schedule_params = schedule_params or {}
         
         if schedule_type == "daily":
@@ -258,7 +319,13 @@ class TaskScheduler:
             return f"* * * * *"
     
     def list_scheduled_tasks(self) -> List[Dict]:
-        """List tasks from the platform scheduler in normalized dicts."""
+        """List tasks from the platform scheduler in normalized dicts.
+
+        Manages list scheduled tasks operations and coordinates related state changes for the component.
+
+        Returns:
+            List[Dict]: List of processed items or identifiers.
+        """
         try:
             if self.system == "windows":
                 return self._list_windows_tasks()
@@ -274,7 +341,13 @@ class TaskScheduler:
             return []
     
     def _list_windows_tasks(self) -> List[Dict]:
-        """List Windows scheduled tasks."""
+        """List Windows scheduled tasks.
+
+        Manages list windows tasks operations and coordinates related state changes for the component.
+
+        Returns:
+            List[Dict]: List of processed items or identifiers.
+        """
         try:
             cmd = ["schtasks", "/query", "/fo", "csv"]
             result = _proc.run(cmd, text=True, timeout=30)
@@ -299,7 +372,13 @@ class TaskScheduler:
             return []
     
     def _list_macos_tasks(self) -> List[Dict]:
-        """List macOS scheduled tasks."""
+        """List macOS scheduled tasks.
+
+        Manages list macos tasks operations and coordinates related state changes for the component.
+
+        Returns:
+            List[Dict]: List of processed items or identifiers.
+        """
         try:
             cmd = ["launchctl", "list"]
             result = _proc.run(cmd, text=True, timeout=30)
@@ -323,7 +402,13 @@ class TaskScheduler:
             return []
     
     def _list_linux_tasks(self) -> List[Dict]:
-        """List Linux scheduled tasks."""
+        """List Linux scheduled tasks.
+
+        Manages list linux tasks operations and coordinates related state changes for the component.
+
+        Returns:
+            List[Dict]: List of processed items or identifiers.
+        """
         try:
             cmd = ["crontab", "-l"]
             result = _proc.run(cmd, text=True, timeout=30)
@@ -345,7 +430,16 @@ class TaskScheduler:
             return []
     
     def delete_scheduled_task(self, name: str) -> bool:
-        """delete_scheduled_task."""
+        """delete_scheduled_task.
+
+        Manages delete scheduled task operations and coordinates related state changes for the component.
+
+        Args:
+            name (str): The name parameter.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         try:
             if self.system == "windows":
                 cmd = ["schtasks", "/delete", "/tn", name, "/f"]
@@ -374,10 +468,15 @@ class TaskScheduler:
         except Exception:
             self.error_count += 1
             return False
-        """delete_scheduled_task."""
     
     def get_stats(self) -> dict:
-        """Summarize task count, platform, and error total."""
+        """Summarize task count, platform, and error total.
+
+        Manages get stats operations and coordinates related state changes for the component.
+
+        Returns:
+            dict: Dictionary mapping identifiers to status or values.
+        """
         tasks = self.list_scheduled_tasks()
         
         return {

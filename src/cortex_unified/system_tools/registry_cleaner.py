@@ -19,10 +19,19 @@ from ..core.config import Config
 
 
 class RegistryCleaner:
-    """Find and remove registry entries that reference files no longer on disk."""
+    """Registrycleaner.
+
+    Manages RegistryCleaner operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, config: Config = None):
-        """Initialize Registry Cleaner."""
+        """Initialize Registry Cleaner.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            config (Config): The config parameter.
+        """
         self.config = config or Config()
         self.logger = logging.getLogger("registry_cleaner")
 
@@ -38,11 +47,23 @@ class RegistryCleaner:
     # ──────────────────────────────────────────────────────────────────
 
     def scan(self) -> List[Dict]:
-        """Alias used by SmartScanner."""
+        """Alias used by SmartScanner.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+        Returns:
+            List[Dict]: List of processed items or identifiers.
+        """
         return self.scan_orphaned_entries()
 
     def scan_orphaned_entries(self) -> List[Dict]:
-        """Run all category scans and return the accumulated orphans."""
+        """Run all category scans and return the accumulated orphans.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+        Returns:
+            List[Dict]: List of processed items or identifiers.
+        """
         self.orphaned_entries.clear()
         self.error_count = 0
 
@@ -64,7 +85,13 @@ class RegistryCleaner:
     # ──────────────────────────────────────────────────────────────────
 
     def _scan_uninstall_entries(self, hive):
-        """_scan_uninstall_entries."""
+        """_scan_uninstall_entries.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+        Args:
+            hive: The hive parameter.
+        """
         import winreg
 
         # Both views must be enumerated: the plain path holds 64-bit installers,
@@ -93,11 +120,18 @@ class RegistryCleaner:
                 pass
             except Exception:
                 self.error_count += 1
-        """_scan_uninstall_entries."""
-        """_scan_uninstall_entries."""
 
     def _check_uninstall_entry(self, hive, hive_name, full_path, subkey_name):
-        """_check_uninstall_entry."""
+        """_check_uninstall_entry.
+
+        Manages check uninstall entry operations and coordinates related state changes for the component.
+
+        Args:
+            hive: The hive parameter.
+            hive_name: The hive name parameter.
+            full_path: Filesystem path to the target file or directory.
+            subkey_name: The subkey name parameter.
+        """
         import winreg
         try:
             with winreg.OpenKey(hive, full_path, 0, winreg.KEY_READ | winreg.KEY_WOW64_64KEY) as sk:
@@ -130,15 +164,16 @@ class RegistryCleaner:
                         })
         except Exception:
             self.error_count += 1
-        """_check_uninstall_entry."""
-        """_check_uninstall_entry."""
 
     # ──────────────────────────────────────────────────────────────────
     # Startup entries
     # ──────────────────────────────────────────────────────────────────
 
     def _scan_startup_entries(self):
-        """Check Run/RunOnce keys for entries that reference missing executables."""
+        """Check Run/RunOnce keys for entries that reference missing executables.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+        """
         import winreg
 
         startup_keys = [
@@ -178,7 +213,10 @@ class RegistryCleaner:
     # ──────────────────────────────────────────────────────────────────
 
     def _scan_file_associations(self):
-        """Check HKCR (via HKLM\\Software\\Classes) for associations pointing to missing executables."""
+        r"""Check HKCR (via HKLM\Software\Classes) for associations pointing to missing executables.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+        """
         import winreg
 
         classes_path = r"Software\Classes"
@@ -219,7 +257,10 @@ class RegistryCleaner:
     # ──────────────────────────────────────────────────────────────────
 
     def _scan_shared_dlls(self):
-        """Check SharedDLLs registry for entries with reference count = 0."""
+        """Check SharedDLLs registry for entries with reference count = 0.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+        """
         import winreg
         shared_path = r"Software\Microsoft\Windows\CurrentVersion\SharedDLLs"
         try:
@@ -284,7 +325,17 @@ class RegistryCleaner:
             return None
 
     def backup_entry(self, entry: Dict, backup_dir: Optional[str] = None) -> Optional[str]:
-        """Export a specific registry entry to a .reg file before deletion for instant rollback."""
+        """Export a specific registry entry to a .reg file before deletion for instant rollback.
+
+        Creates a backup archive or export of target resources, reporting the final output location upon success.
+
+        Args:
+            entry (Dict): The entry parameter.
+            backup_dir (Optional[str]): The backup dir parameter.
+
+        Returns:
+            Optional[str]: Formatted string or path.
+        """
         hive = entry.get("hive", "")
         path = entry.get("path", "")
         if not hive or not path:
@@ -366,7 +417,13 @@ class RegistryCleaner:
     # ──────────────────────────────────────────────────────────────────
 
     def get_stats(self) -> dict:
-        """Get stats."""
+        """Get stats.
+
+        Manages get stats operations and coordinates related state changes for the component.
+
+        Returns:
+            dict: Dictionary mapping identifiers to status or values.
+        """
         return {
             "orphaned_entries_found": len(self.orphaned_entries),
             "backups_created": len(self.backup_files),
@@ -374,7 +431,16 @@ class RegistryCleaner:
         }
 
     def filter_by_type(self, entry_type: str) -> List[Dict]:
-        """Filter by type."""
+        """Filter by type.
+
+        Manages filter by type operations and coordinates related state changes for the component.
+
+        Args:
+            entry_type (str): The entry type parameter.
+
+        Returns:
+            List[Dict]: List of processed items or identifiers.
+        """
         return [e for e in self.orphaned_entries if e.get("type") == entry_type]
 
     # ──────────────────────────────────────────────────────────────────
@@ -383,13 +449,20 @@ class RegistryCleaner:
 
     @staticmethod
     def _reg_val(winreg, key, name, default=""):
-        """_reg_val."""
+        """_reg_val.
+
+        Manages reg val operations and coordinates related state changes for the component.
+
+        Args:
+            winreg: The winreg parameter.
+            key: The key parameter.
+            name: The name parameter.
+            default: The default parameter.
+        """
         try:
             return winreg.QueryValueEx(key, name)[0]
         except (FileNotFoundError, OSError):
             return default
-        """_reg_val."""
-        """_reg_val."""
 
     @staticmethod
     def _extract_exe_path(raw: str) -> Optional[str]:

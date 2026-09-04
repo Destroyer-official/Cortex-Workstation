@@ -87,7 +87,10 @@ class PrivacyLevel(str, enum.Enum):
 
 @dataclass(slots=True)
 class SanitizeResult:
-    """Outcome of one sanitization attempt."""
+    """Sanitizeresult.
+
+    Manages SanitizeResult operations and coordinates related state changes for the component.
+    """
 
     path: Path
     level: PrivacyLevel
@@ -101,7 +104,13 @@ class SanitizeResult:
     latency_cost: str = ""
 
     def to_dict(self) -> dict:
-        """To dict."""
+        """To dict.
+
+        Manages to dict operations and coordinates related state changes for the component.
+
+        Returns:
+            dict: Dictionary mapping identifiers to status or values.
+        """
         return {
             "path": str(self.path),
             "level": self.level.value,
@@ -152,7 +161,14 @@ class AdaptiveSanitizer:
         guard: PathGuard | None = None,
         probe: StorageProbe | None = None,
     ) -> None:
-        """Initialize Adaptive Sanitizer."""
+        """Initialize Adaptive Sanitizer.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            guard (PathGuard | None): The guard parameter.
+            probe (StorageProbe | None): The probe parameter.
+        """
         self.guard = guard or PathGuard()
         self.probe = probe or StorageProbe()
 
@@ -265,7 +281,20 @@ class AdaptiveSanitizer:
 
     # PL0 – full block erase / 3-pass overwrite (HDD) or Secure Erase (SSD)
     def _pl0(self, p: Path, kind: StorageKind, verify: bool, force: bool, timeout: int) -> SanitizeResult:
-        """_pl0."""
+        """Pl0.
+
+        Manages pl0 operations and coordinates related state changes for the component.
+
+        Args:
+            p (Path): The p parameter.
+            kind (StorageKind): The kind parameter.
+            verify (bool): The verify parameter.
+            force (bool): The force parameter.
+            timeout (int): The timeout parameter.
+
+        Returns:
+            SanitizeResult: Result of the operation.
+        """
         if kind.overwrite_effective:
             # HDD: honest overwrites still effective – use SecureDeleter's path
             try:
@@ -294,15 +323,26 @@ class AdaptiveSanitizer:
              "adjacent pages (PULSE median RBER >0.93% SLC, ~13% TLC). Use PL1/PULSE "
              "or PL2 crypto-erase for per-file sanitization."),
         )
-        """_pl0."""
-        """_pl0."""
 
     # PL1 – page scrubbing / PULSE low-disturbance overwrite pulses
     def _pl1(self, p: Path, kind: StorageKind, verify: bool, force: bool, timeout: int) -> SanitizeResult:
         # PULSE strategy: sub-block aware, hotness separated, limited overwrite
         # pulses to keep RBER <0.57% FG (paper Table 2). On non-elevated or non-SSD
         # we fall back to 1-pass best-effort overwrite.
-        """_pl1."""
+        """Pl1.
+
+        Manages pl1 operations and coordinates related state changes for the component.
+
+        Args:
+            p (Path): The p parameter.
+            kind (StorageKind): The kind parameter.
+            verify (bool): The verify parameter.
+            force (bool): The force parameter.
+            timeout (int): The timeout parameter.
+
+        Returns:
+            SanitizeResult: Result of the operation.
+        """
         if p.is_dir():
             # Recurse depth-first (WAS-Deletion: separate hot/cold regions)
             failures: list[str] = []
@@ -373,8 +413,6 @@ class AdaptiveSanitizer:
         except OSError as exc:
             return SanitizeResult(p, PrivacyLevel.PL1, kind, False, False,
                                   "p1 scrub", str(exc))
-        """_pl1."""
-        """_pl1."""
 
     # PL2 – parity/ECC disruption / crypto-erase (Ahn PL2, FlashFox)
     def _pl2(self, p: Path, kind: StorageKind, verify: bool, timeout: int) -> SanitizeResult:
@@ -382,7 +420,19 @@ class AdaptiveSanitizer:
         # Approximation without TPM: overwrite first 4 KiB with random (destroys
         # header / sack), then rename to random, TRIM. Verifiability via read of
         # corrupted header.
-        """_pl2."""
+        """Pl2.
+
+        Manages pl2 operations and coordinates related state changes for the component.
+
+        Args:
+            p (Path): The p parameter.
+            kind (StorageKind): The kind parameter.
+            verify (bool): The verify parameter.
+            timeout (int): The timeout parameter.
+
+        Returns:
+            SanitizeResult: Result of the operation.
+        """
         try:
             if p.is_dir():
                 # For directories, PL2 = recursive PL2 on children (WAS vertical encryption)
@@ -428,12 +478,22 @@ class AdaptiveSanitizer:
         except OSError as exc:
             return SanitizeResult(p, PrivacyLevel.PL2, kind, False, False,
                                   "p2 ecc", str(exc))
-        """_pl2."""
-        """_pl2."""
 
     # PL3 – controller lockout / TRIM range (logical unmap)
     def _pl3(self, p: Path, kind: StorageKind, verify: bool, timeout: int) -> SanitizeResult:
-        """_pl3."""
+        """Pl3.
+
+        Manages pl3 operations and coordinates related state changes for the component.
+
+        Args:
+            p (Path): The p parameter.
+            kind (StorageKind): The kind parameter.
+            verify (bool): The verify parameter.
+            timeout (int): The timeout parameter.
+
+        Returns:
+            SanitizeResult: Result of the operation.
+        """
         try:
             # Logical unmap: remove directory entry, issue TRIM on parent FS
             if p.is_dir() and not p.is_symlink():
@@ -452,8 +512,6 @@ class AdaptiveSanitizer:
         except OSError as exc:
             return SanitizeResult(p, PrivacyLevel.PL3, kind, False, False,
                                   "p3 trim", str(exc))
-        """_pl3."""
-        """_pl3."""
 
     def _trim_parent(self, p: Path) -> None:
         """Best-effort TRIM hint for the parent filesystem.

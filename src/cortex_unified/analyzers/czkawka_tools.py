@@ -60,7 +60,13 @@ except ImportError:
 # ---------------------------------------------------------------------------
 
 def _temp_dirs() -> List[Path]:
-    """_temp_dirs."""
+    """Enumerate standard operating system and user temporary directories.
+
+    Resolves TEMP, TMP, LocalAppData\\Temp, and browser cache paths across all configured drives.
+
+    Returns:
+        List[Path]: List of processed items or identifiers.
+    """
     dirs: List[Path] = []
     for key in ("TEMP", "TMP", "TMPDIR"):
         v = os.environ.get(key)
@@ -87,8 +93,6 @@ def _temp_dirs() -> List[Path]:
             seen.add(s)
             out.append(d)
     return out
-    """_temp_dirs."""
-    """_temp_dirs."""
 
 _MAGIC_HEADERS: Dict[bytes, str] = {
     b"\xFF\xD8\xFF": ".jpg",
@@ -110,7 +114,16 @@ _MAGIC_HEADERS: Dict[bytes, str] = {
 }
 
 def _sniff_extension(path: Path) -> Optional[str]:
-    """_sniff_extension."""
+    """Infer the expected file extension from binary magic bytes.
+
+    Inspects leading header bytes of the file and cross-references known MIME signatures.
+
+    Args:
+        path (Path): Filesystem path to the target file or directory.
+
+    Returns:
+        Optional[str]: Formatted string or path.
+    """
     try:
         head = path.read_bytes()[:16]
         for magic, ext in _MAGIC_HEADERS.items():
@@ -124,8 +137,6 @@ def _sniff_extension(path: Path) -> Optional[str]:
     except OSError:
         pass
     return None
-    """_sniff_extension."""
-    """_sniff_extension."""
 
 # ---------------------------------------------------------------------------
 # Empty finder
@@ -133,25 +144,46 @@ def _sniff_extension(path: Path) -> Optional[str]:
 
 @dataclass(slots=True)
 class EmptyResult:
-    """Empty scan result with empty files, folders, and scan stats."""
+    """Emptyresult.
+
+    Manages EmptyResult operations and coordinates related state changes for the component.
+    """
     empty_files: List[Path]
     empty_folders: List[Path]
     scanned: int
     duration: float
 
 class EmptyFinder:
-    """Walk a root tree collecting zero-byte files and empty folders."""
+    """Emptyfinder.
+
+    Manages EmptyFinder operations and coordinates related state changes for the component.
+    """
     def __init__(self, root: str | os.PathLike, config: Config | None = None):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            root (str | os.PathLike): Filesystem path to the target file or directory.
+            config (Config | None): The config parameter.
+        """
         self.root = normalize_path(root)
         self.config = config or Config()
         self.exclude_dirs = set(self.config.exclude_dirs)
-        """__init__."""
-        """__init__."""
 
     def find(self, cancel: threading.Event | None = None,
              progress: Callable[[str], None] | None = None) -> EmptyResult:
-        """Collect empty files then empty folders under the root."""
+        """Search and locate items matching specific criteria.
+
+        Traverses filesystem directories or cached registries to find resources that satisfy the specified filters.
+
+        Args:
+            cancel (threading.Event | None): Threading event or callable to check for cancellation.
+            progress (Callable[[str], None] | None): The progress parameter.
+
+        Returns:
+            EmptyResult: Result of the operation.
+        """
         t0 = time.time()
         empty_files: List[Path] = []
         empty_folders: List[Path] = []
@@ -192,24 +224,45 @@ class EmptyFinder:
 
 @dataclass(slots=True)
 class SymlinkResult:
-    """Broken-symlink scan result with link targets and scan stats."""
+    """Symlinkresult.
+
+    Manages SymlinkResult operations and coordinates related state changes for the component.
+    """
     broken: List[Tuple[Path, Path]]  # (link, target)
     scanned: int
     duration: float
 
 class InvalidSymlinkFinder:
-    """Walk a root tree collecting symlinks whose targets no longer exist."""
+    """Invalidsymlinkfinder.
+
+    Manages InvalidSymlinkFinder operations and coordinates related state changes for the component.
+    """
     def __init__(self, root: str | os.PathLike, config: Config | None = None):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            root (str | os.PathLike): Filesystem path to the target file or directory.
+            config (Config | None): The config parameter.
+        """
         self.root = normalize_path(root)
         self.config = config or Config()
         self.exclude_dirs = set(self.config.exclude_dirs)
-        """__init__."""
-        """__init__."""
 
     def find(self, cancel: threading.Event | None = None,
              progress: Callable[[str], None] | None = None) -> SymlinkResult:
-        """Collect symlinks whose resolved targets are missing."""
+        """Search and locate items matching specific criteria.
+
+        Traverses filesystem directories or cached registries to find resources that satisfy the specified filters.
+
+        Args:
+            cancel (threading.Event | None): Threading event or callable to check for cancellation.
+            progress (Callable[[str], None] | None): The progress parameter.
+
+        Returns:
+            SymlinkResult: Result of the operation.
+        """
         t0 = time.time()
         broken: List[Tuple[Path, Path]] = []
         scanned = 0
@@ -237,18 +290,35 @@ class InvalidSymlinkFinder:
 # ---------------------------------------------------------------------------
 
 class BrokenFileFinder:
-    """Detect corrupt images, archives, and PDFs via content verification."""
+    """Brokenfilefinder.
+
+    Manages BrokenFileFinder operations and coordinates related state changes for the component.
+    """
     def __init__(self, root: str | os.PathLike, config: Config | None = None):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            root (str | os.PathLike): Filesystem path to the target file or directory.
+            config (Config | None): The config parameter.
+        """
         self.root = normalize_path(root)
         self.config = config or Config()
         self.exclude_dirs = set(self.config.exclude_dirs)
-        """__init__."""
-        """__init__."""
 
     def _is_broken(self, p: Path) -> bool:
         # image
-        """_is_broken."""
+        """Check whether a candidate file or link is corrupted or broken.
+
+        Validates header signatures, checks symlink targets, or probes file readability to identify defective items.
+
+        Args:
+            p (Path): The p parameter.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         if p.suffix.lower() in {".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp", ".tiff"}:
             if HAS_PIL:
                 try:
@@ -276,12 +346,21 @@ class BrokenFileFinder:
             except OSError:
                 return True
         return False
-        """_is_broken."""
-        """_is_broken."""
 
     def find(self, threads: int = 0, cancel: threading.Event | None = None,
              progress: Callable[[str], None] | None = None) -> List[Path]:
-        """Check every file under the root returning paths that fail verification."""
+        """Search and locate items matching specific criteria.
+
+        Traverses filesystem directories or cached registries to find resources that satisfy the specified filters.
+
+        Args:
+            threads (int): The threads parameter.
+            cancel (threading.Event | None): Threading event or callable to check for cancellation.
+            progress (Callable[[str], None] | None): The progress parameter.
+
+        Returns:
+            List[Path]: List of processed items or identifiers.
+        """
         files: List[Path] = []
         for dirpath, dirnames, filenames in os.walk(self.root):
             if cancel and cancel.is_set():
@@ -294,10 +373,17 @@ class BrokenFileFinder:
         broken: List[Path] = []
         lock = threading.Lock()
         def check(p: Path) -> Path | None:
-            """check."""
+            """Check.
+
+            Manages check operations and coordinates related state changes for the component.
+
+            Args:
+                p (Path): The p parameter.
+
+            Returns:
+                Path | None: Result of the operation.
+            """
             return p if self._is_broken(p) else None
-            """check."""
-            """check."""
         with ThreadPoolExecutor(max_workers=threads) as ex:
             futs = {ex.submit(check, p): p for p in files}
             for fut in as_completed(futs):
@@ -317,24 +403,45 @@ class BrokenFileFinder:
 
 @dataclass(slots=True)
 class BadExtResult:
-    """One file whose sniffed content type disagrees with its extension."""
+    """Badextresult.
+
+    Manages BadExtResult operations and coordinates related state changes for the component.
+    """
     path: Path
     actual: str
     claimed: str
 
 class BadExtensionFinder:
-    """Compare each file's magic-byte type against its claimed extension."""
+    """Badextensionfinder.
+
+    Manages BadExtensionFinder operations and coordinates related state changes for the component.
+    """
     def __init__(self, root: str | os.PathLike, config: Config | None = None):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            root (str | os.PathLike): Filesystem path to the target file or directory.
+            config (Config | None): The config parameter.
+        """
         self.root = normalize_path(root)
         self.config = config or Config()
         self.exclude_dirs = set(self.config.exclude_dirs)
-        """__init__."""
-        """__init__."""
 
     def find(self, cancel: threading.Event | None = None,
              progress: Callable[[str], None] | None = None) -> List[BadExtResult]:
-        """Return files whose sniffed extension differs from the file suffix."""
+        """Search and locate items matching specific criteria.
+
+        Traverses filesystem directories or cached registries to find resources that satisfy the specified filters.
+
+        Args:
+            cancel (threading.Event | None): Threading event or callable to check for cancellation.
+            progress (Callable[[str], None] | None): The progress parameter.
+
+        Returns:
+            List[BadExtResult]: List of processed items or identifiers.
+        """
         results: List[BadExtResult] = []
         for dirpath, dirnames, filenames in os.walk(self.root):
             if cancel and cancel.is_set():
@@ -369,17 +476,34 @@ _BAD_PATTERNS = [
 ]
 
 class BadNamesFinder:
-    """Collect files and folders with illegal, reserved, or overlong names."""
+    """Badnamesfinder.
+
+    Manages BadNamesFinder operations and coordinates related state changes for the component.
+    """
     def __init__(self, root: str | os.PathLike, config: Config | None = None):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            root (str | os.PathLike): Filesystem path to the target file or directory.
+            config (Config | None): The config parameter.
+        """
         self.root = normalize_path(root)
         self.config = config or Config()
         self.exclude_dirs = set(self.config.exclude_dirs)
-        """__init__."""
-        """__init__."""
 
     def find(self, cancel: threading.Event | None = None) -> List[Path]:
-        """Return paths whose names match control-char or reserved patterns."""
+        """Search and locate items matching specific criteria.
+
+        Traverses filesystem directories or cached registries to find resources that satisfy the specified filters.
+
+        Args:
+            cancel (threading.Event | None): Threading event or callable to check for cancellation.
+
+        Returns:
+            List[Path]: List of processed items or identifiers.
+        """
         bad: List[Path] = []
         for dirpath, dirnames, filenames in os.walk(self.root):
             if cancel and cancel.is_set():
@@ -395,16 +519,33 @@ class BadNamesFinder:
 # ---------------------------------------------------------------------------
 
 class ExifCleaner:
-    """Scan images for EXIF metadata and strip it to protect privacy."""
+    """Exifcleaner.
+
+    Manages ExifCleaner operations and coordinates related state changes for the component.
+    """
     def __init__(self, root: str | os.PathLike, config: Config | None = None):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            root (str | os.PathLike): Filesystem path to the target file or directory.
+            config (Config | None): The config parameter.
+        """
         self.root = normalize_path(root)
         self.config = config or Config()
-        """__init__."""
-        """__init__."""
 
     def scan(self, cancel: threading.Event | None = None) -> List[Tuple[Path, Dict]]:
-        """List JPEG/TIFF/WebP files that still carry EXIF metadata."""
+        """List JPEG/TIFF/WebP files that still carry EXIF metadata.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+        Args:
+            cancel (threading.Event | None): Threading event or callable to check for cancellation.
+
+        Returns:
+            List[Tuple[Path, Dict]]: List of processed items or identifiers.
+        """
         results: List[Tuple[Path, Dict]] = []
         for dirpath, dirnames, filenames in os.walk(self.root):
             if cancel and cancel.is_set():
@@ -433,7 +574,16 @@ class ExifCleaner:
         return results
 
     def strip(self, paths: List[Path]) -> Dict[Path, bool]:
-        """Remove EXIF metadata from the given images reporting per-file success."""
+        """Strip.
+
+        Manages strip operations and coordinates related state changes for the component.
+
+        Args:
+            paths (List[Path]): Filesystem path to the target file or directory.
+
+        Returns:
+            Dict[Path, bool]: Dictionary mapping identifiers to status or values.
+        """
         out: Dict[Path, bool] = {}
         for p in paths:
             try:
@@ -463,16 +613,33 @@ _TEMP_PATTERNS = [
 ]
 
 class TempFileFinder:
-    """Locate temp/log/backup files under a root or system temp dirs."""
+    """Tempfilefinder.
+
+    Manages TempFileFinder operations and coordinates related state changes for the component.
+    """
     def __init__(self, root: str | os.PathLike | None = None, config: Config | None = None):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            root (str | os.PathLike | None): Filesystem path to the target file or directory.
+            config (Config | None): The config parameter.
+        """
         self.root = normalize_path(root) if root else None
         self.config = config or Config()
-        """__init__."""
-        """__init__."""
 
     def find(self, cancel: threading.Event | None = None) -> List[Path]:
-        """find."""
+        """Search and locate items matching specific criteria.
+
+        Traverses filesystem directories or cached registries to find resources that satisfy the specified filters.
+
+        Args:
+            cancel (threading.Event | None): Threading event or callable to check for cancellation.
+
+        Returns:
+            List[Path]: List of processed items or identifiers.
+        """
         roots = [Path(self.root)] if self.root else _temp_dirs()
         # also scan user-specified root
         results: List[Path] = []
@@ -493,8 +660,6 @@ class TempFileFinder:
                     elif rt in _temp_dirs():
                         results.append(Path(dirpath) / fn)
         return results
-        """find."""
-        """find."""
 
 # ---------------------------------------------------------------------------
 # Video optimizer (ffprobe static detection + re-encode)
@@ -502,7 +667,10 @@ class TempFileFinder:
 
 @dataclass(slots=True)
 class VideoInfo:
-    """VideoInfo."""
+    """Videoinfo.
+
+    Manages VideoInfo operations and coordinates related state changes for the component.
+    """
     path: Path
     width: int
     height: int
@@ -511,13 +679,23 @@ class VideoInfo:
     codec: str
     has_static_borders: bool = False
     border_pixels: int = 0
-    """VideoInfo class."""
-    """VideoInfo class."""
 
 class VideoOptimizer:
-    """VideoOptimizer."""
+    """Videooptimizer.
+
+    Manages VideoOptimizer operations and coordinates related state changes for the component.
+    """
     def find_static_borders(self, video: Path) -> Optional[VideoInfo]:
-        """find_static_borders."""
+        """find_static_borders.
+
+        Manages find static borders operations and coordinates related state changes for the component.
+
+        Args:
+            video (Path): The video parameter.
+
+        Returns:
+            Optional[VideoInfo]: Result of the operation.
+        """
         try:
             rc = subprocess.run(
                 ["ffprobe", "-v", "error", "-select_streams", "v:0",
@@ -541,12 +719,22 @@ class VideoOptimizer:
             )
         except Exception:
             return None
-        """find_static_borders."""
-        """find_static_borders."""
 
     def optimize(self, video: Path, out: Path | None = None,
                  crf: int = 28, preset: str = "fast") -> bool:
-        """Re-encode with libx264, crop static borders if detected."""
+        """Optimize.
+
+        Manages optimize operations and coordinates related state changes for the component.
+
+        Args:
+            video (Path): The video parameter.
+            out (Path | None): The out parameter.
+            crf (int): The crf parameter.
+            preset (str): The preset parameter.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         if out is None:
             out = video.with_suffix(".optimized.mp4")
         # detect crop via cropdetect filter (sample 2 fps, 30 frames)
@@ -574,8 +762,6 @@ class VideoOptimizer:
             return rc.returncode == 0 and out.exists() and out.stat().st_size > 0
         except Exception:
             return False
-    """VideoOptimizer class."""
-    """VideoOptimizer class."""
 
 __all__ = [
     "EmptyFinder", "EmptyResult",

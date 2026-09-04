@@ -19,14 +19,23 @@ from PySide6.QtWidgets import QApplication  # noqa: E402
 
 @pytest.fixture(scope="module")
 def app():
-    """app."""
+    """App.
+
+    Manages app operations and coordinates related state changes for the component.
+    """
     application = QApplication.instance() or QApplication([])
     yield application
 
 
 @pytest.fixture
 def window(app):
-    """window."""
+    """Window.
+
+    Manages window operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+    """
     import gc
     from cortex_unified.ui.premium.theme import apply_theme
     from cortex_unified.ui.premium.window import PremiumMainWindow
@@ -44,7 +53,13 @@ def window(app):
 
 
 def test_stylesheet_builds_for_both_themes(app):
-    """test_stylesheet_builds_for_both_themes."""
+    """test_stylesheet_builds_for_both_themes.
+
+    Manages test stylesheet builds for both themes operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+    """
     from cortex_unified.ui.premium.theme import THEMES, build_stylesheet
     for name, palette in THEMES.items():
         qss = build_stylesheet(palette)
@@ -53,20 +68,38 @@ def test_stylesheet_builds_for_both_themes(app):
 
 
 def test_all_pages_present(window):
-    """test_all_pages_present."""
+    """test_all_pages_present.
+
+    Manages test all pages present operations and coordinates related state changes for the component.
+
+    Args:
+        window: Parent window or shell controller instance.
+    """
     from cortex_unified.ui.premium import registry
     assert set(window._pages) == {p.id for p in registry.PAGES}
 
 
 def test_navigate_every_page(window):
-    """Selecting each page must switch the stack without error."""
+    """Selecting each page must switch the stack without error.
+
+    Manages test navigate every page operations and coordinates related state changes for the component.
+
+    Args:
+        window: Parent window or shell controller instance.
+    """
     for pid in window._pages:
         window._select(pid)
         assert window._stack.currentWidget() is window._pages[pid]
 
 
 def test_theme_toggle_does_not_crash(window):
-    """test_theme_toggle_does_not_crash."""
+    """test_theme_toggle_does_not_crash.
+
+    Manages test theme toggle does not crash operations and coordinates related state changes for the component.
+
+    Args:
+        window: Parent window or shell controller instance.
+    """
     window.set_theme("light")
     assert window.theme_name == "light"
     window.set_theme("dark")
@@ -74,7 +107,13 @@ def test_theme_toggle_does_not_crash(window):
 
 
 def test_navigation_switches_pages(window):
-    """test_navigation_switches_pages."""
+    """test_navigation_switches_pages.
+
+    Manages test navigation switches pages operations and coordinates related state changes for the component.
+
+    Args:
+        window: Parent window or shell controller instance.
+    """
     window._select("duplicates")
     assert window._stack.currentWidget() is window._pages["duplicates"]
     window._select("dashboard")
@@ -82,7 +121,13 @@ def test_navigation_switches_pages(window):
 
 
 def test_dashboard_populates_from_report(window):
-    """test_dashboard_populates_from_report."""
+    """test_dashboard_populates_from_report.
+
+    Manages test dashboard populates from report operations and coordinates related state changes for the component.
+
+    Args:
+        window: Parent window or shell controller instance.
+    """
     from cortex_unified.engine import default_categories
     from cortex_unified.engine.models import FileEntry
     from cortex_unified.engine.service import CategoryScan, CleanupReport
@@ -102,7 +147,13 @@ def test_dashboard_populates_from_report(window):
 
 
 def test_dashboard_preview_expands(window):
-    """Expanding a category must lazily reveal its contents (preview)."""
+    """Expanding a category must lazily reveal its contents (preview).
+
+    Manages test dashboard preview expands operations and coordinates related state changes for the component.
+
+    Args:
+        window: Parent window or shell controller instance.
+    """
     from pathlib import Path
     from cortex_unified.engine.categories import CleanupCategory, RiskLevel
     from cortex_unified.engine.models import FileEntry
@@ -145,7 +196,13 @@ def test_dashboard_preview_expands(window):
 
 
 def test_preview_helpers(app):
-    """The drill-down grouping helpers must aggregate correctly and fast."""
+    """The drill-down grouping helpers must aggregate correctly and fast.
+
+    Manages test preview helpers operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+    """
     from cortex_unified.ui.premium.workers import aggregate_roots, children_under
     from cortex_unified.engine.models import FileEntry
 
@@ -173,7 +230,13 @@ def test_preview_helpers(app):
 
 
 def test_group_by_app(app):
-    """App caches must group by their owning app with friendly names."""
+    """App caches must group by their owning app with friendly names.
+
+    Manages test group by app operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+    """
     from cortex_unified.ui.premium.workers import group_by_app
     from cortex_unified.engine.models import FileEntry
     base = "C:\\Users\\x\\AppData\\Local"
@@ -193,7 +256,13 @@ def test_group_by_app(app):
 
 
 def test_dashboard_selection_excludes(window):
-    """Unchecking an app/folder in the preview must exclude it from cleaning."""
+    """Unchecking an app/folder in the preview must exclude it from cleaning.
+
+    Manages test dashboard selection excludes operations and coordinates related state changes for the component.
+
+    Args:
+        window: Parent window or shell controller instance.
+    """
     from pathlib import Path
     from cortex_unified.engine.categories import CleanupCategory, RiskLevel
     from cortex_unified.engine.models import FileEntry
@@ -236,7 +305,13 @@ def test_dashboard_selection_excludes(window):
 
 
 def test_circular_gauge_animates(window):
-    """test_circular_gauge_animates."""
+    """test_circular_gauge_animates.
+
+    Manages test circular gauge animates operations and coordinates related state changes for the component.
+
+    Args:
+        window: Parent window or shell controller instance.
+    """
     dash = window._pages["dashboard"]
     dash.gauge.animate_to(75.0, display="75")
     # value property is animated; end value must be within range
@@ -244,14 +319,26 @@ def test_circular_gauge_animates(window):
 
 
 def test_render_to_pixmap(window):
-    """The window must render to a non-empty pixmap (catches paint crashes)."""
+    """The window must render to a non-empty pixmap (catches paint crashes).
+
+    Manages test render to pixmap operations and coordinates related state changes for the component.
+
+    Args:
+        window: Parent window or shell controller instance.
+    """
     window.show()
     pix = window.grab()
     assert pix.width() > 0 and pix.height() > 0
 
 
 def test_responsive_resize(window):
-    """Content must adapt (and render) across small and large window sizes."""
+    """Content must adapt (and render) across small and large window sizes.
+
+    Manages test responsive resize operations and coordinates related state changes for the component.
+
+    Args:
+        window: Parent window or shell controller instance.
+    """
     window.show()
     # Small window: margins shrink, pages stay scrollable (no clip/crash).
     window.resize(840, 560)
@@ -275,7 +362,13 @@ def test_responsive_resize(window):
 
 
 def test_core_bars_widget_renders(app):
-    """The per-core CPU bar widget must accept values and paint without error."""
+    """The per-core CPU bar widget must accept values and paint without error.
+
+    Manages test core bars widget renders operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+    """
     from cortex_unified.ui.premium.theme import THEMES
     from cortex_unified.ui.premium.widgets import CoreBars
     bars = CoreBars(THEMES["dark"])
@@ -289,7 +382,13 @@ def test_core_bars_widget_renders(app):
 
 
 def test_stat_card_animate_value(app):
-    """test_stat_card_animate_value."""
+    """test_stat_card_animate_value.
+
+    Manages test stat card animate value operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+    """
     from cortex_unified.ui.premium.theme import THEMES
     from cortex_unified.ui.premium.widgets import StatCard
     card = StatCard(THEMES["dark"], "Test", "0")
@@ -300,7 +399,13 @@ def test_stat_card_animate_value(app):
 
 
 def test_shred_page_present_and_wired(window):
-    """test_shred_page_present_and_wired."""
+    """test_shred_page_present_and_wired.
+
+    Manages test shred page present and wired operations and coordinates related state changes for the component.
+
+    Args:
+        window: Parent window or shell controller instance.
+    """
     page = window._pages["shred"]
     assert hasattr(page, "shred_btn") and hasattr(page, "standard_combo")
     # No file selected yet -> shred action disabled.
@@ -308,7 +413,14 @@ def test_shred_page_present_and_wired(window):
 
 
 def test_recycle_worker_actually_removes(app, tmp_path):
-    """DeleteSelectedWorker (recycle) must remove a real file, run synchronously."""
+    """DeleteSelectedWorker (recycle) must remove a real file, run synchronously.
+
+    Manages test recycle worker actually removes operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+        tmp_path: Filesystem path to the target file or directory.
+    """
     from cortex_unified.ui.premium.workers import DeleteSelectedWorker
 
     f = tmp_path / "junk.txt"
@@ -348,7 +460,14 @@ def test_dashboard_live_scan_completes(app, window):
 
 
 def test_shred_worker_overwrites_and_removes(app, tmp_path):
-    """ShredWorker with force_flash must overwrite+delete regardless of medium."""
+    """ShredWorker with force_flash must overwrite+delete regardless of medium.
+
+    Manages test shred worker overwrites and removes operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+        tmp_path: Filesystem path to the target file or directory.
+    """
     from cortex_unified.ui.premium.workers import ShredWorker
 
     f = tmp_path / "secret.bin"
@@ -368,29 +487,47 @@ def test_shred_worker_overwrites_and_removes(app, tmp_path):
 # ---------------------------------------------------------------------------
 
 class _CoopWorker:
-    """QObject worker that honours cancel() promptly (duck-typed for run_worker)."""
+    """Coopworker.
+
+    Manages CoopWorker operations and coordinates related state changes for the component.
+    """
 
     def __new__(cls):
-        """__new__."""
+        """New.
+
+        Manages new operations and coordinates related state changes for the component.
+        """
         import threading
         from PySide6.QtCore import QObject, Signal
 
         class W(QObject):
-            """W."""
+            """W.
+
+            Manages W operations and coordinates related state changes for the component.
+            """
             finished = Signal(str)
             failed = Signal(str)
 
             def __init__(self):
-                """__init__."""
+                """Initialize the instance and configure internal state.
+
+                Sets up sub-widgets, event signal connections, and default options.
+                """
                 super().__init__()
                 self._cancel = threading.Event()
 
             def cancel(self):
-                """cancel."""
+                """cancel.
+
+                Sets the internal cancellation event to cooperatively stop worker execution at the next safe boundary.
+                """
                 self._cancel.set()
 
             def run(self):
-                """run."""
+                """run.
+
+                Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+                """
                 import time
                 for _ in range(300):
                     if self._cancel.is_set():
@@ -423,12 +560,18 @@ def test_close_with_unkillable_worker_detaches_instead_of_crashing(app, window):
     from PySide6.QtCore import QObject, Signal
 
     class StuckWorker(QObject):
-        """StuckWorker."""
+        """Stuckworker.
+
+        Manages StuckWorker operations and coordinates related state changes for the component.
+        """
         finished = Signal(str)
         failed = Signal(str)
 
         def run(self):
-            """run."""
+            """run.
+
+            Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+            """
             event = threading.Event()
             event.wait(6)   # uninterruptible-ish; outlives the shortened grace
 
@@ -460,9 +603,15 @@ def test_run_worker_refused_after_close(app, window):
     ran = []
 
     class Probe(_CoopWorker().__class__):
-        """Probe."""
+        """Probe.
+
+        Manages Probe operations and coordinates related state changes for the component.
+        """
         def run(self):
-            """run."""
+            """run.
+
+            Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+            """
             ran.append(True)
 
     window.run_worker(Probe(), lambda *a: None)
@@ -494,14 +643,26 @@ def temp_window(app, tmp_path):
 
 
 def _fake_qobject_window(app):
-    """A minimal QObject that quacks like the window for tray-action tests."""
+    """A minimal QObject that quacks like the window for tray-action tests.
+
+    Manages fake qobject window operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+    """
     from PySide6.QtCore import QObject
     from cortex_unified.ui.premium.theme import THEMES
 
     class FakeWin(QObject):
-        """FakeWin."""
+        """Fakewin.
+
+        Manages FakeWin operations and coordinates related state changes for the component.
+        """
         def __init__(self):
-            """__init__."""
+            """Initialize the instance and configure internal state.
+
+            Sets up sub-widgets, event signal connections, and default options.
+            """
             super().__init__()
             self.palette_tokens = THEMES["dark"]
             self._force_quit = False
@@ -509,38 +670,68 @@ def _fake_qobject_window(app):
             self.calls: list = []
 
         def isMinimized(self):  # noqa: N802
-            """isMinimized."""
+            """Isminimized.
+
+            Manages isMinimized operations and coordinates related state changes for the component.
+            """
             return False
 
         def show(self):
-            """show."""
+            """Show.
+
+            Manages show operations and coordinates related state changes for the component.
+            """
             self.calls.append("show")
 
         def showNormal(self):  # noqa: N802
-            """showNormal."""
+            """Shownormal.
+
+            Manages showNormal operations and coordinates related state changes for the component.
+            """
             self.calls.append("showNormal")
 
         def raise_(self):
-            """raise_."""
+            """Raise.
+
+            Manages raise operations and coordinates related state changes for the component.
+            """
             self.calls.append("raise")
 
         def activateWindow(self):  # noqa: N802
-            """activateWindow."""
+            """Activatewindow.
+
+            Manages activateWindow operations and coordinates related state changes for the component.
+            """
             self.calls.append("activate")
 
         def _select(self, pid):
-            """_select."""
+            """Select.
+
+            Manages select operations and coordinates related state changes for the component.
+
+            Args:
+                pid: The pid parameter.
+            """
             self.calls.append(("select", pid))
 
         def close(self):
-            """close."""
+            """Close.
+
+            Manages close operations and coordinates related state changes for the component.
+            """
             self.calls.append("close")
 
     return FakeWin()
 
 
 def test_settings_store_defaults_and_roundtrip(tmp_path):
-    """test_settings_store_defaults_and_roundtrip."""
+    """test_settings_store_defaults_and_roundtrip.
+
+    Manages test settings store defaults and roundtrip operations and coordinates related state changes for the component.
+
+    Args:
+        tmp_path: Filesystem path to the target file or directory.
+    """
     from cortex_unified.ui.premium.settings_store import SettingsStore
     p = tmp_path / "s.json"
     s = SettingsStore(p)
@@ -554,7 +745,13 @@ def test_settings_store_defaults_and_roundtrip(tmp_path):
 
 
 def test_settings_store_tolerates_corrupt_file(tmp_path):
-    """test_settings_store_tolerates_corrupt_file."""
+    """test_settings_store_tolerates_corrupt_file.
+
+    Manages test settings store tolerates corrupt file operations and coordinates related state changes for the component.
+
+    Args:
+        tmp_path: Filesystem path to the target file or directory.
+    """
     from cortex_unified.ui.premium.settings_store import SettingsStore
     p = tmp_path / "s.json"
     p.write_text("{ this is not valid json", encoding="utf-8")
@@ -564,7 +761,13 @@ def test_settings_store_tolerates_corrupt_file(tmp_path):
 
 
 def test_settings_store_sanitizes_bad_values(tmp_path):
-    """test_settings_store_sanitizes_bad_values."""
+    """test_settings_store_sanitizes_bad_values.
+
+    Manages test settings store sanitizes bad values operations and coordinates related state changes for the component.
+
+    Args:
+        tmp_path: Filesystem path to the target file or directory.
+    """
     import json
     from cortex_unified.ui.premium.settings_store import SettingsStore
     p = tmp_path / "s.json"
@@ -577,7 +780,13 @@ def test_settings_store_sanitizes_bad_values(tmp_path):
 
 
 def test_theme_choice_persists_across_restart(temp_window):
-    """test_theme_choice_persists_across_restart."""
+    """test_theme_choice_persists_across_restart.
+
+    Manages test theme choice persists across restart operations and coordinates related state changes for the component.
+
+    Args:
+        temp_window: The temp window parameter.
+    """
     win, store = temp_window
     win.set_theme("light")
     assert store.theme == "light"
@@ -587,7 +796,13 @@ def test_theme_choice_persists_across_restart(temp_window):
 
 
 def test_settings_page_marks_active_theme(temp_window):
-    """test_settings_page_marks_active_theme."""
+    """test_settings_page_marks_active_theme.
+
+    Manages test settings page marks active theme operations and coordinates related state changes for the component.
+
+    Args:
+        temp_window: The temp window parameter.
+    """
     win, store = temp_window
     page = win._pages["settings"]
     # Dark is active at construction, so its button carries the accent style.
@@ -600,7 +815,13 @@ def test_settings_page_marks_active_theme(temp_window):
 
 
 def test_tray_icon_renders_for_both_themes(app):
-    """test_tray_icon_renders_for_both_themes."""
+    """test_tray_icon_renders_for_both_themes.
+
+    Manages test tray icon renders for both themes operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+    """
     from cortex_unified.ui.premium.theme import THEMES
     from cortex_unified.ui.premium.tray import _render_tray_icon
     for palette in THEMES.values():
@@ -622,7 +843,14 @@ def test_tray_is_inert_when_unavailable(app, tmp_path):
 
 
 def test_tray_menu_actions_drive_window(app, tmp_path):
-    """test_tray_menu_actions_drive_window."""
+    """test_tray_menu_actions_drive_window.
+
+    Manages test tray menu actions drive window operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+        tmp_path: Filesystem path to the target file or directory.
+    """
     from cortex_unified.ui.premium.settings_store import SettingsStore
     from cortex_unified.ui.premium.tray import PremiumTray
     fw = _fake_qobject_window(app)
@@ -642,23 +870,46 @@ def test_close_to_tray_hides_instead_of_quitting(temp_window):
     win, store = temp_window
 
     class FakeTray:
-        """FakeTray."""
+        """Faketray.
+
+        Manages FakeTray operations and coordinates related state changes for the component.
+        """
         def __init__(self):
-            """__init__."""
+            """Initialize the instance and configure internal state.
+
+            Sets up sub-widgets, event signal connections, and default options.
+            """
             self.available = True
             self.msgs: list = []
             self.stopped = False
 
         def show_message(self, title, message, msecs=6000):
-            """show_message."""
+            """show_message.
+
+            Manages show message operations and coordinates related state changes for the component.
+
+            Args:
+                title: Display text string.
+                message: Informational or progress status message.
+                msecs: The msecs parameter.
+            """
             self.msgs.append((title, message))
 
         def stop(self):
-            """stop."""
+            """Stop active background operations.
+
+            Manages worker thread execution states, signaling termination flags or initializing scheduled execution timers.
+            """
             self.stopped = True
 
         def refresh_theme(self, palette):
-            """refresh_theme."""
+            """refresh_theme.
+
+            Manages refresh theme operations and coordinates related state changes for the component.
+
+            Args:
+                palette: The palette parameter.
+            """
             pass
 
     win._tray = FakeTray()
@@ -679,22 +930,45 @@ def test_close_to_tray_hides_instead_of_quitting(temp_window):
 
 
 def test_close_to_tray_only_hints_once(temp_window):
-    """test_close_to_tray_only_hints_once."""
+    """test_close_to_tray_only_hints_once.
+
+    Manages test close to tray only hints once operations and coordinates related state changes for the component.
+
+    Args:
+        temp_window: The temp window parameter.
+    """
     win, store = temp_window
 
     class FakeTray:
-        """FakeTray."""
+        """Faketray.
+
+        Manages FakeTray operations and coordinates related state changes for the component.
+        """
         def __init__(self):
-            """__init__."""
+            """Initialize the instance and configure internal state.
+
+            Sets up sub-widgets, event signal connections, and default options.
+            """
             self.available = True
             self.msgs: list = []
 
         def show_message(self, title, message, msecs=6000):
-            """show_message."""
+            """show_message.
+
+            Manages show message operations and coordinates related state changes for the component.
+
+            Args:
+                title: Display text string.
+                message: Informational or progress status message.
+                msecs: The msecs parameter.
+            """
             self.msgs.append((title, message))
 
         def stop(self):
-            """stop."""
+            """Stop active background operations.
+
+            Manages worker thread execution states, signaling termination flags or initializing scheduled execution timers.
+            """
             pass
 
     win._tray = FakeTray()
@@ -752,7 +1026,13 @@ def test_focus_visible_ring_only_for_keyboard(app):
 
 
 def test_install_focus_visible_is_idempotent(app):
-    """test_install_focus_visible_is_idempotent."""
+    """test_install_focus_visible_is_idempotent.
+
+    Manages test install focus visible is idempotent operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+    """
     from cortex_unified.ui.premium.focus import install_focus_visible
     install_focus_visible(app)
     first = getattr(app, "_cortex_focus_filter", None)
@@ -766,7 +1046,14 @@ def test_install_focus_visible_is_idempotent(app):
 # ---------------------------------------------------------------------------
 
 def _scroll_area(app, rng: int = 1000):
-    """A scroll area with a deterministic vertical range for wheel tests."""
+    """A scroll area with a deterministic vertical range for wheel tests.
+
+    Manages scroll area operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+        rng (int): The rng parameter.
+    """
     from PySide6.QtWidgets import QScrollArea, QWidget
     area = QScrollArea()
     area.setWidget(QWidget())
@@ -777,7 +1064,14 @@ def _scroll_area(app, rng: int = 1000):
 
 
 def _wheel(down: bool = True, pixel: bool = False):
-    """_wheel."""
+    """Wheel.
+
+    Manages wheel operations and coordinates related state changes for the component.
+
+    Args:
+        down (bool): The down parameter.
+        pixel (bool): The pixel parameter.
+    """
     from PySide6.QtCore import QPoint, QPointF, Qt
     from PySide6.QtGui import QWheelEvent
     angle = QPoint(0, -120 if down else 120)
@@ -788,7 +1082,13 @@ def _wheel(down: bool = True, pixel: bool = False):
 
 
 def test_smooth_scroll_glides_on_mouse_wheel(app):
-    """test_smooth_scroll_glides_on_mouse_wheel."""
+    """test_smooth_scroll_glides_on_mouse_wheel.
+
+    Manages test smooth scroll glides on mouse wheel operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+    """
     from cortex_unified.ui.premium.smoothscroll import install_smooth_scroll
     area, bar = _scroll_area(app)
     sc = install_smooth_scroll(area)
@@ -800,7 +1100,13 @@ def test_smooth_scroll_glides_on_mouse_wheel(app):
 
 
 def test_smooth_scroll_ignores_touchpad(app):
-    """test_smooth_scroll_ignores_touchpad."""
+    """test_smooth_scroll_ignores_touchpad.
+
+    Manages test smooth scroll ignores touchpad operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+    """
     from cortex_unified.ui.premium.smoothscroll import install_smooth_scroll
     area, bar = _scroll_area(app)
     sc = install_smooth_scroll(area)
@@ -809,7 +1115,13 @@ def test_smooth_scroll_ignores_touchpad(app):
 
 
 def test_smooth_scroll_hands_off_at_boundary(app):
-    """test_smooth_scroll_hands_off_at_boundary."""
+    """test_smooth_scroll_hands_off_at_boundary.
+
+    Manages test smooth scroll hands off at boundary operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+    """
     from cortex_unified.ui.premium.smoothscroll import install_smooth_scroll
     area, bar = _scroll_area(app)
     bar.setValue(0)                    # already at the top
@@ -820,7 +1132,13 @@ def test_smooth_scroll_hands_off_at_boundary(app):
 
 
 def test_smooth_scroll_respects_reduced_motion(app):
-    """test_smooth_scroll_respects_reduced_motion."""
+    """test_smooth_scroll_respects_reduced_motion.
+
+    Manages test smooth scroll respects reduced motion operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+    """
     from cortex_unified.ui.premium import motion
     from cortex_unified.ui.premium.smoothscroll import install_smooth_scroll
     area, bar = _scroll_area(app)
@@ -834,7 +1152,13 @@ def test_smooth_scroll_respects_reduced_motion(app):
 
 
 def test_install_smooth_scroll_is_idempotent(app):
-    """test_install_smooth_scroll_is_idempotent."""
+    """test_install_smooth_scroll_is_idempotent.
+
+    Manages test install smooth scroll is idempotent operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+    """
     from cortex_unified.ui.premium.smoothscroll import install_smooth_scroll
     area, bar = _scroll_area(app)
     a = install_smooth_scroll(area)
@@ -843,7 +1167,13 @@ def test_install_smooth_scroll_is_idempotent(app):
 
 
 def test_pages_have_smooth_scroll_installed(window):
-    """Every page's outer scroll area gets the premium glide."""
+    """Every page's outer scroll area gets the premium glide.
+
+    Manages test pages have smooth scroll installed operations and coordinates related state changes for the component.
+
+    Args:
+        window: Parent window or shell controller instance.
+    """
     dash = window._pages["dashboard"]
     assert getattr(dash._scroll, "_cortex_smooth_scroller", None) is not None
 
@@ -853,7 +1183,13 @@ def test_pages_have_smooth_scroll_installed(window):
 # ---------------------------------------------------------------------------
 
 def test_reveal_respects_reduced_motion(app):
-    """test_reveal_respects_reduced_motion."""
+    """test_reveal_respects_reduced_motion.
+
+    Manages test reveal respects reduced motion operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+    """
     from PySide6.QtWidgets import QWidget
     from cortex_unified.ui.premium import motion
     w = QWidget()
@@ -872,7 +1208,13 @@ def test_reveal_respects_reduced_motion(app):
 
 
 def test_settings_store_reduced_motion_roundtrip(tmp_path):
-    """test_settings_store_reduced_motion_roundtrip."""
+    """test_settings_store_reduced_motion_roundtrip.
+
+    Manages test settings store reduced motion roundtrip operations and coordinates related state changes for the component.
+
+    Args:
+        tmp_path: Filesystem path to the target file or directory.
+    """
     from cortex_unified.ui.premium.settings_store import SettingsStore
     p = tmp_path / "s.json"
     s = SettingsStore(p)
@@ -882,7 +1224,13 @@ def test_settings_store_reduced_motion_roundtrip(tmp_path):
 
 
 def test_shimmer_skeleton_start_stop(app):
-    """test_shimmer_skeleton_start_stop."""
+    """test_shimmer_skeleton_start_stop.
+
+    Manages test shimmer skeleton start stop operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+    """
     from cortex_unified.ui.premium import motion
     from cortex_unified.ui.premium.skeleton import ShimmerSkeleton
     from cortex_unified.ui.premium.theme import THEMES
@@ -900,7 +1248,13 @@ def test_shimmer_skeleton_start_stop(app):
 
 
 def test_settings_page_reduced_motion_toggle(temp_window):
-    """test_settings_page_reduced_motion_toggle."""
+    """test_settings_page_reduced_motion_toggle.
+
+    Manages test settings page reduced motion toggle operations and coordinates related state changes for the component.
+
+    Args:
+        temp_window: The temp window parameter.
+    """
     from cortex_unified.ui.premium import motion
     win, store = temp_window
     page = win._pages["settings"]
@@ -914,7 +1268,13 @@ def test_settings_page_reduced_motion_toggle(temp_window):
 
 
 def test_health_page_has_shimmer_skeleton(window):
-    """test_health_page_has_shimmer_skeleton."""
+    """test_health_page_has_shimmer_skeleton.
+
+    Manages test health page has shimmer skeleton operations and coordinates related state changes for the component.
+
+    Args:
+        window: Parent window or shell controller instance.
+    """
     from cortex_unified.ui.premium.skeleton import ShimmerSkeleton
     hp = window._pages["health"]
     assert isinstance(getattr(hp, "skeleton", None), ShimmerSkeleton)
@@ -925,7 +1285,13 @@ def test_health_page_has_shimmer_skeleton(window):
 # ---------------------------------------------------------------------------
 
 def test_press_feedback_sinks_and_restores(app):
-    """test_press_feedback_sinks_and_restores."""
+    """test_press_feedback_sinks_and_restores.
+
+    Manages test press feedback sinks and restores operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+    """
     from PySide6.QtCore import QPoint
     from PySide6.QtWidgets import QPushButton
     from cortex_unified.ui.premium import motion
@@ -940,7 +1306,13 @@ def test_press_feedback_sinks_and_restores(app):
 
 
 def test_press_feedback_respects_reduced_motion(app):
-    """test_press_feedback_respects_reduced_motion."""
+    """test_press_feedback_respects_reduced_motion.
+
+    Manages test press feedback respects reduced motion operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+    """
     from PySide6.QtWidgets import QPushButton
     from cortex_unified.ui.premium import motion
     b = QPushButton("x")
@@ -954,7 +1326,13 @@ def test_press_feedback_respects_reduced_motion(app):
 
 
 def test_bento_tile_hover_in_stylesheet(app):
-    """test_bento_tile_hover_in_stylesheet."""
+    """test_bento_tile_hover_in_stylesheet.
+
+    Manages test bento tile hover in stylesheet operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+    """
     from cortex_unified.ui.premium.theme import THEMES, build_stylesheet
     for palette in THEMES.values():
         qss = build_stylesheet(palette)
@@ -963,7 +1341,13 @@ def test_bento_tile_hover_in_stylesheet(app):
 
 
 def test_dashboard_uses_bento_tiles(window):
-    """test_dashboard_uses_bento_tiles."""
+    """test_dashboard_uses_bento_tiles.
+
+    Manages test dashboard uses bento tiles operations and coordinates related state changes for the component.
+
+    Args:
+        window: Parent window or shell controller instance.
+    """
     dash = window._pages["dashboard"]
     for attr in ("card_space", "card_files", "card_cats"):
         tile = getattr(dash, attr)
@@ -1018,7 +1402,13 @@ def test_health_check_columns_size_to_content(window):
 # ---------------------------------------------------------------------------
 
 def test_uninstaller_page_has_leftover_section(window):
-    """test_uninstaller_page_has_leftover_section."""
+    """test_uninstaller_page_has_leftover_section.
+
+    Manages test uninstaller page has leftover section operations and coordinates related state changes for the component.
+
+    Args:
+        window: Parent window or shell controller instance.
+    """
     lp = window._pages["leftovers"]
     for attr in ("leftover_scan_btn", "orphan_scan_btn", "clean_leftover_btn",
                  "leftover_tbl", "leftover_state"):
@@ -1028,7 +1418,13 @@ def test_uninstaller_page_has_leftover_section(window):
 
 
 def test_leftover_findings_populate_table_and_status(window):
-    """test_leftover_findings_populate_table_and_status."""
+    """test_leftover_findings_populate_table_and_status.
+
+    Manages test leftover findings populate table and status operations and coordinates related state changes for the component.
+
+    Args:
+        window: Parent window or shell controller instance.
+    """
     lp = window._pages["leftovers"]
     findings = [
         {"kind": "folder", "path": r"C:\x\AppData\Local\Zeta",
@@ -1044,7 +1440,13 @@ def test_leftover_findings_populate_table_and_status(window):
 
 
 def test_leftover_clean_button_needs_selection(window):
-    """test_leftover_clean_button_needs_selection."""
+    """test_leftover_clean_button_needs_selection.
+
+    Manages test leftover clean button needs selection operations and coordinates related state changes for the component.
+
+    Args:
+        window: Parent window or shell controller instance.
+    """
     lp = window._pages["leftovers"]
     lp._on_leftovers([
         {"kind": "folder", "path": r"C:\x\Zeta", "size_bytes": 1,
@@ -1056,7 +1458,14 @@ def test_leftover_clean_button_needs_selection(window):
 
 
 def test_leftover_scan_without_pending_shows_hint(window, monkeypatch):
-    """Clicking Scan with no recorded uninstall must hint, never crash."""
+    """Clicking Scan with no recorded uninstall must hint, never crash.
+
+    Manages test leftover scan without pending shows hint operations and coordinates related state changes for the component.
+
+    Args:
+        window: Parent window or shell controller instance.
+        monkeypatch: The monkeypatch parameter.
+    """
     from PySide6.QtWidgets import QMessageBox
     lp = window._pages["leftovers"]
     shown = []
@@ -1068,19 +1477,41 @@ def test_leftover_scan_without_pending_shows_hint(window, monkeypatch):
 
 
 def test_leftover_clean_worker_recycles_and_reports(tmp_path, monkeypatch):
-    """LeftoverCleanWorker routes findings through LeftoverCleaner."""
+    """LeftoverCleanWorker routes findings through LeftoverCleaner.
+
+    Manages test leftover clean worker recycles and reports operations and coordinates related state changes for the component.
+
+    Args:
+        tmp_path: Filesystem path to the target file or directory.
+        monkeypatch: The monkeypatch parameter.
+    """
     import cortex_unified.ui.premium.system_pages as sp
     calls = {}
 
     class FakeCleaner:
-        """FakeCleaner."""
+        """Fakecleaner.
+
+        Manages FakeCleaner operations and coordinates related state changes for the component.
+        """
         def __init__(self):
-            """__init__."""
+            """Initialize the instance and configure internal state.
+
+            Sets up sub-widgets, event signal connections, and default options.
+            """
             pass
 
         def clean(self, models, create_restore_point=False,
                   exclusions=None, cancel_event=None):
-            """clean."""
+            """clean.
+
+            Permanently purges or removes specified target items, reclaiming storage space and logging actions taken.
+
+            Args:
+                models: The models parameter.
+                create_restore_point: The create restore point parameter.
+                exclusions: Error message string or exception instance.
+                cancel_event: Threading event or callable to check for cancellation.
+            """
             assert create_restore_point is False
             assert exclusions is None
             calls["paths"] = [m.path for m in models]
@@ -1103,19 +1534,41 @@ def test_leftover_clean_worker_recycles_and_reports(tmp_path, monkeypatch):
 
 def test_leftover_clean_worker_requests_restore_point_when_asked(
         tmp_path, monkeypatch):
-    """The checkbox's choice reaches the cleaner as create_restore_point."""
+    """The checkbox's choice reaches the cleaner as create_restore_point.
+
+    Manages test leftover clean worker requests restore point when asked operations and coordinates related state changes for the component.
+
+    Args:
+        tmp_path: Filesystem path to the target file or directory.
+        monkeypatch: The monkeypatch parameter.
+    """
     import cortex_unified.ui.premium.system_pages as sp
     seen = {}
 
     class FakeCleaner:
-        """FakeCleaner."""
+        """Fakecleaner.
+
+        Manages FakeCleaner operations and coordinates related state changes for the component.
+        """
         def __init__(self):
-            """__init__."""
+            """Initialize the instance and configure internal state.
+
+            Sets up sub-widgets, event signal connections, and default options.
+            """
             pass
 
         def clean(self, models, create_restore_point=False,
                   exclusions=None, cancel_event=None):
-            """clean."""
+            """clean.
+
+            Permanently purges or removes specified target items, reclaiming storage space and logging actions taken.
+
+            Args:
+                models: The models parameter.
+                create_restore_point: The create restore point parameter.
+                exclusions: Error message string or exception instance.
+                cancel_event: Threading event or callable to check for cancellation.
+            """
             seen["restore"] = create_restore_point
             from cortex_unified.system_tools.leftover_cleaner import CleanOutcome
             return [CleanOutcome(models[0].path, models[0].kind, True,
@@ -1135,20 +1588,44 @@ def test_leftover_clean_worker_requests_restore_point_when_asked(
 
 
 def test_leftover_scan_worker_emits_sorted_findings(monkeypatch):
-    """Findings come back as plain dicts sorted by score descending."""
+    """Findings come back as plain dicts sorted by score descending.
+
+    Manages test leftover scan worker emits sorted findings operations and coordinates related state changes for the component.
+
+    Args:
+        monkeypatch: The monkeypatch parameter.
+    """
     import cortex_unified.ui.premium.system_pages as sp
     from cortex_unified.system_tools import leftover_cleaner as lc
 
     class FakeScanner:
-        """FakeScanner."""
+        """Fakescanner.
+
+        Manages FakeScanner operations and coordinates related state changes for the component.
+        """
         def __init__(self, installed_apps=None, exclusions=None,
                      cancel_event=None, policy=None):
-            """__init__."""
+            """__init__.
+
+            Initializes the instance and configures internal state.
+
+            Args:
+                installed_apps: The installed apps parameter.
+                exclusions: Error message string or exception instance.
+                cancel_event: Threading event or callable to check for cancellation.
+                policy: The policy parameter.
+            """
             assert installed_apps == []
             self._calls = 0
 
         def scan_app(self, app):
-            """scan_app."""
+            """scan_app.
+
+            Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+            Args:
+                app: The app parameter.
+            """
             assert app.name == "ZetaEditor"
             return [
                 lc.LeftoverFinding(kind="folder", path=r"C:\low",
@@ -1170,7 +1647,10 @@ def test_leftover_scan_worker_emits_sorted_findings(monkeypatch):
 
 
 def test_leftover_workers_support_cooperative_cancel():
-    """cancel() must exist on all three workers (window shutdown calls it)."""
+    """cancel() must exist on all three workers (window shutdown calls it).
+
+    Manages test leftover workers support cooperative cancel operations and coordinates related state changes for the component.
+    """
     from cortex_unified.ui.premium.system_pages import (
         LeftoverScanWorker,
         OrphanScanWorker,
@@ -1219,7 +1699,14 @@ def test_uninstall_hands_off_metadata_to_leftover_page(window, monkeypatch):
     seen_apps: list = []
 
     def fake_worker_init(self, apps, exclusions=None):
-        """fake_worker_init."""
+        """fake_worker_init.
+
+        Manages fake worker init operations and coordinates related state changes for the component.
+
+        Args:
+            apps: The apps parameter.
+            exclusions: Error message string or exception instance.
+        """
         from PySide6.QtCore import QObject
         QObject.__init__(self)                 # initialise the Qt shell first
         self._apps = list(apps)
@@ -1228,7 +1715,10 @@ def test_uninstall_hands_off_metadata_to_leftover_page(window, monkeypatch):
         self._cancel = Event()
 
     def fake_worker_run(self):
-        """fake_worker_run."""
+        """fake_worker_run.
+
+        Manages fake worker run operations and coordinates related state changes for the component.
+        """
         self.finished.emit([{"kind": "folder", "path": r"C:\x\Zeta",
                              "size_bytes": 1, "score": 8,
                              "level": "VeryGood", "reasons": []}]

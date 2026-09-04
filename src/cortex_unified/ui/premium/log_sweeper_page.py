@@ -34,13 +34,23 @@ IS_WINDOWS = sys.platform == "win32"
 
 
 class _LogWorker(QObject):
-    """_LogWorker class."""
+    """Logworker.
+
+    Manages LogWorker operations and coordinates related state changes for the component.
+    """
     finished = Signal(list)
     progress = Signal(str)
     failed = Signal(str)
 
     def __init__(self, roots, min_mb=100.0):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            roots: The roots parameter.
+            min_mb: The min mb parameter.
+        """
         super().__init__()
         self._roots = roots
         self._min = min_mb
@@ -49,11 +59,17 @@ class _LogWorker(QObject):
         self._cancel = threading.Event()
 
     def cancel(self):
-        """cancel."""
+        """cancel.
+
+        Sets the internal cancellation event to cooperatively stop worker execution at the next safe boundary.
+        """
         self._cancel.set()
 
     def run(self):
-        """run."""
+        """run.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         try:
             from cortex_unified.analyzers.cache_cleaner import CacheCleaner
 
@@ -71,10 +87,19 @@ class _LogWorker(QObject):
 
 
 class LogSweeperPage(_Page):
-    """Find large logs outside the default cache roots."""
+    """Logsweeperpage.
+
+    Manages LogSweeperPage operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, win):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win: Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(
             title_block(
@@ -174,7 +199,10 @@ class LogSweeperPage(_Page):
         self._results: list[tuple[Path, int]] = []
 
     def _add_root(self):
-        """_add_root."""
+        """_add_root.
+
+        Manages add root operations and coordinates related state changes for the component.
+        """
         folder = QFileDialog.getExistingDirectory(
             self, "Select folder to sweep for logs", str(Path.home())
         )
@@ -184,7 +212,13 @@ class LogSweeperPage(_Page):
             self.roots_list.addItem(folder)
 
     def _discover_code_roots(self) -> list[Path]:
-        """Discover common code root directories across all fixed drives."""
+        """Discover common code root directories across all fixed drives.
+
+        Manages discover code roots operations and coordinates related state changes for the component.
+
+        Returns:
+            list[Path]: List of processed items or identifiers.
+        """
         import string
 
         roots: list[Path] = []
@@ -212,7 +246,10 @@ class LogSweeperPage(_Page):
         return roots
 
     def _select_code_root(self):
-        """Open folder picker to select a code root directory."""
+        """Open folder picker to select a code root directory.
+
+        Manages select code root operations and coordinates related state changes for the component.
+        """
         folder = QFileDialog.getExistingDirectory(
             self, "Select code root", str(Path.home())
         )
@@ -223,13 +260,19 @@ class LogSweeperPage(_Page):
             self.status.setText(f"Added {folder} — sweep will include it.")
 
     def _rm_root(self):
-        """_rm_root."""
+        """_rm_root.
+
+        Manages rm root operations and coordinates related state changes for the component.
+        """
         row = self.roots_list.currentRow()
         if row >= 0:
             self.roots_list.takeItem(row)
 
     def _scan(self):
-        """_scan."""
+        """_scan.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+        """
         roots = [self.roots_list.item(i).text() for i in range(self.roots_list.count())]
         if not roots:
             QMessageBox.information(
@@ -245,11 +288,23 @@ class LogSweeperPage(_Page):
         self.win.run_worker(w, self._on_done, self._fail, on_progress=self._on_progress)
 
     def _on_progress(self, msg: str):
-        """_on_progress."""
+        """_on_progress.
+
+        Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
+
+        Args:
+            msg (str): Informational or progress status message.
+        """
         self.status.setText(msg)
 
     def _on_done(self, results: list):
-        """_on_done."""
+        """_on_done.
+
+        Receives the completed data from the  background worker, populates the view with results, and restores button states.
+
+        Args:
+            results (list): Dictionary or data object holding operation results.
+        """
         self._worker = None
         self.progress.setVisible(False)
         self.scan_btn.setEnabled(True)
@@ -277,7 +332,10 @@ class LogSweeperPage(_Page):
         )
 
     def _delete(self):
-        """_delete."""
+        """Delete.
+
+        Manages delete operations and coordinates related state changes for the component.
+        """
         rows = {idx.row() for idx in self.tbl.selectedIndexes()}
         if not rows:
             QMessageBox.information(
@@ -307,7 +365,15 @@ class LogSweeperPage(_Page):
         )
 
     def _on_deleted(self, freed: int, ok: int, blocked: int):
-        """_on_deleted."""
+        """_on_deleted.
+
+        Manages on deleted operations and coordinates related state changes for the component.
+
+        Args:
+            freed (int): The freed parameter.
+            ok (int): The ok parameter.
+            blocked (int): The blocked parameter.
+        """
         self.progress.setVisible(False)
         QMessageBox.information(
             self,
@@ -318,7 +384,13 @@ class LogSweeperPage(_Page):
         self._scan()
 
     def _fail(self, msg: str):
-        """_fail."""
+        """Handle an operation failure and notify the user.
+
+        Captures error details, displays an informative failure state in the UI, resets progress indicators, and re-enables interactive controls.
+
+        Args:
+            msg (str): Informational or progress status message.
+        """
         self._worker = None
         self.progress.setVisible(False)
         self.scan_btn.setEnabled(True)

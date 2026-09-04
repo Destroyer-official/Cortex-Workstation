@@ -14,9 +14,15 @@ import pytest
 
 
 class TestParseVersion:
-    """TestParseVersion."""
+    """Testparseversion.
+
+    Manages TestParseVersion operations and coordinates related state changes for the component.
+    """
     def test_plain_and_v_prefixed(self):
-        """test_plain_and_v_prefixed."""
+        """test_plain_and_v_prefixed.
+
+        Manages test plain and v prefixed operations and coordinates related state changes for the component.
+        """
         from cortex_unified.system_tools.update_checker import parse_version
         assert parse_version("1.2.3") == (1, 2, 3)
         assert parse_version("v1.2.3") == (1, 2, 3)
@@ -25,21 +31,43 @@ class TestParseVersion:
     @pytest.mark.parametrize("bad", ["", "abc", "1.2", "v1.2.3.4",
                                      "release-42"])
     def test_unparseable_tags_return_none(self, bad):
-        """test_unparseable_tags_return_none."""
+        """test_unparseable_tags_return_none.
+
+        Manages test unparseable tags return none operations and coordinates related state changes for the component.
+
+        Args:
+            bad: The bad parameter.
+        """
         from cortex_unified.system_tools.update_checker import parse_version
         assert parse_version(bad) is None
 
 
 class TestCheckForUpdate:
-    """TestCheckForUpdate."""
+    """Testcheckforupdate.
+
+    Manages TestCheckForUpdate operations and coordinates related state changes for the component.
+    """
     def _patch_fetch(self, monkeypatch, tag):
-        """_patch_fetch."""
+        """_patch_fetch.
+
+        Manages patch fetch operations and coordinates related state changes for the component.
+
+        Args:
+            monkeypatch: The monkeypatch parameter.
+            tag: The tag parameter.
+        """
         from cortex_unified.system_tools import update_checker as uc
         monkeypatch.setattr(uc, "fetch_latest_tag",
                             lambda *a, **k: tag)
 
     def test_update_available_when_latest_is_newer(self, monkeypatch):
-        """test_update_available_when_latest_is_newer."""
+        """test_update_available_when_latest_is_newer.
+
+        Manages test update available when latest is newer operations and coordinates related state changes for the component.
+
+        Args:
+            monkeypatch: The monkeypatch parameter.
+        """
         from cortex_unified.system_tools.update_checker import check_for_update
         self._patch_fetch(monkeypatch, "v9.9.9")
         result = check_for_update(installed="1.0.0")
@@ -48,7 +76,13 @@ class TestCheckForUpdate:
         assert result["installed"] == "1.0.0"
 
     def test_up_to_date_when_equal_or_older(self, monkeypatch):
-        """test_up_to_date_when_equal_or_older."""
+        """test_up_to_date_when_equal_or_older.
+
+        Manages test up to date when equal or older operations and coordinates related state changes for the component.
+
+        Args:
+            monkeypatch: The monkeypatch parameter.
+        """
         from cortex_unified.system_tools.update_checker import check_for_update
         self._patch_fetch(monkeypatch, "v1.0.0")
         assert check_for_update(installed="1.0.0")["status"] == "up_to_date"
@@ -56,23 +90,45 @@ class TestCheckForUpdate:
         assert check_for_update(installed="1.0.0")["status"] == "up_to_date"
 
     def test_offline_reports_unknown_never_raises(self, monkeypatch):
-        """test_offline_reports_unknown_never_raises."""
+        """test_offline_reports_unknown_never_raises.
+
+        Manages test offline reports unknown never raises operations and coordinates related state changes for the component.
+
+        Args:
+            monkeypatch: The monkeypatch parameter.
+        """
         from cortex_unified.system_tools.update_checker import check_for_update
         self._patch_fetch(monkeypatch, None)
         result = check_for_update(installed="1.0.0")
         assert result["status"] == "unknown"
 
     def test_unparseable_remote_tag_is_unknown(self, monkeypatch):
-        """test_unparseable_remote_tag_is_unknown."""
+        """test_unparseable_remote_tag_is_unknown.
+
+        Manages test unparseable remote tag is unknown operations and coordinates related state changes for the component.
+
+        Args:
+            monkeypatch: The monkeypatch parameter.
+        """
         from cortex_unified.system_tools.update_checker import check_for_update
         self._patch_fetch(monkeypatch, "not-a-version")
         assert check_for_update(installed="1.0.0")["status"] == "unknown"
 
 
 class TestCrashReport:
-    """TestCrashReport."""
+    """Testcrashreport.
+
+    Manages TestCrashReport operations and coordinates related state changes for the component.
+    """
     def test_excepthook_writes_crash_file(self, tmp_path, monkeypatch):
-        """The excepthook persists a redact-flagged crash report file."""
+        """The excepthook persists a redact-flagged crash report file.
+
+        Manages test excepthook writes crash file operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+            monkeypatch: The monkeypatch parameter.
+        """
         import cortex_unified.ui.premium.app as app_mod
 
         monkeypatch.setattr(app_mod, "log_dir", lambda: tmp_path / "logs")

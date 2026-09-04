@@ -9,6 +9,8 @@ __pycache__/
 build/
 dist/
 site/
+target/
+**/target/
 *.egg-info/
 *.egg
 wheels/
@@ -16,6 +18,7 @@ CortexCleaner.spec.bak
 
 # --- Test / coverage ---
 .pytest_cache/
+.pytest_cache*/
 .coverage
 .coverage.*
 htmlcov/

@@ -32,7 +32,10 @@ if not HAS_KEYRING:
 
 @dataclass
 class DriveInfo:
-    """Data structure for drive information."""
+    """Driveinfo.
+
+    Manages DriveInfo operations and coordinates related state changes for the component.
+    """
     path: str
     label: str
     filesystem: str
@@ -44,19 +47,34 @@ class DriveInfo:
     
     @property
     def used_size(self) -> int:
-        """Bytes in use: total minus free."""
+        """Bytes in use: total minus free.
+
+        Manages used size operations and coordinates related state changes for the component.
+
+        Returns:
+            int: Result of the operation.
+        """
         return self.total_size - self.free_size
     
     @property
     def usage_percent(self) -> float:
-        """Used share of capacity; 0.0 when total size is zero."""
+        """Used share of capacity; 0.0 when total size is zero.
+
+        Manages usage percent operations and coordinates related state changes for the component.
+
+        Returns:
+            float: Result of the operation.
+        """
         if self.total_size == 0:
             return 0.0
         return (self.used_size / self.total_size) * 100
 
 @dataclass
 class NetworkDrive:
-    """Connection and authentication state for a network share."""
+    """Networkdrive.
+
+    Manages NetworkDrive operations and coordinates related state changes for the component.
+    """
     path: str
     server: str
     share: str
@@ -67,7 +85,10 @@ class NetworkDrive:
 
 @dataclass
 class UserProfile:
-    """One detectable OS user profile plus access metadata."""
+    """Userprofile.
+
+    Manages UserProfile operations and coordinates related state changes for the component.
+    """
     username: str
     profile_path: str
     is_active: bool
@@ -79,7 +100,10 @@ class UserProfile:
 
 @dataclass
 class ScanProgress:
-    """Counters describing progress through a multi-location scan."""
+    """Counters describing progress through a multi-location scan.
+
+    Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
+    """
     total_locations: int
     completed_locations: int
     current_location: str
@@ -89,26 +113,28 @@ class ScanProgress:
     errors: List[str] = None
     
     def __post_init__(self):
-        """__post_init__."""
+        """__post_init__.
+
+        Manages post init operations and coordinates related state changes for the component.
+        """
         if self.errors is None:
             self.errors = []
-        """__post_init__."""
-        """__post_init__."""
     
     @property
     def overall_progress(self) -> float:
-        """overall_progress."""
+        """((completed/total)*100) + (current_progress/total) (note: current_progress 0-100 divided by total)."""
         if self.total_locations == 0:
             return 0.0
         base_progress = (self.completed_locations / self.total_locations) * 100
         current_contribution = (self.current_progress / self.total_locations)
         return min(100.0, base_progress + current_contribution)
-        """overall_progress."""
-        """overall_progress."""
 
 @dataclass
 class AggregatedResult:
-    """Totals and summary statistics merged across all scanned locations."""
+    """Aggregatedresult.
+
+    Manages AggregatedResult operations and coordinates related state changes for the component.
+    """
     total_empty_files: int
     total_empty_dirs: int
     total_size_freed: int
@@ -168,7 +194,13 @@ class MultiUserScanner:
         return profiles
     
     def _detect_windows_user_profiles_enhanced(self) -> List[UserProfile]:
-        """Enumerate C:/Users subdirectories, skipping built-in accounts."""
+        """Enumerate C:/Users subdirectories, skipping built-in accounts.
+
+        Manages detect windows user profiles enhanced operations and coordinates related state changes for the component.
+
+        Returns:
+            List[UserProfile]: List of processed items or identifiers.
+        """
         profiles = []
         
         try:
@@ -211,7 +243,13 @@ class MultiUserScanner:
         return profiles
     
     def _detect_unix_user_profiles_enhanced(self) -> List[UserProfile]:
-        """Enumerate /home entries plus /root when accessible."""
+        """Enumerate /home entries plus /root when accessible.
+
+        Manages detect unix user profiles enhanced operations and coordinates related state changes for the component.
+
+        Returns:
+            List[UserProfile]: List of processed items or identifiers.
+        """
         profiles = []
         
         try:
@@ -263,7 +301,16 @@ class MultiUserScanner:
         return profiles
     
     def _check_path_permissions(self, path: Path) -> Dict[str, bool]:
-        """Probe read/write/execute access for the current process via os.access."""
+        """Probe read/write/execute access for the current process via os.access.
+
+        Manages check path permissions operations and coordinates related state changes for the component.
+
+        Args:
+            path (Path): Filesystem path to the target file or directory.
+
+        Returns:
+            Dict[str, bool]: Dictionary mapping identifiers to status or values.
+        """
         permissions = {"read": False, "write": False, "execute": False}
         
         try:
@@ -276,7 +323,16 @@ class MultiUserScanner:
         return permissions
     
     def _get_windows_last_login(self, username: str) -> Optional[datetime]:
-        """Best-effort last logon time via the net user command; None when unavailable."""
+        """Best-effort last logon time via the net user command; None when unavailable.
+
+        Manages get windows last login operations and coordinates related state changes for the component.
+
+        Args:
+            username (str): The username parameter.
+
+        Returns:
+            Optional[datetime]: Result of the operation.
+        """
         try:
             if platform.system().lower() == "windows":
                 import subprocess
@@ -311,7 +367,16 @@ class MultiUserScanner:
         return None
     
     def _get_unix_last_login(self, username: str) -> Optional[datetime]:
-        """Get last login time for Unix user."""
+        """Get last login time for Unix user.
+
+        Manages get unix last login operations and coordinates related state changes for the component.
+
+        Args:
+            username (str): The username parameter.
+
+        Returns:
+            Optional[datetime]: Result of the operation.
+        """
         try:
             import subprocess
             result = subprocess.run(
@@ -336,7 +401,16 @@ class MultiUserScanner:
         return None
     
     def _is_user_active_windows(self, username: str) -> bool:
-        """True when the profile is logged in (its registry hive is loaded)."""
+        """True when the profile is logged in (its registry hive is loaded).
+
+        Manages is user active windows operations and coordinates related state changes for the component.
+
+        Args:
+            username (str): The username parameter.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         try:
             import subprocess
             result = subprocess.run(
@@ -350,7 +424,16 @@ class MultiUserScanner:
             return False
     
     def _is_user_active_unix(self, username: str) -> bool:
-        """True if the username appears in who output."""
+        """True if the username appears in who output.
+
+        Manages is user active unix operations and coordinates related state changes for the component.
+
+        Args:
+            username (str): The username parameter.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         try:
             import subprocess
             result = subprocess.run(
@@ -364,7 +447,17 @@ class MultiUserScanner:
             return False
     
     def scan_user_profile(self, profile: UserProfile, scanner_factory: Optional[Callable] = None) -> Dict[str, Any]:
-        """Walk one user profile; permission gaps degrade to partial results."""
+        """Walk one user profile; permission gaps degrade to partial results.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+        Args:
+            profile (UserProfile): The profile parameter.
+            scanner_factory (Optional[Callable]): The scanner factory parameter.
+
+        Returns:
+            Dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         if not profile.is_accessible:
             return {
                 "error": "Access denied",
@@ -438,7 +531,13 @@ class MultiUserScanner:
         return result
     
     def _can_elevate(self) -> bool:
-        """True when a UAC elevation prompt can succeed for this session."""
+        """True when a UAC elevation prompt can succeed for this session.
+
+        Manages can elevate operations and coordinates related state changes for the component.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         try:
             if platform.system().lower() == "windows":
                 import ctypes
@@ -449,7 +548,16 @@ class MultiUserScanner:
             return False
     
     def aggregate_results(self, results: Dict[str, Dict[str, Any]]) -> AggregatedResult:
-        """Aggregate results with cross-location analysis."""
+        """Aggregate results with cross-location analysis.
+
+        Manages aggregate results operations and coordinates related state changes for the component.
+
+        Args:
+            results (Dict[str, Dict[str, Any]]): Collection or dictionary holding operation results.
+
+        Returns:
+            AggregatedResult: Result of the operation.
+        """
         total_empty_files = 0
         total_empty_dirs = 0
         total_size_freed = 0
@@ -488,10 +596,19 @@ class MultiUserScanner:
         )
 
 class DriveManager:
-    """Enhanced drive management with monitoring and network drive support."""
+    """Drivemanager.
+
+    Manages DriveManager operations and coordinates related state changes for the component.
+    """
     
     def __init__(self, config: Any = None):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            config (Any): The config parameter.
+        """
         self.config = config
         self._drive_cache: Dict[str, DriveInfo] = {}
         self._network_credentials: Dict[str, Dict[str, str]] = {}
@@ -499,11 +616,15 @@ class DriveManager:
         self._monitor_thread: Optional[threading.Thread] = None
         self._change_callbacks: List[Callable] = []
         self._disconnected_drives: Set[str] = set()
-        """__init__."""
-        """__init__."""
     
     def detect_all_drives(self) -> List[DriveInfo]:
-        """Detect all available drives including network and removable drives."""
+        """Detect all available drives including network and removable drives.
+
+        Manages detect all drives operations and coordinates related state changes for the component.
+
+        Returns:
+            List[DriveInfo]: List of processed items or identifiers.
+        """
         drives = []
         
         try:
@@ -541,7 +662,16 @@ class DriveManager:
         return drives
     
     def _create_drive_info(self, partition) -> DriveInfo:
-        """Create DriveInfo object from partition information."""
+        """Create DriveInfo object from partition information.
+
+        Manages create drive info operations and coordinates related state changes for the component.
+
+        Args:
+            partition: The partition parameter.
+
+        Returns:
+            DriveInfo: Result of the operation.
+        """
         try:
             usage = psutil.disk_usage(partition.mountpoint)
             
@@ -575,7 +705,16 @@ class DriveManager:
             )
     
     def _get_drive_type(self, partition) -> str:
-        """Determine the type of drive."""
+        """Determine the type of drive.
+
+        Manages get drive type operations and coordinates related state changes for the component.
+
+        Args:
+            partition: The partition parameter.
+
+        Returns:
+            str: Formatted string or path.
+        """
         opts = getattr(partition, 'opts', '').lower()
         fstype = getattr(partition, 'fstype', '').lower()
         device = getattr(partition, 'device', '').lower()
@@ -603,7 +742,16 @@ class DriveManager:
         return 'fixed'
     
     def _get_drive_label(self, path: str) -> str:
-        """_get_drive_label."""
+        """_get_drive_label.
+
+        Manages get drive label operations and coordinates related state changes for the component.
+
+        Args:
+            path (str): Filesystem path to the target file or directory.
+
+        Returns:
+            str: Formatted string or path.
+        """
         try:
             if platform.system().lower() == "windows":
                 import ctypes
@@ -629,11 +777,15 @@ class DriveManager:
             pass
         
         return ""
-        """_get_drive_label."""
-        """_get_drive_label."""
     
     def _fallback_drive_detection(self) -> List[DriveInfo]:
-        """_fallback_drive_detection."""
+        """_fallback_drive_detection.
+
+        Manages fallback drive detection operations and coordinates related state changes for the component.
+
+        Returns:
+            List[DriveInfo]: List of processed items or identifiers.
+        """
         drives = []
         system = platform.system().lower()
         
@@ -646,11 +798,15 @@ class DriveManager:
             logger.error(f"Fallback drive detection failed: {e}")
         
         return drives
-        """_fallback_drive_detection."""
-        """_fallback_drive_detection."""
     
     def _detect_windows_drives(self) -> List[DriveInfo]:
-        """Drive discovery via PowerShell when psutil returns nothing."""
+        """Drive discovery via PowerShell when psutil returns nothing.
+
+        Manages detect windows drives operations and coordinates related state changes for the component.
+
+        Returns:
+            List[DriveInfo]: List of processed items or identifiers.
+        """
         drives = []
         
         try:
@@ -694,7 +850,13 @@ class DriveManager:
         return drives
     
     def _detect_unix_drives(self) -> List[DriveInfo]:
-        """Drive discovery via /proc/mounts when psutil returns nothing."""
+        """Drive discovery via /proc/mounts when psutil returns nothing.
+
+        Manages detect unix drives operations and coordinates related state changes for the component.
+
+        Returns:
+            List[DriveInfo]: List of processed items or identifiers.
+        """
         drives = []
         
         # Common mount points to check
@@ -721,7 +883,16 @@ class DriveManager:
         return drives
     
     def handle_network_drives(self, credentials: Dict[str, str] = None) -> List[NetworkDrive]:
-        """Detect shares, prompt-free auth via stored credentials, reconnect as needed."""
+        """Detect shares, prompt-free auth via stored credentials, reconnect as needed.
+
+        Manages handle network drives operations and coordinates related state changes for the component.
+
+        Args:
+            credentials (Dict[str, str]): The credentials parameter.
+
+        Returns:
+            List[NetworkDrive]: List of processed items or identifiers.
+        """
         network_drives = []
         
         if credentials:
@@ -744,7 +915,16 @@ class DriveManager:
         return network_drives
     
     def _process_network_drive(self, partition) -> NetworkDrive:
-        """Process a single network drive partition."""
+        """Process a single network drive partition.
+
+        Manages process network drive operations and coordinates related state changes for the component.
+
+        Args:
+            partition: The partition parameter.
+
+        Returns:
+            NetworkDrive: Result of the operation.
+        """
         server, share = self._parse_network_path(partition.device)
         
         is_connected = os.path.exists(partition.mountpoint)
@@ -771,7 +951,13 @@ class DriveManager:
         return network_drive
     
     def _store_credentials(self, credentials: Dict[str, str]) -> None:
-        """Securely store network drive credentials."""
+        """Securely store network drive credentials.
+
+        Manages store credentials operations and coordinates related state changes for the component.
+
+        Args:
+            credentials (Dict[str, str]): The credentials parameter.
+        """
         for server, cred_info in credentials.items():
             try:
                 if isinstance(cred_info, dict):
@@ -802,7 +988,16 @@ class DriveManager:
                 logger.error(f"Error storing credentials for {server}: {e}")
     
     def _get_stored_credentials(self, server: str) -> Optional[Dict[str, str]]:
-        """Retrieve stored credentials for a server."""
+        """Retrieve stored credentials for a server.
+
+        Manages get stored credentials operations and coordinates related state changes for the component.
+
+        Args:
+            server (str): The server parameter.
+
+        Returns:
+            Optional[Dict[str, str]]: Dictionary mapping identifiers to status or values.
+        """
         # First check memory cache
         if server in self._network_credentials:
             return self._network_credentials[server]
@@ -816,14 +1011,28 @@ class DriveManager:
             return None
     
     def _attempt_network_connection(self, network_drive: NetworkDrive, credentials: Dict[str, str]) -> None:
-        """Attempt to connect to a network drive with credentials."""
+        """Attempt to connect to a network drive with credentials.
+
+        Manages attempt network connection operations and coordinates related state changes for the component.
+
+        Args:
+            network_drive (NetworkDrive): The network drive parameter.
+            credentials (Dict[str, str]): The credentials parameter.
+        """
         if platform.system().lower() == "windows":
             self._connect_windows_network_drive(network_drive, credentials)
         else:
             self._connect_unix_network_drive(network_drive, credentials)
     
     def _connect_windows_network_drive(self, network_drive: NetworkDrive, credentials: Dict[str, str]) -> None:
-        """_connect_windows_network_drive."""
+        """_connect_windows_network_drive.
+
+        Manages connect windows network drive operations and coordinates related state changes for the component.
+
+        Args:
+            network_drive (NetworkDrive): The network drive parameter.
+            credentials (Dict[str, str]): The credentials parameter.
+        """
         try:
             import subprocess
             
@@ -844,25 +1053,37 @@ class DriveManager:
                 
         except Exception as e:
             network_drive.last_error = str(e)
-        """_connect_windows_network_drive."""
-        """_connect_windows_network_drive."""
     
     def _connect_unix_network_drive(self, network_drive: NetworkDrive, credentials: Dict[str, str]) -> None:
         # For now, just check if the mount point exists
-        """_connect_unix_network_drive."""
+        """_connect_unix_network_drive.
+
+        Manages connect unix network drive operations and coordinates related state changes for the component.
+
+        Args:
+            network_drive (NetworkDrive): The network drive parameter.
+            credentials (Dict[str, str]): The credentials parameter.
+        """
         network_drive.is_connected = os.path.exists(network_drive.path)
-        """_connect_unix_network_drive."""
-        """_connect_unix_network_drive."""
     
     def monitor_drive_changes(self, callback: Callable[[str, str], None]) -> None:
-        """Poll for attach/remove events; invoke callbacks on each change."""
+        """Poll for attach/remove events; invoke callbacks on each change.
+
+        Manages monitor drive changes operations and coordinates related state changes for the component.
+
+        Args:
+            callback (Callable[[str, str], None]): The callback parameter.
+        """
         self._change_callbacks.append(callback)
         
         if not self._monitoring_active:
             self._start_monitoring()
     
     def _start_monitoring(self) -> None:
-        """Start drive monitoring in a separate thread."""
+        """Start drive monitoring in a separate thread.
+
+        Manages start monitoring operations and coordinates related state changes for the component.
+        """
         if self._monitoring_active:
             return
         
@@ -871,7 +1092,10 @@ class DriveManager:
         self._monitor_thread.start()
     
     def _monitor_loop(self) -> None:
-        """Main monitoring loop."""
+        """Main monitoring loop.
+
+        Manages monitor loop operations and coordinates related state changes for the component.
+        """
         last_drives = set()
         
         while self._monitoring_active:
@@ -901,7 +1125,14 @@ class DriveManager:
             time.sleep(5)  # Check every 5 seconds
     
     def _notify_drive_change(self, drive_path: str, change_type: str) -> None:
-        """Notify callbacks of drive changes."""
+        """Notify callbacks of drive changes.
+
+        Manages notify drive change operations and coordinates related state changes for the component.
+
+        Args:
+            drive_path (str): Filesystem path to the target file or directory.
+            change_type (str): The change type parameter.
+        """
         for callback in self._change_callbacks:
             try:
                 callback(drive_path, change_type)
@@ -909,7 +1140,16 @@ class DriveManager:
                 logger.error(f"Error in drive change callback: {e}")
     
     def handle_disconnected_drives(self, drive_id: str) -> Dict[str, Any]:
-        """Attempt reconnects for dropped drives; skip after retries run out."""
+        """Attempt reconnects for dropped drives; skip after retries run out.
+
+        Manages handle disconnected drives operations and coordinates related state changes for the component.
+
+        Args:
+            drive_id (str): The drive id parameter.
+
+        Returns:
+            Dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         result = {
             "drive_id": drive_id,
             "was_disconnected": drive_id in self._disconnected_drives,
@@ -936,13 +1176,25 @@ class DriveManager:
         return result
     
     def stop_monitoring(self) -> None:
-        """Stop drive monitoring."""
+        """Stop drive monitoring.
+
+        Manages stop monitoring operations and coordinates related state changes for the component.
+        """
         self._monitoring_active = False
         if self._monitor_thread and self._monitor_thread.is_alive():
             self._monitor_thread.join(timeout=10)
     
     def _parse_network_path(self, device_path: str) -> Tuple[str, str]:
-        """Parse network device path to extract server and share."""
+        """Parse network device path to extract server and share.
+
+        Manages parse network path operations and coordinates related state changes for the component.
+
+        Args:
+            device_path (str): Filesystem path to the target file or directory.
+
+        Returns:
+            Tuple[str, str]: Formatted string or path.
+        """
         try:
             # Handle UNC paths (\\server\share)
             if device_path.startswith('\\\\'):
@@ -963,10 +1215,19 @@ class DriveManager:
         return device_path, ""
 
 class MultiDriveScanner:
-    """Enhanced multi-drive scanner with comprehensive functionality."""
+    """Multidrivescanner.
+
+    Manages MultiDriveScanner operations and coordinates related state changes for the component.
+    """
     
     def __init__(self, config: Any = None):
-        """Initialize multi-drive scanner with configuration."""
+        """Initialize multi-drive scanner with configuration.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            config (Any): The config parameter.
+        """
         self.config = config
         self._scan_results: Dict[str, Any] = {}
         self._scan_lock = threading.Lock()
@@ -976,11 +1237,23 @@ class MultiDriveScanner:
         self.drive_manager = DriveManager(config)
     
     def detect_drives(self) -> List[DriveInfo]:
-        """Detect drives using the enhanced DriveManager."""
+        """Detect drives using the enhanced DriveManager.
+
+        Manages detect drives operations and coordinates related state changes for the component.
+
+        Returns:
+            List[DriveInfo]: List of processed items or identifiers.
+        """
         return self.drive_manager.detect_all_drives()
     
     def detect_all_drives(self) -> List[DriveInfo]:
-        """Detect all available drives on the system."""
+        """Detect all available drives on the system.
+
+        Manages detect all drives operations and coordinates related state changes for the component.
+
+        Returns:
+            List[DriveInfo]: List of processed items or identifiers.
+        """
         drives = []
         system = platform.system().lower()
         
@@ -1035,7 +1308,18 @@ class MultiDriveScanner:
     
     def scan_multiple_drives(self, drives: List[str], parallel: bool = True, 
                            scanner_factory: Optional[Callable] = None) -> Dict[str, Any]:
-        """Enhanced multi-drive scanning with progress tracking and error handling."""
+        """Enhanced multi-drive scanning with progress tracking and error handling.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+        Args:
+            drives (List[str]): The drives parameter.
+            parallel (bool): The parallel parameter.
+            scanner_factory (Optional[Callable]): The scanner factory parameter.
+
+        Returns:
+            Dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         start_time = datetime.now()
         
         # Initialize progress tracking
@@ -1051,11 +1335,15 @@ class MultiDriveScanner:
         
         if not scanner_factory:
             def default_scanner_factory(path: str):
-                """default_scanner_factory."""
+                """default_scanner_factory.
+
+                Manages default scanner factory operations and coordinates related state changes for the component.
+
+                Args:
+                    path (str): Filesystem path to the target file or directory.
+                """
                 from cortex_unified.core.scanner import Scanner
                 return Scanner(root_path=path)
-                """default_scanner_factory."""
-                """default_scanner_factory."""
             scanner_factory = default_scanner_factory
         
         try:
@@ -1080,7 +1368,17 @@ class MultiDriveScanner:
         return results
     
     def _scan_drives_parallel(self, drives: List[str], scanner_factory: Callable) -> Dict[str, Any]:
-        """Scan drives in parallel with progress tracking."""
+        """Scan drives in parallel with progress tracking.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+        Args:
+            drives (List[str]): The drives parameter.
+            scanner_factory (Callable): The scanner factory parameter.
+
+        Returns:
+            Dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         results = {}
         max_workers = min(len(drives), os.cpu_count() or 4)
         
@@ -1117,7 +1415,17 @@ class MultiDriveScanner:
         return results
     
     def _scan_drives_sequential(self, drives: List[str], scanner_factory: Callable) -> Dict[str, Any]:
-        """Scan drives sequentially with progress tracking."""
+        """Scan drives sequentially with progress tracking.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+        Args:
+            drives (List[str]): The drives parameter.
+            scanner_factory (Callable): The scanner factory parameter.
+
+        Returns:
+            Dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         results = {}
         
         for i, drive in enumerate(drives):
@@ -1147,7 +1455,17 @@ class MultiDriveScanner:
         return results
     
     def _scan_single_drive_with_progress(self, drive_path: str, scanner_factory: Callable) -> Dict[str, Any]:
-        """Walk one drive, streaming per-file progress to registered callbacks."""
+        """Walk one drive, streaming per-file progress to registered callbacks.
+
+        Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
+
+        Args:
+            drive_path (str): Filesystem path to the target file or directory.
+            scanner_factory (Callable): The scanner factory parameter.
+
+        Returns:
+            Dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         try:
             if not os.path.exists(drive_path):
                 return {
@@ -1189,7 +1507,17 @@ class MultiDriveScanner:
             raise
     
     def _scan_single_drive(self, drive_path: str, scanner_factory: Callable) -> Dict[str, Any]:
-        """_scan_single_drive."""
+        """_scan_single_drive.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+        Args:
+            drive_path (str): Filesystem path to the target file or directory.
+            scanner_factory (Callable): The scanner factory parameter.
+
+        Returns:
+            Dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         scanner = scanner_factory(drive_path)
         empty_files, empty_dirs = scanner.scan()
         
@@ -1198,27 +1526,54 @@ class MultiDriveScanner:
             "empty_dirs": [str(d) for d in empty_dirs],
             "stats": scanner.get_stats()
         }
-        """_scan_single_drive."""
-        """_scan_single_drive."""
     
     def handle_network_drives(self, credentials: Dict[str, str] = None) -> List[NetworkDrive]:
-        """Handle network drives using the enhanced DriveManager."""
+        """Handle network drives using the enhanced DriveManager.
+
+        Manages handle network drives operations and coordinates related state changes for the component.
+
+        Args:
+            credentials (Dict[str, str]): The credentials parameter.
+
+        Returns:
+            List[NetworkDrive]: List of processed items or identifiers.
+        """
         return self.drive_manager.handle_network_drives(credentials)
     
     def monitor_drive_changes(self, callback: Callable[[str, str], None]) -> None:
-        """monitor_drive_changes."""
+        """monitor_drive_changes.
+
+        Manages monitor drive changes operations and coordinates related state changes for the component.
+
+        Args:
+            callback (Callable[[str, str], None]): The callback parameter.
+        """
         self.drive_manager.monitor_drive_changes(callback)
-        """monitor_drive_changes."""
-        """monitor_drive_changes."""
     
     def handle_disconnected_drives(self, drive_id: str) -> Dict[str, Any]:
-        """handle_disconnected_drives."""
+        """handle_disconnected_drives.
+
+        Manages handle disconnected drives operations and coordinates related state changes for the component.
+
+        Args:
+            drive_id (str): The drive id parameter.
+
+        Returns:
+            Dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         return self.drive_manager.handle_disconnected_drives(drive_id)
-        """handle_disconnected_drives."""
-        """handle_disconnected_drives."""
     
     def scan_user_profiles(self, admin_mode: bool = False) -> Dict[str, Any]:
-        """Enhanced multi-user profile scanning with progress tracking."""
+        """Enhanced multi-user profile scanning with progress tracking.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+        Args:
+            admin_mode (bool): The admin mode parameter.
+
+        Returns:
+            Dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         start_time = datetime.now()
         user_profiles = self.user_scanner.detect_user_profiles()
         
@@ -1269,17 +1624,36 @@ class MultiDriveScanner:
         return results
     
     def detect_user_profiles(self, admin_mode: bool = False) -> List[UserProfile]:
-        """Detect user profiles using the enhanced MultiUserScanner."""
+        """Detect user profiles using the enhanced MultiUserScanner.
+
+        Manages detect user profiles operations and coordinates related state changes for the component.
+
+        Args:
+            admin_mode (bool): The admin mode parameter.
+
+        Returns:
+            List[UserProfile]: List of processed items or identifiers.
+        """
         return self.user_scanner.detect_user_profiles()
     
     def add_progress_callback(self, callback: Callable[[str], None]) -> None:
-        """add_progress_callback."""
+        """add_progress_callback.
+
+        Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
+
+        Args:
+            callback (Callable[[str], None]): The callback parameter.
+        """
         self._progress_callbacks.append(callback)
-        """add_progress_callback."""
-        """add_progress_callback."""
     
     def _notify_progress(self, message: str) -> None:
-        """Enhanced progress notification with detailed progress information."""
+        """Enhanced progress notification with detailed progress information.
+
+        Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
+
+        Args:
+            message (str): Informational or progress status message.
+        """
         # Update progress callbacks with message
         for callback in self._progress_callbacks:
             try:
@@ -1292,17 +1666,35 @@ class MultiDriveScanner:
         logger.info(message)
     
     def get_scan_progress(self) -> ScanProgress:
-        """Get current scan progress information."""
+        """Get current scan progress information.
+
+        Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
+
+        Returns:
+            ScanProgress: Result of the operation.
+        """
         with self._scan_lock:
             return self._current_progress
     
     def get_scan_results(self) -> Dict[str, Any]:
-        """Get all scan results."""
+        """Get all scan results.
+
+        Manages get scan results operations and coordinates related state changes for the component.
+
+        Returns:
+            Dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         with self._scan_lock:
             return self._scan_results.copy()
     
     def get_aggregated_results(self) -> Optional[AggregatedResult]:
-        """Get aggregated scan results."""
+        """Get aggregated scan results.
+
+        Manages get aggregated results operations and coordinates related state changes for the component.
+
+        Returns:
+            Optional[AggregatedResult]: Result of the operation.
+        """
         with self._scan_lock:
             aggregated_data = self._scan_results.get("_aggregated")
             if aggregated_data:
@@ -1310,14 +1702,17 @@ class MultiDriveScanner:
             return None
     
     def clear_results(self) -> None:
-        """Clear all scan results."""
+        """Clear all scan results.
+
+        Manages clear results operations and coordinates related state changes for the component.
+        """
         with self._scan_lock:
             self._scan_results.clear()
             self._current_progress = ScanProgress(0, 0, "", 0.0, datetime.now())
     
     def scan_multiple_locations(self, locations: List[Dict[str, Any]], 
                               parallel: bool = True) -> Dict[str, Any]:
-        """scan_multiple_locations."""
+        """Scan each location in `locations` and return per-location results (parallel flag is ignored; locations scanned sequentially)."""
         start_time = datetime.now()
         
         # Initialize progress tracking
@@ -1383,9 +1778,10 @@ class MultiDriveScanner:
             self._scan_results["_aggregated"] = asdict(aggregated)
         
         return results
-        """scan_multiple_locations."""
-        """scan_multiple_locations."""
     
     def stop_monitoring(self) -> None:
-        """Stop all monitoring activities."""
+        """Stop all monitoring activities.
+
+        Manages stop monitoring operations and coordinates related state changes for the component.
+        """
         self.drive_manager.stop_monitoring()

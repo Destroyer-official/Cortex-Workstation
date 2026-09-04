@@ -43,25 +43,43 @@ _KIND = {
 
 @dataclass(slots=True)
 class BootRecord:
-    """Boot Record data container."""
+    """Bootrecord.
+
+    Manages BootRecord operations and coordinates related state changes for the component.
+    """
     when: str
     boot_ms: int
     main_path_ms: int
 
     @property
     def boot_seconds(self) -> float:
-        """Boot seconds."""
+        """Boot seconds.
+
+        Manages boot seconds operations and coordinates related state changes for the component.
+
+        Returns:
+            float: Result of the operation.
+        """
         return round(self.boot_ms / 1000.0, 1)
 
     def to_dict(self) -> dict[str, Any]:
-        """To dict."""
+        """To dict.
+
+        Manages to dict operations and coordinates related state changes for the component.
+
+        Returns:
+            dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         return {"when": self.when, "boot_ms": self.boot_ms,
                 "main_path_ms": self.main_path_ms, "boot_seconds": self.boot_seconds}
 
 
 @dataclass(slots=True)
 class BootIssue:
-    """Boot Issue data container."""
+    """Bootissue.
+
+    Manages BootIssue operations and coordinates related state changes for the component.
+    """
     kind: str
     name: str
     impact_ms: int
@@ -69,25 +87,56 @@ class BootIssue:
 
     @property
     def impact_seconds(self) -> float:
-        """Impact seconds."""
+        """Impact seconds.
+
+        Manages impact seconds operations and coordinates related state changes for the component.
+
+        Returns:
+            float: Result of the operation.
+        """
         return round(self.impact_ms / 1000.0, 1)
 
     def to_dict(self) -> dict[str, Any]:
-        """To dict."""
+        """To dict.
+
+        Manages to dict operations and coordinates related state changes for the component.
+
+        Returns:
+            dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         return {"kind": self.kind, "name": self.name, "impact_ms": self.impact_ms,
                 "impact_seconds": self.impact_seconds, "when": self.when}
 
 
 class BootPerformanceMonitor:
-    """Reads Windows boot diagnostics (read-only)."""
+    """Bootperformancemonitor.
+
+    Manages BootPerformanceMonitor operations and coordinates related state changes for the component.
+    """
 
     @staticmethod
     def is_supported() -> bool:
-        """Is supported."""
+        """Is supported.
+
+        Manages is supported operations and coordinates related state changes for the component.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         return _IS_WINDOWS
 
     def analyze(self, max_boots: int = 10, max_issues: int = 40) -> dict[str, Any]:
-        """Analyze."""
+        """Analyze.
+
+        Manages analyze operations and coordinates related state changes for the component.
+
+        Args:
+            max_boots (int): The max boots parameter.
+            max_issues (int): The max issues parameter.
+
+        Returns:
+            dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         if not _IS_WINDOWS:
             return {"supported": False, "boots": [], "issues": []}
         out = self._run(self._script(max_boots, max_issues))
@@ -103,7 +152,17 @@ class BootPerformanceMonitor:
 
     @staticmethod
     def _script(max_boots: int, max_issues: int) -> str:
-        """_script."""
+        """Script.
+
+        Manages script operations and coordinates related state changes for the component.
+
+        Args:
+            max_boots (int): The max boots parameter.
+            max_issues (int): The max issues parameter.
+
+        Returns:
+            str: Formatted string or path.
+        """
         return (
             f"$log='{_LOG_NAME}';"
             "function Fields($e){ $x=[xml]$e.ToXml(); $d=@{}; "
@@ -119,12 +178,19 @@ class BootPerformanceMonitor:
             " Name=$d['Name']; TotalTime=$d['TotalTime']; Time=$_.TimeCreated.ToString('s') } };"
             "[pscustomobject]@{ boots=$boots; issues=$issues } | ConvertTo-Json -Depth 4 -Compress"
         )
-        """_script."""
-        """_script."""
 
     @staticmethod
     def _parse(out: str | None) -> tuple[list[BootRecord], list[BootIssue]]:
-        """_parse."""
+        """Parse and decode structured data from strings or byte streams.
+
+        Extracts fields, validates expected formats, and instantiates corresponding strongly-typed model objects.
+
+        Args:
+            out (str | None): The out parameter.
+
+        Returns:
+            tuple[list[BootRecord], list[BootIssue]]: List of processed items or identifiers.
+        """
         if not out:
             return [], []
         try:
@@ -133,21 +199,29 @@ class BootPerformanceMonitor:
             return [], []
 
         def _int(v):
-            """_int."""
+            """Int.
+
+            Manages int operations and coordinates related state changes for the component.
+
+            Args:
+                v: The v parameter.
+            """
             try:
                 return int(float(v)) if v not in (None, "") else 0
             except (ValueError, TypeError):
                 return 0
-            """_int."""
-            """_int."""
 
         def _as_list(v):
-            """_as_list."""
+            """_as_list.
+
+            Manages as list operations and coordinates related state changes for the component.
+
+            Args:
+                v: The v parameter.
+            """
             if v is None:
                 return []
             return v if isinstance(v, list) else [v]
-            """_as_list."""
-            """_as_list."""
 
         boots: list[BootRecord] = []
         for b in _as_list(data.get("boots")):
@@ -174,11 +248,18 @@ class BootPerformanceMonitor:
             ))
         issues.sort(key=lambda i: i.impact_ms, reverse=True)
         return boots, issues
-        """_parse."""
-        """_parse."""
 
     def _run(self, script: str) -> str | None:
-        """_run."""
+        """Run.
+
+        Manages run operations and coordinates related state changes for the component.
+
+        Args:
+            script (str): The script parameter.
+
+        Returns:
+            str | None: Formatted string or path.
+        """
         try:
             proc = _proc.run(
                 ["powershell", "-NoProfile", "-NonInteractive", "-Command", script],
@@ -188,5 +269,3 @@ class BootPerformanceMonitor:
         except (_proc.ProcessCancelled, OSError, subprocess.SubprocessError) as exc:
             _LOG.debug("boot performance query failed: %s", exc)
             return None
-        """_run."""
-        """_run."""

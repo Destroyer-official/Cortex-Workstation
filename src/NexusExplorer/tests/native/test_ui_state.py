@@ -23,13 +23,25 @@ from PySide6.QtWidgets import QApplication  # noqa: E402
 
 @pytest.fixture(scope="module")
 def qapp():
-    """qapp."""
+    """Qapp.
+
+    Manages qapp operations and coordinates related state changes for the component.
+    """
     app = QApplication.instance() or QApplication([])
     yield app
 
 
 def _row(name, size=0, is_dir=False, mtime=1000):
-    """_row."""
+    """Row.
+
+    Manages row operations and coordinates related state changes for the component.
+
+    Args:
+        name: The name parameter.
+        size: Integer number of bytes to format or process.
+        is_dir: The is dir parameter.
+        mtime: The mtime parameter.
+    """
     return {
         "name": name,
         "path": str(Path("C:/seed") / name),
@@ -41,9 +53,18 @@ def _row(name, size=0, is_dir=False, mtime=1000):
 
 
 class TestUpdateRowsIncremental:
-    """TestUpdateRowsIncremental."""
+    """Testupdaterowsincremental.
+
+    Manages TestUpdateRowsIncremental operations and coordinates related state changes for the component.
+    """
     def test_diff_removes_adds_modifies(self, qapp):
-        """test_diff_removes_adds_modifies."""
+        """test_diff_removes_adds_modifies.
+
+        Manages test diff removes adds modifies operations and coordinates related state changes for the component.
+
+        Args:
+            qapp: The qapp parameter.
+        """
         from nexus_core import FileTableModel, IconThumbs
 
         model = FileTableModel(IconThumbs())
@@ -64,7 +85,13 @@ class TestUpdateRowsIncremental:
         assert model.rows[0]["size"] == 999
 
     def test_empty_then_populate(self, qapp):
-        """test_empty_then_populate."""
+        """test_empty_then_populate.
+
+        Manages test empty then populate operations and coordinates related state changes for the component.
+
+        Args:
+            qapp: The qapp parameter.
+        """
         from nexus_core import FileTableModel, IconThumbs
 
         model = FileTableModel(IconThumbs())
@@ -75,9 +102,19 @@ class TestUpdateRowsIncremental:
 
 
 class TestSessionRoundTrip:
-    """TestSessionRoundTrip."""
+    """Testsessionroundtrip.
+
+    Manages TestSessionRoundTrip operations and coordinates related state changes for the component.
+    """
     def test_tabs_and_view_mode_persist(self, qapp, tmp_path):
-        """test_tabs_and_view_mode_persist."""
+        """test_tabs_and_view_mode_persist.
+
+        Manages test tabs and view mode persist operations and coordinates related state changes for the component.
+
+        Args:
+            qapp: The qapp parameter.
+            tmp_path: Filesystem path to the target file or directory.
+        """
         from nexus_explorer import ExplorerWidget
         from PySide6.QtCore import QSettings
 

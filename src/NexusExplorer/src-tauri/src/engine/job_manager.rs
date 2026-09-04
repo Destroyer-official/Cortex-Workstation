@@ -30,6 +30,7 @@ pub struct JobControl {
 }
 
 impl JobControl {
+    /// Creates a new job control in the `running` state for the given job kind.
     pub fn new(kind: &str) -> Self {
         Self {
             kind: kind.to_string(),
@@ -62,10 +63,12 @@ impl JobControl {
         !self.cancel.load(Ordering::Relaxed)
     }
 
+    /// Stores the new terminal/transient job state string.
     pub fn set_state(&self, state: &str) {
         *self.state.lock() = state.to_string();
     }
 
+    /// Builds a point-in-time `JobSummary` snapshot for the given job id.
     pub fn snapshot(&self, job_id: &str) -> JobSummary {
         JobSummary {
             job_id: job_id.to_string(),
@@ -90,18 +93,22 @@ pub struct JobManager {
 }
 
 impl JobManager {
+    /// Creates an empty job registry with no tracked jobs.
     pub fn new() -> Self {
         Self::default()
     }
 
+    /// Inserts a job control under the given job id, replacing any existing entry.
     pub fn register(&self, id: String, control: Arc<JobControl>) {
         self.jobs.lock().insert(id, control);
     }
 
+    /// Returns the job control for the given job id, if still tracked.
     pub fn get(&self, id: &str) -> Option<Arc<JobControl>> {
         self.jobs.lock().get(id).cloned()
     }
 
+    /// Collects a snapshot summary for every tracked job.
     pub fn list_summaries(&self) -> Vec<JobSummary> {
         self.jobs
             .lock()

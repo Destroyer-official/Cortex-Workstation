@@ -62,7 +62,10 @@ _DEFAULT_SUSPEND_CANDIDATES: tuple[str, ...] = (
 
 @dataclass(slots=True)
 class BoostReport:
-    """Outcome of starting or stopping a boosted session."""
+    """Boostreport.
+
+    Manages BoostReport operations and coordinates related state changes for the component.
+    """
 
     ok: bool
     phase: str                       # "start" | "stop"
@@ -75,7 +78,13 @@ class BoostReport:
     message: str = ""
 
     def to_dict(self) -> dict[str, Any]:
-        """To dict."""
+        """To dict.
+
+        Manages to dict operations and coordinates related state changes for the component.
+
+        Returns:
+            dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         return {
             "ok": self.ok,
             "phase": self.phase,
@@ -90,14 +99,24 @@ class BoostReport:
 
 
 class GameMode:
-    """Apply and revert a gaming-session performance profile."""
+    """Gamemode.
+
+    Manages GameMode operations and coordinates related state changes for the component.
+    """
 
     def __init__(
         self,
         extra_suspend: tuple[str, ...] = (),
         dry_run: bool = False,
     ) -> None:
-        """Initialize Game Mode."""
+        """Initialize Game Mode.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            extra_suspend (tuple[str, ...]): The extra suspend parameter.
+            dry_run (bool): The dry run parameter.
+        """
         self._extra = tuple(n.strip().lower() for n in extra_suspend if n.strip())
         self._dry_run = bool(dry_run)
         self._tuner = PerformanceTuner()
@@ -110,11 +129,23 @@ class GameMode:
 
     @staticmethod
     def is_supported() -> bool:
-        """Boost needs Windows power plans + psutil."""
+        """Boost needs Windows power plans + psutil.
+
+        Manages is supported operations and coordinates related state changes for the component.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         return _IS_WINDOWS and psutil is not None
 
     def _candidates(self) -> list[tuple[int, str]]:
-        """Running processes matching the suspend lists (protected excluded)."""
+        """Candidates.
+
+        Manages candidates operations and coordinates related state changes for the component.
+
+        Returns:
+            list[tuple[int, str]]: List of processed items or identifiers.
+        """
         found: list[tuple[int, str]] = []
         wanted = set(_DEFAULT_SUSPEND_CANDIDATES) | set(self._extra)
         if psutil is None:
@@ -131,7 +162,13 @@ class GameMode:
         return sorted(found, key=lambda item: item[1].lower())
 
     def preview(self) -> dict[str, Any]:
-        """Read-only view of exactly what ``start()`` would change."""
+        """Preview.
+
+        Manages preview operations and coordinates related state changes for the component.
+
+        Returns:
+            dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         plans = self._tuner.list_plans()
         best = self._pick_boost_plan(plans)
         return {
@@ -147,7 +184,13 @@ class GameMode:
     # -- lifecycle -------------------------------------------------------------
 
     def start(self) -> BoostReport:
-        """Apply the boost profile (idempotent; safe while already active)."""
+        """Start active background operations.
+
+        Manages worker thread execution states, signaling termination flags or initializing scheduled execution timers.
+
+        Returns:
+            BoostReport: Formatted string or path.
+        """
         if not self.is_supported():
             return BoostReport(False, "start",
                                message="Gaming mode requires Windows and psutil.")
@@ -193,7 +236,13 @@ class GameMode:
         return report
 
     def stop(self) -> BoostReport:
-        """Restore power plan and resume everything this session suspended."""
+        """Stop active background operations.
+
+        Manages worker thread execution states, signaling termination flags or initializing scheduled execution timers.
+
+        Returns:
+            BoostReport: Formatted string or path.
+        """
         report = BoostReport(ok=True, phase="stop")
         if self._boosted_plan_guid and self._original_plan:
             switched, message = self._tuner.set_active(self._original_plan)
@@ -220,25 +269,41 @@ class GameMode:
     # -- context-manager sugar ------------------------------------------------
 
     def __enter__(self) -> "GameMode":
-        """__enter__."""
+        """Manage context lifecycle and resource acquisition or cleanup.
+
+        Acquires necessary lock or file resources on entry and guarantees safe release and error propagation on exit.
+
+        Returns:
+            'GameMode': Result of the operation.
+        """
         self.start()
         return self
-        """__enter__."""
-        """__enter__."""
 
     def __exit__(self, exc_type, exc, tb) -> None:
-        """__exit__."""
+        """Manage context lifecycle and resource acquisition or cleanup.
+
+        Acquires necessary lock or file resources on entry and guarantees safe release and error propagation on exit.
+
+        Args:
+            exc_type: Error message string or exception instance.
+            exc: Error message string or exception instance.
+            tb: The tb parameter.
+        """
         try:
             self.stop()
         except Exception:  # noqa: BLE001 - restoring must never mask errors
             _LOG.exception("game-mode restore failed")
-        """__exit__."""
-        """__exit__."""
 
     # -- helpers ------------------------------------------------------------------
 
     def _pick_boost_plan(self, plans):
-        """Choose the highest-performance scheme available, else None."""
+        """Choose the highest-performance scheme available, else None.
+
+        Manages pick boost plan operations and coordinates related state changes for the component.
+
+        Args:
+            plans: The plans parameter.
+        """
         if not plans:
             return None
         keywords = ("high performance", "ultimate", "high", "performance")
@@ -250,7 +315,16 @@ class GameMode:
 
 
 def run_proc_checked(args: list[str]) -> bool:  # pragma: no cover - thin helper
-    """Convenience wrapper used by diagnostics; True when exit code is 0."""
+    """Convenience wrapper used by diagnostics; True when exit code is 0.
+
+    Manages run proc checked operations and coordinates related state changes for the component.
+
+    Args:
+        args (list[str]): The args parameter.
+
+    Returns:
+        bool: True if the operation succeeded, False otherwise.
+    """
     try:
         completed = _proc.run(args, text=True, timeout=15)
         return completed.returncode == 0

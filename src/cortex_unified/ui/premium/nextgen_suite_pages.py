@@ -48,7 +48,16 @@ from cortex_unified.system_tools.checksum_matrix import ChecksumMatrix, FileChec
 
 
 def _fmt_bytes(b: int) -> str:
-    """Format a byte count into a human-readable B/KB/MB/GB string."""
+    """Format a byte count into a human-readable B/KB/MB/GB string.
+
+    Converts raw numeric values into formatted, localized, and human-readable string representations.
+
+    Args:
+        b (int): Integer number of bytes to format or process.
+
+    Returns:
+        str: Formatted string or path.
+    """
     if b < 1024:
         return f"{b} B"
     if b < 1024 * 1024:
@@ -59,7 +68,16 @@ def _fmt_bytes(b: int) -> str:
 
 
 def _PrimaryButton(text: str) -> QPushButton:
-    """Create a QPushButton styled as the primary (accented) action button."""
+    """Construct a styled accented QPushButton adhering to design system tokens.
+
+    Applies consistent margins, accent styling, focus outline, and pointing-hand cursor according to theme tokens.
+
+    Args:
+        text (str): Display text string.
+
+    Returns:
+        QPushButton: Result of the operation.
+    """
     btn = QPushButton(text)
     btn.setObjectName("Primary")
     btn.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -67,14 +85,32 @@ def _PrimaryButton(text: str) -> QPushButton:
 
 
 def _SecondaryButton(text: str) -> QPushButton:
-    """Create a QPushButton styled as a secondary action button with a pointing-hand cursor."""
+    """Construct a styled secondary QPushButton adhering to design system tokens.
+
+    Applies consistent margins, accent styling, focus outline, and pointing-hand cursor according to theme tokens.
+
+    Args:
+        text (str): Display text string.
+
+    Returns:
+        QPushButton: Result of the operation.
+    """
     btn = QPushButton(text)
     btn.setCursor(Qt.CursorShape.PointingHandCursor)
     return btn
 
 
 def _run_task(win, work_fn, done_fn, err_fn=None):
-    """Run work_fn on the window's worker runtime, or inline as a fallback, dispatching to done_fn / err_fn."""
+    """Run work_fn on the window's worker runtime, or inline as a fallback, dispatching to done_fn / err_fn.
+
+    Manages run task operations and coordinates related state changes for the component.
+
+    Args:
+        win: Parent window or shell controller instance.
+        work_fn: The work fn parameter.
+        done_fn: The done fn parameter.
+        err_fn: Error message string or exception instance.
+    """
     if hasattr(win, "worker_runtime") and getattr(win, "worker_runtime", None) is not None:
         win.worker_runtime.run(work_fn, on_result=done_fn, on_error=err_fn)
     else:
@@ -91,9 +127,18 @@ def _run_task(win, work_fn, done_fn, err_fn=None):
 # ===========================================================================
 
 class ShaderCachePage(_Page):
-    """Page for auditing and purging stale GPU shader caches by age."""
+    """Shadercachepage.
+
+    Manages ShaderCachePage operations and coordinates related state changes for the component.
+    """
     def __init__(self, win: PremiumMainWindow):
-        """Build the Shader Cache page with scan/clean buttons, a min-age spinner, and a table."""
+        """Build the Shader Cache page with scan/clean buttons, a min-age spinner, and a table.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win (PremiumMainWindow): Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(title_block(
             "GPU & DirectX Shader Cache Cleaner",
@@ -140,16 +185,28 @@ class ShaderCachePage(_Page):
         self.cleaner = ShaderCacheCleaner()
 
     def _on_scan(self):
-        """Scan shader cache locations with the configured minimum age."""
+        """Scan shader cache locations with the configured minimum age.
+
+        Manages on scan operations and coordinates related state changes for the component.
+        """
         self.summary_label.setText("Scanning shader cache stores...")
         age = self.age_spin.value()
 
         def work():
-            """Scan shader caches for files older than the minimum age."""
+            """Execute background processing off the main UI thread.
+
+            Performs the intensive analysis, scanning, or file operations in a worker thread to keep the interface responsive.
+            """
             return self.cleaner.scan(min_age_days=age)
 
         def done(report: ShaderCacheReport):
-            """List discovered cache locations and stale-file totals."""
+            """Handle completion of the asynchronous task.
+
+            Processes the returned result payload, updates corresponding tables or UI views, and restores interactive controls.
+
+            Args:
+                report (ShaderCacheReport): The generated report data object from the backend.
+            """
             self.table.setRowCount(0)
             for loc in report.locations:
                 r = self.table.rowCount()
@@ -168,16 +225,28 @@ class ShaderCachePage(_Page):
         _run_task(self.win, work, done)
 
     def _on_clean(self):
-        """Purge shader binaries older than the minimum age."""
+        """Purge shader binaries older than the minimum age.
+
+        Manages on clean operations and coordinates related state changes for the component.
+        """
         age = self.age_spin.value()
         self.summary_label.setText("Purging stale shader binaries...")
 
         def work():
-            """Clean stale shader caches (not a dry run)."""
+            """Execute background processing off the main UI thread.
+
+            Performs the intensive analysis, scanning, or file operations in a worker thread to keep the interface responsive.
+            """
             return self.cleaner.clean(min_age_days=age, dry_run=False)
 
         def done(result: ShaderCleanResult):
-            """Report cleaned files, freed bytes, and any locked files, then rescan."""
+            """Handle completion of the asynchronous task.
+
+            Processes the returned result payload, updates corresponding tables or UI views, and restores interactive controls.
+
+            Args:
+                result (ShaderCleanResult): Collection or dictionary holding operation results.
+            """
             msg = f"Cleaned {result.cleaned_files} shader files, freeing {_fmt_bytes(result.freed_bytes)}."
             if result.skipped_locked_files:
                 msg += f" (Skipped {result.skipped_locked_files} currently locked by running games/drivers)."
@@ -193,9 +262,18 @@ class ShaderCachePage(_Page):
 # ===========================================================================
 
 class AiTelemetryCleanerPage(_Page):
-    """Page for auditing Copilot/Recall caches and truncating SQLite WAL logs."""
+    """Aitelemetrycleanerpage.
+
+    Manages AiTelemetryCleanerPage operations and coordinates related state changes for the component.
+    """
     def __init__(self, win: PremiumMainWindow):
-        """Build the AI Telemetry page with scan/clean buttons and an artifacts table."""
+        """Build the AI Telemetry page with scan/clean buttons and an artifacts table.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win (PremiumMainWindow): Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(title_block(
             "Windows 11 AI & Recall Telemetry Cleaner",
@@ -235,15 +313,27 @@ class AiTelemetryCleanerPage(_Page):
         self.cleaner = AiTelemetryCleaner()
 
     def _on_scan(self):
-        """Scan local AI and Recall stores in the background."""
+        """Scan local AI and Recall stores in the background.
+
+        Manages on scan operations and coordinates related state changes for the component.
+        """
         self.summary_label.setText("Analyzing AI and Recall stores...")
 
         def work():
-            """Scan AI telemetry artifacts."""
+            """Execute background processing off the main UI thread.
+
+            Performs the intensive analysis, scanning, or file operations in a worker thread to keep the interface responsive.
+            """
             return self.cleaner.scan()
 
         def done(report: AiTelemetryReport):
-            """List AI artifacts, sizes, and WAL journal usage."""
+            """Handle completion of the asynchronous task.
+
+            Processes the returned result payload, updates corresponding tables or UI views, and restores interactive controls.
+
+            Args:
+                report (AiTelemetryReport): The generated report data object from the backend.
+            """
             self.table.setRowCount(0)
             for a in report.artifacts:
                 r = self.table.rowCount()
@@ -261,15 +351,27 @@ class AiTelemetryCleanerPage(_Page):
         _run_task(self.win, work, done)
 
     def _on_clean(self):
-        """Clean transient AI caches and checkpoint WAL databases."""
+        """Clean transient AI caches and checkpoint WAL databases.
+
+        Manages on clean operations and coordinates related state changes for the component.
+        """
         self.summary_label.setText("Optimizing AI stores and truncating WAL logs...")
 
         def work():
-            """Clean AI caches and truncate SQLite WAL journals."""
+            """Execute background processing off the main UI thread.
+
+            Performs the intensive analysis, scanning, or file operations in a worker thread to keep the interface responsive.
+            """
             return self.cleaner.clean(checkpoint_wal=True, dry_run=False)
 
         def done(result: AiCleanResult):
-            """Report cleaned items and checkpointed WALs, then rescan."""
+            """Handle completion of the asynchronous task.
+
+            Processes the returned result payload, updates corresponding tables or UI views, and restores interactive controls.
+
+            Args:
+                result (AiCleanResult): Collection or dictionary holding operation results.
+            """
             msg = (
                 f"Cleaned {result.cleaned_items} transient cache items and checkpointed "
                 f"{result.truncated_wal_count} SQLite WAL databases, freeing {_fmt_bytes(result.freed_bytes)}."
@@ -286,9 +388,18 @@ class AiTelemetryCleanerPage(_Page):
 # ===========================================================================
 
 class SsdTrimOptimizerPage(_Page):
-    """Page for auditing volume TRIM state and running a ReTrim on a chosen drive."""
+    """Ssdtrimoptimizerpage.
+
+    Manages SsdTrimOptimizerPage operations and coordinates related state changes for the component.
+    """
     def __init__(self, win: PremiumMainWindow):
-        """Build the SSD TRIM page with audit/trim buttons and a volumes table."""
+        """Build the SSD TRIM page with audit/trim buttons and a volumes table.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win (PremiumMainWindow): Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(title_block(
             "SSD NVMe TRIM & Wear-Leveling Optimizer",
@@ -325,15 +436,27 @@ class SsdTrimOptimizerPage(_Page):
         self.optimizer = SsdTrimOptimizer()
 
     def _on_audit(self):
-        """Audit volumes and filesystem TRIM status in the background."""
+        """Audit volumes and filesystem TRIM status in the background.
+
+        Manages on audit operations and coordinates related state changes for the component.
+        """
         self.summary_label.setText("Querying physical disk controller and filesystem status...")
 
         def work():
-            """Audit volume media types and TRIM enablement."""
+            """Execute background processing off the main UI thread.
+
+            Performs the intensive analysis, scanning, or file operations in a worker thread to keep the interface responsive.
+            """
             return self.optimizer.audit_volumes()
 
         def done(report: TrimAuditReport):
-            """Fill the volumes table and filesystem TRIM summary."""
+            """Handle completion of the asynchronous task.
+
+            Processes the returned result payload, updates corresponding tables or UI views, and restores interactive controls.
+
+            Args:
+                report (TrimAuditReport): The generated report data object from the backend.
+            """
             self.table.setRowCount(0)
             for v in report.volumes:
                 r = self.table.rowCount()
@@ -354,7 +477,10 @@ class SsdTrimOptimizerPage(_Page):
         _run_task(self.win, work, done)
 
     def _on_trim(self):
-        """ReTrim the drive selected in the table."""
+        """ReTrim the drive selected in the table.
+
+        Manages on trim operations and coordinates related state changes for the component.
+        """
         row = self.table.currentRow()
         if row < 0:
             QMessageBox.warning(self.win, "Selection Required", "Please select a drive volume from the table to execute TRIM.")
@@ -366,11 +492,20 @@ class SsdTrimOptimizerPage(_Page):
         self.summary_label.setText(f"Executing non-destructive ReTrim on volume {drive_letter}:...")
 
         def work():
-            """Execute a non-destructive ReTrim on the chosen volume."""
+            """Execute background processing off the main UI thread.
+
+            Performs the intensive analysis, scanning, or file operations in a worker thread to keep the interface responsive.
+            """
             return self.optimizer.retrim_volume(drive_letter)
 
         def done(result: TrimExecutionResult):
-            """Report the ReTrim result, then re-audit."""
+            """Handle completion of the asynchronous task.
+
+            Processes the returned result payload, updates corresponding tables or UI views, and restores interactive controls.
+
+            Args:
+                result (TrimExecutionResult): Collection or dictionary holding operation results.
+            """
             self.summary_label.setText(result.message)
             if result.success:
                 QMessageBox.information(self.win, "TRIM Complete", result.message)
@@ -386,9 +521,18 @@ class SsdTrimOptimizerPage(_Page):
 # ===========================================================================
 
 class RestartManagerUnlockerPage(_Page):
-    """Page for finding and killing processes that lock a file via Restart Manager."""
+    """Restartmanagerunlockerpage.
+
+    Manages RestartManagerUnlockerPage operations and coordinates related state changes for the component.
+    """
     def __init__(self, win: PremiumMainWindow):
-        """Build the Unlocker page with path input, inspect/unlock buttons, and a processes table."""
+        """Build the Unlocker page with path input, inspect/unlock buttons, and a processes table.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win (PremiumMainWindow): Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(title_block(
             "Windows Restart Manager File Unlocker",
@@ -431,14 +575,20 @@ class RestartManagerUnlockerPage(_Page):
         self.unlocker = RestartManagerUnlocker()
 
     def _on_browse(self):
-        """Pick a file, fill the path input, and inspect it immediately."""
+        """Pick a file, fill the path input, and inspect it immediately.
+
+        Manages on browse operations and coordinates related state changes for the component.
+        """
         f, _ = QFileDialog.getOpenFileName(self.win, "Select File to Inspect Locks")
         if f:
             self.path_input.setText(f)
             self._on_inspect()
 
     def _on_inspect(self):
-        """Query Restart Manager for processes locking the entered path."""
+        """Query Restart Manager for processes locking the entered path.
+
+        Manages on inspect operations and coordinates related state changes for the component.
+        """
         p = self.path_input.text().strip()
         if not p:
             return
@@ -446,11 +596,20 @@ class RestartManagerUnlockerPage(_Page):
         self.summary_label.setText("Querying Windows Restart Manager session...")
 
         def work():
-            """Inspect which processes lock the file."""
+            """Execute background processing off the main UI thread.
+
+            Performs the intensive analysis, scanning, or file operations in a worker thread to keep the interface responsive.
+            """
             return self.unlocker.inspect_locks(p)
 
         def done(report: FileLockReport):
-            """List locking processes or report the file as unlocked/missing."""
+            """Handle completion of the asynchronous task.
+
+            Processes the returned result payload, updates corresponding tables or UI views, and restores interactive controls.
+
+            Args:
+                report (FileLockReport): The generated report data object from the backend.
+            """
             self.table.setRowCount(0)
             if not report.exists:
                 self.summary_label.setText("Specified file does not exist on disk.")
@@ -472,17 +631,29 @@ class RestartManagerUnlockerPage(_Page):
         _run_task(self.win, work, done)
 
     def _on_unlock(self):
-        """Force-terminate the processes locking the entered file."""
+        """Force-terminate the processes locking the entered file.
+
+        Manages on unlock operations and coordinates related state changes for the component.
+        """
         p = self.path_input.text().strip()
         if not p:
             return
 
         def work():
-            """Unlock the file by terminating locking processes."""
+            """Execute background processing off the main UI thread.
+
+            Performs the intensive analysis, scanning, or file operations in a worker thread to keep the interface responsive.
+            """
             return self.unlocker.unlock_file(p, force_terminate=True)
 
         def done(result: UnlockResult):
-            """Report the unlock result, then re-inspect."""
+            """Handle completion of the asynchronous task.
+
+            Processes the returned result payload, updates corresponding tables or UI views, and restores interactive controls.
+
+            Args:
+                result (UnlockResult): Collection or dictionary holding operation results.
+            """
             self.summary_label.setText(result.message)
             QMessageBox.information(self.win, "Unlock Status", result.message)
             self._on_inspect()
@@ -495,9 +666,18 @@ class RestartManagerUnlockerPage(_Page):
 # ===========================================================================
 
 class VssHealthAnalyzerPage(_Page):
-    """Page for diagnosing VSS writers and shadow copy storage usage."""
+    """Vsshealthanalyzerpage.
+
+    Manages VssHealthAnalyzerPage operations and coordinates related state changes for the component.
+    """
     def __init__(self, win: PremiumMainWindow):
-        """Build the VSS Health page with scan/reset buttons and a writers table."""
+        """Build the VSS Health page with scan/reset buttons and a writers table.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win (PremiumMainWindow): Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(title_block(
             "VSS Writer Health & Shadow Storage Analyzer",
@@ -537,15 +717,27 @@ class VssHealthAnalyzerPage(_Page):
         self.analyzer = VssHealthAnalyzer()
 
     def _on_scan(self):
-        """Inspect VSS writers and shadow storage in the background."""
+        """Inspect VSS writers and shadow storage in the background.
+
+        Manages on scan operations and coordinates related state changes for the component.
+        """
         self.summary_label.setText("Querying vssadmin writers and shadow storage...")
 
         def work():
-            """Inspect VSS writer health."""
+            """Execute background processing off the main UI thread.
+
+            Performs the intensive analysis, scanning, or file operations in a worker thread to keep the interface responsive.
+            """
             return self.analyzer.inspect_health()
 
         def done(report: VssHealthReport):
-            """List writer states and summarize healthy vs failed writers."""
+            """Handle completion of the asynchronous task.
+
+            Processes the returned result payload, updates corresponding tables or UI views, and restores interactive controls.
+
+            Args:
+                report (VssHealthReport): The generated report data object from the backend.
+            """
             self.table.setRowCount(0)
             for w in report.writers:
                 r = self.table.rowCount()
@@ -565,15 +757,27 @@ class VssHealthAnalyzerPage(_Page):
         _run_task(self.win, work, done)
 
     def _on_reset(self):
-        """Restart VSS services to clear stalled writer states."""
+        """Restart VSS services to clear stalled writer states.
+
+        Manages on reset operations and coordinates related state changes for the component.
+        """
         self.summary_label.setText("Restarting VSS services and clearing stalled writer states...")
 
         def work():
-            """Reset stalled VSS writers."""
+            """Execute background processing off the main UI thread.
+
+            Performs the intensive analysis, scanning, or file operations in a worker thread to keep the interface responsive.
+            """
             return self.analyzer.reset_vss_writers()
 
         def done(result: VssResetResult):
-            """Report the reset result, then re-scan."""
+            """Handle completion of the asynchronous task.
+
+            Processes the returned result payload, updates corresponding tables or UI views, and restores interactive controls.
+
+            Args:
+                result (VssResetResult): Collection or dictionary holding operation results.
+            """
             self.summary_label.setText(result.message)
             QMessageBox.information(self.win, "VSS Reset Status", result.message)
             self._on_scan()
@@ -586,9 +790,18 @@ class VssHealthAnalyzerPage(_Page):
 # ===========================================================================
 
 class DevPackageCachePage(_Page):
-    """Page for auditing and purging Winget, Cargo, vcpkg, NuGet, and Pip caches."""
+    """Devpackagecachepage.
+
+    Manages DevPackageCachePage operations and coordinates related state changes for the component.
+    """
     def __init__(self, win: PremiumMainWindow):
-        """Build the Dev Package Cache page with scan/clean buttons and a stores table."""
+        """Build the Dev Package Cache page with scan/clean buttons and a stores table.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win (PremiumMainWindow): Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(title_block(
             "Developer Package Caches Cleaner",
@@ -629,15 +842,27 @@ class DevPackageCachePage(_Page):
         self.cleaner = DevPackageCacheCleaner()
 
     def _on_scan(self):
-        """Scan developer package stores in the background."""
+        """Scan developer package stores in the background.
+
+        Manages on scan operations and coordinates related state changes for the component.
+        """
         self.summary_label.setText("Analyzing developer toolchain directories...")
 
         def work():
-            """Scan developer package caches."""
+            """Execute background processing off the main UI thread.
+
+            Performs the intensive analysis, scanning, or file operations in a worker thread to keep the interface responsive.
+            """
             return self.cleaner.scan()
 
         def done(report: DevPackageReport):
-            """List package stores, counts, sizes, and locations."""
+            """Handle completion of the asynchronous task.
+
+            Processes the returned result payload, updates corresponding tables or UI views, and restores interactive controls.
+
+            Args:
+                report (DevPackageReport): The generated report data object from the backend.
+            """
             self.table.setRowCount(0)
             for s in report.stores:
                 r = self.table.rowCount()
@@ -656,15 +881,27 @@ class DevPackageCachePage(_Page):
         _run_task(self.win, work, done)
 
     def _on_clean(self):
-        """Purge all discovered developer package stores."""
+        """Purge all discovered developer package stores.
+
+        Manages on clean operations and coordinates related state changes for the component.
+        """
         self.summary_label.setText("Purging developer package stores...")
 
         def work():
-            """Clean developer package stores (not a dry run)."""
+            """Execute background processing off the main UI thread.
+
+            Performs the intensive analysis, scanning, or file operations in a worker thread to keep the interface responsive.
+            """
             return self.cleaner.clean(dry_run=False)
 
         def done(result: DevPackageCleanResult):
-            """Report stores cleaned and bytes freed, then rescan."""
+            """Handle completion of the asynchronous task.
+
+            Processes the returned result payload, updates corresponding tables or UI views, and restores interactive controls.
+
+            Args:
+                result (DevPackageCleanResult): Collection or dictionary holding operation results.
+            """
             msg = f"Cleaned {result.cleaned_stores} stores, removing {result.deleted_packages} packages and freeing {_fmt_bytes(result.freed_bytes)}."
             self.summary_label.setText(msg)
             QMessageBox.information(self.win, "Developer Stores Cleaned", msg)
@@ -678,9 +915,18 @@ class DevPackageCachePage(_Page):
 # ===========================================================================
 
 class ChecksumMatrixPage(_Page):
-    """Page for batch hashing files and generating .sha256 manifests."""
+    """Checksummatrixpage.
+
+    Manages ChecksumMatrixPage operations and coordinates related state changes for the component.
+    """
     def __init__(self, win: PremiumMainWindow):
-        """Build the Checksum Matrix page with target input, hash/manifest buttons, and a digests table."""
+        """Build the Checksum Matrix page with target input, hash/manifest buttons, and a digests table.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win (PremiumMainWindow): Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(title_block(
             "Forensic Checksum Matrix & Manifest Verifier",
@@ -729,20 +975,29 @@ class ChecksumMatrixPage(_Page):
         self.matrix = ChecksumMatrix()
 
     def _on_browse_file(self):
-        """Pick a file, fill the target input, and hash it immediately."""
+        """Pick a file, fill the target input, and hash it immediately.
+
+        Manages on browse file operations and coordinates related state changes for the component.
+        """
         f, _ = QFileDialog.getOpenFileName(self.win, "Select File to Hash")
         if f:
             self.target_input.setText(f)
             self._on_hash()
 
     def _on_browse_dir(self):
-        """Pick a directory to use for manifest generation."""
+        """Pick a directory to use for manifest generation.
+
+        Manages on browse dir operations and coordinates related state changes for the component.
+        """
         d = QFileDialog.getExistingDirectory(self.win, "Select Folder for Manifest")
         if d:
             self.target_input.setText(d)
 
     def _on_hash(self):
-        """Compute CRC32, MD5, SHA-1, SHA-256, and SHA-512 for the chosen file."""
+        """Compute CRC32, MD5, SHA-1, SHA-256, and SHA-512 for the chosen file.
+
+        Manages on hash operations and coordinates related state changes for the component.
+        """
         p = Path(self.target_input.text().strip())
         if not p.is_file():
             QMessageBox.warning(self.win, "File Required", "Please select a valid file to calculate checksums.")
@@ -751,11 +1006,20 @@ class ChecksumMatrixPage(_Page):
         self.summary_label.setText(f"Streaming {p.name} through hash digest matrix...")
 
         def work():
-            """Compute all five checksum digests for the file."""
+            """Execute background processing off the main UI thread.
+
+            Performs the intensive analysis, scanning, or file operations in a worker thread to keep the interface responsive.
+            """
             return self.matrix.hash_file(p, algorithms=["crc32", "md5", "sha1", "sha256", "sha512"])
 
         def done(res: FileChecksumResult):
-            """Show every computed digest and the hashing duration."""
+            """Handle completion of the asynchronous task.
+
+            Processes the returned result payload, updates corresponding tables or UI views, and restores interactive controls.
+
+            Args:
+                res (FileChecksumResult): The res parameter.
+            """
             self.table.setRowCount(0)
             rows = [
                 ("CRC32", res.crc32),
@@ -778,7 +1042,10 @@ class ChecksumMatrixPage(_Page):
         _run_task(self.win, work, done)
 
     def _on_generate_manifest(self):
-        """Write a checksums.sha256 manifest for the chosen directory."""
+        """Write a checksums.sha256 manifest for the chosen directory.
+
+        Manages on generate manifest operations and coordinates related state changes for the component.
+        """
         p = Path(self.target_input.text().strip())
         if not p.is_dir():
             QMessageBox.warning(self.win, "Directory Required", "Please select a valid directory to generate a manifest.")
@@ -788,11 +1055,20 @@ class ChecksumMatrixPage(_Page):
         self.summary_label.setText(f"Generating SHA-256 manifest for {p}...")
 
         def work():
-            """Generate a SHA-256 manifest for the directory."""
+            """Execute background processing off the main UI thread.
+
+            Performs the intensive analysis, scanning, or file operations in a worker thread to keep the interface responsive.
+            """
             return self.matrix.generate_manifest(p, out_file, algorithm="sha256")
 
         def done(count: int):
-            """Report the number of entries written to the manifest."""
+            """Handle completion of the asynchronous task.
+
+            Processes the returned result payload, updates corresponding tables or UI views, and restores interactive controls.
+
+            Args:
+                count (int): The count parameter.
+            """
             msg = f"Generated checksum manifest with {count} file entries at: {out_file}"
             self.summary_label.setText(msg)
             QMessageBox.information(self.win, "Manifest Created", msg)

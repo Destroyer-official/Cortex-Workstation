@@ -20,7 +20,10 @@ from typing import List, Tuple
 
 @dataclass
 class CacheRebuildReport:
-    """Cache Rebuild Report data container."""
+    """Cacherebuildreport.
+
+    Manages CacheRebuildReport operations and coordinates related state changes for the component.
+    """
     icon_cache_rebuilt: bool = False
     thumb_cache_rebuilt: bool = False
     font_cache_rebuilt: bool = False
@@ -30,19 +33,29 @@ class CacheRebuildReport:
     errors: List[str] = None
 
     def __post_init__(self):
-        """__post_init__."""
+        """__post_init__.
+
+        Manages post init operations and coordinates related state changes for the component.
+        """
         if self.errors is None:
             self.errors = []
-        """__post_init__."""
-        """__post_init__."""
 
 
 class SystemCacheRebuilder:
-    """Production Windows system cache recovery and rebuilding toolkit."""
+    """Systemcacherebuilder.
+
+    Manages SystemCacheRebuilder operations and coordinates related state changes for the component.
+    """
 
     @classmethod
     def rebuild_font_cache(cls) -> Tuple[bool, int, int, List[str]]:
-        """Stop FontCache service, delete cached .dat files, and restart service."""
+        """Stop FontCache service, delete cached .dat files, and restart service.
+
+        Manages rebuild font cache operations and coordinates related state changes for the component.
+
+        Returns:
+            Tuple[bool, int, int, List[str]]: List of processed items or identifiers.
+        """
         if platform.system() != "Windows":
             return False, 0, 0, ["Windows only"]
 
@@ -89,7 +102,13 @@ class SystemCacheRebuilder:
 
     @classmethod
     def rebuild_icon_thumbnail_cache(cls) -> Tuple[bool, int, int, List[str]]:
-        """Purge IconCache.db, iconcache_*.db, and thumbcache_*.db files."""
+        """Purge IconCache.db, iconcache_*.db, and thumbcache_*.db files.
+
+        Manages rebuild icon thumbnail cache operations and coordinates related state changes for the component.
+
+        Returns:
+            Tuple[bool, int, int, List[str]]: List of processed items or identifiers.
+        """
         if platform.system() != "Windows":
             return False, 0, 0, ["Windows only"]
 
@@ -120,7 +139,13 @@ class SystemCacheRebuilder:
 
     @classmethod
     def notify_shell_refresh(cls) -> bool:
-        """Issue Windows Shell change notification to reload icons without killing explorer."""
+        """Issue Windows Shell change notification to reload icons without killing explorer.
+
+        Manages notify shell refresh operations and coordinates related state changes for the component.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         if platform.system() != "Windows":
             return False
 
@@ -134,21 +159,85 @@ class SystemCacheRebuilder:
 
     @classmethod
     def restart_explorer(cls) -> bool:
-        """Gracefully terminate and restart Windows Explorer."""
+        """Restart Windows Explorer safely without leaving a black screen.
+
+        Terminates the existing Explorer instance gracefully and restarts it
+        using the native Windows ShellExecute API to ensure the taskbar and desktop
+        shell are fully restored.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         if platform.system() != "Windows":
             return False
 
+        windir = os.environ.get("WINDIR", r"C:\Windows")
+        explorer_path = os.path.join(windir, "explorer.exe")
+
         try:
-            subprocess.run(["taskkill", "/f", "/im", "explorer.exe"], capture_output=True, timeout=5)
-            time.sleep(1)
-            subprocess.Popen(["explorer.exe"])
+            # 1. First broadcast shell change notification so caches reload
+            cls.notify_shell_refresh()
+
+            # 2. Attempt graceful close (without /f) so Explorer saves its state
+            try:
+                subprocess.run(["taskkill", "/im", "explorer.exe"], capture_output=True, timeout=3)
+            except Exception:
+                pass
+            time.sleep(0.8)
+
+            # Check if explorer is still running; only force kill if stuck
+            try:
+                import psutil
+                explorer_alive = any((p.name() or "").lower() == "explorer.exe" for p in psutil.process_iter(["name"]))
+            except Exception:
+                explorer_alive = False
+
+            if explorer_alive:
+                subprocess.run(["taskkill", "/f", "/im", "explorer.exe"], capture_output=True, timeout=4)
+                time.sleep(1.0)
+
+            # 3. Restart Explorer via native ShellExecute to guarantee desktop initialization
+            restarted = False
+            try:
+                ret = ctypes.windll.shell32.ShellExecuteW(None, "open", explorer_path, None, windir, 1)
+                if ret > 32:  # ShellExecute returns > 32 on success
+                    restarted = True
+            except Exception:
+                pass
+
+            # Fallback to detached cmd /c start if ShellExecute didn't launch
+            if not restarted:
+                try:
+                    subprocess.Popen(
+                        ["cmd.exe", "/c", "start", "", explorer_path],
+                        cwd=windir,
+                        creationflags=getattr(subprocess, "DETACHED_PROCESS", 0x00000008),
+                    )
+                except Exception:
+                    subprocess.Popen([explorer_path], cwd=windir)
+
+            time.sleep(0.5)
             return True
         except Exception:
+            # Emergency fallback: ensure explorer is launched
+            try:
+                ctypes.windll.shell32.ShellExecuteW(None, "open", explorer_path, None, windir, 1)
+            except Exception:
+                pass
             return False
 
     @classmethod
     def execute_full_cache_rebuild(cls, restart_shell: bool = False) -> CacheRebuildReport:
-        """Run a full system cache rebuild across fonts, icons, thumbnails, and shell."""
+        """Run a full system cache rebuild across fonts, icons, thumbnails, and shell.
+
+        Manages execute full cache rebuild operations and coordinates related state changes for the component.
+
+        Args:
+            restart_shell (bool): The restart shell parameter.
+
+        Returns:
+            CacheRebuildReport: Result of the operation.
+        """
         report = CacheRebuildReport()
 
         # Font Cache
@@ -167,10 +256,10 @@ class SystemCacheRebuilder:
         report.errors.extend(i_errs)
 
         # Shell Notification / Restart
+        # Always issue non-destructive shell change notification
+        report.shell_notified = cls.notify_shell_refresh()
         if restart_shell:
             cls.restart_explorer()
-            report.shell_notified = True
-        else:
-            report.shell_notified = cls.notify_shell_refresh()
 
         return report
+

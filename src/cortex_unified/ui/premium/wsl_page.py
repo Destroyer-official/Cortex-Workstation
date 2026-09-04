@@ -33,11 +33,17 @@ IS_WINDOWS = sys.platform == "win32"
 
 
 class _WslListWorker(QObject):
-    """_WslListWorker class."""
+    """Wsllistworker.
+
+    Manages WslListWorker operations and coordinates related state changes for the component.
+    """
     finished = Signal(list)
     failed = Signal(str)
     def run(self):
-        """run."""
+        """run.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         try:
             from cortex_unified.system_tools.wsl_cleaner import WslCleaner
             self.finished.emit([d for d in WslCleaner().list_distros()])
@@ -46,11 +52,17 @@ class _WslListWorker(QObject):
 
 
 class _WslShutdownWorker(QObject):
-    """_WslShutdownWorker class."""
+    """Wslshutdownworker.
+
+    Manages WslShutdownWorker operations and coordinates related state changes for the component.
+    """
     finished = Signal(bool, str)
     failed = Signal(str)
     def run(self):
-        """run."""
+        """run.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         try:
             from cortex_unified.system_tools.wsl_cleaner import WslCleaner
             ok, msg = WslCleaner().shutdown()
@@ -60,10 +72,19 @@ class _WslShutdownWorker(QObject):
 
 
 class WslPage(_Page):
-    """List WSL distros, show ext4.vhdx sizes, shutdown + compact."""
+    """Wslpage.
+
+    Manages WslPage operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, win):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win: Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(title_block(
             "WSL Cleaner",
@@ -122,7 +143,10 @@ class WslPage(_Page):
         self._loaded = False
 
     def _load(self):
-        """_load."""
+        """Fetch and reload the latest data entries into the view.
+
+        Queries the underlying system service or storage cache and refreshes view tables with up-to-date state.
+        """
         self.refresh_btn.setEnabled(False)
         self.state.show_loading("Listing WSL distros…")
         from cortex_unified.system_tools.wsl_cleaner import WslCleaner
@@ -134,7 +158,13 @@ class WslPage(_Page):
         self.win.run_worker(_WslListWorker(), self._on_list, self._fail)
 
     def _on_list(self, distros):
-        """_on_list."""
+        """_on_list.
+
+        Manages on list operations and coordinates related state changes for the component.
+
+        Args:
+            distros: The distros parameter.
+        """
         self.refresh_btn.setEnabled(True)
         if not distros:
             self.state.show_empty("No WSL distros found.")
@@ -169,7 +199,10 @@ class WslPage(_Page):
             self.tbl.setItem(r, 4, QTableWidgetItem(fmt_bytes(logical) if logical else "—"))
 
     def _shutdown(self):
-        """_shutdown."""
+        """Shutdown.
+
+        Manages shutdown operations and coordinates related state changes for the component.
+        """
         confirm = QMessageBox.question(
             self, "Stop WSL?",
             "This stops ALL WSL distros and Docker Desktop's WSL backend.\n\n"
@@ -185,7 +218,14 @@ class WslPage(_Page):
         self.win.run_worker(_WslShutdownWorker(), self._on_shutdown, self._fail)
 
     def _on_shutdown(self, ok: bool, msg: str):
-        """_on_shutdown."""
+        """_on_shutdown.
+
+        Manages on shutdown operations and coordinates related state changes for the component.
+
+        Args:
+            ok (bool): The ok parameter.
+            msg (str): Informational or progress status message.
+        """
         self.shutdown_btn.setEnabled(True)
         self.progress.setVisible(False)
         if ok:
@@ -196,7 +236,10 @@ class WslPage(_Page):
         self._load()
 
     def _compact(self):
-        """_compact."""
+        """Compact.
+
+        Manages compact operations and coordinates related state changes for the component.
+        """
         sel = self.tbl.selectedIndexes()
         if not sel:
             return
@@ -229,15 +272,27 @@ class WslPage(_Page):
         from PySide6.QtCore import QObject as _QO, Signal as _Sig
 
         class _Compact(QObject):
-            """_Compact class."""
+            """Compact.
+
+            Manages Compact operations and coordinates related state changes for the component.
+            """
             finished = Signal(list)
             failed = Signal(str)
             def __init__(self, paths):
-                """__init__."""
+                """__init__.
+
+                Initializes the instance and configures internal state.
+
+                Args:
+                    paths: Filesystem path to the target file or directory.
+                """
                 super().__init__()
                 self._paths = paths
             def run(self):
-                """run."""
+                """run.
+
+                Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+                """
                 try:
                     from cortex_unified.system_tools.wsl_cleaner import WslCleaner
                     results = []
@@ -250,7 +305,13 @@ class WslPage(_Page):
         self.win.run_worker(w, self._on_compact, self._fail)
 
     def _on_compact(self, results):
-        """_on_compact."""
+        """_on_compact.
+
+        Manages on compact operations and coordinates related state changes for the component.
+
+        Args:
+            results: Collection or dictionary holding operation results.
+        """
         self.compact_btn.setEnabled(True)
         self.progress.setVisible(False)
         if not results:
@@ -264,7 +325,13 @@ class WslPage(_Page):
         self._load()
 
     def _fail(self, msg: str):
-        """_fail."""
+        """Handle an operation failure and notify the user.
+
+        Captures error details, displays an informative failure state in the UI, resets progress indicators, and re-enables interactive controls.
+
+        Args:
+            msg (str): Informational or progress status message.
+        """
         self.refresh_btn.setEnabled(True)
         self.shutdown_btn.setEnabled(True)
         self.compact_btn.setEnabled(bool(self.tbl.selectedIndexes()))

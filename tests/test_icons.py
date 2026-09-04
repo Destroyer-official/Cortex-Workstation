@@ -27,27 +27,39 @@ from cortex_unified.ui.premium import icons, registry  # noqa: E402
 
 @pytest.fixture(scope="module")
 def app():
-    """app."""
+    """App.
+
+    Manages app operations and coordinates related state changes for the component.
+    """
     return QApplication.instance() or QApplication([])
 
 
 # --- asset coverage --------------------------------------------------------
 
 def test_every_page_has_its_own_icon_asset():
-    """test_every_page_has_its_own_icon_asset."""
+    """test_every_page_has_its_own_icon_asset.
+
+    Manages test every page has its own icon asset operations and coordinates related state changes for the component.
+    """
     missing = [s.id for s in registry.PAGES if not icons.has_icon(s.icon)]
     assert missing == [], f"pages without an icon asset: {missing}"
 
 
 def test_no_two_pages_share_an_icon():
-    """Regression: five glyphs were previously reused across tools."""
+    """Regression: five glyphs were previously reused across tools.
+
+    Manages test no two pages share an icon operations and coordinates related state changes for the component.
+    """
     used = [spec.icon for spec in registry.PAGES]
     duplicates = {name for name in used if used.count(name) > 1}
     assert duplicates == set(), f"icons reused across pages: {duplicates}"
 
 
 def test_registry_icons_are_asset_names_not_glyphs():
-    """An icon field must never contain a raw symbol codepoint again."""
+    """An icon field must never contain a raw symbol codepoint again.
+
+    Manages test registry icons are asset names not glyphs operations and coordinates related state changes for the component.
+    """
     for spec in registry.PAGES:
         assert spec.icon.isascii(), f"{spec.id} icon is not an asset name"
         assert not spec.icon.startswith("\\u"), spec.id
@@ -55,7 +67,10 @@ def test_registry_icons_are_asset_names_not_glyphs():
 
 
 def test_window_chrome_and_status_icons_are_shipped():
-    """test_window_chrome_and_status_icons_are_shipped."""
+    """test_window_chrome_and_status_icons_are_shipped.
+
+    Manages test window chrome and status icons are shipped operations and coordinates related state changes for the component.
+    """
     for name in ("brand", "win-minimize", "win-maximize", "win-restore",
                  "win-close", "info", "warning", "success", "error"):
         assert icons.has_icon(name), name
@@ -64,7 +79,13 @@ def test_window_chrome_and_status_icons_are_shipped():
 # --- rendering quality -----------------------------------------------------
 
 def test_every_shipped_icon_renders(app):
-    """test_every_shipped_icon_renders."""
+    """test_every_shipped_icon_renders.
+
+    Manages test every shipped icon renders operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+    """
     failed = [n for n in sorted(icons.available())
               if icons.pixmap(n, 18, "#DCE3F0").isNull()]
     assert failed == [], f"icons that failed to render: {failed}"
@@ -87,7 +108,13 @@ def test_rasterises_at_device_resolution(app, dpr_x100, expected):
 
 
 def test_icons_are_tinted_to_the_requested_colour(app):
-    """test_icons_are_tinted_to_the_requested_colour."""
+    """test_icons_are_tinted_to_the_requested_colour.
+
+    Manages test icons are tinted to the requested colour operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+    """
     image = icons.pixmap("firewall", 32, "#FF0000").toImage()
     opaque = {
         image.pixelColor(x, y).name()
@@ -100,7 +127,13 @@ def test_icons_are_tinted_to_the_requested_colour(app):
 
 
 def test_icon_exposes_a_larger_variant_so_qt_never_upscales(app):
-    """test_icon_exposes_a_larger_variant_so_qt_never_upscales."""
+    """test_icon_exposes_a_larger_variant_so_qt_never_upscales.
+
+    Manages test icon exposes a larger variant so qt never upscales operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+    """
     sizes = icons.icon("dashboard", 18, "#FFFFFF").availableSizes()
     assert sizes, "QIcon carries no pixmaps"
     assert max(s.width() for s in sizes) >= 36
@@ -109,13 +142,25 @@ def test_icon_exposes_a_larger_variant_so_qt_never_upscales(app):
 # --- robustness ------------------------------------------------------------
 
 def test_missing_icon_degrades_to_empty_without_raising(app):
-    """A missing decoration must never stop a tool from opening."""
+    """A missing decoration must never stop a tool from opening.
+
+    Manages test missing icon degrades to empty without raising operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+    """
     assert icons.icon("no_such_icon_exists").isNull()
     assert icons.pixmap("no_such_icon_exists").isNull()
 
 
 def test_clear_cache_allows_retinting(app):
-    """test_clear_cache_allows_retinting."""
+    """test_clear_cache_allows_retinting.
+
+    Manages test clear cache allows retinting operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+    """
     first = icons.pixmap("settings", 16, "#112233")
     icons.clear_cache()
     second = icons.pixmap("settings", 16, "#445566")
@@ -126,7 +171,13 @@ def test_clear_cache_allows_retinting(app):
 # --- integration with the shell -------------------------------------------
 
 def test_navigation_uses_real_icons_and_clean_labels(app):
-    """test_navigation_uses_real_icons_and_clean_labels."""
+    """test_navigation_uses_real_icons_and_clean_labels.
+
+    Manages test navigation uses real icons and clean labels operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+    """
     from cortex_unified.ui.premium.theme import apply_theme
     from cortex_unified.ui.premium.window import PremiumMainWindow
 
@@ -145,7 +196,13 @@ def test_navigation_uses_real_icons_and_clean_labels(app):
 
 
 def test_theme_switch_retints_navigation_icons(app):
-    """test_theme_switch_retints_navigation_icons."""
+    """test_theme_switch_retints_navigation_icons.
+
+    Manages test theme switch retints navigation icons operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+    """
     from cortex_unified.ui.premium.theme import apply_theme
     from cortex_unified.ui.premium.window import PremiumMainWindow
 
@@ -163,7 +220,13 @@ def test_theme_switch_retints_navigation_icons(app):
 
 
 def test_title_bar_controls_have_icons_and_accessible_names(app):
-    """test_title_bar_controls_have_icons_and_accessible_names."""
+    """test_title_bar_controls_have_icons_and_accessible_names.
+
+    Manages test title bar controls have icons and accessible names operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+    """
     from cortex_unified.ui.premium.theme import apply_theme
     from cortex_unified.ui.premium.window import PremiumMainWindow
 
@@ -225,7 +288,13 @@ def test_no_symbol_glyphs_remain_in_the_premium_ui():
 
 
 def test_status_note_pairs_an_icon_with_accessible_text(app):
-    """test_status_note_pairs_an_icon_with_accessible_text."""
+    """test_status_note_pairs_an_icon_with_accessible_text.
+
+    Manages test status note pairs an icon with accessible text operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+    """
     from cortex_unified.ui.premium.theme import THEMES
     from cortex_unified.ui.premium.widgets import status_note
 

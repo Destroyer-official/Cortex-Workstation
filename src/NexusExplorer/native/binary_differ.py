@@ -16,7 +16,10 @@ from typing import Dict, List, Optional, Tuple
 
 @dataclass
 class HexDiffChunk:
-    """HexDiffChunk."""
+    """Hexdiffchunk.
+
+    Manages HexDiffChunk operations and coordinates related state changes for the component.
+    """
     offset: int
     left_bytes: bytes
     right_bytes: bytes
@@ -25,12 +28,14 @@ class HexDiffChunk:
     left_ascii: str
     right_ascii: str
     is_match: bool
-    """HexDiffChunk class."""
 
 
 @dataclass
 class BinaryDiffReport:
-    """BinaryDiffReport."""
+    """Binarydiffreport.
+
+    Manages BinaryDiffReport operations and coordinates related state changes for the component.
+    """
     file_a: str
     file_b: str
     size_a: int
@@ -41,17 +46,28 @@ class BinaryDiffReport:
     first_difference_offset: Optional[int]
     diff_chunks: List[HexDiffChunk]
     error: Optional[str] = None
-    """BinaryDiffReport class."""
 
 
 class BinaryDiffer:
-    """Production byte-level binary and hex diffing engine."""
+    """Binarydiffer.
+
+    Manages BinaryDiffer operations and coordinates related state changes for the component.
+    """
 
     CHUNK_SIZE = 16  # Standard 16-byte hex viewer row
 
     @staticmethod
     def _to_ascii(b_data: bytes) -> str:
-        """Convert bytes to printable ASCII with dots for non-printables."""
+        """Convert bytes to printable ASCII with dots for non-printables.
+
+        Manages to ascii operations and coordinates related state changes for the component.
+
+        Args:
+            b_data (bytes): The b data parameter.
+
+        Returns:
+            str: Formatted string or path.
+        """
         return "".join(chr(b) if 32 <= b <= 126 else "." for b in b_data)
 
     @classmethod
@@ -61,7 +77,18 @@ class BinaryDiffer:
         file_b_path: str | Path,
         max_diff_chunks: int = 200,
     ) -> BinaryDiffReport:
-        """Perform byte-by-byte comparison and generate hex diff report."""
+        """Perform byte-by-byte comparison and generate hex diff report.
+
+        Manages compare binary files operations and coordinates related state changes for the component.
+
+        Args:
+            file_a_path (str | Path): Filesystem path to the target file or directory.
+            file_b_path (str | Path): Filesystem path to the target file or directory.
+            max_diff_chunks (int): The max diff chunks parameter.
+
+        Returns:
+            BinaryDiffReport: Result of the operation.
+        """
         pa = Path(file_a_path).resolve()
         pb = Path(file_b_path).resolve()
 

@@ -17,7 +17,10 @@ except ImportError:
 
 @dataclass
 class OptimizationSettings:
-    """Settings for performance optimization."""
+    """Optimizationsettings.
+
+    Manages OptimizationSettings operations and coordinates related state changes for the component.
+    """
     max_memory_mb: int = 0  # 0 = no limit
     max_cpu_percent: float = 80.0
     max_threads: int = 0  # 0 = auto-detect
@@ -30,7 +33,10 @@ class OptimizationSettings:
     cache_size_mb: int = 50
 
 class PerformanceOptimizer:
-    """Optimizes performance for Cortex Cleaner operations."""
+    """Performanceoptimizer.
+
+    Manages PerformanceOptimizer operations and coordinates related state changes for the component.
+    """
     
     def __init__(self, settings: OptimizationSettings = None, logger: logging.Logger = None):
         """Initialize performance optimizer.
@@ -57,7 +63,10 @@ class PerformanceOptimizer:
             self.logger.warning("psutil not available, some optimizations will be disabled")
     
     def start_optimization(self) -> None:
-        """Start performance optimization."""
+        """Start performance optimization.
+
+        Manages start optimization operations and coordinates related state changes for the component.
+        """
         if self.optimization_active:
             return
         
@@ -82,7 +91,10 @@ class PerformanceOptimizer:
                 self.logger.warning(f"Could not set process priority: {e}")
     
     def stop_optimization(self) -> None:
-        """Stop performance optimization and restore defaults."""
+        """Stop performance optimization and restore defaults.
+
+        Manages stop optimization operations and coordinates related state changes for the component.
+        """
         if not self.optimization_active:
             return
         
@@ -102,7 +114,10 @@ class PerformanceOptimizer:
     
     def _optimize_garbage_collection(self) -> None:
         # Store original thresholds
-        """_optimize_garbage_collection."""
+        """_optimize_garbage_collection.
+
+        Manages optimize garbage collection operations and coordinates related state changes for the component.
+        """
         self.original_gc_thresholds = gc.get_threshold()
         
         # Set more aggressive thresholds for memory-intensive operations
@@ -113,18 +128,22 @@ class PerformanceOptimizer:
         
         gc.set_threshold(*new_thresholds)
         self.logger.info(f"Set GC thresholds from {self.original_gc_thresholds} to {new_thresholds}")
-        """_optimize_garbage_collection."""
-        """_optimize_garbage_collection."""
     
     def _start_memory_monitoring(self) -> None:
-        """Start memory usage monitoring."""
+        """Start memory usage monitoring.
+
+        Manages start memory monitoring operations and coordinates related state changes for the component.
+        """
         if not self.process:
             return
         
         self.memory_monitor_active = True
         
         def monitor_memory():
-            """monitor_memory."""
+            """monitor_memory.
+
+            Manages monitor memory operations and coordinates related state changes for the component.
+            """
             while self.memory_monitor_active:
                 try:
                     memory_info = self.process.memory_info()
@@ -147,14 +166,15 @@ class PerformanceOptimizer:
                 except Exception as e:
                     self.logger.error(f"Error monitoring memory: {e}")
                     break
-            """monitor_memory."""
-            """monitor_memory."""
         
         monitor_thread = threading.Thread(target=monitor_memory, daemon=True)
         monitor_thread.start()
     
     def _trigger_memory_cleanup(self) -> None:
-        """Trigger aggressive memory cleanup."""
+        """Trigger aggressive memory cleanup.
+
+        Manages trigger memory cleanup operations and coordinates related state changes for the component.
+        """
         self.logger.info("Triggering memory cleanup")
         
         # Force garbage collection
@@ -174,10 +194,11 @@ class PerformanceOptimizer:
     def _clear_internal_caches(self) -> None:
         # This would clear any internal caches maintained by Cortex Cleaner
         # For now, just log the action
-        """_clear_internal_caches."""
+        """_clear_internal_caches.
+
+        Manages clear internal caches operations and coordinates related state changes for the component.
+        """
         self.logger.debug("Clearing internal caches")
-        """_clear_internal_caches."""
-        """_clear_internal_caches."""
     
     def get_optimal_thread_count(self, operation_type: str = "default") -> int:
         """Get optimal thread count for an operation.

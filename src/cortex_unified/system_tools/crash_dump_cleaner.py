@@ -16,7 +16,10 @@ from typing import List, Optional, Tuple
 
 @dataclass
 class CrashDumpItem:
-    """Crash Dump Item data container."""
+    """Crashdumpitem.
+
+    Manages CrashDumpItem operations and coordinates related state changes for the component.
+    """
     path: str
     filename: str
     category: str  # "Kernel Dump", "Minidump", "LiveKernel", "User CrashDump", "WER Report"
@@ -26,7 +29,10 @@ class CrashDumpItem:
 
 @dataclass
 class CrashDumpCleanReport:
-    """Crash Dump Clean Report data container."""
+    """Crashdumpcleanreport.
+
+    Manages CrashDumpCleanReport operations and coordinates related state changes for the component.
+    """
     total_found: int = 0
     total_bytes_found: int = 0
     files_deleted: int = 0
@@ -34,19 +40,29 @@ class CrashDumpCleanReport:
     errors: List[str] = None
 
     def __post_init__(self):
-        """__post_init__."""
+        """__post_init__.
+
+        Manages post init operations and coordinates related state changes for the component.
+        """
         if self.errors is None:
             self.errors = []
-        """__post_init__."""
-        """__post_init__."""
 
 
 class CrashDumpCleaner:
-    """Production Windows crash dump and WER queue sanitizer."""
+    """Crashdumpcleaner.
+
+    Manages CrashDumpCleaner operations and coordinates related state changes for the component.
+    """
 
     @classmethod
     def scan_dumps(cls) -> List[CrashDumpItem]:
-        """Scan all known Windows crash dump and error reporting locations."""
+        """Scan all known Windows crash dump and error reporting locations.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+        Returns:
+            List[CrashDumpItem]: List of processed items or identifiers.
+        """
         if platform.system() != "Windows":
             return []
 
@@ -118,7 +134,16 @@ class CrashDumpCleaner:
 
     @classmethod
     def clean_dumps(cls, items_to_delete: Optional[List[CrashDumpItem]] = None) -> CrashDumpCleanReport:
-        """Purge selected or all discovered crash dumps and WER files."""
+        """Purge selected or all discovered crash dumps and WER files.
+
+        Permanently purges or removes specified target items, reclaiming storage space and logging actions taken.
+
+        Args:
+            items_to_delete (Optional[List[CrashDumpItem]]): The items to delete parameter.
+
+        Returns:
+            CrashDumpCleanReport: Result of the operation.
+        """
         if items_to_delete is None:
             items_to_delete = cls.scan_dumps()
 

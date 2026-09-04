@@ -12,20 +12,38 @@ from cortex_unified.system_tools.task_manager import TaskManager
 @pytest.fixture
 def tm():
     # Fresh instance so priming state is deterministic per test.
-    """tm."""
+    """Tm.
+
+    Manages tm operations and coordinates related state changes for the component.
+    """
     return TaskManager()
 
 
 class TestSnapshot:
-    """TestSnapshot."""
+    """Testsnapshot.
+
+    Manages TestSnapshot operations and coordinates related state changes for the component.
+    """
     def test_snapshot_shape(self, tm):
-        """test_snapshot_shape."""
+        """test_snapshot_shape.
+
+        Manages test snapshot shape operations and coordinates related state changes for the component.
+
+        Args:
+            tm: The tm parameter.
+        """
         snap = tm.snapshot()
         assert "error" not in snap
         assert set(snap) >= {"cpu", "memory", "processes"}
 
     def test_cpu_block(self, tm):
-        """test_cpu_block."""
+        """test_cpu_block.
+
+        Manages test cpu block operations and coordinates related state changes for the component.
+
+        Args:
+            tm: The tm parameter.
+        """
         cpu = tm.snapshot()["cpu"]
         assert cpu["cores"] >= 1
         assert 0.0 <= cpu["total_percent"] <= 100.0 * cpu["cores"]
@@ -33,7 +51,13 @@ class TestSnapshot:
         assert len(cpu["per_core"]) == cpu["cores"]
 
     def test_processes_have_fields(self, tm):
-        """test_processes_have_fields."""
+        """test_processes_have_fields.
+
+        Manages test processes have fields operations and coordinates related state changes for the component.
+
+        Args:
+            tm: The tm parameter.
+        """
         procs = tm.snapshot()["processes"]
         assert procs, "expected at least one running process"
         p = procs[0]
@@ -43,43 +67,82 @@ class TestSnapshot:
         assert any(pr["pid"] == os.getpid() for pr in procs)
 
     def test_processes_sorted_by_memory_desc(self, tm):
-        """test_processes_sorted_by_memory_desc."""
+        """test_processes_sorted_by_memory_desc.
+
+        Manages test processes sorted by memory desc operations and coordinates related state changes for the component.
+
+        Args:
+            tm: The tm parameter.
+        """
         procs = tm.snapshot()["processes"]
         rss = [p["rss"] for p in procs]
         assert rss == sorted(rss, reverse=True)
 
     def test_idle_process_excluded(self, tm):
-        """The idle process (unused CPU) must never appear as a real process."""
+        """The idle process (unused CPU) must never appear as a real process.
+
+        Manages test idle process excluded operations and coordinates related state changes for the component.
+
+        Args:
+            tm: The tm parameter.
+        """
         procs = tm.snapshot()["processes"]
         assert all(p["pid"] != 0 for p in procs)
         assert all(p["name"].lower() not in {"system idle process", "idle"}
                    for p in procs)
 
     def test_total_cpu_in_range(self, tm):
-        """test_total_cpu_in_range."""
+        """test_total_cpu_in_range.
+
+        Manages test total cpu in range operations and coordinates related state changes for the component.
+
+        Args:
+            tm: The tm parameter.
+        """
         cpu = tm.snapshot()["cpu"]
         assert 0.0 <= cpu["total_percent"] <= 100.0
 
     def test_per_process_cpu_normalized(self, tm):
         # After priming, a second snapshot yields real deltas; each normalized
         # value should be within a sane 0..100 band (rounding tolerance).
-        """test_per_process_cpu_normalized."""
+        """test_per_process_cpu_normalized.
+
+        Manages test per process cpu normalized operations and coordinates related state changes for the component.
+
+        Args:
+            tm: The tm parameter.
+        """
         tm.snapshot()
         procs = tm.snapshot()["processes"]
         assert all(0.0 <= p["cpu"] <= 100.5 for p in procs)
 
 
 class TestMemoryReconciliation:
-    """TestMemoryReconciliation."""
+    """Testmemoryreconciliation.
+
+    Manages TestMemoryReconciliation operations and coordinates related state changes for the component.
+    """
     def test_core_fields_present(self, tm):
-        """test_core_fields_present."""
+        """test_core_fields_present.
+
+        Manages test core fields present operations and coordinates related state changes for the component.
+
+        Args:
+            tm: The tm parameter.
+        """
         mem = tm.snapshot()["memory"]
         for key in ("total", "available", "used", "percent",
                     "sum_process_ws", "ws_overlaps"):
             assert key in mem
 
     def test_used_is_total_minus_available(self, tm):
-        """test_used_is_total_minus_available."""
+        """test_used_is_total_minus_available.
+
+        Manages test used is total minus available operations and coordinates related state changes for the component.
+
+        Args:
+            tm: The tm parameter.
+        """
         mem = tm.snapshot()["memory"]
         assert mem["used"] == mem["total"] - mem["available"]
 
@@ -94,7 +157,13 @@ class TestMemoryReconciliation:
         assert mem["ws_overlaps"] == (mem["sum_process_ws"] > mem["used"])
 
     def test_hardware_reserved_consistent_if_present(self, tm):
-        """test_hardware_reserved_consistent_if_present."""
+        """test_hardware_reserved_consistent_if_present.
+
+        Manages test hardware reserved consistent if present operations and coordinates related state changes for the component.
+
+        Args:
+            tm: The tm parameter.
+        """
         mem = tm.snapshot()["memory"]
         if "installed" in mem:
             assert mem["installed"] >= mem["total"]
@@ -102,22 +171,40 @@ class TestMemoryReconciliation:
 
 
 class TestEndProcess:
-    """TestEndProcess."""
+    """Testendprocess.
+
+    Manages TestEndProcess operations and coordinates related state changes for the component.
+    """
     def test_end_nonexistent_pid(self, tm):
         # PID 0 / a very high unlikely PID -> graceful failure, never raises.
-        """test_end_nonexistent_pid."""
+        """test_end_nonexistent_pid.
+
+        Manages test end nonexistent pid operations and coordinates related state changes for the component.
+
+        Args:
+            tm: The tm parameter.
+        """
         ok, msg = tm.end_process(999_999_99)
         assert ok is False
         assert isinstance(msg, str) and msg
 
     def test_end_returns_tuple(self, tm):
-        """test_end_returns_tuple."""
+        """test_end_returns_tuple.
+
+        Manages test end returns tuple operations and coordinates related state changes for the component.
+
+        Args:
+            tm: The tm parameter.
+        """
         result = tm.end_process(-1)
         assert isinstance(result, tuple) and len(result) == 2
 
 
 def test_singleton_instance():
-    """test_singleton_instance."""
+    """test_singleton_instance.
+
+    Manages test singleton instance operations and coordinates related state changes for the component.
+    """
     a = TaskManager.instance()
     b = TaskManager.instance()
     assert a is b

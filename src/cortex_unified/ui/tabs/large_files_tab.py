@@ -24,21 +24,33 @@ from cortex_unified.core.deleter import Deleter
 from cortex_unified.analyzers.large_file_finder import LargeFileFinder
 
 class LargeFileFinderWorker(QThread):
-    """Finds large files above a size threshold off the GUI thread."""
+    """Largefilefinderworker.
+
+    Manages LargeFileFinderWorker operations and coordinates related state changes for the component.
+    """
     finished = Signal(list)
     error = Signal(str)
 
     def __init__(self, config: Config, path: str, min_size_mb: int = 100):
-        """Store the config, scan path, and minimum size in MB."""
+        """Store the config, scan path, and minimum size in MB.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            config (Config): The config parameter.
+            path (str): Filesystem path to the target file or directory.
+            min_size_mb (int): The min size mb parameter.
+        """
         super().__init__()
         self.config = config
         self.path = path
         self.min_size_mb = min_size_mb
-        """__init__."""
-        """__init__."""
 
     def run(self):
-        """Run the large file finding process."""
+        """Run the large file finding process.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         try:
             finder = LargeFileFinder(self.config, self.path)
             large_files = finder.find_large_files(min_size_mb=self.min_size_mb)
@@ -46,20 +58,30 @@ class LargeFileFinderWorker(QThread):
             self.finished.emit([large_files, stats])
         except Exception as e:
             self.error.emit(str(e))
-    """LargeFileFinderWorker class."""
-    """LargeFileFinderWorker class."""
 
 class LargeFilesTab(BaseTab):
-    """Tab for large files tab functionality."""
+    """Largefilestab.
+
+    Manages LargeFilesTab operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, config, logger, safety_manager):
-        """Initialize the tab and call setup_ui."""
+        """Initialize the tab and call setup_ui.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            config: The config parameter.
+            logger: The logger parameter.
+            safety_manager: The safety manager parameter.
+        """
         super().__init__(config, logger, safety_manager)
-        """__init__."""
-        """__init__."""
 
     def setup_ui(self):
-        """Set up the user interface."""
+        """Set up the user interface.
+
+        Manages setup ui operations and coordinates related state changes for the component.
+        """
         layout = QVBoxLayout(self)
         layout.setSpacing(10)
         
@@ -135,26 +157,32 @@ class LargeFilesTab(BaseTab):
         layout.addWidget(self.large_files_table)
 
     def _on_selection_changed(self):
-        """Enable the delete button when table rows are selected."""
+        """Enable the delete button when table rows are selected.
+
+        Manages on selection changed operations and coordinates related state changes for the component.
+        """
         has_sel = len(self.large_files_table.selectedItems()) > 0
         self.delete_large_files_button.setEnabled(has_sel)
-        """_on_selection_changed."""
-        """_on_selection_changed."""
 
     def select_all(self):
-        """Select all rows in the large-files table."""
+        """Select all rows in the large-files table.
+
+        Manages select all operations and coordinates related state changes for the component.
+        """
         self.large_files_table.selectAll()
-        """select_all."""
-        """select_all."""
         
     def deselect_all(self):
-        """Clear the table's selection."""
+        """Clear the table's selection.
+
+        Manages deselect all operations and coordinates related state changes for the component.
+        """
         self.large_files_table.clearSelection()
-        """deselect_all."""
-        """deselect_all."""
 
     def start_find_large_files(self):
-        """Start finding large files natively via Thread manager."""
+        """Start finding large files natively via Thread manager.
+
+        Manages start find large files operations and coordinates related state changes for the component.
+        """
         path = self.large_files_path_input.text().strip()
         if not path:
             QMessageBox.warning(self, 'Warning', 'Please select a directory to scan for large files.')
@@ -191,14 +219,24 @@ class LargeFilesTab(BaseTab):
         worker.start()
 
     def _on_worker_finished(self, worker):
-        """Unregister a finished worker thread and delete it."""
+        """Unregister a finished worker thread and delete it.
+
+        Manages on worker finished operations and coordinates related state changes for the component.
+
+        Args:
+            worker: The worker parameter.
+        """
         self.remove_worker_thread(worker)
         worker.deleteLater()
-        """_on_worker_finished."""
-        """_on_worker_finished."""
 
     def large_files_found(self, result: list):
-        """Fill the table with path/size/modified-time rows and enable actions."""
+        """Fill the table with path/size/modified-time rows and enable actions.
+
+        Manages large files found operations and coordinates related state changes for the component.
+
+        Args:
+            result (list): Collection or dictionary holding operation results.
+        """
         large_files, stats = result
         self.find_large_files_button.setEnabled(True)
         self.large_files_progress_bar.setVisible(False)
@@ -222,20 +260,25 @@ class LargeFilesTab(BaseTab):
         if len(large_files) > 0:
             self.select_all_btn.setEnabled(True)
             self.deselect_all_btn.setEnabled(True)
-        """large_files_found."""
-        """large_files_found."""
 
     def large_files_error(self, error: str):
-        """Reset the find button and report the error."""
+        """Reset the find button and report the error.
+
+        Manages large files error operations and coordinates related state changes for the component.
+
+        Args:
+            error (str): Error message string or exception instance.
+        """
         self.logger.error(f'Large files error: {error}')
         self.find_large_files_button.setEnabled(True)
         self.large_files_progress_bar.setVisible(False)
         QMessageBox.critical(self, 'Error', f'An error occurred while finding large files:\n{error}')
-        """large_files_error."""
-        """large_files_error."""
 
     def delete_selected_large_files(self):
-        """Confirm, then trash the selected large files via Deleter and rescan."""
+        """Confirm, then trash the selected large files via Deleter and rescan.
+
+        Manages delete selected large files operations and coordinates related state changes for the component.
+        """
         selected_ranges = self.large_files_table.selectedRanges()
         if not selected_ranges:
             QMessageBox.information(self, 'Info', 'Please select files to delete.')
@@ -280,5 +323,3 @@ class LargeFilesTab(BaseTab):
         except Exception as e:
             self.large_files_progress_bar.setVisible(False)
             QMessageBox.critical(self, 'Deletion Error', f'Error deleting large files:\n{str(e)}')
-        """delete_selected_large_files."""
-        """delete_selected_large_files."""

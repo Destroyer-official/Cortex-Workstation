@@ -25,6 +25,7 @@ fn emit_open_paths(app: &tauri::AppHandle, paths: Vec<String>) {
     }
 }
 
+/// Builds and runs the NexusExplorer Tauri application with all managed state and IPC commands.
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     // When embedded (e.g. inside Cortex Cleaner via Win32 SetParent), the host

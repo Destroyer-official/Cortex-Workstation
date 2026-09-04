@@ -86,7 +86,13 @@ IS_WINDOWS = platform.system() == "Windows"
 # ===========================================================================
 
 def test_hash_computation(tmp_path: Path):
-    """test_hash_computation."""
+    """test_hash_computation.
+
+    Manages test hash computation operations and coordinates related state changes for the component.
+
+    Args:
+        tmp_path (Path): Filesystem path to the target file or directory.
+    """
     test_file = tmp_path / "data.bin"
     test_file.write_bytes(b"Cortex Cleaner Hash Test Payload 1234567890")
 
@@ -103,7 +109,13 @@ def test_hash_computation(tmp_path: Path):
 
 
 def test_checksum_manifest_creation_and_verify(tmp_path: Path):
-    """test_checksum_manifest_creation_and_verify."""
+    """test_checksum_manifest_creation_and_verify.
+
+    Manages test checksum manifest creation and verify operations and coordinates related state changes for the component.
+
+    Args:
+        tmp_path (Path): Filesystem path to the target file or directory.
+    """
     f1 = tmp_path / "file1.txt"
     f2 = tmp_path / "file2.txt"
     f1.write_text("Alpha content")
@@ -140,7 +152,13 @@ def test_checksum_manifest_creation_and_verify(tmp_path: Path):
 # ===========================================================================
 
 def test_batch_renamer_tokens_and_case(tmp_path: Path):
-    """test_batch_renamer_tokens_and_case."""
+    """test_batch_renamer_tokens_and_case.
+
+    Manages test batch renamer tokens and case operations and coordinates related state changes for the component.
+
+    Args:
+        tmp_path (Path): Filesystem path to the target file or directory.
+    """
     f1 = tmp_path / "my document report.txt"
     f2 = tmp_path / "my second report.txt"
     f1.write_text("Doc 1")
@@ -181,7 +199,13 @@ def test_batch_renamer_tokens_and_case(tmp_path: Path):
 # ===========================================================================
 
 def test_directory_diff_and_sync(tmp_path: Path):
-    """test_directory_diff_and_sync."""
+    """test_directory_diff_and_sync.
+
+    Manages test directory diff and sync operations and coordinates related state changes for the component.
+
+    Args:
+        tmp_path (Path): Filesystem path to the target file or directory.
+    """
     left = tmp_path / "left"
     right = tmp_path / "right"
     left.mkdir()
@@ -229,7 +253,13 @@ def test_directory_diff_and_sync(tmp_path: Path):
 # ===========================================================================
 
 def test_file_splitter_and_joiner(tmp_path: Path):
-    """test_file_splitter_and_joiner."""
+    """test_file_splitter_and_joiner.
+
+    Manages test file splitter and joiner operations and coordinates related state changes for the component.
+
+    Args:
+        tmp_path (Path): Filesystem path to the target file or directory.
+    """
     source_file = tmp_path / "large_payload.bin"
     payload = b"CHUNK_DATA_PATTERN_ABC123" * 500  # ~13KB
     source_file.write_bytes(payload)
@@ -265,7 +295,13 @@ def test_file_splitter_and_joiner(tmp_path: Path):
 # ===========================================================================
 
 def test_file_unlocker_inspect(tmp_path: Path):
-    """test_file_unlocker_inspect."""
+    """test_file_unlocker_inspect.
+
+    Manages test file unlocker inspect operations and coordinates related state changes for the component.
+
+    Args:
+        tmp_path (Path): Filesystem path to the target file or directory.
+    """
     dummy_file = tmp_path / "test_lock.txt"
     dummy_file.write_text("Sample lock testing file")
 
@@ -278,7 +314,13 @@ def test_file_unlocker_inspect(tmp_path: Path):
 # ===========================================================================
 
 def test_alternate_data_streams_list(tmp_path: Path):
-    """test_alternate_data_streams_list."""
+    """test_alternate_data_streams_list.
+
+    Manages test alternate data streams list operations and coordinates related state changes for the component.
+
+    Args:
+        tmp_path (Path): Filesystem path to the target file or directory.
+    """
     dummy_file = tmp_path / "downloaded_app.exe"
     dummy_file.write_bytes(b"\x4D\x5A\x90\x00")  # MZ PE stub
 
@@ -295,7 +337,10 @@ def test_alternate_data_streams_list(tmp_path: Path):
 # ===========================================================================
 
 def test_event_log_cleaner_scan():
-    """test_event_log_cleaner_scan."""
+    """test_event_log_cleaner_scan.
+
+    Manages test event log cleaner scan operations and coordinates related state changes for the component.
+    """
     channels = EventLogCleaner.list_all_logs()
     assert isinstance(channels, list)
     if IS_WINDOWS:
@@ -308,7 +353,10 @@ def test_event_log_cleaner_scan():
 # ===========================================================================
 
 def test_system_cache_rebuilder_scan():
-    """test_system_cache_rebuilder_scan."""
+    """test_system_cache_rebuilder_scan.
+
+    Manages test system cache rebuilder scan operations and coordinates related state changes for the component.
+    """
     ok = SystemCacheRebuilder.notify_shell_refresh()
     assert isinstance(ok, bool)
 
@@ -318,7 +366,10 @@ def test_system_cache_rebuilder_scan():
 # ===========================================================================
 
 def test_network_stack_optimizer_status():
-    """test_network_stack_optimizer_status."""
+    """test_network_stack_optimizer_status.
+
+    Manages test network stack optimizer status operations and coordinates related state changes for the component.
+    """
     settings = NetworkStackOptimizer.get_tcp_settings()
     assert hasattr(settings, "autotuning_level")
     assert hasattr(settings, "receive_side_scaling")
@@ -330,7 +381,10 @@ def test_network_stack_optimizer_status():
 # ===========================================================================
 
 def test_crash_dump_cleaner_scan():
-    """test_crash_dump_cleaner_scan."""
+    """test_crash_dump_cleaner_scan.
+
+    Manages test crash dump cleaner scan operations and coordinates related state changes for the component.
+    """
     items = CrashDumpCleaner.scan_dumps()
     assert isinstance(items, list)
 
@@ -340,7 +394,10 @@ def test_crash_dump_cleaner_scan():
 # ===========================================================================
 
 def test_delivery_optimization_cleaner_scan():
-    """test_delivery_optimization_cleaner_scan."""
+    """test_delivery_optimization_cleaner_scan.
+
+    Manages test delivery optimization cleaner scan operations and coordinates related state changes for the component.
+    """
     status = DeliveryOptimizationCleaner.get_status()
     assert isinstance(status, DeliveryOptimizationStatus)
     assert isinstance(status.file_count, int)

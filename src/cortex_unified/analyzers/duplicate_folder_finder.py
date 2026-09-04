@@ -17,7 +17,10 @@ from cortex_unified.core.utils import normalize_path
 from cortex_unified.core.config import Config
 
 class DuplicateFolderFinder:
-    """Finds folders whose contents are byte-for-byte identical."""
+    """Duplicatefolderfinder.
+
+    Manages DuplicateFolderFinder operations and coordinates related state changes for the component.
+    """
     
     def __init__(self, config: Config = None, root_path: str = "."):
         """
@@ -40,7 +43,16 @@ class DuplicateFolderFinder:
         self.error_count = 0
     
     def _should_exclude_path(self, path: Path) -> bool:
-        """True when *path* hits an excluded directory name or pattern."""
+        """True when *path* hits an excluded directory name or pattern.
+
+        Manages should exclude path operations and coordinates related state changes for the component.
+
+        Args:
+            path (Path): Filesystem path to the target file or directory.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         if path.name in self.exclude_dirs:
             return True
         
@@ -114,20 +126,28 @@ class DuplicateFolderFinder:
             threads = min(32, os.cpu_count() + 4)
 
         def _cancelled() -> bool:
-            """_cancelled."""
+            """Cancelled.
+
+            Manages cancelled operations and coordinates related state changes for the component.
+
+            Returns:
+                bool: True if the operation succeeded, False otherwise.
+            """
             return cancel_event is not None and cancel_event.is_set()
-            """_cancelled."""
-            """_cancelled."""
 
         def _emit(text: str) -> None:
-            """_emit."""
+            """Emit.
+
+            Manages emit operations and coordinates related state changes for the component.
+
+            Args:
+                text (str): Display text string.
+            """
             if progress is not None:
                 try:
                     progress(text)
                 except Exception:
                     pass
-            """_emit."""
-            """_emit."""
 
         # Pass 1: index every folder under the root.
         folders = []
@@ -191,7 +211,13 @@ class DuplicateFolderFinder:
         return self.duplicate_folders
     
     def get_stats(self) -> dict:
-        """Get statistics about the duplicate folder finding process."""
+        """Get statistics about the duplicate folder finding process.
+
+        Manages get stats operations and coordinates related state changes for the component.
+
+        Returns:
+            dict: Dictionary mapping identifiers to status or values.
+        """
         duplicate_count = sum(len(paths) for paths in self.duplicate_folders.values())
         unique_folders = len(self.duplicate_folders)
         

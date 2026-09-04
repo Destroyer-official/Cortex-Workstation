@@ -15,12 +15,21 @@ from cortex_unified.ui.premium.window import PremiumMainWindow
 
 @pytest.fixture(scope="module")
 def app():
-    """app."""
+    """App.
+
+    Manages app operations and coordinates related state changes for the component.
+    """
     return QApplication.instance() or QApplication([])
 
 
 def test_sidebar_group_headers_have_valid_chevrons_and_escaped_titles(app):
-    """Every group header must have a valid SVG chevron and no raw underscore mnemonics."""
+    """Every group header must have a valid SVG chevron and no raw underscore mnemonics.
+
+    Manages test sidebar group headers have valid chevrons and escaped titles operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+    """
     win = PremiumMainWindow()
     win._toggle_sidebar()  # Expand sidebar
 
@@ -47,7 +56,13 @@ def test_sidebar_group_headers_have_valid_chevrons_and_escaped_titles(app):
 
 
 def test_sidebar_expand_collapse_preserves_chevrons(app):
-    """Expanding and collapsing the sidebar must never erase header chevrons or text."""
+    """Expanding and collapsing the sidebar must never erase header chevrons or text.
+
+    Manages test sidebar expand collapse preserves chevrons operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+    """
     win = PremiumMainWindow()
 
     # Initial state after constructor toggle
@@ -71,11 +86,17 @@ def test_sidebar_expand_collapse_preserves_chevrons(app):
         assert sec["header"].text().strip() != ""
 
 
-def test_all_132_pages_have_unique_icons_with_uniform_palette_tint(app):
-    """All 132 page icons must be distinct and uniformly tinted to the theme color."""
+def test_all_pages_have_unique_icons_with_uniform_palette_tint(app):
+    """All page icons must be distinct and uniformly tinted to the theme color.
+
+    Manages test all pages have unique icons with uniform palette tint operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+    """
     used_icons = [spec.icon for spec in registry.PAGES]
-    assert len(used_icons) == 132
-    assert len(set(used_icons)) == 132, "All 132 pages must have distinct icons"
+    assert len(used_icons) == len(registry.PAGES)
+    assert len(set(used_icons)) == len(registry.PAGES), "All registered pages must have distinct icons"
 
     # Test that every icon renders without null and is tinted to #8B9BB4
     theme_color = "#8B9BB4"

@@ -42,7 +42,10 @@ _BLOCKERS = {
 
 
 class DiskKind(str, enum.Enum):
-    """Which runtime owns a virtual disk (drives the shutdown advice)."""
+    """Diskkind.
+
+    Manages DiskKind operations and coordinates related state changes for the component.
+    """
 
     WSL = "wsl"
     DOCKER = "docker"
@@ -52,7 +55,10 @@ class DiskKind(str, enum.Enum):
 
 @dataclass(slots=True)
 class VirtualDisk:
-    """One discovered ``.vhdx`` plus what we honestly know about it."""
+    """Virtualdisk.
+
+    Manages VirtualDisk operations and coordinates related state changes for the component.
+    """
 
     path: Path
     kind: DiskKind
@@ -81,12 +87,24 @@ class VirtualDisk:
 
     @property
     def can_compact(self) -> bool:
-        """True when compaction can be attempted right now."""
+        """True when compaction can be attempted right now.
+
+        Manages can compact operations and coordinates related state changes for the component.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         return not self.running and self.path.exists()
 
     @property
     def status_note(self) -> str:
-        """Plain explanation of the current state, always safe to display."""
+        """Plain explanation of the current state, always safe to display.
+
+        Manages status note operations and coordinates related state changes for the component.
+
+        Returns:
+            str: Formatted string or path.
+        """
         if not self.path.exists():
             return "file no longer exists"
         if self.running:
@@ -98,7 +116,13 @@ class VirtualDisk:
         return "ready to compact"
 
     def to_dict(self) -> dict[str, Any]:
-        """To dict."""
+        """To dict.
+
+        Manages to dict operations and coordinates related state changes for the component.
+
+        Returns:
+            dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         return {
             "path": str(self.path),
             "kind": self.kind.value,
@@ -116,7 +140,10 @@ class VirtualDisk:
 
 @dataclass(slots=True)
 class CompactResult:
-    """Outcome of one compaction, measured rather than estimated."""
+    """Compactresult.
+
+    Manages CompactResult operations and coordinates related state changes for the component.
+    """
 
     path: Path
     label: str
@@ -128,11 +155,23 @@ class CompactResult:
 
     @property
     def freed_bytes(self) -> int:
-        """Actual bytes returned to the host (never negative)."""
+        """Actual bytes returned to the host (never negative).
+
+        Manages freed bytes operations and coordinates related state changes for the component.
+
+        Returns:
+            int: Result of the operation.
+        """
         return max(0, self.before_bytes - self.after_bytes)
 
     def to_dict(self) -> dict[str, Any]:
-        """To dict."""
+        """To dict.
+
+        Manages to dict operations and coordinates related state changes for the component.
+
+        Returns:
+            dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         return {
             "path": str(self.path),
             "label": self.label,
@@ -145,21 +184,39 @@ class CompactResult:
 
 
 class VhdxManager:
-    """Discover and compact WSL / Docker / Hyper-V virtual disks."""
+    """Vhdxmanager.
+
+    Manages VhdxManager operations and coordinates related state changes for the component.
+    """
 
     def __init__(self) -> None:
-        """Initialize Vhdx Manager."""
+        """Initialize Vhdx Manager.
+
+        Initializes the instance and configures internal state.
+        """
         self.logger = _LOG
 
     @staticmethod
     def is_supported() -> bool:
-        """Virtual-disk compaction is a Windows-only concern."""
+        """Virtual-disk compaction is a Windows-only concern.
+
+        Manages is supported operations and coordinates related state changes for the component.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         return _IS_WINDOWS
 
     # -- discovery ----------------------------------------------------------
 
     def list_disks(self) -> list[VirtualDisk]:
-        """Return every virtual disk we can account for, largest first."""
+        """Return every virtual disk we can account for, largest first.
+
+        Manages list disks operations and coordinates related state changes for the component.
+
+        Returns:
+            list[VirtualDisk]: List of processed items or identifiers.
+        """
         if not _IS_WINDOWS:
             return []
         running = self._running_processes()
@@ -231,7 +288,13 @@ class VhdxManager:
         return out
 
     def _docker_disks(self) -> list[VirtualDisk]:
-        """Find Docker Desktop data disks outside the WSL registry entries."""
+        """Find Docker Desktop data disks outside the WSL registry entries.
+
+        Manages docker disks operations and coordinates related state changes for the component.
+
+        Returns:
+            list[VirtualDisk]: List of processed items or identifiers.
+        """
         out: list[VirtualDisk] = []
         local = os.environ.get("LOCALAPPDATA")
         if not local:
@@ -253,7 +316,13 @@ class VhdxManager:
         return out
 
     def _hyperv_disks(self) -> list[VirtualDisk]:
-        """List Hyper-V VM disks, but only when the role is actually installed."""
+        """List Hyper-V VM disks, but only when the role is actually installed.
+
+        Manages hyperv disks operations and coordinates related state changes for the component.
+
+        Returns:
+            list[VirtualDisk]: List of processed items or identifiers.
+        """
         script = (
             "$ErrorActionPreference='SilentlyContinue';"
             "if (Get-Command Get-VM -ErrorAction SilentlyContinue) {"
@@ -275,7 +344,13 @@ class VhdxManager:
         return out
 
     def _measure(self, disk: VirtualDisk) -> None:
-        """Fill in host sizes, using the engine's sparse-aware measurement."""
+        """Measure.
+
+        Manages measure operations and coordinates related state changes for the component.
+
+        Args:
+            disk (VirtualDisk): The disk parameter.
+        """
         try:
             disk.size_bytes = disk.path.stat().st_size
         except OSError:
@@ -449,7 +524,16 @@ class VhdxManager:
 
     @staticmethod
     def _explain_failure(out: str | None) -> str:
-        """Translate diskpart's output into something actionable."""
+        """Translate diskpart's output into something actionable.
+
+        Manages explain failure operations and coordinates related state changes for the component.
+
+        Args:
+            out (str | None): The out parameter.
+
+        Returns:
+            str: Formatted string or path.
+        """
         low = (out or "").lower()
         if "access is denied" in low or "administrator" in low:
             return ("Administrator rights are required to compact a virtual disk. "
@@ -507,7 +591,17 @@ class VhdxManager:
                     pass
 
     def _run_ps(self, script: str, timeout: int) -> str | None:
-        """Run a PowerShell snippet with a hidden window; None on any failure."""
+        """Run a PowerShell snippet with a hidden window; None on any failure.
+
+        Manages run ps operations and coordinates related state changes for the component.
+
+        Args:
+            script (str): The script parameter.
+            timeout (int): The timeout parameter.
+
+        Returns:
+            str | None: Formatted string or path.
+        """
         try:
             proc = subprocess.run(
                 ["powershell", "-NoProfile", "-NonInteractive", "-Command", script],
@@ -521,7 +615,13 @@ class VhdxManager:
 
     @staticmethod
     def _running_processes() -> set[str]:
-        """Lower-cased names of running processes (empty set if unavailable)."""
+        """Lower-cased names of running processes (empty set if unavailable).
+
+        Manages running processes operations and coordinates related state changes for the component.
+
+        Returns:
+            set[str]: Formatted string or path.
+        """
         try:
             import psutil
         except ImportError:  # pragma: no cover - psutil is a hard dep in practice
@@ -538,7 +638,16 @@ class VhdxManager:
 
     @staticmethod
     def _decode(raw: bytes | str | None) -> str:
-        """_decode."""
+        """Decode.
+
+        Manages decode operations and coordinates related state changes for the component.
+
+        Args:
+            raw (bytes | str | None): The raw parameter.
+
+        Returns:
+            str: Formatted string or path.
+        """
         if raw is None:
             return ""
         if isinstance(raw, str):
@@ -549,29 +658,43 @@ class VhdxManager:
             except UnicodeDecodeError:
                 continue
         return raw.decode("utf-8", errors="replace")
-        """_decode."""
-        """_decode."""
 
     @staticmethod
     def _reg_str(key, name: str) -> str:
-        """_reg_str."""
+        """_reg_str.
+
+        Manages reg str operations and coordinates related state changes for the component.
+
+        Args:
+            key: The key parameter.
+            name (str): The name parameter.
+
+        Returns:
+            str: Formatted string or path.
+        """
         try:
             import winreg
             value, _ = winreg.QueryValueEx(key, name)
             return str(value)
         except (OSError, ImportError, ValueError):
             return ""
-        """_reg_str."""
-        """_reg_str."""
 
     @staticmethod
     def _reg_int(key, name: str) -> int:
-        """_reg_int."""
+        """_reg_int.
+
+        Manages reg int operations and coordinates related state changes for the component.
+
+        Args:
+            key: The key parameter.
+            name (str): The name parameter.
+
+        Returns:
+            int: Result of the operation.
+        """
         try:
             import winreg
             value, _ = winreg.QueryValueEx(key, name)
             return int(value)
         except (OSError, ImportError, ValueError, TypeError):
             return 0
-        """_reg_int."""
-        """_reg_int."""

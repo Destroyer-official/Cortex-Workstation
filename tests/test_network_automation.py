@@ -10,7 +10,13 @@ from cortex_unified.system_tools import network_automation as automation
 
 
 def test_schedule_builds_only_fixed_private_scan_command(monkeypatch):
-    """test_schedule_builds_only_fixed_private_scan_command."""
+    """test_schedule_builds_only_fixed_private_scan_command.
+
+    Manages test schedule builds only fixed private scan command operations and coordinates related state changes for the component.
+
+    Args:
+        monkeypatch: The monkeypatch parameter.
+    """
     monkeypatch.setattr(automation.sys, "executable", "C:/Python/python.exe")
     spec = automation.NetworkSchedule(
         frequency="weekly", time="21:30", weekday="FRI",
@@ -33,7 +39,10 @@ def test_schedule_builds_only_fixed_private_scan_command(monkeypatch):
 
 
 def test_schedule_rejects_public_scope_and_arbitrary_frequency():
-    """test_schedule_rejects_public_scope_and_arbitrary_frequency."""
+    """test_schedule_rejects_public_scope_and_arbitrary_frequency.
+
+    Manages test schedule rejects public scope and arbitrary frequency operations and coordinates related state changes for the component.
+    """
     with pytest.raises(ValueError, match="private LAN"):
         automation.build_scan_command(automation.NetworkSchedule(
             scopes=("8.8.8.0/24",)))
@@ -43,12 +52,24 @@ def test_schedule_rejects_public_scope_and_arbitrary_frequency():
 
 
 def test_scheduler_uses_process_runner_without_shell(monkeypatch):
-    """test_scheduler_uses_process_runner_without_shell."""
+    """test_scheduler_uses_process_runner_without_shell.
+
+    Manages test scheduler uses process runner without shell operations and coordinates related state changes for the component.
+
+    Args:
+        monkeypatch: The monkeypatch parameter.
+    """
     calls = []
     monkeypatch.setattr(automation.platform, "system", lambda: "Windows")
 
     def fake_run(arguments, **kwargs):
-        """fake_run."""
+        """fake_run.
+
+        Manages fake run operations and coordinates related state changes for the component.
+
+        Args:
+            arguments: The arguments parameter.
+        """
         calls.append((arguments, kwargs))
         return subprocess.CompletedProcess(arguments, 0, "ok", "")
 

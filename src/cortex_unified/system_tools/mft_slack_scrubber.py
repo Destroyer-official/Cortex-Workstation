@@ -22,7 +22,10 @@ _LOG = logging.getLogger("cortex.system_tools.mft_slack")
 
 @dataclass
 class NtfsMftGeometry:
-    """NTFS volume geometry and MFT allocation metadata."""
+    """Ntfsmftgeometry.
+
+    Manages NtfsMftGeometry operations and coordinates related state changes for the component.
+    """
 
     volume_letter: str
     bytes_per_sector: int = 512
@@ -37,7 +40,13 @@ class NtfsMftGeometry:
     estimated_free_mft_records: int = 0
 
     def to_dict(self) -> Dict[str, Any]:
-        """To dict."""
+        """To dict.
+
+        Manages to dict operations and coordinates related state changes for the component.
+
+        Returns:
+            Dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         return {
             "volume": self.volume_letter,
             "bytes_per_sector": self.bytes_per_sector,
@@ -53,7 +62,10 @@ class NtfsMftGeometry:
 
 @dataclass
 class MftScrubReport:
-    """Report on MFT slack and index allocation sanitization."""
+    """Mftscrubreport.
+
+    Manages MftScrubReport operations and coordinates related state changes for the component.
+    """
 
     volume: str
     geometry: Optional[NtfsMftGeometry] = None
@@ -63,7 +75,13 @@ class MftScrubReport:
     errors: List[str] = field(default_factory=list)
 
     def to_dict(self) -> Dict[str, Any]:
-        """To dict."""
+        """To dict.
+
+        Manages to dict operations and coordinates related state changes for the component.
+
+        Returns:
+            Dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         return {
             "volume": self.volume,
             "geometry": self.geometry.to_dict() if self.geometry else None,
@@ -75,17 +93,32 @@ class MftScrubReport:
 
 
 class MftSlackScrubber:
-    """Auditor and scrubber for NTFS Master File Table and directory slack space."""
+    """Mftslackscrubber.
+
+    Manages MftSlackScrubber operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, volume: str = "C:") -> None:
-        """Initialize Mft Slack Scrubber."""
+        """Initialize Mft Slack Scrubber.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            volume (str): The volume parameter.
+        """
         self.volume = volume.rstrip("\\").upper()
         if not self.volume.endswith(":"):
             self.volume += ":"
         self.fsutil_path = shutil.which("fsutil")
 
     def query_geometry(self) -> NtfsMftGeometry:
-        """Query volume geometry using fsutil fsinfo ntfsinfo."""
+        """Query volume geometry using fsutil fsinfo ntfsinfo.
+
+        Manages query geometry operations and coordinates related state changes for the component.
+
+        Returns:
+            NtfsMftGeometry: Result of the operation.
+        """
         geom = NtfsMftGeometry(volume_letter=self.volume)
         if sys.platform != "win32" or not self.fsutil_path:
             return geom
@@ -107,7 +140,17 @@ class MftSlackScrubber:
 
     @classmethod
     def parse_ntfsinfo_output(cls, volume: str, text: str) -> NtfsMftGeometry:
-        """Parse stdout of 'fsutil fsinfo ntfsinfo <volume>'."""
+        """Parse stdout of 'fsutil fsinfo ntfsinfo <volume>'.
+
+        Manages parse ntfsinfo output operations and coordinates related state changes for the component.
+
+        Args:
+            volume (str): The volume parameter.
+            text (str): Display text string.
+
+        Returns:
+            NtfsMftGeometry: Result of the operation.
+        """
         geom = NtfsMftGeometry(volume_letter=volume)
         for line in text.splitlines():
             line = line.strip()
@@ -118,11 +161,18 @@ class MftSlackScrubber:
             v_str = v.strip()
 
             def _parse_int(s: str) -> int:
-                """_parse_int."""
+                """_parse_int.
+
+                Manages parse int operations and coordinates related state changes for the component.
+
+                Args:
+                    s (str): The s parameter.
+
+                Returns:
+                    int: Result of the operation.
+                """
                 m = re.search(r"(\d+)", s.replace(",", "").replace(".", ""))
                 return int(m.group(1)) if m else 0
-                """_parse_int."""
-                """_parse_int."""
 
             if "bytes per sector" in k:
                 geom.bytes_per_sector = _parse_int(v_str) or 512
@@ -147,7 +197,13 @@ class MftSlackScrubber:
         return geom
 
     def audit(self) -> MftScrubReport:
-        """Perform non-destructive audit of MFT record slack."""
+        """Audit.
+
+        Manages audit operations and coordinates related state changes for the component.
+
+        Returns:
+            MftScrubReport: Result of the operation.
+        """
         geom = self.query_geometry()
         slack_estimate = geom.estimated_free_mft_records * geom.bytes_per_file_record_segment
         return MftScrubReport(
@@ -158,7 +214,13 @@ class MftSlackScrubber:
         )
 
     def scrub(self) -> MftScrubReport:
-        """Execute sanitization of unallocated MFT slack records and index slack."""
+        """Scrub.
+
+        Manages scrub operations and coordinates related state changes for the component.
+
+        Returns:
+            MftScrubReport: Result of the operation.
+        """
         report = self.audit()
         if sys.platform != "win32":
             report.errors.append("MFT sanitization only supported on Windows NTFS.")

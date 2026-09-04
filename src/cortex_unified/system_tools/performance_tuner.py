@@ -32,34 +32,67 @@ _SCHEME_RE = re.compile(
 
 @dataclass(slots=True)
 class PowerPlan:
-    """One Windows power scheme as reported by ``powercfg /list``."""
+    """Powerplan.
+
+    Manages PowerPlan operations and coordinates related state changes for the component.
+    """
 
     guid: str
     name: str
     active: bool = False
 
     def to_dict(self) -> dict[str, Any]:
-        """To dict."""
+        """To dict.
+
+        Manages to dict operations and coordinates related state changes for the component.
+
+        Returns:
+            dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         return {"guid": self.guid, "name": self.name, "active": self.active}
 
 
 class PerformanceTuner:
-    """List and switch Windows power plans via powercfg."""
+    """Performancetuner.
+
+    Manages PerformanceTuner operations and coordinates related state changes for the component.
+    """
 
     @staticmethod
     def is_supported() -> bool:
-        """powercfg-based control only exists on Windows."""
+        """powercfg-based control only exists on Windows.
+
+        Manages is supported operations and coordinates related state changes for the component.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         return _IS_WINDOWS
 
     def list_plans(self) -> list[PowerPlan]:
-        """Return available schemes; empty off-Windows or if powercfg fails."""
+        """Return available schemes; empty off-Windows or if powercfg fails.
+
+        Manages list plans operations and coordinates related state changes for the component.
+
+        Returns:
+            list[PowerPlan]: List of processed items or identifiers.
+        """
         if not _IS_WINDOWS:
             return []
         return self._parse(self._run(["powercfg", "/list"]))
 
     @staticmethod
     def _parse(out: str | None) -> list[PowerPlan]:
-        """_parse."""
+        """Parse and decode structured data from strings or byte streams.
+
+        Extracts fields, validates expected formats, and instantiates corresponding strongly-typed model objects.
+
+        Args:
+            out (str | None): The out parameter.
+
+        Returns:
+            list[PowerPlan]: List of processed items or identifiers.
+        """
         if not out:
             return []
         plans: list[PowerPlan] = []
@@ -69,11 +102,15 @@ class PerformanceTuner:
                 guid, name, star = m.group(1), m.group(2).strip(), m.group(3)
                 plans.append(PowerPlan(guid=guid, name=name, active=bool(star)))
         return plans
-        """_parse."""
-        """_parse."""
 
     def active_plan(self) -> PowerPlan | None:
-        """Return the scheme powercfg marks active, or ``None`` if unknown."""
+        """Return the scheme powercfg marks active, or ``None`` if unknown.
+
+        Manages active plan operations and coordinates related state changes for the component.
+
+        Returns:
+            PowerPlan | None: Result of the operation.
+        """
         for p in self.list_plans():
             if p.active:
                 return p
@@ -95,7 +132,14 @@ class PerformanceTuner:
         return False, "Could not switch power plan (Administrator may be required)."
 
     def _run(self, args: list[str], want_returncode: bool = False):
-        """_run."""
+        """Run.
+
+        Manages run operations and coordinates related state changes for the component.
+
+        Args:
+            args (list[str]): The args parameter.
+            want_returncode (bool): The want returncode parameter.
+        """
         try:
             proc = _proc.run(args, text=True, timeout=20, creationflags=_NO_WINDOW)
             if want_returncode:
@@ -104,5 +148,3 @@ class PerformanceTuner:
         except (_proc.ProcessCancelled, OSError, subprocess.SubprocessError) as exc:
             _LOG.debug("powercfg failed: %s", exc)
             return False if want_returncode else None
-        """_run."""
-        """_run."""

@@ -52,6 +52,44 @@ _POLL_INTERVAL_S = 0.2
 #: Grace period to collect output after killing the tree, before giving up.
 _REAP_TIMEOUT_S = 5.0
 
+#: Processes never eligible for termination or suspension under any circumstances.
+PROTECTED_SYSTEM_PROCESSES: frozenset[str] = frozenset({
+    "system", "system idle process", "registry", "memory compression", "idle",
+    "smss.exe", "csrss.exe", "wininit.exe", "winlogon.exe", "services.exe",
+    "lsass.exe", "svchost.exe", "dwm.exe", "winmgmt.exe", "audiodg.exe",
+    "explorer.exe", "sihost.exe", "taskhostw.exe", "runtimebroker.exe",
+    "fontdrvhost.exe", "conhost.exe", "ctfmon.exe", "shellexperiencehost.exe",
+    "searchapp.exe", "startmenuexperiencehost.exe",
+    "python.exe", "pythonw.exe", "python3.exe", "cortex.exe",
+})
+
+
+def is_protected_process(name_or_pid: str | int) -> bool:
+    """Check whether a process name or PID is an OS-critical protected process.
+
+    Prevents accidental termination of critical Windows services, desktop shell
+    (explorer.exe), or compositor (dwm.exe).
+
+    Args:
+        name_or_pid: Process name string (e.g. 'explorer.exe') or integer PID.
+
+    Returns:
+        bool: True if protected, False otherwise.
+    """
+    if isinstance(name_or_pid, int):
+        if name_or_pid in (0, 4):
+            return True
+        try:
+            import psutil
+            p = psutil.Process(name_or_pid)
+            n = (p.name() or "").lower()
+            return n in PROTECTED_SYSTEM_PROCESSES or n.rstrip(".exe") in PROTECTED_SYSTEM_PROCESSES
+        except Exception:
+            return False
+    name_clean = str(name_or_pid).strip().lower()
+    name_clean_exe = name_clean if name_clean.endswith(".exe") else f"{name_clean}.exe"
+    return name_clean in PROTECTED_SYSTEM_PROCESSES or name_clean_exe in PROTECTED_SYSTEM_PROCESSES
+
 
 class ProcessCancelled(subprocess.SubprocessError):
     """Raised when ``cancel_event`` fired before the process finished.
@@ -61,10 +99,15 @@ class ProcessCancelled(subprocess.SubprocessError):
     """
 
     def __init__(self, args):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            args: The args parameter.
+        """
         super().__init__(f"process cancelled: {args!r}")
         self.args_ = args
-        """__init__."""
 
 
 def run(
@@ -146,7 +189,13 @@ def run(
 
 
 def _kill_tree(proc: subprocess.Popen) -> None:
-    """Best-effort kill of *proc* and every descendant it spawned."""
+    """Best-effort kill of *proc* and every descendant it spawned.
+
+    Manages kill tree operations and coordinates related state changes for the component.
+
+    Args:
+        proc (subprocess.Popen): The proc parameter.
+    """
     if proc.poll() is not None:
         return  # already exited
     if _IS_WINDOWS:
@@ -189,3 +238,42 @@ def _reap_quietly(proc: subprocess.Popen) -> None:
             proc.wait(timeout=_REAP_TIMEOUT_S)
         except Exception:  # noqa: BLE001
             pass
+
+
+def kill_process_tree(pid: int) -> bool:
+    """Kill an entire process tree rooted at `pid` using taskkill /T /F on Windows or SIGKILL on POSIX.
+
+    Refuses to kill OS-critical protected processes like explorer.exe, dwm.exe, system.
+
+    Args:
+        pid (int): The pid parameter.
+
+    Returns:
+        bool: True if the operation succeeded, False otherwise.
+    """
+    if is_protected_process(pid):
+        _LOG.warning("kill_process_tree refused for protected process PID %s", pid)
+        return False
+
+    if _IS_WINDOWS:
+        try:
+            res = subprocess.run(
+                ["taskkill", "/T", "/F", "/PID", str(pid)],
+                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                timeout=10, creationflags=NO_WINDOW,
+            )
+            return res.returncode == 0
+        except (OSError, subprocess.SubprocessError) as exc:
+            _LOG.debug("taskkill failed for pid %s: %s", pid, exc)
+            return False
+    else:
+        import signal
+        try:
+            os.killpg(os.getpgid(pid), signal.SIGKILL)
+            return True
+        except (OSError, ProcessLookupError):
+            try:
+                os.kill(pid, signal.SIGKILL)
+                return True
+            except OSError:
+                return False

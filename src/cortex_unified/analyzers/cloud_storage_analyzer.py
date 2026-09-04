@@ -73,7 +73,10 @@ from typing import AsyncGenerator, Callable, Dict, List, Optional, Tuple, Any
 
 @dataclass(slots=True)
 class CloudFileEntry:
-    """Single cloud object entry."""
+    """Cloudfileentry.
+
+    Manages CloudFileEntry operations and coordinates related state changes for the component.
+    """
     path: str
     size: int
     mtime: datetime
@@ -88,18 +91,25 @@ class CloudFileEntry:
     metadata: Dict[str, str] = field(default_factory=dict)
 
     def to_dict(self) -> dict:
-        """Serialize this entry to a plain dict, with ``mtime`` as ISO-8601."""
+        """Serialize this entry to a plain dict, with ``mtime`` as ISO-8601.
+
+        Manages to dict operations and coordinates related state changes for the component.
+
+        Returns:
+            dict: Dictionary mapping identifiers to status or values.
+        """
         import dataclasses
         d = dataclasses.asdict(self)
         d["mtime"] = self.mtime.isoformat()
         return d
-        """to_dict."""
-        """to_dict."""
 
 
 @dataclass
 class CloudScanStats:
-    """Aggregate totals for one scan: sizes by class/provider, cost, errors."""
+    """Cloudscanstats.
+
+    Manages CloudScanStats operations and coordinates related state changes for the component.
+    """
     total_objects: int = 0
     total_size_bytes: int = 0
     by_storage_class: Dict[str, int] = field(default_factory=lambda: defaultdict(int))
@@ -109,13 +119,14 @@ class CloudScanStats:
     unpriced_classes: set = field(default_factory=set)
     scan_duration_seconds: float = 0.0
     errors: List[str] = field(default_factory=list)
-    """CloudScanStats class."""
-    """CloudScanStats class."""
 
 
 @dataclass
 class DuplicateGroup:
-    """Cross-cloud/local duplicate group."""
+    """Duplicategroup.
+
+    Manages DuplicateGroup operations and coordinates related state changes for the component.
+    """
     hash: str
     size: int
     entries: List[CloudFileEntry] = field(default_factory=list)
@@ -123,10 +134,14 @@ class DuplicateGroup:
 
     @property
     def wasted_bytes(self) -> int:
-        """Bytes reclaimable if all but one copy of this group were removed."""
+        """Bytes reclaimable if all but one copy of this group were removed.
+
+        Manages wasted bytes operations and coordinates related state changes for the component.
+
+        Returns:
+            int: Result of the operation.
+        """
         return self.size * (len(self.entries) + len(self.local_paths) - 1)
-        """wasted_bytes."""
-        """wasted_bytes."""
 
 
 # ---------------------------------------------------------------------------
@@ -134,14 +149,18 @@ class DuplicateGroup:
 # ---------------------------------------------------------------------------
 
 def _pricing_cache_dir() -> Path:
-    """Return (creating if needed) the on-disk pricing cache directory."""
+    """Return (creating if needed) the on-disk pricing cache directory.
+
+    Manages pricing cache dir operations and coordinates related state changes for the component.
+
+    Returns:
+        Path: Result of the operation.
+    """
     base = os.environ.get("LOCALAPPDATA") or os.environ.get("XDG_CACHE_HOME")
     root = Path(base) if base else (Path.home() / ".cache")
     d = root / "Cortex" / "pricing"
     d.mkdir(parents=True, exist_ok=True)
     return d
-    """_pricing_cache_dir."""
-    """_pricing_cache_dir."""
 
 
 class PricingCatalog:
@@ -155,23 +174,46 @@ class PricingCatalog:
     """
 
     def __init__(self, ttl_hours: int = 168, timeout: int = 20):
-        """Set the cache TTL in hours and the network timeout in seconds."""
+        """Set the cache TTL in hours and the network timeout in seconds.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            ttl_hours (int): The ttl hours parameter.
+            timeout (int): The timeout parameter.
+        """
         self.ttl_seconds = max(1, ttl_hours) * 3600
         self.timeout = timeout
-        """__init__."""
-        """__init__."""
 
     # -- cache plumbing
 
     def _cache_file(self, provider: str, region: str) -> Path:
-        """Filesystem path of the cache file for one provider/region pair."""
+        """Filesystem path of the cache file for one provider/region pair.
+
+        Manages cache file operations and coordinates related state changes for the component.
+
+        Args:
+            provider (str): The provider parameter.
+            region (str): The region parameter.
+
+        Returns:
+            Path: Result of the operation.
+        """
         safe = urllib.parse.quote(f"{provider}_{region}", safe="")
         return _pricing_cache_dir() / f"{safe}.json"
-        """_cache_file."""
-        """_cache_file."""
 
     def _read_cache(self, provider: str, region: str) -> Optional[Dict[str, float]]:
-        """Return cached rates for this pair, or ``None`` when missing, stale, or corrupt."""
+        """Return cached rates for this pair, or ``None`` when missing, stale, or corrupt.
+
+        Manages read cache operations and coordinates related state changes for the component.
+
+        Args:
+            provider (str): The provider parameter.
+            region (str): The region parameter.
+
+        Returns:
+            Optional[Dict[str, float]]: Dictionary mapping identifiers to status or values.
+        """
         f = self._cache_file(provider, region)
         if not f.exists():
             return None
@@ -183,11 +225,17 @@ class PricingCatalog:
             return {str(k): float(v) for k, v in rates.items()}
         except Exception:
             return None
-        """_read_cache."""
-        """_read_cache."""
 
     def _write_cache(self, provider: str, region: str, rates: Dict[str, float]) -> None:
-        """Persist rates with a fetch timestamp, silently ignoring filesystem errors."""
+        """Persist rates with a fetch timestamp, silently ignoring filesystem errors.
+
+        Manages write cache operations and coordinates related state changes for the component.
+
+        Args:
+            provider (str): The provider parameter.
+            region (str): The region parameter.
+            rates (Dict[str, float]): The rates parameter.
+        """
         try:
             self._cache_file(provider, region).write_text(
                 json.dumps({"fetched_at": time.time(), "region": region, "rates": rates}, indent=2),
@@ -195,11 +243,18 @@ class PricingCatalog:
             )
         except OSError:
             pass
-        """_write_cache."""
-        """_write_cache."""
 
     def _http_json(self, url: str) -> Optional[Any]:
-        """GET a URL and parse the JSON response; return ``None`` on any failure."""
+        """GET a URL and parse the JSON response; return ``None`` on any failure.
+
+        Manages http json operations and coordinates related state changes for the component.
+
+        Args:
+            url (str): The url parameter.
+
+        Returns:
+            Optional[Any]: Result of the operation.
+        """
         req = urllib.request.Request(url, headers={"Accept": "application/json",
                                                    "User-Agent": "cortex-cleaner"})
         try:
@@ -207,14 +262,21 @@ class PricingCatalog:
                 return json.loads(resp.read().decode("utf-8", errors="replace"))
         except Exception:
             return None
-        """_http_json."""
-        """_http_json."""
 
     # -- AWS S3: Price List Query API (no credentials required)
 
     def _fetch_aws(self, region: str) -> Dict[str, float]:
         # Region index published by AWS for the AmazonS3 offer.
-        """Fetch S3 per-GB-month storage rates from AWS's public Price List Query API."""
+        """Fetch S3 per-GB-month storage rates from AWS's public Price List Query API.
+
+        Manages fetch aws operations and coordinates related state changes for the component.
+
+        Args:
+            region (str): The region parameter.
+
+        Returns:
+            Dict[str, float]: Dictionary mapping identifiers to status or values.
+        """
         idx = self._http_json(
             "https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AmazonS3/current/region_index.json"
         )
@@ -251,13 +313,20 @@ class PricingCatalog:
                     key = _normalise_class(volume_type)
                     rates[key] = min(price, rates.get(key, price))
         return rates
-        """_fetch_aws."""
-        """_fetch_aws."""
 
     # -- Azure Blob: Retail Prices API (no credentials required)
 
     def _fetch_azure(self, region: str) -> Dict[str, float]:
-        """Fetch per-GB-month blob rates from Azure's unauthenticated Retail Prices API."""
+        """Fetch per-GB-month blob rates from Azure's unauthenticated Retail Prices API.
+
+        Manages fetch azure operations and coordinates related state changes for the component.
+
+        Args:
+            region (str): The region parameter.
+
+        Returns:
+            Dict[str, float]: Dictionary mapping identifiers to status or values.
+        """
         base = ("https://prices.azure.com/api/retail/prices?$filter="
                 "serviceName eq 'Storage' and priceType eq 'Consumption'"
                 f" and armRegionName eq '{region}'")
@@ -281,13 +350,21 @@ class PricingCatalog:
             url = doc.get("NextPageLink")
             pages += 1
         return rates
-        """_fetch_azure."""
-        """_fetch_azure."""
 
     # -- public
 
     def rates(self, provider: str, region: str) -> Dict[str, float]:
-        """Return normalized class -> USD/GB/month, from cache or a live vendor fetch."""
+        """Rates.
+
+        Manages rates operations and coordinates related state changes for the component.
+
+        Args:
+            provider (str): The provider parameter.
+            region (str): The region parameter.
+
+        Returns:
+            Dict[str, float]: Dictionary mapping identifiers to status or values.
+        """
         cached = self._read_cache(provider, region)
         if cached is not None:
             return cached
@@ -300,11 +377,20 @@ class PricingCatalog:
         if rates:
             self._write_cache(provider, region, rates)
         return rates
-        """rates."""
-        """rates."""
 
     def rate(self, provider: str, region: str, storage_class: str) -> Optional[float]:
-        """Resolve one storage class to a USD/GB/month rate, or ``None`` if unknown."""
+        """Rate.
+
+        Manages rate operations and coordinates related state changes for the component.
+
+        Args:
+            provider (str): The provider parameter.
+            region (str): The region parameter.
+            storage_class (str): The storage class parameter.
+
+        Returns:
+            Optional[float]: Result of the operation.
+        """
         table = self.rates(provider, region)
         if not table:
             return None
@@ -318,12 +404,19 @@ class PricingCatalog:
             if (k in key or key in k) and len(k) > best_len:
                 best, best_len = v, len(k)
         return best
-        """rate."""
-        """rate."""
 
 
 def _normalise_class(name: str) -> str:
-    """Fold vendor storage-class / meter names into a comparable key."""
+    """Fold vendor storage-class / meter names into a comparable key.
+
+    Manages normalise class operations and coordinates related state changes for the component.
+
+    Args:
+        name (str): The name parameter.
+
+    Returns:
+        str: Formatted string or path.
+    """
     s = (name or "").strip().lower()
     for token in ("standard", "general purpose", "blob", "data stored", "storage",
                   "lrs", "grs", "zrs", "ra-", "gzrs", "(", ")", "-", "_", "/"):
@@ -339,17 +432,24 @@ _PRICING = PricingCatalog()
 # ---------------------------------------------------------------------------
 
 class CloudProvider(ABC):
-    """Abstract cloud storage provider."""
+    """Cloudprovider.
+
+    Manages CloudProvider operations and coordinates related state changes for the component.
+    """
 
     #: Key used to look up live pricing (``""`` = provider has no storage rate).
     pricing_key: str = ""
 
     def __init__(self, config: Dict[str, Any]):
-        """Store config and derive the lowercase provider name from the class name."""
+        """Store config and derive the lowercase provider name from the class name.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            config (Dict[str, Any]): The config parameter.
+        """
         self.config = config
         self.name = self.__class__.__name__.replace("Provider", "").lower()
-        """__init__."""
-        """__init__."""
 
     @abstractmethod
     async def list_objects(
@@ -358,14 +458,29 @@ class CloudProvider(ABC):
         prefix: str = "",
         max_keys: Optional[int] = None,
     ) -> AsyncGenerator[CloudFileEntry, None]:
-        """Stream every object under a bucket/prefix as :class:`CloudFileEntry` items."""
+        """Stream every object under a bucket/prefix as :class:`CloudFileEntry` items.
+
+        Manages list objects operations and coordinates related state changes for the component.
+
+        Args:
+            bucket (str): The bucket parameter.
+            prefix (str): The prefix parameter.
+            max_keys (Optional[int]): The max keys parameter.
+
+        Returns:
+            AsyncGenerator[CloudFileEntry, None]: Result of the operation.
+        """
         pass
-        """list_objects."""
-        """list_objects."""
 
     @property
     def region(self) -> str:
-        """Region used for pricing lookups, resolved from config or environment."""
+        """Region.
+
+        Manages region operations and coordinates related state changes for the component.
+
+        Returns:
+            str: Formatted string or path.
+        """
         return str(
             self.config.get("region")
             or os.environ.get("AWS_REGION")
@@ -393,10 +508,14 @@ class CloudProvider(ABC):
         return total
 
     def validate_config(self) -> Tuple[bool, str]:
-        """Hook for providers to reject bad config; base accepts everything."""
+        """Hook for providers to reject bad config; base accepts everything.
+
+        Manages validate config operations and coordinates related state changes for the component.
+
+        Returns:
+            Tuple[bool, str]: True if the operation succeeded, False otherwise.
+        """
         return True, ""
-        """validate_config."""
-        """validate_config."""
 
 
 # ---------------------------------------------------------------------------
@@ -404,20 +523,30 @@ class CloudProvider(ABC):
 # ---------------------------------------------------------------------------
 
 class S3Provider(CloudProvider):
-    """AWS S3 backend driven by boto3, listing object versions when available."""
+    """S3provider.
+
+    Manages S3Provider operations and coordinates related state changes for the component.
+    """
     pricing_key = "s3"
 
     def __init__(self, config: Dict[str, Any]):
-        """Initialize and create the boto3 S3 client from config/environment."""
+        """Initialize and create the boto3 S3 client from config/environment.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            config (Dict[str, Any]): The config parameter.
+        """
         super().__init__(config)
         self._client = None
         self._resolved_region: Optional[str] = None
         self._init_client()
-        """__init__."""
-        """__init__."""
 
     def _init_client(self):
-        """Build the boto3 client, letting boto3 fall back to env/IAM/SSO credentials."""
+        """Build the boto3 client, letting boto3 fall back to env/IAM/SSO credentials.
+
+        Manages init client operations and coordinates related state changes for the component.
+        """
         try:
             import boto3
         except ImportError:
@@ -441,19 +570,30 @@ class S3Provider(CloudProvider):
                 self._resolved_region = str(meta_region)
         except Exception:
             self._client = None
-        """_init_client."""
-        """_init_client."""
 
     @property
     def region(self) -> str:
         # Prefer the bucket's own region so pricing matches where data lives.
-        """The bucket-resolved region if known, else the inherited default."""
+        """Region.
+
+        Manages region operations and coordinates related state changes for the component.
+
+        Returns:
+            str: Formatted string or path.
+        """
         return self._resolved_region or super().region
-        """region."""
-        """region."""
 
     def _bucket_region(self, bucket: str) -> Optional[str]:
-        """Query GetBucketLocation for the bucket's region; ``None`` on failure."""
+        """Query GetBucketLocation for the bucket's region; ``None`` on failure.
+
+        Manages bucket region operations and coordinates related state changes for the component.
+
+        Args:
+            bucket (str): The bucket parameter.
+
+        Returns:
+            Optional[str]: Formatted string or path.
+        """
         if not self._client:
             return None
         try:
@@ -467,8 +607,6 @@ class S3Provider(CloudProvider):
             return str(loc)
         except Exception:
             return None
-        """_bucket_region."""
-        """_bucket_region."""
 
     async def list_objects(
         self,
@@ -476,7 +614,18 @@ class S3Provider(CloudProvider):
         prefix: str = "",
         max_keys: Optional[int] = None,
     ) -> AsyncGenerator[CloudFileEntry, None]:
-        """Stream S3 objects, preferring versioned listing to surface billable old versions."""
+        """Stream S3 objects, preferring versioned listing to surface billable old versions.
+
+        Manages list objects operations and coordinates related state changes for the component.
+
+        Args:
+            bucket (str): The bucket parameter.
+            prefix (str): The prefix parameter.
+            max_keys (Optional[int]): The max keys parameter.
+
+        Returns:
+            AsyncGenerator[CloudFileEntry, None]: Result of the operation.
+        """
         if not self._client:
             return
         region = self._bucket_region(bucket)
@@ -520,15 +669,19 @@ class S3Provider(CloudProvider):
                     count += 1
         except Exception:
             return
-        """list_objects."""
-        """list_objects."""
 
     def estimate_cost(self, stats: CloudScanStats) -> float:
-        """estimate_cost."""
+        """Estimate monthly USD via base live rates for S3 classes scanned.
+
+        Manages estimate cost operations and coordinates related state changes for the component.
+
+        Args:
+            stats (CloudScanStats): The stats parameter.
+
+        Returns:
+            float: Result of the operation.
+        """
         return super().estimate_cost(stats)
-        """estimate_cost."""
-    """S3Provider class."""
-    """S3Provider class."""
 
 
 # ---------------------------------------------------------------------------
@@ -536,20 +689,30 @@ class S3Provider(CloudProvider):
 # ---------------------------------------------------------------------------
 
 class AzureBlobProvider(CloudProvider):
-    """Azure Blob backend via BlobServiceClient (connection string or token auth)."""
+    """Azureblobprovider.
+
+    Manages AzureBlobProvider operations and coordinates related state changes for the component.
+    """
     pricing_key = "azure"
 
     def __init__(self, config: Dict[str, Any]):
-        """Initialize and create the BlobServiceClient from config/environment."""
+        """Initialize and create the BlobServiceClient from config/environment.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            config (Dict[str, Any]): The config parameter.
+        """
         super().__init__(config)
         self._client = None
         self._resolved_region: Optional[str] = None
         self._init_client()
-        """__init__."""
-        """__init__."""
 
     def _init_client(self):
-        """Build the BlobServiceClient from a connection string, account URL, or DefaultAzureCredential."""
+        """Build the BlobServiceClient from a connection string, account URL, or DefaultAzureCredential.
+
+        Manages init client operations and coordinates related state changes for the component.
+        """
         try:
             from azure.storage.blob import BlobServiceClient
         except ImportError:
@@ -570,12 +733,16 @@ class AzureBlobProvider(CloudProvider):
                 self._client = BlobServiceClient(account_url=account_url, credential=credential)
         except Exception:
             self._client = None
-        """_init_client."""
-        """_init_client."""
 
     @property
     def region(self) -> str:
-        """Resolved ARM region for pricing, from config or the account information."""
+        """Region.
+
+        Manages region operations and coordinates related state changes for the component.
+
+        Returns:
+            str: Formatted string or path.
+        """
         if self._resolved_region:
             return self._resolved_region
         configured = super().region
@@ -592,8 +759,6 @@ class AzureBlobProvider(CloudProvider):
             except Exception:
                 pass
         return ""
-        """region."""
-        """region."""
 
     async def list_objects(
         self,
@@ -601,7 +766,18 @@ class AzureBlobProvider(CloudProvider):
         prefix: str = "",
         max_keys: Optional[int] = None,
     ) -> AsyncGenerator[CloudFileEntry, None]:
-        """Stream container blobs with metadata, tags, and versions where enabled."""
+        """Stream container blobs with metadata, tags, and versions where enabled.
+
+        Manages list objects operations and coordinates related state changes for the component.
+
+        Args:
+            container (str): The container parameter.
+            prefix (str): The prefix parameter.
+            max_keys (Optional[int]): The max keys parameter.
+
+        Returns:
+            AsyncGenerator[CloudFileEntry, None]: Result of the operation.
+        """
         if not self._client:
             return
         container_client = self._client.get_container_client(container)
@@ -635,14 +811,19 @@ class AzureBlobProvider(CloudProvider):
                 return
             except Exception:
                 continue
-        """list_objects."""
-        """list_objects."""
 
     def estimate_cost(self, stats: CloudScanStats) -> float:
-        """Delegate to the base class cost estimate using Azure live rates."""
+        """Delegate to the base class cost estimate using Azure live rates.
+
+        Manages estimate cost operations and coordinates related state changes for the component.
+
+        Args:
+            stats (CloudScanStats): The stats parameter.
+
+        Returns:
+            float: Result of the operation.
+        """
         return super().estimate_cost(stats)
-    """AzureBlobProvider class."""
-    """AzureBlobProvider class."""
 
 
 # ---------------------------------------------------------------------------
@@ -662,16 +843,29 @@ class GoogleDriveProvider(CloudProvider):
     API = "https://www.googleapis.com/drive/v3/files"
 
     def __init__(self, config: Dict[str, Any]):
-        """Store config and resolve the Drive OAuth access token."""
+        """Store config and resolve the Drive OAuth access token.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            config (Dict[str, Any]): The config parameter.
+        """
         super().__init__(config)
         self._token = (config.get("access_token")
                        or os.environ.get("GOOGLE_OAUTH_ACCESS_TOKEN")
                        or "")
-        """__init__."""
-        """__init__."""
 
     def _get(self, params: Dict[str, str]) -> Optional[Dict[str, Any]]:
-        """Issue an authorized Drive v3 GET; return parsed JSON or ``None``."""
+        """Get.
+
+        Manages get operations and coordinates related state changes for the component.
+
+        Args:
+            params (Dict[str, str]): The params parameter.
+
+        Returns:
+            Optional[Dict[str, Any]]: Dictionary mapping identifiers to status or values.
+        """
         if not self._token:
             return None
         url = f"{self.API}?{urllib.parse.urlencode(params)}"
@@ -684,8 +878,6 @@ class GoogleDriveProvider(CloudProvider):
                 return json.loads(resp.read().decode("utf-8", errors="replace"))
         except Exception:
             return None
-        """_get."""
-        """_get."""
 
     async def list_objects(
         self,
@@ -693,7 +885,18 @@ class GoogleDriveProvider(CloudProvider):
         prefix: str = "",
         max_keys: Optional[int] = None,
     ) -> AsyncGenerator[CloudFileEntry, None]:
-        """Stream non-trashed Drive files in a folder, skipping size-less native docs."""
+        """Stream non-trashed Drive files in a folder, skipping size-less native docs.
+
+        Manages list objects operations and coordinates related state changes for the component.
+
+        Args:
+            bucket (str): The bucket parameter.
+            prefix (str): The prefix parameter.
+            max_keys (Optional[int]): The max keys parameter.
+
+        Returns:
+            AsyncGenerator[CloudFileEntry, None]: Result of the operation.
+        """
         if not self._token:
             return
         folder = bucket or "root"
@@ -741,8 +944,6 @@ class GoogleDriveProvider(CloudProvider):
             if not token:
                 return
             params["pageToken"] = token
-        """list_objects."""
-        """list_objects."""
 
 
 # ---------------------------------------------------------------------------
@@ -761,16 +962,29 @@ class OneDriveProvider(CloudProvider):
     GRAPH = "https://graph.microsoft.com/v1.0"
 
     def __init__(self, config: Dict[str, Any]):
-        """Store config and resolve the Microsoft Graph access token."""
+        """Store config and resolve the Microsoft Graph access token.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            config (Dict[str, Any]): The config parameter.
+        """
         super().__init__(config)
         self._token = (config.get("access_token")
                        or os.environ.get("MSGRAPH_ACCESS_TOKEN")
                        or "")
-        """__init__."""
-        """__init__."""
 
     def _get(self, url: str) -> Optional[Dict[str, Any]]:
-        """Issue an authorized Graph GET; return parsed JSON or ``None``."""
+        """Get.
+
+        Manages get operations and coordinates related state changes for the component.
+
+        Args:
+            url (str): The url parameter.
+
+        Returns:
+            Optional[Dict[str, Any]]: Dictionary mapping identifiers to status or values.
+        """
         if not self._token:
             return None
         req = urllib.request.Request(url, headers={
@@ -782,8 +996,6 @@ class OneDriveProvider(CloudProvider):
                 return json.loads(resp.read().decode("utf-8", errors="replace"))
         except Exception:
             return None
-        """_get."""
-        """_get."""
 
     async def list_objects(
         self,
@@ -791,7 +1003,18 @@ class OneDriveProvider(CloudProvider):
         prefix: str = "",
         max_keys: Optional[int] = None,
     ) -> AsyncGenerator[CloudFileEntry, None]:
-        """Stream non-folder drive items via Graph ``/children`` pages."""
+        """Stream non-folder drive items via Graph ``/children`` pages.
+
+        Manages list objects operations and coordinates related state changes for the component.
+
+        Args:
+            bucket (str): The bucket parameter.
+            prefix (str): The prefix parameter.
+            max_keys (Optional[int]): The max keys parameter.
+
+        Returns:
+            AsyncGenerator[CloudFileEntry, None]: Result of the operation.
+        """
         if not self._token:
             return
         drive = (bucket or "me/drive").strip("/")
@@ -829,8 +1052,6 @@ class OneDriveProvider(CloudProvider):
                 )
                 count += 1
             url = doc.get("@odata.nextLink")
-        """list_objects."""
-        """list_objects."""
 
 
 # ---------------------------------------------------------------------------
@@ -848,16 +1069,29 @@ class RcloneProvider(CloudProvider):
     pricing_key = ""  # Backend-specific; rates are attributed to the native provider.
 
     def __init__(self, config: Dict[str, Any]):
-        """Store config, remote name, and locate the rclone binary."""
+        """Store config, remote name, and locate the rclone binary.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            config (Dict[str, Any]): The config parameter.
+        """
         super().__init__(config)
         self.remote = str(config.get("remote", "") or "")
         self.binary = self._locate_binary(config.get("binary"))
-        """__init__."""
-        """__init__."""
 
     @staticmethod
     def _locate_binary(explicit: Optional[str]) -> Optional[str]:
-        """Find rclone via explicit hint, ``RCLONE_BINARY``, or ``PATH``."""
+        """Find rclone via explicit hint, ``RCLONE_BINARY``, or ``PATH``.
+
+        Manages locate binary operations and coordinates related state changes for the component.
+
+        Args:
+            explicit (Optional[str]): The explicit parameter.
+
+        Returns:
+            Optional[str]: Formatted string or path.
+        """
         import shutil as _shutil
         for candidate in (explicit, os.environ.get("RCLONE_BINARY"), "rclone"):
             if not candidate:
@@ -866,18 +1100,26 @@ class RcloneProvider(CloudProvider):
             if found:
                 return found
         return None
-        """_locate_binary."""
-        """_locate_binary."""
 
     @property
     def available(self) -> bool:
-        """Whether a usable rclone binary was found."""
+        """Available.
+
+        Manages available operations and coordinates related state changes for the component.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         return self.binary is not None
-        """available."""
-        """available."""
 
     def list_remotes(self) -> List[str]:
-        """Configured rclone remotes, so callers never guess a remote name."""
+        """Configured rclone remotes, so callers never guess a remote name.
+
+        Manages list remotes operations and coordinates related state changes for the component.
+
+        Returns:
+            List[str]: List of processed items or identifiers.
+        """
         if not self.binary:
             return []
         try:
@@ -895,7 +1137,18 @@ class RcloneProvider(CloudProvider):
         prefix: str = "",
         max_keys: Optional[int] = None,
     ) -> AsyncGenerator[CloudFileEntry, None]:
-        """Run ``rclone lsjson`` recursively and stream each file as an entry."""
+        """Run ``rclone lsjson`` recursively and stream each file as an entry.
+
+        Manages list objects operations and coordinates related state changes for the component.
+
+        Args:
+            bucket (str): The bucket parameter.
+            prefix (str): The prefix parameter.
+            max_keys (Optional[int]): The max keys parameter.
+
+        Returns:
+            AsyncGenerator[CloudFileEntry, None]: Result of the operation.
+        """
         if not self.binary:
             return
         remote = self.remote or bucket
@@ -938,15 +1191,20 @@ class RcloneProvider(CloudProvider):
                 metadata={"mimeType": str(rec.get("MimeType", ""))},
             )
             count += 1
-        """list_objects."""
-        """list_objects."""
 
     def estimate_cost(self, stats: CloudScanStats) -> float:
         # Backends vary; the native provider classes own pricing.
-        """Return 0.0: pricing belongs to the backend's native provider class."""
+        """Return 0.0: pricing belongs to the backend's native provider class.
+
+        Manages estimate cost operations and coordinates related state changes for the component.
+
+        Args:
+            stats (CloudScanStats): The stats parameter.
+
+        Returns:
+            float: Result of the operation.
+        """
         return 0.0
-        """estimate_cost."""
-        """estimate_cost."""
 
 
 # ---------------------------------------------------------------------------
@@ -954,7 +1212,10 @@ class RcloneProvider(CloudProvider):
 # ---------------------------------------------------------------------------
 
 class CloudStorageAnalyzer:
-    """Unified cloud storage analyzer with multi-provider support."""
+    """Cloudstorageanalyzer.
+
+    Manages CloudStorageAnalyzer operations and coordinates related state changes for the component.
+    """
 
     PROVIDERS = {
         "s3": S3Provider,
@@ -971,17 +1232,30 @@ class CloudStorageAnalyzer:
         cancel_event: Optional[threading.Event] = None,
         progress_cb: Optional[Callable[[int, int, str], None]] = None,
     ):
-        """Set up cancellation, progress callbacks, and instantiate all providers."""
+        """Set up cancellation, progress callbacks, and instantiate all providers.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            default_provider (str): The default provider parameter.
+            provider_configs (Optional[Dict[str, Dict]]): The provider configs parameter.
+            cancel_event (Optional[threading.Event]): Threading event or callable to check for cancellation.
+            progress_cb (Optional[Callable[[int, int, str], None]]): Callback invoked with progress updates.
+        """
         self.cancel_event = cancel_event or threading.Event()
         self.progress_cb = progress_cb
         self.provider_configs = provider_configs or {}
         self._providers: Dict[str, CloudProvider] = {}
         self._init_providers(default_provider)
-        """__init__."""
-        """__init__."""
 
     def _init_providers(self, default: str):
-        """Instantiate every provider (skipping ones that fail) and pick the default."""
+        """Instantiate every provider (skipping ones that fail) and pick the default.
+
+        Manages init providers operations and coordinates related state changes for the component.
+
+        Args:
+            default (str): The default parameter.
+        """
         for name, cls in self.PROVIDERS.items():
             config = dict(self.provider_configs.get(name) or {})
             try:
@@ -990,14 +1264,19 @@ class CloudStorageAnalyzer:
                 continue
         self.default_provider = default if default in self._providers else next(
             iter(self._providers), "")
-        """_init_providers."""
-        """_init_providers."""
 
     def get_provider(self, name: str) -> Optional[CloudProvider]:
-        """Return the instantiated provider by name, or ``None``."""
+        """Return the instantiated provider by name, or ``None``.
+
+        Manages get provider operations and coordinates related state changes for the component.
+
+        Args:
+            name (str): The name parameter.
+
+        Returns:
+            Optional[CloudProvider]: Result of the operation.
+        """
         return self._providers.get(name)
-        """get_provider."""
-        """get_provider."""
 
     def available_targets(self) -> Dict[str, List[str]]:
         """Enumerate what this machine can actually scan.
@@ -1039,7 +1318,17 @@ class CloudStorageAnalyzer:
         target: str,  # "provider://bucket/prefix" or "provider:remote/path"
         max_objects: Optional[int] = None,
     ) -> AsyncGenerator[CloudFileEntry, None]:
-        """Scan cloud target. target format: 's3://bucket/prefix' or 'rclone://remote/path'."""
+        """Scan cloud target. target format: 's3://bucket/prefix' or 'rclone://remote/path'.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+        Args:
+            target (str): The target parameter.
+            max_objects (Optional[int]): The max objects parameter.
+
+        Returns:
+            AsyncGenerator[CloudFileEntry, None]: Result of the operation.
+        """
         if "://" in target:
             provider_name, rest = target.split("://", 1)
             bucket, _, prefix = rest.partition("/")
@@ -1078,7 +1367,19 @@ class CloudStorageAnalyzer:
         progress_cb: Optional[Callable[[int, int, str], None]] = None,
         cancel_event: Optional[threading.Event] = None,
     ) -> Tuple[List[CloudFileEntry], CloudScanStats]:
-        """Synchronous scan returning all entries and stats."""
+        """Synchronous scan returning all entries and stats.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+        Args:
+            target (str): The target parameter.
+            max_objects (Optional[int]): The max objects parameter.
+            progress_cb (Optional[Callable[[int, int, str], None]]): Callback invoked with progress updates.
+            cancel_event (Optional[threading.Event]): Threading event or callable to check for cancellation.
+
+        Returns:
+            Tuple[List[CloudFileEntry], CloudScanStats]: List of processed items or identifiers.
+        """
         import asyncio
         self.cancel_event = cancel_event or threading.Event()
         self.progress_cb = progress_cb or (lambda *_: None)
@@ -1088,15 +1389,16 @@ class CloudStorageAnalyzer:
         t0 = time.time()
 
         async def _collect():
-            """Accumulate entries and per-class/provider stats from the scan stream."""
+            """Aggregate discovered files or telemetry metrics into collections.
+
+            Iterates over raw subsystem records, filters excluded paths, and collates findings into a structured report list.
+            """
             async for entry in self.scan(target, max_objects):
                 entries.append(entry)
                 stats.total_objects += 1
                 stats.total_size_bytes += entry.size
                 stats.by_storage_class[entry.storage_class] += entry.size
                 stats.by_provider[entry.provider] += 1
-            """_collect."""
-            """_collect."""
 
         try:
             asyncio.run(_collect())

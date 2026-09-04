@@ -18,14 +18,29 @@ _LOG = logging.getLogger("cortex")
 
 
 def log_dir() -> Path:
-    """Return application log directory."""
+    """Return application log directory.
+
+    Manages log dir operations and coordinates related state changes for the component.
+
+    Returns:
+        Path: Result of the operation.
+    """
     d = Path.home() / ".cortex_workstation" / "logs"
     d.mkdir(parents=True, exist_ok=True)
     return d
 
 
 def setup_logging(debug: bool = False) -> Path:
-    """Configure root logging: console + rotating file. Returns the log path."""
+    """Configure root logging: console + rotating file. Returns the log path.
+
+    Manages setup logging operations and coordinates related state changes for the component.
+
+    Args:
+        debug (bool): The debug parameter.
+
+    Returns:
+        Path: Result of the operation.
+    """
     level = logging.DEBUG if debug else logging.INFO
     log_file = log_dir() / "cortex.log"
 
@@ -58,7 +73,10 @@ def setup_logging(debug: bool = False) -> Path:
 
 
 def _install_qt_message_handler() -> None:
-    """Route Qt's internal warnings/errors into Python logging."""
+    """Route Qt's internal warnings/errors into Python logging.
+
+    Initiates the package or update installation workflow in the background, monitoring execution progress.
+    """
     try:
         from PySide6.QtCore import QtMsgType, qInstallMessageHandler
     except ImportError:  # pragma: no cover
@@ -74,16 +92,35 @@ def _install_qt_message_handler() -> None:
     }
 
     def handler(mode, context, message):  # noqa: ANN001
-        """handler."""
+        """Handler.
+
+        Manages handler operations and coordinates related state changes for the component.
+
+        Args:
+            mode: The mode parameter.
+            context: The context parameter.
+            message: Informational or progress status message.
+        """
         qlog.log(level_map.get(mode, logging.INFO), "%s", message)
 
     qInstallMessageHandler(handler)
 
 
 def _install_excepthook() -> None:
-    """_install_excepthook."""
+    """_install_excepthook.
+
+    Initiates the package or update installation workflow in the background, monitoring execution progress.
+    """
     def hook(exc_type, exc_value, exc_tb):
-        """hook."""
+        """Hook.
+
+        Manages hook operations and coordinates related state changes for the component.
+
+        Args:
+            exc_type: Error message string or exception instance.
+            exc_value: Error message string or exception instance.
+            exc_tb: Error message string or exception instance.
+        """
         _LOG.critical("Uncaught exception", exc_info=(exc_type, exc_value, exc_tb))
         # Persist a user-submittable crash report next to the logs. Paths in
         # the traceback can contain user filenames - anyone sharing this file
@@ -118,7 +155,13 @@ def _install_threading_excepthook() -> None:
     import threading
 
     def hook(args: threading.ExceptHookArgs) -> None:
-        """hook."""
+        """Hook.
+
+        Manages hook operations and coordinates related state changes for the component.
+
+        Args:
+            args (threading.ExceptHookArgs): The args parameter.
+        """
         if args.exc_type is SystemExit:
             return
         _LOG.critical(
@@ -143,7 +186,10 @@ def _schedule_update_check(win, settings=None) -> None:
         return
 
     def _done():
-        """_done."""
+        """Handle completion of the asynchronous task.
+
+        Processes the returned result payload, updates corresponding tables or UI views, and restores interactive controls.
+        """
         try:
             from cortex_unified.system_tools.update_checker import check_for_update
             result = check_for_update()
@@ -261,7 +307,13 @@ def _configure_high_dpi() -> None:
 
 
 def main() -> int:
-    """main."""
+    """Main.
+
+    Manages main operations and coordinates related state changes for the component.
+
+    Returns:
+        int: Result of the operation.
+    """
     debug = ("--debug" in sys.argv) or os.environ.get("CORTEX_DEBUG") in ("1", "true", "True")
     log_file = setup_logging(debug)
 

@@ -71,7 +71,10 @@ except ImportError:
 
 @dataclass(slots=True)
 class PortableApp:
-    """PortableApp."""
+    """Portableapp.
+
+    Manages PortableApp operations and coordinates related state changes for the component.
+    """
     id: str
     name: str
     version: str
@@ -85,21 +88,30 @@ class PortableApp:
     latest_version: Optional[str] = None
 
     def to_dict(self) -> dict:
-        """to_dict."""
+        """to_dict.
+
+        Manages to dict operations and coordinates related state changes for the component.
+
+        Returns:
+            dict: Dictionary mapping identifiers to status or values.
+        """
         d = {k: v for k, v in self.__dict__.items()}
         d["path"] = str(d["path"])
         d["launch_exe"] = str(d["launch_exe"]) if d["launch_exe"] else None
         return d
-        """to_dict."""
-    """PortableApp class."""
-    """PortableApp class."""
 
 # ---------------------------------------------------------------------------
 # Root discovery — dynamic
 # ---------------------------------------------------------------------------
 
 def _find_removable_drives() -> List[Path]:
-    """_find_removable_drives."""
+    """_find_removable_drives.
+
+    Manages find removable drives operations and coordinates related state changes for the component.
+
+    Returns:
+        List[Path]: List of processed items or identifiers.
+    """
     drives: List[Path] = []
     try:
         if os.name == "nt":
@@ -126,11 +138,15 @@ def _find_removable_drives() -> List[Path]:
     except Exception:
         pass
     return drives
-    """_find_removable_drives."""
-    """_find_removable_drives."""
 
 def _find_portable_roots() -> List[Path]:
-    """_find_portable_roots."""
+    """_find_portable_roots.
+
+    Manages find portable roots operations and coordinates related state changes for the component.
+
+    Returns:
+        List[Path]: List of processed items or identifiers.
+    """
     roots: List[Path] = []
     # env
     for key in ("PORTABLEAPPS", "PORTABLEAPPS_DIR", "LIBERKEY"):
@@ -166,15 +182,22 @@ def _find_portable_roots() -> List[Path]:
             seen.add(s)
             out.append(r)
     return out
-    """_find_portable_roots."""
-    """_find_portable_roots."""
 
 # ---------------------------------------------------------------------------
 # App discovery
 # ---------------------------------------------------------------------------
 
 def _parse_appinfo(ini_path: Path) -> Optional[PortableApp]:
-    """_parse_appinfo."""
+    """_parse_appinfo.
+
+    Manages parse appinfo operations and coordinates related state changes for the component.
+
+    Args:
+        ini_path (Path): Filesystem path to the target file or directory.
+
+    Returns:
+        Optional[PortableApp]: Result of the operation.
+    """
     try:
         cfg = configparser.ConfigParser()
         cfg.read(ini_path, encoding="utf-8")
@@ -206,25 +229,40 @@ def _parse_appinfo(ini_path: Path) -> Optional[PortableApp]:
         )
     except Exception:
         return None
-    """_parse_appinfo."""
-    """_parse_appinfo."""
 
 # ---------------------------------------------------------------------------
 # Manager
 # ---------------------------------------------------------------------------
 
 class PortableManager:
-    """PortableManager."""
+    """Portablemanager.
+
+    Manages PortableManager operations and coordinates related state changes for the component.
+    """
     def __init__(self, progress: Callable[[str], None] | None = None,
                  cancel: threading.Event | None = None):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            progress (Callable[[str], None] | None): The progress parameter.
+            cancel (threading.Event | None): Threading event or callable to check for cancellation.
+        """
         self.progress = progress or (lambda _: None)
         self.cancel = cancel or threading.Event()
-        """__init__."""
-        """__init__."""
 
     def scan_portable_roots(self, roots: List[Path] | None = None) -> List[PortableApp]:
-        """scan_portable_roots."""
+        """scan_portable_roots.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+        Args:
+            roots (List[Path] | None): The roots parameter.
+
+        Returns:
+            List[PortableApp]: List of processed items or identifiers.
+        """
         roots = roots or _find_portable_roots()
         apps: List[PortableApp] = []
         for root in roots:
@@ -259,8 +297,6 @@ class PortableManager:
                             launch_exe=exes[0],
                         ))
         return apps
-        """scan_portable_roots."""
-        """scan_portable_roots."""
 
     #: PAF installers are NSIS-based; /SILENT suppresses the pages while
     #: still extracting to the target directory. This is the documented
@@ -440,7 +476,5 @@ class PortableManager:
         except OSError:
             return False
         return True
-    """PortableManager class."""
-    """PortableManager class."""
 
 __all__ = ["PortableManager", "PortableApp"]

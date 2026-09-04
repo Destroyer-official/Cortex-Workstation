@@ -71,17 +71,21 @@ from typing import Any, Deque, Dict, Hashable, Optional, Tuple
 
 @dataclass(slots=True)
 class _Entry:
-    """_Entry."""
+    """Entry.
+
+    Manages Entry operations and coordinates related state changes for the component.
+    """
     key: Hashable
     value: Any
     freq: int = 0  # 0..3 (2 bits)
-    """_Entry class."""
-    """_Entry class."""
 
 
 @dataclass
 class S3FIFOStats:
-    """S3 F I F O Stats data container."""
+    """S3fifostats.
+
+    Manages S3FIFOStats operations and coordinates related state changes for the component.
+    """
     hits: int = 0
     misses: int = 0
     ghost_hits: int = 0
@@ -93,8 +97,11 @@ class S3FIFOStats:
     def to_dict(self) -> dict:
         """To dict.
 
+        Manages to dict operations and coordinates related state changes for the component.
+
         Returns:
-            Result of the operation."""
+            dict: Dictionary mapping identifiers to status or values.
+        """
         total = self.hits + self.misses
         return {
             "hits": self.hits,
@@ -148,13 +155,26 @@ class S3FIFO:
     # -- internal helpers
 
     def _ghost_contains(self, key: Hashable) -> bool:
-        """_ghost_contains."""
+        """_ghost_contains.
+
+        Manages ghost contains operations and coordinates related state changes for the component.
+
+        Args:
+            key (Hashable): The key parameter.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         return key in self._ghost_set
-        """_ghost_contains."""
-        """_ghost_contains."""
 
     def _ghost_add(self, key: Hashable) -> None:
-        """_ghost_add."""
+        """_ghost_add.
+
+        Manages ghost add operations and coordinates related state changes for the component.
+
+        Args:
+            key (Hashable): The key parameter.
+        """
         if key in self._ghost_set:
             # Move to tail (FIFO recency) – remove old position
             try:
@@ -166,22 +186,27 @@ class S3FIFO:
         while len(self._ghost) > self.ghost_capacity:
             old = self._ghost.popleft()
             self._ghost_set.discard(old)
-        """_ghost_add."""
-        """_ghost_add."""
 
     def _ghost_remove(self, key: Hashable) -> None:
-        """_ghost_remove."""
+        """_ghost_remove.
+
+        Manages ghost remove operations and coordinates related state changes for the component.
+
+        Args:
+            key (Hashable): The key parameter.
+        """
         if key in self._ghost_set:
             try:
                 self._ghost.remove(key)
             except ValueError:
                 pass
             self._ghost_set.discard(key)
-        """_ghost_remove."""
-        """_ghost_remove."""
 
     def _evict_small_if_needed(self) -> None:
-        """_evict_small_if_needed."""
+        """_evict_small_if_needed.
+
+        Manages evict small if needed operations and coordinates related state changes for the component.
+        """
         while len(self._small) > self.small_capacity:
             entry = self._small.popleft()
             # Remove from index (will be re-added if promoted)
@@ -197,12 +222,13 @@ class S3FIFO:
                 self._ghost_add(entry.key)
                 self._stats.small_evictions_to_ghost += 1
                 self._stats.evictions += 1
-        """_evict_small_if_needed."""
-        """_evict_small_if_needed."""
 
     def _evict_main_if_needed(self) -> None:
         # FIFO-Reinsertion: keep looping until within capacity
-        """_evict_main_if_needed."""
+        """_evict_main_if_needed.
+
+        Manages evict main if needed operations and coordinates related state changes for the component.
+        """
         while len(self._main) > self.main_capacity:
             entry = self._main.popleft()
             if entry.freq >= 1:
@@ -213,14 +239,21 @@ class S3FIFO:
             else:
                 self._index.pop(entry.key, None)
                 self._stats.evictions += 1
-        """_evict_main_if_needed."""
-        """_evict_main_if_needed."""
                 # Not added to ghost (paper: only S evictions enter ghost)
 
     # -- public API
 
     def get(self, key: Hashable) -> Optional[Any]:
-        """Return value or ``None`` on miss; bumps frequency on hit."""
+        """Get.
+
+        Manages get operations and coordinates related state changes for the component.
+
+        Args:
+            key (Hashable): The key parameter.
+
+        Returns:
+            Optional[Any]: Result of the operation.
+        """
         with self._lock:
             hit = self._index.get(key)
             if hit is None:
@@ -263,7 +296,16 @@ class S3FIFO:
                 self._evict_small_if_needed()
 
     def delete(self, key: Hashable) -> bool:
-        """Remove ``key`` if present; returns True if removed."""
+        """Delete.
+
+        Manages delete operations and coordinates related state changes for the component.
+
+        Args:
+            key (Hashable): The key parameter.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         with self._lock:
             hit = self._index.pop(key, None)
             if hit is None:
@@ -281,29 +323,46 @@ class S3FIFO:
     def contains(self, key: Hashable) -> bool:
         """Contains.
 
+        Manages contains operations and coordinates related state changes for the component.
+
         Args:
-            key: key.
+            key (Hashable): The key parameter.
 
         Returns:
-            Result of the operation."""
+            bool: True if the operation succeeded, False otherwise.
+        """
         with self._lock:
             return key in self._index
 
     def __contains__(self, key: object) -> bool:  # type: ignore[override]
-        """__contains__."""
+        """Contains.
+
+        Manages contains operations and coordinates related state changes for the component.
+
+        Args:
+            key (object): The key parameter.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         return self.contains(key)  # type: ignore[arg-type]
-        """__contains__."""
-        """__contains__."""
 
     def __len__(self) -> int:
-        """__len__."""
+        """Len.
+
+        Manages len operations and coordinates related state changes for the component.
+
+        Returns:
+            int: Result of the operation.
+        """
         with self._lock:
             return len(self._index)
-        """__len__."""
-        """__len__."""
 
     def clear(self) -> None:
-        """Clear."""
+        """Clear.
+
+        Manages clear operations and coordinates related state changes for the component.
+        """
         with self._lock:
             self._small.clear()
             self._main.clear()
@@ -315,8 +374,11 @@ class S3FIFO:
     def stats(self) -> dict:
         """Stats.
 
+        Manages stats operations and coordinates related state changes for the component.
+
         Returns:
-            Result of the operation."""
+            dict: Dictionary mapping identifiers to status or values.
+        """
         with self._lock:
             d = self._stats.to_dict()
             d.update(
@@ -337,13 +399,22 @@ class S3FIFO:
     def keys(self) -> list[Hashable]:
         """Keys.
 
+        Manages keys operations and coordinates related state changes for the component.
+
         Returns:
-            Result of the operation."""
+            list[Hashable]: List of processed items or identifiers.
+        """
         with self._lock:
             return list(self._index.keys())
 
     def snapshot(self) -> dict:
-        """Return a JSON-serialisable snapshot of queue states (ordered)."""
+        """Snapshot.
+
+        Manages snapshot operations and coordinates related state changes for the component.
+
+        Returns:
+            dict: Dictionary mapping identifiers to status or values.
+        """
         with self._lock:
             return {
                 "small": [(e.key, e.freq) for e in self._small],

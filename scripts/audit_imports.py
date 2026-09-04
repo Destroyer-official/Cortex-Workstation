@@ -25,7 +25,13 @@ for p in pkg_root.rglob("*.py"):
 
 # Collect top-level symbols per module (classes, functions, assignments, imports-as)
 def module_symbols(path):
-    """module_symbols."""
+    """module_symbols.
+
+    Manages module symbols operations and coordinates related state changes for the component.
+
+    Args:
+        path: Filesystem path to the target file or directory.
+    """
     try:
         tree = ast.parse(path.read_text(encoding="utf-8", errors="replace"))
     except SyntaxError:
@@ -74,7 +80,13 @@ def module_symbols(path):
 
 sym_cache = {}
 def get_syms(modname):
-    """get_syms."""
+    """get_syms.
+
+    Manages get syms operations and coordinates related state changes for the component.
+
+    Args:
+        modname: The modname parameter.
+    """
     if modname not in sym_cache:
         path = modules.get(modname)
         sym_cache[modname] = module_symbols(path) if path else None

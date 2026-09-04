@@ -26,7 +26,10 @@ IO_REPARSE_TAG_WOF = 0x80000017
 
 @dataclass
 class ReparseItem:
-    """Reparse Item data container."""
+    """Reparseitem.
+
+    Manages ReparseItem operations and coordinates related state changes for the component.
+    """
     path: str
     target: str
     link_type: str  # "Junction", "Symlink", "AppExecLink", "Hardlink"
@@ -37,7 +40,10 @@ class ReparseItem:
 
 @dataclass
 class JunctionAuditReport:
-    """Junction Audit Report data container."""
+    """Junctionauditreport.
+
+    Manages JunctionAuditReport operations and coordinates related state changes for the component.
+    """
     total_reparse_points: int = 0
     junction_count: int = 0
     symlink_count: int = 0
@@ -48,14 +54,30 @@ class JunctionAuditReport:
 
 
 class JunctionAuditor:
-    """Enterprise NTFS Junction Point & Reparse Tag Auditor."""
+    """Junctionauditor.
+
+    Manages JunctionAuditor operations and coordinates related state changes for the component.
+    """
 
     def __init__(self):
-        """Initialize Junction Auditor."""
+        """Initialize Junction Auditor.
+
+        Initializes the instance and configures internal state.
+        """
         self._is_windows = os.name == "nt"
 
     def audit(self, root_path: Optional[str] = None, max_depth: int = 4) -> JunctionAuditReport:
-        """Audit a folder hierarchy or default system profile for reparse links."""
+        """Audit.
+
+        Manages audit operations and coordinates related state changes for the component.
+
+        Args:
+            root_path (Optional[str]): Filesystem path to the target file or directory.
+            max_depth (int): The max depth parameter.
+
+        Returns:
+            JunctionAuditReport: Result of the operation.
+        """
         if not self._is_windows:
             return JunctionAuditReport(error="NTFS Junction auditing requires Windows NT.")
 
@@ -75,7 +97,14 @@ class JunctionAuditor:
         visited_paths: set[str] = set()
 
         def _scan(dir_path: Path, depth: int):
-            """_scan."""
+            """_scan.
+
+            Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+            Args:
+                dir_path (Path): Filesystem path to the target file or directory.
+                depth (int): The depth parameter.
+            """
             nonlocal dead_cnt, loop_cnt, junc_cnt, sym_cnt
             if depth > max_depth:
                 return
@@ -150,8 +179,6 @@ class JunctionAuditor:
 
                 except (PermissionError, OSError):
                     continue
-            """_scan."""
-            """_scan."""
 
         _scan(root, 0)
 
@@ -165,7 +192,16 @@ class JunctionAuditor:
         )
 
     def remove_dead_junction(self, link_path: str) -> tuple[bool, str]:
-        """Safely unlink a dead junction or symlink without touching target files."""
+        """Safely unlink a dead junction or symlink without touching target files.
+
+        Manages remove dead junction operations and coordinates related state changes for the component.
+
+        Args:
+            link_path (str): Filesystem path to the target file or directory.
+
+        Returns:
+            tuple[bool, str]: True if the operation succeeded, False otherwise.
+        """
         p = Path(link_path)
         if not p.is_symlink() and not (p.exists() or p.is_file() or p.is_dir()):
             return False, "Target is not a valid link"

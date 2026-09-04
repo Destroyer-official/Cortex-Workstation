@@ -32,8 +32,6 @@ _MAX_ITEMS_PER_DEVICE = 1024
 def _text(value: Any, limit: int = 512) -> str:
     """Coerce to a trimmed, length-capped string; empty values become ""."""
     return str(value or "").strip()[:limit]
-    """_text."""
-    """_text."""
 
 
 def _json_safe(value: Any, depth: int = 0) -> Any:
@@ -52,8 +50,6 @@ def _json_safe(value: Any, depth: int = 0) -> Any:
     if isinstance(value, (list, tuple, set)):
         return [_json_safe(item, depth + 1) for item in list(value)[:256]]
     return _text(value, 1024)
-    """_json_safe."""
-    """_json_safe."""
 
 
 @dataclass(slots=True, frozen=True)
@@ -224,8 +220,6 @@ def _normalize_mac(value: Any) -> str:
     """Return a lowercase colon-separated MAC, or "" when malformed."""
     mac = _text(value, 32).lower().replace("-", ":")
     return mac if _MAC_RE.fullmatch(mac) else ""
-    """_normalize_mac."""
-    """_normalize_mac."""
 
 
 def _randomized_mac(mac: str) -> bool:
@@ -234,8 +228,6 @@ def _randomized_mac(mac: str) -> bool:
         return False
     first = int(mac.split(":", 1)[0], 16)
     return bool(first & 0x02) and not bool(first & 0x01)
-    """_randomized_mac."""
-    """_randomized_mac."""
 
 
 def _identity(device: InventoryDevice) -> tuple[str, str]:
@@ -247,8 +239,6 @@ def _identity(device: InventoryDevice) -> tuple[str, str]:
     # IP identity is deliberately labelled low confidence: DHCP leases move,
     # and a randomized MAC may change each time the client joins.
     return f"ip:{device.ip}", "low"
-    """_identity."""
-    """_identity."""
 
 
 def _service(value: Any) -> InventoryService:
@@ -290,8 +280,6 @@ def _service(value: Any) -> InventoryService:
     raise TypeError(
         "service entries must be strings, integers, mappings, observations, or InventoryService"
     )
-    """_service."""
-    """_service."""
 
 
 def _finding(value: Any) -> InventoryFinding:
@@ -315,16 +303,12 @@ def _finding(value: Any) -> InventoryFinding:
         severity=severity,
         details=_json_safe(details or {}),
     )
-    """_finding."""
-    """_finding."""
 
 
 def _get(value: Any, name: str, default: Any = None) -> Any:
     """Read an attribute mapping-style or object-style, with a default."""
     return value.get(name, default) if isinstance(
         value, Mapping) else getattr(value, name, default)
-    """_get."""
-    """_get."""
 
 
 def normalize_device(value: Any) -> InventoryDevice:
@@ -423,8 +407,6 @@ class NetworkInventory:
         connection.execute("PRAGMA foreign_keys = ON")
         connection.execute("PRAGMA busy_timeout = 5000")
         return connection
-        """_new_connection."""
-        """_new_connection."""
 
     def _connect(self) -> sqlite3.Connection:
         """Reuse the memory connection, or open a fresh file connection."""
@@ -552,8 +534,6 @@ class NetworkInventory:
             raise
         finally:
             self._release(connection)
-        """_migrate."""
-        """_migrate."""
 
     def record_snapshot(
         self,
@@ -717,8 +697,6 @@ class NetworkInventory:
                     "data": json.loads(str(finding["data_json"])),
                 }
         return snapshot_id, str(row["gateway_mac"]), result
-        """_load_previous."""
-        """_load_previous."""
 
     @staticmethod
     def _compare(
@@ -841,8 +819,6 @@ class NetworkInventory:
                 identity_confidence="high" if gateway_mac else "low",
             ))
         return changes
-        """_compare."""
-        """_compare."""
 
     @staticmethod
     def _store_device(
@@ -907,8 +883,6 @@ class NetworkInventory:
                  finding.severity,
                  data),
             )
-        """_store_device."""
-        """_store_device."""
 
     def _enforce_retention(self, connection: sqlite3.Connection) -> None:
         """Delete snapshots beyond the retention limit and orphaned catalog rows."""
@@ -927,8 +901,6 @@ class NetworkInventory:
         connection.execute(
             "DELETE FROM devices WHERE identity_key NOT IN "
             "(SELECT DISTINCT identity_key FROM observations)")
-        """_enforce_retention."""
-        """_enforce_retention."""
 
     @staticmethod
     def _metadata_identity(value: Any) -> str:
@@ -942,8 +914,6 @@ class NetworkInventory:
             raise ValueError("invalid inventory identity key")
         device = normalize_device(value)
         return _identity(device)[0]
-        """_metadata_identity."""
-        """_metadata_identity."""
 
     @staticmethod
     def _metadata_values(
@@ -965,8 +935,6 @@ class NetworkInventory:
         if len(normalized_tags) > 32:
             raise ValueError("device metadata supports at most 32 tags")
         return name, trust, normalized_tags, _text(notes, 4096)
-        """_metadata_values."""
-        """_metadata_values."""
 
     def set_metadata(
         self,
@@ -1049,8 +1017,6 @@ class NetworkInventory:
             notes=str(row["notes"]),
             updated_at=str(row["updated_at"]),
         )
-        """_metadata_from_row."""
-        """_metadata_from_row."""
 
     def exposure_trends(self, limit: int = 50) -> list[dict[str, Any]]:
         """Return bounded per-snapshot device/service/finding aggregates."""
@@ -1084,8 +1050,6 @@ class NetworkInventory:
         """Escape CSV cells that would parse as spreadsheet formulas."""
         text = str(value or "")
         return "'" + text if text.startswith(_FORMULA_PREFIXES) else text
-        """_csv_cell."""
-        """_csv_cell."""
 
     @staticmethod
     def _csv_value(value: Any) -> str:
@@ -1094,8 +1058,6 @@ class NetworkInventory:
         if len(text) > 1 and text[0] == "'" and text[1] in _FORMULA_PREFIXES:
             return text[1:]
         return text
-        """_csv_value."""
-        """_csv_value."""
 
     def export_inventory_csv(self, path: str | Path) -> int:
         """Export the latest inventory plus metadata with formula escaping."""
@@ -1255,8 +1217,6 @@ def _timestamp(value: dt.datetime | str | None) -> str:
         current = current.replace(tzinfo=dt.timezone.utc)
     return current.astimezone(
         dt.timezone.utc).isoformat().replace("+00:00", "Z")
-    """_timestamp."""
-    """_timestamp."""
 
 
 __all__ = [

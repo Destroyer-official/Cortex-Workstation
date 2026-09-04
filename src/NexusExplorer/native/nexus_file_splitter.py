@@ -1,9 +1,4 @@
-"""Nexus Explorer — High-Performance File Splitter & Joiner Engine.
-
-Splits large files into sequential chunk segments (.001, .002...) with presets
-(100MB, 700MB CD, 4.3GB DVD, 4GB FAT32) and integrity manifests (.crc / .json).
-Reassembles split segments with automated cryptographic validation.
-"""
+"""Split/merge files with a single JSON manifest (<name>.split.json only; no .crc files)."""
 
 from __future__ import annotations
 
@@ -18,7 +13,10 @@ from typing import Callable, List, Optional, Tuple
 
 
 class SplitPreset(Enum):
-    """SplitPreset."""
+    """Splitpreset.
+
+    Manages SplitPreset operations and coordinates related state changes for the component.
+    """
     CUSTOM = "Custom Size"
     MB_10 = "10 MB"
     MB_50 = "50 MB"
@@ -26,7 +24,6 @@ class SplitPreset(Enum):
     CD_700MB = "700 MB (CD-R)"
     FAT32_4GB = "3.99 GB (FAT32 Limit)"
     DVD_4_3GB = "4.37 GB (DVD Single Layer)"
-    """SplitPreset class."""
 
 
 PRESET_BYTES = {
@@ -41,7 +38,10 @@ PRESET_BYTES = {
 
 @dataclass
 class SplitManifest:
-    """SplitManifest."""
+    """Splitmanifest.
+
+    Manages SplitManifest operations and coordinates related state changes for the component.
+    """
     original_filename: str
     original_size: int
     chunk_size: int
@@ -49,34 +49,40 @@ class SplitManifest:
     sha256: str
     timestamp: float
     parts: List[str]
-    """SplitManifest class."""
 
 
 @dataclass
 class SplitResult:
-    """SplitResult."""
+    """Splitresult.
+
+    Manages SplitResult operations and coordinates related state changes for the component.
+    """
     success: bool
     parts_created: List[str]
     manifest_path: str
     elapsed_seconds: float
     error: Optional[str] = None
-    """SplitResult class."""
 
 
 @dataclass
 class JoinResult:
-    """JoinResult."""
+    """Joinresult.
+
+    Manages JoinResult operations and coordinates related state changes for the component.
+    """
     success: bool
     output_path: str
     total_bytes: int
     hash_verified: bool
     elapsed_seconds: float
     error: Optional[str] = None
-    """JoinResult class."""
 
 
 class FileSplitterJoiner:
-    """Production file splitting and joining engine with streaming buffers."""
+    """Filesplitterjoiner.
+
+    Manages FileSplitterJoiner operations and coordinates related state changes for the component.
+    """
 
     BUFFER_SIZE = 128 * 1024  # 128 KB chunk buffer
 
@@ -89,7 +95,20 @@ class FileSplitterJoiner:
         progress_cb: Optional[Callable[[int, int, int, int], None]] = None,
         cancel_check: Optional[Callable[[], bool]] = None,
     ) -> SplitResult:
-        """Split a file into sequential parts with SHA256 integrity manifest."""
+        """Split a file into sequential parts with SHA256 integrity manifest.
+
+        Manages split file operations and coordinates related state changes for the component.
+
+        Args:
+            source_file (str | Path): The source file parameter.
+            chunk_size_bytes (int): The chunk size bytes parameter.
+            output_directory (Optional[str | Path]): The output directory parameter.
+            progress_cb (Optional[Callable[[int, int, int, int], None]]): Callback invoked with progress updates.
+            cancel_check (Optional[Callable[[], bool]]): Threading event or callable to check for cancellation.
+
+        Returns:
+            SplitResult: Result of the operation.
+        """
         src = Path(source_file).resolve()
         if not src.is_file():
             return SplitResult(False, [], "", 0.0, "Source file does not exist")
@@ -172,7 +191,19 @@ class FileSplitterJoiner:
         progress_cb: Optional[Callable[[int, int, int, int], None]] = None,
         cancel_check: Optional[Callable[[], bool]] = None,
     ) -> JoinResult:
-        """Reassemble sequential split parts (.001, .002...) back into the original file."""
+        """Reassemble sequential split parts (.001, .002...) back into the original file.
+
+        Manages join files operations and coordinates related state changes for the component.
+
+        Args:
+            first_part_or_manifest (str | Path): The first part or manifest parameter.
+            output_path (Optional[str | Path]): Filesystem path to the target file or directory.
+            progress_cb (Optional[Callable[[int, int, int, int], None]]): Callback invoked with progress updates.
+            cancel_check (Optional[Callable[[], bool]]): Threading event or callable to check for cancellation.
+
+        Returns:
+            JoinResult: Result of the operation.
+        """
         input_path = Path(first_part_or_manifest).resolve()
         if not input_path.is_file():
             return JoinResult(False, "", 0, False, 0.0, "Input file does not exist")

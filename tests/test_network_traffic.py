@@ -14,9 +14,15 @@ from cortex_unified.system_tools.network_traffic import (
 
 
 class TestSample:
-    """TestSample."""
+    """Testsample.
+
+    Manages TestSample operations and coordinates related state changes for the component.
+    """
     def test_first_sample_zero_rate(self):
-        """test_first_sample_zero_rate."""
+        """test_first_sample_zero_rate.
+
+        Manages test first sample zero rate operations and coordinates related state changes for the component.
+        """
         tm = TrafficMonitor()
         s = tm.sample()
         assert isinstance(s, TrafficSample)
@@ -25,13 +31,19 @@ class TestSample:
         assert s.total_sent >= 0 and s.total_recv >= 0
 
     def test_since_start_starts_zero(self):
-        """test_since_start_starts_zero."""
+        """test_since_start_starts_zero.
+
+        Manages test since start starts zero operations and coordinates related state changes for the component.
+        """
         tm = TrafficMonitor()
         s = tm.sample()
         assert s.sent_since_start == 0 and s.recv_since_start == 0
 
     def test_second_sample_has_nonnegative_rates(self):
-        """test_second_sample_has_nonnegative_rates."""
+        """test_second_sample_has_nonnegative_rates.
+
+        Manages test second sample has nonnegative rates operations and coordinates related state changes for the component.
+        """
         import time
         tm = TrafficMonitor()
         tm.sample()
@@ -42,7 +54,10 @@ class TestSample:
         assert s.sent_since_start >= 0 and s.recv_since_start >= 0
 
     def test_per_nic_present_and_sorted(self):
-        """test_per_nic_present_and_sorted."""
+        """test_per_nic_present_and_sorted.
+
+        Manages test per nic present and sorted operations and coordinates related state changes for the component.
+        """
         tm = TrafficMonitor()
         tm.sample()
         s = tm.sample()
@@ -52,7 +67,10 @@ class TestSample:
         assert rates == sorted(rates, reverse=True)
 
     def test_to_dict_shape(self):
-        """test_to_dict_shape."""
+        """test_to_dict_shape.
+
+        Manages test to dict shape operations and coordinates related state changes for the component.
+        """
         tm = TrafficMonitor()
         d = tm.sample().to_dict()
         assert set(d) >= {"send_rate", "recv_rate", "total_sent", "total_recv",
@@ -60,5 +78,8 @@ class TestSample:
 
 
 def test_singleton():
-    """test_singleton."""
+    """test_singleton.
+
+    Manages test singleton operations and coordinates related state changes for the component.
+    """
     assert TrafficMonitor.instance() is TrafficMonitor.instance()

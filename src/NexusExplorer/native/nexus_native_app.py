@@ -22,7 +22,13 @@ from nexus_explorer import DARK_QSS  # noqa: E402
 
 
 def main() -> int:
-    """main."""
+    """Main.
+
+    Manages main operations and coordinates related state changes for the component.
+
+    Returns:
+        int: Result of the operation.
+    """
     args = [a for a in sys.argv[1:] if not a.startswith("-")]
     app = QApplication(sys.argv)
     app.setApplicationName("Nexus Explorer")
@@ -52,16 +58,17 @@ def main() -> int:
         widget._toggle_sidebar()
 
     def on_quit():
-        """on_quit."""
+        """on_quit.
+
+        Manages on quit operations and coordinates related state changes for the component.
+        """
         settings.setValue("lastPath", widget._tab()["path"])
         settings.setValue("windowGeometry", win.saveGeometry())
         settings.setValue("sidebarVisible", widget._sidebar_visible)
-        """on_quit."""
 
     app.aboutToQuit.connect(on_quit)
     win.show()
     return app.exec()
-    """main."""
 
 
 if __name__ == "__main__":

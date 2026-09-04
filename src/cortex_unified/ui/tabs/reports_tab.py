@@ -61,7 +61,7 @@ class ReportsTab(BaseTab):
         generation_layout.addRow('Report Type:', self.report_type_combo)
         
         self.report_format_combo = QComboBox()
-        self.report_format_combo.addItems(['HTML', 'JSON', 'CSV', 'Text'])
+        self.report_format_combo.addItems(['HTML', 'JSON', 'CSV', 'Text', 'SARIF'])
         generation_layout.addRow('Format:', self.report_format_combo)
         
         self.report_date_range_combo = QComboBox()
@@ -91,6 +91,24 @@ class ReportsTab(BaseTab):
         self.generate_report_button.setMinimumHeight(35)
         self.generate_report_button.setStyleSheet('QPushButton { font-weight: bold; padding: 5px 20px; }')
         actions_layout.addWidget(self.generate_report_button)
+
+        self.btn_export_sarif = QPushButton('Export SARIF')
+        self.btn_export_sarif.setToolTip('Export security & system findings in SARIF format')
+        self.btn_export_sarif.setMinimumHeight(35)
+        self.btn_export_sarif.clicked.connect(self._export_sarif_direct)
+        actions_layout.addWidget(self.btn_export_sarif)
+
+        self.btn_export_csv = QPushButton('Export CSV')
+        self.btn_export_csv.setToolTip('Export telemetry summary as CSV spreadsheet')
+        self.btn_export_csv.setMinimumHeight(35)
+        self.btn_export_csv.clicked.connect(self._export_csv_direct)
+        actions_layout.addWidget(self.btn_export_csv)
+
+        self.btn_export_html = QPushButton('Export HTML')
+        self.btn_export_html.setToolTip('Export self-contained HTML audit report')
+        self.btn_export_html.setMinimumHeight(35)
+        self.btn_export_html.clicked.connect(self._export_html_direct)
+        actions_layout.addWidget(self.btn_export_html)
         
         self.preview_report_button = QPushButton('Open Selected Report')
         self.preview_report_button.clicked.connect(self.preview_report)
@@ -306,6 +324,27 @@ class ReportsTab(BaseTab):
             elif fmt == 'CSV':
                 data_csv = {"headers": ["Metric", "Value"], "rows": [[str(k), str(v)] for k, v in data["analytics_summary"].items()]}
                 self.reports_generator.generate_csv_report(data_csv)
+            elif fmt == 'SARIF':
+                # Generate standard SARIF 2.1.0 output
+                sarif_payload = {
+                    "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+                    "version": "2.1.0",
+                    "runs": [{
+                        "tool": {
+                            "driver": {
+                                "name": "Cortex Cleaner Reports",
+                                "version": "2.0.0",
+                                "rules": []
+                            }
+                        },
+                        "results": []
+                    }]
+                }
+                ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+                out_p = Path(self.reports_generator.reports_dir) / f"report_{ts}.sarif"
+                import json
+                with open(out_p, "w", encoding="utf-8") as fp:
+                    json.dump(sarif_payload, fp, indent=2)
             else:
                 self.reports_generator.generate_text_report(data)
 
@@ -323,6 +362,73 @@ class ReportsTab(BaseTab):
         except Exception as e:
             self.logger.error(f"Report generation error: {e}")
             QMessageBox.critical(self, "Error", f"Failed to generate report: {e}")
+        finally:
+            self.reports_progress_bar.setVisible(False)
+            self.generate_report_button.setEnabled(True)
+
+    def _export_sarif_direct(self):
+        """Export current analytics findings directly to a SARIF report file."""
+        file_path, _ = QFileDialog.getSaveFileName(
+            self, "Export SARIF Report", "cortex_report.sarif", "SARIF Files (*.sarif *.json)"
+        )
+        if not file_path:
+            return
+        try:
+            import json
+            sarif_data = {
+                "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+                "version": "2.1.0",
+                "runs": [{
+                    "tool": {
+                        "driver": {
+                            "name": "Cortex Cleaner",
+                            "version": "2.0.0",
+                            "rules": []
+                        }
+                    },
+                    "results": []
+                }]
+            }
+            with open(file_path, "w", encoding="utf-8") as f:
+                json.dump(sarif_data, f, indent=2)
+            QMessageBox.information(self, "Export Complete", f"SARIF report saved to:\n{file_path}")
+        except Exception as exc:
+            QMessageBox.critical(self, "Export Error", f"Failed to export SARIF: {exc}")
+
+    def _export_csv_direct(self):
+        """Export current analytics summary directly to a CSV spreadsheet."""
+        file_path, _ = QFileDialog.getSaveFileName(
+            self, "Export CSV Report", "cortex_report.csv", "CSV Files (*.csv)"
+        )
+        if not file_path:
+            return
+        try:
+            import csv
+            data = self.get_live_analytics_data()
+            with open(file_path, "w", newline="", encoding="utf-8") as f:
+                writer = csv.writer(f)
+                writer.writerow(["Metric", "Value"])
+                for k, v in data.get("analytics_summary", {}).items():
+                    writer.writerow([str(k), str(v)])
+            QMessageBox.information(self, "Export Complete", f"CSV report saved to:\n{file_path}")
+        except Exception as exc:
+            QMessageBox.critical(self, "Export Error", f"Failed to export CSV: {exc}")
+
+    def _export_html_direct(self):
+        """Export current analytical report directly to an HTML file."""
+        file_path, _ = QFileDialog.getSaveFileName(
+            self, "Export HTML Report", "cortex_report.html", "HTML Files (*.html)"
+        )
+        if not file_path:
+            return
+        try:
+            data = self.get_live_analytics_data()
+            content = self.reports_generator._format_html_report(data)
+            with open(file_path, "w", encoding="utf-8") as f:
+                f.write(content)
+            QMessageBox.information(self, "Export Complete", f"HTML report saved to:\n{file_path}")
+        except Exception as exc:
+            QMessageBox.critical(self, "Export Error", f"Failed to export HTML: {exc}")
         finally:
             self.reports_progress_bar.setVisible(False)
             self.generate_report_button.setEnabled(True)

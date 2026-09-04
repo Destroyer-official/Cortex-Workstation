@@ -23,7 +23,10 @@ else:
 
 @dataclass
 class TelemetrySetting:
-    """Telemetry Setting data container."""
+    """Telemetrysetting.
+
+    Manages TelemetrySetting operations and coordinates related state changes for the component.
+    """
     id: str
     name: str
     hive_name: str  # "HKLM" or "HKCU"
@@ -37,7 +40,10 @@ class TelemetrySetting:
 
 @dataclass
 class TelemetryAuditReport:
-    """Telemetry Audit Report data container."""
+    """Telemetryauditreport.
+
+    Manages TelemetryAuditReport operations and coordinates related state changes for the component.
+    """
     total_settings: int
     hardened_count: int
     exposed_count: int
@@ -46,7 +52,10 @@ class TelemetryAuditReport:
 
 
 class DiagnosticDataManager:
-    """Production Windows Telemetry & Diagnostic Data level management engine."""
+    """Diagnosticdatamanager.
+
+    Manages DiagnosticDataManager operations and coordinates related state changes for the component.
+    """
 
     DATA_COLLECTION_POLICIES = [
         TelemetrySetting(
@@ -130,7 +139,18 @@ class DiagnosticDataManager:
 
     @classmethod
     def _read_dword(cls, hive, subkey: str, name: str) -> Optional[int]:
-        """_read_dword."""
+        """_read_dword.
+
+        Manages read dword operations and coordinates related state changes for the component.
+
+        Args:
+            hive: The hive parameter.
+            subkey (str): The subkey parameter.
+            name (str): The name parameter.
+
+        Returns:
+            Optional[int]: Result of the operation.
+        """
         if winreg is None:
             return None
         try:
@@ -139,12 +159,22 @@ class DiagnosticDataManager:
                 return int(val)
         except (FileNotFoundError, OSError):
             return None
-        """_read_dword."""
-        """_read_dword."""
 
     @classmethod
     def _write_dword(cls, hive, subkey: str, name: str, value: int) -> bool:
-        """_write_dword."""
+        """_write_dword.
+
+        Manages write dword operations and coordinates related state changes for the component.
+
+        Args:
+            hive: The hive parameter.
+            subkey (str): The subkey parameter.
+            name (str): The name parameter.
+            value (int): The value parameter.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         if winreg is None:
             return False
         try:
@@ -155,12 +185,16 @@ class DiagnosticDataManager:
             return False
         except Exception:
             return False
-        """_write_dword."""
-        """_write_dword."""
 
     @classmethod
     def audit_telemetry(cls) -> TelemetryAuditReport:
-        """Inspect all diagnostic telemetry settings and calculate score."""
+        """Inspect all diagnostic telemetry settings and calculate score.
+
+        Manages audit telemetry operations and coordinates related state changes for the component.
+
+        Returns:
+            TelemetryAuditReport: Result of the operation.
+        """
         settings: List[TelemetrySetting] = []
         hardened_cnt = 0
 
@@ -197,7 +231,13 @@ class DiagnosticDataManager:
 
     @classmethod
     def apply_maximum_privacy(cls) -> Tuple[int, List[str]]:
-        """Harden all telemetry settings to maximum privacy values."""
+        """Harden all telemetry settings to maximum privacy values.
+
+        Manages apply maximum privacy operations and coordinates related state changes for the component.
+
+        Returns:
+            Tuple[int, List[str]]: List of processed items or identifiers.
+        """
         if winreg is None:
             return 0, ["Windows only"]
 

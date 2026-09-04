@@ -18,7 +18,14 @@ import pytest
 
 @pytest.fixture
 def fake_env(monkeypatch, tmp_path):
-    """Redirect every sweep root into a throwaway directory tree."""
+    """Redirect every sweep root into a throwaway directory tree.
+
+    Manages fake env operations and coordinates related state changes for the component.
+
+    Args:
+        monkeypatch: The monkeypatch parameter.
+        tmp_path: Filesystem path to the target file or directory.
+    """
     roots = {
         "PROGRAMFILES": tmp_path / "pf",
         "ProgramFiles(x86)": tmp_path / "pf86",
@@ -41,9 +48,18 @@ def fake_env(monkeypatch, tmp_path):
 # =====================================================================
 
 class TestExclusionsStore:
-    """TestExclusionsStore."""
+    """Testexclusionsstore.
+
+    Manages TestExclusionsStore operations and coordinates related state changes for the component.
+    """
     def test_add_is_persisted_and_prefix_matched(self, tmp_path):
-        """test_add_is_persisted_and_prefix_matched."""
+        """test_add_is_persisted_and_prefix_matched.
+
+        Manages test add is persisted and prefix matched operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         from cortex_unified.system_tools.leftover_cleaner import ExclusionsStore
         store = ExclusionsStore(tmp_path / "ex.json")
         target = tmp_path / "roaming" / "ZetaSoft"
@@ -57,7 +73,13 @@ class TestExclusionsStore:
         assert not reloaded.is_excluded(tmp_path / "other")
 
     def test_discard_removes_and_persists(self, tmp_path):
-        """test_discard_removes_and_persists."""
+        """test_discard_removes_and_persists.
+
+        Manages test discard removes and persists operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         from cortex_unified.system_tools.leftover_cleaner import ExclusionsStore
         p = tmp_path / "ex.json"
         store = ExclusionsStore(p)
@@ -66,7 +88,13 @@ class TestExclusionsStore:
         assert len(ExclusionsStore(p)) == 0
 
     def test_corrupt_file_degrades_to_empty(self, tmp_path):
-        """test_corrupt_file_degrades_to_empty."""
+        """test_corrupt_file_degrades_to_empty.
+
+        Manages test corrupt file degrades to empty operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         from cortex_unified.system_tools.leftover_cleaner import ExclusionsStore
         p = tmp_path / "ex.json"
         p.write_text("{not json", encoding="utf-8")
@@ -76,9 +104,18 @@ class TestExclusionsStore:
 
 
 class TestScannerExclusions:
-    """TestScannerExclusions."""
+    """Testscannerexclusions.
+
+    Manages TestScannerExclusions operations and coordinates related state changes for the component.
+    """
     def test_scan_app_skips_excluded_folders(self, fake_env):
-        """test_scan_app_skips_excluded_folders."""
+        """test_scan_app_skips_excluded_folders.
+
+        Manages test scan app skips excluded folders operations and coordinates related state changes for the component.
+
+        Args:
+            fake_env: The fake env parameter.
+        """
         from cortex_unified.system_tools.leftover_cleaner import (
             ExclusionsStore,
             InstalledApp,
@@ -96,7 +133,14 @@ class TestScannerExclusions:
 
     def test_clean_refuses_excluded_paths_even_when_asked(self, tmp_path,
                                                           monkeypatch):
-        """Defense in depth: a stale caller cannot delete an excluded path."""
+        """Defense in depth: a stale caller cannot delete an excluded path.
+
+        Manages test clean refuses excluded paths even when asked operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+            monkeypatch: The monkeypatch parameter.
+        """
         from cortex_unified.system_tools.leftover_cleaner import (
             CleanOutcome,
             ExclusionsStore,
@@ -106,7 +150,13 @@ class TestScannerExclusions:
         calls = []
 
         def fake_send2trash(path):  # must never be reached
-            """fake_send2trash."""
+            """fake_send2trash.
+
+            Manages fake send2trash operations and coordinates related state changes for the component.
+
+            Args:
+                path: Filesystem path to the target file or directory.
+            """
             calls.append(path)
 
         import send2trash
@@ -126,9 +176,19 @@ class TestScannerExclusions:
 
 
 class TestCleanCancel:
-    """TestCleanCancel."""
+    """Testcleancancel.
+
+    Manages TestCleanCancel operations and coordinates related state changes for the component.
+    """
     def test_cancel_event_stops_between_items(self, tmp_path, monkeypatch):
-        """test_cancel_event_stops_between_items."""
+        """test_cancel_event_stops_between_items.
+
+        Manages test cancel event stops between items operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+            monkeypatch: The monkeypatch parameter.
+        """
         from threading import Event
 
         from cortex_unified.system_tools.leftover_cleaner import (
@@ -138,7 +198,13 @@ class TestCleanCancel:
         processed = []
 
         def fake_send2trash(path):
-            """fake_send2trash."""
+            """fake_send2trash.
+
+            Manages fake send2trash operations and coordinates related state changes for the component.
+
+            Args:
+                path: Filesystem path to the target file or directory.
+            """
             processed.append(path)
             if len(processed) == 1:
                 ev.set()                          # cancel after first item
@@ -166,7 +232,10 @@ class TestCleanCancel:
 # =====================================================================
 
 class TestDisambiguation:
-    """TestDisambiguation."""
+    """Testdisambiguation.
+
+    Manages TestDisambiguation operations and coordinates related state changes for the component.
+    """
     def test_weaker_name_match_penalised(self, fake_env):
         """For app 'ZetaEditor', folder 'ZetaEditor' outranks 'ZetaEditorSuite'
         - the suite folder likely belongs to a different product."""
@@ -200,21 +269,42 @@ class TestDisambiguation:
 # =====================================================================
 
 class TestSettingsConsent:
-    """TestSettingsConsent."""
+    """Testsettingsconsent.
+
+    Manages TestSettingsConsent operations and coordinates related state changes for the component.
+    """
     def test_update_check_defaults_off(self, tmp_path):
-        """test_update_check_defaults_off."""
+        """test_update_check_defaults_off.
+
+        Manages test update check defaults off operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         from cortex_unified.ui.premium.settings_store import SettingsStore
         s = SettingsStore(tmp_path / "s.json")
         assert s.update_check is False          # opt-in ONLY
 
     def test_leftover_restore_point_defaults_on(self, tmp_path):
-        """test_leftover_restore_point_defaults_on."""
+        """test_leftover_restore_point_defaults_on.
+
+        Manages test leftover restore point defaults on operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         from cortex_unified.ui.premium.settings_store import SettingsStore
         s = SettingsStore(tmp_path / "s.json")
         assert s.leftover_restore_point is True  # safe default
 
     def test_fields_roundtrip(self, tmp_path):
-        """test_fields_roundtrip."""
+        """test_fields_roundtrip.
+
+        Manages test fields roundtrip operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         from cortex_unified.ui.premium.settings_store import SettingsStore
         s = SettingsStore(tmp_path / "s.json")
         s.update_check = True
@@ -224,7 +314,13 @@ class TestSettingsConsent:
         assert reloaded.leftover_restore_point is False
 
     def test_corrupt_file_uses_safe_defaults(self, tmp_path):
-        """test_corrupt_file_uses_safe_defaults."""
+        """test_corrupt_file_uses_safe_defaults.
+
+        Manages test corrupt file uses safe defaults operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         from cortex_unified.ui.premium.settings_store import SettingsStore
         p = tmp_path / "s.json"
         p.write_text("garbage{", encoding="utf-8")
@@ -234,9 +330,18 @@ class TestSettingsConsent:
 
 
 class TestUpdateCheckGate:
-    """TestUpdateCheckGate."""
+    """Testupdatecheckgate.
+
+    Manages TestUpdateCheckGate operations and coordinates related state changes for the component.
+    """
     def test_scheduler_noops_without_consent(self, monkeypatch):
-        """No network call may happen unless the user opted in."""
+        """No network call may happen unless the user opted in.
+
+        Manages test scheduler noops without consent operations and coordinates related state changes for the component.
+
+        Args:
+            monkeypatch: The monkeypatch parameter.
+        """
         import cortex_unified.ui.premium.app as app_mod
         from cortex_unified.system_tools import update_checker as uc
 
@@ -245,13 +350,25 @@ class TestUpdateCheckGate:
                             lambda *a, **k: called.append(1))
 
         class FakeWin:
-            """FakeWin."""
+            """Fakewin.
+
+            Manages FakeWin operations and coordinates related state changes for the component.
+            """
             def statusBar(self):
-                """statusBar."""
+                """Statusbar.
+
+                Manages statusBar operations and coordinates related state changes for the component.
+                """
                 class SB:
-                    """SB."""
+                    """Sb.
+
+                    Manages SB operations and coordinates related state changes for the component.
+                    """
                     def showMessage(self, *a, **k):
-                        """showMessage."""
+                        """Showmessage.
+
+                        Manages showMessage operations and coordinates related state changes for the component.
+                        """
                         pass
                 return SB()
 
@@ -265,9 +382,19 @@ class TestUpdateCheckGate:
 # =====================================================================
 
 class TestBackupsLeftoverJournals:
-    """TestBackupsLeftoverJournals."""
+    """Testbackupsleftoverjournals.
+
+    Manages TestBackupsLeftoverJournals operations and coordinates related state changes for the component.
+    """
     def test_worker_lists_journal_sessions(self, tmp_path, monkeypatch):
-        """test_worker_lists_journal_sessions."""
+        """test_worker_lists_journal_sessions.
+
+        Manages test worker lists journal sessions operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+            monkeypatch: The monkeypatch parameter.
+        """
         import cortex_unified.ui.premium.report_pages as rp
 
         session = tmp_path / "CortexCleanerBackups" / "leftovers" / "20260101_120000"
@@ -279,9 +406,15 @@ class TestBackupsLeftoverJournals:
         }), encoding="utf-8")
 
         class FakeRestoreManager:
-            """FakeRestoreManager."""
+            """Fakerestoremanager.
+
+            Manages FakeRestoreManager operations and coordinates related state changes for the component.
+            """
             def list_manifests(self):
-                """list_manifests."""
+                """list_manifests.
+
+                Manages list manifests operations and coordinates related state changes for the component.
+                """
                 return [{"backup_name": "op-manifest", "_kind": "manifest"}]
 
         from cortex_unified.reports import restore_manager as rm_mod

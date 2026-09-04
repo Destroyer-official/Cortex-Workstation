@@ -1,7 +1,7 @@
 """Base tab class for Cortex Cleaner GUI tabs with safety manager integration."""
 
 from abc import ABC, abstractmethod
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Union
 import logging
 from pathlib import Path
 
@@ -160,6 +160,19 @@ class BaseTab(QWidget):
                 self.tr("error.operation_creation_failed", error=str(e)))
             raise
 
+    def can_delete(self, path: Union[str, Path]) -> tuple[bool, str]:
+        """Check if a path can be safely deleted using the safety manager.
+
+        Args:
+            path: Target file or directory path to check.
+
+        Returns:
+            tuple[bool, str]: (is_allowed, denial_reason). If allowed, reason is empty.
+        """
+        if self.safety_manager and hasattr(self.safety_manager, "can_delete"):
+            return self.safety_manager.can_delete(path)
+        return True, ""
+
     def _handle_operation_request(self, operation: Operation):
         """Handle operation request with validation and execution.
 
@@ -174,14 +187,27 @@ class BaseTab(QWidget):
                 operation)
 
             if validation_result == ValidationResult.REJECTED:
-                error_msg = self.tr("error.operation_rejected")
+                denials = operation.parameters.get("guard_denials", [])
+                if denials:
+                    error_msg = f"{self.tr('error.operation_rejected')}:\n" + "\n".join(denials[:5])
+                else:
+                    error_msg = self.tr("error.operation_rejected")
                 self.validation_failed.emit(error_msg, validation_result)
+                try:
+                    from PySide6.QtWidgets import QMessageBox
+                    QMessageBox.critical(self, "Safety Guard Denial", f"Operation blocked by Cortex PathGuard safety rules:\n\n{error_msg}")
+                except Exception:
+                    pass
                 return
 
             if validation_result == ValidationResult.REQUIRES_CONFIRMATION:
                 # Emit signal for UI to handle confirmation
+                denials = operation.parameters.get("guard_denials", [])
+                msg = self.tr("warning.operation_requires_confirmation")
+                if denials:
+                    msg += f"\nNote: {len(denials)} protected item(s) were excluded by PathGuard."
                 self.validation_failed.emit(
-                    self.tr("warning.operation_requires_confirmation"),
+                    msg,
                     validation_result
                 )
                 return

@@ -1,8 +1,9 @@
 """Entitlement checks: the single gateway every gated feature goes through.
 
 GUI pages, CLI commands and engine modules must never inspect the license
-directly. They call :func:`allowed` / :func:`require` here, so enforcement
-policy (grace handling, upgrade nudges, audit logging) stays in one place.
+directly. They call :func:`allowed` / :func:`require` here.
+Entitlement checks and debug logging of denials; grace handling and upgrade nudges are in license_manager.
+This module only reads the resulting state.
 
 Typical use in a tool module::
 
@@ -37,11 +38,23 @@ T = TypeVar("T")
 
 
 class EntitlementError(PermissionError):
-    """Raised by :func:`require` when a feature's tier is not licensed."""
+    """Entitlementerror.
+
+    Manages EntitlementError operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, feature: Feature, required: Tier, current: Tier,
                  message: str | None = None):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            feature (Feature): The feature parameter.
+            required (Tier): The required parameter.
+            current (Tier): The current parameter.
+            message (str | None): Informational or progress status message.
+        """
         self.feature = feature
         self.required = required
         self.current = current
@@ -50,22 +63,41 @@ class EntitlementError(PermissionError):
             or f"'{feature.value}' requires the {required.value.title()} tier "
                f"(current tier: {current.value})."
         )
-        """__init__."""
-        """__init__."""
 
 
 def current_tier() -> Tier:
-    """The effective tier of this machine right now."""
+    """The effective tier of this machine right now.
+
+    Manages current tier operations and coordinates related state changes for the component.
+
+    Returns:
+        Tier: Result of the operation.
+    """
     return get_license_manager().validate().tier
 
 
 def effective_features() -> set[Feature]:
-    """Every feature unlocked on this machine right now."""
+    """Every feature unlocked on this machine right now.
+
+    Manages effective features operations and coordinates related state changes for the component.
+
+    Returns:
+        set[Feature]: Result of the operation.
+    """
     return features_for_tier(current_tier())
 
 
 def allowed(feature: Feature) -> bool:
-    """True if *feature* may be used right now (never raises)."""
+    """Allowed.
+
+    Manages allowed operations and coordinates related state changes for the component.
+
+    Args:
+        feature (Feature): The feature parameter.
+
+    Returns:
+        bool: True if the operation succeeded, False otherwise.
+    """
     try:
         state = get_license_manager().validate()
     except Exception as exc:  # noqa: BLE001 - gating must never break callers
@@ -78,7 +110,13 @@ def allowed(feature: Feature) -> bool:
 
 
 def require(feature: Feature) -> None:
-    """Raise :class:`EntitlementError` unless *feature* is licensed."""
+    """Require.
+
+    Manages require operations and coordinates related state changes for the component.
+
+    Args:
+        feature (Feature): The feature parameter.
+    """
     from .tiers import FEATURE_MIN_TIER
 
     required = FEATURE_MIN_TIER.get(feature, Tier.FREE)
@@ -88,23 +126,43 @@ def require(feature: Feature) -> None:
 
 
 def gate(feature: Feature) -> Callable[[Callable[..., T]], Callable[..., T]]:
-    """Decorator form of :func:`require` for whole functions/methods."""
+    """Gate.
+
+    Manages gate operations and coordinates related state changes for the component.
+
+    Args:
+        feature (Feature): The feature parameter.
+
+    Returns:
+        Callable[[Callable[..., T]], Callable[..., T]]: Result of the operation.
+    """
 
     def decorator(func: Callable[..., T]) -> Callable[..., T]:
-        """decorator."""
+        """Decorator.
+
+        Manages decorator operations and coordinates related state changes for the component.
+
+        Args:
+            func (Callable[..., T]): The func parameter.
+
+        Returns:
+            Callable[..., T]: Result of the operation.
+        """
         def wrapper(*args: object, **kwargs: object) -> T:
-            """wrapper."""
+            """Wrapper.
+
+            Manages wrapper operations and coordinates related state changes for the component.
+
+            Returns:
+                T: Result of the operation.
+            """
             require(feature)
             return func(*args, **kwargs)
-            """wrapper."""
-            """wrapper."""
 
         wrapper.__name__ = func.__name__
         wrapper.__doc__ = func.__doc__
         wrapper.__wrapped__ = func  # type: ignore[attr-defined]
         return wrapper
-        """decorator."""
-        """decorator."""
 
     return decorator
 
@@ -115,6 +173,9 @@ _RESET_LOCK = threading.Lock()
 
 
 def reset_cache() -> None:
-    """Drop memoised validation state (tests only)."""
+    """Drop memoised validation state (tests only).
+
+    Manages reset cache operations and coordinates related state changes for the component.
+    """
     with _RESET_LOCK:
         get_license_manager().invalidate()

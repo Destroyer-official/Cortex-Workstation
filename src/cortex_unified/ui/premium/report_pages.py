@@ -35,18 +35,33 @@ from .window import _Page
 # =====================================================================
 
 class HealthReportWorker(QObject):
-    """Collects read-only diagnostics and writes a report in the chosen format."""
+    """Healthreportworker.
+
+    Manages HealthReportWorker operations and coordinates related state changes for the component.
+    """
 
     finished = Signal(str, dict)   # (report_path, data)
     failed = Signal(str)
 
     def __init__(self, fmt: str):
-        """Store the report output format ("html", "json", or "text")."""
+        """Store the report output format ("html", "json", or "text").
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            fmt (str): The fmt parameter.
+        """
         super().__init__()
         self._fmt = fmt
 
     def _collect(self) -> dict:
-        """Gather system snapshot and disk health data, capturing per-section errors."""
+        """Aggregate discovered files or telemetry metrics into collections.
+
+        Iterates over raw subsystem records, filters excluded paths, and collates findings into a structured report list.
+
+        Returns:
+            dict: Dictionary mapping identifiers to status or values.
+        """
         data: dict = {}
         try:
             from cortex_unified.system_tools.system_info import SystemInfo
@@ -62,7 +77,10 @@ class HealthReportWorker(QObject):
         return data
 
     def run(self):
-        """Collect diagnostics, generate the report file, and emit its path and data."""
+        """Collect diagnostics, generate the report file, and emit its path and data.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         try:
             from cortex_unified.reports.reports import ReportsGenerator
             data = self._collect()
@@ -92,7 +110,13 @@ class ManifestListWorker(QObject):
 
     @staticmethod
     def _leftover_sessions() -> list[dict]:
-        """Build read-only history rows from leftover-cleanup journals (newest first)."""
+        """Build read-only history rows from leftover-cleanup journals (newest first).
+
+        Manages leftover sessions operations and coordinates related state changes for the component.
+
+        Returns:
+            list[dict]: List of processed items or identifiers.
+        """
         rows: list[dict] = []
         root = Path.home() / "CortexCleanerBackups" / "leftovers"
         try:
@@ -122,7 +146,10 @@ class ManifestListWorker(QObject):
         return rows
 
     def run(self):
-        """List restore manifests plus leftover sessions and emit the combined rows."""
+        """List restore manifests plus leftover sessions and emit the combined rows.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         try:
             from cortex_unified.reports.restore_manager import RestoreManager
             manifests = list(RestoreManager().list_manifests())
@@ -143,14 +170,25 @@ class RestoreWorker(QObject):
     failed = Signal(str)
 
     def __init__(self, manifest_file: str, dry_run: bool, overwrite: bool):
-        """Store the manifest path plus dry-run and overwrite flags."""
+        """Store the manifest path plus dry-run and overwrite flags.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            manifest_file (str): The manifest file parameter.
+            dry_run (bool): The dry run parameter.
+            overwrite (bool): The overwrite parameter.
+        """
         super().__init__()
         self._file = manifest_file
         self._dry = dry_run
         self._overwrite = overwrite
 
     def run(self):
-        """Run the manifest restore via RestoreManager and emit the result."""
+        """Run the manifest restore via RestoreManager and emit the result.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         try:
             from cortex_unified.reports.restore_manager import RestoreManager
             res = RestoreManager().restore_from_manifest(
@@ -165,10 +203,19 @@ class RestoreWorker(QObject):
 # =====================================================================
 
 class HealthReportPage(_Page):
-    """Generate an exportable, shareable PC health report."""
+    """Healthreportpage.
+
+    Manages HealthReportPage operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, win):
-        """Build the PC Health Report page: export buttons, progress, and preview card."""
+        """Build the PC Health Report page: export buttons, progress, and preview card.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win: Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(title_block(
             "PC Health Report",
@@ -215,7 +262,13 @@ class HealthReportPage(_Page):
         self._last_path: str | None = None
 
     def _generate(self, fmt: str):
-        """Disable export buttons and run HealthReportWorker for the given format."""
+        """Generate.
+
+        Manages generate operations and coordinates related state changes for the component.
+
+        Args:
+            fmt (str): The fmt parameter.
+        """
         for b in (self.html_btn, self.json_btn, self.txt_btn):
             b.setEnabled(False)
         self.state.show_loading("Collecting diagnostics\u2026")
@@ -223,7 +276,14 @@ class HealthReportPage(_Page):
         self.win.run_worker(HealthReportWorker(fmt), self._on_done, self._fail)
 
     def _on_done(self, path: str, data: dict):
-        """Show a summary preview of the saved report and enable opening it."""
+        """Show a summary preview of the saved report and enable opening it.
+
+        Receives the completed data from the  background worker, populates the view with results, and restores button states.
+
+        Args:
+            path (str): Filesystem path to the target file or directory.
+            data (dict): The data parameter.
+        """
         self.state.clear()
         for b in (self.html_btn, self.json_btn, self.txt_btn):
             b.setEnabled(True)
@@ -248,7 +308,10 @@ class HealthReportPage(_Page):
         self.win.statusBar().showMessage(f"Report written to {path}", 6000)
 
     def _open_last(self):
-        """Open the most recently generated report with the OS default viewer."""
+        """Open the most recently generated report with the OS default viewer.
+
+        Manages open last operations and coordinates related state changes for the component.
+        """
         if not self._last_path:
             return
         try:
@@ -263,7 +326,13 @@ class HealthReportPage(_Page):
             QMessageBox.warning(self, "Open failed", str(exc))
 
     def _fail(self, msg: str):
-        """Re-enable export buttons and show the report error."""
+        """Handle an operation failure and notify the user.
+
+        Captures error details, displays an informative failure state in the UI, resets progress indicators, and re-enables interactive controls.
+
+        Args:
+            msg (str): Informational or progress status message.
+        """
         for b in (self.html_btn, self.json_btn, self.txt_btn):
             b.setEnabled(True)
         self.state.show_error(msg, on_retry=None)
@@ -274,10 +343,19 @@ class HealthReportPage(_Page):
 # =====================================================================
 
 class BackupsPage(_Page):
-    """List backup manifests and restore files from them."""
+    """List backup manifests and restore files from them.
+
+    Creates a backup archive or export of target resources, reporting the final output location upon success.
+    """
 
     def __init__(self, win):
-        """Build the Backups & Restore page: refresh/preview/restore buttons and a manifests table."""
+        """Build the Backups & Restore page: refresh/preview/restore buttons and a manifests table.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win: Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(title_block(
             "Backups & Restore",
@@ -335,19 +413,31 @@ class BackupsPage(_Page):
         self._loaded = False
 
     def _on_sel(self):
-        """Enable Preview/Restore buttons based on table selection."""
+        """Enable Preview/Restore buttons based on table selection.
+
+        Manages on sel operations and coordinates related state changes for the component.
+        """
         has = bool(self.tbl.selectedIndexes())
         self.preview_btn.setEnabled(has)
         self.restore_btn.setEnabled(has)
 
     def _load(self):
-        """Refresh the manifest list via ManifestListWorker."""
+        """Fetch and reload the latest data entries into the view.
+
+        Queries the underlying system service or storage cache and refreshes view tables with up-to-date state.
+        """
         self.refresh_btn.setEnabled(False)
         self.state.show_loading("Loading backups\u2026")
         self.win.run_worker(ManifestListWorker(), self._on_listed, self._fail)
 
     def _on_listed(self, manifests: list):
-        """Populate the backups table and show an empty state when none exist."""
+        """Populate the backups table and show an empty state when none exist.
+
+        Manages on listed operations and coordinates related state changes for the component.
+
+        Args:
+            manifests (list): The manifests parameter.
+        """
         if not manifests:
             self.state.show_empty("No backups found yet. Cortex creates these before "
                                    "cleaning when backups are enabled in Settings.")
@@ -369,7 +459,13 @@ class BackupsPage(_Page):
             self.status.setText(f"{len(manifests)} backup(s) available.")
 
     def _selected_manifest(self) -> str | None:
-        """Return the file path of the currently selected backup row."""
+        """Return the file path of the currently selected backup row.
+
+        Manages selected manifest operations and coordinates related state changes for the component.
+
+        Returns:
+            str | None: Formatted string or path.
+        """
         sel = self.tbl.selectedIndexes()
         if not sel:
             return None
@@ -377,7 +473,10 @@ class BackupsPage(_Page):
         return item.data(Qt.ItemDataRole.UserRole) if item else None
 
     def _preview(self):
-        """Dry-run the restore of the selected manifest and report what would happen."""
+        """Preview.
+
+        Manages preview operations and coordinates related state changes for the component.
+        """
         mf = self._selected_manifest()
         if not mf:
             return
@@ -385,7 +484,13 @@ class BackupsPage(_Page):
         self.win.run_worker(RestoreWorker(mf, True, False), self._on_preview, self._fail)
 
     def _on_preview(self, res: dict):
-        """Show dry-run counts (would-restore / skipped / errors) in the status line."""
+        """Show dry-run counts (would-restore / skipped / errors) in the status line.
+
+        Manages on preview operations and coordinates related state changes for the component.
+
+        Args:
+            res (dict): The res parameter.
+        """
         self._busy(False)
         self.status.setText(
             f"Dry-run: {res['restored']} file(s) would be restored, "
@@ -393,7 +498,10 @@ class BackupsPage(_Page):
             + (f"First issues: {res['error_details'][0]}" if res.get("error_details") else ""))
 
     def _restore(self):
-        """Confirm overwrite choice, then run the real restore via RestoreWorker."""
+        """Restore.
+
+        Manages restore operations and coordinates related state changes for the component.
+        """
         mf = self._selected_manifest()
         if not mf:
             return
@@ -416,7 +524,13 @@ class BackupsPage(_Page):
         self.win.run_worker(RestoreWorker(mf, False, overwrite), self._on_restored, self._fail)
 
     def _on_restored(self, res: dict):
-        """Report restore results (restored / skipped / errors) in a dialog and status line."""
+        """Report restore results (restored / skipped / errors) in a dialog and status line.
+
+        Manages on restored operations and coordinates related state changes for the component.
+
+        Args:
+            res (dict): The res parameter.
+        """
         self._busy(False)
         msg = (f"Restored {res['restored']} file(s). "
                f"Skipped {res['skipped']}, {res['errors']} error(s).")
@@ -425,13 +539,25 @@ class BackupsPage(_Page):
         self.win.statusBar().showMessage(msg, 6000)
 
     def _busy(self, on: bool):
-        """Toggle progress bar and action buttons while a worker runs."""
+        """Update the busy state indicators across the interface.
+
+        Shows or hides loading indicators, adjusts cursor feedback, and toggles action button availability.
+
+        Args:
+            on (bool): The on parameter.
+        """
         self.progress.setVisible(on)
         self.refresh_btn.setEnabled(not on)
         self.preview_btn.setEnabled(not on and bool(self.tbl.selectedIndexes()))
         self.restore_btn.setEnabled(not on and bool(self.tbl.selectedIndexes()))
 
     def _fail(self, msg: str):
-        """Clear the busy state and show the worker error with a reload retry."""
+        """Handle an operation failure and notify the user.
+
+        Captures error details, displays an informative failure state in the UI, resets progress indicators, and re-enables interactive controls.
+
+        Args:
+            msg (str): Informational or progress status message.
+        """
         self._busy(False)
         self.state.show_error(msg, on_retry=self._load)

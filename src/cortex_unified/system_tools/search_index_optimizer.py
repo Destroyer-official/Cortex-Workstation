@@ -20,7 +20,10 @@ from typing import Dict, List, Optional, Tuple
 
 @dataclass
 class SearchIndexStatus:
-    """Search Index Status data container."""
+    """Searchindexstatus.
+
+    Manages SearchIndexStatus operations and coordinates related state changes for the component.
+    """
     database_path: str
     database_size_bytes: int
     service_status: str  # "Running", "Stopped", "Disabled", "Unknown"
@@ -31,7 +34,10 @@ class SearchIndexStatus:
 
 @dataclass
 class SearchIndexOperationResult:
-    """Search Index Operation Result data container."""
+    """Searchindexoperationresult.
+
+    Manages SearchIndexOperationResult operations and coordinates related state changes for the component.
+    """
     success: bool
     message: str
     bytes_freed: int = 0
@@ -39,19 +45,29 @@ class SearchIndexOperationResult:
     errors: List[str] = None
 
     def __post_init__(self):
-        """__post_init__."""
+        """__post_init__.
+
+        Manages post init operations and coordinates related state changes for the component.
+        """
         if self.errors is None:
             self.errors = []
-        """__post_init__."""
-        """__post_init__."""
 
 
 class SearchIndexOptimizer:
-    """Production Windows Search Index database diagnostic and compaction toolkit."""
+    """Searchindexoptimizer.
+
+    Manages SearchIndexOptimizer operations and coordinates related state changes for the component.
+    """
 
     @classmethod
     def get_status(cls) -> SearchIndexStatus:
-        """Query Windows Search Index database metrics and service status."""
+        """Query Windows Search Index database metrics and service status.
+
+        Manages get status operations and coordinates related state changes for the component.
+
+        Returns:
+            SearchIndexStatus: Result of the operation.
+        """
         if platform.system() != "Windows":
             return SearchIndexStatus("", 0, "Non-Windows", False, False)
 
@@ -98,7 +114,13 @@ class SearchIndexOptimizer:
 
     @classmethod
     def compact_database(cls) -> SearchIndexOperationResult:
-        """Stop WSearch service, perform offline ESENT compaction (esentutl /d), and restart service."""
+        """Stop WSearch service, perform offline ESENT compaction (esentutl /d), and restart service.
+
+        Manages compact database operations and coordinates related state changes for the component.
+
+        Returns:
+            SearchIndexOperationResult: Result of the operation.
+        """
         if platform.system() != "Windows":
             return SearchIndexOperationResult(False, "Windows only")
 
@@ -155,7 +177,13 @@ class SearchIndexOptimizer:
 
     @classmethod
     def rebuild_index(cls) -> SearchIndexOperationResult:
-        """Trigger an official Windows Search index catalog rebuild."""
+        """Trigger an official Windows Search index catalog rebuild.
+
+        Manages rebuild index operations and coordinates related state changes for the component.
+
+        Returns:
+            SearchIndexOperationResult: Result of the operation.
+        """
         if platform.system() != "Windows":
             return SearchIndexOperationResult(False, "Windows only")
 

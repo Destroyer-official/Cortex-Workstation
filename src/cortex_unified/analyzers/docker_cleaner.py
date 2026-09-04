@@ -24,7 +24,10 @@ from cortex_unified.core.config import Config
 
 @dataclass
 class DockerImage:
-    """An image flagged as dangling or referenced by no container."""
+    """Dockerimage.
+
+    Manages DockerImage operations and coordinates related state changes for the component.
+    """
     id: str
     repository: str
     tag: str
@@ -33,14 +36,18 @@ class DockerImage:
     is_dangling: bool
     
     def __str__(self):
-        """__str__."""
+        """Return an informative string representation of the instance.
+
+        Formats key attributes and state flags into a concise string suitable for debugging and diagnostics.
+        """
         return f"{self.repository}:{self.tag} ({self.id[:12]})"
-        """__str__."""
-        """__str__."""
 
 @dataclass
 class DockerContainer:
-    """A non-running container eligible for removal."""
+    """Dockercontainer.
+
+    Manages DockerContainer operations and coordinates related state changes for the component.
+    """
     id: str
     name: str
     image: str
@@ -49,14 +56,18 @@ class DockerContainer:
     created: datetime
     
     def __str__(self):
-        """__str__."""
+        """Return an informative string representation of the instance.
+
+        Formats key attributes and state flags into a concise string suitable for debugging and diagnostics.
+        """
         return f"{self.name} ({self.id[:12]})"
-        """__str__."""
-        """__str__."""
 
 @dataclass
 class DockerVolume:
-    """A volume not mounted by any container."""
+    """Dockervolume.
+
+    Manages DockerVolume operations and coordinates related state changes for the component.
+    """
     name: str
     driver: str
     size: int
@@ -64,28 +75,36 @@ class DockerVolume:
     is_orphaned: bool
     
     def __str__(self):
-        """__str__."""
+        """Return an informative string representation of the instance.
+
+        Formats key attributes and state flags into a concise string suitable for debugging and diagnostics.
+        """
         return f"{self.name} ({self.driver})"
-        """__str__."""
-        """__str__."""
 
 @dataclass
 class DockerNetwork:
-    """A user-defined network with no attached containers."""
+    """Dockernetwork.
+
+    Manages DockerNetwork operations and coordinates related state changes for the component.
+    """
     id: str
     name: str
     driver: str
     is_unused: bool
     
     def __str__(self):
-        """__str__."""
+        """Return an informative string representation of the instance.
+
+        Formats key attributes and state flags into a concise string suitable for debugging and diagnostics.
+        """
         return f"{self.name} ({self.driver})"
-        """__str__."""
-        """__str__."""
 
 @dataclass
 class CleanupResult:
-    """Outcome of a cleanup pass; counts include dry-run simulations."""
+    """Outcome of a cleanup pass; counts include dry-run simulations.
+
+    Permanently purges or removes specified target items, reclaiming storage space and logging actions taken.
+    """
     images_removed: int
     containers_removed: int
     volumes_removed: int
@@ -95,10 +114,14 @@ class CleanupResult:
     
     @property
     def total_removed(self) -> int:
-        """total_removed."""
+        """total_removed.
+
+        Manages total removed operations and coordinates related state changes for the component.
+
+        Returns:
+            int: Result of the operation.
+        """
         return self.images_removed + self.containers_removed + self.volumes_removed + self.networks_removed
-        """total_removed."""
-        """total_removed."""
 
 class DockerCleaner:
     """Finds and removes reclaimable Docker resources via the Docker SDK.
@@ -148,7 +171,13 @@ class DockerCleaner:
         return self._client
     
     def is_docker_available(self) -> bool:
-        """Check if Docker is available and running."""
+        """Check if Docker is available and running.
+
+        Manages is docker available operations and coordinates related state changes for the component.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         if not HAS_DOCKER:
             self.logger.warning("Docker SDK not installed")
             return False
@@ -165,7 +194,13 @@ class DockerCleaner:
             return False
     
     def scan_unused_images(self) -> List[DockerImage]:
-        """Collect images that are dangling or referenced by no container."""
+        """Collect images that are dangling or referenced by no container.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+        Returns:
+            List[DockerImage]: List of processed items or identifiers.
+        """
         if not self.is_docker_available():
             return []
         
@@ -219,7 +254,13 @@ class DockerCleaner:
         return unused_images
     
     def scan_stopped_containers(self) -> List[DockerContainer]:
-        """Collect containers that are not currently running."""
+        """Collect containers that are not currently running.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+        Returns:
+            List[DockerContainer]: List of processed items or identifiers.
+        """
         if not self.is_docker_available():
             return []
         
@@ -260,7 +301,13 @@ class DockerCleaner:
         return stopped_containers
     
     def scan_unused_volumes(self) -> List[DockerVolume]:
-        """Collect volumes not mounted by any container."""
+        """Collect volumes not mounted by any container.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+        Returns:
+            List[DockerVolume]: List of processed items or identifiers.
+        """
         if not self.is_docker_available():
             return []
         
@@ -300,7 +347,13 @@ class DockerCleaner:
         return unused_volumes
     
     def scan_unused_networks(self) -> List[DockerNetwork]:
-        """Collect user-defined networks with no attached containers."""
+        """Collect user-defined networks with no attached containers.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+        Returns:
+            List[DockerNetwork]: List of processed items or identifiers.
+        """
         if not self.is_docker_available():
             return []
         
@@ -443,7 +496,13 @@ class DockerCleaner:
         return {"filesystem_cache_bytes": total, "locations": found}
 
     def get_space_usage(self) -> Dict[str, int]:
-        """Get Docker space usage information (SDK + filesystem fallback)."""
+        """Get Docker space usage information (SDK + filesystem fallback).
+
+        Manages get space usage operations and coordinates related state changes for the component.
+
+        Returns:
+            Dict[str, int]: Dictionary mapping identifiers to status or values.
+        """
         # Prefer SDK when available, but always include filesystem cache probe
         fs_info = self.get_filesystem_cache_size()
         if not self.is_docker_available():
@@ -469,11 +528,26 @@ class DockerCleaner:
             return fs_info
     
     def get_stats(self) -> Dict[str, Any]:
-        """Return a snapshot copy of cumulative scan counters."""
+        """Return a snapshot copy of cumulative scan counters.
+
+        Manages get stats operations and coordinates related state changes for the component.
+
+        Returns:
+            Dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         return self._stats.copy()
     
     def _is_image_unused(self, image_id: str) -> bool:
-        """True if no container references the image; False on API errors (fail-safe)."""
+        """True if no container references the image; False on API errors (fail-safe).
+
+        Manages is image unused operations and coordinates related state changes for the component.
+
+        Args:
+            image_id (str): The image id parameter.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         try:
             containers = self.client.containers.list(all=True)
             for container in containers:
@@ -484,7 +558,16 @@ class DockerCleaner:
             return False
     
     def _is_volume_orphaned(self, volume_name: str) -> bool:
-        """True if no container mounts the volume; False on API errors (fail-safe)."""
+        """True if no container mounts the volume; False on API errors (fail-safe).
+
+        Manages is volume orphaned operations and coordinates related state changes for the component.
+
+        Args:
+            volume_name (str): The volume name parameter.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         try:
             containers = self.client.containers.list(all=True)
             for container in containers:
@@ -497,7 +580,16 @@ class DockerCleaner:
             return False
     
     def _is_network_unused(self, network_id: str) -> bool:
-        """True if the network reports zero attached containers; False on errors."""
+        """True if the network reports zero attached containers; False on errors.
+
+        Manages is network unused operations and coordinates related state changes for the component.
+
+        Args:
+            network_id (str): The network id parameter.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         try:
             network = self.client.networks.get(network_id)
             containers = network.attrs.get('Containers', {})
@@ -549,7 +641,16 @@ class DockerCleaner:
             return 0
     
     def _format_bytes(self, bytes_size: int) -> str:
-        """Render a byte count using the largest fitting binary unit."""
+        """Render a byte count using the largest fitting binary unit.
+
+        Converts raw numeric values into formatted, localized, and human-readable string representations.
+
+        Args:
+            bytes_size (int): The bytes size parameter.
+
+        Returns:
+            str: Formatted string or path.
+        """
         for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
             if bytes_size < 1024.0:
                 return f"{bytes_size:.1f} {unit}"

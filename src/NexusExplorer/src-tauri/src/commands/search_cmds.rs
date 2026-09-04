@@ -10,6 +10,7 @@ use uuid::Uuid;
 use crate::engine::search_engine::{run_search_blocking, SearchRegistry};
 use crate::models::{SearchEvent, SearchOptions};
 
+/// Starts a filename search under `root`, streaming `SearchEvent` batches over `on_event`.
 #[tauri::command]
 pub async fn search_files(
     root: String,
@@ -47,6 +48,7 @@ pub async fn search_files(
     Ok(search_id)
 }
 
+/// Signals cancellation for the given search id.
 #[tauri::command]
 pub async fn cancel_search(
     search_id: String,

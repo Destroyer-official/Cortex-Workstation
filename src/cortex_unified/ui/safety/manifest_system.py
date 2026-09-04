@@ -13,11 +13,17 @@ import os
 from cortex_unified.core.utils import DeepCleanerError, ensure_directory
 
 class ManifestError(DeepCleanerError):
-    """Exception raised for manifest system errors."""
+    """Manifesterror.
+
+    Manages ManifestError operations and coordinates related state changes for the component.
+    """
     pass
 
 class ManifestSystem:
-    """Manages atomic manifest creation and operation logging."""
+    """Manifestsystem.
+
+    Manages ManifestSystem operations and coordinates related state changes for the component.
+    """
     
     def __init__(self, manifest_dir: Optional[str] = None, logger: Optional[logging.Logger] = None):
         """Initialize manifest system.
@@ -38,11 +44,15 @@ class ManifestSystem:
         self._current_operations: Dict[str, Dict] = {}
     
     def _get_default_manifest_dir(self) -> Path:
-        """_get_default_manifest_dir."""
+        """_get_default_manifest_dir.
+
+        Manages get default manifest dir operations and coordinates related state changes for the component.
+
+        Returns:
+            Path: Result of the operation.
+        """
         home = Path.home()
         return home / ".cortex_cleaner" / "manifests"
-        """_get_default_manifest_dir."""
-        """_get_default_manifest_dir."""
     
     def create_operation_manifest(self, operation_type: str, parameters: Dict[str, Any] = None) -> str:
         """Create atomic manifest with unique operation ID.
@@ -94,7 +104,13 @@ class ManifestSystem:
             raise ManifestError(f"Failed to create operation manifest: {e}")
     
     def _get_user_info(self) -> Dict[str, Any]:
-        """Get current user information."""
+        """Get current user information.
+
+        Manages get user info operations and coordinates related state changes for the component.
+
+        Returns:
+            Dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         try:
             import getpass
             user_info = {
@@ -111,14 +127,18 @@ class ManifestSystem:
             return {"username": "unknown"}
     
     def _get_os_info(self) -> str:
-        """_get_os_info."""
+        """_get_os_info.
+
+        Manages get os info operations and coordinates related state changes for the component.
+
+        Returns:
+            str: Formatted string or path.
+        """
         try:
             import platform
             return f"{platform.system()} {platform.release()}"
         except Exception:
             return "unknown"
-        """_get_os_info."""
-        """_get_os_info."""
     
     def log_file_action(self, op_id: str, action_type: str, file_path: Path, 
                        action: str, **kwargs) -> None:
@@ -187,7 +207,16 @@ class ManifestSystem:
             # Don't raise exception to avoid breaking the main operation
     
     def _calculate_file_hash(self, file_path: Path) -> str:
-        """Calculate SHA256 hash of a file."""
+        """Calculate SHA256 hash of a file.
+
+        Manages calculate file hash operations and coordinates related state changes for the component.
+
+        Args:
+            file_path (Path): Filesystem path to the target file or directory.
+
+        Returns:
+            str: Formatted string or path.
+        """
         try:
             hash_sha256 = hashlib.sha256()
             with open(file_path, "rb") as f:

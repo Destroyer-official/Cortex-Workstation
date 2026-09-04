@@ -267,9 +267,17 @@ class RestartManagerUnlocker:
         terminated: List[int] = []
         try:
             import psutil
+            from cortex_unified.core.proc import is_protected_process
             for pinfo in report.locking_processes:
                 try:
                     p = psutil.Process(pinfo.pid)
+                    p_name = p.name() or ""
+                    if is_protected_process(pinfo.pid) or is_protected_process(p_name):
+                        self.logger.warning(
+                            "Refusing to terminate protected system process %s (PID %d) locking %s",
+                            p_name, pinfo.pid, file_path
+                        )
+                        continue
                     if force_terminate:
                         p.kill()
                     else:

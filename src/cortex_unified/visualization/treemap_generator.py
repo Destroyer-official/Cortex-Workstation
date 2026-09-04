@@ -14,46 +14,60 @@ except ImportError:
     HAS_PLOTLY = False
     # No-op stand-ins keep method bodies runnable without Plotly
     class go:
-        """go."""
+        """Go.
+
+        Manages go operations and coordinates related state changes for the component.
+        """
         class Figure:
-            """Figure."""
+            """Figure.
+
+            Manages Figure operations and coordinates related state changes for the component.
+            """
             def __init__(self, *args, **kwargs):
-                """__init__."""
+                """Initialize the instance and configure internal state.
+
+                Sets up sub-widgets, event signal connections, and default options.
+                """
                 pass
-                """__init__."""
-                """__init__."""
             def add_trace(self, *args, **kwargs):
-                """add_trace."""
+                """add_trace.
+
+                Manages add trace operations and coordinates related state changes for the component.
+                """
                 pass
-                """add_trace."""
-                """add_trace."""
             def update_layout(self, *args, **kwargs):
-                """update_layout."""
+                """update_layout.
+
+                Manages update layout operations and coordinates related state changes for the component.
+                """
                 pass
-                """update_layout."""
-            """Figure class."""
-        """go class."""
-        """go class."""
     class px:
-        """px."""
+        """Px.
+
+        Manages px operations and coordinates related state changes for the component.
+        """
         @staticmethod
         def treemap(*args, **kwargs):
-            """treemap."""
+            """Treemap.
+
+            Manages treemap operations and coordinates related state changes for the component.
+            """
             return go.Figure()
-            """treemap."""
-        """px class."""
-        """px class."""
     def plot(*args, **kwargs):
-        """plot."""
+        """Plot.
+
+        Manages plot operations and coordinates related state changes for the component.
+        """
         pass
-        """plot."""
-        """plot."""
 
 import colorsys
 
 @dataclass
 class TreeMapNode:
-    """Tree cell carrying size, depth, and its resolved display color."""
+    """Treemapnode.
+
+    Manages TreeMapNode operations and coordinates related state changes for the component.
+    """
     name: str
     size: int
     path: str
@@ -64,10 +78,19 @@ class TreeMapNode:
     modified_time: Optional[float] = None
 
 class TreeMapGenerator:
-    """Renders disk trees as treemaps; larger nodes darken within their hue."""
+    """Treemapgenerator.
+
+    Manages TreeMapGenerator operations and coordinates related state changes for the component.
+    """
     
     def __init__(self, data: Any = None):
-        """Warn once without Plotly; color scale is sized lazily at flatten."""
+        """Warn once without Plotly; color scale is sized lazily at flatten.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            data (Any): The data parameter.
+        """
         self.data = data
         self.color_map = {}
         self.has_plotly = HAS_PLOTLY
@@ -77,7 +100,10 @@ class TreeMapGenerator:
         self._setup_color_scheme()
     
     def _setup_color_scheme(self):
-        """Per-extension base hues; 'unknown' catches unlisted types."""
+        """Per-extension base hues; 'unknown' catches unlisted types.
+
+        Manages setup color scheme operations and coordinates related state changes for the component.
+        """
         self.file_type_colors = {
             '.txt': '#3498db',    # Blue
             '.py': '#2ecc71',     # Green
@@ -97,7 +123,16 @@ class TreeMapGenerator:
         }
     
     def _get_file_type_from_path(self, path: str) -> str:
-        """Extension tag for a path; 'directory'/'unknown' sentinels."""
+        """Extension tag for a path; 'directory'/'unknown' sentinels.
+
+        Manages get file type from path operations and coordinates related state changes for the component.
+
+        Args:
+            path (str): Filesystem path to the target file or directory.
+
+        Returns:
+            str: Formatted string or path.
+        """
         if os.path.isdir(path):
             return 'directory'
         ext = os.path.splitext(path)[1].lower()
@@ -187,7 +222,14 @@ class TreeMapGenerator:
         hover_texts = []
         
         def add_node(node: TreeMapNode, parent_id: str = ""):
-            """add_node."""
+            """add_node.
+
+            Manages add node operations and coordinates related state changes for the component.
+
+            Args:
+                node (TreeMapNode): The node parameter.
+                parent_id (str): The parent id parameter.
+            """
             node_id = f"{parent_id}/{node.name}" if parent_id else node.name
             
             ids.append(node_id)
@@ -202,17 +244,19 @@ class TreeMapGenerator:
             
             for child in node.children:
                 add_node(child, node_id)
-            """add_node."""
-            """add_node."""
         
         all_sizes = []
         def collect_sizes(nodes_list):
-            """collect_sizes."""
+            """collect_sizes.
+
+            Manages collect sizes operations and coordinates related state changes for the component.
+
+            Args:
+                nodes_list: The nodes list parameter.
+            """
             for node in nodes_list:
                 all_sizes.append(node.size)
                 collect_sizes(node.children)
-            """collect_sizes."""
-            """collect_sizes."""
         
         collect_sizes(nodes)
         self._max_size = max(all_sizes) if all_sizes else 1
@@ -355,7 +399,16 @@ class TreeMapGenerator:
             raise RuntimeError(f"Failed to export treemap as HTML: {str(e)}")
     
     def _format_bytes(self, bytes_count: int) -> str:
-        """Human-readable size using binary (1024-step) units."""
+        """Human-readable size using binary (1024-step) units.
+
+        Converts raw numeric values into formatted, localized, and human-readable string representations.
+
+        Args:
+            bytes_count (int): The bytes count parameter.
+
+        Returns:
+            str: Formatted string or path.
+        """
         if bytes_count == 0:
             return "0 B"
         

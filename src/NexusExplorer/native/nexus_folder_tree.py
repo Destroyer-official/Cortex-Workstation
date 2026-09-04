@@ -21,20 +21,31 @@ except ImportError:
 
 
 class FolderTreeModel(QStandardItemModel):
-    """Lazy-loading tree model for filesystem directories."""
+    """Foldertreemodel.
+
+    Manages FolderTreeModel operations and coordinates related state changes for the component.
+    """
 
     _MAX_DEPTH = 20
 
     def __init__(self, parent=None):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            parent: Parent window or shell controller instance.
+        """
         super().__init__(parent)
         self._loaded: set[str] = set()
         self._provider = QFileIconProvider()
         self._visited_inodes: set[tuple[int, int]] = set()
-        """__init__."""
 
     def populate_drives(self):
-        """Add top-level drive items."""
+        """Add top-level drive items.
+
+        Refreshes table or tree items with formatted values, tooltips, and status indicators based on the provided dataset.
+        """
         self.clear()
         self.setHorizontalHeaderLabels(["Name"])
         self._visited_inodes.clear()
@@ -66,17 +77,24 @@ class FolderTreeModel(QStandardItemModel):
             self._setup_children(item, drive_path)
 
     def _get_drives(self) -> list[tuple[str, str]]:
-        """Get available drives on the system."""
+        """List local drives with volume labels (empty label on failure).
+
+        Manages get drives operations and coordinates related state changes for the component.
+
+        Returns:
+            list[tuple[str, str]]: List of processed items or identifiers.
+        """
         drives = []
         if os.name == "nt":
             for letter in string.ascii_uppercase:
                 drive = f"{letter}:\\"
                 if Path(drive).exists():
                     try:
-                        volume_info = ctypes.windll.kernel32.GetVolumeInformationW(
-                            drive, None, 0, None, None, None, None, 0
+                        buf = ctypes.create_unicode_buffer(261)
+                        ok = ctypes.windll.kernel32.GetVolumeInformationW(
+                            drive, buf, 261, None, None, None, None, 0
                         )
-                        label = volume_info[0] if volume_info and volume_info[0] else ""
+                        label = buf.value if ok else ""
                     except Exception:
                         label = ""
                     drives.append((drive, label))
@@ -85,7 +103,15 @@ class FolderTreeModel(QStandardItemModel):
         return drives
 
     def _setup_children(self, parent_item: QStandardItem, path: str, depth: int = 0):
-        """Add a lazy expansion sentinel child to display an expand chevron until contents load."""
+        """Add a lazy expansion sentinel child to display an expand chevron until contents load.
+
+        Manages setup children operations and coordinates related state changes for the component.
+
+        Args:
+            parent_item (QStandardItem): The parent item parameter.
+            path (str): Filesystem path to the target file or directory.
+            depth (int): The depth parameter.
+        """
         lazy_sentinel = QStandardItem("")
         lazy_sentinel.setData("", Qt.ItemDataRole.UserRole)
         parent_item.appendRow(lazy_sentinel)
@@ -95,7 +121,16 @@ class FolderTreeModel(QStandardItemModel):
         )
 
     def hasChildren(self, parent: QModelIndex = QModelIndex()) -> bool:
-        """Override to check UserRole+1 data for lazy-loading consistency."""
+        """Haschildren.
+
+        Manages hasChildren operations and coordinates related state changes for the component.
+
+        Args:
+            parent (QModelIndex): Parent window or shell controller instance.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         if not parent.isValid():
             return self.rowCount() > 0
         item = self.itemFromIndex(parent)
@@ -109,7 +144,16 @@ class FolderTreeModel(QStandardItemModel):
         return item.hasChildren()
 
     def canFetchMore(self, parent: QModelIndex) -> bool:
-        """canFetchMore."""
+        """Canfetchmore.
+
+        Manages canFetchMore operations and coordinates related state changes for the component.
+
+        Args:
+            parent (QModelIndex): Parent window or shell controller instance.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         if not parent.isValid():
             return False
         item = self.itemFromIndex(parent)
@@ -119,10 +163,15 @@ class FolderTreeModel(QStandardItemModel):
         if data is None:
             return False
         return not data.get("loaded", True)
-        """canFetchMore."""
 
     def fetchMore(self, parent: QModelIndex):
-        """fetchMore."""
+        """Fetchmore.
+
+        Manages fetchMore operations and coordinates related state changes for the component.
+
+        Args:
+            parent (QModelIndex): Parent window or shell controller instance.
+        """
         if not parent.isValid():
             return
         item = self.itemFromIndex(parent)
@@ -184,16 +233,24 @@ class FolderTreeModel(QStandardItemModel):
             child.setIcon(_material_folder_icon(name, 16))
             item.appendRow(child)
             self._setup_children(child, child_path, depth=depth + 1)
-        """fetchMore."""
 
 
 class FolderTreeWidget(QWidget):
-    """Folder tree with navigation signal."""
+    """Foldertreewidget.
+
+    Manages FolderTreeWidget operations and coordinates related state changes for the component.
+    """
 
     navigate_to = Signal(str)  # Emitted when user clicks a folder
 
     def __init__(self, parent=None):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            parent: Parent window or shell controller instance.
+        """
         super().__init__(parent)
         self.setObjectName("FolderTree")
 
@@ -219,16 +276,20 @@ class FolderTreeWidget(QWidget):
 
         # Populate on construction
         self.model.populate_drives()
-        """__init__."""
 
     def _on_clicked(self, idx: QModelIndex):
-        """_on_clicked."""
+        """_on_clicked.
+
+        Manages on clicked operations and coordinates related state changes for the component.
+
+        Args:
+            idx (QModelIndex): The idx parameter.
+        """
         item = self.model.itemFromIndex(idx)
         if item:
             path = item.data(Qt.ItemDataRole.UserRole)
             if path and Path(path).is_dir():
                 self.navigate_to.emit(path)
-        """_on_clicked."""
 
     def select_path(self, path: str):
         """Expand and select the given path in the tree.
@@ -274,6 +335,9 @@ class FolderTreeWidget(QWidget):
         self.model.populate_drives()
 
     def cleanup(self):
-        """Clean up resources."""
+        """Clean up resources.
+
+        Permanently purges or removes specified target items, reclaiming storage space and logging actions taken.
+        """
         self.model.clear()
         self.model._visited_inodes.clear()

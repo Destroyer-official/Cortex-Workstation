@@ -26,18 +26,31 @@ from .window import _Page
 
 
 class _BenchWorker(QObject):
-    """_BenchWorker class."""
+    """Benchworker.
+
+    Manages BenchWorker operations and coordinates related state changes for the component.
+    """
     finished = Signal(dict)
     failed = Signal(str)
 
     def __init__(self, capacity: int, trace_len: int = 5000):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            capacity (int): The capacity parameter.
+            trace_len (int): The trace len parameter.
+        """
         super().__init__()
         self._cap = capacity
         self._n = trace_len
 
     def run(self):
-        """run."""
+        """run.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         try:
             from cortex_unified.system_tools.s3_fifo import S3FIFO
             import random
@@ -77,10 +90,19 @@ class _BenchWorker(QObject):
 
 
 class S3FifoPage(_Page):
-    """Visualise and benchmark the S3-FIFO eviction policy."""
+    """S3fifopage.
+
+    Manages S3FifoPage operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, win):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win: Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(title_block(
             "S3-FIFO Cache (SOSP'23)",
@@ -133,7 +155,10 @@ class S3FifoPage(_Page):
         self.v.addWidget(note)
 
     def _run(self):
-        """_run."""
+        """Run.
+
+        Manages run operations and coordinates related state changes for the component.
+        """
         self.run_btn.setEnabled(False)
         self.progress.setVisible(True)
         self.state.show_loading("Benchmarking S3-FIFO vs LRU…")
@@ -141,7 +166,13 @@ class S3FifoPage(_Page):
         self.win.run_worker(w, self._on_done, self._fail)
 
     def _on_done(self, stats: dict):
-        """_on_done."""
+        """_on_done.
+
+        Receives the completed data from the  background worker, populates the view with results, and restores button states.
+
+        Args:
+            stats (dict): The stats parameter.
+        """
         self.progress.setVisible(False)
         self.run_btn.setEnabled(True)
         self.state.clear()
@@ -169,7 +200,13 @@ class S3FifoPage(_Page):
         self.win.statusBar().showMessage("S3-FIFO benchmark complete", 5000)
 
     def _fail(self, msg: str):
-        """_fail."""
+        """Handle an operation failure and notify the user.
+
+        Captures error details, displays an informative failure state in the UI, resets progress indicators, and re-enables interactive controls.
+
+        Args:
+            msg (str): Informational or progress status message.
+        """
         self.progress.setVisible(False)
         self.run_btn.setEnabled(True)
         self.state.show_error(msg, on_retry=self._run)

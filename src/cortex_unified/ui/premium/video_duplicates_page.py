@@ -23,13 +23,23 @@ from cortex_unified.analyzers.video_duplicate_finder import VideoDuplicateFinder
 
 
 class _VideoWorker(QObject):
-    """_VideoWorker class."""
+    """Videoworker.
+
+    Manages VideoWorker operations and coordinates related state changes for the component.
+    """
     finished = Signal(dict)
     progress = Signal(str)
     failed = Signal(str)
 
     def __init__(self, root: str, threshold: float = 0.55):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            root (str): Filesystem path to the target file or directory.
+            threshold (float): The threshold parameter.
+        """
         super().__init__()
         self._root = root
         self._thr = threshold
@@ -38,11 +48,17 @@ class _VideoWorker(QObject):
         self._cancel = threading.Event()
 
     def cancel(self):
-        """cancel."""
+        """cancel.
+
+        Sets the internal cancellation event to cooperatively stop worker execution at the next safe boundary.
+        """
         self._cancel.set()
 
     def run(self):
-        """run."""
+        """run.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         try:
             from cortex_unified.analyzers.video_duplicate_finder import VideoDuplicateFinder
 
@@ -57,10 +73,19 @@ class _VideoWorker(QObject):
 
 
 class VideoDuplicatesPage(_Page):
-    """Find temporally-similar videos (re-encodes, trims, watermarked copies)."""
+    """Videoduplicatespage.
+
+    Manages VideoDuplicatesPage operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, win):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win: Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(title_block(
             "Video Near-Duplicates",
@@ -109,6 +134,15 @@ class VideoDuplicatesPage(_Page):
         self.tbl.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self.v.addWidget(self.tbl, 1)
 
+        act_row = QHBoxLayout()
+        self.opt_btn = QPushButton("Optimize Selected Video (Crop & Re-Encode)")
+        self.opt_btn.setObjectName("Ghost")
+        self.opt_btn.setToolTip("Uses VideoOptimizer to crop static black borders and re-encode with libx264.")
+        self.opt_btn.clicked.connect(self._optimize_video)
+        act_row.addWidget(self.opt_btn)
+        act_row.addStretch(1)
+        self.v.addLayout(act_row)
+
         self.state = StatePanel(self.p)
         self.state.bind_content(self.tbl)
         self.v.addWidget(self.state, 1)
@@ -117,7 +151,10 @@ class VideoDuplicatesPage(_Page):
         self._worker = None
 
     def _pick(self):
-        """_pick."""
+        """Prompt the user to select a filesystem directory or file.
+
+        Launches a native file dialog and populates the selected path into the corresponding target input widget.
+        """
         from PySide6.QtWidgets import QFileDialog
 
         folder = QFileDialog.getExistingDirectory(self, "Select folder", self._folder)
@@ -126,7 +163,10 @@ class VideoDuplicatesPage(_Page):
             self.path_label.setText(folder)
 
     def _run(self):
-        """_run."""
+        """Run.
+
+        Manages run operations and coordinates related state changes for the component.
+        """
         self.run_btn.setEnabled(False)
         self.progress.setVisible(True)
         self.state.show_loading("Hashing video keyframes…")
@@ -137,11 +177,23 @@ class VideoDuplicatesPage(_Page):
         self.win.run_worker(w, self._on_done, self._fail, on_progress=self._on_progress)
 
     def _on_progress(self, msg: str):
-        """_on_progress."""
+        """_on_progress.
+
+        Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
+
+        Args:
+            msg (str): Informational or progress status message.
+        """
         self.status.setText(msg)
 
     def _on_done(self, groups: dict):
-        """_on_done."""
+        """_on_done.
+
+        Receives the completed data from the  background worker, populates the view with results, and restores button states.
+
+        Args:
+            groups (dict): The groups parameter.
+        """
         self._worker = None
         self.progress.setVisible(False)
         self.run_btn.setEnabled(True)
@@ -174,8 +226,88 @@ class VideoDuplicatesPage(_Page):
         self.win.statusBar().showMessage(f"{len(groups)} video-duplicate groups", 5000)
 
     def _fail(self, msg):
-        """_fail."""
+        """Handle an operation failure and notify the user.
+
+        Captures error details, displays an informative failure state in the UI, resets progress indicators, and re-enables interactive controls.
+
+        Args:
+            msg: Informational or progress status message.
+        """
         self._worker = None
         self.progress.setVisible(False)
         self.run_btn.setEnabled(True)
         self.state.show_error(msg, on_retry=self._run)
+
+    def _optimize_video(self):
+        """Optimize selected or picked video with VideoOptimizer.
+
+        Manages optimize video operations and coordinates related state changes for the component.
+        """
+        row = self.tbl.currentRow()
+        target_path = None
+        if row >= 0:
+            item = self.tbl.item(row, 0)
+            if item and item.text():
+                target_path = item.text()
+
+        if not target_path or not Path(target_path).exists():
+            from PySide6.QtWidgets import QFileDialog
+            f, _ = QFileDialog.getOpenFileName(self, "Select Video to Optimize", self._folder, "Video Files (*.mp4 *.mkv *.avi *.mov)")
+            if f:
+                target_path = f
+
+        if not target_path:
+            return
+
+        from PySide6.QtWidgets import QMessageBox
+        self.status.setText(f"Optimizing video with VideoOptimizer: {Path(target_path).name}…")
+        self.progress.setVisible(True)
+
+        def work():
+            """Execute background processing off the main UI thread.
+
+            Performs the intensive analysis, scanning, or file operations in a worker thread to keep the interface responsive.
+            """
+            from cortex_unified.analyzers.czkawka_tools import VideoOptimizer
+            opt = VideoOptimizer()
+            p = Path(target_path)
+            ok = opt.optimize(p)
+            return ok, p
+
+        def done(res):
+            """Handle completion of the asynchronous task.
+
+            Processes the returned result payload, updates corresponding tables or UI views, and restores interactive controls.
+
+            Args:
+                res: The res parameter.
+            """
+            ok, p = res
+            self.progress.setVisible(False)
+            if ok:
+                msg = f"Successfully optimized: {p.name} -> {p.with_suffix('.optimized.mp4').name}"
+                self.status.setText(msg)
+                QMessageBox.information(self, "Optimization Complete", msg)
+            else:
+                self.status.setText("Video optimization failed or ffmpeg not available.")
+                QMessageBox.warning(self, "Optimization Note", "Could not optimize video. Ensure ffmpeg is installed and video is valid.")
+
+        def error(msg):
+            """Handle an operation failure and notify the user.
+
+            Captures error details, displays an informative failure state in the UI, resets progress indicators, and re-enables interactive controls.
+
+            Args:
+                msg: Informational or progress status message.
+            """
+            self.progress.setVisible(False)
+            self.status.setText(f"Optimization error: {msg}")
+            QMessageBox.warning(self, "Optimization Error", str(msg))
+
+        if hasattr(self.win, "worker_runtime"):
+            self.win.worker_runtime.run(work, on_result=done, on_error=error)
+        else:
+            try:
+                done(work())
+            except Exception as e:
+                error(str(e))

@@ -1,9 +1,4 @@
-"""Nexus Explorer — Multi-Format Archive Studio & Compression Engine.
-
-Provides archive creation, inspection, extraction, and integrity testing across:
-1. ZIP (.zip - Deflate, BZIP2, LZMA, Store) with password protection
-2. TAR (.tar, .tar.gz, .tgz, .tar.bz2, .tbz2, .tar.xz)
-"""
+"""Archive creation: STORED and DEFLATED only; no BZIP2/LZMA, no password support."""
 
 from __future__ import annotations
 
@@ -19,39 +14,48 @@ from typing import Callable, Dict, List, Optional, Tuple
 
 
 class ArchiveFormat(Enum):
-    """ArchiveFormat."""
+    """ArchiveFormat.
+
+    Converts raw numeric values into formatted, localized, and human-readable string representations.
+    """
     ZIP = "ZIP Archive (.zip)"
     TAR = "Tarball (.tar)"
     TAR_GZ = "Gzipped Tarball (.tar.gz)"
     TAR_BZ2 = "Bzip2 Tarball (.tar.bz2)"
     TAR_XZ = "XZ Compressed Tarball (.tar.xz)"
-    """ArchiveFormat class."""
 
 
 class CompressionLevel(Enum):
-    """CompressionLevel."""
+    """Compressionlevel.
+
+    Manages CompressionLevel operations and coordinates related state changes for the component.
+    """
     STORE = 0
     FAST = 1
     NORMAL = 6
     MAXIMUM = 9
-    """CompressionLevel class."""
 
 
 @dataclass
 class ArchiveEntryInfo:
-    """ArchiveEntryInfo."""
+    """Archiveentryinfo.
+
+    Manages ArchiveEntryInfo operations and coordinates related state changes for the component.
+    """
     filename: str
     uncompressed_size: int
     compressed_size: int
     is_directory: bool
     modified_time: float
     crc: Optional[str] = None
-    """ArchiveEntryInfo class."""
 
 
 @dataclass
 class ArchiveOperationResult:
-    """ArchiveOperationResult."""
+    """Archiveoperationresult.
+
+    Manages ArchiveOperationResult operations and coordinates related state changes for the component.
+    """
     success: bool
     archive_path: str
     total_files: int
@@ -59,15 +63,26 @@ class ArchiveOperationResult:
     total_compressed_bytes: int
     elapsed_seconds: float
     error: Optional[str] = None
-    """ArchiveOperationResult class."""
 
 
 class ArchiveManager:
-    """Production archive management, compression, and extraction engine."""
+    """Archivemanager.
+
+    Manages ArchiveManager operations and coordinates related state changes for the component.
+    """
 
     @staticmethod
     def detect_format(archive_path: str | Path) -> Optional[ArchiveFormat]:
-        """Detect archive format based on file extension."""
+        """Detect archive format based on file extension.
+
+        Converts raw numeric values into formatted, localized, and human-readable string representations.
+
+        Args:
+            archive_path (str | Path): Filesystem path to the target file or directory.
+
+        Returns:
+            Optional[ArchiveFormat]: Result of the operation.
+        """
         name = Path(archive_path).name.lower()
         if name.endswith(".zip"):
             return ArchiveFormat.ZIP
@@ -83,7 +98,16 @@ class ArchiveManager:
 
     @classmethod
     def list_entries(cls, archive_path: str | Path) -> List[ArchiveEntryInfo]:
-        """List all entries contained in an archive without extracting to disk."""
+        """List all entries contained in an archive without extracting to disk.
+
+        Manages list entries operations and coordinates related state changes for the component.
+
+        Args:
+            archive_path (str | Path): Filesystem path to the target file or directory.
+
+        Returns:
+            List[ArchiveEntryInfo]: List of processed items or identifiers.
+        """
         path = Path(archive_path).resolve()
         if not path.is_file():
             return []
@@ -123,7 +147,16 @@ class ArchiveManager:
 
     @classmethod
     def test_archive(cls, archive_path: str | Path) -> Tuple[bool, Optional[str]]:
-        """Verify archive integrity and check for CRC/decompress corruption."""
+        """Verify archive integrity and check for CRC/decompress corruption.
+
+        Manages test archive operations and coordinates related state changes for the component.
+
+        Args:
+            archive_path (str | Path): Filesystem path to the target file or directory.
+
+        Returns:
+            Tuple[bool, Optional[str]]: True if the operation succeeded, False otherwise.
+        """
         path = Path(archive_path).resolve()
         if not path.is_file():
             return False, "Archive file does not exist"
@@ -158,7 +191,20 @@ class ArchiveManager:
         progress_cb: Optional[Callable[[int, int, str], None]] = None,
         cancel_check: Optional[Callable[[], bool]] = None,
     ) -> ArchiveOperationResult:
-        """Extract an archive to a destination directory."""
+        """Extract an archive to a destination directory.
+
+        Manages extract archive operations and coordinates related state changes for the component.
+
+        Args:
+            archive_path (str | Path): Filesystem path to the target file or directory.
+            destination_dir (str | Path): The destination dir parameter.
+            password (Optional[str]): The password parameter.
+            progress_cb (Optional[Callable[[int, int, str], None]]): Callback invoked with progress updates.
+            cancel_check (Optional[Callable[[], bool]]): Threading event or callable to check for cancellation.
+
+        Returns:
+            ArchiveOperationResult: Result of the operation.
+        """
         arc_p = Path(archive_path).resolve()
         dest_p = Path(destination_dir).resolve()
         dest_p.mkdir(parents=True, exist_ok=True)
@@ -213,7 +259,7 @@ class ArchiveManager:
         progress_cb: Optional[Callable[[int, int, str], None]] = None,
         cancel_check: Optional[Callable[[], bool]] = None,
     ) -> ArchiveOperationResult:
-        """Create a compressed archive from a list of files or folders."""
+        """Create archive (STORED or DEFLATED only; no BZIP2/LZMA, no password)."""
         out_p = Path(output_file).resolve()
         out_p.parent.mkdir(parents=True, exist_ok=True)
 

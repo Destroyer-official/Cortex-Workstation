@@ -43,10 +43,20 @@ _DURATION_MS = 360
 
 
 class SmoothScroller(QObject):
-    """Animate a scroll area's vertical scrollbar for an eased wheel glide."""
+    """Smoothscroller.
+
+    Manages SmoothScroller operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, area: QAbstractScrollArea, parent: QObject | None = None):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            area (QAbstractScrollArea): The area parameter.
+            parent (QObject | None): Parent window or shell controller instance.
+        """
         super().__init__(parent or area)
         self._area = area
         self._bar = area.verticalScrollBar()
@@ -62,7 +72,14 @@ class SmoothScroller(QObject):
             vp.installEventFilter(self)
 
     def eventFilter(self, obj, event):  # noqa: N802
-        """eventFilter."""
+        """Filter monitored Qt events for target child widgets.
+
+        Intercepts specific mouse, keyboard, or focus events to provide custom interactive behaviors before standard event dispatch.
+
+        Args:
+            obj: The obj parameter.
+            event: The Qt event object.
+        """
         if event.type() != QEvent.Type.Wheel:
             return False
         try:
@@ -72,7 +89,16 @@ class SmoothScroller(QObject):
             return False
 
     def _on_wheel(self, event) -> bool:
-        """_on_wheel."""
+        """_on_wheel.
+
+        Manages on wheel operations and coordinates related state changes for the component.
+
+        Args:
+            event: The Qt event object.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         bar = self._bar
         if bar is None:
             return False
@@ -112,7 +138,16 @@ class SmoothScroller(QObject):
 
 
 def install_smooth_scroll(area: QAbstractScrollArea) -> SmoothScroller | None:
-    """Attach smooth wheel scrolling to *area* once (idempotent). Never raises."""
+    """Attach smooth wheel scrolling to *area* once (idempotent). Never raises.
+
+    Initiates the package or update installation workflow in the background, monitoring execution progress.
+
+    Args:
+        area (QAbstractScrollArea): The area parameter.
+
+    Returns:
+        SmoothScroller | None: Result of the operation.
+    """
     if area is None:
         return None
     existing = getattr(area, "_cortex_smooth_scroller", None)

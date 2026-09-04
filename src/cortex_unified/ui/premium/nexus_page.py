@@ -36,7 +36,10 @@ NATIVE_DIR = next((p for p in _NEXUS_SEARCH_PATHS if p and p.is_dir()), _NEXUS_S
 
 
 def _load_nexus_module():
-    """Lazily import the explorer widget when QApplication is running."""
+    """Lazily import the explorer widget when QApplication is running.
+
+    Manages load nexus module operations and coordinates related state changes for the component.
+    """
     try:
         from cortex_unified.explorer.widget import DARK_QSS, ExplorerWidget
         if ExplorerWidget is not None:
@@ -56,9 +59,19 @@ def _load_nexus_module():
 
 
 class _ErrorCard(QWidget):
-    """_ErrorCard class."""
+    """Errorcard.
+
+    Manages ErrorCard operations and coordinates related state changes for the component.
+    """
     def __init__(self, message: str, parent=None):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            message (str): Informational or progress status message.
+            parent: Parent window or shell controller instance.
+        """
         super().__init__(parent)
         from PySide6.QtCore import Qt
 
@@ -86,7 +99,13 @@ class NexusExplorerPage(_Page):
     """
 
     def __init__(self, win):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win: Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.setContentsMargins(0, 0, 0, 0)
         self.v.setSpacing(0)
@@ -95,7 +114,10 @@ class NexusExplorerPage(_Page):
         self._loaded = False
 
     def _build_explorer(self):
-        """_build_explorer."""
+        """_build_explorer.
+
+        Manages build explorer operations and coordinates related state changes for the component.
+        """
         if self._built:
             return
         self._built = True

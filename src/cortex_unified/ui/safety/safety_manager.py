@@ -16,7 +16,10 @@ from .manifest_system import ManifestSystem
 from .process_manager import ProcessManager
 
 class OperationType(Enum):
-    """Types of operations that can be performed."""
+    """Operationtype.
+
+    Manages OperationType operations and coordinates related state changes for the component.
+    """
     DELETE = "delete"
     MOVE = "move"
     CLEAN = "clean"
@@ -24,14 +27,20 @@ class OperationType(Enum):
     RESTORE = "restore"
 
 class ValidationResult(Enum):
-    """Result of operation validation."""
+    """Validationresult.
+
+    Manages ValidationResult operations and coordinates related state changes for the component.
+    """
     APPROVED = "approved"
     REJECTED = "rejected"
     REQUIRES_CONFIRMATION = "requires_confirmation"
 
 @dataclass
 class Operation:
-    """Represents a file system operation."""
+    """Operation.
+
+    Manages Operation operations and coordinates related state changes for the component.
+    """
     id: str
     type: OperationType
     paths: List[Path]
@@ -45,7 +54,10 @@ class Operation:
 
 @dataclass
 class OperationResult:
-    """Result of an operation execution."""
+    """Operationresult.
+
+    Manages OperationResult operations and coordinates related state changes for the component.
+    """
     success: bool
     operation_id: str
     manifest_path: Optional[Path] = None
@@ -57,11 +69,17 @@ class OperationResult:
     dry_run_performed: bool = False
 
 class SafetyError(DeepCleanerError):
-    """Exception raised for safety-related errors."""
+    """Safetyerror.
+
+    Manages SafetyError operations and coordinates related state changes for the component.
+    """
     pass
 
 class SafetyManager:
-    """Central safety manager that coordinates all safety components."""
+    """Safetymanager.
+
+    Manages SafetyManager operations and coordinates related state changes for the component.
+    """
     
     def __init__(self, config: Config = None, logger: Optional[logging.Logger] = None):
         """Initialize safety manager.
@@ -77,6 +95,11 @@ class SafetyManager:
         self.path_validator = PathValidator(logger=self.logger)
         self.manifest_system = ManifestSystem(logger=self.logger)
         self.process_manager = ProcessManager(logger=self.logger)
+        try:
+            from cortex_unified.engine.guard import PathGuard
+            self.path_guard = PathGuard()
+        except Exception:
+            self.path_guard = None
         
         # Safety settings with enhanced defaults
         self.require_confirmation = True
@@ -97,7 +120,10 @@ class SafetyManager:
         self.logger.info("SafetyManager initialized with enhanced safety components and validation pipeline")
     
     def _setup_system_blacklists(self) -> None:
-        """Setup enhanced system directory blacklists."""
+        """Setup enhanced system directory blacklists.
+
+        Manages setup system blacklists operations and coordinates related state changes for the component.
+        """
         # Add critical system paths to path validator
         import sys
         
@@ -209,19 +235,48 @@ class SafetyManager:
     
     def add_path_whitelist(self, path: Union[str, Path]) -> None:
         """Add path to safety whitelist.
-        
+
+        Manages add path whitelist operations and coordinates related state changes for the component.
+
         Args:
-            path: Path to whitelist
+            path (Union[str, Path]): Filesystem path to the target file or directory.
         """
         self.path_validator.add_user_whitelist(str(path))
     
     def add_path_blacklist(self, path: Union[str, Path]) -> None:
         """Add path to safety blacklist.
-        
+
+        Manages add path blacklist operations and coordinates related state changes for the component.
+
         Args:
-            path: Path to blacklist
+            path (Union[str, Path]): Filesystem path to the target file or directory.
         """
         self.path_validator.add_blacklist(str(path))
+    
+    def can_delete(self, path: Union[str, Path]) -> tuple[bool, str]:
+        """Check if a path can be safely deleted against PathGuard and path validator.
+
+        Validates the specified file or folder path against system blacklists,
+        whitelists, and PathGuard engine rules to prevent accidental system damage.
+
+        Args:
+            path: Target file or directory path to check.
+
+        Returns:
+            tuple[bool, str]: (is_allowed, denial_reason). If allowed, reason is empty.
+        """
+        if not path:
+            return False, "Path is empty"
+        p_str = str(path)
+        if getattr(self, "path_guard", None):
+            verdict = self.path_guard.check(p_str)
+            if not verdict.safe:
+                return False, f"PathGuard blocked: {verdict.reason}"
+        if getattr(self, "path_validator", None):
+            is_valid, reason = self.path_validator.validate_path(p_str)
+            if not is_valid:
+                return False, f"Safety check blocked: {reason}"
+        return True, ""
     
     def validate_operation(self, operation: Operation) -> ValidationResult:
         """Enhanced operation validation pipeline with comprehensive safety checks.
@@ -293,7 +348,16 @@ class SafetyManager:
                             details={"operation_id": operation.id})
     
     def _validate_basic_requirements(self, operation: Operation) -> ValidationResult:
-        """Phase 1: Basic validation requirements."""
+        """Phase 1: Basic validation requirements.
+
+        Manages validate basic requirements operations and coordinates related state changes for the component.
+
+        Args:
+            operation (Operation): The operation parameter.
+
+        Returns:
+            ValidationResult: Result of the operation.
+        """
         if len(operation.paths) > self.max_batch_size:
             raise SafetyError(f"Batch size {len(operation.paths)} exceeds maximum {self.max_batch_size}")
         
@@ -306,14 +370,32 @@ class SafetyManager:
         return ValidationResult.APPROVED
     
     def _requires_dry_run_enforcement(self, operation: Operation) -> bool:
-        """Check if operation requires dry-run enforcement."""
+        """Check if operation requires dry-run enforcement.
+
+        Manages requires dry run enforcement operations and coordinates related state changes for the component.
+
+        Args:
+            operation (Operation): The operation parameter.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         destructive_operations = [OperationType.DELETE, OperationType.CLEAN, OperationType.MOVE]
         return (operation.type in destructive_operations and 
                 self.enforce_dry_run_first and 
                 not operation.dry_run)
     
     def _enforce_dry_run_policy(self, operation: Operation) -> ValidationResult:
-        """Phase 2: Enforce dry-run policy for destructive operations."""
+        """Phase 2: Enforce dry-run policy for destructive operations.
+
+        Manages enforce dry run policy operations and coordinates related state changes for the component.
+
+        Args:
+            operation (Operation): The operation parameter.
+
+        Returns:
+            ValidationResult: Result of the operation.
+        """
         if not operation.dry_run:
             dry_run_key = self._get_dry_run_key(operation)
             
@@ -333,14 +415,32 @@ class SafetyManager:
         return ValidationResult.APPROVED
     
     def _get_dry_run_key(self, operation: Operation) -> str:
-        """Generate a key for tracking dry-run results."""
+        """Generate a key for tracking dry-run results.
+
+        Manages get dry run key operations and coordinates related state changes for the component.
+
+        Args:
+            operation (Operation): The operation parameter.
+
+        Returns:
+            str: Formatted string or path.
+        """
         # Paths are resolved + sorted (capped at 10) so the same logical
         # operation maps to one key even if the caller lists paths differently.
         path_signatures = sorted([str(p.resolve()) for p in operation.paths[:10]])  # Limit to first 10 paths
         return f"{operation.type.value}_{hash(tuple(path_signatures))}"
     
     def _validate_path_safety(self, operation: Operation) -> ValidationResult:
-        """Phase 3: Enhanced path safety validation."""
+        """Phase 3: Enhanced path safety validation.
+
+        Manages validate path safety operations and coordinates related state changes for the component.
+
+        Args:
+            operation (Operation): The operation parameter.
+
+        Returns:
+            ValidationResult: Result of the operation.
+        """
         validation_summary = self.path_validator.get_validation_summary(operation.paths)
         
         operation.parameters['validation_summary'] = validation_summary
@@ -366,11 +466,42 @@ class SafetyManager:
             if blocked_percentage > 25:  # More than 25% blocked
                 self.logger.warning(f"High percentage of paths blocked ({blocked_percentage:.1f}%), requiring confirmation")
                 return ValidationResult.REQUIRES_CONFIRMATION
-        
+
+        # Cross-check using PathGuard
+        if getattr(self, "path_guard", None):
+            guarded_paths = []
+            guard_blocked = 0
+            denials = []
+            for p in operation.paths:
+                verdict = self.path_guard.check(p)
+                if not verdict.safe:
+                    guard_blocked += 1
+                    msg = f"PathGuard blocked {p}: {verdict.reason}"
+                    denials.append(msg)
+                    self.logger.warning(f"Operation {operation.id}: {msg}")
+                else:
+                    guarded_paths.append(p)
+            if guard_blocked > 0:
+                operation.parameters['guard_denials'] = denials
+                operation.paths = guarded_paths
+                if not operation.paths:
+                    self.logger.error(f"Operation {operation.id} rejected: all paths blocked by PathGuard")
+                    return ValidationResult.REJECTED
+                return ValidationResult.REQUIRES_CONFIRMATION
+
         return ValidationResult.APPROVED
     
     def _validate_resource_limits(self, operation: Operation) -> ValidationResult:
-        """Phase 4: Validate resource limits and file sizes."""
+        """Phase 4: Validate resource limits and file sizes.
+
+        Manages validate resource limits operations and coordinates related state changes for the component.
+
+        Args:
+            operation (Operation): The operation parameter.
+
+        Returns:
+            ValidationResult: Result of the operation.
+        """
         total_size_mb = 0
         large_files = []
         
@@ -404,7 +535,16 @@ class SafetyManager:
         return ValidationResult.APPROVED
     
     def _run_custom_validations(self, operation: Operation) -> ValidationResult:
-        """Phase 5: Run custom validation callbacks."""
+        """Phase 5: Run custom validation callbacks.
+
+        Manages run custom validations operations and coordinates related state changes for the component.
+
+        Args:
+            operation (Operation): The operation parameter.
+
+        Returns:
+            ValidationResult: Result of the operation.
+        """
         for callback in self._validation_callbacks:
             try:
                 if not callback(operation):
@@ -417,7 +557,16 @@ class SafetyManager:
         return ValidationResult.APPROVED
     
     def _validate_operation_specific(self, operation: Operation) -> ValidationResult:
-        """Phase 6: Operation-specific validation."""
+        """Phase 6: Operation-specific validation.
+
+        Manages validate operation specific operations and coordinates related state changes for the component.
+
+        Args:
+            operation (Operation): The operation parameter.
+
+        Returns:
+            ValidationResult: Result of the operation.
+        """
         if operation.type == OperationType.DELETE:
             return self._validate_delete_operation(operation)
         elif operation.type == OperationType.CLEAN:
@@ -432,22 +581,45 @@ class SafetyManager:
         return ValidationResult.APPROVED
     
     def _validate_delete_operation(self, operation: Operation) -> ValidationResult:
-        """_validate_delete_operation."""
+        """_validate_delete_operation.
+
+        Manages validate delete operation operations and coordinates related state changes for the component.
+
+        Args:
+            operation (Operation): The operation parameter.
+
+        Returns:
+            ValidationResult: Result of the operation.
+        """
         if not operation.dry_run and self.require_confirmation and not operation.user_confirmed:
             return ValidationResult.REQUIRES_CONFIRMATION
         return ValidationResult.APPROVED
-        """_validate_delete_operation."""
-        """_validate_delete_operation."""
     
     def _validate_clean_operation(self, operation: Operation) -> ValidationResult:
         # Clean and delete share safety requirements; clean just logs more
-        """_validate_clean_operation."""
+        """_validate_clean_operation.
+
+        Manages validate clean operation operations and coordinates related state changes for the component.
+
+        Args:
+            operation (Operation): The operation parameter.
+
+        Returns:
+            ValidationResult: Result of the operation.
+        """
         return self._validate_delete_operation(operation)
-        """_validate_clean_operation."""
-        """_validate_clean_operation."""
     
     def _validate_move_operation(self, operation: Operation) -> ValidationResult:
-        """_validate_move_operation."""
+        """_validate_move_operation.
+
+        Manages validate move operation operations and coordinates related state changes for the component.
+
+        Args:
+            operation (Operation): The operation parameter.
+
+        Returns:
+            ValidationResult: Result of the operation.
+        """
         destination = operation.parameters.get("destination")
         if not destination:
             raise SafetyError("Move operation requires destination parameter")
@@ -460,18 +632,32 @@ class SafetyManager:
             raise SafetyError(f"Move destination is not a directory: {destination}")
         
         return ValidationResult.APPROVED
-        """_validate_move_operation."""
-        """_validate_move_operation."""
     
     def _validate_analyze_operation(self, operation: Operation) -> ValidationResult:
         # Analyze operations are generally safe (read-only)
-        """_validate_analyze_operation."""
+        """_validate_analyze_operation.
+
+        Manages validate analyze operation operations and coordinates related state changes for the component.
+
+        Args:
+            operation (Operation): The operation parameter.
+
+        Returns:
+            ValidationResult: Result of the operation.
+        """
         return ValidationResult.APPROVED
-        """_validate_analyze_operation."""
-        """_validate_analyze_operation."""
     
     def _validate_restore_operation_enhanced(self, operation: Operation) -> ValidationResult:
-        """Enhanced validation for restore operations."""
+        """Enhanced validation for restore operations.
+
+        Manages validate restore operation enhanced operations and coordinates related state changes for the component.
+
+        Args:
+            operation (Operation): The operation parameter.
+
+        Returns:
+            ValidationResult: Result of the operation.
+        """
         manifest_path = operation.parameters.get("manifest_path")
         if not manifest_path:
             raise SafetyError("Restore operation requires manifest_path parameter")
@@ -602,7 +788,16 @@ class SafetyManager:
                             details={"operation_id": operation.id})
     
     def _should_enforce_dry_run(self, operation: Operation) -> bool:
-        """Check if we should enforce a dry-run before actual execution."""
+        """Check if we should enforce a dry-run before actual execution.
+
+        Manages should enforce dry run operations and coordinates related state changes for the component.
+
+        Args:
+            operation (Operation): The operation parameter.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         if operation.dry_run:
             return False  # Already a dry-run
         
@@ -617,7 +812,16 @@ class SafetyManager:
         return dry_run_key not in self._completed_dry_runs
     
     def _execute_mandatory_dry_run(self, operation: Operation) -> OperationResult:
-        """Execute a mandatory dry-run before the actual operation."""
+        """Execute a mandatory dry-run before the actual operation.
+
+        Manages execute mandatory dry run operations and coordinates related state changes for the component.
+
+        Args:
+            operation (Operation): The operation parameter.
+
+        Returns:
+            OperationResult: Result of the operation.
+        """
         self.logger.info(f"Executing mandatory dry-run for operation {operation.id}")
         
         # Create a dry-run version of the operation
@@ -644,7 +848,17 @@ class SafetyManager:
         return result
     
     def _execute_operation_with_monitoring(self, operation: Operation, manifest_id: str) -> Dict[str, Any]:
-        """Execute operation with enhanced monitoring and error handling."""
+        """Execute operation with enhanced monitoring and error handling.
+
+        Manages execute operation with monitoring operations and coordinates related state changes for the component.
+
+        Args:
+            operation (Operation): The operation parameter.
+            manifest_id (str): The manifest id parameter.
+
+        Returns:
+            Dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         processed_items = 0
         errors = []
         
@@ -679,7 +893,19 @@ class SafetyManager:
     
     def _finalize_operation_execution(self, operation: Operation, manifest_id: str, 
                                    execution_result: Dict[str, Any], execution_start: datetime) -> OperationResult:
-        """Finalize operation execution with comprehensive result generation."""
+        """Finalize operation execution with comprehensive result generation.
+
+        Manages finalize operation execution operations and coordinates related state changes for the component.
+
+        Args:
+            operation (Operation): The operation parameter.
+            manifest_id (str): The manifest id parameter.
+            execution_result (Dict[str, Any]): The execution result parameter.
+            execution_start (datetime): The execution start parameter.
+
+        Returns:
+            OperationResult: Result of the operation.
+        """
         execution_time = (datetime.now() - execution_start).total_seconds()
         success = execution_result["success"]
         
@@ -723,13 +949,18 @@ class SafetyManager:
         return result
     
     def _store_dry_run_result(self, operation: Operation, result: OperationResult) -> None:
-        """_store_dry_run_result."""
+        """_store_dry_run_result.
+
+        Manages store dry run result operations and coordinates related state changes for the component.
+
+        Args:
+            operation (Operation): The operation parameter.
+            result (OperationResult): Collection or dictionary holding operation results.
+        """
         if operation.dry_run or result.dry_run_performed:
             dry_run_key = self._get_dry_run_key(operation)
             self._completed_dry_runs[dry_run_key] = result
             self.logger.debug(f"Stored dry-run result for key: {dry_run_key}")
-        """_store_dry_run_result."""
-        """_store_dry_run_result."""
     
     def get_dry_run_result(self, operation: Operation) -> Optional[OperationResult]:
         """Get stored dry-run result for an operation pattern.
@@ -785,6 +1016,19 @@ class SafetyManager:
         
         for path in operation.paths:
             try:
+                allowed, denial = self.can_delete(path)
+                if not allowed:
+                    error_msg = f"Deletion blocked by safety guard: {path} ({denial})"
+                    errors.append(error_msg)
+                    self.logger.warning(error_msg)
+                    self.manifest_system.log_file_action(
+                        manifest_id,
+                        "file" if path.is_file() else "directory",
+                        path,
+                        f"blocked: {denial}"
+                    )
+                    continue
+
                 if operation.dry_run:
                     # Dry run - just log what would be deleted
                     self.manifest_system.log_file_action(
@@ -1119,7 +1363,10 @@ class SafetyManager:
         return validation_results
     
     def cleanup_resources(self) -> None:
-        """Clean up all safety manager resources."""
+        """Clean up all safety manager resources.
+
+        Permanently purges or removes specified target items, reclaiming storage space and logging actions taken.
+        """
         try:
             self.logger.info("Starting SafetyManager cleanup")
             
@@ -1156,7 +1403,10 @@ class SafetyManager:
             self.logger.error(f"Error during SafetyManager cleanup: {e}")
     
     def __del__(self):
-        """Destructor to ensure cleanup."""
+        """Del.
+
+        Manages del operations and coordinates related state changes for the component.
+        """
         try:
             self.cleanup_resources()
         except Exception:

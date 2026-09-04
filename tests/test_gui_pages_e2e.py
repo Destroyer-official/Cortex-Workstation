@@ -29,13 +29,22 @@ IS_WINDOWS = platform.system() == "Windows"
 
 @pytest.fixture(scope="module")
 def app():
-    """app."""
+    """App.
+
+    Manages app operations and coordinates related state changes for the component.
+    """
     return QApplication.instance() or QApplication([])
 
 
 @pytest.fixture
 def window(app):
-    """window."""
+    """Window.
+
+    Manages window operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+    """
     from cortex_unified.ui.premium.theme import apply_theme
     from cortex_unified.ui.premium.window import PremiumMainWindow
     apply_theme(app, "dark")
@@ -66,7 +75,19 @@ def pro_license(monkeypatch, tmp_path):
 
 
 def pump_until(app, predicate, timeout_ms=45000, interval=25) -> bool:
-    """Spin the event loop until predicate() is true or timeout. Returns final."""
+    """Spin the event loop until predicate() is true or timeout. Returns final.
+
+    Manages pump until operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+        predicate: The predicate parameter.
+        timeout_ms: The timeout ms parameter.
+        interval: The interval parameter.
+
+    Returns:
+        bool: True if the operation succeeded, False otherwise.
+    """
     deadline = QDeadlineTimer(timeout_ms)
     loop = QEventLoop()
     timer = QTimer()
@@ -82,7 +103,13 @@ def pump_until(app, predicate, timeout_ms=45000, interval=25) -> bool:
 
 @pytest.fixture
 def data_tree(tmp_path):
-    """Folder with duplicates, a >50MB file, and empty items for scan pages."""
+    """Folder with duplicates, a >50MB file, and empty items for scan pages.
+
+    Manages data tree operations and coordinates related state changes for the component.
+
+    Args:
+        tmp_path: Filesystem path to the target file or directory.
+    """
     (tmp_path / "a.txt").write_text("identical payload here")
     (tmp_path / "b.txt").write_text("identical payload here")  # duplicate
     big = tmp_path / "huge.bin"
@@ -98,7 +125,14 @@ def data_tree(tmp_path):
 # ---------------------------------------------------------------------------
 
 def test_page_dashboard_scan(app, window):
-    """test_page_dashboard_scan."""
+    """test_page_dashboard_scan.
+
+    Manages test page dashboard scan operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+        window: Parent window or shell controller instance.
+    """
     dash = window._pages["dashboard"]
     dash._scan()
     assert pump_until(app, lambda: not dash._scanning), "dashboard scan stuck"
@@ -113,7 +147,16 @@ def test_page_dashboard_scan(app, window):
 # ---------------------------------------------------------------------------
 
 def _drive_folder_page(app, window, page_id, data_tree):
-    """_drive_folder_page."""
+    """_drive_folder_page.
+
+    Manages drive folder page operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+        window: Parent window or shell controller instance.
+        page_id: The page id parameter.
+        data_tree: The data tree parameter.
+    """
     window._select(page_id)
     page = window._pages[page_id]
     page._folder = str(data_tree)
@@ -124,21 +167,45 @@ def _drive_folder_page(app, window, page_id, data_tree):
 
 
 def test_page_duplicates(app, window, data_tree):
-    """test_page_duplicates."""
+    """test_page_duplicates.
+
+    Manages test page duplicates operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+        window: Parent window or shell controller instance.
+        data_tree: The data tree parameter.
+    """
     page = _drive_folder_page(app, window, "duplicates", data_tree)
     names = {page.tree.item(r, 0).text() for r in range(page.tree.rowCount())}
     assert any("a.txt" in n for n in names) and any("b.txt" in n for n in names)
 
 
 def test_page_large_files(app, window, data_tree):
-    """test_page_large_files."""
+    """test_page_large_files.
+
+    Manages test page large files operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+        window: Parent window or shell controller instance.
+        data_tree: The data tree parameter.
+    """
     page = _drive_folder_page(app, window, "large", data_tree)
     assert page.tbl.rowCount() >= 1
     assert any("huge.bin" in page.tbl.item(r, 0).text() for r in range(page.tbl.rowCount()))
 
 
 def test_page_empty_items(app, window, data_tree):
-    """test_page_empty_items."""
+    """test_page_empty_items.
+
+    Manages test page empty items operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+        window: Parent window or shell controller instance.
+        data_tree: The data tree parameter.
+    """
     page = _drive_folder_page(app, window, "empty", data_tree)
     paths = {page.tbl.item(r, 0).text() for r in range(page.tbl.rowCount())}
     assert any("empty.txt" in p for p in paths)
@@ -150,7 +217,14 @@ def test_page_empty_items(app, window, data_tree):
 # ---------------------------------------------------------------------------
 
 def test_page_privacy_scan(app, window):
-    """test_page_privacy_scan."""
+    """test_page_privacy_scan.
+
+    Manages test page privacy scan operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+        window: Parent window or shell controller instance.
+    """
     window._select("privacy")
     page = window._pages["privacy"]
     page._scan()
@@ -168,7 +242,14 @@ def test_page_privacy_scan(app, window):
 # ---------------------------------------------------------------------------
 
 def test_page_startup_list(app, window):
-    """test_page_startup_list."""
+    """test_page_startup_list.
+
+    Manages test page startup list operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+        window: Parent window or shell controller instance.
+    """
     window._select("startup")   # triggers lazy autoload
     page = window._pages["startup"]
     assert pump_until(app, lambda: page.refresh_btn.isEnabled() and not page.progress.isVisible()), \
@@ -181,7 +262,14 @@ def test_page_startup_list(app, window):
 # ---------------------------------------------------------------------------
 
 def test_page_traffic_monitor(app, window):
-    """test_page_traffic_monitor."""
+    """test_page_traffic_monitor.
+
+    Manages test page traffic monitor operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+        window: Parent window or shell controller instance.
+    """
     window._select("traffic")   # triggers live autoload (starts timer)
     page = window._pages["traffic"]
     # Two ticks so a real rate is computed and the graph gets samples.
@@ -194,7 +282,14 @@ def test_page_traffic_monitor(app, window):
 
 @pytest.mark.skipif(not IS_WINDOWS, reason="Windows Update is Windows-only")
 def test_page_windows_update(app, window):
-    """test_page_windows_update."""
+    """test_page_windows_update.
+
+    Manages test page windows update operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+        window: Parent window or shell controller instance.
+    """
     window._select("winupdate")   # autoload reads registry + update history (offline)
     page = window._pages["winupdate"]
     # We do NOT click "Check for Updates" (that goes online). Just the fast load.
@@ -205,7 +300,14 @@ def test_page_windows_update(app, window):
 
 
 def test_page_health_check(app, window):
-    """test_page_health_check."""
+    """test_page_health_check.
+
+    Manages test page health check operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+        window: Parent window or shell controller instance.
+    """
     window._select("health")   # triggers lazy autoload -> runs all checks
     page = window._pages["health"]
     assert pump_until(app, lambda: page.run_btn.isEnabled() and not page.progress.isVisible(),
@@ -217,7 +319,14 @@ def test_page_health_check(app, window):
 
 @pytest.mark.skipif(not IS_WINDOWS, reason="Defender is Windows-only")
 def test_page_security_status(app, window):
-    """test_page_security_status."""
+    """test_page_security_status.
+
+    Manages test page security status operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+        window: Parent window or shell controller instance.
+    """
     window._select("security")   # triggers lazy autoload (Defender status)
     page = window._pages["security"]
     assert pump_until(app, lambda: page.refresh_btn.isEnabled() and not page.progress.isVisible(),
@@ -227,7 +336,14 @@ def test_page_security_status(app, window):
 
 @pytest.mark.skipif(not IS_WINDOWS, reason="Storage Sense is Windows-only")
 def test_page_storage_sense(app, window):
-    """test_page_storage_sense."""
+    """test_page_storage_sense.
+
+    Manages test page storage sense operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+        window: Parent window or shell controller instance.
+    """
     window._select("storagesense")   # reads registry (read-only in this test)
     page = window._pages["storagesense"]
     assert pump_until(app, lambda: not page._loading, timeout_ms=10000), \
@@ -238,7 +354,14 @@ def test_page_storage_sense(app, window):
 
 @pytest.mark.skipif(not IS_WINDOWS, reason="boot diagnostics are Windows-only")
 def test_page_boot_performance(app, window):
-    """test_page_boot_performance."""
+    """test_page_boot_performance.
+
+    Manages test page boot performance operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+        window: Parent window or shell controller instance.
+    """
     window._select("bootperf")   # triggers lazy autoload
     page = window._pages["bootperf"]
     assert pump_until(app, lambda: page.refresh_btn.isEnabled() and not page.progress.isVisible(),
@@ -251,14 +374,28 @@ def test_page_boot_performance(app, window):
 def test_page_system_repair_constructs(app, window):
     # Do NOT run sfc/dism here (minutes-long, system-modifying). Just verify the
     # page builds and exposes its tool buttons.
-    """test_page_system_repair_constructs."""
+    """test_page_system_repair_constructs.
+
+    Manages test page system repair constructs operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+        window: Parent window or shell controller instance.
+    """
     window._select("repair")
     page = window._pages["repair"]
     assert hasattr(page, "sfc_btn") and hasattr(page, "dism_btn")
 
 
 def test_page_load_tester_authorization(app, window):
-    """test_page_load_tester_authorization."""
+    """test_page_load_tester_authorization.
+
+    Manages test page load tester authorization operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+        window: Parent window or shell controller instance.
+    """
     window._select("loadtest")
     page = window._pages["loadtest"]
     # Localhost is inherently authorized; the Start button must enable.
@@ -271,7 +408,14 @@ def test_page_load_tester_authorization(app, window):
 
 
 def test_load_tester_refuses_public_in_ui(app, window):
-    """A public target must NOT enable the run button (safety gate in the UI)."""
+    """A public target must NOT enable the run button (safety gate in the UI).
+
+    Manages test load tester refuses public in ui operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+        window: Parent window or shell controller instance.
+    """
     window._select("loadtest")
     page = window._pages["loadtest"]
     page.target.setText("8.8.8.8")
@@ -286,7 +430,14 @@ def test_load_tester_refuses_public_in_ui(app, window):
 
 
 def test_page_network_tools(app, window):
-    """test_page_network_tools."""
+    """test_page_network_tools.
+
+    Manages test page network tools operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+        window: Parent window or shell controller instance.
+    """
     window._select("nettools")
     page = window._pages["nettools"]
     # IP Info is offline and instant-ish; ping localhost is always reachable.
@@ -301,7 +452,14 @@ def test_page_network_tools(app, window):
 
 
 def test_page_network_map(app, window):
-    """test_page_network_map."""
+    """test_page_network_map.
+
+    Manages test page network map operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+        window: Parent window or shell controller instance.
+    """
     window._select("netmap")   # triggers lazy autoload
     page = window._pages["netmap"]
     assert pump_until(app, lambda: page.refresh_btn.isEnabled()), "network map stuck"
@@ -311,7 +469,15 @@ def test_page_network_map(app, window):
 
 
 def test_page_lan_devices(app, window, monkeypatch):
-    """test_page_lan_devices."""
+    """test_page_lan_devices.
+
+    Manages test page lan devices operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+        window: Parent window or shell controller instance.
+        monkeypatch: The monkeypatch parameter.
+    """
     from cortex_unified.system_tools.network_discovery import NetworkDiscovery, DiscoveryResult, Device
     from cortex_unified.system_tools.wan_audit import WanStatus
 
@@ -337,7 +503,14 @@ def test_page_lan_devices(app, window, monkeypatch):
 
 @pytest.mark.skipif(not IS_WINDOWS, reason="Windows Firewall only")
 def test_page_firewall_list(app, window):
-    """test_page_firewall_list."""
+    """test_page_firewall_list.
+
+    Manages test page firewall list operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+        window: Parent window or shell controller instance.
+    """
     window._select("firewall")   # triggers lazy autoload (read-only list)
     page = window._pages["firewall"]
     assert pump_until(app, lambda: page.refresh_btn.isEnabled() and not page.progress.isVisible()), \
@@ -348,7 +521,14 @@ def test_page_firewall_list(app, window):
 
 
 def test_page_network_monitor(app, window):
-    """test_page_network_monitor."""
+    """test_page_network_monitor.
+
+    Manages test page network monitor operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+        window: Parent window or shell controller instance.
+    """
     window._select("network")   # triggers live autoload
     page = window._pages["network"]
     page.auto_chk.setChecked(False)  # stop the live timer during assertions
@@ -362,7 +542,14 @@ def test_page_network_monitor(app, window):
 
 
 def test_page_processes_list(app, window):
-    """test_page_processes_list."""
+    """test_page_processes_list.
+
+    Manages test page processes list operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+        window: Parent window or shell controller instance.
+    """
     window._select("processes")   # triggers live autoload
     page = window._pages["processes"]
     # Stop the live timer so it doesn't spawn workers mid-assertion.
@@ -420,7 +607,14 @@ def test_page_processes_list(app, window):
 
 @pytest.mark.skipif(not IS_WINDOWS, reason="Windows-only feature")
 def test_page_uninstaller_list(app, window):
-    """test_page_uninstaller_list."""
+    """test_page_uninstaller_list.
+
+    Manages test page uninstaller list operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+        window: Parent window or shell controller instance.
+    """
     window._select("uninstaller")
     page = window._pages["uninstaller"]
     assert pump_until(app, lambda: page.refresh_btn.isEnabled() and not page.progress.isVisible()), \
@@ -431,7 +625,14 @@ def test_page_uninstaller_list(app, window):
 
 @pytest.mark.skipif(not IS_WINDOWS, reason="Windows-only feature")
 def test_page_telemetry_status(app, window):
-    """test_page_telemetry_status."""
+    """test_page_telemetry_status.
+
+    Manages test page telemetry status operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+        window: Parent window or shell controller instance.
+    """
     window._select("telemetry")
     page = window._pages["telemetry"]
     assert pump_until(app, lambda: page.tree.topLevelItemCount() > 0), "telemetry status stuck"
@@ -440,7 +641,15 @@ def test_page_telemetry_status(app, window):
 
 @pytest.mark.skipif(not IS_WINDOWS, reason="Windows-only feature")
 def test_page_registry_scan(app, window, pro_license):
-    """test_page_registry_scan."""
+    """test_page_registry_scan.
+
+    Manages test page registry scan operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+        window: Parent window or shell controller instance.
+        pro_license: The pro license parameter.
+    """
     window._select("registry")
     page = window._pages["registry"]
     page._scan()
@@ -456,7 +665,14 @@ def test_page_registry_scan(app, window, pro_license):
 
 @pytest.mark.skipif(not IS_WINDOWS, reason="Windows-only feature")
 def test_page_software_updater_list(app, window):
-    """test_page_software_updater_list."""
+    """test_page_software_updater_list.
+
+    Manages test page software updater list operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+        window: Parent window or shell controller instance.
+    """
     from cortex_unified.system_tools.app_updater import AppUpdater
     if not AppUpdater.is_available():
         pytest.skip("winget not available on this machine")
@@ -470,7 +686,14 @@ def test_page_software_updater_list(app, window):
 
 @pytest.mark.skipif(not IS_WINDOWS, reason="Windows-only feature")
 def test_page_drive_optimizer_list(app, window):
-    """test_page_drive_optimizer_list."""
+    """test_page_drive_optimizer_list.
+
+    Manages test page drive optimizer list operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+        window: Parent window or shell controller instance.
+    """
     window._select("drives")
     page = window._pages["drives"]
     assert pump_until(app, lambda: page.refresh_btn.isEnabled() and not page.progress.isVisible()), \
@@ -482,14 +705,30 @@ def test_page_drive_optimizer_list(app, window):
 
 
 def _drive_action_text(drive: dict) -> str:
-    """_drive_action_text."""
+    """_drive_action_text.
+
+    Manages drive action text operations and coordinates related state changes for the component.
+
+    Args:
+        drive (dict): The drive parameter.
+
+    Returns:
+        str: Formatted string or path.
+    """
     from cortex_unified.ui.premium.more_pages import _drive_action
     return _drive_action(drive)
 
 
 @pytest.mark.skipif(not IS_WINDOWS, reason="virtual disk compaction is Windows-only")
 def test_page_virtual_disks(app, window):
-    """Discovery is read-only, so it runs here; compaction is worker-tested."""
+    """Discovery is read-only, so it runs here; compaction is worker-tested.
+
+    Manages test page virtual disks operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+        window: Parent window or shell controller instance.
+    """
     from cortex_unified.system_tools.vhdx_manager import DiskKind, VirtualDisk
 
     window._select("vdisks")   # triggers lazy autoload (registry + PowerShell)
@@ -534,7 +773,14 @@ def test_page_component_store_construct(app, window):
 
 
 def test_page_system_info_load(app, window):
-    """test_page_system_info_load."""
+    """test_page_system_info_load.
+
+    Manages test page system info load operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+        window: Parent window or shell controller instance.
+    """
     window._select("sysinfo")
     page = window._pages["sysinfo"]
     assert pump_until(app, lambda: "OS:" in page.info_label.text() or "Loading" not in page.info_label.text()), \
@@ -543,7 +789,14 @@ def test_page_system_info_load(app, window):
 
 
 def test_page_package_caches_load(app, window):
-    """test_page_package_caches_load."""
+    """test_page_package_caches_load.
+
+    Manages test page package caches load operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+        window: Parent window or shell controller instance.
+    """
     window._select("packages")
     page = window._pages["packages"]
     assert pump_until(app, lambda: page.refresh_btn.isEnabled(),
@@ -587,7 +840,14 @@ def test_dashboard_smart_learning_loop(app, window, tmp_path):
 
 def test_page_broken_links_and_dupfolders_construct(app, window):
     # These don't auto-load (need a folder); just verify they construct + wire.
-    """test_page_broken_links_and_dupfolders_construct."""
+    """test_page_broken_links_and_dupfolders_construct.
+
+    Manages test page broken links and dupfolders construct operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+        window: Parent window or shell controller instance.
+    """
     for pid in ("brokenlinks", "dupfolders"):
         window._select(pid)
         page = window._pages[pid]
@@ -600,7 +860,15 @@ def test_page_broken_links_and_dupfolders_construct(app, window):
 # ---------------------------------------------------------------------------
 
 def test_page_shred_storage_detection(app, window, tmp_path):
-    """test_page_shred_storage_detection."""
+    """test_page_shred_storage_detection.
+
+    Manages test page shred storage detection operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+        window: Parent window or shell controller instance.
+        tmp_path: Filesystem path to the target file or directory.
+    """
     window._select("shred")
     page = window._pages["shred"]
     f = tmp_path / "target.bin"
@@ -621,7 +889,14 @@ def test_page_shred_storage_detection(app, window, tmp_path):
 # ---------------------------------------------------------------------------
 
 def test_page_settings_theme_toggle(app, window):
-    """test_page_settings_theme_toggle."""
+    """test_page_settings_theme_toggle.
+
+    Manages test page settings theme toggle operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+        window: Parent window or shell controller instance.
+    """
     window._select("settings")
     page = window._pages["settings"]
     page.light_btn.click()
@@ -632,7 +907,14 @@ def test_page_settings_theme_toggle(app, window):
 
 @pytest.mark.skipif(not IS_WINDOWS, reason="restore points are Windows-only")
 def test_page_settings_restore_point_list(app, window):
-    """The safety card must list restore points (read-only) without hanging."""
+    """The safety card must list restore points (read-only) without hanging.
+
+    Manages test page settings restore point list operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+        window: Parent window or shell controller instance.
+    """
     window._select("settings")
     page = window._pages["settings"]
     assert hasattr(page, "rp_table"), "restore-point safety card missing"
@@ -661,7 +943,13 @@ def test_restore_point_worker_reports_honest_status(app):
 
 
 def test_page_lan_devices_renders_synthetic_advanced_audit(window):
-    """Exercise the premium audit UI without touching the live network."""
+    """Exercise the premium audit UI without touching the live network.
+
+    Manages test page lan devices renders synthetic advanced audit operations and coordinates related state changes for the component.
+
+    Args:
+        window: Parent window or shell controller instance.
+    """
     from cortex_unified.system_tools.network_discovery import Device, DiscoveryResult
     from cortex_unified.system_tools.network_inventory import InventoryChanges
     from cortex_unified.system_tools.network_security_audit import SecurityFinding
@@ -695,7 +983,14 @@ def test_page_lan_devices_renders_synthetic_advanced_audit(window):
     assert page.table.visible_count == 1
 
     def cell(row, col):
-        """cell."""
+        """Cell.
+
+        Manages cell operations and coordinates related state changes for the component.
+
+        Args:
+            row: Table row index or list of row indices.
+            col: The col parameter.
+        """
         return model.data(model.index(row, col), Qt.ItemDataRole.DisplayRole)
 
     assert "5555/tcp adb" in cell(0, 5)
@@ -718,7 +1013,14 @@ def test_page_lan_devices_renders_synthetic_advanced_audit(window):
 # ---------------------------------------------------------------------------
 
 def test_page_winapp2_e2e(app, window):
-    """test_page_winapp2_e2e."""
+    """test_page_winapp2_e2e.
+
+    Manages test page winapp2 e2e operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+        window: Parent window or shell controller instance.
+    """
     page = window._pages["winapp2"]
     assert page is not None
     assert page.stat_apps is not None
@@ -727,7 +1029,14 @@ def test_page_winapp2_e2e(app, window):
 
 
 def test_page_srum_bam_e2e(app, window):
-    """test_page_srum_bam_e2e."""
+    """test_page_srum_bam_e2e.
+
+    Manages test page srum bam e2e operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+        window: Parent window or shell controller instance.
+    """
     page = window._pages["srumbam"]
     assert page is not None
     assert page.stat_bam_records is not None
@@ -736,7 +1045,14 @@ def test_page_srum_bam_e2e(app, window):
 
 
 def test_page_directstorage_e2e(app, window):
-    """test_page_directstorage_e2e."""
+    """test_page_directstorage_e2e.
+
+    Manages test page directstorage e2e operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+        window: Parent window or shell controller instance.
+    """
     page = window._pages["directstorage"]
     assert page is not None
     assert page.stat_status is not None
@@ -745,7 +1061,14 @@ def test_page_directstorage_e2e(app, window):
 
 
 def test_page_standby_purger_e2e(app, window):
-    """test_page_standby_purger_e2e."""
+    """test_page_standby_purger_e2e.
+
+    Manages test page standby purger e2e operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+        window: Parent window or shell controller instance.
+    """
     page = window._pages["standbymem"]
     assert page is not None
     assert page.stat_phys_total is not None
@@ -754,7 +1077,14 @@ def test_page_standby_purger_e2e(app, window):
 
 
 def test_page_mft_slack_e2e(app, window):
-    """test_page_mft_slack_e2e."""
+    """test_page_mft_slack_e2e.
+
+    Manages test page mft slack e2e operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+        window: Parent window or shell controller instance.
+    """
     page = window._pages["mftslack"]
     assert page is not None
     assert page.stat_total_records is not None
@@ -763,7 +1093,14 @@ def test_page_mft_slack_e2e(app, window):
 
 
 def test_page_search_optimizer_e2e(app, window):
-    """test_page_search_optimizer_e2e."""
+    """test_page_search_optimizer_e2e.
+
+    Manages test page search optimizer e2e operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+        window: Parent window or shell controller instance.
+    """
     page = window._pages["searchopt"]
     assert page is not None
     assert page.stat_size is not None
@@ -772,7 +1109,15 @@ def test_page_search_optimizer_e2e(app, window):
 
 
 def test_page_disk_analyzer_e2e(app, window, tmp_path):
-    """test_page_disk_analyzer_e2e."""
+    """test_page_disk_analyzer_e2e.
+
+    Manages test page disk analyzer e2e operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+        window: Parent window or shell controller instance.
+        tmp_path: Filesystem path to the target file or directory.
+    """
     sub = tmp_path / "subfolder"
     sub.mkdir()
     (sub / "test1.bin").write_bytes(b"A" * 1024)

@@ -15,9 +15,12 @@ from PySide6.QtCore import QObject, Signal
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
+    QFileDialog,
     QHBoxLayout,
+    QHeaderView,
     QLabel,
     QLineEdit,
+    QMessageBox,
     QProgressBar,
     QPushButton,
     QSpinBox,
@@ -37,18 +40,25 @@ from cortex_unified.analyzers.cloud_storage_analyzer import (
     CloudFileEntry,
     DuplicateGroup,
 )
+from cortex_unified.explorer.cloud import CloudManager, CloudProviderType, CloudFile
 
 
 @dataclass(slots=True)
 class _WorkerResult:
-    """_WorkerResult class."""
+    """Workerresult.
+
+    Manages WorkerResult operations and coordinates related state changes for the component.
+    """
     entries: list[CloudFileEntry]
     stats: CloudScanStats
     duplicates: list[DuplicateGroup]
 
 
 class _CloudWorker(QObject):
-    """_CloudWorker class."""
+    """Cloudworker.
+
+    Manages CloudWorker operations and coordinates related state changes for the component.
+    """
     finished = Signal(_WorkerResult)
     progress = Signal(str)
     failed = Signal(str)
@@ -60,7 +70,16 @@ class _CloudWorker(QObject):
         include_versions: bool,
         include_delete_markers: bool,
     ):
-        """Initialize worker."""
+        """Initialize worker.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            target (str): The target parameter.
+            max_objects (int): The max objects parameter.
+            include_versions (bool): The include versions parameter.
+            include_delete_markers (bool): The include delete markers parameter.
+        """
         super().__init__()
         self._target = target
         self._max_objects = max_objects
@@ -69,11 +88,17 @@ class _CloudWorker(QObject):
         self._cancel = threading.Event()
 
     def cancel(self):
-        """cancel."""
+        """cancel.
+
+        Sets the internal cancellation event to cooperatively stop worker execution at the next safe boundary.
+        """
         self._cancel.set()
 
     def run(self):
-        """run."""
+        """run.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         try:
             analyzer = CloudStorageAnalyzer(cancel_event=self._cancel)
             entries, stats = analyzer.scan_sync(
@@ -88,10 +113,19 @@ class _CloudWorker(QObject):
 
 
 class CloudStoragePage(_Page):
-    """Analyze cloud storage (S3, Azure, GDrive, OneDrive, rclone)."""
+    """Cloudstoragepage.
+
+    Manages CloudStoragePage operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, win):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win: Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(
             title_block(
@@ -168,19 +202,28 @@ class CloudStoragePage(_Page):
         self._build_duplicates_tab()
         self.tabs.addTab(self.dup_tab, "Duplicates")
 
+        self._worker = None
+        self._entries: list[CloudFileEntry] = []
+        self._stats: CloudScanStats | None = None
+        self._duplicates: list[DuplicateGroup] = []
+        self._cloud_mgr = CloudManager()
+        self._active_provider: CloudProviderType | None = CloudProviderType.S3
+
+        self.providers_tab = QWidget()
+        self._build_providers_tab()
+        self.tabs.addTab(self.providers_tab, "Providers")
+
         self.v.addWidget(self.tabs, 1)
 
         self.state = StatePanel(self.p)
         self.state.bind_content(self.tabs)
         self.v.addWidget(self.state, 1)
 
-        self._worker = None
-        self._entries: list[CloudFileEntry] = []
-        self._stats: CloudScanStats | None = None
-        self._duplicates: list[DuplicateGroup] = []
-
     def _build_summary_tab(self):
-        """_build_summary_tab."""
+        """_build_summary_tab.
+
+        Manages build summary tab operations and coordinates related state changes for the component.
+        """
         lay = QVBoxLayout(self.summary_tab)
         lay.setContentsMargins(0, 0, 0, 0)
         lay.setSpacing(12)
@@ -215,7 +258,10 @@ class CloudStoragePage(_Page):
         lay.addWidget(self.provider_breakdown, 1)
 
     def _build_by_provider_tab(self):
-        """_build_by_provider_tab."""
+        """_build_by_provider_tab.
+
+        Manages build by provider tab operations and coordinates related state changes for the component.
+        """
         lay = QVBoxLayout(self.by_provider_tab)
         lay.setContentsMargins(0, 0, 0, 0)
         lay.setSpacing(8)
@@ -231,7 +277,10 @@ class CloudStoragePage(_Page):
         lay.addWidget(self.provider_tbl, 1)
 
     def _build_by_class_tab(self):
-        """_build_by_class_tab."""
+        """_build_by_class_tab.
+
+        Manages build by class tab operations and coordinates related state changes for the component.
+        """
         lay = QVBoxLayout(self.by_class_tab)
         lay.setContentsMargins(0, 0, 0, 0)
         lay.setSpacing(8)
@@ -247,7 +296,10 @@ class CloudStoragePage(_Page):
         lay.addWidget(self.class_tbl, 1)
 
     def _build_duplicates_tab(self):
-        """_build_duplicates_tab."""
+        """_build_duplicates_tab.
+
+        Manages build duplicates tab operations and coordinates related state changes for the component.
+        """
         lay = QVBoxLayout(self.dup_tab)
         lay.setContentsMargins(0, 0, 0, 0)
         lay.setSpacing(8)
@@ -270,7 +322,10 @@ class CloudStoragePage(_Page):
         lay.addWidget(self.dup_tbl, 1)
 
     def _refresh_targets(self):
-        """_refresh_targets."""
+        """_refresh_targets.
+
+        Manages refresh targets operations and coordinates related state changes for the component.
+        """
         analyzer = CloudStorageAnalyzer()
         targets = analyzer.available_targets()
         self.target_combo.clear()
@@ -292,7 +347,10 @@ class CloudStoragePage(_Page):
         )
 
     def _run(self):
-        """_run."""
+        """Run.
+
+        Manages run operations and coordinates related state changes for the component.
+        """
         target = self.target_combo.currentText().strip()
         if not target:
             self.state.show_error("Select or enter a cloud target to analyze.")
@@ -321,11 +379,23 @@ class CloudStoragePage(_Page):
         self.win.run_worker(w, self._on_done, self._fail, on_progress=self._on_progress)
 
     def _on_progress(self, msg: str):
-        """_on_progress."""
+        """_on_progress.
+
+        Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
+
+        Args:
+            msg (str): Informational or progress status message.
+        """
         self.status.setText(msg)
 
     def _on_done(self, result: _WorkerResult):
-        """_on_done."""
+        """_on_done.
+
+        Receives the completed data from the  background worker, populates the view with results, and restores button states.
+
+        Args:
+            result (_WorkerResult): Dictionary or data object holding operation results.
+        """
         self._worker = None
         self.progress.setVisible(False)
         self.run_btn.setEnabled(True)
@@ -360,14 +430,26 @@ class CloudStoragePage(_Page):
         )
 
     def _fail(self, msg: str):
-        """_fail."""
+        """Handle an operation failure and notify the user.
+
+        Captures error details, displays an informative failure state in the UI, resets progress indicators, and re-enables interactive controls.
+
+        Args:
+            msg (str): Informational or progress status message.
+        """
         self._worker = None
         self.progress.setVisible(False)
         self.run_btn.setEnabled(True)
         self.state.show_error(msg, on_retry=self._run)
 
     def _populate_summary(self, stats: CloudScanStats):
-        """_populate_summary."""
+        """_populate_summary.
+
+        Refreshes table or tree items with formatted values, tooltips, and status indicators based on the provided dataset.
+
+        Args:
+            stats (CloudScanStats): The stats parameter.
+        """
         self.stat_total_objects.set_value(f"{stats.total_objects:,}", animate=True)
         self.stat_total_size.set_value(fmt_bytes(stats.total_size_bytes), animate=True)
         self.stat_monthly_cost.set_value(
@@ -397,7 +479,13 @@ class CloudStoragePage(_Page):
             self.provider_breakdown.setItem(r, 2, QTableWidgetItem(fmt_bytes(size)))
 
     def _populate_by_provider(self, stats: CloudScanStats):
-        """_populate_by_provider."""
+        """_populate_by_provider.
+
+        Refreshes table or tree items with formatted values, tooltips, and status indicators based on the provided dataset.
+
+        Args:
+            stats (CloudScanStats): The stats parameter.
+        """
         analyzer = CloudStorageAnalyzer()
         self.provider_tbl.setRowCount(len(stats.by_provider))
         for r, (prov, count) in enumerate(
@@ -412,7 +500,13 @@ class CloudStoragePage(_Page):
             self.provider_tbl.setItem(r, 3, QTableWidgetItem(f"${cost:,.2f}"))
 
     def _populate_by_class(self, stats: CloudScanStats):
-        """_populate_by_class."""
+        """_populate_by_class.
+
+        Refreshes table or tree items with formatted values, tooltips, and status indicators based on the provided dataset.
+
+        Args:
+            stats (CloudScanStats): The stats parameter.
+        """
         from collections import defaultdict
 
         obj_per_class: dict[str, int] = defaultdict(int)
@@ -454,7 +548,13 @@ class CloudStoragePage(_Page):
             self.class_tbl.setItem(r, 4, QTableWidgetItem(cost))
 
     def _populate_duplicates(self, duplicates: list[DuplicateGroup]):
-        """_populate_duplicates."""
+        """_populate_duplicates.
+
+        Refreshes table or tree items with formatted values, tooltips, and status indicators based on the provided dataset.
+
+        Args:
+            duplicates (list[DuplicateGroup]): The duplicates parameter.
+        """
         if not duplicates:
             return
         self.dup_tbl.setRowCount(min(len(duplicates), 500))
@@ -468,3 +568,265 @@ class CloudStoragePage(_Page):
             self.dup_tbl.setItem(r, 3, QTableWidgetItem(str(len(g.local_paths))))
             self.dup_tbl.setItem(r, 4, QTableWidgetItem(fmt_bytes(g.wasted_bytes)))
             self.dup_tbl.setItem(r, 5, QTableWidgetItem(paths))
+
+    def _build_providers_tab(self):
+        """Build the interactive Cloud Providers tab with connect/disconnect/browse actions.
+
+        Manages build providers tab operations and coordinates related state changes for the component.
+        """
+        lay = QVBoxLayout(self.providers_tab)
+        lay.setContentsMargins(0, 0, 0, 0)
+        lay.setSpacing(12)
+
+        # 1. Providers Card
+        prov_card = Card(self.p, "Active Cloud Accounts & Providers")
+        pc_lay = QVBoxLayout(prov_card)
+        pc_lay.setContentsMargins(18, 14, 18, 14)
+        pc_lay.setSpacing(10)
+
+        header_desc = QLabel("Configure, authenticate, and connect native cloud providers (OneDrive, Google Drive, Dropbox, Amazon S3).")
+        header_desc.setObjectName("Muted")
+        pc_lay.addWidget(header_desc)
+
+        self.providers_table = QTableWidget(0, 4)
+        self.providers_table.setHorizontalHeaderLabels(["Provider", "Protocol / Service", "Status", "Actions"])
+        self.providers_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
+        self.providers_table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
+        self.providers_table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
+        self.providers_table.horizontalHeader().setSectionResizeMode(3, QHeaderView.ResizeMode.Stretch)
+        self.providers_table.verticalHeader().setVisible(False)
+        self.providers_table.setAlternatingRowColors(True)
+        self.providers_table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
+        self.providers_table.setMinimumHeight(160)
+        pc_lay.addWidget(self.providers_table)
+        lay.addWidget(prov_card)
+
+        # 2. File Browser Card
+        browser_card = Card(self.p, "Cloud File Explorer")
+        bc_lay = QVBoxLayout(browser_card)
+        bc_lay.setContentsMargins(18, 14, 18, 14)
+        bc_lay.setSpacing(10)
+
+        nav_row = QHBoxLayout()
+        self.cloud_provider_label = QLabel("Provider: Amazon S3")
+        self.cloud_provider_label.setObjectName("PrimaryText")
+        nav_row.addWidget(self.cloud_provider_label)
+
+        self.cloud_path_input = QLineEdit()
+        self.cloud_path_input.setPlaceholderText("Enter remote path / prefix (e.g. / or bucket/prefix)…")
+        self.cloud_path_input.setText("/")
+        nav_row.addWidget(self.cloud_path_input, 1)
+
+        self.cloud_browse_btn = QPushButton("Browse")
+        self.cloud_browse_btn.setObjectName("Primary")
+        self.cloud_browse_btn.clicked.connect(self._on_browse_cloud_path)
+        nav_row.addWidget(self.cloud_browse_btn)
+
+        self.cloud_download_btn = QPushButton("Download Selected…")
+        self.cloud_download_btn.setObjectName("Ghost")
+        self.cloud_download_btn.clicked.connect(self._on_download_cloud_file)
+        nav_row.addWidget(self.cloud_download_btn)
+
+        bc_lay.addLayout(nav_row)
+
+        self.cloud_files_table = QTableWidget(0, 5)
+        self.cloud_files_table.setHorizontalHeaderLabels(["Name", "Type", "Size", "Remote Path", "Sync Status"])
+        self.cloud_files_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
+        self.cloud_files_table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
+        self.cloud_files_table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
+        self.cloud_files_table.horizontalHeader().setSectionResizeMode(3, QHeaderView.ResizeMode.Stretch)
+        self.cloud_files_table.horizontalHeader().setSectionResizeMode(4, QHeaderView.ResizeMode.ResizeToContents)
+        self.cloud_files_table.verticalHeader().setVisible(False)
+        self.cloud_files_table.setAlternatingRowColors(True)
+        self.cloud_files_table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
+        self.cloud_files_table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
+        self.cloud_files_table.cellDoubleClicked.connect(self._on_cloud_file_double_clicked)
+        bc_lay.addWidget(self.cloud_files_table, 1)
+
+        lay.addWidget(browser_card, 1)
+
+        self._init_providers_table()
+
+    def _init_providers_table(self):
+        """Populate the cloud providers table with connect/disconnect/browse controls.
+
+        Manages init providers table operations and coordinates related state changes for the component.
+        """
+        providers = [
+            (CloudProviderType.ONEDRIVE, "Microsoft OneDrive", "Microsoft Graph API"),
+            (CloudProviderType.GOOGLE_DRIVE, "Google Drive", "Google Drive API v3"),
+            (CloudProviderType.DROPBOX, "Dropbox", "Dropbox v2 REST API"),
+            (CloudProviderType.S3, "Amazon S3", "AWS S3 / Boto3 SDK"),
+        ]
+
+        self.providers_table.setRowCount(len(providers))
+        for r, (pt, name, proto) in enumerate(providers):
+            self.providers_table.setItem(r, 0, QTableWidgetItem(name))
+            self.providers_table.setItem(r, 1, QTableWidgetItem(proto))
+
+            p = self._cloud_mgr.get_provider(pt)
+            is_conn = p.is_authenticated() if p else False
+            status_item = QTableWidgetItem("Connected" if is_conn else "Disconnected")
+            self.providers_table.setItem(r, 2, status_item)
+
+            # Action buttons
+            actions_widget = QWidget()
+            aw_lay = QHBoxLayout(actions_widget)
+            aw_lay.setContentsMargins(4, 2, 4, 2)
+            aw_lay.setSpacing(6)
+
+            conn_btn = QPushButton("Connect")
+            conn_btn.setObjectName("Ghost")
+            conn_btn.clicked.connect(lambda _, _pt=pt: self._connect_provider(_pt))
+            aw_lay.addWidget(conn_btn)
+
+            disc_btn = QPushButton("Disconnect")
+            disc_btn.setObjectName("Ghost")
+            disc_btn.clicked.connect(lambda _, _pt=pt: self._disconnect_provider(_pt))
+            aw_lay.addWidget(disc_btn)
+
+            browse_btn = QPushButton("Browse")
+            browse_btn.setObjectName("Primary")
+            browse_btn.clicked.connect(lambda _, _pt=pt: self._select_provider_for_browse(_pt))
+            aw_lay.addWidget(browse_btn)
+
+            self.providers_table.setCellWidget(r, 3, actions_widget)
+
+    def _connect_provider(self, pt: CloudProviderType):
+        """Attempt connection to selected provider.
+
+        Manages connect provider operations and coordinates related state changes for the component.
+
+        Args:
+            pt (CloudProviderType): The pt parameter.
+        """
+        ok = self._cloud_mgr.connect_provider(pt)
+        self._init_providers_table()
+        if ok:
+            QMessageBox.information(self, "Cloud Connected", f"Successfully connected to {pt.name}.")
+        else:
+            QMessageBox.warning(
+                self,
+                "Authentication Notice",
+                f"Could not connect to {pt.name}. Please ensure API tokens or credentials are set in environment variables or configuration."
+            )
+
+    def _disconnect_provider(self, pt: CloudProviderType):
+        """Disconnect provider.
+
+        Manages disconnect provider operations and coordinates related state changes for the component.
+
+        Args:
+            pt (CloudProviderType): The pt parameter.
+        """
+        self._cloud_mgr.disconnect_provider(pt)
+        self._init_providers_table()
+        self.status.setText(f"Disconnected from {pt.name}.")
+
+    def _select_provider_for_browse(self, pt: CloudProviderType):
+        """Select provider and browse remote path.
+
+        Manages select provider for browse operations and coordinates related state changes for the component.
+
+        Args:
+            pt (CloudProviderType): The pt parameter.
+        """
+        self._active_provider = pt
+        self.cloud_provider_label.setText(f"Provider: {pt.name}")
+        self._on_browse_cloud_path()
+
+    def _on_browse_cloud_path(self):
+        """Browse files in current provider path.
+
+        Manages on browse cloud path operations and coordinates related state changes for the component.
+        """
+        if not self._active_provider:
+            self._active_provider = CloudProviderType.S3
+        p = self._cloud_mgr.get_provider(self._active_provider)
+        if not p:
+            QMessageBox.warning(self, "Provider Error", "Selected provider is not available.")
+            return
+
+        path = self.cloud_path_input.text().strip() or "/"
+        self.status.setText(f"Listing files in {self._active_provider.name}:{path}…")
+
+        def work():
+            """Execute background processing off the main UI thread.
+
+            Performs the intensive analysis, scanning, or file operations in a worker thread to keep the interface responsive.
+            """
+            try:
+                return p.list_files(path)
+            except Exception as e:
+                return str(e)
+
+        def done(res):
+            """Handle completion of the asynchronous task.
+
+            Processes the returned result payload, updates corresponding tables or UI views, and restores interactive controls.
+
+            Args:
+                res: The res parameter.
+            """
+            if isinstance(res, str):
+                self.status.setText(f"Listing error: {res}")
+                return
+            files = res or []
+            self.cloud_files_table.setRowCount(len(files))
+            for r, f in enumerate(files):
+                self.cloud_files_table.setItem(r, 0, QTableWidgetItem(f.name))
+                self.cloud_files_table.setItem(r, 1, QTableWidgetItem("Folder" if f.is_dir else "File"))
+                self.cloud_files_table.setItem(r, 2, QTableWidgetItem(fmt_bytes(f.size) if not f.is_dir else "—"))
+                self.cloud_files_table.setItem(r, 3, QTableWidgetItem(f.path))
+                status_str = getattr(f.sync_status, "value", str(f.sync_status))
+                self.cloud_files_table.setItem(r, 4, QTableWidgetItem(status_str))
+
+            self.status.setText(f"Found {len(files)} item(s) in {self._active_provider.name}:{path}")
+
+        if hasattr(self.win, "worker_runtime"):
+            self.win.worker_runtime.run(work, on_result=done)
+        else:
+            done(work())
+
+    def _on_download_cloud_file(self):
+        """Download selected cloud file.
+
+        Manages on download cloud file operations and coordinates related state changes for the component.
+        """
+        row = self.cloud_files_table.currentRow()
+        if row < 0:
+            QMessageBox.information(self, "Selection Required", "Please select a file to download.")
+            return
+        path_item = self.cloud_files_table.item(row, 3)
+        remote_path = path_item.text() if path_item else ""
+        if not remote_path:
+            return
+
+        dest_dir = QFileDialog.getExistingDirectory(self, "Select Download Destination")
+        if not dest_dir:
+            return
+
+        p = self._cloud_mgr.get_provider(self._active_provider)
+        if p and hasattr(p, "download"):
+            local_dest = str(Path(dest_dir) / Path(remote_path).name)
+            ok = p.download(remote_path, local_dest)
+            if ok:
+                QMessageBox.information(self, "Download Complete", f"Downloaded to:\n{local_dest}")
+            else:
+                QMessageBox.warning(self, "Download Notice", "Download could not complete or provider is unauthenticated.")
+
+    def _on_cloud_file_double_clicked(self, row, col):
+        """Navigate into folder on double click.
+
+        Manages on cloud file double clicked operations and coordinates related state changes for the component.
+
+        Args:
+            row: Table row index or list of row indices.
+            col: The col parameter.
+        """
+        type_item = self.cloud_files_table.item(row, 1)
+        if type_item and type_item.text() == "Folder":
+            path_item = self.cloud_files_table.item(row, 3)
+            if path_item:
+                self.cloud_path_input.setText(path_item.text())
+                self._on_browse_cloud_path()

@@ -30,14 +30,23 @@ from PySide6.QtWidgets import QApplication  # noqa: E402
 
 @pytest.fixture(scope="module")
 def app():
-    """app."""
+    """App.
+
+    Manages app operations and coordinates related state changes for the component.
+    """
     application = QApplication.instance() or QApplication([])
     yield application
 
 
 @pytest.fixture
 def window(app):
-    """window."""
+    """Window.
+
+    Manages window operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+    """
     from cortex_unified.ui.premium.theme import apply_theme
     from cortex_unified.ui.premium.window import PremiumMainWindow
     apply_theme(app, "dark")
@@ -48,7 +57,13 @@ def window(app):
 
 
 def test_card_has_no_persistent_graphics_effect(app):
-    """A Card must render its surface via QSS, not a blur-prone effect."""
+    """A Card must render its surface via QSS, not a blur-prone effect.
+
+    Manages test card has no persistent graphics effect operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+    """
     from cortex_unified.ui.premium.theme import THEMES
     from cortex_unified.ui.premium.widgets import Card
 
@@ -64,7 +79,13 @@ def test_card_has_no_persistent_graphics_effect(app):
 
 
 def test_hero_buttons_and_gauge_have_no_persistent_effect(window):
-    """The Scan/Clean CTAs and the dashboard gauge must stay crisp: no effect."""
+    """The Scan/Clean CTAs and the dashboard gauge must stay crisp: no effect.
+
+    Manages test hero buttons and gauge have no persistent effect operations and coordinates related state changes for the component.
+
+    Args:
+        window: Parent window or shell controller instance.
+    """
     dash = window._pages["dashboard"]
     assert dash.scan_btn.graphicsEffect() is None
     assert dash.recycle_btn.graphicsEffect() is None
@@ -72,7 +93,13 @@ def test_hero_buttons_and_gauge_have_no_persistent_effect(window):
 
 
 def test_attach_glow_does_not_attach_blurring_effect(app):
-    """attach_glow must never install a QGraphicsEffect (which would blur)."""
+    """attach_glow must never install a QGraphicsEffect (which would blur).
+
+    Manages test attach glow does not attach blurring effect operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+    """
     from cortex_unified.ui.premium.theme import THEMES
     from cortex_unified.ui.premium.widgets import CircularGauge, attach_glow
     from PySide6.QtWidgets import QPushButton
@@ -90,7 +117,13 @@ def test_attach_glow_does_not_attach_blurring_effect(app):
 
 
 def test_gauge_paints_with_glow_enabled(app):
-    """With a glow set, the gauge must still paint without error at any value."""
+    """With a glow set, the gauge must still paint without error at any value.
+
+    Manages test gauge paints with glow enabled operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+    """
     from PySide6.QtCore import QPoint
     from PySide6.QtGui import QPixmap
     from cortex_unified.ui.premium.theme import THEMES

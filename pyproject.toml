@@ -88,7 +88,8 @@ cortex_unified = [
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
-addopts = ["--verbose", "--cov=cortex_unified"]
+cache_dir = ".pytest_cache_local"
+addopts = ["--verbose"]
 markers = [
     "live: walks real system state (registry trees, running services); deselect with -m 'not live'",
 ]

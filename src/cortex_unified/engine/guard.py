@@ -24,20 +24,33 @@ from pathlib import Path
 
 @dataclass(frozen=True, slots=True)
 class GuardVerdict:
-    """Outcome of a safety check."""
+    """Guardverdict.
+
+    Manages GuardVerdict operations and coordinates related state changes for the component.
+    """
 
     safe: bool
     reason: str = ""
 
     def __bool__(self) -> bool:  # allow ``if guard.check(p):``
-        """__bool__."""
+        """Bool.
+
+        Manages bool operations and coordinates related state changes for the component.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         return self.safe
-        """__bool__."""
-        """__bool__."""
 
 
 def _windows_protected() -> set[Path]:
-    """_windows_protected."""
+    """_windows_protected.
+
+    Manages windows protected operations and coordinates related state changes for the component.
+
+    Returns:
+        set[Path]: Result of the operation.
+    """
     system_drive = os.environ.get("SystemDrive", "C:") + "\\"
     roots = {
         Path(system_drive) / "Windows",
@@ -54,12 +67,16 @@ def _windows_protected() -> set[Path]:
     if win:
         roots.add(Path(win))
     return {p.resolve(strict=False) for p in roots}
-    """_windows_protected."""
-    """_windows_protected."""
 
 
 def _posix_protected() -> set[Path]:
-    """_posix_protected."""
+    """_posix_protected.
+
+    Manages posix protected operations and coordinates related state changes for the component.
+
+    Returns:
+        set[Path]: Result of the operation.
+    """
     base = {
         "/", "/bin", "/sbin", "/usr", "/lib", "/lib64", "/etc", "/boot",
         "/dev", "/proc", "/sys", "/run", "/var", "/root",
@@ -67,16 +84,24 @@ def _posix_protected() -> set[Path]:
     if platform.system() == "Darwin":
         base |= {"/System", "/Library", "/Applications", "/private", "/cores"}
     return {Path(p).resolve(strict=False) for p in base}
-    """_posix_protected."""
-    """_posix_protected."""
 
 
 class PathGuard:
-    """Decides whether a path is safe to delete/overwrite."""
+    """Pathguard.
+
+    Manages PathGuard operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, sandbox: os.PathLike[str] | str | None = None,
                  allow_system: bool = False) -> None:
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            sandbox (os.PathLike[str] | str | None): The sandbox parameter.
+            allow_system (bool): The allow system parameter.
+        """
         self._system = platform.system()
         self._protected = (
             _windows_protected() if self._system == "Windows" else _posix_protected()
@@ -89,11 +114,18 @@ class PathGuard:
             self._home = Path.home().resolve(strict=False)
         except (OSError, RuntimeError):
             self._home = None
-        """__init__."""
-        """__init__."""
 
     def check(self, path: os.PathLike[str] | str) -> GuardVerdict:
-        """Return a :class:`GuardVerdict` for *path*."""
+        """Check.
+
+        Manages check operations and coordinates related state changes for the component.
+
+        Args:
+            path (os.PathLike[str] | str): Filesystem path to the target file or directory.
+
+        Returns:
+            GuardVerdict: Dictionary mapping identifiers to status or values.
+        """
         try:
             resolved = Path(path).resolve(strict=False)
         except (OSError, ValueError) as exc:
@@ -122,7 +154,16 @@ class PathGuard:
         return GuardVerdict(True)
 
     def is_writable(self, path: os.PathLike[str] | str) -> bool:
-        """True if *path* (or its parent, for not-yet-existing paths) is writable."""
+        """True if *path* (or its parent, for not-yet-existing paths) is writable.
+
+        Manages is writable operations and coordinates related state changes for the component.
+
+        Args:
+            path (os.PathLike[str] | str): Filesystem path to the target file or directory.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         p = Path(path)
         try:
             if p.exists():
@@ -133,7 +174,17 @@ class PathGuard:
 
     @staticmethod
     def _is_within(child: Path, parent: Path) -> bool:
-        """Robust replacement for prefix matching (handles sibling-name traps)."""
+        """Robust replacement for prefix matching (handles sibling-name traps).
+
+        Manages is within operations and coordinates related state changes for the component.
+
+        Args:
+            child (Path): The child parameter.
+            parent (Path): Parent window or shell controller instance.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         try:
             return child.is_relative_to(parent)  # py>=3.9
         except AttributeError:  # pragma: no cover - very old interpreters

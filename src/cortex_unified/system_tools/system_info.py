@@ -21,7 +21,16 @@ except ImportError:  # pragma: no cover
 
 
 def _fmt_bytes(n: int | float | None) -> str:
-    """_fmt_bytes."""
+    """_fmt_bytes.
+
+    Converts raw numeric values into formatted, localized, and human-readable string representations.
+
+    Args:
+        n (int | float | None): The n parameter.
+
+    Returns:
+        str: Formatted string or path.
+    """
     if not n:
         return "0 B"
     size = float(n)
@@ -30,15 +39,22 @@ def _fmt_bytes(n: int | float | None) -> str:
             return f"{size:.1f} {unit}"
         size /= 1024
     return f"{n} B"
-    """_fmt_bytes."""
-    """_fmt_bytes."""
 
 
 class SystemInfo:
-    """Collect a snapshot of system facts and live metrics."""
+    """Systeminfo.
+
+    Manages SystemInfo operations and coordinates related state changes for the component.
+    """
 
     def platform_info(self) -> dict[str, Any]:
-        """Platform info."""
+        """Platform info.
+
+        Manages platform info operations and coordinates related state changes for the component.
+
+        Returns:
+            dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         uname = platform.uname()
         return {
             "system": uname.system,
@@ -51,7 +67,13 @@ class SystemInfo:
         }
 
     def cpu_info(self) -> dict[str, Any]:
-        """Cpu info."""
+        """Cpu info.
+
+        Manages cpu info operations and coordinates related state changes for the component.
+
+        Returns:
+            dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         if not _HAS_PSUTIL:
             return {}
         try:
@@ -67,7 +89,13 @@ class SystemInfo:
         }
 
     def memory_info(self) -> dict[str, Any]:
-        """Memory info."""
+        """Memory info.
+
+        Manages memory info operations and coordinates related state changes for the component.
+
+        Returns:
+            dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         if not _HAS_PSUTIL:
             return {}
         vm = psutil.virtual_memory()
@@ -83,7 +111,13 @@ class SystemInfo:
         }
 
     def disk_info(self) -> list[dict[str, Any]]:
-        """Disk info."""
+        """Disk info.
+
+        Manages disk info operations and coordinates related state changes for the component.
+
+        Returns:
+            list[dict[str, Any]]: List of processed items or identifiers.
+        """
         if not _HAS_PSUTIL:
             return []
         out: list[dict[str, Any]] = []
@@ -105,7 +139,13 @@ class SystemInfo:
         return out
 
     def battery_info(self) -> dict[str, Any] | None:
-        """Battery info."""
+        """Battery info.
+
+        Manages battery info operations and coordinates related state changes for the component.
+
+        Returns:
+            dict[str, Any] | None: Dictionary mapping identifiers to status or values.
+        """
         if not _HAS_PSUTIL or not hasattr(psutil, "sensors_battery"):
             return None
         try:
@@ -121,7 +161,13 @@ class SystemInfo:
         }
 
     def boot_time(self) -> float | None:
-        """Boot time."""
+        """Boot time.
+
+        Manages boot time operations and coordinates related state changes for the component.
+
+        Returns:
+            float | None: Result of the operation.
+        """
         if not _HAS_PSUTIL:
             return None
         try:
@@ -130,7 +176,13 @@ class SystemInfo:
             return None
 
     def snapshot(self) -> dict[str, Any]:
-        """Full read-only snapshot for the dashboard/report."""
+        """Snapshot.
+
+        Manages snapshot operations and coordinates related state changes for the component.
+
+        Returns:
+            dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         return {
             "platform": self.platform_info(),
             "cpu": self.cpu_info(),

@@ -33,12 +33,18 @@ IS_WINDOWS = sys.platform == "win32"
 
 
 class _ScanWorker(QObject):
-    """_ScanWorker class."""
+    """_ScanWorker class.
+
+    Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+    """
     finished = Signal(list)
     failed = Signal(str)
 
     def run(self):
-        """run."""
+        """run.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         try:
             from cortex_unified.system_tools.model_cache_manager import ModelCacheManager
 
@@ -48,17 +54,29 @@ class _ScanWorker(QObject):
 
 
 class _CleanOrphansWorker(QObject):
-    """_CleanOrphansWorker class."""
+    """_CleanOrphansWorker class.
+
+    Permanently purges or removes specified target items, reclaiming storage space and logging actions taken.
+    """
     finished = Signal(bool, str, int)
     failed = Signal(str)
 
     def __init__(self, dry_run: bool = True):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            dry_run (bool): The dry run parameter.
+        """
         super().__init__()
         self._dry = dry_run
 
     def run(self):
-        """run."""
+        """run.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         try:
             from cortex_unified.system_tools.model_cache_manager import ModelCacheManager
 
@@ -69,10 +87,19 @@ class _CleanOrphansWorker(QObject):
 
 
 class ModelCachePage(_Page):
-    """Hardlink-aware model cache inventory + safe orphan cleanup."""
+    """Modelcachepage.
+
+    Manages ModelCachePage operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, win):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win: Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(title_block(
             "Model Cache",
@@ -143,7 +170,10 @@ class ModelCachePage(_Page):
         self._loaded = False
 
     def _scan(self):
-        """_scan."""
+        """_scan.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+        """
         self.scan_btn.setEnabled(False)
         self.clean_btn.setEnabled(False)
         self.state.show_loading("Scanning model caches…")
@@ -151,7 +181,13 @@ class ModelCachePage(_Page):
         self.win.run_worker(_ScanWorker(), self._on_scan, self._fail)
 
     def _on_scan(self, stores):
-        """_on_scan."""
+        """_on_scan.
+
+        Manages on scan operations and coordinates related state changes for the component.
+
+        Args:
+            stores: The stores parameter.
+        """
         self.scan_btn.setEnabled(True)
         self._stores = stores
         if not stores or not any(getattr(s, "exists", False) for s in stores):
@@ -198,7 +234,13 @@ class ModelCachePage(_Page):
         self.win.statusBar().showMessage(f"Model caches: {fmt_bytes(total_actual)} actual, {fmt_bytes(total_orphan)} orphans", 6000)
 
     def _clean(self, dry_run: bool):
-        """_clean."""
+        """_clean.
+
+        Permanently purges or removes specified target items, reclaiming storage space and logging actions taken.
+
+        Args:
+            dry_run (bool): The dry run parameter.
+        """
         hf_store = next((s for s in self._stores if getattr(s, "kind", "") == "hf"), None)
         if not hf_store or not getattr(hf_store, "orphan_count", 0):
             QMessageBox.information(self, "No orphans", "No HF orphan blobs to clean. Run Scan first.")
@@ -220,7 +262,15 @@ class ModelCachePage(_Page):
         self.win.run_worker(_CleanOrphansWorker(dry_run), self._on_clean, self._fail)
 
     def _on_clean(self, ok: bool, msg: str, freed: int):
-        """_on_clean."""
+        """_on_clean.
+
+        Manages on clean operations and coordinates related state changes for the component.
+
+        Args:
+            ok (bool): The ok parameter.
+            msg (str): Informational or progress status message.
+            freed (int): The freed parameter.
+        """
         self.progress.setVisible(False)
         self.scan_btn.setEnabled(True)
         if ok:
@@ -231,7 +281,13 @@ class ModelCachePage(_Page):
         self._scan()
 
     def _fail(self, msg: str):
-        """_fail."""
+        """Handle an operation failure and notify the user.
+
+        Captures error details, displays an informative failure state in the UI, resets progress indicators, and re-enables interactive controls.
+
+        Args:
+            msg (str): Informational or progress status message.
+        """
         self.scan_btn.setEnabled(True)
         self.progress.setVisible(False)
         self.state.show_error(msg, on_retry=self._scan)

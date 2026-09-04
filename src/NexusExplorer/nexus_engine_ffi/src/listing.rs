@@ -126,6 +126,8 @@ pub unsafe extern "C" fn nexus_scan_dir(
     0
 }
 
+/// NOTE: scan_id is generated internally by nexus_scan_dir and never returned to caller;
+/// cancellation is currently unusable until scan_id is exposed.
 #[no_mangle]
 pub unsafe extern "C" fn nexus_cancel_scan(ctx: *mut c_void, scan_id: *const c_char) -> c_int {
     if ctx.is_null() || scan_id.is_null() {
@@ -143,6 +145,7 @@ pub unsafe extern "C" fn nexus_cancel_scan(ctx: *mut c_void, scan_id: *const c_c
     }
 }
 
+/// Synchronously lists one directory level into a caller-owned `FileEntry` array (free with `nexus_free_entries`).
 #[no_mangle]
 pub unsafe extern "C" fn nexus_read_dir_sync(
     ctx: *mut c_void,
@@ -285,6 +288,7 @@ pub unsafe extern "C" fn nexus_read_dir_sync_json(
     }
 }
 
+/// Frees a `FileEntry` array and its owned strings previously returned by `nexus_read_dir_sync`.
 #[no_mangle]
 pub unsafe extern "C" fn nexus_free_entries(entries: *mut FileEntry, count: size_t) {
     if entries.is_null() || count == 0 {

@@ -46,14 +46,34 @@ from .widgets import Card, hline, title_block
 from .window import PremiumMainWindow, _Page
 
 def PrimaryButton(text: str, parent=None) -> QPushButton:
-    """Create a QPushButton styled as the primary (accented) action button."""
+    """Construct a styled accented QPushButton adhering to design system tokens.
+
+    Applies consistent margins, accent styling, focus outline, and pointing-hand cursor according to theme tokens.
+
+    Args:
+        text (str): Display text string.
+        parent: Parent window or shell controller instance.
+
+    Returns:
+        QPushButton: Result of the operation.
+    """
     btn = QPushButton(text, parent if isinstance(parent, QWidget) else None)
     btn.setObjectName("Primary")
     btn.setCursor(Qt.CursorShape.PointingHandCursor)
     return btn
 
 def SecondaryButton(text: str, parent=None) -> QPushButton:
-    """Create a QPushButton styled as a secondary action button with a pointing-hand cursor."""
+    """Construct a styled secondary QPushButton adhering to design system tokens.
+
+    Applies consistent margins, accent styling, focus outline, and pointing-hand cursor according to theme tokens.
+
+    Args:
+        text (str): Display text string.
+        parent: Parent window or shell controller instance.
+
+    Returns:
+        QPushButton: Result of the operation.
+    """
     btn = QPushButton(text, parent if isinstance(parent, QWidget) else None)
     btn.setCursor(Qt.CursorShape.PointingHandCursor)
     return btn
@@ -72,7 +92,16 @@ from cortex_unified.system_tools.browser_deep_cleaner import BrowserDeepCleaner,
 
 
 def _fmt_bytes(b: int) -> str:
-    """Format bytes into human-readable string."""
+    """Format bytes into human-readable string.
+
+    Converts raw numeric values into formatted, localized, and human-readable string representations.
+
+    Args:
+        b (int): Integer number of bytes to format or process.
+
+    Returns:
+        str: Formatted string or path.
+    """
     if b < 1024:
         return f"{b} B"
     if b < 1024 * 1024:
@@ -87,9 +116,18 @@ def _fmt_bytes(b: int) -> str:
 # ===========================================================================
 
 class LinksManagerPage(_Page):
-    """Page for scanning and safely removing NTFS junctions, symlinks, and hardlinks."""
+    """Linksmanagerpage.
+
+    Manages LinksManagerPage operations and coordinates related state changes for the component.
+    """
     def __init__(self, win: PremiumMainWindow):
-        """Build the Links Manager page with folder picker, recursive option, and links table."""
+        """Build the Links Manager page with folder picker, recursive option, and links table.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win (PremiumMainWindow): Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(title_block("NTFS Links & Junctions Manager", "Inspect, create, and safely manage Directory Junctions, Symlinks, and Hardlinks."))
 
@@ -140,24 +178,39 @@ class LinksManagerPage(_Page):
         self._items: List[LinkItem] = []
 
     def _on_choose_folder(self):
-        """Open a directory picker and remember it as the scan target."""
+        """Open a directory picker and remember it as the scan target.
+
+        Manages on choose folder operations and coordinates related state changes for the component.
+        """
         folder = QFileDialog.getExistingDirectory(self, "Select Folder to Scan for Links")
         if folder:
             self._scan_dir = Path(folder)
             self.selected_path_label.setText(f"Scan Target: {self._scan_dir}")
 
     def _on_scan(self):
-        """Scan the chosen directory (or home) for links on the worker runtime."""
+        """Scan the chosen directory (or home) for links on the worker runtime.
+
+        Manages on scan operations and coordinates related state changes for the component.
+        """
         target = self._scan_dir or Path.home()
         self.scan_btn.setEnabled(False)
         self.table.setRowCount(0)
 
         def _work():
-            """Scan the target directory for links, optionally recursive."""
+            """Execute background processing off the main UI thread.
+
+            Performs the intensive analysis, scanning, or file operations in a worker thread to keep the interface responsive.
+            """
             return LinksManager.scan_links_in_directory(target, recursive=self.recursive_box.isChecked())
 
         def _done(items: List[LinkItem]):
-            """Fill the links table with name, type, target, validity, and size."""
+            """Handle completion of the asynchronous task.
+
+            Processes the returned result payload, updates corresponding tables or UI views, and restores interactive controls.
+
+            Args:
+                items (List[LinkItem]): Collection of items or entries to process.
+            """
             self.scan_btn.setEnabled(True)
             self._items = items
             self.table.setRowCount(len(items))
@@ -174,7 +227,10 @@ class LinksManagerPage(_Page):
         self.win.worker_runtime.run(_work, on_result=_done, on_error=lambda err: self.scan_btn.setEnabled(True))
 
     def _on_remove_link(self):
-        """Confirm and remove the selected link without touching its target files."""
+        """Confirm and remove the selected link without touching its target files.
+
+        Manages on remove link operations and coordinates related state changes for the component.
+        """
         sel = self.table.currentRow()
         if sel < 0 or sel >= len(self._items):
             QMessageBox.information(self, "Links Manager", "Please select a link to remove.")
@@ -200,9 +256,18 @@ class LinksManagerPage(_Page):
 # ===========================================================================
 
 class FastCopierPage(_Page):
-    """Page for high-throughput multi-threaded file transfer with verification modes."""
+    """Fastcopierpage.
+
+    Manages FastCopierPage operations and coordinates related state changes for the component.
+    """
     def __init__(self, win: PremiumMainWindow):
-        """Build the Fast Copier page with source/destination pickers, mode combo, and progress bar."""
+        """Build the Fast Copier page with source/destination pickers, mode combo, and progress bar.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win (PremiumMainWindow): Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(title_block("High-Throughput Fast File Copier", "Multi-threaded asynchronous transfer engine with unbuffered direct streaming and SHA-256 verification."))
 
@@ -271,21 +336,30 @@ class FastCopierPage(_Page):
         self._dest_dir: Optional[Path] = None
 
     def _on_add_source(self):
-        """Append a picked source directory to the copy list."""
+        """Append a picked source directory to the copy list.
+
+        Manages on add source operations and coordinates related state changes for the component.
+        """
         folder = QFileDialog.getExistingDirectory(self, "Select Source Directory")
         if folder:
             self._sources.append(Path(folder))
             self.sources_label.setText(f"Sources: {len(self._sources)} items selected ({self._sources[-1].name})")
 
     def _on_choose_dest(self):
-        """Pick the destination directory for the batch copy."""
+        """Pick the destination directory for the batch copy.
+
+        Manages on choose dest operations and coordinates related state changes for the component.
+        """
         folder = QFileDialog.getExistingDirectory(self, "Select Destination Directory")
         if folder:
             self._dest_dir = Path(folder)
             self.dest_label.setText(f"Destination: {self._dest_dir}")
 
     def _on_start_copy(self):
-        """Run the batch copy in the background with the chosen mode and speed limit."""
+        """Run the batch copy in the background with the chosen mode and speed limit.
+
+        Manages on start copy operations and coordinates related state changes for the component.
+        """
         if not self._sources or not self._dest_dir:
             QMessageBox.information(self, "Fast Copier", "Please select source files/folders and destination directory.")
             return
@@ -302,7 +376,10 @@ class FastCopierPage(_Page):
         speed_lim = self.speed_limit_spin.value()
 
         def _work():
-            """Copy all selected sources to the destination via FastCopier.copy_batch."""
+            """Execute background processing off the main UI thread.
+
+            Performs the intensive analysis, scanning, or file operations in a worker thread to keep the interface responsive.
+            """
             return FastCopier.copy_batch(
                 self._sources,
                 self._dest_dir,
@@ -311,7 +388,13 @@ class FastCopierPage(_Page):
             )
 
         def _done(summary: CopySummary):
-            """Report transfer statistics or the first copy errors."""
+            """Handle completion of the asynchronous task.
+
+            Processes the returned result payload, updates corresponding tables or UI views, and restores interactive controls.
+
+            Args:
+                summary (CopySummary): The summary parameter.
+            """
             self.start_btn.setEnabled(True)
             self.progress_bar.setValue(100)
             if summary.success:
@@ -331,9 +414,18 @@ class FastCopierPage(_Page):
 # ===========================================================================
 
 class TimestampTouchPage(_Page):
-    """Page for inspecting and stomping MACB timestamps and Win32 file attributes."""
+    """Timestamptouchpage.
+
+    Manages TimestampTouchPage operations and coordinates related state changes for the component.
+    """
     def __init__(self, win: PremiumMainWindow):
-        """Build the Timestamp Touch page with file picker, datetime editors, and attribute checkboxes."""
+        """Build the Timestamp Touch page with file picker, datetime editors, and attribute checkboxes.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win (PremiumMainWindow): Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(title_block("Forensic File Timestamp & Attribute Modifier", "Inspect, stomp, and synchronize MACB timestamps (Created, Modified, Accessed) and Win32 attribute flags."))
 
@@ -415,7 +507,10 @@ class TimestampTouchPage(_Page):
         self._selected_files: List[Path] = []
 
     def _on_choose_files(self):
-        """Pick files and preload the first file's timestamps and attributes into the editors."""
+        """Pick files and preload the first file's timestamps and attributes into the editors.
+
+        Manages on choose files operations and coordinates related state changes for the component.
+        """
         files, _ = QFileDialog.getOpenFileNames(self, "Select Files to Touch")
         if files:
             self._selected_files = [Path(f) for f in files]
@@ -432,7 +527,10 @@ class TimestampTouchPage(_Page):
                 self.archive_check.setChecked(meta.is_archive)
 
     def _on_apply(self):
-        """Apply the chosen timestamps and attributes to every selected file."""
+        """Apply the chosen timestamps and attributes to every selected file.
+
+        Manages on apply operations and coordinates related state changes for the component.
+        """
         if not self._selected_files:
             QMessageBox.information(self, "Timestamp Touch", "Please select files first.")
             return
@@ -458,9 +556,18 @@ class TimestampTouchPage(_Page):
 # ===========================================================================
 
 class ArchiveManagerPage(_Page):
-    """Page for creating, inspecting, testing, and extracting multi-format archives."""
+    """Archivemanagerpage.
+
+    Manages ArchiveManagerPage operations and coordinates related state changes for the component.
+    """
     def __init__(self, win: PremiumMainWindow):
-        """Build the Archive Studio page with open/test/extract/create buttons and a contents table."""
+        """Build the Archive Studio page with open/test/extract/create buttons and a contents table.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win (PremiumMainWindow): Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(title_block("Multi-Format Archive Studio", "Create, inspect, extract, and test ZIP, TAR, GZ, BZ2, and XZ archives with compression presets."))
 
@@ -509,7 +616,10 @@ class ArchiveManagerPage(_Page):
         self._current_archive: Optional[Path] = None
 
     def _on_open_archive(self):
-        """Open an archive and list its entries in the table."""
+        """Open an archive and list its entries in the table.
+
+        Manages on open archive operations and coordinates related state changes for the component.
+        """
         f, _ = QFileDialog.getOpenFileName(self, "Open Archive", "", "Archives (*.zip *.tar *.tar.gz *.tgz *.tar.bz2 *.tbz2 *.tar.xz)")
         if f:
             self._current_archive = Path(f)
@@ -523,7 +633,10 @@ class ArchiveManagerPage(_Page):
                 self.table.setItem(r, 3, QTableWidgetItem(e.crc or "-"))
 
     def _on_test_archive(self):
-        """Run an integrity test on the currently opened archive."""
+        """Run an integrity test on the currently opened archive.
+
+        Manages on test archive operations and coordinates related state changes for the component.
+        """
         if not self._current_archive:
             QMessageBox.information(self, "Archive Studio", "Please open an archive first.")
             return
@@ -535,7 +648,10 @@ class ArchiveManagerPage(_Page):
             QMessageBox.warning(self, "Archive Integrity Test", f"✗ {msg}")
 
     def _on_extract_archive(self):
-        """Extract the opened archive into a chosen destination folder."""
+        """Extract the opened archive into a chosen destination folder.
+
+        Manages on extract archive operations and coordinates related state changes for the component.
+        """
         if not self._current_archive:
             QMessageBox.information(self, "Archive Studio", "Please open an archive first.")
             return
@@ -549,7 +665,10 @@ class ArchiveManagerPage(_Page):
                 QMessageBox.warning(self, "Extraction Error", res.error or "Failed to extract archive.")
 
     def _on_create_archive(self):
-        """Pick files and a target name, then build a new archive."""
+        """Pick files and a target name, then build a new archive.
+
+        Manages on create archive operations and coordinates related state changes for the component.
+        """
         sources, _ = QFileDialog.getOpenFileNames(self, "Select Files to Compress")
         if not sources:
             return
@@ -569,9 +688,18 @@ class ArchiveManagerPage(_Page):
 # ===========================================================================
 
 class PrefetchAnalyzerPage(_Page):
-    """Page for analyzing and flushing Windows Prefetch execution traces."""
+    """Prefetchanalyzerpage.
+
+    Manages PrefetchAnalyzerPage operations and coordinates related state changes for the component.
+    """
     def __init__(self, win: PremiumMainWindow):
-        """Build the Prefetch page with status line, scan/clean buttons, and a traces table."""
+        """Build the Prefetch page with status line, scan/clean buttons, and a traces table.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win (PremiumMainWindow): Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(title_block("Windows Prefetch & SysMain Trace Analyzer", "Analyze execution traces, executable run counts, and purge orphaned prefetch caches."))
 
@@ -611,7 +739,10 @@ class PrefetchAnalyzerPage(_Page):
         self._refresh_status()
 
     def _refresh_status(self):
-        """Refresh the prefetch cache size, SysMain state, and privilege line."""
+        """Refresh the prefetch cache size, SysMain state, and privilege line.
+
+        Manages refresh status operations and coordinates related state changes for the component.
+        """
         st = PrefetchAnalyzer.get_status()
         self.status_label.setText(
             f"Prefetch Cache: {st.total_files} traces ({_fmt_bytes(st.total_size_bytes)})  •  "
@@ -620,16 +751,28 @@ class PrefetchAnalyzerPage(_Page):
         )
 
     def _on_scan(self):
-        """Scan prefetch trace files on the worker runtime."""
+        """Scan prefetch trace files on the worker runtime.
+
+        Manages on scan operations and coordinates related state changes for the component.
+        """
         self.scan_btn.setEnabled(False)
         self.table.setRowCount(0)
 
         def _work():
-            """Scan the Prefetch directory for trace entries."""
+            """Execute background processing off the main UI thread.
+
+            Performs the intensive analysis, scanning, or file operations in a worker thread to keep the interface responsive.
+            """
             return PrefetchAnalyzer.scan_prefetch_files()
 
         def _done(entries: List[PrefetchEntry]):
-            """Fill the traces table with executables, hashes, sizes, and last-run times."""
+            """Handle completion of the asynchronous task.
+
+            Processes the returned result payload, updates corresponding tables or UI views, and restores interactive controls.
+
+            Args:
+                entries (List[PrefetchEntry]): Collection of items or entries to process.
+            """
             self.scan_btn.setEnabled(True)
             self.table.setRowCount(len(entries))
             for r, e in enumerate(entries):
@@ -643,7 +786,10 @@ class PrefetchAnalyzerPage(_Page):
         self.win.worker_runtime.run(_work, on_result=_done, on_error=lambda err: self.scan_btn.setEnabled(True))
 
     def _on_clean(self):
-        """Confirm and flush all prefetch traces, then rescan."""
+        """Confirm and flush all prefetch traces, then rescan.
+
+        Manages on clean operations and coordinates related state changes for the component.
+        """
         confirm = QMessageBox.question(
             self, "Confirm Prefetch Purge",
             "Flush all Windows Prefetch execution trace files?",
@@ -660,9 +806,18 @@ class PrefetchAnalyzerPage(_Page):
 # ===========================================================================
 
 class SearchIndexOptimizerPage(_Page):
-    """Page for compacting and rebuilding the Windows Search index database."""
+    """Searchindexoptimizerpage.
+
+    Manages SearchIndexOptimizerPage operations and coordinates related state changes for the component.
+    """
     def __init__(self, win: PremiumMainWindow):
-        """Build the Search Index page with status card and compact/rebuild buttons."""
+        """Build the Search Index page with status card and compact/rebuild buttons.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win (PremiumMainWindow): Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(title_block("Windows Search Index Database Optimizer", "Inspect, compact, and repair the Windows Search Catalog database (Windows.edb)."))
 
@@ -697,7 +852,10 @@ class SearchIndexOptimizerPage(_Page):
         self._refresh()
 
     def _refresh(self):
-        """Refresh the database path, size, item estimate, and service status."""
+        """Fetch and reload the latest data entries into the view.
+
+        Queries the underlying system service or storage cache and refreshes view tables with up-to-date state.
+        """
         st = SearchIndexOptimizer.get_status()
         self.status_info.setText(
             f"Database Location: {st.database_path}\n"
@@ -708,7 +866,10 @@ class SearchIndexOptimizerPage(_Page):
         )
 
     def _on_compact(self):
-        """Confirm and run offline ESENT compaction in the background."""
+        """Confirm and run offline ESENT compaction in the background.
+
+        Manages on compact operations and coordinates related state changes for the component.
+        """
         confirm = QMessageBox.question(
             self, "Confirm Compaction",
             "Stop Windows Search service and run offline ESENT database compaction?",
@@ -718,11 +879,20 @@ class SearchIndexOptimizerPage(_Page):
             self.compact_btn.setEnabled(False)
 
             def _work():
-                """Stop WSearch and compact the Windows.edb database."""
+                """Execute background processing off the main UI thread.
+
+                Performs the intensive analysis, scanning, or file operations in a worker thread to keep the interface responsive.
+                """
                 return SearchIndexOptimizer.compact_database()
 
             def _done(res):
-                """Report compaction outcome and refresh the metrics."""
+                """Handle completion of the asynchronous task.
+
+                Processes the returned result payload, updates corresponding tables or UI views, and restores interactive controls.
+
+                Args:
+                    res: The res parameter.
+                """
                 self.compact_btn.setEnabled(True)
                 self._refresh()
                 if res.success:
@@ -733,7 +903,10 @@ class SearchIndexOptimizerPage(_Page):
             self.win.worker_runtime.run(_work, on_result=_done, on_error=lambda err: self.compact_btn.setEnabled(True))
 
     def _on_rebuild(self):
-        """Confirm and trigger a full search-index rebuild."""
+        """Confirm and trigger a full search-index rebuild.
+
+        Manages on rebuild operations and coordinates related state changes for the component.
+        """
         confirm = QMessageBox.question(
             self, "Confirm Index Rebuild",
             "Reset and rebuild the entire Windows Search catalog? (Indexing will run in background)",
@@ -750,9 +923,18 @@ class SearchIndexOptimizerPage(_Page):
 # ===========================================================================
 
 class DnsBenchmarkPage(_Page):
-    """Page for benchmarking DNS provider latency and applying the chosen resolver."""
+    """Dnsbenchmarkpage.
+
+    Manages DnsBenchmarkPage operations and coordinates related state changes for the component.
+    """
     def __init__(self, win: PremiumMainWindow):
-        """Build the DNS Benchmark page with run/apply buttons and a results table."""
+        """Build the DNS Benchmark page with run/apply buttons and a results table.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win (PremiumMainWindow): Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(title_block("DNS Latency Benchmark & Resolver Selector", "Benchmark real round-trip DNS latency across top global and security providers."))
 
@@ -790,16 +972,28 @@ class DnsBenchmarkPage(_Page):
         self._results: List[DnsBenchmarkResult] = []
 
     def _on_benchmark(self):
-        """Run the full DNS benchmark on the worker runtime."""
+        """Run the full DNS benchmark on the worker runtime.
+
+        Manages on benchmark operations and coordinates related state changes for the component.
+        """
         self.run_btn.setEnabled(False)
         self.table.setRowCount(0)
 
         def _work():
-            """Benchmark all known DNS providers."""
+            """Execute background processing off the main UI thread.
+
+            Performs the intensive analysis, scanning, or file operations in a worker thread to keep the interface responsive.
+            """
             return DnsBenchmarkEngine.run_full_benchmark()
 
         def _done(results: List[DnsBenchmarkResult]):
-            """Fill the results table and highlight the fastest provider."""
+            """Handle completion of the asynchronous task.
+
+            Processes the returned result payload, updates corresponding tables or UI views, and restores interactive controls.
+
+            Args:
+                results (List[DnsBenchmarkResult]): Collection or dictionary holding operation results.
+            """
             self.run_btn.setEnabled(True)
             self._results = results
             self.table.setRowCount(len(results))
@@ -818,7 +1012,10 @@ class DnsBenchmarkPage(_Page):
         self.win.worker_runtime.run(_work, on_result=_done, on_error=lambda err: self.run_btn.setEnabled(True))
 
     def _on_apply_dns(self):
-        """Apply the selected provider's DNS servers to Wi-Fi, falling back to Ethernet."""
+        """Apply the selected provider's DNS servers to Wi-Fi, falling back to Ethernet.
+
+        Manages on apply dns operations and coordinates related state changes for the component.
+        """
         sel = self.table.currentRow()
         if sel < 0 or sel >= len(self._results):
             QMessageBox.information(self, "DNS Selector", "Please select a DNS provider from the benchmark table.")
@@ -841,9 +1038,18 @@ class DnsBenchmarkPage(_Page):
 # ===========================================================================
 
 class DiskBenchmarkPage(_Page):
-    """Page for measuring sequential throughput and 4K random IOPS."""
+    """Diskbenchmarkpage.
+
+    Manages DiskBenchmarkPage operations and coordinates related state changes for the component.
+    """
     def __init__(self, win: PremiumMainWindow):
-        """Build the Disk Benchmark page with target picker, progress label, and results table."""
+        """Build the Disk Benchmark page with target picker, progress label, and results table.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win (PremiumMainWindow): Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(title_block("Storage Throughput & IOPS Benchmark", "Measure Sequential Read/Write and Random 4KB IOPS performance across storage drives."))
 
@@ -893,23 +1099,38 @@ class DiskBenchmarkPage(_Page):
         self._target_path = Path.home()
 
     def _on_select_target(self):
-        """Pick the drive or folder to benchmark."""
+        """Pick the drive or folder to benchmark.
+
+        Manages on select target operations and coordinates related state changes for the component.
+        """
         folder = QFileDialog.getExistingDirectory(self, "Select Benchmark Target Drive")
         if folder:
             self._target_path = Path(folder)
             self.target_label.setText(f"Target: {self._target_path}")
 
     def _on_start_bench(self):
-        """Run a 64 MB storage benchmark on the target in the background."""
+        """Run a 64 MB storage benchmark on the target in the background.
+
+        Manages on start bench operations and coordinates related state changes for the component.
+        """
         self.start_btn.setEnabled(False)
         self.progress_label.setText("Running storage benchmark (64MB sample)...")
 
         def _work():
-            """Run the disk benchmark engine on the target path."""
+            """Execute background processing off the main UI thread.
+
+            Performs the intensive analysis, scanning, or file operations in a worker thread to keep the interface responsive.
+            """
             return DiskBenchmarkEngine.run_benchmark(self._target_path, file_size_mb=64)
 
         def _done(report: DiskBenchmarkReport):
-            """Populate throughput and IOPS results for the four test profiles."""
+            """Handle completion of the asynchronous task.
+
+            Processes the returned result payload, updates corresponding tables or UI views, and restores interactive controls.
+
+            Args:
+                report (DiskBenchmarkReport): The generated report data object from the backend.
+            """
             self.start_btn.setEnabled(True)
             self.progress_label.setText(f"Completed in {report.elapsed_seconds}s on {report.target_drive}")
 
@@ -927,9 +1148,18 @@ class DiskBenchmarkPage(_Page):
 # ===========================================================================
 
 class MemoryOptimizerPage(_Page):
-    """Page for inspecting RAM usage and trimming process working sets."""
+    """Memoryoptimizerpage.
+
+    Manages MemoryOptimizerPage operations and coordinates related state changes for the component.
+    """
     def __init__(self, win: PremiumMainWindow):
-        """Build the RAM Optimizer page with summary line, process table, and trim button."""
+        """Build the RAM Optimizer page with summary line, process table, and trim button.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win (PremiumMainWindow): Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(title_block("RAM & Working Set Optimizer", "Inspect physical RAM composition and safely trim background process working sets."))
 
@@ -967,7 +1197,10 @@ class MemoryOptimizerPage(_Page):
         self._on_refresh()
 
     def _on_refresh(self):
-        """Refresh the RAM summary and top-30 process memory table."""
+        """Refresh the RAM summary and top-30 process memory table.
+
+        Manages on refresh operations and coordinates related state changes for the component.
+        """
         m = MemoryOptimizer.get_system_ram_metrics()
         self.ram_summary.setText(
             f"Physical RAM: {_fmt_bytes(m.used_bytes)} / {_fmt_bytes(m.total_bytes)} ({m.percent_used:.1f}% used)  •  "
@@ -984,7 +1217,10 @@ class MemoryOptimizerPage(_Page):
             self.table.setItem(r, 3, QTableWidgetItem(_fmt_bytes(p.private_bytes)))
 
     def _on_trim(self):
-        """Trim background process working sets, then refresh."""
+        """Trim background process working sets, then refresh.
+
+        Manages on trim operations and coordinates related state changes for the component.
+        """
         res = MemoryOptimizer.optimize_all_background_working_sets()
         QMessageBox.information(self, "Memory Optimized", f"Trimmed working sets of {res.processes_trimmed} background processes.")
         self._on_refresh()
@@ -995,9 +1231,18 @@ class MemoryOptimizerPage(_Page):
 # ===========================================================================
 
 class DevCleanerPage(_Page):
-    """Page for scanning and purging developer ecosystem build caches."""
+    """Devcleanerpage.
+
+    Manages DevCleanerPage operations and coordinates related state changes for the component.
+    """
     def __init__(self, win: PremiumMainWindow):
-        """Build the Dev Cleaner page with scan/clean buttons and a caches table."""
+        """Build the Dev Cleaner page with scan/clean buttons and a caches table.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win (PremiumMainWindow): Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(title_block("Developer Build Artifacts & Cache Purger", "Scan and clean Docker, Python, Node.js, Rust/Cargo, Gradle, Go, and .NET NuGet caches."))
 
@@ -1033,16 +1278,28 @@ class DevCleanerPage(_Page):
         self._items: List[DevCacheItem] = []
 
     def _on_scan(self):
-        """Scan developer caches on the worker runtime."""
+        """Scan developer caches on the worker runtime.
+
+        Manages on scan operations and coordinates related state changes for the component.
+        """
         self.scan_btn.setEnabled(False)
         self.table.setRowCount(0)
 
         def _work():
-            """Scan for Docker, Python, Node, Rust, Gradle, Go, and NuGet caches."""
+            """Execute background processing off the main UI thread.
+
+            Performs the intensive analysis, scanning, or file operations in a worker thread to keep the interface responsive.
+            """
             return DevCleaner.scan_dev_caches()
 
         def _done(items: List[DevCacheItem]):
-            """Fill the caches table with ecosystem, name, size, and description."""
+            """Handle completion of the asynchronous task.
+
+            Processes the returned result payload, updates corresponding tables or UI views, and restores interactive controls.
+
+            Args:
+                items (List[DevCacheItem]): Collection of items or entries to process.
+            """
             self.scan_btn.setEnabled(True)
             self._items = items
             self.table.setRowCount(len(items))
@@ -1055,7 +1312,10 @@ class DevCleanerPage(_Page):
         self.win.worker_runtime.run(_work, on_result=_done, on_error=lambda err: self.scan_btn.setEnabled(True))
 
     def _on_clean(self):
-        """Confirm and purge all discovered caches, then rescan."""
+        """Confirm and purge all discovered caches, then rescan.
+
+        Manages on clean operations and coordinates related state changes for the component.
+        """
         if not self._items:
             QMessageBox.information(self, "Dev Cleaner", "Please scan for developer caches first.")
             return
@@ -1076,9 +1336,18 @@ class DevCleanerPage(_Page):
 # ===========================================================================
 
 class BrowserDeepCleanerPage(_Page):
-    """Page for scanning and purging caches across installed browsers."""
+    """Browserdeepcleanerpage.
+
+    Manages BrowserDeepCleanerPage operations and coordinates related state changes for the component.
+    """
     def __init__(self, win: PremiumMainWindow):
-        """Build the Browser Cleaner page with scan/clean buttons and a targets table."""
+        """Build the Browser Cleaner page with scan/clean buttons and a targets table.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win (PremiumMainWindow): Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(title_block("Multi-Browser Deep Privacy & Cache Sanitizer", "Forensic cache and storage cleaner across Chrome, Edge, Firefox, Brave, Opera, Vivaldi, and Arc."))
 
@@ -1095,6 +1364,11 @@ class BrowserDeepCleanerPage(_Page):
         self.clean_btn = SecondaryButton("Clean Browser Caches", self.p)
         self.clean_btn.clicked.connect(self._on_clean)
         btn_row.addWidget(self.clean_btn)
+
+        self.vacuum_btn = SecondaryButton("Vacuum Databases", self.p)
+        self.vacuum_btn.setToolTip("Defragments and compacts browser SQLite databases (History, Cookies, Places) to improve launch speed and reclaim space.")
+        self.vacuum_btn.clicked.connect(self._on_vacuum)
+        btn_row.addWidget(self.vacuum_btn)
         btn_row.addStretch(1)
         cl.addLayout(btn_row)
 
@@ -1114,16 +1388,28 @@ class BrowserDeepCleanerPage(_Page):
         self._targets: List[BrowserTarget] = []
 
     def _on_scan(self):
-        """Scan browser caches on the worker runtime."""
+        """Scan browser caches on the worker runtime.
+
+        Manages on scan operations and coordinates related state changes for the component.
+        """
         self.scan_btn.setEnabled(False)
         self.table.setRowCount(0)
 
         def _work():
-            """Scan installed browser profiles for cache and storage sizes."""
+            """Execute background processing off the main UI thread.
+
+            Performs the intensive analysis, scanning, or file operations in a worker thread to keep the interface responsive.
+            """
             return BrowserDeepCleaner.scan_browser_caches()
 
         def _done(targets: List[BrowserTarget]):
-            """Fill the targets table with browser, category, size, and path."""
+            """Handle completion of the asynchronous task.
+
+            Processes the returned result payload, updates corresponding tables or UI views, and restores interactive controls.
+
+            Args:
+                targets (List[BrowserTarget]): The targets parameter.
+            """
             self.scan_btn.setEnabled(True)
             self._targets = targets
             self.table.setRowCount(len(targets))
@@ -1136,7 +1422,10 @@ class BrowserDeepCleanerPage(_Page):
         self.win.worker_runtime.run(_work, on_result=_done, on_error=lambda err: self.scan_btn.setEnabled(True))
 
     def _on_clean(self):
-        """Confirm and purge transient browser caches (logins preserved), then rescan."""
+        """Confirm and purge transient browser caches (logins preserved), then rescan.
+
+        Manages on clean operations and coordinates related state changes for the component.
+        """
         if not self._targets:
             QMessageBox.information(self, "Browser Cleaner", "Please scan for browser caches first.")
             return
@@ -1150,3 +1439,57 @@ class BrowserDeepCleanerPage(_Page):
             res = BrowserDeepCleaner.clean_targets(self._targets)
             QMessageBox.information(self, "Browsers Cleaned", f"Cleaned {res.browsers_cleaned} browser profiles ({res.files_deleted} files), freed {_fmt_bytes(res.bytes_freed)}.")
             self._on_scan()
+
+    def _on_vacuum(self):
+        """Find and VACUUM browser SQLite databases to compact and reclaim space.
+
+        Manages on vacuum operations and coordinates related state changes for the component.
+        """
+        confirm = QMessageBox.question(
+            self, "Vacuum Databases",
+            "Defragment and optimize browser SQLite databases (History, Cookies, Places)?\n\n"
+            "Please make sure your web browsers are closed before running this operation.",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.Yes,
+        )
+        if confirm != QMessageBox.StandardButton.Yes:
+            return
+
+        self.vacuum_btn.setEnabled(False)
+
+        def _work():
+            """Execute SQLite database vacuum and defragmentation in the background.
+
+            Scans browser profiles for candidate SQLite databases and runs VACUUM
+            commands to compact disk pages and rebuild indexes.
+
+            Returns:
+                tuple: Count of databases vacuumed and total bytes reclaimed.
+            """
+            from pathlib import Path
+            from cortex_unified.system_tools.browser_cleaner import DeepBrowserCleaner
+            cleaner = DeepBrowserCleaner()
+            items = cleaner.scan()
+            dbs = [item.path for item in items if getattr(item, "can_vacuum", False) and item.path.is_file()]
+            # Also discover common SQLite DB files in browser profiles
+            res = cleaner.vacuum_databases(dbs)
+            total_saved = sum(res.values())
+            return len(res), total_saved
+
+        def _done(result):
+            """Handle completion of the asynchronous task.
+
+            Processes the returned result payload, updates corresponding tables or UI views, and restores interactive controls.
+
+            Args:
+                result: Collection or dictionary holding operation results.
+            """
+            count, saved = result
+            self.vacuum_btn.setEnabled(True)
+            QMessageBox.information(
+                self, "Databases Vacuumed",
+                f"Optimized {count} browser database file(s), compacted and reclaimed {_fmt_bytes(saved)}.",
+            )
+
+        self.win.worker_runtime.run(_work, on_result=_done, on_error=lambda err: self.vacuum_btn.setEnabled(True))
+

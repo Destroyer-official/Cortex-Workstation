@@ -32,7 +32,13 @@ for p in (str(SRC_DIR), str(NEXUS_DIR)):
 # 1. Advanced File Manager & Power Features
 # ═════════════════════════════════════════════════════════════════════════════
 def test_fm_core_and_power_features(qapp):
-    """test_fm_core_and_power_features."""
+    """test_fm_core_and_power_features.
+
+    Manages test fm core and power features operations and coordinates related state changes for the component.
+
+    Args:
+        qapp: The qapp parameter.
+    """
     from cortex_unified.explorer.widget import ExplorerWidget
     from NexusExplorer.native.nexus_explorer import FileChecksumDialog, ShortcutsDialog
 
@@ -75,7 +81,10 @@ def test_fm_core_and_power_features(qapp):
 # 2. Disk & Storage Analyzers
 # ═════════════════════════════════════════════════════════════════════════════
 def test_disk_and_storage_analyzers():
-    """test_disk_and_storage_analyzers."""
+    """test_disk_and_storage_analyzers.
+
+    Manages test disk and storage analyzers operations and coordinates related state changes for the component.
+    """
     from cortex_unified.analyzers.disk_analyzer import DiskAnalyzer
     from cortex_unified.analyzers.advanced_disk_analyzer import AdvancedDiskAnalyzer
     from cortex_unified.system_tools.vhdx_manager import VhdxManager
@@ -118,7 +127,10 @@ def test_disk_and_storage_analyzers():
 # 3. System Maintenance & Repair
 # ═════════════════════════════════════════════════════════════════════════════
 def test_system_maintenance_and_repair():
-    """test_system_maintenance_and_repair."""
+    """test_system_maintenance_and_repair.
+
+    Manages test system maintenance and repair operations and coordinates related state changes for the component.
+    """
     from cortex_unified.system_tools.component_store import ComponentStore
     from cortex_unified.system_tools.windows_update_repair import WindowsUpdateRepair
     from cortex_unified.system_tools.system_repair import SystemRepair
@@ -164,7 +176,10 @@ def test_system_maintenance_and_repair():
 # 4. Security & Sanitization Standards
 # ═════════════════════════════════════════════════════════════════════════════
 def test_security_and_sanitization_standards():
-    """test_security_and_sanitization_standards."""
+    """test_security_and_sanitization_standards.
+
+    Manages test security and sanitization standards operations and coordinates related state changes for the component.
+    """
     from cortex_unified.analyzers.advanced_shredder import AdvancedShredder, ShredMethod
     from cortex_unified.system_tools.adaptive_sanitizer import AdaptiveSanitizer
     from cortex_unified.system_tools.free_space_wipe import FreeSpaceWiper
@@ -231,7 +246,10 @@ def test_security_and_sanitization_standards():
 # 5. Privacy & Telemetry
 # ═════════════════════════════════════════════════════════════════════════════
 def test_privacy_and_telemetry():
-    """test_privacy_and_telemetry."""
+    """test_privacy_and_telemetry.
+
+    Manages test privacy and telemetry operations and coordinates related state changes for the component.
+    """
     from cortex_unified.system_tools.telemetry_blocker import TelemetryBlocker
     from cortex_unified.analyzers.privacy_cleaner import PrivacyCleaner
 
@@ -254,7 +272,10 @@ def test_privacy_and_telemetry():
 # 6. Process & Performance Optimization
 # ═════════════════════════════════════════════════════════════════════════════
 def test_process_and_performance_optimization():
-    """test_process_and_performance_optimization."""
+    """test_process_and_performance_optimization.
+
+    Manages test process and performance optimization operations and coordinates related state changes for the component.
+    """
     from cortex_unified.system_tools import memory_optimizer
     from cortex_unified.system_tools.process_analyzer import ProcessAnalyzer
     from cortex_unified.system_tools.game_mode import GameMode
@@ -293,7 +314,10 @@ def test_process_and_performance_optimization():
 # 7. Network Tools & Defense
 # ═════════════════════════════════════════════════════════════════════════════
 def test_network_tools_and_defense():
-    """test_network_tools_and_defense."""
+    """test_network_tools_and_defense.
+
+    Manages test network tools and defense operations and coordinates related state changes for the component.
+    """
     from cortex_unified.system_tools.network_monitor import NetworkMonitor
     from cortex_unified.system_tools.network_traffic import TrafficMonitor
     from cortex_unified.system_tools.lan_scanner import LanScanner
@@ -347,7 +371,10 @@ def test_network_tools_and_defense():
 # 8. Apps & Extension Management
 # ═════════════════════════════════════════════════════════════════════════════
 def test_apps_and_extension_management():
-    """test_apps_and_extension_management."""
+    """test_apps_and_extension_management.
+
+    Manages test apps and extension management operations and coordinates related state changes for the component.
+    """
     from cortex_unified.system_tools.app_uninstaller import AppUninstaller
     from cortex_unified.system_tools.leftover_cleaner import LeftoverCleaner
     from cortex_unified.system_tools.app_updater import AppUpdater
@@ -382,7 +409,10 @@ def test_apps_and_extension_management():
 # 9. Registry & Startup Tools
 # ═════════════════════════════════════════════════════════════════════════════
 def test_registry_and_startup_tools():
-    """test_registry_and_startup_tools."""
+    """test_registry_and_startup_tools.
+
+    Manages test registry and startup tools operations and coordinates related state changes for the component.
+    """
     from cortex_unified.system_tools.registry_cleaner import RegistryCleaner
     from cortex_unified.system_tools.startup_manager import StartupManager
     from cortex_unified.system_tools.task_manager import TaskManager
@@ -407,7 +437,10 @@ def test_registry_and_startup_tools():
 # 10. Specialized Dedup & Cache Analyzers
 # ═════════════════════════════════════════════════════════════════════════════
 def test_specialized_dedup_and_cache_analyzers():
-    """test_specialized_dedup_and_cache_analyzers."""
+    """test_specialized_dedup_and_cache_analyzers.
+
+    Manages test specialized dedup and cache analyzers operations and coordinates related state changes for the component.
+    """
     from cortex_unified.analyzers.duplicate_finder import DuplicateFinder
     from cortex_unified.analyzers.perceptual_duplicate_finder import (
         PerceptualDuplicateFinder,
@@ -520,7 +553,13 @@ def test_specialized_dedup_and_cache_analyzers():
 # 11. UI Page Registry Integrity & Lazy Loading
 # ═════════════════════════════════════════════════════════════════════════════
 def test_ui_page_registry_all_pages_loadable(qapp):
-    """test_ui_page_registry_all_pages_loadable."""
+    """test_ui_page_registry_all_pages_loadable.
+
+    Manages test ui page registry all pages loadable operations and coordinates related state changes for the component.
+
+    Args:
+        qapp: The qapp parameter.
+    """
     from cortex_unified.ui.premium.registry import PAGES
 
     assert len(PAGES) >= 35

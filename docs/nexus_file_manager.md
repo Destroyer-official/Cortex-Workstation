@@ -40,7 +40,7 @@
   - **Auto-Dismiss**: Green completion notice auto-collapses cleanly after completion.
 
 ### 5. Advanced File Creation & Project Scaffolding
-- **Nested Creation**: Create deep subdirectories or files in a single step (e.g. `src/components/ui/button.tsx`).
+- **Nested Creation**: Create deep subdirectories or files in a single step (e.g. `my_project/src/components/ui/button.py`).
 - **Batch Scaffolding**: Generate entire project trees from indented text or path lists.
 - **Scaffold Presets**: 1-click generation of standard project layouts (Python Package, React/TypeScript, Rust Crate, Go Service, HTML/CSS Web).
 - **Template Presets**: Create new files pre-populated with boilerplate (`.py`, `.json`, `.yaml`, `.md`, `.env`, `.sh`).

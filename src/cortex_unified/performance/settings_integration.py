@@ -18,23 +18,33 @@ from .optimization import OptimizationSettings, PerformanceOptimizer
 from .resource_throttler import ResourceThrottler
 
 class PerformanceSettingsWidget(QWidget):
-    """Widget for performance capabilities integration."""
+    """Performancesettingswidget.
+
+    Manages PerformanceSettingsWidget operations and coordinates related state changes for the component.
+    """
     
     settings_applied = Signal(dict)
     
     def __init__(self, parent=None):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            parent: Parent window or shell controller instance.
+        """
         super().__init__(parent)
         self.logger = logging.getLogger(__name__)
         self.settings = QSettings()
         
         self.setup_ui()
         self.load_settings()
-        """__init__."""
-        """__init__."""
 
     def setup_ui(self):
-        """Build the UI structure mirroring old properties natively."""
+        """Build the UI structure mirroring old properties natively.
+
+        Manages setup ui operations and coordinates related state changes for the component.
+        """
         if not HAS_PYSIDE6:
             return
             
@@ -83,7 +93,10 @@ class PerformanceSettingsWidget(QWidget):
         layout.addWidget(safety_group)
 
     def load_settings(self):
-        """Restore properties from persistence."""
+        """Restore properties from persistence.
+
+        Manages load settings operations and coordinates related state changes for the component.
+        """
         if not HAS_PYSIDE6:
             return
             
@@ -101,7 +114,10 @@ class PerformanceSettingsWidget(QWidget):
         self.enable_throttling_checkbox.setChecked(self.settings.value("performance/throttling_enabled", True, type=bool))
 
     def save_settings(self):
-        """Persist properties and sync natively into systems."""
+        """Persist properties and sync natively into systems.
+
+        Manages save settings operations and coordinates related state changes for the component.
+        """
         if not HAS_PYSIDE6:
             return
             
@@ -125,10 +141,16 @@ class PerformanceSettingsWidget(QWidget):
         self.logger.info("Synchronized and emitted core performance properties.")
 
 class PerformanceManager:
-    """Singleton context managing throttling endpoints globally."""
+    """Performancemanager.
+
+    Manages PerformanceManager operations and coordinates related state changes for the component.
+    """
     
     def __init__(self):
-        """__init__."""
+        """Initialize the instance and configure internal state.
+
+        Sets up sub-widgets, event signal connections, and default options.
+        """
         self.logger = logging.getLogger(__name__)
         self.settings = QSettings() if HAS_PYSIDE6 else None
         
@@ -136,11 +158,12 @@ class PerformanceManager:
         self.throttler = ResourceThrottler()
         
         self.load_saved_settings()
-        """__init__."""
-        """__init__."""
 
     def load_saved_settings(self):
-        """load_saved_settings."""
+        """load_saved_settings.
+
+        Manages load saved settings operations and coordinates related state changes for the component.
+        """
         if not self.settings: return
         try:
             properties = {
@@ -155,11 +178,15 @@ class PerformanceManager:
             self.apply_properties(properties)
         except Exception as e:
             self.logger.error(f"Error loading performance states: {e}")
-        """load_saved_settings."""
-        """load_saved_settings."""
 
     def apply_properties(self, properties: dict):
-        """Translates basic dictionary states into core optimization classes natively."""
+        """Translates basic dictionary states into core optimization classes natively.
+
+        Manages apply properties operations and coordinates related state changes for the component.
+
+        Args:
+            properties (dict): The properties parameter.
+        """
         # Setup Optimizer Limits
         opt_config = OptimizationSettings()
         opt_config.max_threads = properties["threads"]
@@ -183,19 +210,27 @@ class PerformanceManager:
             self.throttler.stop_monitoring()
 
     def create_settings_widget(self, parent=None):
-        """create_settings_widget."""
+        """create_settings_widget.
+
+        Manages create settings widget operations and coordinates related state changes for the component.
+
+        Args:
+            parent: Parent window or shell controller instance.
+        """
         if HAS_PYSIDE6:
             return PerformanceSettingsWidget(parent)
         return None
-        """create_settings_widget."""
-        """create_settings_widget."""
 
 _perf_manager = None
 def get_performance_manager() -> PerformanceManager:
-    """get_performance_manager."""
+    """get_performance_manager.
+
+    Manages get performance manager operations and coordinates related state changes for the component.
+
+    Returns:
+        PerformanceManager: Result of the operation.
+    """
     global _perf_manager
     if _perf_manager is None:
         _perf_manager = PerformanceManager()
     return _perf_manager
-    """get_performance_manager."""
-    """get_performance_manager."""

@@ -22,7 +22,10 @@ from typing import Dict, List, Optional, Tuple
 
 
 class FileAttributeFlags(Flag):
-    """FileAttributeFlags."""
+    """Fileattributeflags.
+
+    Manages FileAttributeFlags operations and coordinates related state changes for the component.
+    """
     READONLY = 0x00000001
     HIDDEN = 0x00000002
     SYSTEM = 0x00000004
@@ -30,12 +33,14 @@ class FileAttributeFlags(Flag):
     NORMAL = 0x00000080
     TEMPORARY = 0x00000100
     COMPRESSED = 0x00000800
-    """FileAttributeFlags class."""
 
 
 @dataclass
 class TimestampInfo:
-    """TimestampInfo."""
+    """Timestampinfo.
+
+    Manages TimestampInfo operations and coordinates related state changes for the component.
+    """
     path: str
     filename: str
     created_time: float
@@ -46,24 +51,37 @@ class TimestampInfo:
     is_hidden: bool
     is_system: bool
     is_archive: bool
-    """TimestampInfo class."""
 
 
 @dataclass
 class TimestampUpdateResult:
-    """TimestampUpdateResult."""
+    """Timestampupdateresult.
+
+    Manages TimestampUpdateResult operations and coordinates related state changes for the component.
+    """
     path: str
     success: bool
     error: Optional[str] = None
-    """TimestampUpdateResult class."""
 
 
 class TimestampTouchEngine:
-    """Production Win32/POSIX file timestamp and attribute manipulation studio."""
+    """Timestamptouchengine.
+
+    Manages TimestampTouchEngine operations and coordinates related state changes for the component.
+    """
 
     @classmethod
     def get_file_metadata(cls, file_path: str | Path) -> Optional[TimestampInfo]:
-        """Query full MACB timestamps and attribute flags."""
+        """Query full MACB timestamps and attribute flags.
+
+        Manages get file metadata operations and coordinates related state changes for the component.
+
+        Args:
+            file_path (str | Path): Filesystem path to the target file or directory.
+
+        Returns:
+            Optional[TimestampInfo]: Result of the operation.
+        """
         p = Path(file_path).resolve()
         if not p.exists():
             return None
@@ -98,19 +116,39 @@ class TimestampTouchEngine:
         modified_time: Optional[float | datetime.datetime] = None,
         accessed_time: Optional[float | datetime.datetime] = None,
     ) -> TimestampUpdateResult:
-        """Set Created, Modified, and Accessed timestamps on a file or directory."""
+        """Set Created, Modified, and Accessed timestamps on a file or directory.
+
+        Manages set timestamps operations and coordinates related state changes for the component.
+
+        Args:
+            file_path (str | Path): Filesystem path to the target file or directory.
+            created_time (Optional[float | datetime.datetime]): The created time parameter.
+            modified_time (Optional[float | datetime.datetime]): The modified time parameter.
+            accessed_time (Optional[float | datetime.datetime]): The accessed time parameter.
+
+        Returns:
+            TimestampUpdateResult: Result of the operation.
+        """
         p = Path(file_path).resolve()
         if not p.exists():
             return TimestampUpdateResult(str(p), False, "File does not exist")
 
         def _to_timestamp(val: Optional[float | datetime.datetime]) -> Optional[float]:
-            """_to_timestamp."""
+            """_to_timestamp.
+
+            Manages to timestamp operations and coordinates related state changes for the component.
+
+            Args:
+                val (Optional[float | datetime.datetime]): The val parameter.
+
+            Returns:
+                Optional[float]: Result of the operation.
+            """
             if val is None:
                 return None
             if isinstance(val, datetime.datetime):
                 return val.timestamp()
             return float(val)
-            """_to_timestamp."""
 
         c_ts = _to_timestamp(created_time)
         m_ts = _to_timestamp(modified_time)
@@ -138,7 +176,19 @@ class TimestampTouchEngine:
         modified_ts: Optional[float],
         accessed_ts: Optional[float],
     ) -> TimestampUpdateResult:
-        """Win32 SetFileTime implementation via ctypes."""
+        """Win32 SetFileTime implementation via ctypes.
+
+        Manages set windows timestamps operations and coordinates related state changes for the component.
+
+        Args:
+            path (Path): Filesystem path to the target file or directory.
+            created_ts (Optional[float]): The created ts parameter.
+            modified_ts (Optional[float]): The modified ts parameter.
+            accessed_ts (Optional[float]): The accessed ts parameter.
+
+        Returns:
+            TimestampUpdateResult: Result of the operation.
+        """
         GENERIC_READ = 0x80000000
         GENERIC_WRITE = 0x40000000
         FILE_SHARE_READ = 0x00000001
@@ -164,14 +214,22 @@ class TimestampTouchEngine:
 
         try:
             def _to_filetime(ts: Optional[float]) -> Optional[ctypes.c_uint64]:
-                """_to_filetime."""
+                """_to_filetime.
+
+                Manages to filetime operations and coordinates related state changes for the component.
+
+                Args:
+                    ts (Optional[float]): The ts parameter.
+
+                Returns:
+                    Optional[ctypes.c_uint64]: Result of the operation.
+                """
                 if ts is None:
                     return None
                 # Windows FILETIME is 100-nanosecond intervals since Jan 1, 1601 UTC
                 # Unix epoch is Jan 1, 1970 (11644473600 seconds after 1601)
                 ft_val = int((ts + 11644473600) * 10000000)
                 return ctypes.c_uint64(ft_val)
-                """_to_filetime."""
 
             c_ft = _to_filetime(created_ts)
             a_ft = _to_filetime(accessed_ts)
@@ -198,7 +256,20 @@ class TimestampTouchEngine:
         system: Optional[bool] = None,
         archive: Optional[bool] = None,
     ) -> bool:
-        """Update file attribute flags (Readonly, Hidden, System, Archive)."""
+        """Update file attribute flags (Readonly, Hidden, System, Archive).
+
+        Manages set attributes operations and coordinates related state changes for the component.
+
+        Args:
+            file_path (str | Path): Filesystem path to the target file or directory.
+            readonly (Optional[bool]): The readonly parameter.
+            hidden (Optional[bool]): The hidden parameter.
+            system (Optional[bool]): The system parameter.
+            archive (Optional[bool]): The archive parameter.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         p = Path(file_path).resolve()
         if not p.exists() or platform.system() != "Windows":
             return False
@@ -230,7 +301,19 @@ class TimestampTouchEngine:
         modified_time: Optional[float | datetime.datetime] = None,
         accessed_time: Optional[float | datetime.datetime] = None,
     ) -> List[TimestampUpdateResult]:
-        """Apply timestamp touch updates across a batch of files."""
+        """Apply timestamp touch updates across a batch of files.
+
+        Manages touch batch operations and coordinates related state changes for the component.
+
+        Args:
+            file_paths (List[str | Path]): Filesystem path to the target file or directory.
+            created_time (Optional[float | datetime.datetime]): The created time parameter.
+            modified_time (Optional[float | datetime.datetime]): The modified time parameter.
+            accessed_time (Optional[float | datetime.datetime]): The accessed time parameter.
+
+        Returns:
+            List[TimestampUpdateResult]: List of processed items or identifiers.
+        """
         results = []
         for fp in file_paths:
             results.append(cls.set_timestamps(fp, created_time, modified_time, accessed_time))

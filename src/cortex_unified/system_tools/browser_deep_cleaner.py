@@ -18,7 +18,10 @@ from typing import Dict, List, Optional, Tuple
 
 @dataclass
 class BrowserTarget:
-    """Browser Target data container."""
+    """Browsertarget.
+
+    Manages BrowserTarget operations and coordinates related state changes for the component.
+    """
     browser_name: str
     category: str  # "Web Cache", "GPU Cache", "Code Cache", "Service Worker", "Crash Dumps"
     path: str
@@ -28,26 +31,42 @@ class BrowserTarget:
 
 @dataclass
 class BrowserCleanResult:
-    """Browser Clean Result data container."""
+    """Browsercleanresult.
+
+    Manages BrowserCleanResult operations and coordinates related state changes for the component.
+    """
     browsers_cleaned: int
     files_deleted: int
     bytes_freed: int
     errors: List[str] = None
 
     def __post_init__(self):
-        """__post_init__."""
+        """__post_init__.
+
+        Manages post init operations and coordinates related state changes for the component.
+        """
         if self.errors is None:
             self.errors = []
-        """__post_init__."""
-        """__post_init__."""
 
 
 class BrowserDeepCleaner:
-    """Production Multi-Browser cache and forensic artifact sanitizer."""
+    """Browserdeepcleaner.
+
+    Manages BrowserDeepCleaner operations and coordinates related state changes for the component.
+    """
 
     @classmethod
     def _dir_stats(cls, path: Path) -> Tuple[int, int]:
-        """Compute size in bytes and file count for directory."""
+        """Compute size in bytes and file count for directory.
+
+        Manages dir stats operations and coordinates related state changes for the component.
+
+        Args:
+            path (Path): Filesystem path to the target file or directory.
+
+        Returns:
+            Tuple[int, int]: Result of the operation.
+        """
         if not path.is_dir():
             return 0, 0
         total_size = 0
@@ -67,7 +86,13 @@ class BrowserDeepCleaner:
 
     @classmethod
     def scan_browser_caches(cls) -> List[BrowserTarget]:
-        """Scan all detected web browsers for non-essential cache and transient stores."""
+        """Scan all detected web browsers for non-essential cache and transient stores.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+        Returns:
+            List[BrowserTarget]: List of processed items or identifiers.
+        """
         targets: List[BrowserTarget] = []
         home = Path.home()
         local_app = Path(os.environ.get("LOCALAPPDATA", str(home / "AppData" / "Local")))
@@ -143,7 +168,16 @@ class BrowserDeepCleaner:
 
     @classmethod
     def clean_targets(cls, targets: List[BrowserTarget]) -> BrowserCleanResult:
-        """Purge selected browser cache directories."""
+        """Purge selected browser cache directories.
+
+        Permanently purges or removes specified target items, reclaiming storage space and logging actions taken.
+
+        Args:
+            targets (List[BrowserTarget]): The targets parameter.
+
+        Returns:
+            BrowserCleanResult: Result of the operation.
+        """
         result = BrowserCleanResult(0, 0, 0)
         browsers_seen = set()
 

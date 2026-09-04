@@ -59,7 +59,17 @@ _NO_WINDOW = 0x08000000 if _IS_WINDOWS else 0
 
 
 def _verify_path(path: Path, allowed_roots: List[Path]) -> bool:
-    """Clearmodel-style path traversal guard – path must be inside allowed_roots."""
+    """Clearmodel-style path traversal guard – path must be inside allowed_roots.
+
+    Manages verify path operations and coordinates related state changes for the component.
+
+    Args:
+        path (Path): Filesystem path to the target file or directory.
+        allowed_roots (List[Path]): The allowed roots parameter.
+
+    Returns:
+        bool: True if the operation succeeded, False otherwise.
+    """
     try:
         p = path.resolve(strict=False)
         for root in allowed_roots:
@@ -79,7 +89,10 @@ def _verify_path(path: Path, allowed_roots: List[Path]) -> bool:
 
 @dataclass(slots=True)
 class ModelStore:
-    """One cache store (HF hub, Ollama, etc.)."""
+    """Modelstore.
+
+    Manages ModelStore operations and coordinates related state changes for the component.
+    """
 
     kind: str  # hf | ollama | lmstudio | comfyui | mlx | stray
     root: Path
@@ -93,7 +106,13 @@ class ModelStore:
     explain: str = ""
 
     def to_dict(self) -> dict:
-        """To dict."""
+        """To dict.
+
+        Manages to dict operations and coordinates related state changes for the component.
+
+        Returns:
+            dict: Dictionary mapping identifiers to status or values.
+        """
         return {
             "kind": self.kind,
             "root": str(self.root),
@@ -148,7 +167,10 @@ def _hardlink_aware_size(root: Path) -> Tuple[int, int, int, Dict[Tuple[int, int
 
 
 class ModelCacheManager:
-    """Scan and safely clean model caches."""
+    """Modelcachemanager.
+
+    Manages ModelCacheManager operations and coordinates related state changes for the component.
+    """
 
     # Known store locations – mirrors ai-model-scanner + model-warden + LM docs
     HF_CANDIDATES = [
@@ -172,7 +194,13 @@ class ModelCacheManager:
     ]
     @classmethod
     def _get_comfyui_candidates(cls) -> List[Path]:
-        """_get_comfyui_candidates."""
+        """_get_comfyui_candidates.
+
+        Manages get comfyui candidates operations and coordinates related state changes for the component.
+
+        Returns:
+            List[Path]: List of processed items or identifiers.
+        """
         candidates = [
             Path.home() / "ComfyUI" / "models" / "checkpoints",
             Path.home() / "ComfyUI" / "models",
@@ -192,12 +220,16 @@ class ModelCacheManager:
                     candidates.append(d / "ComfyUI" / "models" / "checkpoints")
                     candidates.append(d / "ComfyUI" / "models")
         return candidates
-        """_get_comfyui_candidates."""
-        """_get_comfyui_candidates."""
 
     @property
     def COMFYUI_CANDIDATES(self) -> List[Path]:
-        """COMFYUI CANDIDATES."""
+        """COMFYUI CANDIDATES.
+
+        Manages COMFYUI CANDIDATES operations and coordinates related state changes for the component.
+
+        Returns:
+            List[Path]: List of processed items or identifiers.
+        """
         return self._get_comfyui_candidates()
 
     MLX_CANDIDATES = [
@@ -206,7 +238,16 @@ class ModelCacheManager:
     ]
 
     def _first_existing(self, candidates: List[Path | None] | None) -> Path | None:
-        """_first_existing."""
+        """_first_existing.
+
+        Manages first existing operations and coordinates related state changes for the component.
+
+        Args:
+            candidates (List[Path | None] | None): The candidates parameter.
+
+        Returns:
+            Path | None: Result of the operation.
+        """
         if not candidates:
             return None
         for p in candidates:
@@ -218,13 +259,21 @@ class ModelCacheManager:
             except OSError:
                 continue
         return None
-        """_first_existing."""
-        """_first_existing."""
 
     # ------------------------------------------------------------------ scan
 
     def scan_hf_hub(self, progress=None, cancel_event=None) -> ModelStore:
-        """Measure HF hub cache, hardlink-aware, and count orphan blobs."""
+        """Measure HF hub cache, hardlink-aware, and count orphan blobs.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+        Args:
+            progress: The progress parameter.
+            cancel_event: Threading event or callable to check for cancellation.
+
+        Returns:
+            ModelStore: Result of the operation.
+        """
         root = self._first_existing(self.HF_CANDIDATES) or (Path.home() / ".cache" / "huggingface" / "hub")
         exists = root.exists()
         if not exists:
@@ -282,7 +331,13 @@ class ModelCacheManager:
         return ModelStore("hf", root, True, logical, actual, count, orphan_bytes, orphan_count, savings, explain)
 
     def scan_ollama(self) -> ModelStore:
-        """Scan ollama."""
+        """Scan ollama.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+        Returns:
+            ModelStore: Result of the operation.
+        """
         root = self._first_existing(self.OLLAMA_CANDIDATES) or (Path.home() / ".ollama" / "models")
         exists = root.exists()
         if not exists:
@@ -294,7 +349,17 @@ class ModelCacheManager:
                           f"Ollama blob store (blobs/sha256-*, manifests). Manage via 'ollama rm <model>' or 'ollama list'. Hardlink-aware size {actual/1e9:.2f}GB.")
 
     def scan_all(self, progress=None, cancel_event=None) -> List[ModelStore]:
-        """Scan all."""
+        """Scan all.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+        Args:
+            progress: The progress parameter.
+            cancel_event: Threading event or callable to check for cancellation.
+
+        Returns:
+            List[ModelStore]: List of processed items or identifiers.
+        """
         stores: List[ModelStore] = []
         # Core stores
         stores.append(self.scan_hf_hub(progress, cancel_event))
@@ -433,7 +498,16 @@ class ModelCacheManager:
 
     @staticmethod
     def read_gguf_metadata(path: Path | str) -> Dict[str, Any]:
-        """Zero-copy GGUF binary metadata parser (extracts arch, quantization, context size)."""
+        """Zero-copy GGUF binary metadata parser (extracts arch, quantization, context size).
+
+        Manages read gguf metadata operations and coordinates related state changes for the component.
+
+        Args:
+            path (Path | str): Filesystem path to the target file or directory.
+
+        Returns:
+            Dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         p = Path(path)
         if not p.exists() or p.stat().st_size < 24:
             return {}
@@ -459,7 +533,13 @@ class ModelCacheManager:
             return {}
 
     def summarize(self) -> dict:
-        """Summarize."""
+        """Summarize.
+
+        Manages summarize operations and coordinates related state changes for the component.
+
+        Returns:
+            dict: Dictionary mapping identifiers to status or values.
+        """
         stores = self.scan_all()
         total_actual = sum(s.total_bytes_actual for s in stores if s.exists)
         total_orphan = sum(s.orphan_bytes for s in stores)

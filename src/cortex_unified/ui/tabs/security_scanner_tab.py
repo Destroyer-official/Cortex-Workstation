@@ -10,8 +10,8 @@ from PySide6.QtWidgets import (
     QProgressBar, QGroupBox, QFormLayout, QFileDialog,
     QMessageBox, QHeaderView, QSpinBox, QTextEdit, QSplitter
 )
-from PySide6.QtCore import QThread, Signal, Qt
-from PySide6.QtGui import QColor, QFont
+from PySide6.QtCore import QThread, Signal, Qt, QUrl
+from PySide6.QtGui import QColor, QFont, QDesktopServices
 
 from .base_tab import BaseTab
 from cortex_unified.core.config import Config
@@ -64,6 +64,113 @@ class SentinelScanWorker(QThread):
             self.finished.emit(stats)
         except Exception as e:
             self.error.emit(str(e))
+
+
+class VerifyWorker(QThread):
+    """Background worker for live credential verification against provider APIs."""
+    progress = Signal(str)
+    finished = Signal(dict)
+    error = Signal(str)
+
+    def __init__(self, findings: list):
+        """Initialize worker with findings list to verify."""
+        super().__init__()
+        self.findings = findings
+
+    def run(self):
+        """Execute credential verification off the main UI thread."""
+        try:
+            from cortex_unified.system_tools.secrets_scanner import verify_all_findings
+            self.progress.emit("Verifying credentials against provider APIs...")
+            results = verify_all_findings(self.findings, quiet=True)
+            self.finished.emit(results)
+        except Exception as exc:
+            self.error.emit(str(exc))
+
+
+class BaselineWorker(QThread):
+    """Background worker for baseline save and delta calculation."""
+    finished = Signal(str, object)  # (action, result)
+    error = Signal(str)
+
+    def __init__(self, action: str, findings: list, directory: str):
+        """Initialize with action ('save' or 'diff'), findings, and directory."""
+        super().__init__()
+        self.action = action
+        self.findings = findings
+        self.directory = directory
+
+    def run(self):
+        """Execute baseline save or diff calculation off the main thread."""
+        try:
+            if self.action == "save":
+                from cortex_unified.system_tools.secrets_scanner import save_baseline
+                path = save_baseline(self.findings, self.directory)
+                self.finished.emit("save", path)
+            elif self.action == "diff":
+                from cortex_unified.system_tools.secrets_scanner import load_baseline, compute_delta
+                base = load_baseline(self.directory)
+                if not base:
+                    self.finished.emit("diff", None)
+                else:
+                    new_findings, known_count = compute_delta(self.findings, base)
+                    self.finished.emit("diff", (new_findings, known_count))
+        except Exception as exc:
+            self.error.emit(str(exc))
+
+
+class ExportWorker(QThread):
+    """Background worker for SARIF, CSV, JSON, and HTML report export."""
+    finished = Signal(str, str)  # (format, file_path)
+    error = Signal(str)
+
+    def __init__(self, fmt: str, stats: object, file_path: str):
+        """Initialize with format ('sarif', 'csv', 'html', 'json'), scan stats, and output path."""
+        super().__init__()
+        self.fmt = fmt.lower()
+        self.stats = stats
+        self.file_path = file_path
+
+    def run(self):
+        """Generate and write the report to disk off the UI thread."""
+        try:
+            if self.fmt == "sarif":
+                from cortex_unified.system_tools.secrets_scanner import export_sarif
+                export_sarif(self.stats, self.file_path)
+            elif self.fmt == "csv":
+                from cortex_unified.system_tools.secrets_scanner import export_csv
+                export_csv(self.stats, self.file_path)
+            elif self.fmt == "html":
+                from cortex_unified.system_tools.secrets_scanner import generate_html_report
+                generate_html_report(self.stats, self.file_path)
+            elif self.fmt == "json":
+                import json
+                with open(self.file_path, "w", encoding="utf-8") as fp:
+                    json.dump(self.stats.to_dict(), fp, indent=2, default=str)
+            self.finished.emit(self.fmt, self.file_path)
+        except Exception as exc:
+            self.error.emit(str(exc))
+
+
+class DashboardWorker(QThread):
+    """Background worker to generate live web dashboard report."""
+    finished = Signal(str)  # output file path
+    error = Signal(str)
+
+    def __init__(self, stats: object, output_path: str):
+        """Initialize with scan stats and output file path."""
+        super().__init__()
+        self.stats = stats
+        self.output_path = output_path
+
+    def run(self):
+        """Generate dashboard HTML file off the UI thread."""
+        try:
+            from cortex_unified.system_tools.secrets_scanner import generate_html_report
+            generate_html_report(self.stats, self.output_path)
+            self.finished.emit(self.output_path)
+        except Exception as exc:
+            self.error.emit(str(exc))
 
 
 SEVERITY_COLORS = {
@@ -146,6 +253,72 @@ class SecurityScannerTab(BaseTab):
         btn_layout.addStretch()
         layout.addLayout(btn_layout)
 
+        # Verify / Baseline row — live-verify stays off until explicitly clicked
+        # (backend default is air-gap safe; only this button triggers network).
+        verify_layout = QHBoxLayout()
+        self.verify_button = QPushButton("⚡ Verify Live Credentials (network)")
+        self.verify_button.setToolTip(
+            "Check verifiable findings against provider APIs. "
+            "Makes network requests — click to consent.")
+        self.verify_button.setEnabled(False)
+        self.verify_button.clicked.connect(self._verify_live)
+        verify_layout.addWidget(self.verify_button)
+
+        self.baseline_button = QPushButton("💾 Save Baseline")
+        self.baseline_button.setToolTip("Save current findings as the delta baseline.")
+        self.baseline_button.setEnabled(False)
+        self.baseline_button.clicked.connect(self._save_baseline)
+        verify_layout.addWidget(self.baseline_button)
+
+        self.delta_button = QPushButton("📊 New Since Baseline")
+        self.delta_button.setToolTip("Compare current findings against the saved baseline.")
+        self.delta_button.setEnabled(False)
+        self.delta_button.clicked.connect(self._show_delta)
+        verify_layout.addWidget(self.delta_button)
+        verify_layout.addStretch()
+        layout.addLayout(verify_layout)
+
+        # False-positive + export row (SARIF/CSV/HTML were orphaned backend ops)
+        fp_layout = QHBoxLayout()
+        self.suppress_fp_button = QPushButton("🚫 Suppress Selected (FP)")
+        self.suppress_fp_button.setToolTip("Add the selected finding to the FP suppression DB.")
+        self.suppress_fp_button.setEnabled(False)
+        self.suppress_fp_button.clicked.connect(self._suppress_selected_fp)
+        fp_layout.addWidget(self.suppress_fp_button)
+
+        self.apply_fp_button = QPushButton("🧹 Apply FP Filter")
+        self.apply_fp_button.setToolTip("Hide findings listed in the FP suppression DB.")
+        self.apply_fp_button.setEnabled(False)
+        self.apply_fp_button.clicked.connect(self._apply_fp_filter)
+        fp_layout.addWidget(self.apply_fp_button)
+
+        self.export_sarif_button = QPushButton("📤 SARIF")
+        self.export_sarif_button.setToolTip("Export findings in SARIF format.")
+        self.export_sarif_button.setEnabled(False)
+        self.export_sarif_button.clicked.connect(self._export_sarif)
+        fp_layout.addWidget(self.export_sarif_button)
+
+        self.export_csv_button = QPushButton("📤 CSV")
+        self.export_csv_button.setToolTip("Export findings in CSV format.")
+        self.export_csv_button.setEnabled(False)
+        self.export_csv_button.clicked.connect(self._export_csv)
+        fp_layout.addWidget(self.export_csv_button)
+
+        self.export_html_button = QPushButton("📤 HTML")
+        self.export_html_button.setToolTip("Generate the self-contained Sentinel HTML report.")
+        self.export_html_button.setEnabled(False)
+        self.export_html_button.clicked.connect(self._export_html)
+        fp_layout.addWidget(self.export_html_button)
+
+        self.dashboard_button = QPushButton("🌐 Live Web Dashboard")
+        self.dashboard_button.setToolTip("Launch live interactive web dashboard for security findings in your browser.")
+        self.dashboard_button.setEnabled(False)
+        self.dashboard_button.clicked.connect(self._start_dashboard)
+        fp_layout.addWidget(self.dashboard_button)
+
+        fp_layout.addStretch()
+        layout.addLayout(fp_layout)
+
         # Progress
         self.progress_bar = QProgressBar()
         self.progress_bar.setRange(0, 0)
@@ -207,6 +380,14 @@ class SecurityScannerTab(BaseTab):
 
         self.scan_button.setEnabled(False)
         self.export_button.setEnabled(False)
+        self.verify_button.setEnabled(False)
+        self.baseline_button.setEnabled(False)
+        self.delta_button.setEnabled(False)
+        self.suppress_fp_button.setEnabled(False)
+        self.apply_fp_button.setEnabled(False)
+        self.export_sarif_button.setEnabled(False)
+        self.export_csv_button.setEnabled(False)
+        self.export_html_button.setEnabled(False)
         self.progress_bar.setVisible(True)
         self.summary_label.setVisible(False)
         self.findings_table.setRowCount(0)
@@ -242,6 +423,15 @@ class SecurityScannerTab(BaseTab):
         self.scan_stats = stats
         self.scan_button.setEnabled(True)
         self.export_button.setEnabled(True)
+        self.verify_button.setEnabled(True)
+        self.baseline_button.setEnabled(True)
+        self.delta_button.setEnabled(True)
+        self.suppress_fp_button.setEnabled(True)
+        self.apply_fp_button.setEnabled(True)
+        self.export_sarif_button.setEnabled(True)
+        self.export_csv_button.setEnabled(True)
+        self.export_html_button.setEnabled(True)
+        self.dashboard_button.setEnabled(True)
         self.progress_bar.setVisible(False)
         self.progress_label.setText("")
 
@@ -320,7 +510,7 @@ class SecurityScannerTab(BaseTab):
         self.detail_text.setPlainText(detail)
 
     def export_report(self):
-        """Export the last scan's stats to a JSON file via a save dialog."""
+        """Export the last scan's stats to a JSON file via a save dialog using ExportWorker."""
         if not self.scan_stats:
             return
         file_path, _ = QFileDialog.getSaveFileName(
@@ -328,10 +518,324 @@ class SecurityScannerTab(BaseTab):
         )
         if not file_path:
             return
+        self.progress_bar.setVisible(True)
+        self.progress_label.setText("Exporting JSON report...")
+        worker = ExportWorker("json", self.scan_stats, file_path)
+        self.add_worker_thread(worker)
+
+        def on_done(fmt, path):
+            """Handle JSON export completion."""
+            self.progress_bar.setVisible(False)
+            self.progress_label.setText("")
+            self.remove_worker_thread(worker)
+            worker.deleteLater()
+            QMessageBox.information(self, "Export Complete", f"Report saved to:\n{path}")
+
+        def on_err(msg):
+            """Handle JSON export failure."""
+            self.progress_bar.setVisible(False)
+            self.progress_label.setText("")
+            self.remove_worker_thread(worker)
+            worker.deleteLater()
+            QMessageBox.critical(self, "Export Error", f"Failed to export report:\n{msg}")
+
+        worker.finished.connect(on_done)
+        worker.error.connect(on_err)
+        worker.start()
+
+    def _verify_live(self):
+        """Verify findings against real provider APIs via VerifyWorker."""
+        if not self.scan_stats or not self.scan_stats.findings:
+            return
+        reply = QMessageBox.question(
+            self, "Verify Live Credentials",
+            "This will send targeted, read-only authentication probes to live cloud services "
+            "(AWS, GitHub, Slack, Stripe, OpenAI, npm) to determine whether discovered tokens are active.\n\n"
+            "Proceed with live verification?",
+            QMessageBox.Yes | QMessageBox.No, QMessageBox.No
+        )
+        if reply != QMessageBox.Yes:
+            return
+
+        self.progress_bar.setVisible(True)
+        self.progress_label.setText("Verifying live credentials...")
+        self.verify_button.setEnabled(False)
+
+        worker = VerifyWorker(self.scan_stats.findings)
+        self.add_worker_thread(worker)
+
+        def on_progress(text):
+            """Update verification progress status text."""
+            self.progress_label.setText(text)
+
+        def on_done(results):
+            """Handle live verification completion."""
+            self.progress_bar.setVisible(False)
+            self.verify_button.setEnabled(True)
+            self.progress_label.setText("")
+            self.remove_worker_thread(worker)
+            worker.deleteLater()
+            live_count = sum(1 for r in results.values() if getattr(r, 'verified', False) is True)
+            QMessageBox.information(
+                self, "Verification Complete",
+                f"Verified {len(results)} potential credentials.\n"
+                f"Active / Live credentials found: {live_count}"
+            )
+            self._scan_complete(self.scan_stats)
+
+        def on_err(msg):
+            """Handle live verification failure."""
+            self.progress_bar.setVisible(False)
+            self.verify_button.setEnabled(True)
+            self.progress_label.setText("")
+            self.remove_worker_thread(worker)
+            worker.deleteLater()
+            QMessageBox.critical(self, "Verification Error", msg)
+
+        worker.progress.connect(on_progress)
+        worker.finished.connect(on_done)
+        worker.error.connect(on_err)
+        worker.start()
+
+    def _save_baseline(self):
+        """Save current findings as delta baseline via BaselineWorker."""
+        if not self.scan_stats:
+            return
+        p = self.scan_path_input.text().strip() or os.getcwd()
+        self.progress_bar.setVisible(True)
+        self.progress_label.setText("Saving baseline...")
+        self.baseline_button.setEnabled(False)
+
+        worker = BaselineWorker("save", self.scan_stats.findings, p)
+        self.add_worker_thread(worker)
+
+        def on_done(action, path):
+            """Handle baseline save completion."""
+            self.progress_bar.setVisible(False)
+            self.baseline_button.setEnabled(True)
+            self.progress_label.setText("")
+            self.remove_worker_thread(worker)
+            worker.deleteLater()
+            QMessageBox.information(self, "Baseline Saved", f"Saved baseline with {len(self.scan_stats.findings)} findings to:\n{path}")
+
+        def on_err(msg):
+            """Handle baseline save failure."""
+            self.progress_bar.setVisible(False)
+            self.baseline_button.setEnabled(True)
+            self.progress_label.setText("")
+            self.remove_worker_thread(worker)
+            worker.deleteLater()
+            QMessageBox.critical(self, "Baseline Error", msg)
+
+        worker.finished.connect(on_done)
+        worker.error.connect(on_err)
+        worker.start()
+
+    def _show_delta(self):
+        """Compare current findings against saved baseline via BaselineWorker."""
+        if not self.scan_stats:
+            return
+        p = self.scan_path_input.text().strip() or os.getcwd()
+        self.progress_bar.setVisible(True)
+        self.progress_label.setText("Comparing against baseline...")
+        self.delta_button.setEnabled(False)
+
+        worker = BaselineWorker("diff", self.scan_stats.findings, p)
+        self.add_worker_thread(worker)
+
+        def on_done(action, res):
+            """Handle baseline comparison completion."""
+            self.progress_bar.setVisible(False)
+            self.delta_button.setEnabled(True)
+            self.progress_label.setText("")
+            self.remove_worker_thread(worker)
+            worker.deleteLater()
+            if res is None:
+                QMessageBox.warning(self, "No Baseline", "No baseline found for this directory. Click 'Save Baseline' first.")
+            else:
+                new_findings, known_count = res
+                QMessageBox.information(
+                    self, "Baseline Delta",
+                    f"Baseline comparison:\n"
+                    f"• Known (previously seen) findings: {known_count}\n"
+                    f"• New findings: {len(new_findings)}"
+                )
+
+        def on_err(msg):
+            """Handle baseline comparison failure."""
+            self.progress_bar.setVisible(False)
+            self.delta_button.setEnabled(True)
+            self.progress_label.setText("")
+            self.remove_worker_thread(worker)
+            worker.deleteLater()
+            QMessageBox.critical(self, "Delta Error", msg)
+
+        worker.finished.connect(on_done)
+        worker.error.connect(on_err)
+        worker.start()
+
+    def _suppress_selected_fp(self):
+        """Add the selected finding to the false-positive suppression DB."""
+        row = self.findings_table.currentRow()
+        if row < 0 or not self.scan_stats or row >= len(self.scan_stats.findings):
+            QMessageBox.warning(self, "Select Finding", "Please select a finding row in the table to suppress.")
+            return
+        f = self.scan_stats.findings[row]
         try:
-            import json
-            with open(file_path, 'w', encoding='utf-8') as fp:
-                json.dump(self.scan_stats.to_dict(), fp, indent=2, default=str)
-            QMessageBox.information(self, "Export Complete", f"Report saved to:\n{file_path}")
-        except Exception as e:
-            QMessageBox.critical(self, "Export Error", f"Failed to export report:\n{str(e)}")
+            from cortex_unified.system_tools.secrets_scanner import add_fp
+            p = self.scan_path_input.text().strip() or os.getcwd()
+            add_fp(f.fingerprint, p, reason="User suppressed via GUI")
+            QMessageBox.information(self, "Suppressed", f"Added finding '{f.pattern_name}' to false positive database.")
+            self._apply_fp_filter()
+        except Exception as exc:
+            QMessageBox.critical(self, "Suppression Error", str(exc))
+
+    def _apply_fp_filter(self):
+        """Filter out suppressed false positives from the displayed findings."""
+        if not self.scan_stats:
+            return
+        try:
+            from cortex_unified.system_tools.secrets_scanner import apply_fp_filter
+            p = self.scan_path_input.text().strip() or os.getcwd()
+            filtered, suppressed = apply_fp_filter(self.scan_stats.findings, p)
+            self.scan_stats.findings = filtered
+            self._scan_complete(self.scan_stats)
+            QMessageBox.information(self, "FP Filter Applied", f"Filtered out {suppressed} false positive findings.")
+        except Exception as exc:
+            QMessageBox.critical(self, "Filter Error", str(exc))
+
+    def _export_sarif(self):
+        """Export findings to a standard SARIF file via ExportWorker."""
+        if not self.scan_stats:
+            return
+        file_path, _ = QFileDialog.getSaveFileName(
+            self, "Export SARIF Report", "sentinel_report.sarif", "SARIF Files (*.sarif *.json)"
+        )
+        if not file_path:
+            return
+        self.progress_bar.setVisible(True)
+        self.progress_label.setText("Exporting SARIF report...")
+        worker = ExportWorker("sarif", self.scan_stats, file_path)
+        self.add_worker_thread(worker)
+
+        def on_done(fmt, path):
+            """Handle SARIF export completion."""
+            self.progress_bar.setVisible(False)
+            self.progress_label.setText("")
+            self.remove_worker_thread(worker)
+            worker.deleteLater()
+            QMessageBox.information(self, "Export Complete", f"SARIF report saved to:\n{path}")
+
+        def on_err(msg):
+            """Handle SARIF export failure."""
+            self.progress_bar.setVisible(False)
+            self.progress_label.setText("")
+            self.remove_worker_thread(worker)
+            worker.deleteLater()
+            QMessageBox.critical(self, "Export Error", str(msg))
+
+        worker.finished.connect(on_done)
+        worker.error.connect(on_err)
+        worker.start()
+
+    def _export_csv(self):
+        """Export findings to a CSV file via ExportWorker."""
+        if not self.scan_stats:
+            return
+        file_path, _ = QFileDialog.getSaveFileName(
+            self, "Export CSV Report", "sentinel_report.csv", "CSV Files (*.csv)"
+        )
+        if not file_path:
+            return
+        self.progress_bar.setVisible(True)
+        self.progress_label.setText("Exporting CSV report...")
+        worker = ExportWorker("csv", self.scan_stats, file_path)
+        self.add_worker_thread(worker)
+
+        def on_done(fmt, path):
+            """Handle CSV export completion."""
+            self.progress_bar.setVisible(False)
+            self.progress_label.setText("")
+            self.remove_worker_thread(worker)
+            worker.deleteLater()
+            QMessageBox.information(self, "Export Complete", f"CSV report saved to:\n{path}")
+
+        def on_err(msg):
+            """Handle CSV export failure."""
+            self.progress_bar.setVisible(False)
+            self.progress_label.setText("")
+            self.remove_worker_thread(worker)
+            worker.deleteLater()
+            QMessageBox.critical(self, "Export Error", str(msg))
+
+        worker.finished.connect(on_done)
+        worker.error.connect(on_err)
+        worker.start()
+
+    def _export_html(self):
+        """Export findings to a self-contained HTML audit report via ExportWorker."""
+        if not self.scan_stats:
+            return
+        file_path, _ = QFileDialog.getSaveFileName(
+            self, "Export HTML Report", "sentinel_report.html", "HTML Files (*.html)"
+        )
+        if not file_path:
+            return
+        self.progress_bar.setVisible(True)
+        self.progress_label.setText("Exporting HTML report...")
+        worker = ExportWorker("html", self.scan_stats, file_path)
+        self.add_worker_thread(worker)
+
+        def on_done(fmt, path):
+            """Handle HTML export completion."""
+            self.progress_bar.setVisible(False)
+            self.progress_label.setText("")
+            self.remove_worker_thread(worker)
+            worker.deleteLater()
+            QMessageBox.information(self, "Export Complete", f"HTML report saved to:\n{path}")
+
+        def on_err(msg):
+            """Handle HTML export failure."""
+            self.progress_bar.setVisible(False)
+            self.progress_label.setText("")
+            self.remove_worker_thread(worker)
+            worker.deleteLater()
+            QMessageBox.critical(self, "Export Error", str(msg))
+
+        worker.finished.connect(on_done)
+        worker.error.connect(on_err)
+        worker.start()
+
+    def _start_dashboard(self):
+        """Launch and view the interactive web dashboard via DashboardWorker."""
+        if not self.scan_stats:
+            return
+        import tempfile
+        temp_dir = tempfile.gettempdir()
+        out_file = os.path.join(temp_dir, "sentinel_live_dashboard.html")
+        self.progress_bar.setVisible(True)
+        self.progress_label.setText("Generating live dashboard...")
+
+        worker = DashboardWorker(self.scan_stats, out_file)
+        self.add_worker_thread(worker)
+
+        def on_done(path):
+            """Handle live dashboard generation completion."""
+            self.progress_bar.setVisible(False)
+            self.progress_label.setText("")
+            self.remove_worker_thread(worker)
+            worker.deleteLater()
+            QDesktopServices.openUrl(QUrl.fromLocalFile(path))
+
+        def on_err(msg):
+            """Handle live dashboard generation failure."""
+            self.progress_bar.setVisible(False)
+            self.progress_label.setText("")
+            self.remove_worker_thread(worker)
+            worker.deleteLater()
+            QMessageBox.critical(self, "Dashboard Error", str(msg))
+
+        worker.finished.connect(on_done)
+        worker.error.connect(on_err)
+        worker.start()
+

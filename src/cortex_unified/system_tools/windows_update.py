@@ -34,30 +34,54 @@ _HISTORY_RESULT = {1: "In progress", 2: "Succeeded", 3: "Succeeded with errors",
 
 @dataclass(slots=True)
 class PendingUpdate:
-    """Pending Update data container."""
+    """Pendingupdate.
+
+    Manages PendingUpdate operations and coordinates related state changes for the component.
+    """
     title: str
     kb: str = ""
     severity: str = ""
     size_bytes: int = 0
 
     def to_dict(self) -> dict[str, Any]:
-        """To dict."""
+        """To dict.
+
+        Manages to dict operations and coordinates related state changes for the component.
+
+        Returns:
+            dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         return {"title": self.title, "kb": self.kb, "severity": self.severity,
                 "size_bytes": self.size_bytes}
 
 
 class WindowsUpdate:
-    """Read Windows Update state (read-only)."""
+    """Windowsupdate.
+
+    Manages WindowsUpdate operations and coordinates related state changes for the component.
+    """
 
     @staticmethod
     def is_supported() -> bool:
-        """Is supported."""
+        """Is supported.
+
+        Manages is supported operations and coordinates related state changes for the component.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         return _IS_WINDOWS
 
     # -- offline: last activity from registry -------------------------------
 
     def last_activity(self) -> dict[str, str]:
-        """Last activity."""
+        """Last activity.
+
+        Manages last activity operations and coordinates related state changes for the component.
+
+        Returns:
+            dict[str, str]: Dictionary mapping identifiers to status or values.
+        """
         if not _IS_WINDOWS:
             return {"last_check": "", "last_install": ""}
         return {
@@ -67,7 +91,16 @@ class WindowsUpdate:
 
     @staticmethod
     def _read_result_time(sub: str) -> str:
-        """_read_result_time."""
+        """_read_result_time.
+
+        Manages read result time operations and coordinates related state changes for the component.
+
+        Args:
+            sub (str): The sub parameter.
+
+        Returns:
+            str: Formatted string or path.
+        """
         try:
             import winreg
             with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, _RESULTS_KEY + "\\" + sub) as key:
@@ -78,13 +111,17 @@ class WindowsUpdate:
         except Exception as exc:  # noqa: BLE001
             _LOG.debug("read WU %s time failed: %s", sub, exc)
             return ""
-        """_read_result_time."""
-        """_read_result_time."""
 
     # -- online: pending updates via COM ------------------------------------
 
     def check_pending(self) -> list[PendingUpdate]:
-        """Check pending."""
+        """Check pending.
+
+        Manages check pending operations and coordinates related state changes for the component.
+
+        Returns:
+            list[PendingUpdate]: List of processed items or identifiers.
+        """
         if not _IS_WINDOWS:
             return []
         script = (
@@ -98,7 +135,16 @@ class WindowsUpdate:
 
     @staticmethod
     def _parse_pending(out: str | None) -> list[PendingUpdate]:
-        """_parse_pending."""
+        """_parse_pending.
+
+        Manages parse pending operations and coordinates related state changes for the component.
+
+        Args:
+            out (str | None): The out parameter.
+
+        Returns:
+            list[PendingUpdate]: List of processed items or identifiers.
+        """
         if not out:
             return []
         try:
@@ -109,13 +155,17 @@ class WindowsUpdate:
             data = [data]
 
         def _int(v):
-            """_int."""
+            """Int.
+
+            Manages int operations and coordinates related state changes for the component.
+
+            Args:
+                v: The v parameter.
+            """
             try:
                 return int(v) if v is not None else 0
             except (ValueError, TypeError):
                 return 0
-            """_int."""
-            """_int."""
 
         updates = []
         for u in data:
@@ -131,13 +181,20 @@ class WindowsUpdate:
                 size_bytes=_int(u.get("Size")),
             ))
         return updates
-        """_parse_pending."""
-        """_parse_pending."""
 
     # -- history via COM ----------------------------------------------------
 
     def recent_history(self, limit: int = 15) -> list[dict[str, Any]]:
-        """Recent history."""
+        """Recent history.
+
+        Manages recent history operations and coordinates related state changes for the component.
+
+        Args:
+            limit (int): The limit parameter.
+
+        Returns:
+            list[dict[str, Any]]: List of processed items or identifiers.
+        """
         if not _IS_WINDOWS:
             return []
         script = (
@@ -152,7 +209,16 @@ class WindowsUpdate:
 
     @staticmethod
     def _parse_history(out: str | None) -> list[dict[str, Any]]:
-        """_parse_history."""
+        """_parse_history.
+
+        Manages parse history operations and coordinates related state changes for the component.
+
+        Args:
+            out (str | None): The out parameter.
+
+        Returns:
+            list[dict[str, Any]]: List of processed items or identifiers.
+        """
         if not out:
             return []
         try:
@@ -179,11 +245,19 @@ class WindowsUpdate:
                 "succeeded": rc == 2,
             })
         return rows
-        """_parse_history."""
-        """_parse_history."""
 
     def _run(self, script: str, timeout: int) -> str | None:
-        """_run."""
+        """Run.
+
+        Manages run operations and coordinates related state changes for the component.
+
+        Args:
+            script (str): The script parameter.
+            timeout (int): The timeout parameter.
+
+        Returns:
+            str | None: Formatted string or path.
+        """
         try:
             proc = _proc.run(
                 ["powershell", "-NoProfile", "-NonInteractive", "-Command", script],
@@ -193,5 +267,3 @@ class WindowsUpdate:
         except (_proc.ProcessCancelled, OSError, subprocess.SubprocessError) as exc:
             _LOG.debug("windows update query failed: %s", exc)
             return None
-        """_run."""
-        """_run."""

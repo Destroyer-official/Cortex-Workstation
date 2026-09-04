@@ -1,10 +1,4 @@
-"""Nexus Explorer — Binary Magic Bytes & MIME Header Forensic Sniffer.
-
-Inspects file headers against an internal database of 100+ binary magic signatures:
-1. Detects spoofed file extensions (e.g. executable disguised as PDF or image).
-2. Identifies corrupted or truncated headers.
-3. Batch scans directories to discover disguised or unknown binary files.
-"""
+"""File type detection via magic bytes: ~38 signatures (JPEG, PNG, PDF, ZIP, RAR, 7z, etc.)."""
 
 from __future__ import annotations
 
@@ -16,13 +10,15 @@ from typing import Callable, Dict, List, Optional, Tuple
 
 @dataclass
 class FileSignature:
-    """FileSignature."""
+    """Filesignature.
+
+    Manages FileSignature operations and coordinates related state changes for the component.
+    """
     extension: str
     mime_type: str
     description: str
     magic_bytes: bytes
     offset: int = 0
-    """FileSignature class."""
 
 
 # Comprehensive signature library of top file formats
@@ -79,7 +75,10 @@ SIGNATURE_LIBRARY: List[FileSignature] = [
 
 @dataclass
 class SniffResult:
-    """SniffResult."""
+    """Sniffresult.
+
+    Manages SniffResult operations and coordinates related state changes for the component.
+    """
     file_path: str
     file_name: str
     declared_extension: str
@@ -89,15 +88,26 @@ class SniffResult:
     is_unknown: bool
     header_hex: str
     file_size_bytes: int
-    """SniffResult class."""
 
 
 class FileSignatureSniffer:
-    """Production file header and magic byte forensic analyzer."""
+    """Filesignaturesniffer.
+
+    Manages FileSignatureSniffer operations and coordinates related state changes for the component.
+    """
 
     @classmethod
     def sniff_file(cls, file_path: str | Path) -> SniffResult:
-        """Read file header bytes and identify actual format vs declared extension."""
+        """Read file header bytes and identify actual format vs declared extension.
+
+        Manages sniff file operations and coordinates related state changes for the component.
+
+        Args:
+            file_path (str | Path): Filesystem path to the target file or directory.
+
+        Returns:
+            SniffResult: Result of the operation.
+        """
         p = Path(file_path).resolve()
         if not p.is_file():
             return SniffResult(str(p), p.name, p.suffix.lower(), "File Not Found", "unknown", False, True, "", 0)
@@ -172,7 +182,20 @@ class FileSignatureSniffer:
         progress_cb: Optional[Callable[[int, str], None]] = None,
         cancel_check: Optional[Callable[[], bool]] = None,
     ) -> List[SniffResult]:
-        """Scan directory and check all files for spoofed or corrupted headers."""
+        """Scan directory and check all files for spoofed or corrupted headers.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+        Args:
+            root_dir (str | Path): The root dir parameter.
+            recursive (bool): The recursive parameter.
+            only_spoofed (bool): The only spoofed parameter.
+            progress_cb (Optional[Callable[[int, str], None]]): Callback invoked with progress updates.
+            cancel_check (Optional[Callable[[], bool]]): Threading event or callable to check for cancellation.
+
+        Returns:
+            List[SniffResult]: List of processed items or identifiers.
+        """
         root = Path(root_dir).resolve()
         if not root.is_dir():
             return []

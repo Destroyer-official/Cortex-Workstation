@@ -27,7 +27,7 @@ Deep Cleaner supports multiple languages through a comprehensive internationaliz
 #### Basic Usage
 
 ```python
-from deep_cleaner.i18n import translate as _
+from cortex_unified.translations import translate as _
 
 # Simple translation
 message = _("buttons.ok")  # Returns "OK" in English
@@ -39,7 +39,7 @@ greeting = _("scanner.files_found", count=42)  # Returns "Files found: 42"
 #### Advanced Usage
 
 ```python
-from deep_cleaner.i18n import get_translator, set_global_locale
+from cortex_unified.translations import get_translator, set_global_locale
 
 # Get translator instance
 translator = get_translator()
@@ -60,7 +60,7 @@ is_rtl = translator.is_rtl_locale("ar")
 
 ### Translation File Format
 
-Translation files are stored in `src/deep_cleaner/i18n/locales/` as JSON files:
+Translation files are stored in `src/cortex_unified/translations/locales/` as JSON files:
 
 ```json
 {
@@ -86,7 +86,7 @@ Translation files are stored in `src/deep_cleaner/i18n/locales/` as JSON files:
 
 ### Adding New Languages
 
-1. Create a new JSON file in `src/deep_cleaner/i18n/locales/` (e.g., `it.json` for Italian)
+1. Create a new JSON file in `src/cortex_unified/translations/locales/` (e.g., `it.json` for Italian)
 2. Copy the structure from `en.json`
 3. Translate all text values
 4. Update the `_meta` section with language information
@@ -110,7 +110,7 @@ Deep Cleaner includes comprehensive accessibility features:
 #### Setup
 
 ```python
-from deep_cleaner.accessibility import KeyboardHandler
+from cortex_unified.accessibility import KeyboardHandler
 
 # Create keyboard handler
 handler = KeyboardHandler(widget)
@@ -149,7 +149,7 @@ handler.setup_shortcuts(shortcuts)
 #### Setup
 
 ```python
-from deep_cleaner.accessibility import ScreenReaderSupport
+from cortex_unified.accessibility import ScreenReaderSupport
 
 # Create screen reader support
 support = ScreenReaderSupport(widget)
@@ -188,7 +188,7 @@ support.create_accessible_tree(tree_widget)
 #### Theme Manager
 
 ```python
-from deep_cleaner.accessibility import get_theme_manager
+from cortex_unified.accessibility import get_theme_manager
 
 theme_manager = get_theme_manager()
 
@@ -215,7 +215,7 @@ is_high_contrast = theme_manager.is_high_contrast_enabled()
 #### Creating Settings Widget
 
 ```python
-from deep_cleaner.i18n import get_i18n_manager
+from cortex_unified.translations import get_i18n_manager
 
 manager = get_i18n_manager()
 settings_widget = manager.create_settings_widget(parent)
@@ -240,8 +240,8 @@ is_rtl = manager.is_rtl_layout()
 ### Complete Setup Example
 
 ```python
-from deep_cleaner.i18n import get_i18n_manager
-from deep_cleaner.accessibility import setup_full_accessibility
+from cortex_unified.translations import get_i18n_manager
+from cortex_unified.accessibility import setup_full_accessibility
 
 class MyMainWindow(QMainWindow):
     def __init__(self):
@@ -285,16 +285,10 @@ class MyMainWindow(QMainWindow):
 
 ## Testing
 
-Run the accessibility and i18n tests:
+Run the accessibility-related test suites:
 
 ```bash
-python -m pytest tests/test_i18n_accessibility.py -v
-```
-
-Run the demo:
-
-```bash
-python examples/i18n_accessibility_demo.py
+pytest tests/ -k "translation or accessibility or premium" -v
 ```
 
 ## Best Practices
@@ -339,8 +333,8 @@ Enable debug logging to troubleshoot issues:
 
 ```python
 import logging
-logging.getLogger('deep_cleaner.i18n').setLevel(logging.DEBUG)
-logging.getLogger('deep_cleaner.accessibility').setLevel(logging.DEBUG)
+logging.getLogger('cortex_unified.translations').setLevel(logging.DEBUG)
+logging.getLogger('cortex_unified.accessibility').setLevel(logging.DEBUG)
 ```
 
 ## Contributing

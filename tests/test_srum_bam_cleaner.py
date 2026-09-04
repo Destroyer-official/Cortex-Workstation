@@ -15,7 +15,10 @@ from cortex_unified.system_tools.srum_bam_cleaner import (
 def test_filetime_conversion():
     # Test valid FILETIME: 2026-01-01 00:00:00 UTC
     # 134116992000000000 in 100ns intervals since 1601
-    """test_filetime_conversion."""
+    """test_filetime_conversion.
+
+    Manages test filetime conversion operations and coordinates related state changes for the component.
+    """
     ft_bytes = struct.pack("<Q", 134116992000000000)
     ts, epoch = SrumBamCleaner._filetime_to_datetime(ft_bytes)
     assert "2026-01-01" in ts
@@ -32,7 +35,10 @@ def test_filetime_conversion():
 
 
 def test_srum_query():
-    """test_srum_query."""
+    """test_srum_query.
+
+    Manages test srum query operations and coordinates related state changes for the component.
+    """
     cleaner = SrumBamCleaner()
     info = cleaner.query_srum()
     assert isinstance(info, SrumDatabaseInfo)
@@ -40,7 +46,10 @@ def test_srum_query():
 
 
 def test_srum_bam_scan():
-    """test_srum_bam_scan."""
+    """test_srum_bam_scan.
+
+    Manages test srum bam scan operations and coordinates related state changes for the component.
+    """
     cleaner = SrumBamCleaner()
     report = cleaner.scan()
     assert isinstance(report, SrumBamReport)
@@ -50,7 +59,10 @@ def test_srum_bam_scan():
 
 
 def test_clean_bam_empty():
-    """test_clean_bam_empty."""
+    """test_clean_bam_empty.
+
+    Manages test clean bam empty operations and coordinates related state changes for the component.
+    """
     cleaner = SrumBamCleaner()
     # Cleaning empty list should safely return 0 without error
     cleaned = cleaner.clean_bam_entries([])

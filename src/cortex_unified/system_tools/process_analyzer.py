@@ -14,10 +14,19 @@ from typing import List, Dict
 from ..core.config import Config
 
 class ProcessAnalyzer:
-    """Enumerate running processes/services and flag high-resource consumers."""
+    """Processanalyzer.
+
+    Manages ProcessAnalyzer operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, config: Config = None):
-        """Use *config* or a default Config; the OS decides which backends run."""
+        """Use *config* or a default Config; the OS decides which backends run.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            config (Config): The config parameter.
+        """
         self.config = config or Config()
         self.system = platform.system().lower()
 
@@ -27,7 +36,13 @@ class ProcessAnalyzer:
         self.error_count = 0
 
     def list_processes(self) -> List[Dict]:
-        """Populate ``processes`` from the platform's process listing."""
+        """Populate ``processes`` from the platform's process listing.
+
+        Manages list processes operations and coordinates related state changes for the component.
+
+        Returns:
+            List[Dict]: List of processed items or identifiers.
+        """
         self.processes = []
         self.error_count = 0
         
@@ -44,7 +59,10 @@ class ProcessAnalyzer:
         return self.processes
     
     def _list_windows_processes(self):
-        """_list_windows_processes."""
+        """_list_windows_processes.
+
+        Manages list windows processes operations and coordinates related state changes for the component.
+        """
         try:
             cmd = ["tasklist", "/fo", "csv", "/v"]
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
@@ -68,11 +86,12 @@ class ProcessAnalyzer:
                             })
         except Exception:
             self.error_count += 1
-        """_list_windows_processes."""
-        """_list_windows_processes."""
     
     def _list_macos_processes(self):
-        """_list_macos_processes."""
+        """_list_macos_processes.
+
+        Manages list macos processes operations and coordinates related state changes for the component.
+        """
         try:
             cmd = ["ps", "aux"]
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
@@ -98,11 +117,12 @@ class ProcessAnalyzer:
                             })
         except Exception:
             self.error_count += 1
-        """_list_macos_processes."""
-        """_list_macos_processes."""
     
     def _list_linux_processes(self):
-        """_list_linux_processes."""
+        """_list_linux_processes.
+
+        Manages list linux processes operations and coordinates related state changes for the component.
+        """
         try:
             cmd = ["ps", "aux"]
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
@@ -128,11 +148,15 @@ class ProcessAnalyzer:
                             })
         except Exception:
             self.error_count += 1
-        """_list_linux_processes."""
-        """_list_linux_processes."""
     
     def list_services(self) -> List[Dict]:
-        """Populate ``services`` from the platform's service listing."""
+        """Populate ``services`` from the platform's service listing.
+
+        Manages list services operations and coordinates related state changes for the component.
+
+        Returns:
+            List[Dict]: List of processed items or identifiers.
+        """
         self.services = []
         self.error_count = 0
         
@@ -149,7 +173,10 @@ class ProcessAnalyzer:
         return self.services
     
     def _list_windows_services(self):
-        """List Windows services using sc query."""
+        """List Windows services using sc query.
+
+        Manages list windows services operations and coordinates related state changes for the component.
+        """
         try:
             cmd = ["sc", "query"]
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
@@ -180,7 +207,10 @@ class ProcessAnalyzer:
             self.error_count += 1
     
     def _list_macos_services(self):
-        """_list_macos_services."""
+        """_list_macos_services.
+
+        Manages list macos services operations and coordinates related state changes for the component.
+        """
         try:
             cmd = ["launchctl", "list"]
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
@@ -198,11 +228,12 @@ class ProcessAnalyzer:
                             })
         except Exception:
             self.error_count += 1
-        """_list_macos_services."""
-        """_list_macos_services."""
     
     def _list_linux_services(self):
-        """List Linux services using systemctl, falling back to ``service``."""
+        """List Linux services using systemctl, falling back to ``service``.
+
+        Manages list linux services operations and coordinates related state changes for the component.
+        """
         try:
             cmd = ["systemctl", "list-units", "--type=service", "--no-pager"]
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
@@ -236,7 +267,17 @@ class ProcessAnalyzer:
                 self.error_count += 1
     
     def find_high_resource_processes(self, cpu_threshold: float = 50.0, mem_threshold: float = 50.0) -> List[Dict]:
-        """Flag processes at or above the CPU/memory percentage thresholds."""
+        """Flag processes at or above the CPU/memory percentage thresholds.
+
+        Manages find high resource processes operations and coordinates related state changes for the component.
+
+        Args:
+            cpu_threshold (float): The cpu threshold parameter.
+            mem_threshold (float): The mem threshold parameter.
+
+        Returns:
+            List[Dict]: List of processed items or identifiers.
+        """
         self.high_resource_processes = []
         
         if not self.processes:
@@ -275,7 +316,13 @@ class ProcessAnalyzer:
         return self.high_resource_processes
     
     def get_stats(self) -> dict:
-        """Snapshot counts for UI display."""
+        """Snapshot counts for UI display.
+
+        Manages get stats operations and coordinates related state changes for the component.
+
+        Returns:
+            dict: Dictionary mapping identifiers to status or values.
+        """
         total_processes = len(self.processes)
         total_services = len(self.services)
         high_resource_count = len(self.high_resource_processes)
@@ -289,7 +336,16 @@ class ProcessAnalyzer:
         }
     
     def filter_processes_by_name(self, name_pattern: str) -> List[Dict]:
-        """Case-insensitive substring match on process name."""
+        """Case-insensitive substring match on process name.
+
+        Manages filter processes by name operations and coordinates related state changes for the component.
+
+        Args:
+            name_pattern (str): The name pattern parameter.
+
+        Returns:
+            List[Dict]: List of processed items or identifiers.
+        """
         filtered = []
         for process in self.processes:
             if name_pattern.lower() in process.get("name", "").lower():
@@ -297,7 +353,16 @@ class ProcessAnalyzer:
         return filtered
     
     def filter_services_by_state(self, state: str) -> List[Dict]:
-        """Case-insensitive substring match on service state."""
+        """Case-insensitive substring match on service state.
+
+        Manages filter services by state operations and coordinates related state changes for the component.
+
+        Args:
+            state (str): The state parameter.
+
+        Returns:
+            List[Dict]: List of processed items or identifiers.
+        """
         filtered = []
         for service in self.services:
             if state.lower() in service.get("state", "").lower():

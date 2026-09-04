@@ -34,31 +34,55 @@ from .window import _Page, fmt_bytes
 
 
 class _MftScrubWorker(QObject):
-    """_MftScrubWorker class."""
+    """Mftscrubworker.
+
+    Manages MftScrubWorker operations and coordinates related state changes for the component.
+    """
     finished = Signal(object)
     scrub_finished = Signal(object)
 
     def __init__(self, scrubber: MftSlackScrubber) -> None:
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            scrubber (MftSlackScrubber): The scrubber parameter.
+        """
         super().__init__()
         self.scrubber = scrubber
 
     def run_audit(self) -> None:
-        """run_audit."""
+        """run_audit.
+
+        Manages run audit operations and coordinates related state changes for the component.
+        """
         rep = self.scrubber.audit()
         self.finished.emit(rep)
 
     def run_scrub(self) -> None:
-        """run_scrub."""
+        """run_scrub.
+
+        Manages run scrub operations and coordinates related state changes for the component.
+        """
         rep = self.scrubber.scrub()
         self.scrub_finished.emit(rep)
 
 
 class MftSlackScrubberPage(_Page):
-    """UI page for NTFS MFT record slack auditing and sanitization."""
+    """Mftslackscrubberpage.
+
+    Manages MftSlackScrubberPage operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, win) -> None:
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win: Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.current_volume = "C:"
         self.scrubber = MftSlackScrubber(self.current_volume)
@@ -143,7 +167,13 @@ class MftSlackScrubberPage(_Page):
         self.v.addWidget(self.note)
 
     def _on_volume_changed(self, vol: str) -> None:
-        """_on_volume_changed."""
+        """_on_volume_changed.
+
+        Manages on volume changed operations and coordinates related state changes for the component.
+
+        Args:
+            vol (str): The vol parameter.
+        """
         self.current_volume = vol
         self.scrubber = MftSlackScrubber(vol)
         self.stat_total_records.set_value("0")
@@ -152,7 +182,10 @@ class MftSlackScrubberPage(_Page):
         self.btn_scrub.setEnabled(False)
 
     def _start_audit(self) -> None:
-        """_start_audit."""
+        """_start_audit.
+
+        Manages start audit operations and coordinates related state changes for the component.
+        """
         self.btn_audit.setEnabled(False)
         self.btn_scrub.setEnabled(False)
         self.progress_bar.setVisible(True)
@@ -166,7 +199,13 @@ class MftSlackScrubberPage(_Page):
         self._thread.start()
 
     def _on_audit_finished(self, report: MftScrubReport) -> None:
-        """_on_audit_finished."""
+        """_on_audit_finished.
+
+        Manages on audit finished operations and coordinates related state changes for the component.
+
+        Args:
+            report (MftScrubReport): The generated report data object from the backend.
+        """
         self.current_report = report
         if self._thread:
             self._thread.quit()
@@ -192,7 +231,10 @@ class MftSlackScrubberPage(_Page):
         self.lbl_status.setText(f"Audit complete for {self.current_volume}.")
 
     def _start_scrub(self) -> None:
-        """_start_scrub."""
+        """_start_scrub.
+
+        Manages start scrub operations and coordinates related state changes for the component.
+        """
         confirm = QMessageBox.question(
             self,
             "Confirm MFT Slack Sanitization",
@@ -216,7 +258,13 @@ class MftSlackScrubberPage(_Page):
         self._thread.start()
 
     def _on_scrub_finished(self, report: MftScrubReport) -> None:
-        """_on_scrub_finished."""
+        """_on_scrub_finished.
+
+        Manages on scrub finished operations and coordinates related state changes for the component.
+
+        Args:
+            report (MftScrubReport): The generated report data object from the backend.
+        """
         if self._thread:
             self._thread.quit()
             self._thread.wait()

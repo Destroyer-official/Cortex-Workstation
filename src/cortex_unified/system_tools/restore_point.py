@@ -45,7 +45,10 @@ _VALID_TYPES = {
 
 
 class RestoreStatus(str, enum.Enum):
-    """Outcome of a restore-point create attempt - each is honest & distinct."""
+    """Restorestatus.
+
+    Manages RestoreStatus operations and coordinates related state changes for the component.
+    """
 
     CREATED = "created"                      # a new point was verifiably made
     THROTTLED = "throttled"                  # skipped: one exists in last 24h
@@ -57,14 +60,23 @@ class RestoreStatus(str, enum.Enum):
 
 @dataclass(slots=True)
 class RestorePointResult:
-    """Result of a create attempt."""
+    """Restorepointresult.
+
+    Manages RestorePointResult operations and coordinates related state changes for the component.
+    """
 
     status: RestoreStatus
     message: str = ""
 
     @property
     def created(self) -> bool:
-        """Created."""
+        """Created.
+
+        Manages created operations and coordinates related state changes for the component.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         return self.status is RestoreStatus.CREATED
 
     @property
@@ -77,27 +89,51 @@ class RestorePointResult:
         return self.status in (RestoreStatus.CREATED, RestoreStatus.THROTTLED)
 
     def to_dict(self) -> dict[str, Any]:
-        """To dict."""
+        """To dict.
+
+        Manages to dict operations and coordinates related state changes for the component.
+
+        Returns:
+            dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         return {"status": self.status.value, "message": self.message, "created": self.created}
 
 
 class RestorePointManager:
-    """Create and list Windows System Restore points, honestly."""
+    """Restorepointmanager.
+
+    Manages RestorePointManager operations and coordinates related state changes for the component.
+    """
 
     def __init__(self) -> None:
-        """Initialize Restore Point Manager."""
+        """Initialize Restore Point Manager.
+
+        Initializes the instance and configures internal state.
+        """
         self.logger = _LOG
 
     # -- capability checks --------------------------------------------------
 
     @staticmethod
     def is_supported() -> bool:
-        """Is supported."""
+        """Is supported.
+
+        Manages is supported operations and coordinates related state changes for the component.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         return _IS_WINDOWS
 
     @staticmethod
     def is_elevated() -> bool:
-        """True if running as Administrator (required to create a point)."""
+        """True if running as Administrator (required to create a point).
+
+        Manages is elevated operations and coordinates related state changes for the component.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         if not _IS_WINDOWS:
             return False
         try:
@@ -113,7 +149,17 @@ class RestorePointManager:
         description: str = "Cortex Cleaner",
         restore_point_type: str = "MODIFY_SETTINGS",
     ) -> RestorePointResult:
-        """Attempt to create a restore point and report the verified outcome."""
+        """Create.
+
+        Manages create operations and coordinates related state changes for the component.
+
+        Args:
+            description (str): The description parameter.
+            restore_point_type (str): The restore point type parameter.
+
+        Returns:
+            RestorePointResult: Result of the operation.
+        """
         if not _IS_WINDOWS:
             return RestorePointResult(RestoreStatus.NOT_SUPPORTED,
                                       "System Restore is only available on Windows.")
@@ -154,7 +200,16 @@ class RestorePointManager:
 
     @staticmethod
     def _parse_create_output(out: str | None) -> RestorePointResult:
-        """_parse_create_output."""
+        """_parse_create_output.
+
+        Manages parse create output operations and coordinates related state changes for the component.
+
+        Args:
+            out (str | None): The out parameter.
+
+        Returns:
+            RestorePointResult: Result of the operation.
+        """
         if not out:
             return RestorePointResult(
                 RestoreStatus.FAILED,
@@ -178,13 +233,20 @@ class RestorePointManager:
             _, _, msg = line.partition("MSG=")
             return RestorePointResult(RestoreStatus.FAILED, msg or "Restore point creation failed.")
         return RestorePointResult(RestoreStatus.FAILED, "Unexpected System Restore response.")
-        """_parse_create_output."""
-        """_parse_create_output."""
 
     # -- list ---------------------------------------------------------------
 
     def list_points(self, limit: int = 50) -> list[dict[str, Any]]:
-        """Return existing restore points (most recent first). Empty on failure."""
+        """Return existing restore points (most recent first). Empty on failure.
+
+        Manages list points operations and coordinates related state changes for the component.
+
+        Args:
+            limit (int): The limit parameter.
+
+        Returns:
+            list[dict[str, Any]]: List of processed items or identifiers.
+        """
         if not _IS_WINDOWS:
             return []
         script = (
@@ -218,7 +280,16 @@ class RestorePointManager:
 
     @staticmethod
     def _parse_wmi_time(value: Any) -> str:
-        """Best-effort parse of a WMI CreationTime into an ISO-ish string."""
+        """Best-effort parse of a WMI CreationTime into an ISO-ish string.
+
+        Manages parse wmi time operations and coordinates related state changes for the component.
+
+        Args:
+            value (Any): The value parameter.
+
+        Returns:
+            str: Formatted string or path.
+        """
         if not value:
             return ""
         s = str(value)
@@ -228,7 +299,17 @@ class RestorePointManager:
         return s
 
     def _run_ps(self, script: str, timeout: int) -> str | None:
-        """_run_ps."""
+        """_run_ps.
+
+        Manages run ps operations and coordinates related state changes for the component.
+
+        Args:
+            script (str): The script parameter.
+            timeout (int): The timeout parameter.
+
+        Returns:
+            str | None: Formatted string or path.
+        """
         try:
             proc = _proc.run(
                 ["powershell", "-NoProfile", "-NonInteractive", "-Command", script],
@@ -242,5 +323,3 @@ class RestorePointManager:
         except (_proc.ProcessCancelled, OSError, subprocess.SubprocessError) as exc:
             self.logger.debug("powershell invocation failed: %s", exc)
             return None
-        """_run_ps."""
-        """_run_ps."""

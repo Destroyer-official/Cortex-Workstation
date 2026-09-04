@@ -51,7 +51,16 @@ from cortex_unified.system_tools.storage_growth_tracker import StorageGrowthTrac
 
 
 def _fmt_bytes(b: int) -> str:
-    """Format a byte count into a human-readable B/KB/MB/GB string."""
+    """Format a byte count into a human-readable B/KB/MB/GB string.
+
+    Converts raw numeric values into formatted, localized, and human-readable string representations.
+
+    Args:
+        b (int): Integer number of bytes to format or process.
+
+    Returns:
+        str: Formatted string or path.
+    """
     if b < 1024:
         return f"{b} B"
     if b < 1024 * 1024:
@@ -62,7 +71,17 @@ def _fmt_bytes(b: int) -> str:
 
 
 def _PrimaryButton(text: str, parent=None) -> QPushButton:
-    """Create a QPushButton styled as the primary (accented) action button."""
+    """Construct a styled accented QPushButton adhering to design system tokens.
+
+    Applies consistent margins, accent styling, focus outline, and pointing-hand cursor according to theme tokens.
+
+    Args:
+        text (str): Display text string.
+        parent: Parent window or shell controller instance.
+
+    Returns:
+        QPushButton: Result of the operation.
+    """
     btn = QPushButton(text, parent if isinstance(parent, QWidget) else None)
     btn.setObjectName("Primary")
     btn.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -70,14 +89,33 @@ def _PrimaryButton(text: str, parent=None) -> QPushButton:
 
 
 def _SecondaryButton(text: str, parent=None) -> QPushButton:
-    """Create a QPushButton styled as a secondary action button with a pointing-hand cursor."""
+    """Construct a styled secondary QPushButton adhering to design system tokens.
+
+    Applies consistent margins, accent styling, focus outline, and pointing-hand cursor according to theme tokens.
+
+    Args:
+        text (str): Display text string.
+        parent: Parent window or shell controller instance.
+
+    Returns:
+        QPushButton: Result of the operation.
+    """
     btn = QPushButton(text, parent if isinstance(parent, QWidget) else None)
     btn.setCursor(Qt.CursorShape.PointingHandCursor)
     return btn
 
 
 def _run_task(win: PremiumMainWindow, work_fn, done_fn, err_fn=None):
-    """Run work_fn on the window's worker runtime, or inline as a fallback, dispatching to done_fn / err_fn."""
+    """Run work_fn on the window's worker runtime, or inline as a fallback, dispatching to done_fn / err_fn.
+
+    Manages run task operations and coordinates related state changes for the component.
+
+    Args:
+        win (PremiumMainWindow): Parent window or shell controller instance.
+        work_fn: The work fn parameter.
+        done_fn: The done fn parameter.
+        err_fn: Error message string or exception instance.
+    """
     if hasattr(win, "worker_runtime") and getattr(win, "worker_runtime", None) is not None:
         win.worker_runtime.run(work_fn, on_result=done_fn, on_error=err_fn)
     else:
@@ -94,9 +132,18 @@ def _run_task(win: PremiumMainWindow, work_fn, done_fn, err_fn=None):
 # ===========================================================================
 
 class VssManagerPage(_Page):
-    """Page for auditing VSS shadow copies, creating snapshots, and purging the oldest shadow."""
+    """Vssmanagerpage.
+
+    Manages VssManagerPage operations and coordinates related state changes for the component.
+    """
     def __init__(self, win: PremiumMainWindow):
-        """Build the VSS page with audit/create/purge buttons, summary label, and shadows table."""
+        """Build the VSS page with audit/create/purge buttons, summary label, and shadows table.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win (PremiumMainWindow): Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(title_block("Volume Shadow Copy (VSS) Manager", "Audit VSS snapshots, monitor shadow storage usage, create recovery snapshots, and reclaim space."))
 
@@ -136,12 +183,21 @@ class VssManagerPage(_Page):
         self._mgr = VssManager()
 
     def _on_audit(self):
-        """Start an asynchronous VSS audit and show a busy message in the summary label."""
+        """Start an asynchronous VSS audit and show a busy message in the summary label.
+
+        Manages on audit operations and coordinates related state changes for the component.
+        """
         self.summary_label.setText("Querying vssadmin and WMI shadow copies…")
         _run_task(self.win, self._mgr.audit, self._on_audit_done, self._on_err)
 
     def _on_audit_done(self, rep: VssAuditReport):
-        """Populate the shadows table and summary from a VssAuditReport."""
+        """Populate the shadows table and summary from a VssAuditReport.
+
+        Receives the completed data from the audit background worker, populates the view with results, and restores button states.
+
+        Args:
+            rep (VssAuditReport): The rep parameter.
+        """
         if rep.error:
             self.summary_label.setText(f"VSS Audit Error: {rep.error}")
             return
@@ -157,23 +213,41 @@ class VssManagerPage(_Page):
             self.table.setItem(r, 3, QTableWidgetItem(s.provider))
 
     def _on_create(self):
-        """Kick off creation of a recovery shadow copy on C: in the background."""
+        """Kick off creation of a recovery shadow copy on C: in the background.
+
+        Manages on create operations and coordinates related state changes for the component.
+        """
         self.summary_label.setText("Creating recovery snapshot on C:…")
         _run_task(self.win, lambda: self._mgr.create_shadow_copy("C:"), self._on_action_done, self._on_err)
 
     def _on_purge(self):
-        """Kick off deletion of the oldest shadow copy on C: in the background."""
+        """Kick off deletion of the oldest shadow copy on C: in the background.
+
+        Manages on purge operations and coordinates related state changes for the component.
+        """
         self.summary_label.setText("Purging oldest shadow on C:…")
         _run_task(self.win, lambda: self._mgr.delete_oldest_shadow("C:"), self._on_action_done, self._on_err)
 
     def _on_action_done(self, res: tuple[bool, str]):
-        """Show the result message of a create/purge action, then refresh the audit."""
+        """Show the result message of a create/purge action, then refresh the audit.
+
+        Receives the completed data from the action background worker, populates the view with results, and restores button states.
+
+        Args:
+            res (tuple[bool, str]): The res parameter.
+        """
         ok, msg = res
         self.summary_label.setText(msg)
         self._on_audit()
 
     def _on_err(self, exc):
-        """Show an error message from a failed worker in the summary label."""
+        """Show an error message from a failed worker in the summary label.
+
+        Captures worker error messages, presents diagnostic feedback to the user, and resets interactive controls for retry.
+
+        Args:
+            exc: Error message string or exception instance.
+        """
         self.summary_label.setText(f"Error: {exc}")
 
 
@@ -182,9 +256,18 @@ class VssManagerPage(_Page):
 # ===========================================================================
 
 class DevDriveOptimizerPage(_Page):
-    """Page for auditing ReFS Dev Drives, block-cloning support, and Defender performance mode."""
+    """Devdriveoptimizerpage.
+
+    Manages DevDriveOptimizerPage operations and coordinates related state changes for the component.
+    """
     def __init__(self, win: PremiumMainWindow):
-        """Build the Dev Drive page with an audit button, summary label, and drives table."""
+        """Build the Dev Drive page with an audit button, summary label, and drives table.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win (PremiumMainWindow): Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(title_block("ReFS Dev Drive & Block-Cloning Optimizer", "Detect ReFS Dev Drives, test Copy-on-Write block cloning, and inspect Defender Performance Mode."))
 
@@ -218,12 +301,21 @@ class DevDriveOptimizerPage(_Page):
         self._opt = DevDriveOptimizer()
 
     def _on_audit(self):
-        """Start an asynchronous storage-drive audit and update the summary label."""
+        """Start an asynchronous storage-drive audit and update the summary label.
+
+        Manages on audit operations and coordinates related state changes for the component.
+        """
         self.summary_label.setText("Querying volume geometry and fsutil devdrv status…")
         _run_task(self.win, self._opt.audit, self._on_audit_done, self._on_err)
 
     def _on_audit_done(self, rep: DevDriveAuditReport):
-        """Fill the drives table and summary from a DevDriveAuditReport."""
+        """Fill the drives table and summary from a DevDriveAuditReport.
+
+        Receives the completed data from the audit background worker, populates the view with results, and restores button states.
+
+        Args:
+            rep (DevDriveAuditReport): The rep parameter.
+        """
         if rep.error:
             self.summary_label.setText(f"Audit Error: {rep.error}")
             return
@@ -242,7 +334,13 @@ class DevDriveOptimizerPage(_Page):
             self.table.setItem(r, 5, QTableWidgetItem(f"{_fmt_bytes(d.free_space_bytes)} / {_fmt_bytes(d.total_space_bytes)}"))
 
     def _on_err(self, exc):
-        """Show an error message from a failed worker in the summary label."""
+        """Show an error message from a failed worker in the summary label.
+
+        Captures worker error messages, presents diagnostic feedback to the user, and resets interactive controls for retry.
+
+        Args:
+            exc: Error message string or exception instance.
+        """
         self.summary_label.setText(f"Error: {exc}")
 
 
@@ -251,9 +349,18 @@ class DevDriveOptimizerPage(_Page):
 # ===========================================================================
 
 class BitLockerAuditorPage(_Page):
-    """Page for auditing volume BitLocker protection, cipher strength, and key protectors."""
+    """Bitlockerauditorpage.
+
+    Manages BitLockerAuditorPage operations and coordinates related state changes for the component.
+    """
     def __init__(self, win: PremiumMainWindow):
-        """Build the BitLocker page with an audit button, summary label, and volumes table."""
+        """Build the BitLocker page with an audit button, summary label, and volumes table.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win (PremiumMainWindow): Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(title_block("BitLocker & Drive Encryption Auditor", "Audit volume encryption protection, cipher strength (XTS-AES), and active TPM key protectors."))
 
@@ -287,12 +394,21 @@ class BitLockerAuditorPage(_Page):
         self._aud = BitLockerAuditor()
 
     def _on_audit(self):
-        """Start an asynchronous BitLocker audit and update the summary label."""
+        """Start an asynchronous BitLocker audit and update the summary label.
+
+        Manages on audit operations and coordinates related state changes for the component.
+        """
         self.summary_label.setText("Querying manage-bde and Win32_EncryptableVolume…")
         _run_task(self.win, self._aud.audit, self._on_audit_done, self._on_err)
 
     def _on_audit_done(self, rep: BitLockerAuditReport):
-        """Fill the volumes table and compliance summary from a BitLockerAuditReport."""
+        """Fill the volumes table and compliance summary from a BitLockerAuditReport.
+
+        Receives the completed data from the audit background worker, populates the view with results, and restores button states.
+
+        Args:
+            rep (BitLockerAuditReport): The rep parameter.
+        """
         if rep.error:
             self.summary_label.setText(f"Audit Error: {rep.error}")
             return
@@ -310,7 +426,13 @@ class BitLockerAuditorPage(_Page):
             self.table.setItem(r, 5, QTableWidgetItem(", ".join(v.key_protectors) or "None"))
 
     def _on_err(self, exc):
-        """Show an error message from a failed worker in the summary label."""
+        """Show an error message from a failed worker in the summary label.
+
+        Captures worker error messages, presents diagnostic feedback to the user, and resets interactive controls for retry.
+
+        Args:
+            exc: Error message string or exception instance.
+        """
         self.summary_label.setText(f"Error: {exc}")
 
 
@@ -319,9 +441,18 @@ class BitLockerAuditorPage(_Page):
 # ===========================================================================
 
 class JunctionAuditorPage(_Page):
-    """Page for scanning NTFS junctions, symlinks, dead links, and circular reparse traps."""
+    """Junctionauditorpage.
+
+    Manages JunctionAuditorPage operations and coordinates related state changes for the component.
+    """
     def __init__(self, win: PremiumMainWindow):
-        """Build the Junction Auditor page with scan/custom/unlink buttons and a links table."""
+        """Build the Junction Auditor page with scan/custom/unlink buttons and a links table.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win (PremiumMainWindow): Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(title_block("NTFS Junction & Reparse Point Auditor", "Identify directory junctions, symbolic links, broken dead links, and circular recursion traps."))
 
@@ -362,19 +493,31 @@ class JunctionAuditorPage(_Page):
         self._aud = JunctionAuditor()
 
     def _on_scan(self):
-        """Scan reparse points across the user profile in the background."""
+        """Scan reparse points across the user profile in the background.
+
+        Manages on scan operations and coordinates related state changes for the component.
+        """
         self.summary_label.setText("Scanning reparse points across user profile…")
         _run_task(self.win, lambda: self._aud.audit(), self._on_scan_done, self._on_err)
 
     def _on_custom(self):
-        """Prompt for a folder and scan its reparse points in the background."""
+        """Prompt for a folder and scan its reparse points in the background.
+
+        Manages on custom operations and coordinates related state changes for the component.
+        """
         d = QFileDialog.getExistingDirectory(self.p, "Select Folder to Audit Junctions")
         if d:
             self.summary_label.setText(f"Scanning reparse points in {d}…")
             _run_task(self.win, lambda: self._aud.audit(d), self._on_scan_done, self._on_err)
 
     def _on_scan_done(self, rep: JunctionAuditReport):
-        """Fill the links table and counters from a JunctionAuditReport."""
+        """Fill the links table and counters from a JunctionAuditReport.
+
+        Receives the completed data from the scan background worker, populates the view with results, and restores button states.
+
+        Args:
+            rep (JunctionAuditReport): The rep parameter.
+        """
         if rep.error:
             self.summary_label.setText(f"Scan Error: {rep.error}")
             return
@@ -392,7 +535,10 @@ class JunctionAuditorPage(_Page):
             self.table.setItem(r, 4, QTableWidgetItem("YES (Recursive Trap)" if item.is_circular else "No"))
 
     def _on_clean_dead(self):
-        """Unlink the dead junction selected in the table, then rescan."""
+        """Unlink the dead junction selected in the table, then rescan.
+
+        Manages on clean dead operations and coordinates related state changes for the component.
+        """
         row = self.table.currentRow()
         if row < 0:
             QMessageBox.information(self.p, "No Selection", "Please select a dead link row to unlink.")
@@ -403,7 +549,13 @@ class JunctionAuditorPage(_Page):
         self._on_scan()
 
     def _on_err(self, exc):
-        """Show an error message from a failed worker in the summary label."""
+        """Show an error message from a failed worker in the summary label.
+
+        Captures worker error messages, presents diagnostic feedback to the user, and resets interactive controls for retry.
+
+        Args:
+            exc: Error message string or exception instance.
+        """
         self.summary_label.setText(f"Error: {exc}")
 
 
@@ -412,9 +564,18 @@ class JunctionAuditorPage(_Page):
 # ===========================================================================
 
 class BitRotScrubberPage(_Page):
-    """Page for detecting silent bit-rot by comparing files against a SHA-256 baseline."""
+    """Bitrotscrubberpage.
+
+    Manages BitRotScrubberPage operations and coordinates related state changes for the component.
+    """
     def __init__(self, win: PremiumMainWindow):
-        """Build the BitRot page with a target picker, scrub button, and corrupted-files table."""
+        """Build the BitRot page with a target picker, scrub button, and corrupted-files table.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win (PremiumMainWindow): Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(title_block("Silent BitRot & File Integrity Scrubber", "Detect bit-level silent data corruption and hash mutations across documents, photos, and archives."))
 
@@ -452,13 +613,19 @@ class BitRotScrubberPage(_Page):
         self._scrubber = BitRotScrubber()
 
     def _on_browse(self):
-        """Open a directory picker and set it as the scrub target."""
+        """Open a directory picker and set it as the scrub target.
+
+        Manages on browse operations and coordinates related state changes for the component.
+        """
         d = QFileDialog.getExistingDirectory(self.p, "Select Folder to Scrub", self.target_edit.text())
         if d:
             self.target_edit.setText(d)
 
     def _on_scrub(self):
-        """Hash and scrub the chosen folder in the background."""
+        """Hash and scrub the chosen folder in the background.
+
+        Manages on scrub operations and coordinates related state changes for the component.
+        """
         d = self.target_edit.text().strip()
         if not d:
             return
@@ -466,7 +633,13 @@ class BitRotScrubberPage(_Page):
         _run_task(self.win, lambda: self._scrubber.scrub(d), self._on_scrub_done, self._on_err)
 
     def _on_scrub_done(self, rep: BitRotScrubReport):
-        """Show scrub statistics and list corrupted files from a BitRotScrubReport."""
+        """Show scrub statistics and list corrupted files from a BitRotScrubReport.
+
+        Receives the completed data from the scrub background worker, populates the view with results, and restores button states.
+
+        Args:
+            rep (BitRotScrubReport): The rep parameter.
+        """
         if rep.error:
             self.summary_label.setText(f"Scrub Error: {rep.error}")
             return
@@ -482,7 +655,13 @@ class BitRotScrubberPage(_Page):
             self.table.setItem(r, 3, QTableWidgetItem(_fmt_bytes(item.size)))
 
     def _on_err(self, exc):
-        """Show an error message from a failed worker in the summary label."""
+        """Show an error message from a failed worker in the summary label.
+
+        Captures worker error messages, presents diagnostic feedback to the user, and resets interactive controls for retry.
+
+        Args:
+            exc: Error message string or exception instance.
+        """
         self.summary_label.setText(f"Error: {exc}")
 
 
@@ -491,9 +670,18 @@ class BitRotScrubberPage(_Page):
 # ===========================================================================
 
 class MemoryCompressionPage(_Page):
-    """Page for auditing Windows memory compression and toggling it on or off."""
+    """Memorycompressionpage.
+
+    Manages MemoryCompressionPage operations and coordinates related state changes for the component.
+    """
     def __init__(self, win: PremiumMainWindow):
-        """Build the Memory Compression page with audit/toggle buttons and a metrics table."""
+        """Build the Memory Compression page with audit/toggle buttons and a metrics table.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win (PremiumMainWindow): Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(title_block("Windows Memory Compression & SysMain Optimizer", "Audit Windows 10/11 Memory Compression (MMAgent), RAM commit ratios, and tune compression overhead."))
 
@@ -528,12 +716,21 @@ class MemoryCompressionPage(_Page):
         self._curr_status = None
 
     def _on_audit(self):
-        """Query MMAgent memory status in the background."""
+        """Query MMAgent memory status in the background.
+
+        Manages on audit operations and coordinates related state changes for the component.
+        """
         self.summary_label.setText("Querying Get-MMAgent and memory working sets…")
         _run_task(self.win, self._tuner.audit, self._on_audit_done, self._on_err)
 
     def _on_audit_done(self, rep: MemoryTunerReport):
-        """Fill the metrics table from a MemoryTunerReport and remember the current status."""
+        """Fill the metrics table from a MemoryTunerReport and remember the current status.
+
+        Receives the completed data from the audit background worker, populates the view with results, and restores button states.
+
+        Args:
+            rep (MemoryTunerReport): The rep parameter.
+        """
         if rep.error or not rep.status:
             self.summary_label.setText(f"Audit Error: {rep.error or 'Failed to query memory status'}")
             return
@@ -559,7 +756,10 @@ class MemoryCompressionPage(_Page):
             self.table.setItem(r, 1, QTableWidgetItem(v))
 
     def _on_toggle(self):
-        """Flip the memory-compression state to the opposite of the audited status."""
+        """Flip the memory-compression state to the opposite of the audited status.
+
+        Manages on toggle operations and coordinates related state changes for the component.
+        """
         if not self._curr_status:
             return
         new_state = not self._curr_status.is_enabled
@@ -567,13 +767,25 @@ class MemoryCompressionPage(_Page):
         _run_task(self.win, lambda: self._tuner.set_memory_compression(new_state), self._on_toggle_done, self._on_err)
 
     def _on_toggle_done(self, res: tuple[bool, str]):
-        """Report the toggle result, then re-run the audit."""
+        """Report the toggle result, then re-run the audit.
+
+        Receives the completed data from the toggle background worker, populates the view with results, and restores button states.
+
+        Args:
+            res (tuple[bool, str]): The res parameter.
+        """
         ok, msg = res
         QMessageBox.information(self.p, "Memory Tuning", msg)
         self._on_audit()
 
     def _on_err(self, exc):
-        """Show an error message from a failed worker in the summary label."""
+        """Show an error message from a failed worker in the summary label.
+
+        Captures worker error messages, presents diagnostic feedback to the user, and resets interactive controls for retry.
+
+        Args:
+            exc: Error message string or exception instance.
+        """
         self.summary_label.setText(f"Error: {exc}")
 
 
@@ -582,9 +794,18 @@ class MemoryCompressionPage(_Page):
 # ===========================================================================
 
 class SandboxCleanerPage(_Page):
-    """Page for finding and purging Windows Sandbox, Hyper-V, and WSL2 artifacts."""
+    """Sandboxcleanerpage.
+
+    Manages SandboxCleanerPage operations and coordinates related state changes for the component.
+    """
     def __init__(self, win: PremiumMainWindow):
-        """Build the Sandbox Cleaner page with scan/clean buttons and an artifacts table."""
+        """Build the Sandbox Cleaner page with scan/clean buttons and an artifacts table.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win (PremiumMainWindow): Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(title_block("Virtual Environment & Sandbox Artifact Purger", "Reclaim storage locked in Windows Sandbox containers, Hyper-V saved states (.vsv), and WSL2 swap disks."))
 
@@ -622,12 +843,21 @@ class SandboxCleanerPage(_Page):
         self._artifacts = []
 
     def _on_scan(self):
-        """Scan for discarded virtualization artifacts in the background."""
+        """Scan for discarded virtualization artifacts in the background.
+
+        Manages on scan operations and coordinates related state changes for the component.
+        """
         self.summary_label.setText("Scanning Windows Sandbox, Hyper-V, and WSL artifacts…")
         _run_task(self.win, self._cleaner.scan, self._on_scan_done, self._on_err)
 
     def _on_scan_done(self, rep: SandboxCleanReport):
-        """Cache the artifact list and fill the table from a SandboxCleanReport."""
+        """Cache the artifact list and fill the table from a SandboxCleanReport.
+
+        Receives the completed data from the scan background worker, populates the view with results, and restores button states.
+
+        Args:
+            rep (SandboxCleanReport): The rep parameter.
+        """
         self._artifacts = rep.artifacts
         self.summary_label.setText(
             f"Artifacts: {len(rep.artifacts)} | Total Reclaimable: {_fmt_bytes(rep.total_reclaimable_bytes)} | Categories: {', '.join(rep.categories_found) or 'None'}"
@@ -641,7 +871,10 @@ class SandboxCleanerPage(_Page):
             self.table.setItem(r, 4, QTableWidgetItem(a.path))
 
     def _on_clean(self):
-        """Purge every artifact flagged safe to clean; warn when none exist."""
+        """Purge every artifact flagged safe to clean; warn when none exist.
+
+        Manages on clean operations and coordinates related state changes for the component.
+        """
         targets = [a.path for a in self._artifacts if a.is_safe_to_clean]
         if not targets:
             QMessageBox.information(self.p, "Nothing to Clean", "No safe virtual artifacts found to purge.")
@@ -651,13 +884,25 @@ class SandboxCleanerPage(_Page):
         _run_task(self.win, lambda: self._cleaner.clean(targets), self._on_clean_done, self._on_err)
 
     def _on_clean_done(self, res: tuple[int, list[str]]):
-        """Report reclaimed bytes, then rescan for remaining artifacts."""
+        """Report reclaimed bytes, then rescan for remaining artifacts.
+
+        Receives the completed data from the clean background worker, populates the view with results, and restores button states.
+
+        Args:
+            res (tuple[int, list[str]]): The res parameter.
+        """
         cleaned_b, errs = res
         self.summary_label.setText(f"Successfully purged {_fmt_bytes(cleaned_b)} of virtual artifact storage.")
         self._on_scan()
 
     def _on_err(self, exc):
-        """Show an error message from a failed worker in the summary label."""
+        """Show an error message from a failed worker in the summary label.
+
+        Captures worker error messages, presents diagnostic feedback to the user, and resets interactive controls for retry.
+
+        Args:
+            exc: Error message string or exception instance.
+        """
         self.summary_label.setText(f"Error: {exc}")
 
 
@@ -666,9 +911,18 @@ class SandboxCleanerPage(_Page):
 # ===========================================================================
 
 class SmbShareAuditorPage(_Page):
-    """Page for auditing local SMB shares, admin shares, and SMBv1 exposure."""
+    """Smbshareauditorpage.
+
+    Manages SmbShareAuditorPage operations and coordinates related state changes for the component.
+    """
     def __init__(self, win: PremiumMainWindow):
-        """Build the SMB Auditor page with an audit button, summary label, and shares table."""
+        """Build the SMB Auditor page with an audit button, summary label, and shares table.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win (PremiumMainWindow): Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(title_block("SMB Share & Network Exposure Auditor", "Audit local Windows SMB shares, hidden administrative shares (C$, ADMIN$), and verify SMB security settings."))
 
@@ -701,12 +955,21 @@ class SmbShareAuditorPage(_Page):
         self._aud = SmbShareAuditor()
 
     def _on_audit(self):
-        """Start an asynchronous SMB share audit and update the summary label."""
+        """Start an asynchronous SMB share audit and update the summary label.
+
+        Manages on audit operations and coordinates related state changes for the component.
+        """
         self.summary_label.setText("Querying Get-SmbShare and SMB security configuration…")
         _run_task(self.win, self._aud.audit, self._on_audit_done, self._on_err)
 
     def _on_audit_done(self, rep: SmbSecurityReport):
-        """Fill the shares table and risk summary from a SmbSecurityReport."""
+        """Fill the shares table and risk summary from a SmbSecurityReport.
+
+        Receives the completed data from the audit background worker, populates the view with results, and restores button states.
+
+        Args:
+            rep (SmbSecurityReport): The rep parameter.
+        """
         if rep.error:
             self.summary_label.setText(f"Audit Error: {rep.error}")
             return
@@ -724,7 +987,13 @@ class SmbShareAuditorPage(_Page):
             self.table.setItem(r, 4, QTableWidgetItem(s.risk_level))
 
     def _on_err(self, exc):
-        """Show an error message from a failed worker in the summary label."""
+        """Show an error message from a failed worker in the summary label.
+
+        Captures worker error messages, presents diagnostic feedback to the user, and resets interactive controls for retry.
+
+        Args:
+            exc: Error message string or exception instance.
+        """
         self.summary_label.setText(f"Error: {exc}")
 
 
@@ -733,9 +1002,18 @@ class SmbShareAuditorPage(_Page):
 # ===========================================================================
 
 class ProcessTokenPage(_Page):
-    """Page for inspecting process token integrity levels, elevation, and privileges."""
+    """Processtokenpage.
+
+    Manages ProcessTokenPage operations and coordinates related state changes for the component.
+    """
     def __init__(self, win: PremiumMainWindow):
-        """Build the Process Token page with an audit button, summary label, and processes table."""
+        """Build the Process Token page with an audit button, summary label, and processes table.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win (PremiumMainWindow): Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(title_block("Process Security Token & Integrity Forensics", "Inspect TokenIntegrityLevels (Untrusted to System), token elevation types, and critical sensitive privileges."))
 
@@ -769,12 +1047,21 @@ class ProcessTokenPage(_Page):
         self._aud = ProcessTokenAuditor()
 
     def _on_audit(self):
-        """Start an asynchronous process token audit and update the summary label."""
+        """Start an asynchronous process token audit and update the summary label.
+
+        Manages on audit operations and coordinates related state changes for the component.
+        """
         self.summary_label.setText("Querying OpenProcessToken and GetTokenInformation…")
         _run_task(self.win, self._aud.audit, self._on_audit_done, self._on_err)
 
     def _on_audit_done(self, rep: ProcessTokenAuditReport):
-        """Fill the processes table and privilege summary from a ProcessTokenAuditReport."""
+        """Fill the processes table and privilege summary from a ProcessTokenAuditReport.
+
+        Receives the completed data from the audit background worker, populates the view with results, and restores button states.
+
+        Args:
+            rep (ProcessTokenAuditReport): The rep parameter.
+        """
         if rep.error:
             self.summary_label.setText(f"Audit Error: {rep.error}")
             return
@@ -792,7 +1079,13 @@ class ProcessTokenPage(_Page):
             self.table.setItem(r, 5, QTableWidgetItem(", ".join(p.privileges) or "Standard"))
 
     def _on_err(self, exc):
-        """Show an error message from a failed worker in the summary label."""
+        """Show an error message from a failed worker in the summary label.
+
+        Captures worker error messages, presents diagnostic feedback to the user, and resets interactive controls for retry.
+
+        Args:
+            exc: Error message string or exception instance.
+        """
         self.summary_label.setText(f"Error: {exc}")
 
 
@@ -801,9 +1094,18 @@ class ProcessTokenPage(_Page):
 # ===========================================================================
 
 class StorageGrowthTrackerPage(_Page):
-    """Page for taking directory snapshots and diffing storage growth between them."""
+    """Storagegrowthtrackerpage.
+
+    Manages StorageGrowthTrackerPage operations and coordinates related state changes for the component.
+    """
     def __init__(self, win: PremiumMainWindow):
-        """Build the Growth Tracker page with path picker, snapshot/diff buttons, and a growth table."""
+        """Build the Growth Tracker page with path picker, snapshot/diff buttons, and a growth table.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win (PremiumMainWindow): Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(title_block("Storage Growth Tracker & Timeline Differ", "Take persistent directory snapshots and track disk usage expansion and folder growth deltas over time."))
 
@@ -846,13 +1148,19 @@ class StorageGrowthTrackerPage(_Page):
         self._tracker = StorageGrowthTracker()
 
     def _on_browse(self):
-        """Open a directory picker and set it as the snapshot target."""
+        """Open a directory picker and set it as the snapshot target.
+
+        Manages on browse operations and coordinates related state changes for the component.
+        """
         d = QFileDialog.getExistingDirectory(self.p, "Select Directory to Snapshot", self.path_edit.text())
         if d:
             self.path_edit.setText(d)
 
     def _on_snapshot(self):
-        """Capture a storage snapshot of the entered path in the background."""
+        """Capture a storage snapshot of the entered path in the background.
+
+        Manages on snapshot operations and coordinates related state changes for the component.
+        """
         p = self.path_edit.text().strip()
         if not p:
             return
@@ -860,13 +1168,22 @@ class StorageGrowthTrackerPage(_Page):
         _run_task(self.win, lambda: self._tracker.take_snapshot(p, label=f"Scan of {Path(p).name}"), self._on_snapshot_done, self._on_err)
 
     def _on_snapshot_done(self, s: SnapshotSummary):
-        """Show the captured snapshot id, label, and total footprint."""
+        """Show the captured snapshot id, label, and total footprint.
+
+        Receives the completed data from the snapshot background worker, populates the view with results, and restores button states.
+
+        Args:
+            s (SnapshotSummary): The s parameter.
+        """
         self.summary_label.setText(
             f"Captured Snapshot #{s.snapshot_id} ('{s.label}') | Total Footprint: {_fmt_bytes(s.total_bytes)} ({s.total_files} files, {s.total_folders} folders)"
         )
 
     def _on_diff(self):
-        """Compare the two most recent snapshots, or prompt if fewer exist."""
+        """Compare the two most recent snapshots, or prompt if fewer exist.
+
+        Manages on diff operations and coordinates related state changes for the component.
+        """
         snaps = self._tracker.list_snapshots()
         if len(snaps) < 2:
             QMessageBox.information(self.p, "Insufficient Snapshots", "Please take at least two snapshots to compare growth deltas.")
@@ -878,7 +1195,13 @@ class StorageGrowthTrackerPage(_Page):
         _run_task(self.win, lambda: self._tracker.compare_snapshots(base_id, target_id), self._on_diff_done, self._on_err)
 
     def _on_diff_done(self, rep: StorageGrowthDiffReport):
-        """Show net growth between snapshots and list the fastest-growing directories."""
+        """Show net growth between snapshots and list the fastest-growing directories.
+
+        Receives the completed data from the diff background worker, populates the view with results, and restores button states.
+
+        Args:
+            rep (StorageGrowthDiffReport): The rep parameter.
+        """
         if rep.error:
             self.summary_label.setText(f"Diff Error: {rep.error}")
             return
@@ -896,5 +1219,11 @@ class StorageGrowthTrackerPage(_Page):
             self.table.setItem(r, 4, QTableWidgetItem(f"+{d.growth_percent:.1f}%"))
 
     def _on_err(self, exc):
-        """Show an error message from a failed worker in the summary label."""
+        """Show an error message from a failed worker in the summary label.
+
+        Captures worker error messages, presents diagnostic feedback to the user, and resets interactive controls for retry.
+
+        Args:
+            exc: Error message string or exception instance.
+        """
         self.summary_label.setText(f"Error: {exc}")

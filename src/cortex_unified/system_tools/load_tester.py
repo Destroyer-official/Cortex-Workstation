@@ -50,7 +50,10 @@ _WARNING_BANNER = (
 
 @dataclass(slots=True)
 class Authorization:
-    """Authorization data container."""
+    """Authorization.
+
+    Manages Authorization operations and coordinates related state changes for the component.
+    """
     authorized: bool
     category: str            # loopback / private / link-local / owned-public / denied
     host: str
@@ -58,7 +61,13 @@ class Authorization:
     reason: str = ""
 
     def to_dict(self) -> dict[str, Any]:
-        """To dict."""
+        """To dict.
+
+        Manages to dict operations and coordinates related state changes for the component.
+
+        Returns:
+            dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         return {
             "authorized": self.authorized, "category": self.category,
             "host": self.host, "resolved_ip": self.resolved_ip, "reason": self.reason,
@@ -66,7 +75,10 @@ class Authorization:
 
 
 class TargetAuthorizer:
-    """Decides whether a target may be load-tested. Private = yours = allowed."""
+    """Targetauthorizer.
+
+    Manages TargetAuthorizer operations and coordinates related state changes for the component.
+    """
 
     @staticmethod
     def classify(host: str) -> tuple[str, str]:
@@ -98,7 +110,18 @@ class TargetAuthorizer:
 
     def authorize(self, host: str, ownership_token: str | None = None,
                   verify_public: bool = True) -> Authorization:
-        """Authorize."""
+        """Authorize.
+
+        Manages authorize operations and coordinates related state changes for the component.
+
+        Args:
+            host (str): The host parameter.
+            ownership_token (str | None): The ownership token parameter.
+            verify_public (bool): The verify public parameter.
+
+        Returns:
+            Authorization: Result of the operation.
+        """
         category, ip = self.classify(host)
         if category in ("loopback", "private", "link-local"):
             return Authorization(True, category, host, ip,
@@ -122,7 +145,17 @@ class TargetAuthorizer:
 
     @staticmethod
     def _verify_ownership(host: str, token: str) -> bool:
-        """Fetch the token file the user placed on their server and compare."""
+        """Fetch the token file the user placed on their server and compare.
+
+        Manages verify ownership operations and coordinates related state changes for the component.
+
+        Args:
+            host (str): The host parameter.
+            token (str): The token parameter.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         import urllib.request
         h = host if "://" in host else f"http://{host}"
         url = h.rstrip("/") + _TOKEN_PATH
@@ -137,7 +170,13 @@ class TargetAuthorizer:
 
     @staticmethod
     def new_token() -> str:
-        """Generate a random token for the user to host on their server."""
+        """Generate a random token for the user to host on their server.
+
+        Manages new token operations and coordinates related state changes for the component.
+
+        Returns:
+            str: Formatted string or path.
+        """
         import secrets
         return "cortex-" + secrets.token_hex(16)
 
@@ -148,7 +187,10 @@ class TargetAuthorizer:
 
 @dataclass(slots=True)
 class HttpLoadConfig:
-    """Http Load Config data container."""
+    """Httploadconfig.
+
+    Manages HttpLoadConfig operations and coordinates related state changes for the component.
+    """
     url: str
     method: str = "GET"
     concurrency: int = 10
@@ -160,7 +202,10 @@ class HttpLoadConfig:
 
 @dataclass(slots=True)
 class TcpLoadConfig:
-    """Tcp Load Config data container."""
+    """Tcploadconfig.
+
+    Manages TcpLoadConfig operations and coordinates related state changes for the component.
+    """
     host: str
     port: int
     concurrency: int = 10
@@ -170,7 +215,10 @@ class TcpLoadConfig:
 
 @dataclass(slots=True)
 class LoadResult:
-    """Load Result data container."""
+    """Loadresult.
+
+    Manages LoadResult operations and coordinates related state changes for the component.
+    """
     kind: str
     target: str
     total: int = 0
@@ -183,16 +231,37 @@ class LoadResult:
 
     @property
     def rps(self) -> float:
-        """Rps."""
+        """Rps.
+
+        Manages rps operations and coordinates related state changes for the component.
+
+        Returns:
+            float: Result of the operation.
+        """
         return round(self.total / self.duration_s, 1) if self.duration_s else 0.0
 
     @property
     def error_rate(self) -> float:
-        """Error rate."""
+        """Error rate.
+
+        Manages error rate operations and coordinates related state changes for the component.
+
+        Returns:
+            float: Result of the operation.
+        """
         return round(100.0 * self.failed / self.total, 2) if self.total else 0.0
 
     def percentile(self, p: float) -> float:
-        """Percentile."""
+        """Percentile.
+
+        Manages percentile operations and coordinates related state changes for the component.
+
+        Args:
+            p (float): The p parameter.
+
+        Returns:
+            float: Result of the operation.
+        """
         if not self.latencies_ms:
             return 0.0
         s = sorted(self.latencies_ms)
@@ -200,7 +269,13 @@ class LoadResult:
         return round(s[k], 1)
 
     def summary(self) -> dict[str, Any]:
-        """Summary."""
+        """Summary.
+
+        Manages summary operations and coordinates related state changes for the component.
+
+        Returns:
+            dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         return {
             "kind": self.kind, "target": self.target, "total": self.total,
             "succeeded": self.succeeded, "failed": self.failed,
@@ -225,10 +300,16 @@ ProgressCB = Callable[[dict], None]
 # =====================================================================
 
 class LoadTester:
-    """Runs authorized load tests and reports resilience metrics."""
+    """Loadtester.
+
+    Manages LoadTester operations and coordinates related state changes for the component.
+    """
 
     def __init__(self):
-        """Initialize Load Tester."""
+        """Initialize Load Tester.
+
+        Initializes the instance and configures internal state.
+        """
         self._authorizer = TargetAuthorizer()
 
     # -- HTTP (L7) ----------------------------------------------------------
@@ -238,7 +319,21 @@ class LoadTester:
                  cancel_event: threading.Event | None = None,
                  confirm: bool = False,
                  safe_mode: bool = False) -> LoadResult:
-        """Run http."""
+        """Run http.
+
+        Manages run http operations and coordinates related state changes for the component.
+
+        Args:
+            cfg (HttpLoadConfig): The cfg parameter.
+            auth (Authorization): The auth parameter.
+            progress (ProgressCB | None): The progress parameter.
+            cancel_event (threading.Event | None): Threading event or callable to check for cancellation.
+            confirm (bool): The confirm parameter.
+            safe_mode (bool): The safe mode parameter.
+
+        Returns:
+            LoadResult: Result of the operation.
+        """
         if not auth.authorized:
             raise PermissionError(f"Target not authorized: {auth.reason}")
         if not confirm:
@@ -259,7 +354,13 @@ class LoadTester:
         min_interval = (conc / cfg.rate_cap_rps) if cfg.rate_cap_rps > 0 else 0.0
 
         def worker(idx: int):
-            """Worker."""
+            """Worker.
+
+            Manages worker operations and coordinates related state changes for the component.
+
+            Args:
+                idx (int): The idx parameter.
+            """
             import urllib.request
             if cfg.ramp_s > 0:
                 time.sleep(cfg.ramp_s * idx / conc)
@@ -310,7 +411,21 @@ class LoadTester:
                 cancel_event: threading.Event | None = None,
                 confirm: bool = False,
                 safe_mode: bool = False) -> LoadResult:
-        """Run tcp."""
+        """Run tcp.
+
+        Manages run tcp operations and coordinates related state changes for the component.
+
+        Args:
+            cfg (TcpLoadConfig): The cfg parameter.
+            auth (Authorization): The auth parameter.
+            progress (ProgressCB | None): The progress parameter.
+            cancel_event (threading.Event | None): Threading event or callable to check for cancellation.
+            confirm (bool): The confirm parameter.
+            safe_mode (bool): The safe mode parameter.
+
+        Returns:
+            LoadResult: Result of the operation.
+        """
         if not auth.authorized:
             raise PermissionError(f"Target not authorized: {auth.reason}")
         if not confirm:
@@ -330,7 +445,13 @@ class LoadTester:
         deadline = start + dur
 
         def worker(idx: int):
-            """Worker."""
+            """Worker.
+
+            Manages worker operations and coordinates related state changes for the component.
+
+            Args:
+                idx (int): The idx parameter.
+            """
             while time.monotonic() < deadline and not cancel.is_set():
                 t0 = time.monotonic()
                 ok = False
@@ -364,7 +485,19 @@ class LoadTester:
 
     @staticmethod
     def _run_pool(worker, conc, deadline, cancel, progress, result, start):
-        """_run_pool."""
+        """_run_pool.
+
+        Manages run pool operations and coordinates related state changes for the component.
+
+        Args:
+            worker: The worker parameter.
+            conc: The conc parameter.
+            deadline: The deadline parameter.
+            cancel: Threading event or callable to check for cancellation.
+            progress: The progress parameter.
+            result: Collection or dictionary holding operation results.
+            start: The start parameter.
+        """
         threads = [threading.Thread(target=worker, args=(i,), daemon=True)
                    for i in range(conc)]
         for t in threads:
@@ -377,12 +510,21 @@ class LoadTester:
                 break
         for t in threads:
             t.join(timeout=2.0)
-        """_run_pool."""
-        """_run_pool."""
 
     @staticmethod
     def _progress_snapshot(result: LoadResult, start: float, final: bool = False) -> dict:
-        """_progress_snapshot."""
+        """_progress_snapshot.
+
+        Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
+
+        Args:
+            result (LoadResult): Dictionary or data object holding operation results.
+            start (float): The start parameter.
+            final (bool): The final parameter.
+
+        Returns:
+            dict: Dictionary mapping identifiers to status or values.
+        """
         elapsed = max(1e-6, time.monotonic() - start)
         return {
             "elapsed_s": round(elapsed, 1),
@@ -392,12 +534,20 @@ class LoadTester:
             "error_rate": result.error_rate,
             "final": final,
         }
-        """_progress_snapshot."""
-        """_progress_snapshot."""
 
     @staticmethod
     def _audit(kind: str, target: str, auth: Authorization, conc: int, dur: int) -> None:
-        """_audit."""
+        """Audit.
+
+        Manages audit operations and coordinates related state changes for the component.
+
+        Args:
+            kind (str): The kind parameter.
+            target (str): The target parameter.
+            auth (Authorization): The auth parameter.
+            conc (int): The conc parameter.
+            dur (int): The dur parameter.
+        """
         try:
             _AUDIT_LOG.parent.mkdir(parents=True, exist_ok=True)
             ts = time.strftime("%Y-%m-%d %H:%M:%S")
@@ -406,5 +556,3 @@ class LoadTester:
                          f"\tip={auth.resolved_ip}\tconc={conc}\tdur={dur}s\n")
         except OSError:
             pass
-        """_audit."""
-        """_audit."""

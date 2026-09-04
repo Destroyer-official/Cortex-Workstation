@@ -157,4 +157,4 @@ User preferences and historical tracking baselines are stored persistently in th
 The presentation layer utilizes a modern, cohesive design system defined in [`tokens.py`](../src/cortex_unified/ui/premium/tokens.py):
 - **Dynamic Palette**: Tailored dark mode (`#0B0E14` background, `#121722` card surface, `#00D2FF` electric cyan accents).
 - **100% Vector SVG Icons**: All 118 UI pages use pure SVG vector assets located in `src/cortex_unified/resources/icons/`. No unicode glyphs or rasterized low-DPI PNGs are used in navigation.
-- **Dynamic Tinting**: Icons are dynamically recolored at runtime (`icon_provider.py`) based on theme active/inactive states and HiDPI device pixel ratios (100%, 125%, 150%, 200%).
+- **Dynamic Tinting**: Icons are dynamically recolored at runtime (`src/cortex_unified/ui/premium/icons.py`) based on theme active/inactive states and HiDPI device pixel ratios (100%, 125%, 150%, 200%).

@@ -85,7 +85,10 @@ from cortex_unified.system_tools.restore_point import RestorePointManager
 
 @dataclass(frozen=True, slots=True)
 class AppInfo:
-    """Unified application representation."""
+    """Appinfo.
+
+    Manages AppInfo operations and coordinates related state changes for the component.
+    """
     id: str  # unique identifier
     name: str
     version: str
@@ -104,16 +107,23 @@ class AppInfo:
     metadata: Dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict:
-        """to_dict."""
+        """to_dict.
+
+        Manages to dict operations and coordinates related state changes for the component.
+
+        Returns:
+            dict: Dictionary mapping identifiers to status or values.
+        """
         import dataclasses
         return dataclasses.asdict(self)
-        """to_dict."""
-        """to_dict."""
 
 
 @dataclass(frozen=True, slots=True)
 class LeftoverScanResult:
-    """LeftoverScanResult."""
+    """Leftoverscanresult.
+
+    Manages LeftoverScanResult operations and coordinates related state changes for the component.
+    """
     files: List[str]
     registry_keys: List[str]
     services: List[str]
@@ -125,25 +135,29 @@ class LeftoverScanResult:
     total_size_mb: float
 
     def to_dict(self) -> dict:
-        """to_dict."""
+        """to_dict.
+
+        Manages to dict operations and coordinates related state changes for the component.
+
+        Returns:
+            dict: Dictionary mapping identifiers to status or values.
+        """
         import dataclasses
         return dataclasses.asdict(self)
-        """to_dict."""
-    """LeftoverScanResult class."""
-    """LeftoverScanResult class."""
 
 
 @dataclass
 class UninstallResult:
-    """UninstallResult."""
+    """Uninstallresult.
+
+    Manages UninstallResult operations and coordinates related state changes for the component.
+    """
     app_id: str
     success: bool
     leftovers: LeftoverScanResult
     duration_seconds: float
     error: Optional[str] = None
     restore_point: Optional[str] = None
-    """UninstallResult class."""
-    """UninstallResult class."""
 
 
 # ---------------------------------------------------------------------------
@@ -151,14 +165,27 @@ class UninstallResult:
 # ---------------------------------------------------------------------------
 
 def _normalize_path(path: str) -> str:
-    """_normalize_path."""
+    """_normalize_path.
+
+    Manages normalize path operations and coordinates related state changes for the component.
+
+    Args:
+        path (str): Filesystem path to the target file or directory.
+
+    Returns:
+        str: Formatted string or path.
+    """
     return str(Path(path).resolve()) if path else ""
-    """_normalize_path."""
-    """_normalize_path."""
 
 
 def _get_registry_apps() -> List[AppInfo]:
-    """Enumerate from HKLM/HKCU Uninstall keys."""
+    """Enumerate from HKLM/HKCU Uninstall keys.
+
+    Manages get registry apps operations and coordinates related state changes for the component.
+
+    Returns:
+        List[AppInfo]: List of processed items or identifiers.
+    """
     apps = []
     roots = [
         (winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall", "HKLM"),
@@ -223,7 +250,13 @@ def _get_registry_apps() -> List[AppInfo]:
 
 
 def _get_steam_apps() -> List[AppInfo]:
-    """Parse Steam localconfig.vdf for installed games."""
+    """Parse Steam localconfig.vdf for installed games.
+
+    Manages get steam apps operations and coordinates related state changes for the component.
+
+    Returns:
+        List[AppInfo]: List of processed items or identifiers.
+    """
     apps = []
     try:
         # Dynamically discover Steam paths via environment, Registry, and mounted drives
@@ -308,7 +341,13 @@ $apps | ConvertTo-Json
 
 
 def _get_chocolatey_apps() -> List[AppInfo]:
-    """Enumerate Chocolatey packages."""
+    """Enumerate Chocolatey packages.
+
+    Manages get chocolatey apps operations and coordinates related state changes for the component.
+
+    Returns:
+        List[AppInfo]: List of processed items or identifiers.
+    """
     apps = []
     try:
         rc, out, _ = subprocess.run(["choco", "list", "--local-only", "--limit-output", "--include-programs"],
@@ -340,7 +379,13 @@ def _get_chocolatey_apps() -> List[AppInfo]:
 
 
 def _get_winget_apps() -> List[AppInfo]:
-    """Enumerate Winget packages."""
+    """Enumerate Winget packages.
+
+    Manages get winget apps operations and coordinates related state changes for the component.
+
+    Returns:
+        List[AppInfo]: List of processed items or identifiers.
+    """
     apps = []
     try:
         rc, out, _ = subprocess.run(["winget", "list", "--disable-interactivity"],
@@ -373,7 +418,13 @@ def _get_winget_apps() -> List[AppInfo]:
 
 
 def _get_scoop_apps() -> List[AppInfo]:
-    """Enumerate Scoop packages."""
+    """Enumerate Scoop packages.
+
+    Manages get scoop apps operations and coordinates related state changes for the component.
+
+    Returns:
+        List[AppInfo]: List of processed items or identifiers.
+    """
     apps = []
     try:
         rc, out, _ = subprocess.run(["scoop", "list"],
@@ -405,7 +456,13 @@ def _get_scoop_apps() -> List[AppInfo]:
 
 
 def _get_store_apps() -> List[AppInfo]:
-    """Enumerate Windows Store (UWP) apps."""
+    """Enumerate Windows Store (UWP) apps.
+
+    Manages get store apps operations and coordinates related state changes for the component.
+
+    Returns:
+        List[AppInfo]: List of processed items or identifiers.
+    """
     apps = []
     try:
         script = """
@@ -440,7 +497,13 @@ Get-AppxPackage -AllUsers | Select-Object PackageFullName, Name, Version, Publis
 
 
 def _get_windows_features() -> List[AppInfo]:
-    """Enumerate Windows optional features."""
+    """Enumerate Windows optional features.
+
+    Manages get windows features operations and coordinates related state changes for the component.
+
+    Returns:
+        List[AppInfo]: List of processed items or identifiers.
+    """
     apps = []
     try:
         script = """
@@ -475,7 +538,13 @@ Get-WindowsOptionalFeature -Online | Where-Object {$_.State -eq 'Enabled'} | Sel
 
 
 def _get_portable_apps() -> List[AppInfo]:
-    """Scan common portable app locations."""
+    """Scan common portable app locations.
+
+    Manages get portable apps operations and coordinates related state changes for the component.
+
+    Returns:
+        List[AppInfo]: List of processed items or identifiers.
+    """
     apps = []
     portable_roots = [
         Path(os.environ.get("USERPROFILE", "")) / "PortableApps",
@@ -528,7 +597,17 @@ def _get_portable_apps() -> List[AppInfo]:
 # ---------------------------------------------------------------------------
 
 def _scan_leftovers(app: AppInfo, pre_snapshot: Dict[str, Set[str]]) -> LeftoverScanResult:
-    """Compare pre/post snapshots to find leftovers."""
+    """Compare pre/post snapshots to find leftovers.
+
+    Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+    Args:
+        app (AppInfo): The app parameter.
+        pre_snapshot (Dict[str, Set[str]]): The pre snapshot parameter.
+
+    Returns:
+        LeftoverScanResult: Result of the operation.
+    """
     # This is a simplified version; production would do full snapshot diff
     files = []
     reg_keys = []
@@ -593,7 +672,10 @@ def _scan_leftovers(app: AppInfo, pre_snapshot: Dict[str, Set[str]]) -> Leftover
 # ---------------------------------------------------------------------------
 
 class AdvancedUninstaller:
-    """Multi-source uninstaller with leftover detection and forced uninstall."""
+    """Advanceduninstaller.
+
+    Manages AdvancedUninstaller operations and coordinates related state changes for the component.
+    """
 
     def __init__(
         self,
@@ -601,17 +683,32 @@ class AdvancedUninstaller:
         progress_callback: Optional[Callable[[str], None]] = None,
         cancel_event: Optional[threading.Event] = None,
     ):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            create_restore_point (bool): The create restore point parameter.
+            progress_callback (Optional[Callable[[str], None]]): The progress callback parameter.
+            cancel_event (Optional[threading.Event]): Threading event or callable to check for cancellation.
+        """
         self.create_restore_point = create_restore_point
         self.progress = progress_callback or (lambda _: None)
         self.cancel_event = cancel_event or threading.Event()
         self._restore_mgr = RestorePointManager() if create_restore_point else None
         self._apps_cache: Optional[List[AppInfo]] = None
-        """__init__."""
-        """__init__."""
 
     def enumerate_all(self, force_refresh: bool = False) -> List[AppInfo]:
-        """Enumerate apps from all sources."""
+        """Enumerate apps from all sources.
+
+        Manages enumerate all operations and coordinates related state changes for the component.
+
+        Args:
+            force_refresh (bool): The force refresh parameter.
+
+        Returns:
+            List[AppInfo]: List of processed items or identifiers.
+        """
         if self._apps_cache is not None and not force_refresh:
             return self._apps_cache
 
@@ -654,7 +751,18 @@ class AdvancedUninstaller:
         force: bool = False,
         scan_leftovers: bool = True,
     ) -> List[UninstallResult]:
-        """Uninstall multiple apps with single restore point."""
+        """Uninstall multiple apps with single restore point.
+
+        Manages uninstall batch operations and coordinates related state changes for the component.
+
+        Args:
+            app_ids (List[str]): The app ids parameter.
+            force (bool): The force parameter.
+            scan_leftovers (bool): The scan leftovers parameter.
+
+        Returns:
+            List[UninstallResult]: List of processed items or identifiers.
+        """
         apps = {a.id: a for a in self.enumerate_all()}
         targets = [apps[aid] for aid in app_ids if aid in apps]
 
@@ -688,7 +796,18 @@ class AdvancedUninstaller:
         force: bool,
         scan_leftovers: bool,
     ) -> Tuple[bool, LeftoverScanResult, float, Optional[str]]:
-        """Uninstall one app. Returns (success, leftovers, duration, error)."""
+        """Uninstall one app. Returns (success, leftovers, duration, error).
+
+        Manages uninstall one operations and coordinates related state changes for the component.
+
+        Args:
+            app (AppInfo): The app parameter.
+            force (bool): The force parameter.
+            scan_leftovers (bool): The scan leftovers parameter.
+
+        Returns:
+            Tuple[bool, LeftoverScanResult, float, Optional[str]]: True if the operation succeeded, False otherwise.
+        """
         t0 = time.time()
         self.progress(f"Uninstalling {app.name}...")
 
@@ -871,14 +990,26 @@ class AdvancedUninstaller:
             return False
 
     def _kill_processes(self, name: str) -> None:
-        """_kill_processes."""
+        """Terminate processes associated with an uninstalling application.
+
+        Guards against wildcard kills and refuses to kill protected Windows OS components.
+
+        Args:
+            name (str): Application or executable base name.
+        """
+        if not name or len(name.strip()) < 3:
+            return
+        from cortex_unified.core.proc import is_protected_process
+        n_clean = name.strip().lower()
+        if is_protected_process(n_clean) or n_clean in ("explorer", "windows", "system", "microsoft"):
+            return
         try:
-            subprocess.run(["taskkill", "/F", "/IM", f"{name}*.exe"],
-                           capture_output=True, timeout=30)
+            # Match exact process name or name + .exe, never unbounded wildcard
+            exe_target = n_clean if n_clean.endswith(".exe") else f"{n_clean}.exe"
+            subprocess.run(["taskkill", "/F", "/IM", exe_target],
+                           capture_output=True, timeout=10)
         except Exception:
             pass
-        """_kill_processes."""
-        """_kill_processes."""
 
     def _cleanup_registry_traces(self, app: AppInfo) -> None:
         """Remove the app's own Uninstall entry and publisher-matched keys.

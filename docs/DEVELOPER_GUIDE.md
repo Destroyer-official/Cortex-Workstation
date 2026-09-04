@@ -59,6 +59,8 @@ pip install -e .
 
 Let's walk through an end-to-end example of building a new tool: a hypothetical **DNS Flush & Resolver Tool**.
 
+> **Note:** `dns_resolver.py`, `dnsflush.svg`, `DnsResolverPage`, and `test_dns_resolver.py` below are illustrative example names for files you will create in this tutorial — they do not ship with the repository. The existing `src/cortex_unified/ui/premium/network_pages.py` ships with `TrafficMonitorPage`, `FirewallPage`, `NetworkMapPage`, `LanDevicesPage`, `NetworkToolsPage`, and `LoadTesterPage`; for a real-world backend reference see `src/cortex_unified/system_tools/dns_benchmark.py`.
+
 ### Step 1: Implement the Backend Module
 Create `src/cortex_unified/system_tools/dns_resolver.py`:
 

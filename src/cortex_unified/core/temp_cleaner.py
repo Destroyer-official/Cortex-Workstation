@@ -55,7 +55,10 @@ _SECS_PER_DAY = 86400
 
 @dataclass(slots=True)
 class TempFinding:
-    """One deletable temp file discovered by :meth:`TempCleaner.scan`."""
+    """Tempfinding.
+
+    Manages TempFinding operations and coordinates related state changes for the component.
+    """
 
     path: str
     size_bytes: int
@@ -64,7 +67,16 @@ class TempFinding:
 
 
 def _normalize(path: os.PathLike[str] | str) -> str:
-    """Case- and separator-normalised absolute form, for containment tests."""
+    """Normalize.
+
+    Manages normalize operations and coordinates related state changes for the component.
+
+    Args:
+        path (os.PathLike[str] | str): Filesystem path to the target file or directory.
+
+    Returns:
+        str: Formatted string or path.
+    """
     return os.path.normcase(os.path.abspath(os.fspath(path)))
 
 
@@ -86,7 +98,10 @@ def _is_junction(entry: os.DirEntry) -> bool:
 
 
 class TempCleaner:
-    """Finds and removes stale files under the platform's temp roots."""
+    """Tempcleaner.
+
+    Manages TempCleaner operations and coordinates related state changes for the component.
+    """
 
     def __init__(
         self,
@@ -162,7 +177,17 @@ class TempCleaner:
         seen: set[str] = set()
 
         def _usable(label: str, path: Path) -> bool:
-            """_usable."""
+            """Usable.
+
+            Manages usable operations and coordinates related state changes for the component.
+
+            Args:
+                label (str): Display text string.
+                path (Path): Filesystem path to the target file or directory.
+
+            Returns:
+                bool: True if the operation succeeded, False otherwise.
+            """
             try:
                 key = _normalize(path)
                 if key in seen:
@@ -176,7 +201,6 @@ class TempCleaner:
             seen.add(key)
             locations.append((label, path))
             return True
-            """_usable."""
 
         for label, path in candidates:
             _usable(label, path)
@@ -199,7 +223,17 @@ class TempCleaner:
         return self.LOCATIONS()
 
     def _is_excluded(self, path: str, name: str) -> bool:
-        """True when *path*/*name* hits a configured fnmatch pattern."""
+        """True when *path*/*name* hits a configured fnmatch pattern.
+
+        Manages is excluded operations and coordinates related state changes for the component.
+
+        Args:
+            path (str): Filesystem path to the target file or directory.
+            name (str): The name parameter.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         for pattern in self.exclude_patterns:
             if fnmatch.fnmatch(name, pattern) or fnmatch.fnmatch(path, pattern):
                 return True
@@ -227,7 +261,16 @@ class TempCleaner:
         cutoff: float,
         findings: list[TempFinding],
     ) -> None:
-        """Iteratively collect eligible files under *root* (read-only)."""
+        """Walk.
+
+        Manages walk operations and coordinates related state changes for the component.
+
+        Args:
+            root (Path): Filesystem path to the target file or directory.
+            label (str): Display text string.
+            cutoff (float): The cutoff parameter.
+            findings (list[TempFinding]): The findings parameter.
+        """
         stack: list[tuple[Path, int]] = [(root, 0)]
         while stack:
             directory, depth = stack.pop()
@@ -302,7 +345,13 @@ class TempCleaner:
         return findings
 
     def total_reclaimable(self) -> int:
-        """Total bytes across the most recent scan (0 before any scan)."""
+        """Total bytes across the most recent scan (0 before any scan).
+
+        Manages total reclaimable operations and coordinates related state changes for the component.
+
+        Returns:
+            int: Result of the operation.
+        """
         return sum(f.size_bytes for f in self.findings)
 
     def clean(

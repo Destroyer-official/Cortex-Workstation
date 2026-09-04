@@ -20,9 +20,55 @@ from .base_tab import BaseTab
 from cortex_unified.core.config import Config
 from cortex_unified.core.scanner import Scanner
 from cortex_unified.core.deleter import Deleter
+from cortex_unified.analyzers.czkawka_tools import EmptyFinder, EmptyResult
+
+
+class EmptyFinderWorker(QThread):
+    """Emptyfinderworker.
+
+    Manages EmptyFinderWorker operations and coordinates related state changes for the component.
+    """
+
+    progress_updated = Signal(int)
+    status_updated = Signal(str)
+    scan_completed = Signal(list, list, dict)
+    error_occurred = Signal(str)
+
+    def __init__(self, config, path):
+        """Store config and root path for the EmptyFinder scan.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            config: The config parameter.
+            path: Filesystem path to the target file or directory.
+        """
+        super().__init__()
+        self.config = config
+        self.path = path
+
+    def run(self):
+        """Run EmptyFinder and emit scan_completed (or error_occurred).
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
+        try:
+            self.status_updated.emit("Scanning empty items (czkawka)...")
+            finder = EmptyFinder(self.path, self.config)
+            result = finder.find(
+                progress=lambda msg: self.status_updated.emit(msg))
+            self.progress_updated.emit(100)
+            stats = {"scanned": result.scanned, "duration": result.duration}
+            self.scan_completed.emit(
+                list(result.empty_files), list(result.empty_folders), stats)
+        except Exception as e:
+            self.error_occurred.emit(str(e))
 
 class EmptyFilesWorker(QThread):
-    """Worker thread for empty files operations."""
+    """Emptyfilesworker.
+
+    Manages EmptyFilesWorker operations and coordinates related state changes for the component.
+    """
 
     progress_updated = Signal(int)
     status_updated = Signal(str)
@@ -31,18 +77,29 @@ class EmptyFilesWorker(QThread):
     error_occurred = Signal(str)
 
     def __init__(self, config, path, operation="scan", files_to_delete=None, dirs_to_delete=None):
-        """Store config, path, operation type, and the delete file/dir lists."""
+        """Store config, path, operation type, and the delete file/dir lists.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            config: The config parameter.
+            path: Filesystem path to the target file or directory.
+            operation: The operation parameter.
+            files_to_delete: The files to delete parameter.
+            dirs_to_delete: The dirs to delete parameter.
+        """
         super().__init__()
         self.config = config
         self.path = path
         self.operation = operation
         self.files_to_delete = files_to_delete or []
         self.dirs_to_delete = dirs_to_delete or []
-        """__init__."""
-        """__init__."""
 
     def run(self):
-        """Scan for or delete empty items (emits scan_completed/delete_completed, or error_occurred)."""
+        """Scan for or delete empty items (emits scan_completed/delete_completed, or error_occurred).
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         try:
             if self.operation == "scan":
                 self.status_updated.emit(
@@ -54,7 +111,10 @@ class EmptyFilesWorker(QThread):
                 import threading
                 
                 def poll_progress():
-                    """Relay scanner percentage and current path every 0.1s until the scan ends."""
+                    """Relay scanner percentage and current path every 0.1s until the scan ends.
+
+                    Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
+                    """
                     while not getattr(scanner, '_scan_finished', False):
                         prog = scanner.get_scan_progress()
                         if prog:
@@ -62,8 +122,6 @@ class EmptyFilesWorker(QThread):
                             current = Path(prog.current_path).name if prog.current_path else ""
                             self.status_updated.emit(f"Scanning: {current}")
                         time.sleep(0.1)
-                    """poll_progress."""
-                    """poll_progress."""
                 
                 t = threading.Thread(target=poll_progress)
                 t.daemon = True
@@ -88,22 +146,32 @@ class EmptyFilesWorker(QThread):
 
         except Exception as e:
             self.error_occurred.emit(str(e))
-        """run."""
-        """run."""
 
 class EmptyFilesTab(BaseTab):
-    """Tab for empty files cleaning functionality."""
+    """Emptyfilestab.
+
+    Manages EmptyFilesTab operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, config, logger, safety_manager):
-        """Initialize the tab and clear the empty file/dir caches."""
+        """Initialize the tab and clear the empty file/dir caches.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            config: The config parameter.
+            logger: The logger parameter.
+            safety_manager: The safety manager parameter.
+        """
         super().__init__(config, logger, safety_manager)
         self.empty_files = []
         self.empty_dirs = []
-        """__init__."""
-        """__init__."""
 
     def setup_ui(self):
-        """Set up the user interface."""
+        """Set up the user interface.
+
+        Manages setup ui operations and coordinates related state changes for the component.
+        """
         layout = QVBoxLayout(self)
 
         # Title
@@ -166,6 +234,12 @@ class EmptyFilesTab(BaseTab):
         self.delete_button.setMinimumHeight(35)
         buttons_layout.addWidget(self.delete_button)
 
+        self.czkawka_scan_button = QPushButton("Czkawka Empty Scan")
+        self.czkawka_scan_button.setObjectName("empty_files_czkawka_scan_button")
+        self.czkawka_scan_button.clicked.connect(self.start_czkawka_scan)
+        self.czkawka_scan_button.setMinimumHeight(35)
+        buttons_layout.addWidget(self.czkawka_scan_button)
+
         layout.addLayout(buttons_layout)
 
         # Progress bar
@@ -212,7 +286,10 @@ class EmptyFilesTab(BaseTab):
         layout.addWidget(self.summary_label)
 
     def setup_tooltips(self):
-        """Set up tooltips."""
+        """Set up tooltips.
+
+        Manages setup tooltips operations and coordinates related state changes for the component.
+        """
         self.path_input.setToolTip(
             "Directory path to scan for empty files and folders")
         self.dry_run_checkbox.setToolTip(
@@ -223,18 +300,26 @@ class EmptyFilesTab(BaseTab):
             "Only consider files/folders older than specified days")
         self.scan_button.setToolTip(
             "Start scanning for empty files and directories")
+        self.czkawka_scan_button.setToolTip(
+            "Scan with czkawka EmptyFinder (zero-byte files, empty folders)")
         self.delete_button.setToolTip(
             "Delete selected empty files and directories")
 
     def browse_path(self):
-        """Browse for directory to scan."""
+        """Browse for directory to scan.
+
+        Manages browse path operations and coordinates related state changes for the component.
+        """
         path = QFileDialog.getExistingDirectory(
             self, "Select Directory to Scan")
         if path:
             self.path_input.setText(path)
 
     def start_scan(self):
-        """Validate the path and launch the scan worker."""
+        """Validate the path and launch the scan worker.
+
+        Manages start scan operations and coordinates related state changes for the component.
+        """
         path = self.path_input.text().strip()
         if not path or not Path(path).exists():
             QMessageBox.warning(self, "Invalid Path",
@@ -260,11 +345,46 @@ class EmptyFilesTab(BaseTab):
         worker.finished.connect(lambda: self.operation_finished(worker))
 
         worker.start()
-        """start_scan."""
-        """start_scan."""
+
+    def start_czkawka_scan(self):
+        """Validate the path and launch the czkawka EmptyFinder worker.
+
+        Manages start czkawka scan operations and coordinates related state changes for the component.
+        """
+        path = self.path_input.text().strip()
+        if not path or not Path(path).exists():
+            QMessageBox.warning(self, "Invalid Path",
+                                "Please select a valid directory to scan.")
+            return
+
+        self.scan_button.setEnabled(False)
+        self.czkawka_scan_button.setEnabled(False)
+        self.delete_button.setEnabled(False)
+        self.progress_bar.setVisible(True)
+        self.progress_bar.setRange(0, 0)
+
+        self.results_table.setRowCount(0)
+        self.empty_files = []
+        self.empty_dirs = []
+
+        worker = EmptyFinderWorker(self.config, path)
+        self.add_worker_thread(worker)
+
+        worker.status_updated.connect(self.status_label.setText)
+        worker.progress_updated.connect(self.progress_bar.setValue)
+        worker.scan_completed.connect(self.scan_completed)
+        worker.error_occurred.connect(self.handle_error)
+        worker.finished.connect(lambda: self.operation_finished(worker))
+        worker.finished.connect(
+            lambda: self.czkawka_scan_button.setEnabled(True))
+
+        worker.start()
 
     def start_delete(self):
-        """Start deleting selected items."""
+        """Start deleting selected items.
+
+        Manages start delete operations and coordinates related state changes for the component.
+        """
         selected_files = []
         selected_dirs = []
 
@@ -314,7 +434,15 @@ class EmptyFilesTab(BaseTab):
         worker.start()
 
     def scan_completed(self, empty_files, empty_dirs, stats):
-        """Handle scan completion."""
+        """Handle scan completion.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+        Args:
+            empty_files: The empty files parameter.
+            empty_dirs: The empty dirs parameter.
+            stats: The stats parameter.
+        """
         self.empty_files = empty_files
         self.empty_dirs = empty_dirs
 
@@ -353,25 +481,33 @@ class EmptyFilesTab(BaseTab):
         self.delete_button.setEnabled(total_items > 0)
 
     def select_all_items(self):
-        """Check every row checkbox in the results table."""
+        """Check every row checkbox in the results table.
+
+        Manages select all items operations and coordinates related state changes for the component.
+        """
         for row in range(self.results_table.rowCount()):
             checkbox = self.results_table.cellWidget(row, 0)
             if checkbox:
                 checkbox.setChecked(True)
-        """select_all_items."""
-        """select_all_items."""
 
     def deselect_all_items(self):
-        """Uncheck every row checkbox in the results table."""
+        """Uncheck every row checkbox in the results table.
+
+        Manages deselect all items operations and coordinates related state changes for the component.
+        """
         for row in range(self.results_table.rowCount()):
             checkbox = self.results_table.cellWidget(row, 0)
             if checkbox:
                 checkbox.setChecked(False)
-        """deselect_all_items."""
-        """deselect_all_items."""
 
     def delete_completed(self, result):
-        """Handle deletion completion."""
+        """Handle deletion completion.
+
+        Manages delete completed operations and coordinates related state changes for the component.
+
+        Args:
+            result: Collection or dictionary holding operation results.
+        """
         files_deleted = result.get('files_deleted', 0)
         dirs_deleted = result.get('dirs_deleted', 0)
         errors = result.get('errors', [])
@@ -386,15 +522,25 @@ class EmptyFilesTab(BaseTab):
         self.start_scan()
 
     def handle_error(self, error_message):
-        """Show the error in a dialog and the status label."""
+        """Show the error in a dialog and the status label.
+
+        Manages handle error operations and coordinates related state changes for the component.
+
+        Args:
+            error_message: Informational or progress status message.
+        """
         QMessageBox.critical(
             self, "Error", f"An error occurred: {error_message}")
         self.status_label.setText(f"Error: {error_message}")
-        """handle_error."""
-        """handle_error."""
 
     def operation_finished(self, worker):
-        """Handle operation completion."""
+        """Handle operation completion.
+
+        Manages operation finished operations and coordinates related state changes for the component.
+
+        Args:
+            worker: The worker parameter.
+        """
         self.progress_bar.setVisible(False)
         self.scan_button.setEnabled(True)
 

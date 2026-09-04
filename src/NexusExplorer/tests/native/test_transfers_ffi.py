@@ -25,7 +25,7 @@ except FileNotFoundError:
 
 @pytest.fixture(scope="module")
 def ffi():
-    """ffi."""
+    """Provide a shared NexusFfi handle, closed after the module."""
     f = nexus_ffi.NexusFfi()
     yield f
     f.close()
@@ -33,7 +33,7 @@ def ffi():
 
 @pytest.fixture
 def dirs(tmp_path):
-    """dirs."""
+    """Provide fresh temp src and dst directories."""
     src = tmp_path / "src"
     dst = tmp_path / "dst"
     src.mkdir()
@@ -42,14 +42,14 @@ def dirs(tmp_path):
 
 
 def _payload(n: int, byte: bytes = b"A") -> bytes:
-    """_payload."""
+    """Return n copies of byte for test file contents."""
     return byte * n
 
 
 class TestBasicTransfers:
-    """TestBasicTransfers."""
+    """Group basic FFI copy, move, and delete transfer tests."""
     def test_copy_multi_unicode(self, ffi, dirs):
-        """test_copy_multi_unicode."""
+        """Verify FFI copy of multiple files including unicode and spaced names."""
         src, dst = dirs
         names = ["one.txt", "emoji_\U0001F4C1.dat", "sub space.md"]
         for i, n in enumerate(names):
@@ -60,7 +60,7 @@ class TestBasicTransfers:
             assert (dst / n).read_bytes() == _payload(1024 * (i + 1))
 
     def test_move_removes_source(self, ffi, dirs):
-        """test_move_removes_source."""
+        """Verify FFI move copies content and removes the source."""
         src, dst = dirs
         p = src / "mv.txt"
         p.write_bytes(_payload(2048, b"M"))
@@ -70,7 +70,7 @@ class TestBasicTransfers:
         assert not p.exists()
 
     def test_delete_permanent(self, ffi, dirs):
-        """test_delete_permanent."""
+        """Verify permanent FFI delete removes the file."""
         src, _ = dirs
         v = src / "gone.bin"
         v.write_bytes(b"Z" * 10)
@@ -79,7 +79,7 @@ class TestBasicTransfers:
         assert not v.exists()
 
     def test_delete_to_trash(self, ffi, dirs):
-        """test_delete_to_trash."""
+        """Verify trash FFI delete removes the file from its path."""
         src, _ = dirs
         v = src / "trashed.bin"
         v.write_bytes(b"T" * 10)
@@ -97,7 +97,7 @@ def _run_with_policy(ffi, src_file, dst_dir, policy: int) -> dict:
     done = threading.Event()
 
     def on_conflict(_ud, _j, cid, s, d, ss, ds, sm, dm, is_dir):
-        """on_conflict."""
+        """Count the conflict and answer with the configured policy."""
         result["conflicts"] += 1
         return policy
 
@@ -122,9 +122,9 @@ def _run_with_policy(ffi, src_file, dst_dir, policy: int) -> dict:
 
 
 class TestConflictPolicies:
-    """TestConflictPolicies."""
+    """Group FFI conflict-policy tests for overwrite, skip, and keep-both."""
     def test_overwrite_replaces_content(self, ffi, dirs):
-        """test_overwrite_replaces_content."""
+        """Verify overwrite policy replaces destination content on conflict."""
         src, dst = dirs
         (src / "c.txt").write_bytes(b"S" * 400)
         (dst / "c.txt").write_bytes(b"D" * 100)
@@ -134,7 +134,7 @@ class TestConflictPolicies:
         assert (dst / "c.txt").read_bytes() == b"S" * 400
 
     def test_skip_preserves_destination(self, ffi, dirs):
-        """test_skip_preserves_destination."""
+        """Verify skip policy preserves destination content on conflict."""
         src, dst = dirs
         (src / "s.txt").write_bytes(b"S" * 400)
         (dst / "s.txt").write_bytes(b"D" * 100)
@@ -143,7 +143,7 @@ class TestConflictPolicies:
         assert (dst / "s.txt").read_bytes() == b"D" * 100
 
     def test_keep_both_creates_sibling(self, ffi, dirs):
-        """test_keep_both_creates_sibling."""
+        """Verify keep-both preserves destination and creates a sibling file."""
         src, dst = dirs
         (src / "k.txt").write_bytes(b"S" * 300)
         (dst / "k.txt").write_bytes(b"D" * 50)
@@ -155,10 +155,10 @@ class TestConflictPolicies:
 
 
 class TestPauseResumeCancel:
-    """TestPauseResumeCancel."""
+    """Group pause/resume and cancel tests over a large FFI copy."""
     @pytest.fixture(scope="class")
     def big_src(self, tmp_path_factory):
-        """big_src."""
+        """Provide a 192 MB file built from repeated 1 MB chunks."""
         d = tmp_path_factory.mktemp("big")
         p = d / "big.bin"
         chunk = os.urandom(1024 * 1024)
@@ -179,7 +179,7 @@ class TestPauseResumeCancel:
         dest_b = str(dst_dir).encode()
 
         def on_progress(_ud, _j, db, tb, sp, eta, cur):
-            """on_progress."""
+            """Record bytes done, trigger the control action once, and cap growth."""
             result["progress"].append(int(db))
             if holder.get("handle") and not holder.get("acted"):
                 action(holder, int(db))
@@ -188,7 +188,7 @@ class TestPauseResumeCancel:
                 result["progress"].clear()
 
         def on_complete(_ud, _j, s, e):
-            """on_complete."""
+            """Record success and error then signal job completion."""
             result["ok"] = bool(s)
             result["error"] = e.decode("utf-8", "replace") if e else ""
             done.set()
@@ -205,13 +205,13 @@ class TestPauseResumeCancel:
         return result
 
     def test_pause_resume_completes(self, ffi, big_src, tmp_path):
-        """test_pause_resume_completes."""
+        """Verify a big copy completes with matching size after pause and resume."""
         dst = tmp_path / "pr_out"
         dst.mkdir()
         state = {"paused": False}
 
         def act(holder, _db):
-            """act."""
+            """Pause the job once and schedule a resume after 0.7s."""
             if not state["paused"]:
                 state["paused"] = True
                 assert ffi.pause_job(holder["handle"]) == 0
@@ -225,13 +225,13 @@ class TestPauseResumeCancel:
         assert out.stat().st_size == big_src.stat().st_size
 
     def test_cancel_reports_not_ok(self, ffi, big_src, tmp_path):
-        """test_cancel_reports_not_ok."""
+        """Verify cancelling a big copy reports failure."""
         dst = tmp_path / "cx_out"
         dst.mkdir()
         state = {"cancelled": False}
 
         def act(holder, _db):
-            """act."""
+            """Cancel the job once."""
             if not state["cancelled"]:
                 state["cancelled"] = True
                 ffi.cancel_job(holder["handle"])

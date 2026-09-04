@@ -76,7 +76,10 @@ from cortex_unified.system_tools.restore_point import RestorePointManager
 
 @dataclass(frozen=True, slots=True)
 class DriverInfo:
-    """Single device driver information."""
+    """Driverinfo.
+
+    Manages DriverInfo operations and coordinates related state changes for the component.
+    """
     hardware_id: str
     device_name: str
     manufacturer: str
@@ -96,14 +99,23 @@ class DriverInfo:
     class_guid: Optional[str] = None
 
     def to_dict(self) -> dict:
-        """To dict."""
+        """To dict.
+
+        Manages to dict operations and coordinates related state changes for the component.
+
+        Returns:
+            dict: Dictionary mapping identifiers to status or values.
+        """
         import dataclasses
         return dataclasses.asdict(self)
 
 
 @dataclass(frozen=True, slots=True)
 class DriverPack:
-    """Driver pack metadata (SDIO-compatible)."""
+    """Driverpack.
+
+    Manages DriverPack operations and coordinates related state changes for the component.
+    """
     name: str
     version: str
     date: str
@@ -117,7 +129,10 @@ class DriverPack:
 
 @dataclass
 class ScanResult:
-    """Scan Result data container."""
+    """Scan Result data container.
+
+    Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+    """
     drivers: List[DriverInfo]
     total_devices: int
     outdated_count: int
@@ -125,7 +140,13 @@ class ScanResult:
     scan_time: float
 
     def to_json(self) -> str:
-        """To json."""
+        """To json.
+
+        Manages to json operations and coordinates related state changes for the component.
+
+        Returns:
+            str: Formatted string or path.
+        """
         return json.dumps({
             "total_devices": self.total_devices,
             "outdated_count": self.outdated_count,
@@ -140,7 +161,10 @@ class ScanResult:
 # ---------------------------------------------------------------------------
 
 class DriverManager:
-    """Detect, update, and clean device drivers."""
+    """Drivermanager.
+
+    Manages DriverManager operations and coordinates related state changes for the component.
+    """
 
     def __init__(
         self,
@@ -150,7 +174,17 @@ class DriverManager:
         offline_mode: bool = False,
         driverpack_index: Optional[str] = None,
     ):
-        """Initialize Driver Manager."""
+        """Initialize Driver Manager.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            create_restore_point (bool): The create restore point parameter.
+            progress_callback (Optional[Callable[[str], None]]): The progress callback parameter.
+            cancel_event (Optional[threading.Event]): Threading event or callable to check for cancellation.
+            offline_mode (bool): Whether to operate in offline/local mode without internet access.
+            driverpack_index (Optional[str]): Optional path to the local driverpack index file.
+        """
         self.create_restore_point = create_restore_point
         self.progress = progress_callback or (lambda _: None)
         self.cancel_event = cancel_event or threading.Event()
@@ -164,7 +198,17 @@ class DriverManager:
     # -- helpers
 
     def _run(self, cmd: List[str], timeout: int = 120) -> Tuple[int, str, str]:
-        """_run."""
+        """Run.
+
+        Manages run operations and coordinates related state changes for the component.
+
+        Args:
+            cmd (List[str]): The cmd parameter.
+            timeout (int): The timeout parameter.
+
+        Returns:
+            Tuple[int, str, str]: Formatted string or path.
+        """
         if self.cancel_event.is_set():
             raise RuntimeError("Cancelled")
         try:
@@ -177,17 +221,29 @@ class DriverManager:
             return -1, "", f"Timeout after {timeout}s"
         except Exception as exc:
             return -1, "", str(exc)
-        """_run."""
-        """_run."""
 
     def _run_ps(self, script: str, timeout: int = 120) -> Tuple[int, str, str]:
-        """_run_ps."""
+        """_run_ps.
+
+        Manages run ps operations and coordinates related state changes for the component.
+
+        Args:
+            script (str): The script parameter.
+            timeout (int): The timeout parameter.
+
+        Returns:
+            Tuple[int, str, str]: Formatted string or path.
+        """
         return self._run(["powershell", "-NoProfile", "-Command", script], timeout=timeout)
-        """_run_ps."""
-        """_run_ps."""
 
     def _load_index(self, path: str) -> None:
-        """_load_index."""
+        """_load_index.
+
+        Manages load index operations and coordinates related state changes for the component.
+
+        Args:
+            path (str): Filesystem path to the target file or directory.
+        """
         try:
             with open(path, "r", encoding="utf-8") as f:
                 data = json.load(f)
@@ -198,31 +254,46 @@ class DriverManager:
             self.progress(f"Loaded driverpack index: {len(self._index)} hardware IDs")
         except Exception as exc:
             self.progress(f"Failed to load index: {exc}")
-        """_load_index."""
-        """_load_index."""
 
     def _save_index(self, path: str) -> None:
-        """_save_index."""
+        """_save_index.
+
+        Manages save index operations and coordinates related state changes for the component.
+
+        Args:
+            path (str): Filesystem path to the target file or directory.
+        """
         try:
             data = {"packs": [self._pack_to_dict(p) for p in set(self._index.values())]}
             with open(path, "w", encoding="utf-8") as f:
                 json.dump(data, f, indent=2)
         except Exception as exc:
             self.progress(f"Failed to save index: {exc}")
-        """_save_index."""
-        """_save_index."""
 
     def _pack_to_dict(self, pack: DriverPack) -> dict:
-        """_pack_to_dict."""
+        """_pack_to_dict.
+
+        Manages pack to dict operations and coordinates related state changes for the component.
+
+        Args:
+            pack (DriverPack): The pack parameter.
+
+        Returns:
+            dict: Dictionary mapping identifiers to status or values.
+        """
         import dataclasses
         return dataclasses.asdict(pack)
-        """_pack_to_dict."""
-        """_pack_to_dict."""
 
     # -- enumeration
 
     def _enumerate_pnp(self) -> List[DriverInfo]:
-        """Use WMI/PowerShell to get all PnP devices with driver info."""
+        """Use WMI/PowerShell to get all PnP devices with driver info.
+
+        Manages enumerate pnp operations and coordinates related state changes for the component.
+
+        Returns:
+            List[DriverInfo]: List of processed items or identifiers.
+        """
         script = """
 $devices = Get-PnpDevice -PresentOnly | Where-Object {$_.Status -eq 'OK'}
 $results = @()
@@ -433,7 +504,16 @@ $results | ConvertTo-Json -Depth 3
             return None
 
     def _check_updates_offline(self, drivers: List[DriverInfo]) -> List[DriverInfo]:
-        """Match against local driverpack index."""
+        """Match against local driverpack index.
+
+        Manages check updates offline operations and coordinates related state changes for the component.
+
+        Args:
+            drivers (List[DriverInfo]): List of detected driver records or driver instance.
+
+        Returns:
+            List[DriverInfo]: List of processed items or identifiers.
+        """
         updated: List[DriverInfo] = []
         for drv in drivers:
             # Check primary hardware ID and compatible IDs
@@ -457,9 +537,28 @@ $results | ConvertTo-Json -Depth 3
         return updated
 
     def _version_newer(self, v1: str, v2: str) -> bool:
-        """Compare version strings (handles multi-part versions)."""
+        """Compare version strings (handles multi-part versions).
+
+        Manages version newer operations and coordinates related state changes for the component.
+
+        Args:
+            v1 (str): The v1 parameter.
+            v2 (str): The v2 parameter.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         def parse(v: str) -> List[int]:
-            """Parse."""
+            """Parse and decode structured data from strings or byte streams.
+
+            Extracts fields, validates expected formats, and instantiates corresponding strongly-typed model objects.
+
+            Args:
+                v (str): The v parameter.
+
+            Returns:
+                List[int]: List of processed items or identifiers.
+            """
             return [int(x) for x in re.split(r"[.\-_]", v) if x.isdigit()]
         p1, p2 = parse(v1), parse(v2)
         for a, b in zip(p1, p2):
@@ -470,7 +569,13 @@ $results | ConvertTo-Json -Depth 3
     # -- public API
 
     def scan(self) -> ScanResult:
-        """Scan all devices and check for outdated/missing drivers."""
+        """Scan all devices and check for outdated/missing drivers.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+        Returns:
+            ScanResult: Result of the operation.
+        """
         t0 = time.time()
         self.progress("Enumerating devices...")
         drivers = self._enumerate_pnp()
@@ -494,7 +599,17 @@ $results | ConvertTo-Json -Depth 3
         )
 
     def update_selected(self, hardware_ids: List[str], force: bool = False) -> Dict[str, bool]:
-        """Install driver updates for specified hardware IDs."""
+        """Install driver updates for specified hardware IDs.
+
+        Manages update selected operations and coordinates related state changes for the component.
+
+        Args:
+            hardware_ids (List[str]): List of hardware IDs selected for installation.
+            force (bool): The force parameter.
+
+        Returns:
+            Dict[str, bool]: Dictionary mapping identifiers to status or values.
+        """
         results = {}
         scan = self.scan()
         target_drivers = {d.hardware_id: d for d in scan.drivers if d.hardware_id in hardware_ids}
@@ -527,7 +642,17 @@ $results | ConvertTo-Json -Depth 3
         return results
 
     def _download_and_install(self, drv: DriverInfo, force: bool) -> bool:
-        """Download driver package and install via pnputil."""
+        """Download driver package and install via pnputil.
+
+        Manages download and install operations and coordinates related state changes for the component.
+
+        Args:
+            drv (DriverInfo): The drv parameter.
+            force (bool): The force parameter.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         import tempfile
         import urllib.request
         try:
@@ -547,7 +672,17 @@ $results | ConvertTo-Json -Depth 3
             return False
 
     def _install_from_store(self, inf_name: str, force: bool) -> bool:
-        """Install driver already in driver store."""
+        """Install driver already in driver store.
+
+        Initiates the package or update installation workflow in the background, monitoring execution progress.
+
+        Args:
+            inf_name (str): The inf name parameter.
+            force (bool): The force parameter.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         rc, _, _ = self._run([
             "pnputil.exe", "/add-driver", inf_name,
             "/install" + (" /force" if force else "")
@@ -608,12 +743,24 @@ $results | ConvertTo-Json -Depth 3
         return removed, freed
 
     def export_driverpack_index(self, path: str) -> None:
-        """Export current index to JSON for offline use."""
+        """Export current index to JSON for offline use.
+
+        Manages export driverpack index operations and coordinates related state changes for the component.
+
+        Args:
+            path (str): Filesystem path to the target file or directory.
+        """
         self._save_index(path)
         self.progress(f"Exported driverpack index to {path}")
 
     def get_stats(self) -> Dict:
-        """Get stats."""
+        """Get stats.
+
+        Manages get stats operations and coordinates related state changes for the component.
+
+        Returns:
+            Dict: Dictionary mapping identifiers to status or values.
+        """
         scan = self.scan()
         return {
             "total_devices": scan.total_devices,

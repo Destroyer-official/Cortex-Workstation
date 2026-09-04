@@ -89,11 +89,6 @@ class PluginManifest:
             permissions=tuple(data.get("permissions", [])),
             contributes=data.get("contributes", {}),
         )
-        """Validate raw plugin.json data and build a frozen manifest.
-
-        Enforces required keys, supported api_version, and on-disk
-        existence of the declared main module; raises ValueError or
-        FileNotFoundError on violation."""
 
 
 # ---------------------------------------------------------------------------
@@ -133,8 +128,6 @@ class PluginLifecycle:
         self.error_message = ""
         self.load_time: float = 0.0
         self.last_error: Exception | None = None
-        """Start a plugin's tracker in the DISCOVERED state with no error
-        metadata recorded."""
 
     def transition_to(self, new_state: PluginState, error: str = "") -> None:
         """Apply an FSM transition, enforcing the legal edges table;
@@ -148,20 +141,15 @@ class PluginLifecycle:
             )
         self.state = new_state
         self.error_message = error
-        """Apply an FSM transition, enforcing the legal edges table;
-        illegal transitions raise ValueError (error text is recorded on
-        success)."""
 
     @property
     def is_active(self) -> bool:
         """Return True when the plugin is in the ACTIVE state."""
         return self.state is PluginState.ACTIVE
-        """Return True when the plugin is in the ACTIVE state."""
 
     def __repr__(self) -> str:
         """Debug representation: <PluginLifecycle id state=NAME>."""
         return f"<PluginLifecycle {self.plugin_id} state={self.state.name}>"
-        """Debug representation: <PluginLifecycle id state=NAME>."""
 
 
 # ---------------------------------------------------------------------------
@@ -181,13 +169,10 @@ class ScopedConfig:
                 self._data = json.loads(self._path.read_text(encoding="utf-8"))
             except Exception:
                 pass
-        """Load (or start) the plugin's config JSON inside its private
-        config_dir namespace."""
 
     def get(self, key: str, default: Any = None) -> Any:
         """Return a config value by key, or default when missing."""
         return self._data.get(key, default)
-        """Return a config value by key, or default when missing."""
 
     def set(self, key: str, value: Any) -> None:
         """Store a config value in memory and persist the whole namespace
@@ -198,13 +183,10 @@ class ScopedConfig:
             json.dumps(self._data, indent=2, ensure_ascii=False),
             encoding="utf-8",
         )
-        """Store a config value in memory and persist the whole namespace
-        to the plugin's JSON file (parents created as needed)."""
 
     def all(self) -> dict[str, Any]:
         """Return a copy of the full config mapping."""
         return dict(self._data)
-        """Return a copy of the full config mapping."""
 
 
 class EventBridge:
@@ -215,23 +197,18 @@ class EventBridge:
         plugin's id."""
         self._bus = event_bus
         self._plugin_id = plugin_id
-        """Bind to the host bus, namespacing emitted events with the
-        plugin's id."""
 
     def emit(self, event: str, data: Any = None) -> None:
         """Emit as '<plugin_id>.<event>' so events are attributable."""
         self._bus.emit(f"{self._plugin_id}.{event}", data)
-        """Emit as '<plugin_id>.<event>' so events are attributable."""
 
     def subscribe(self, event: str, callback: Callable) -> None:
         """Subscribe to '<event>' from any plugin ('*.<event>' wildcard)."""
         self._bus.subscribe(f"*.{event}", callback)
-        """Subscribe to '<event>' from any plugin ('*.<event>' wildcard)."""
 
     def unsubscribe(self, event: str, callback: Callable) -> None:
         """Remove a '*.event' subscription (no-op when absent)."""
         self._bus.unsubscribe(f"*.{event}", callback)
-        """Remove a '*.event' subscription (no-op when absent)."""
 
 
 class EventBus:
@@ -241,7 +218,6 @@ class EventBus:
         """Create the subscriber map guarded by a lock."""
         self._lock = threading.Lock()
         self._subscribers: dict[str, list[Callable]] = {}
-        """Create the subscriber map guarded by a lock."""
 
     def emit(self, event: str, data: Any = None) -> None:
         """Invoke all subscribers registered for the event plus '*'
@@ -255,15 +231,11 @@ class EventBus:
                 cb(data)
             except Exception as exc:
                 log.warning("Event handler error on '%s': %s", event, exc)
-        """Invoke all subscribers registered for the event plus '*'
-        wildcards (snapshot under lock; handler exceptions are logged, not
-        raised)."""
 
     def subscribe(self, pattern: str, callback: Callable) -> None:
         """Register a callback for an event pattern (or '*' wildcard)."""
         with self._lock:
             self._subscribers.setdefault(pattern, []).append(callback)
-        """Register a callback for an event pattern (or '*' wildcard)."""
 
     def unsubscribe(self, pattern: str, callback: Callable) -> None:
         """Remove a callback registration (silently ignores misses)."""
@@ -273,7 +245,6 @@ class EventBus:
                 subs.remove(callback)
             except ValueError:
                 pass
-        """Remove a callback registration (silently ignores misses)."""
 
 
 class PluginContext:
@@ -289,58 +260,46 @@ class PluginContext:
         self._plugin_id = plugin_id
         self._host = host
         self._config_cache = ScopedConfig(plugin_id, host.config_dir)
-        """Create the plugin's scoped facade: id, host back-reference
-        (never exposed to the plugin), and a private ScopedConfig."""
 
     @property
     def logger(self) -> logging.Logger:
         """Return the plugin's namespaced logger ('nexus.plugin.<id>')."""
         return logging.getLogger(f"nexus.plugin.{self._plugin_id}")
-        """Return the plugin's namespaced logger ('nexus.plugin.<id>')."""
 
     @property
     def config(self) -> ScopedConfig:
         """Return the plugin's scoped config store."""
         return self._config_cache
-        """Return the plugin's scoped config store."""
 
     @property
     def events(self) -> EventBridge:
         """Return a fresh EventBridge over the host bus, namespaced to
         this plugin."""
         return EventBridge(self._host.event_bus, self._plugin_id)
-        """Return a fresh EventBridge over the host bus, namespaced to
-        this plugin."""
 
     def get_current_path(self) -> str:
         """Return the explorer's current directory via the host callback."""
         return self._host.get_current_path()
-        """Return the explorer's current directory via the host callback."""
 
     def get_selected_files(self) -> list[str]:
         """Return the explorer's current selection via the host callback."""
         return self._host.get_selected_files()
-        """Return the explorer's current selection via the host callback."""
 
     def navigate_to(self, path: str) -> None:
         """Ask the host to navigate to a path."""
         self._host.navigate_to(path)
-        """Ask the host to navigate to a path."""
 
     def refresh(self) -> None:
         """Ask the host to refresh the current view."""
         self._host.refresh_view()
-        """Ask the host to refresh the current view."""
 
     def show_message(self, text: str, timeout_ms: int = 3000) -> None:
         """Show a transient status-bar message."""
         self._host.show_status_message(text, timeout_ms)
-        """Show a transient status-bar message."""
 
     def add_status_widget(self, widget: QWidget) -> None:
         """Attach a widget to the host's status area."""
         self._host.add_status_widget(widget)
-        """Attach a widget to the host's status area."""
 
     # Intentionally no __getattr__ – attribute access beyond the listed
     # methods raises AttributeError, preventing host internals leakage.
@@ -405,8 +364,6 @@ class APIAdapter:
         self._plugin = plugin
         self._manifest = manifest
         self._validate()
-        """Wrap a plugin instance and validate its manifest's api_version
-        against the host's supported set."""
 
     def _validate(self) -> None:
         """Raise ValueError when the plugin's api_version isn't supported
@@ -417,14 +374,11 @@ class APIAdapter:
                 f"{self._manifest.api_version}, host supports "
                 f"{SUPPORTED_API_VERSIONS}"
             )
-        """Raise ValueError when the plugin's api_version isn't supported
-        by this host."""
 
     @property
     def plugin(self) -> NexusPlugin:
         """Return the wrapped plugin instance."""
         return self._plugin
-        """Return the wrapped plugin instance."""
 
 
 # ---------------------------------------------------------------------------
@@ -443,8 +397,6 @@ class HotReloadWatcher(QFileSystemWatcher):
         super().__init__(parent)
         self._watched: dict[str, Path] = {}
         self.directoryChanged.connect(self._on_dir_change)
-        """Create the watcher and connect directoryChanged to the plugin
-        lookup handler."""
 
     def watch_plugin(self, plugin_id: str, plugin_dir: Path) -> None:
         """Start watching a plugin's directory (idempotent addPath) and map
@@ -453,15 +405,12 @@ class HotReloadWatcher(QFileSystemWatcher):
         if dir_str not in self._watched:
             self.addPath(dir_str)
         self._watched[plugin_id] = plugin_dir
-        """Start watching a plugin's directory (idempotent addPath) and map
-        the id to its path."""
 
     def unwatch_plugin(self, plugin_id: str) -> None:
         """Stop watching a plugin's directory and drop its mapping."""
         dir_str = self._watched.pop(plugin_id, None)
         if dir_str:
             self.removePath(str(dir_str))
-        """Stop watching a plugin's directory and drop its mapping."""
 
     def _on_dir_change(self, path: str) -> None:
         """Translate a directoryChanged path back to its plugin id and
@@ -470,8 +419,6 @@ class HotReloadWatcher(QFileSystemWatcher):
             if str(pdir) == path:
                 self.file_changed.emit(pid)
                 break
-        """Translate a directoryChanged path back to its plugin id and
-        emit file_changed for the first matching plugin."""
 
 
 # ---------------------------------------------------------------------------
@@ -590,10 +537,6 @@ class PluginHost(QObject):
         self._refresh_view_fn: Callable[[], None] = lambda: None
         self._show_status_fn: Callable[[str, int], None] = lambda t, ms: None
         self._add_status_widget_fn: Callable[[QWidget], None] = lambda w: None
-        """Create the host: resolve (and create) ~/.nexus/plugins and
-        ~/.nexus/config, allocate the plugin/manifest/context/lifecycle
-        maps, the shared EventBus, the hot-reload watcher, and no-op host
-        callbacks (set later by the application)."""
 
     # -- host callbacks (set by application) ----------------------------------
 
@@ -620,38 +563,30 @@ class PluginHost(QObject):
             self._show_status_fn = show_status_message
         if add_status_widget is not None:
             self._add_status_widget_fn = add_status_widget
-        """Install application-provided callbacks; only the passed ones
-        replace the current (no-op) implementations."""
 
     def get_current_path(self) -> str:
         """Delegate to the installed current-path callback."""
         return self._get_current_path_fn()
-        """Delegate to the installed current-path callback."""
 
     def get_selected_files(self) -> list[str]:
         """Delegate to the installed selection callback."""
         return self._get_selected_files_fn()
-        """Delegate to the installed selection callback."""
 
     def navigate_to(self, path: str) -> None:
         """Delegate navigation to the installed callback."""
         self._navigate_to_fn(path)
-        """Delegate navigation to the installed callback."""
 
     def refresh_view(self) -> None:
         """Delegate view refresh to the installed callback."""
         self._refresh_view_fn()
-        """Delegate view refresh to the installed callback."""
 
     def show_status_message(self, text: str, timeout_ms: int = 3000) -> None:
         """Delegate status-bar messaging to the installed callback."""
         self._show_status_fn(text, timeout_ms)
-        """Delegate status-bar messaging to the installed callback."""
 
     def add_status_widget(self, widget: QWidget) -> None:
         """Delegate status-widget insertion to the installed callback."""
         self._add_status_widget_fn(widget)
-        """Delegate status-widget insertion to the installed callback."""
 
     # -- properties ------------------------------------------------------------
 
@@ -659,25 +594,21 @@ class PluginHost(QObject):
     def plugins_dir(self) -> Path:
         """Return the plugin discovery directory."""
         return self._plugins_dir
-        """Return the plugin discovery directory."""
 
     @property
     def config_dir(self) -> Path:
         """Return the plugin config directory."""
         return self._config_dir
-        """Return the plugin config directory."""
 
     @property
     def loaded_plugins(self) -> MappingProxyType[str, NexusPlugin]:
         """Return a read-only view of the active plugin map."""
         return MappingProxyType(self._plugins)
-        """Return a read-only view of the active plugin map."""
 
     @property
     def lifecycles(self) -> dict[str, PluginLifecycle]:
         """Return a copy of the lifecycle-tracker map."""
         return dict(self._lifecycles)
-        """Return a copy of the lifecycle-tracker map."""
 
     # -- discovery -------------------------------------------------------------
 
@@ -892,7 +823,6 @@ class PluginHost(QObject):
         """Unload every active plugin (iteration over a snapshot)."""
         for plugin_id in list(self._plugins):
             self.unload_plugin(plugin_id)
-        """Unload every active plugin (iteration over a snapshot)."""
 
     # -- enable / disable ------------------------------------------------------
 
@@ -960,17 +890,14 @@ class PluginHost(QObject):
     def get_plugin(self, plugin_id: str) -> NexusPlugin | None:
         """Return the active plugin instance by id, or None."""
         return self._plugins.get(plugin_id)
-        """Return the active plugin instance by id, or None."""
 
     def get_context(self, plugin_id: str) -> PluginContext | None:
         """Return the plugin's scoped context by id, or None."""
         return self._contexts.get(plugin_id)
-        """Return the plugin's scoped context by id, or None."""
 
     def get_all_plugins(self) -> list[NexusPlugin]:
         """Return all active plugin instances."""
         return list(self._plugins.values())
-        """Return all active plugin instances."""
 
     def get_all_context_menu_actions(
         self,
@@ -988,8 +915,6 @@ class PluginHost(QObject):
             except Exception as exc:
                 log.warning("Plugin %s context_menu error: %s", plugin_id, exc)
         return actions
-        """Collect (label, callback) context-menu actions from every
-        active plugin for the selected paths (crash-contained)."""
 
     def get_all_toolbar_actions(self) -> list[tuple[str, Callable[[], None]]]:
         """Collect (label, callback) toolbar actions from every active
@@ -1004,8 +929,6 @@ class PluginHost(QObject):
             except Exception as exc:
                 log.warning("Plugin %s toolbar error: %s", plugin_id, exc)
         return actions
-        """Collect (label, callback) toolbar actions from every active
-        plugin (crash-contained)."""
 
     def notify_file_open(self, path: str) -> bool:
         """Offer the file-open event to each active plugin; returns True
@@ -1020,8 +943,6 @@ class PluginHost(QObject):
             except Exception as exc:
                 log.warning("Plugin %s file_open error: %s", plugin_id, exc)
         return False
-        """Offer the file-open event to each active plugin; returns True
-        when one consumed the open (its on_file_open returned True)."""
 
     def get_preview_widget(self, path: str) -> QWidget | None:
         """Return the first non-None custom preview widget offered by an
@@ -1037,8 +958,6 @@ class PluginHost(QObject):
             except Exception as exc:
                 log.warning("Plugin %s preview error: %s", plugin_id, exc)
         return None
-        """Return the first non-None custom preview widget offered by an
-        active plugin for the path, else None."""
 
     def filter_search_results(self, query: str, results: list) -> list:
         """Chain each active plugin's on_search_filter over the results,
@@ -1052,8 +971,6 @@ class PluginHost(QObject):
             except Exception as exc:
                 log.warning("Plugin %s search_filter error: %s", plugin_id, exc)
         return results
-        """Chain each active plugin's on_search_filter over the results,
-        threading the output of one into the next (crash-contained)."""
 
     # -- diagnostics ------------------------------------------------------------
 

@@ -1,4 +1,4 @@
-"""Advanced Disk Analyzer — MFT fast scan, treemap/sunburst, cloud targets.
+"""Advanced Disk Analyzer — scandir walk, treemap/sunburst, cloud targets.
 
 Research grounding
 ------------------
@@ -23,7 +23,7 @@ Why this matters for Cortex Cleaner
 
 Design
 ------
-* **Platform abstraction**: Scanner base with NTFSScanner (MFT), PosixScanner
+* **Platform abstraction**: Scanner base with NTFSScanner (scandir walk), PosixScanner
   (ioctl/fiemap), CloudScanner (rclone/MS Graph/S3 SDK).
 * **Streaming results**: yields FileEntry objects; UI consumes via async
   generator for progressive treemap rendering.
@@ -38,10 +38,8 @@ Usage::
 
     from cortex_unified.analyzers.advanced_disk_analyzer import AdvancedDiskAnalyzer
     analyzer = AdvancedDiskAnalyzer(include_cloud=False)
-    async for entry in analyzer.scan("C:\\"):
-        # progressive UI update
-        pass
-    root_node = analyzer.build_tree()
+    entries = [entry async for entry in analyzer.scan("C:\\")]
+    root_node = analyzer.build_tree(entries)
     treemap_data = root_node.to_treemap()
     sunburst_data = root_node.to_sunburst()
 
@@ -103,7 +101,10 @@ except ImportError:
 
 @dataclass(slots=True)
 class FileEntry:
-    """Single file system entry from scanner."""
+    """Fileentry.
+
+    Manages FileEntry operations and coordinates related state changes for the component.
+    """
     path: str
     size: int
     mtime: float
@@ -120,7 +121,10 @@ class FileEntry:
 
 @dataclass
 class FolderNode:
-    """Aggregated folder node for visualization."""
+    """Foldernode.
+
+    Manages FolderNode operations and coordinates related state changes for the component.
+    """
     name: str
     path: str
     size: int = 0
@@ -130,7 +134,15 @@ class FolderNode:
     extension_stats: Dict[str, int] = field(default_factory=lambda: defaultdict(int))
 
     def add_file(self, rel_path: str, size: int, ext: str) -> None:
-        """Add one file's size to this node and every intermediate folder node."""
+        """Add one file's size to this node and every intermediate folder node.
+
+        Manages add file operations and coordinates related state changes for the component.
+
+        Args:
+            rel_path (str): Filesystem path to the target file or directory.
+            size (int): Integer number of bytes to format or process.
+            ext (str): The ext parameter.
+        """
         self.size += size
         self.file_count += 1
         self.extension_stats[ext] += size
@@ -144,13 +156,28 @@ class FolderNode:
             node = node.children[part]
             node.size += size
             node.folder_count += 1
-        """add_file."""
 
     def to_treemap(self, max_depth: int = 8) -> List[Dict]:
-        """Convert tree to flat list of hierarchy dictionaries for treemaps."""
+        """Convert tree to flat list of hierarchy dictionaries for treemaps.
+
+        Manages to treemap operations and coordinates related state changes for the component.
+
+        Args:
+            max_depth (int): The max depth parameter.
+
+        Returns:
+            List[Dict]: List of processed items or identifiers.
+        """
         result: List[Dict] = []
         def walk(node: "FolderNode", depth: int = 0):
-            """Emit one node dict, then recurse into children up to max_depth."""
+            """Walk.
+
+            Manages walk operations and coordinates related state changes for the component.
+
+            Args:
+                node ('FolderNode'): The node parameter.
+                depth (int): The depth parameter.
+            """
             if depth >= max_depth:
                 return
             result.append({
@@ -160,15 +187,31 @@ class FolderNode:
             })
             for child in node.children.values():
                 walk(child, depth + 1)
-            """walk."""
         walk(self)
         return result
 
     def to_sunburst(self, max_depth: int = 6) -> List[Dict]:
-        """Convert tree to sunburst parent-child dictionary list."""
+        """Convert tree to sunburst parent-child dictionary list.
+
+        Manages to sunburst operations and coordinates related state changes for the component.
+
+        Args:
+            max_depth (int): The max depth parameter.
+
+        Returns:
+            List[Dict]: List of processed items or identifiers.
+        """
         result: List[Dict] = []
         def walk(node: "FolderNode", depth: int = 0, parent: str = ""):
-            """Emit id/parent/value rows for sunburst rings, recursing to max_depth."""
+            """Walk.
+
+            Manages walk operations and coordinates related state changes for the component.
+
+            Args:
+                node ('FolderNode'): The node parameter.
+                depth (int): The depth parameter.
+                parent (str): Parent window or shell controller instance.
+            """
             if depth >= max_depth:
                 return
             result.append({
@@ -177,26 +220,48 @@ class FolderNode:
             })
             for child in node.children.values():
                 walk(child, depth + 1, node.path)
-            """walk."""
         walk(self)
         return result
 
     def to_bar_chart(self, top_n: int = 20) -> List[Dict]:
-        """Convert tree to top largest folders bar chart format."""
+        """Convert tree to top largest folders bar chart format.
+
+        Manages to bar chart operations and coordinates related state changes for the component.
+
+        Args:
+            top_n (int): The top n parameter.
+
+        Returns:
+            List[Dict]: List of processed items or identifiers.
+        """
         items = []
         def walk(node: "FolderNode"):
-            """Collect non-root folder sizes for the bar chart ranking."""
+            """Walk.
+
+            Manages walk operations and coordinates related state changes for the component.
+
+            Args:
+                node ('FolderNode'): The node parameter.
+            """
             if node.path != self.path:
                 items.append({"path": node.path, "size": node.size, "name": node.name})
             for child in node.children.values():
                 walk(child)
-            """walk."""
         walk(self)
         items.sort(key=lambda x: x["size"], reverse=True)
         return items[:top_n]
 
     def top_extensions(self, limit: int = 10) -> List[Tuple[str, int]]:
-        """Return top N file extensions by space consumed."""
+        """Return top N file extensions by space consumed.
+
+        Manages top extensions operations and coordinates related state changes for the component.
+
+        Args:
+            limit (int): The limit parameter.
+
+        Returns:
+            List[Tuple[str, int]]: List of processed items or identifiers.
+        """
         return sorted(self.extension_stats.items(), key=lambda x: x[1], reverse=True)[:limit]
 
 
@@ -205,33 +270,60 @@ class FolderNode:
 # ---------------------------------------------------------------------------
 
 class Scanner(ABC):
-    """Read-only filesystem scanner yielding FileEntry objects with cancellation and progress."""
+    """Read-only filesystem scanner yielding FileEntry objects with cancellation and progress.
+
+    Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+    """
     def __init__(self, cancel_event: Optional[threading.Event] = None,
                  progress_cb: Optional[Callable[[int, int, str], None]] = None):
-        """Store the cancellation event and progress callback with zeroed counters."""
+        """Store the cancellation event and progress callback with zeroed counters.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            cancel_event (Optional[threading.Event]): Threading event or callable to check for cancellation.
+            progress_cb (Optional[Callable[[int, int, str], None]]): Callback invoked with progress updates.
+        """
         self.cancel_event = cancel_event or threading.Event()
         self.progress_cb = progress_cb
         self._scanned_files = 0
         self._scanned_bytes = 0
-        """__init__."""
 
     @abstractmethod
     def scan(self, root: str) -> Generator[FileEntry, None, None]:
-        """Yield every FileEntry under root; implemented by each platform backend."""
+        """Yield every FileEntry under root; implemented by each platform backend.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+        Args:
+            root (str): Filesystem path to the target file or directory.
+
+        Returns:
+            Generator[FileEntry, None, None]: Result of the operation.
+        """
         ...
-        """scan."""
 
     def _check_cancel(self) -> bool:
-        """True once the caller has signalled the cancel event."""
+        """True once the caller has signalled the cancel event.
+
+        Manages check cancel operations and coordinates related state changes for the component.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         return self.cancel_event.is_set()
 
     def _report(self, path: str) -> None:
-        """Count the file and invoke progress_cb every 100th entry."""
+        """Report.
+
+        Manages report operations and coordinates related state changes for the component.
+
+        Args:
+            path (str): Filesystem path to the target file or directory.
+        """
         self._scanned_files += 1
         if self.progress_cb and self._scanned_files % 100 == 0:
             self.progress_cb(self._scanned_files, self._scanned_bytes, path)
-        """_report."""
-    """Scanner class."""
 
 
 # ---------------------------------------------------------------------------
@@ -239,15 +331,24 @@ class Scanner(ABC):
 # ---------------------------------------------------------------------------
 
 class NTFSScanner(Scanner):
-    """Fast NTFS scanner using direct MFT parsing via Windows API."""
+    """NTFS scanner that probes raw volume access but scans via os.scandir walk (MFT fast path not yet implemented)."""
 
     def __init__(self, *args, **kwargs):
-        """Initialize and probe whether raw MFT/volume access is available."""
+        """Initialize and probe whether raw MFT/volume access is available.
+
+        Initializes the instance and configures internal state.
+        """
         super().__init__(*args, **kwargs)
         self._use_mft = self._check_mft_access()
 
     def _check_mft_access(self) -> bool:
-        """Test raw volume handle access via CreateFileW; needs Administrator."""
+        """Test raw volume handle access via CreateFileW; needs Administrator.
+
+        Manages check mft access operations and coordinates related state changes for the component.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         try:
             import ctypes
             kernel32 = ctypes.windll.kernel32
@@ -262,18 +363,45 @@ class NTFSScanner(Scanner):
         return False
 
     def scan(self, root: str) -> Generator[FileEntry, None, None]:
-        """Yield entries via MFT parsing when available, else scandir fallback."""
+        """Yield entries via scandir walk (MFT fast path not yet implemented).
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+        Args:
+            root (str): Filesystem path to the target file or directory.
+
+        Returns:
+            Generator[FileEntry, None, None]: Result of the operation.
+        """
         if self._use_mft:
             yield from self._scan_mft(root)
         else:
             yield from self._scan_walk(root)
 
     def _scan_mft(self, root: str) -> Generator[FileEntry, None, None]:
-        """MFT fast path; currently delegates to the scandir walk."""
+        """MFT fast path; currently delegates to the scandir walk.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+        Args:
+            root (str): Filesystem path to the target file or directory.
+
+        Returns:
+            Generator[FileEntry, None, None]: Result of the operation.
+        """
         yield from self._scan_walk(root)
 
     def _scan_walk(self, root: str) -> Generator[FileEntry, None, None]:
-        """Iterative scandir walk skipping symlinks and unreadable directories."""
+        """Iterative scandir walk skipping symlinks and unreadable directories.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+        Args:
+            root (str): Filesystem path to the target file or directory.
+
+        Returns:
+            Generator[FileEntry, None, None]: Result of the operation.
+        """
         stack = [root]
         while stack and not self._check_cancel():
             current = stack.pop()
@@ -304,7 +432,6 @@ class NTFSScanner(Scanner):
                         self._report(entry.path)
             except (OSError, PermissionError):
                 continue
-        """_scan_walk."""
 
 
 # ---------------------------------------------------------------------------
@@ -312,9 +439,21 @@ class NTFSScanner(Scanner):
 # ---------------------------------------------------------------------------
 
 class PosixScanner(Scanner):
-    """Linux/macOS scanner using iterative scandir with stat metadata."""
+    """Posixscanner.
+
+    Manages PosixScanner operations and coordinates related state changes for the component.
+    """
     def scan(self, root: str) -> Generator[FileEntry, None, None]:
-        """Yield entries under root via an iterative scandir walk."""
+        """Yield entries under root via an iterative scandir walk.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+        Args:
+            root (str): Filesystem path to the target file or directory.
+
+        Returns:
+            Generator[FileEntry, None, None]: Result of the operation.
+        """
         stack = [root]
         while stack and not self._check_cancel():
             current = stack.pop()
@@ -345,8 +484,6 @@ class PosixScanner(Scanner):
                         self._report(entry.path)
             except (OSError, PermissionError):
                 continue
-        """scan."""
-    """PosixScanner class."""
 
 
 # ---------------------------------------------------------------------------
@@ -354,15 +491,27 @@ class PosixScanner(Scanner):
 # ---------------------------------------------------------------------------
 
 class CloudScanner(Scanner):
-    """Cloud target scanner delegating to rclone ``lsf`` per configured remote."""
+    """Cloudscanner.
+
+    Manages CloudScanner operations and coordinates related state changes for the component.
+    """
     def __init__(self, *args, providers: Optional[List[str]] = None, **kwargs):
-        """Store provider list and verify the rclone binary is usable."""
+        """Store provider list and verify the rclone binary is usable.
+
+        Initializes the instance and configures internal state.
+        """
         super().__init__(*args, **kwargs)
         self.providers = providers or ["onedrive", "gdrive", "dropbox", "s3", "azureblob"]
         self._rclone_available = HAS_RCLONE and self._check_rclone()
 
     def _check_rclone(self) -> bool:
-        """Run ``rclone version`` to confirm the binary works; no admin needed."""
+        """Run ``rclone version`` to confirm the binary works; no admin needed.
+
+        Manages check rclone operations and coordinates related state changes for the component.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         try:
             subprocess.run(["rclone", "version"], capture_output=True, check=True)
             return True
@@ -370,7 +519,16 @@ class CloudScanner(Scanner):
             return False
 
     def scan(self, root: str) -> Generator[FileEntry, None, None]:
-        """Scan each configured ``provider:`` remote, or a single ``root`` remote."""
+        """Scan each configured ``provider:`` remote, or a single ``root`` remote.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+        Args:
+            root (str): Filesystem path to the target file or directory.
+
+        Returns:
+            Generator[FileEntry, None, None]: Result of the operation.
+        """
         if ":" not in root:
             for provider in self.providers:
                 yield from self._scan_remote(f"{provider}:")
@@ -378,7 +536,16 @@ class CloudScanner(Scanner):
             yield from self._scan_remote(root)
 
     def _scan_remote(self, remote: str) -> Generator[FileEntry, None, None]:
-        """List a remote's files via ``rclone lsf`` and convert each line to FileEntry."""
+        """List a remote's files via ``rclone lsf`` and convert each line to FileEntry.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+        Args:
+            remote (str): The remote parameter.
+
+        Returns:
+            Generator[FileEntry, None, None]: Result of the operation.
+        """
         if not self._rclone_available:
             return
         try:
@@ -413,8 +580,6 @@ class CloudScanner(Scanner):
                     self._report(path)
         except Exception:
             pass
-        """_scan_remote."""
-    """CloudScanner class."""
 
 
 # ---------------------------------------------------------------------------
@@ -422,7 +587,10 @@ class CloudScanner(Scanner):
 # ---------------------------------------------------------------------------
 
 class AdvancedDiskAnalyzer:
-    """Disk usage analyzer that scans (local or cloud) and builds FolderNode trees for charts."""
+    """Advanceddiskanalyzer.
+
+    Manages AdvancedDiskAnalyzer operations and coordinates related state changes for the component.
+    """
     def __init__(
         self,
         include_cloud: bool = False,
@@ -430,14 +598,33 @@ class AdvancedDiskAnalyzer:
         cancel_event: Optional[threading.Event] = None,
         progress_cb: Optional[Callable[[int, int, str], None]] = None,
     ):
-        """Store cancellation/progress hooks and pick the platform or cloud scanner."""
+        """Store cancellation/progress hooks and pick the platform or cloud scanner.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            include_cloud (bool): The include cloud parameter.
+            cloud_providers (Optional[List[str]]): The cloud providers parameter.
+            cancel_event (Optional[threading.Event]): Threading event or callable to check for cancellation.
+            progress_cb (Optional[Callable[[int, int, str], None]]): Callback invoked with progress updates.
+        """
         self.cancel_event = cancel_event or threading.Event()
         self.progress_cb = progress_cb
         self._scanner = self._create_scanner(include_cloud, cloud_providers)
         self._root_node: Optional[FolderNode] = None
 
     def _create_scanner(self, include_cloud: bool, providers: Optional[List[str]]) -> Scanner:
-        """Choose NTFS/Posix scanner by platform, or CloudScanner when cloud deps exist."""
+        """Choose NTFS/Posix scanner by platform, or CloudScanner when cloud deps exist.
+
+        Manages create scanner operations and coordinates related state changes for the component.
+
+        Args:
+            include_cloud (bool): The include cloud parameter.
+            providers (Optional[List[str]]): The providers parameter.
+
+        Returns:
+            Scanner: Result of the operation.
+        """
         import sys
         if sys.platform == "win32":
             base = NTFSScanner
@@ -450,10 +637,18 @@ class AdvancedDiskAnalyzer:
                 providers=providers,
             )
         return base(cancel_event=self.cancel_event, progress_cb=self.progress_cb)
-        """_create_scanner."""
 
     async def scan(self, root: str) -> AsyncGenerator[FileEntry, None]:
-        """Async wrapper that streams entries from the underlying sync scanner."""
+        """Async wrapper that streams entries from the underlying sync scanner.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+        Args:
+            root (str): Filesystem path to the target file or directory.
+
+        Returns:
+            AsyncGenerator[FileEntry, None]: Result of the operation.
+        """
         scanner_iter = self._scanner.scan(root)
         if hasattr(scanner_iter, "__aiter__"):
             async for entry in scanner_iter:
@@ -461,10 +656,18 @@ class AdvancedDiskAnalyzer:
         else:
             for entry in scanner_iter:
                 yield entry
-        """scan."""
 
     def build_tree(self, entries: List[FileEntry]) -> FolderNode:
-        """Fold all file entries into an aggregated FolderNode hierarchy."""
+        """Fold all file entries into an aggregated FolderNode hierarchy.
+
+        Manages build tree operations and coordinates related state changes for the component.
+
+        Args:
+            entries (List[FileEntry]): Collection of items or entries to process.
+
+        Returns:
+            FolderNode: Result of the operation.
+        """
         root = FolderNode(name="", path="")
         for entry in entries:
             if entry.is_dir:
@@ -473,10 +676,15 @@ class AdvancedDiskAnalyzer:
             root.add_file(rel, entry.size, entry.extension or "noext")
         self._root_node = root
         return root
-        """build_tree."""
 
     def get_visualizations(self) -> Dict:
-        """Return treemap/sunburst/bar data plus extension and size totals from the last tree."""
+        """Return treemap/sunburst/bar data plus extension and size totals from the last tree.
+
+        Manages get visualizations operations and coordinates related state changes for the component.
+
+        Returns:
+            Dict: Dictionary mapping identifiers to status or values.
+        """
         if not self._root_node:
             return {}
         return {
@@ -488,16 +696,19 @@ class AdvancedDiskAnalyzer:
             "total_files": self._root_node.file_count,
             "total_folders": self._root_node.folder_count,
         }
-        """get_visualizations."""
 
     def get_stats(self) -> Dict:
-        """Return files and bytes counted by the scanner so far."""
+        """Return files and bytes counted by the scanner so far.
+
+        Manages get stats operations and coordinates related state changes for the component.
+
+        Returns:
+            Dict: Dictionary mapping identifiers to status or values.
+        """
         return {
             "scanned_files": self._scanner._scanned_files,
             "scanned_bytes": self._scanner._scanned_bytes,
         }
-        """get_stats."""
-    """AdvancedDiskAnalyzer class."""
 
 
 __all__ = [
@@ -517,7 +728,19 @@ def scan_sync(
     progress_cb: Optional[Callable[[int, int, str], None]] = None,
     cancel_event: Optional[threading.Event] = None,
 ) -> Tuple[List[FileEntry], FolderNode]:
-    """Scan synchronously and return all entries plus the aggregated FolderNode tree."""
+    """Scan synchronously and return all entries plus the aggregated FolderNode tree.
+
+    Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+    Args:
+        root (str): Filesystem path to the target file or directory.
+        include_cloud (bool): The include cloud parameter.
+        progress_cb (Optional[Callable[[int, int, str], None]]): Callback invoked with progress updates.
+        cancel_event (Optional[threading.Event]): Threading event or callable to check for cancellation.
+
+    Returns:
+        Tuple[List[FileEntry], FolderNode]: List of processed items or identifiers.
+    """
     analyzer = AdvancedDiskAnalyzer(
         include_cloud=include_cloud,
         cancel_event=cancel_event,
@@ -529,10 +752,12 @@ def scan_sync(
         import asyncio
 
         async def _collect():
-            """Append every streamed entry into the entries list."""
+            """Aggregate discovered files or telemetry metrics into collections.
+
+            Iterates over raw subsystem records, filters excluded paths, and collates findings into a structured report list.
+            """
             async for entry in scanner_iter:
                 entries.append(entry)
-            """_collect."""
 
         asyncio.run(_collect())
     else:

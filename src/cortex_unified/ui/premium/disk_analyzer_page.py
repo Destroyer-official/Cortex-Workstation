@@ -40,25 +40,41 @@ from .window import _Page, fmt_bytes
 
 
 class _ScanWorker(QObject):
-    """Background worker: scans a path via AdvancedDiskAnalyzer.scan_sync."""
+    """Background worker: scans a path via AdvancedDiskAnalyzer.scan_sync.
+
+    Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+    """
 
     finished = Signal(object)
     progress = Signal(str)
     failed = Signal(str)
 
     def __init__(self, root: str, max_depth: int = 3):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            root (str): Filesystem path to the target file or directory.
+            max_depth (int): The max depth parameter.
+        """
         super().__init__()
         self._root = root
         self._max_depth = max_depth
         self._cancel = threading.Event()
 
     def cancel(self):
-        """cancel."""
+        """cancel.
+
+        Sets the internal cancellation event to cooperatively stop worker execution at the next safe boundary.
+        """
         self._cancel.set()
 
     def run(self):
-        """run."""
+        """run.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         try:
             from cortex_unified.analyzers.advanced_disk_analyzer import (
                 AdvancedDiskAnalyzer,
@@ -66,7 +82,15 @@ class _ScanWorker(QObject):
             )
 
             def _cb(scanned_files: int, scanned_bytes: int, current: str):
-                """_cb."""
+                """Cb.
+
+                Manages cb operations and coordinates related state changes for the component.
+
+                Args:
+                    scanned_files (int): The scanned files parameter.
+                    scanned_bytes (int): The scanned bytes parameter.
+                    current (str): The current parameter.
+                """
                 if self._cancel.is_set():
                     return
                 self.progress.emit(
@@ -98,7 +122,13 @@ class _ScanWorker(QObject):
 
 
 def _discover_fixed_drives() -> List[Tuple[str, str]]:
-    """Return ``[(letter, label)]`` for every existing fixed drive letter."""
+    """Return ``[(letter, label)]`` for every existing fixed drive letter.
+
+    Manages discover fixed drives operations and coordinates related state changes for the component.
+
+    Returns:
+        List[Tuple[str, str]]: List of processed items or identifiers.
+    """
     if sys.platform != "win32":
         return [("/", "/")]
     drives: List[Tuple[str, str]] = []
@@ -125,7 +155,17 @@ def _discover_fixed_drives() -> List[Tuple[str, str]]:
 
 
 def _compute_depth(node, target_path: str) -> int:
-    """Walk the tree to find the depth of *target_path*."""
+    """Walk the tree to find the depth of *target_path*.
+
+    Manages compute depth operations and coordinates related state changes for the component.
+
+    Args:
+        node: The node parameter.
+        target_path (str): Filesystem path to the target file or directory.
+
+    Returns:
+        int: Result of the operation.
+    """
     parts = Path(target_path).parts
     return len(parts) - 1
 
@@ -136,10 +176,19 @@ def _compute_depth(node, target_path: str) -> int:
 
 
 class DiskAnalyzerPage(_Page):
-    """Advanced disk analyzer: fast scan, treemap, folder breakdown by size."""
+    """Diskanalyzerpage.
+
+    Manages DiskAnalyzerPage operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, win):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win: Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(
             title_block(
@@ -223,6 +272,21 @@ class DiskAnalyzerPage(_Page):
         header_row = QHBoxLayout()
         header_row.addWidget(QLabel("Sorted by size (largest first)"))
         header_row.addStretch(1)
+
+        self.sunburst_btn = QPushButton("Export Sunburst HTML")
+        self.sunburst_btn.setObjectName("Ghost")
+        self.sunburst_btn.setToolTip("Export interactive Plotly Sunburst disk hierarchy to HTML.")
+        self.sunburst_btn.setEnabled(False)
+        self.sunburst_btn.clicked.connect(self._export_sunburst)
+        header_row.addWidget(self.sunburst_btn)
+
+        self.treemap_btn = QPushButton("Export TreeMap HTML")
+        self.treemap_btn.setObjectName("Ghost")
+        self.treemap_btn.setToolTip("Export interactive Plotly TreeMap disk hierarchy to HTML.")
+        self.treemap_btn.setEnabled(False)
+        self.treemap_btn.clicked.connect(self._export_treemap)
+        header_row.addWidget(self.treemap_btn)
+
         results_lay.addLayout(header_row)
 
         self._tbl = QTableWidget(0, 6)
@@ -259,7 +323,10 @@ class DiskAnalyzerPage(_Page):
     # ── Drive picker ───────────────────────────────────────────────────
 
     def _populate_drives(self):
-        """_populate_drives."""
+        """_populate_drives.
+
+        Refreshes table or tree items with formatted values, tooltips, and status indicators based on the provided dataset.
+        """
         self._drive_combo.blockSignals(True)
         self._drive_combo.clear()
         self._drive_combo.addItem("Custom path", None)
@@ -268,14 +335,23 @@ class DiskAnalyzerPage(_Page):
         self._drive_combo.blockSignals(False)
 
     def _on_drive_changed(self, idx: int):
-        """_on_drive_changed."""
+        """_on_drive_changed.
+
+        Manages on drive changed operations and coordinates related state changes for the component.
+
+        Args:
+            idx (int): The idx parameter.
+        """
         letter = self._drive_combo.currentData()
         if letter is None:
             return
         self._path_edit.setText(f"{letter}:\\")
 
     def _browse(self):
-        """_browse."""
+        """Prompt the user to select a filesystem directory or file.
+
+        Launches a native file dialog and populates the selected path into the corresponding target input widget.
+        """
         folder = QFileDialog.getExistingDirectory(
             self, "Select folder to analyze", self._path_edit.text()
         )
@@ -288,7 +364,10 @@ class DiskAnalyzerPage(_Page):
     # ── Scan ───────────────────────────────────────────────────────────
 
     def _run(self):
-        """_run."""
+        """Run.
+
+        Manages run operations and coordinates related state changes for the component.
+        """
         path = self._path_edit.text().strip()
         if not path or not Path(path).is_dir():
             self._status.setText("Please enter a valid directory path.")
@@ -307,11 +386,23 @@ class DiskAnalyzerPage(_Page):
         self.win.run_worker(w, self._on_done, self._fail, on_progress=self._on_progress)
 
     def _on_progress(self, msg: str):
-        """_on_progress."""
+        """_on_progress.
+
+        Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
+
+        Args:
+            msg (str): Informational or progress status message.
+        """
         self._status.setText(msg)
 
     def _on_done(self, result):
-        """_on_done."""
+        """_on_done.
+
+        Receives the completed data from the  background worker, populates the view with results, and restores button states.
+
+        Args:
+            result: Dictionary or data object holding operation results.
+        """
         self._worker = None
         self._progress.setVisible(False)
         self._scan_btn.setEnabled(True)
@@ -336,6 +427,11 @@ class DiskAnalyzerPage(_Page):
         treemap = sorted(
             [n for n in treemap if n["path"]], key=lambda n: n["size"], reverse=True
         )
+
+        self._last_tree = tree
+        if hasattr(self, "sunburst_btn"):
+            self.sunburst_btn.setEnabled(True)
+            self.treemap_btn.setEnabled(True)
 
         if not treemap:
             self._state.show_empty(
@@ -397,8 +493,58 @@ class DiskAnalyzerPage(_Page):
         )
 
     def _fail(self, msg: str):
-        """_fail."""
+        """Handle an operation failure and notify the user.
+
+        Captures error details, displays an informative failure state in the UI, resets progress indicators, and re-enables interactive controls.
+
+        Args:
+            msg (str): Informational or progress status message.
+        """
         self._worker = None
         self._progress.setVisible(False)
         self._scan_btn.setEnabled(True)
         self._state.show_error(msg, on_retry=self._run)
+
+    def _export_sunburst(self):
+        """Export current disk analysis tree as an interactive Sunburst HTML chart.
+
+        Manages export sunburst operations and coordinates related state changes for the component.
+        """
+        if not getattr(self, "_last_tree", None):
+            return
+        from PySide6.QtWidgets import QFileDialog, QMessageBox
+        default_name = f"sunburst_{Path(self._path_edit.text()).stem or 'disk'}.html"
+        save_path, _ = QFileDialog.getSaveFileName(self, "Save Sunburst Chart", default_name, "HTML Files (*.html)")
+        if not save_path:
+            return
+        try:
+            from cortex_unified.visualization.sunburst_generator import SunburstGenerator
+            tree_data = self._last_tree.to_sunburst()
+            gen = SunburstGenerator(tree_data)
+            html_content = gen.export_as_html()
+            Path(save_path).write_text(html_content, encoding="utf-8")
+            QMessageBox.information(self, "Export Complete", f"Sunburst chart exported to:\n{save_path}")
+        except Exception as exc:
+            QMessageBox.warning(self, "Export Error", f"Failed to export chart: {exc}")
+
+    def _export_treemap(self):
+        """Export current disk analysis tree as an interactive TreeMap HTML chart.
+
+        Manages export treemap operations and coordinates related state changes for the component.
+        """
+        if not getattr(self, "_last_tree", None):
+            return
+        from PySide6.QtWidgets import QFileDialog, QMessageBox
+        default_name = f"treemap_{Path(self._path_edit.text()).stem or 'disk'}.html"
+        save_path, _ = QFileDialog.getSaveFileName(self, "Save TreeMap Chart", default_name, "HTML Files (*.html)")
+        if not save_path:
+            return
+        try:
+            from cortex_unified.visualization.treemap_generator import TreeMapGenerator
+            tree_data = self._last_tree.to_treemap()
+            gen = TreeMapGenerator(tree_data)
+            html_content = gen.export_as_html()
+            Path(save_path).write_text(html_content, encoding="utf-8")
+            QMessageBox.information(self, "Export Complete", f"TreeMap chart exported to:\n{save_path}")
+        except Exception as exc:
+            QMessageBox.warning(self, "Export Error", f"Failed to export chart: {exc}")

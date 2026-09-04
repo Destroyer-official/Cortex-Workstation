@@ -63,9 +63,6 @@ def _get_7z_search_paths() -> list[str]:
             seen.add(p)
             result.append(p)
     return result
-    """Build candidate 7z.exe paths from Program Files-style env vars
-    (including LOCALAPPDATA\\Programs) and the standard install dirs on
-    every active fixed drive, deduplicated preserving order."""
 
 
 _7z_exe: str | None = None
@@ -116,15 +113,11 @@ def _find_7z() -> str | None:
 
         log.warning("7z.exe not found — archive operations unavailable")
         return None
-    """Locate 7z.exe once (double-checked under a lock): PATH lookup, the
-    known install paths, then the registry (HKLM/HKCU SOFTWARE\\7-Zip);
-    caches the result and returns None when 7-Zip is not installed."""
 
 
 def is_7z_available() -> bool:
     """Return True when a 7z.exe installation was found."""
     return _find_7z() is not None
-    """Return True when a 7z.exe installation was found."""
 
 
 def _7z() -> str:
@@ -136,8 +129,6 @@ def _7z() -> str:
             "7z.exe not found. Install 7-Zip from https://7-zip.org"
         )
     return exe
-    """Return the resolved 7z.exe path, raising FileNotFoundError when
-    7-Zip is not installed."""
 
 
 # ── Security ────────────────────────────────────────────────────────────────
@@ -159,9 +150,6 @@ def validate_extract_path(dest_dir: str, entry_path: str) -> str:
     if not (target == dest_real or target.startswith(dest_real + os.sep)):
         raise ArchiveSecurityError(f"Path traversal blocked: {entry_path}")
     return target
-    """Resolve entry_path under dest_dir and reject path traversal
-    (ArchiveSecurityError when the target escapes dest_dir); returns the
-    resolved target path."""
 
 
 def _enforce_total_size(total: int, label: str = "archive"):
@@ -172,8 +160,6 @@ def _enforce_total_size(total: int, label: str = "archive"):
             f"{label} exceeds max size "
             f"({total / (1024**3):.1f} GB > {MAX_EXTRACT_SIZE / (1024**3):.0f} GB)"
         )
-    """Raise ArchiveSecurityError when a total (un)compressed size exceeds
-    the 10 GB extraction limit."""
 
 
 # ── Enums / data ────────────────────────────────────────────────────────────
@@ -268,14 +254,11 @@ def detect_archive_type(path: str) -> ArchiveType | None:
         return None
 
     return ARCHIVE_EXTENSIONS.get(ext)
-    """Classify an archive by extension, sniffing .gz magic bytes
-    (\\x1f\\x8b) to decide TAR_GZ; returns None for non-archives."""
 
 
 def is_archive(path: str) -> bool:
     """Return True when the path resolves to a known archive type."""
     return detect_archive_type(path) is not None
-    """Return True when the path resolves to a known archive type."""
 
 
 # ── 7z.exe output parser ───────────────────────────────────────────────────
@@ -358,7 +341,7 @@ def _parse_7z_list(output: str) -> list[ArchiveEntry]:
 
 
 def _parse_7z_list_xml(output: str) -> list[ArchiveEntry]:
-    """Fallback XML parser for `7z l -slt` output."""
+    """Fallback key=value text parser for 7z -slt (plain 'Key = Value' lines, not XML)."""
     entries: list[ArchiveEntry] = []
     current: dict = {}
     for line in output.splitlines():
@@ -497,9 +480,6 @@ class SevenZipCLIReader:
         )
         if rc not in (0, 1):  # 1 = some files OK, some failed
             raise FileNotFoundError(f"Cannot open archive: {err}")
-        """Store path/password and verify readability with a 7z listing
-        (timeout scales with archive size: 30 s under 500 MB, else 120 s);
-        raises FileNotFoundError when 7z cannot open the archive."""
 
     def list_entries(self) -> list[ArchiveEntry]:
         """List archive entries via '7z l', caching the parsed result;
@@ -525,9 +505,6 @@ class SevenZipCLIReader:
 
         self._entries = entries
         return entries
-        """List archive entries via '7z l', caching the parsed result;
-        retries with the -slt (key=value) format when the default column
-        parse yields nothing."""
 
     def extract_entry(self, entry_path: str, dest_path: str) -> bool:
         """Extract a single entry."""
@@ -601,13 +578,10 @@ class SevenZipCLIReader:
             compressed_size=compressed,
             is_encrypted=encrypted,
         )
-        """Summarize the archive: entry count, total/compressed sizes,
-        encryption flag, and detected type from the listed entries."""
 
     def clear_cache(self) -> None:
         """Drop the cached entry list so the next list_entries re-parses."""
         self._entries = None
-        """Drop the cached entry list so the next list_entries re-parses."""
 
 
 # ── Factory ─────────────────────────────────────────────────────────────────
@@ -649,8 +623,6 @@ class _ExtractWorker(QThread):
         self._entries = entries
         self._process: subprocess.Popen | None = None
         self._cancelled = threading.Event()
-        """Store archive/dest/password and the optional include-list of
-        entries to extract selectively; no process runs until start()."""
 
     def run(self):
         """Run '7z x' as a live Popen: parse 'Extracting' lines into
@@ -711,10 +683,6 @@ class _ExtractWorker(QThread):
             self.finished_signal.emit(False)
         finally:
             self._process = None
-        """Run '7z x' as a live Popen: parse 'Extracting' lines into
-        per-file progress (-1 indeterminate) and percentage markers,
-        honor isInterruptionRequested/cancel by killing the process, and
-        emit finished_signal(ok = exit code 0 or 1)."""
 
     def cancel(self):
         """Kill the 7z process immediately."""
@@ -738,13 +706,11 @@ class ArchiveManager(QObject):
         """Create the manager with no extraction worker running."""
         super().__init__(parent)
         self._worker: _ExtractWorker | None = None
-        """Create the manager with no extraction worker running."""
 
     @property
     def available(self) -> bool:
         """Return True when 7z.exe is installed."""
         return is_7z_available()
-        """Return True when 7z.exe is installed."""
 
     # -- browsing -----------------------------------------------------------
 
@@ -752,8 +718,6 @@ class ArchiveManager(QObject):
         """Open an archive for browsing (open_archive wrapper; None on
         failure)."""
         return open_archive(path, password)
-        """Open an archive for browsing (open_archive wrapper; None on
-        failure)."""
 
     # -- extraction ---------------------------------------------------------
 
@@ -769,9 +733,6 @@ class ArchiveManager(QObject):
         self._worker.finished_signal.connect(self._on_done)
         self._worker.start()
         return True
-        """Start a background extraction of the whole archive, forwarding
-        worker progress/finish signals to extraction_progress/
-        extraction_finished; returns True once started."""
 
     def extract_selected(
         self,
@@ -788,16 +749,12 @@ class ArchiveManager(QObject):
         self._worker.finished_signal.connect(self._on_done)
         self._worker.start()
         return True
-        """Start a background extraction limited to the given entries
-        (worker include-list); returns True once started."""
 
     def cancel_extraction(self):
         """Request cancellation of the running extraction worker (kills
         the 7z process)."""
         if self._worker:
             self._worker.cancel()
-        """Request cancellation of the running extraction worker (kills
-        the 7z process)."""
 
     def _on_done(self, success: bool):
         """Worker finish handler: disconnect its signals, emit
@@ -810,8 +767,6 @@ class ArchiveManager(QObject):
                 pass
         self.extraction_finished.emit(success)
         self._worker = None
-        """Worker finish handler: disconnect its signals, emit
-        extraction_finished, and drop the worker reference."""
 
     # -- creation -----------------------------------------------------------
 
@@ -869,7 +824,6 @@ class ArchiveManager(QObject):
     def is_extracting(self) -> bool:
         """Return True while an extraction worker thread is running."""
         return self._worker is not None and self._worker.isRunning()
-        """Return True while an extraction worker thread is running."""
 
     def _stop_worker(self):
         """Cancel and reap a running worker (5 s wait), disconnect its
@@ -884,8 +838,6 @@ class ArchiveManager(QObject):
             except RuntimeError:
                 pass
             self._worker = None
-        """Cancel and reap a running worker (5 s wait), disconnect its
-        signals, and clear the reference."""
 
 
 def _compression_level(level: str) -> int:
@@ -902,6 +854,3 @@ def _compression_level(level: str) -> int:
             f"expected one of: {', '.join(levels)}"
         )
     return levels[key]
-    """Translate a named compression level ('store'/'fast'/'normal'/
-    'best') into the 7z -mx integer (0/1/5/9); unknown names raise
-    ValueError."""

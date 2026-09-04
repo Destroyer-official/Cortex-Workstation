@@ -52,7 +52,8 @@ pub type CompletionCallback = extern "C" fn(
     error: *const c_char,
 );
 
-/// Callback for conflict resolution
+/// Callback for conflict resolution:
+/// 0=skip, 1=overwrite, anything else (including 2 and -1)=keepBoth (no cancel)
 pub type ConflictCallback = extern "C" fn(
     user_data: *mut c_void,
     job_id: *const c_char,
@@ -64,7 +65,7 @@ pub type ConflictCallback = extern "C" fn(
     source_mtime: u64,
     dest_mtime: u64,
     is_dir: c_int,
-) -> c_int; // 0=skip, 1=overwrite, 2=keep_both, -1=cancel
+) -> c_int; // 0=skip, 1=overwrite, any other value (including 2 and -1) maps to keepBoth
 
 /// Callback for search results
 pub type SearchCallback = extern "C" fn(

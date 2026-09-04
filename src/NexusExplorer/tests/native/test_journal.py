@@ -23,7 +23,14 @@ except FileNotFoundError:
 
 @pytest.fixture
 def data_dir(tmp_path, monkeypatch):
-    """data_dir."""
+    """data_dir.
+
+    Manages data dir operations and coordinates related state changes for the component.
+
+    Args:
+        tmp_path: Filesystem path to the target file or directory.
+        monkeypatch: The monkeypatch parameter.
+    """
     d = tmp_path / "data"
     d.mkdir()
     monkeypatch.setenv("NEXUS_DATA_DIR", str(d))
@@ -32,21 +39,41 @@ def data_dir(tmp_path, monkeypatch):
 
 @pytest.fixture
 def ffi():
-    """ffi."""
+    """Ffi.
+
+    Manages ffi operations and coordinates related state changes for the component.
+    """
     f = nexus_ffi.NexusFfi()
     yield f
     f.close()
 
 
 def _journal_lines(data_dir: Path) -> list[dict]:
-    """_journal_lines."""
+    """_journal_lines.
+
+    Manages journal lines operations and coordinates related state changes for the component.
+
+    Args:
+        data_dir (Path): The data dir parameter.
+
+    Returns:
+        list[dict]: List of processed items or identifiers.
+    """
     p = data_dir / "jobs.jsonl"
     assert p.is_file(), "journal must be created"
     return [json.loads(l) for l in p.read_text(encoding="utf-8").splitlines() if l.strip()]
 
 
 def test_journal_records_lifecycle(data_dir, ffi, tmp_path):
-    """test_journal_records_lifecycle."""
+    """test_journal_records_lifecycle.
+
+    Manages test journal records lifecycle operations and coordinates related state changes for the component.
+
+    Args:
+        data_dir: The data dir parameter.
+        ffi: The ffi parameter.
+        tmp_path: Filesystem path to the target file or directory.
+    """
     src = tmp_path / "src"
     dst = tmp_path / "dst"
     src.mkdir()
@@ -67,7 +94,15 @@ def test_journal_records_lifecycle(data_dir, ffi, tmp_path):
 
 def test_orphans_detects_interrupted_and_ignores_completed(data_dir, ffi, tmp_path):
     # a real completed copy must NOT appear as orphan
-    """test_orphans_detects_interrupted_and_ignores_completed."""
+    """test_orphans_detects_interrupted_and_ignores_completed.
+
+    Manages test orphans detects interrupted and ignores completed operations and coordinates related state changes for the component.
+
+    Args:
+        data_dir: The data dir parameter.
+        ffi: The ffi parameter.
+        tmp_path: Filesystem path to the target file or directory.
+    """
     src = tmp_path / "src"
     dst_ok = tmp_path / "dst_ok"
     src.mkdir()
@@ -106,5 +141,11 @@ def test_orphans_detects_interrupted_and_ignores_completed(data_dir, ffi, tmp_pa
 
 def test_orphan_scan_tolerates_missing_journal(ffi):
     # default LOCALAPPDATA may or may not have a journal; call must not raise
-    """test_orphan_scan_tolerates_missing_journal."""
+    """test_orphan_scan_tolerates_missing_journal.
+
+    Manages test orphan scan tolerates missing journal operations and coordinates related state changes for the component.
+
+    Args:
+        ffi: The ffi parameter.
+    """
     assert isinstance(ffi.orphans(), list)

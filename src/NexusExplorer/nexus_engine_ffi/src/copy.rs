@@ -118,6 +118,10 @@ impl FfiSink {
                     dest_modified_ms,
                     if is_dir { 1 } else { 0 },
                 );
+                // ConflictCallback resolution (actual behavior):
+                // 0=skip, 1=overwrite, anything else (including 2 and -1)=keepBoth (no cancel)
+                // Known limitation: -1 does NOT cancel the job despite older
+                // docs suggesting so; it falls through to keepBoth.
                 let resolved = match resolution {
                     0 => "skip".to_string(),
                     1 => "overwrite".to_string(),
@@ -186,6 +190,7 @@ impl FfiSink {
     }
 }
 
+/// Starts an async copy job to `dest_dir`, reporting progress/completion/conflicts via callbacks.
 #[no_mangle]
 pub unsafe extern "C" fn nexus_copy(
     ctx: *mut c_void,
@@ -251,6 +256,7 @@ pub unsafe extern "C" fn nexus_copy(
     Box::into_raw(handle) as *mut c_void
 }
 
+/// Starts an async move job to `dest_dir`, reporting progress/completion/conflicts via callbacks.
 #[no_mangle]
 pub unsafe extern "C" fn nexus_move(
     ctx: *mut c_void,
@@ -315,6 +321,7 @@ pub unsafe extern "C" fn nexus_move(
     Box::into_raw(handle) as *mut c_void
 }
 
+/// Starts an async delete job (to trash when `to_trash` is nonzero), reporting progress/completion via callbacks.
 #[no_mangle]
 pub unsafe extern "C" fn nexus_delete(
     ctx: *mut c_void,
@@ -388,6 +395,7 @@ pub unsafe extern "C" fn nexus_delete(
     Box::into_raw(handle) as *mut c_void
 }
 
+/// Pauses a running job handle; the worker thread blocks until resumed or cancelled.
 #[no_mangle]
 pub unsafe extern "C" fn nexus_pause_job(handle: *mut c_void) -> c_int {
     if handle.is_null() { return -1; }
@@ -398,6 +406,7 @@ pub unsafe extern "C" fn nexus_pause_job(handle: *mut c_void) -> c_int {
     0
 }
 
+/// Resumes a paused job handle and marks it running again.
 #[no_mangle]
 pub unsafe extern "C" fn nexus_resume_job(handle: *mut c_void) -> c_int {
     if handle.is_null() { return -1; }
@@ -408,6 +417,7 @@ pub unsafe extern "C" fn nexus_resume_job(handle: *mut c_void) -> c_int {
     0
 }
 
+/// Requests cancellation of a job handle; the worker thread exits at the next checkpoint.
 #[no_mangle]
 pub unsafe extern "C" fn nexus_cancel_job(handle: *mut c_void) -> c_int {
     if handle.is_null() { return -1; }
@@ -419,6 +429,7 @@ pub unsafe extern "C" fn nexus_cancel_job(handle: *mut c_void) -> c_int {
     0
 }
 
+/// Destroys a job handle previously returned by `nexus_copy`/`nexus_move`/`nexus_delete`.
 #[no_mangle]
 pub unsafe extern "C" fn nexus_free_job_handle(handle: *mut c_void) {
     if !handle.is_null() {

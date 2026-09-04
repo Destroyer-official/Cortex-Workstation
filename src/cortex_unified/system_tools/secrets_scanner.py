@@ -118,7 +118,10 @@ FP_DB_FILENAME    = ".sentinel-fp.json"
 
 @dataclass
 class DetectionPattern:
-    """Detection Pattern data container."""
+    """Detectionpattern.
+
+    Manages DetectionPattern operations and coordinates related state changes for the component.
+    """
     name: str
     regex: re.Pattern
     severity: str
@@ -130,7 +133,10 @@ class DetectionPattern:
 
 @dataclass
 class Finding:
-    """Finding data container."""
+    """Finding.
+
+    Manages Finding operations and coordinates related state changes for the component.
+    """
     file_path: str
     line_number: int
     line_preview: str
@@ -148,24 +154,45 @@ class Finding:
     blast_radius: Optional[str] = None
 
     def to_dict(self) -> Dict[str, Any]:
-        """To dict."""
+        """To dict.
+
+        Manages to dict operations and coordinates related state changes for the component.
+
+        Returns:
+            Dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         return asdict(self)
 
     @property
     def severity_rank(self) -> int:
-        """Severity rank."""
+        """Severity rank.
+
+        Manages severity rank operations and coordinates related state changes for the component.
+
+        Returns:
+            int: Result of the operation.
+        """
         return SEVERITY_ORDER.get(self.severity, 0)
 
     @property
     def fingerprint(self) -> str:
-        """Fingerprint."""
+        """Fingerprint.
+
+        Manages fingerprint operations and coordinates related state changes for the component.
+
+        Returns:
+            str: Formatted string or path.
+        """
         return hashlib.sha256(
             f"{self.file_path}|{self.pattern_name}|{self.match_preview}".encode()
         ).hexdigest()[:16]
 
 @dataclass
 class ScanStats:
-    """Scan Stats data container."""
+    """Scan Stats data container.
+
+    Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+    """
     directory: str
     scan_time: str
     duration_seconds: float
@@ -183,31 +210,73 @@ class ScanStats:
 
     @property
     def critical(self)     -> List[Finding]:
-        """Critical."""
+        """Critical.
+
+        Manages critical operations and coordinates related state changes for the component.
+
+        Returns:
+            List[Finding]: List of processed items or identifiers.
+        """
         return [f for f in self.findings if f.severity == "CRITICAL"]
     @property
     def high(self)         -> List[Finding]:
-        """High."""
+        """High.
+
+        Manages high operations and coordinates related state changes for the component.
+
+        Returns:
+            List[Finding]: List of processed items or identifiers.
+        """
         return [f for f in self.findings if f.severity == "HIGH"]
     @property
     def medium(self)       -> List[Finding]:
-        """Medium."""
+        """Medium.
+
+        Manages medium operations and coordinates related state changes for the component.
+
+        Returns:
+            List[Finding]: List of processed items or identifiers.
+        """
         return [f for f in self.findings if f.severity == "MEDIUM"]
     @property
     def low(self)          -> List[Finding]:
-        """Low."""
+        """Low.
+
+        Manages low operations and coordinates related state changes for the component.
+
+        Returns:
+            List[Finding]: List of processed items or identifiers.
+        """
         return [f for f in self.findings if f.severity == "LOW"]
     @property
     def unique_files(self) -> int:
-        """Unique files."""
+        """Unique files.
+
+        Manages unique files operations and coordinates related state changes for the component.
+
+        Returns:
+            int: Result of the operation.
+        """
         return len({f.file_path for f in self.findings})
     @property
     def live_credentials(self) -> List[Finding]:
-        """Live credentials."""
+        """Live credentials.
+
+        Manages live credentials operations and coordinates related state changes for the component.
+
+        Returns:
+            List[Finding]: List of processed items or identifiers.
+        """
         return [f for f in self.findings if f.verified is True]
 
     def to_dict(self) -> Dict[str, Any]:
-        """To dict."""
+        """To dict.
+
+        Manages to dict operations and coordinates related state changes for the component.
+
+        Returns:
+            Dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         d = asdict(self)
         d["summary"] = {
             "critical": len(self.critical), "high": len(self.high),
@@ -219,7 +288,10 @@ class ScanStats:
 
 @dataclass
 class VerificationResult:
-    """Verification Result data container."""
+    """Verificationresult.
+
+    Manages VerificationResult operations and coordinates related state changes for the component.
+    """
     finding_id: str
     pattern_name: str
     is_live: Optional[bool]
@@ -230,7 +302,13 @@ class VerificationResult:
 
     @property
     def status_emoji(self) -> str:
-        """Status emoji."""
+        """Status emoji.
+
+        Manages status emoji operations and coordinates related state changes for the component.
+
+        Returns:
+            str: Formatted string or path.
+        """
         if self.is_live is True:  return "🔴 LIVE"
         if self.is_live is False: return "✅ REVOKED"
         return "❓ UNVERIFIED"
@@ -238,10 +316,18 @@ class VerificationResult:
 # ─── Pattern Compiler ────────────────────────────────────────────────────────
 
 def _p(pattern: str, flags: int = 0) -> re.Pattern:
-    """_p."""
+    """P.
+
+    Manages p operations and coordinates related state changes for the component.
+
+    Args:
+        pattern (str): The pattern parameter.
+        flags (int): The flags parameter.
+
+    Returns:
+        re.Pattern: Result of the operation.
+    """
     return re.compile(pattern.encode(), flags | re.IGNORECASE)
-    """_p."""
-    """_p."""
 
 # ─── Detection Patterns — 90+ Precision Patterns ─────────────────────────────
 
@@ -890,7 +976,16 @@ PATTERNS: List[DetectionPattern] = [
 # High-entropy secret detection (Shannon entropy) ═══════════════════════════
 
 def _shannon_entropy(data: bytes) -> float:
-    """_shannon_entropy."""
+    """_shannon_entropy.
+
+    Manages shannon entropy operations and coordinates related state changes for the component.
+
+    Args:
+        data (bytes): The data parameter.
+
+    Returns:
+        float: Result of the operation.
+    """
     if not data:
         return 0.0
     freq = {}
@@ -898,14 +993,22 @@ def _shannon_entropy(data: bytes) -> float:
         freq[b] = freq.get(b, 0) + 1
     length = len(data)
     return -sum((c / length) * math.log2(c / length) for c in freq.values() if c > 0)
-    """_shannon_entropy."""
-    """_shannon_entropy."""
 
 HIGH_ENTROPY_THRESHOLD = 4.5
 HIGH_ENTROPY_MIN_LEN   = 20
 
 def _check_high_entropy(line: bytes, file_path: str) -> Optional[Finding]:
-    """Detect high-entropy strings that look like secrets but don't match known patterns."""
+    """Detect high-entropy strings that look like secrets but don't match known patterns.
+
+    Manages check high entropy operations and coordinates related state changes for the component.
+
+    Args:
+        line (bytes): The line parameter.
+        file_path (str): Filesystem path to the target file or directory.
+
+    Returns:
+        Optional[Finding]: Result of the operation.
+    """
     for token in re.findall(rb'[A-Za-z0-9+/=_\-]{%d,}' % HIGH_ENTROPY_MIN_LEN, line):
         entropy = _shannon_entropy(token)
         if entropy >= HIGH_ENTROPY_THRESHOLD and len(token) >= HIGH_ENTROPY_MIN_LEN:
@@ -927,7 +1030,20 @@ PLACEHOLDER_RE = re.compile(r'^(?:your[_\-]?(?:api[_\-]?key|secret|token|passwor
 COMMENT_LINE_RE = re.compile(r'^\s*(?:#|//|/\*|\*|--|;|rem\s)', re.IGNORECASE)
 
 def compute_confidence(file_path: str, match_preview: str, entropy: float, category: str, line_raw: str = "") -> float:
-    """Compute confidence."""
+    """Compute confidence.
+
+    Manages compute confidence operations and coordinates related state changes for the component.
+
+    Args:
+        file_path (str): Filesystem path to the target file or directory.
+        match_preview (str): The match preview parameter.
+        entropy (float): The entropy parameter.
+        category (str): The category parameter.
+        line_raw (str): The line raw parameter.
+
+    Returns:
+        float: Result of the operation.
+    """
     confidence = 1.0
     if TEST_PATH_RE.search(file_path):
         confidence *= 0.15
@@ -949,7 +1065,16 @@ def compute_confidence(file_path: str, match_preview: str, entropy: float, categ
 # ─── Core Scanner ─────────────────────────────────────────────────────────────
 
 def _luhn_valid(s: str) -> bool:
-    """_luhn_valid."""
+    """_luhn_valid.
+
+    Manages luhn valid operations and coordinates related state changes for the component.
+
+    Args:
+        s (str): The s parameter.
+
+    Returns:
+        bool: True if the operation succeeded, False otherwise.
+    """
     digits = [int(c) for c in s if c.isdigit()]
     if len(digits) < 13:
         return False
@@ -957,20 +1082,36 @@ def _luhn_valid(s: str) -> bool:
     for i, d in enumerate(reversed(digits)):
         total += d if i % 2 == 0 else (d * 2 - 9 if d * 2 > 9 else d * 2)
     return total % 10 == 0
-    """_luhn_valid."""
-    """_luhn_valid."""
 
 def _redact(match: bytes) -> str:
-    """_redact."""
+    """Redact.
+
+    Manages redact operations and coordinates related state changes for the component.
+
+    Args:
+        match (bytes): The match parameter.
+
+    Returns:
+        str: Formatted string or path.
+    """
     s = match.decode("utf-8", errors="replace")
     if len(s) <= 8:
         return "***"
     return s[:4] + "***" + s[-4:]
-    """_redact."""
-    """_redact."""
 
 def scan_file_bytes(data: bytes, file_path: str, patterns: List[DetectionPattern]) -> List[Finding]:
-    """Scan file bytes."""
+    """Scan file bytes.
+
+    Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+    Args:
+        data (bytes): The data parameter.
+        file_path (str): Filesystem path to the target file or directory.
+        patterns (List[DetectionPattern]): The patterns parameter.
+
+    Returns:
+        List[Finding]: List of processed items or identifiers.
+    """
     findings = []
     lines = data.split(b"\n")
     for line_no, line in enumerate(lines, 1):
@@ -1003,7 +1144,17 @@ def scan_file_bytes(data: bytes, file_path: str, patterns: List[DetectionPattern
     return findings
 
 def scan_single_file(file_path: str, patterns: List[DetectionPattern]) -> Tuple[List[Finding], int]:
-    """Scan single file."""
+    """Scan single file.
+
+    Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+    Args:
+        file_path (str): Filesystem path to the target file or directory.
+        patterns (List[DetectionPattern]): The patterns parameter.
+
+    Returns:
+        Tuple[List[Finding], int]: List of processed items or identifiers.
+    """
     try:
         stat = os.stat(file_path)
         size = stat.st_size
@@ -1032,7 +1183,17 @@ def scan_single_file(file_path: str, patterns: List[DetectionPattern]) -> Tuple[
         return [], 0
 
 def walk_files(directory: str, ignores: List[str]) -> Tuple[List[str], int]:
-    """Walk directory, returning (file_paths, skipped_count)."""
+    """Walk directory, returning (file_paths, skipped_count).
+
+    Manages walk files operations and coordinates related state changes for the component.
+
+    Args:
+        directory (str): The directory parameter.
+        ignores (List[str]): The ignores parameter.
+
+    Returns:
+        Tuple[List[str], int]: List of processed items or identifiers.
+    """
     ignore_patterns = list(ignores)
     ignore_file = os.path.join(directory, ".sentinelignore")
     if os.path.exists(ignore_file):
@@ -1061,7 +1222,16 @@ def walk_files(directory: str, ignores: List[str]) -> Tuple[List[str], int]:
     return files, skipped
 
 def compute_risk_score(findings: List[Finding]) -> int:
-    """Compute risk score."""
+    """Compute risk score.
+
+    Manages compute risk score operations and coordinates related state changes for the component.
+
+    Args:
+        findings (List[Finding]): The findings parameter.
+
+    Returns:
+        int: Result of the operation.
+    """
     if not findings:
         return 0
     weights = {"CRITICAL": 30, "HIGH": 15, "MEDIUM": 5, "LOW": 1}
@@ -1071,7 +1241,20 @@ def compute_risk_score(findings: List[Finding]) -> int:
 
 def run_scan(directory: str, ignores: List[str] = None, max_workers: int = 8,
              severity_filter: List[str] = None, quiet: bool = False) -> ScanStats:
-    """Run scan."""
+    """Run scan.
+
+    Manages run scan operations and coordinates related state changes for the component.
+
+    Args:
+        directory (str): The directory parameter.
+        ignores (List[str]): The ignores parameter.
+        max_workers (int): The max workers parameter.
+        severity_filter (List[str]): The severity filter parameter.
+        quiet (bool): The quiet parameter.
+
+    Returns:
+        ScanStats: Result of the operation.
+    """
     ignores = ignores or []
     t0 = time.time()
     files, skipped = walk_files(directory, ignores)
@@ -1121,15 +1304,32 @@ def run_scan(directory: str, ignores: List[str] = None, max_workers: int = 8,
 # ─── Archive Scanner ──────────────────────────────────────────────────────────
 
 def _scan_archive_member(data: bytes, virtual_path: str) -> List[Finding]:
-    """_scan_archive_member."""
+    """_scan_archive_member.
+
+    Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+    Args:
+        data (bytes): The data parameter.
+        virtual_path (str): Filesystem path to the target file or directory.
+
+    Returns:
+        List[Finding]: List of processed items or identifiers.
+    """
     if b"\x00" in data[:512]:
         return []
     return scan_file_bytes(data, virtual_path, PATTERNS)
-    """_scan_archive_member."""
-    """_scan_archive_member."""
 
 def scan_zip(archive_path: str) -> List[Finding]:
-    """Scan zip."""
+    """Scan zip.
+
+    Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+    Args:
+        archive_path (str): Filesystem path to the target file or directory.
+
+    Returns:
+        List[Finding]: List of processed items or identifiers.
+    """
     findings = []
     try:
         with zipfile.ZipFile(archive_path, 'r') as zf:
@@ -1152,7 +1352,16 @@ def scan_zip(archive_path: str) -> List[Finding]:
     return findings
 
 def scan_tar(archive_path: str) -> List[Finding]:
-    """Scan tar."""
+    """Scan tar.
+
+    Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+    Args:
+        archive_path (str): Filesystem path to the target file or directory.
+
+    Returns:
+        List[Finding]: List of processed items or identifiers.
+    """
     findings = []
     try:
         with tarfile.open(archive_path, 'r:*') as tf:
@@ -1182,7 +1391,17 @@ def scan_tar(archive_path: str) -> List[Finding]:
     return findings
 
 def scan_archives(directory: str, quiet: bool = False) -> Tuple[List[Finding], int]:
-    """Scan archives."""
+    """Scan archives.
+
+    Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+    Args:
+        directory (str): The directory parameter.
+        quiet (bool): The quiet parameter.
+
+    Returns:
+        Tuple[List[Finding], int]: List of processed items or identifiers.
+    """
     findings, count = [], 0
     for root, dirs, files in os.walk(directory):
         dirs[:] = [d for d in dirs if d not in {'.git','node_modules','__pycache__'}]
@@ -1200,7 +1419,18 @@ def scan_archives(directory: str, quiet: bool = False) -> Tuple[List[Finding], i
 # ─── Git History Scanner ──────────────────────────────────────────────────────
 
 def scan_git_history(directory: str, max_commits: int = 500, quiet: bool = False) -> Tuple[List[Finding], int]:
-    """Walk git commit history and scan each diff for secrets."""
+    """Walk git commit history and scan each diff for secrets.
+
+    Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+    Args:
+        directory (str): The directory parameter.
+        max_commits (int): The max commits parameter.
+        quiet (bool): The quiet parameter.
+
+    Returns:
+        Tuple[List[Finding], int]: List of processed items or identifiers.
+    """
     findings = []
     commits_scanned = 0
     try:
@@ -1248,7 +1478,20 @@ def scan_git_history(directory: str, max_commits: int = 500, quiet: bool = False
 # ─── Live Credential Verification ────────────────────────────────────────────
 
 def _http(url: str, headers: dict, data: bytes = None, method: str = "GET", timeout: int = 8) -> Tuple[int, Any]:
-    """_http."""
+    """Http.
+
+    Manages http operations and coordinates related state changes for the component.
+
+    Args:
+        url (str): The url parameter.
+        headers (dict): The headers parameter.
+        data (bytes): The data parameter.
+        method (str): The method parameter.
+        timeout (int): The timeout parameter.
+
+    Returns:
+        Tuple[int, Any]: Result of the operation.
+    """
     req = urllib.request.Request(url, data=data, headers=headers, method=method)
     try:
         with urllib.request.urlopen(req, timeout=timeout) as r:
@@ -1261,17 +1504,37 @@ def _http(url: str, headers: dict, data: bytes = None, method: str = "GET", time
         return e.code, {}
     except Exception as e:
         return 0, {"error": str(e)}
-    """_http."""
-    """_http."""
 
 def _vr(finding_id: str, name: str, live: Optional[bool], identity: Optional[str], blast: str, err: Optional[str] = None) -> VerificationResult:
-    """_vr."""
+    """Vr.
+
+    Manages vr operations and coordinates related state changes for the component.
+
+    Args:
+        finding_id (str): The finding id parameter.
+        name (str): The name parameter.
+        live (Optional[bool]): The live parameter.
+        identity (Optional[str]): The identity parameter.
+        blast (str): The blast parameter.
+        err (Optional[str]): Error message string or exception instance.
+
+    Returns:
+        VerificationResult: Result of the operation.
+    """
     return VerificationResult(finding_id=finding_id, pattern_name=name, is_live=live, identity=identity, blast_radius=blast, error=err)
-    """_vr."""
-    """_vr."""
 
 def verify_aws(key_id: str, secret: str) -> VerificationResult:
-    """Verify aws."""
+    """Verify aws.
+
+    Manages verify aws operations and coordinates related state changes for the component.
+
+    Args:
+        key_id (str): The key id parameter.
+        secret (str): The secret parameter.
+
+    Returns:
+        VerificationResult: Result of the operation.
+    """
     fid = hashlib.md5(f"AWS:{key_id}".encode()).hexdigest()[:8]
     try:
         now = datetime.now(timezone.utc)
@@ -1287,7 +1550,14 @@ def verify_aws(key_id: str, secret: str) -> VerificationResult:
         scope = f"{date_stamp}/{region}/{service}/aws4_request"
         sts = (f"AWS4-HMAC-SHA256\n{amz_date}\n{scope}\n" + hashlib.sha256(canonical.encode()).hexdigest())
         def sign(key, msg):
-            """Sign."""
+            """Sign.
+
+            Manages sign operations and coordinates related state changes for the component.
+
+            Args:
+                key: The key parameter.
+                msg: Informational or progress status message.
+            """
             return hmac.new(key, msg.encode(), hashlib.sha256).digest()
         sig_key = sign(sign(sign(sign(f"AWS4{secret}".encode(), date_stamp), region), service), "aws4_request")
         sig = hmac.new(sig_key, sts.encode(), hashlib.sha256).hexdigest()
@@ -1311,7 +1581,16 @@ def verify_aws(key_id: str, secret: str) -> VerificationResult:
         return _vr(fid, "AWS Key", None, None, "Verification attempted but failed.", str(e))
 
 def verify_github(token: str) -> VerificationResult:
-    """Verify github."""
+    """Verify github.
+
+    Manages verify github operations and coordinates related state changes for the component.
+
+    Args:
+        token (str): The token parameter.
+
+    Returns:
+        VerificationResult: Result of the operation.
+    """
     fid = hashlib.md5(f"GH:{token[:10]}".encode()).hexdigest()[:8]
     status, data = _http("https://api.github.com/user", {"Authorization": f"token {token}", "User-Agent": "Sentinel/2.0"})
     if status == 200:
@@ -1323,7 +1602,16 @@ def verify_github(token: str) -> VerificationResult:
     return _vr(fid, "GitHub Token", None, None, "Could not verify.", f"HTTP {status}")
 
 def verify_stripe(key: str) -> VerificationResult:
-    """Verify stripe."""
+    """Verify stripe.
+
+    Manages verify stripe operations and coordinates related state changes for the component.
+
+    Args:
+        key (str): The key parameter.
+
+    Returns:
+        VerificationResult: Result of the operation.
+    """
     fid = hashlib.md5(f"STRIPE:{key[:10]}".encode()).hexdigest()[:8]
     auth = base64.b64encode(f"{key}:".encode()).decode()
     status, data = _http("https://api.stripe.com/v1/balance", {"Authorization": f"Basic {auth}", "User-Agent": "Sentinel/2.0"})
@@ -1338,7 +1626,16 @@ def verify_stripe(key: str) -> VerificationResult:
     return _vr(fid, "Stripe Key", None, None, "Could not verify.", f"HTTP {status}")
 
 def verify_slack(token: str) -> VerificationResult:
-    """Verify slack."""
+    """Verify slack.
+
+    Manages verify slack operations and coordinates related state changes for the component.
+
+    Args:
+        token (str): The token parameter.
+
+    Returns:
+        VerificationResult: Result of the operation.
+    """
     fid = hashlib.md5(f"SLACK:{token[:10]}".encode()).hexdigest()[:8]
     status, data = _http("https://slack.com/api/auth.test", {"Authorization": f"Bearer {token}", "User-Agent": "Sentinel/2.0"})
     if status == 200 and data.get("ok"):
@@ -1349,7 +1646,16 @@ def verify_slack(token: str) -> VerificationResult:
     return _vr(fid, "Slack Token", None, None, "Could not verify.", f"HTTP {status}")
 
 def verify_npm(token: str) -> VerificationResult:
-    """Verify npm."""
+    """Verify npm.
+
+    Manages verify npm operations and coordinates related state changes for the component.
+
+    Args:
+        token (str): The token parameter.
+
+    Returns:
+        VerificationResult: Result of the operation.
+    """
     fid = hashlib.md5(f"NPM:{token[:10]}".encode()).hexdigest()[:8]
     status, data = _http("https://registry.npmjs.org/-/whoami", {"Authorization": f"Bearer {token}", "User-Agent": "Sentinel/2.0"})
     if status == 200:
@@ -1361,7 +1667,16 @@ def verify_npm(token: str) -> VerificationResult:
     return _vr(fid, "npm Token", None, None, "Could not verify.", f"HTTP {status}")
 
 def verify_openai(key: str) -> VerificationResult:
-    """Verify openai."""
+    """Verify openai.
+
+    Manages verify openai operations and coordinates related state changes for the component.
+
+    Args:
+        key (str): The key parameter.
+
+    Returns:
+        VerificationResult: Result of the operation.
+    """
     fid = hashlib.md5(f"OPENAI:{key[:10]}".encode()).hexdigest()[:8]
     status, data = _http("https://api.openai.com/v1/models", {"Authorization": f"Bearer {key}", "User-Agent": "Sentinel/2.0"})
     if status == 200:
@@ -1384,7 +1699,17 @@ VERIFIER_DISPATCH = {
 }
 
 def verify_all_findings(findings: List[Finding], quiet: bool = False) -> Dict[str, VerificationResult]:
-    """Verify all findings."""
+    """Verify all findings.
+
+    Manages verify all findings operations and coordinates related state changes for the component.
+
+    Args:
+        findings (List[Finding]): The findings parameter.
+        quiet (bool): The quiet parameter.
+
+    Returns:
+        Dict[str, VerificationResult]: Dictionary mapping identifiers to status or values.
+    """
     verifiable = [f for f in findings if f.pattern_name in VERIFIER_DISPATCH]
     results = {}
     if not verifiable:
@@ -1410,17 +1735,34 @@ def verify_all_findings(findings: List[Finding], quiet: bool = False) -> Dict[st
     return results
 
 def _truncate_secret(value: str) -> str:
-    """_truncate_secret."""
+    """_truncate_secret.
+
+    Manages truncate secret operations and coordinates related state changes for the component.
+
+    Args:
+        value (str): The value parameter.
+
+    Returns:
+        str: Formatted string or path.
+    """
     if len(value) <= 8:
         return value
     return value[:4] + '***' + value[-4:]
-    """_truncate_secret."""
-    """_truncate_secret."""
 
 # ─── Baseline / Delta Mode ────────────────────────────────────────────────────
 
 def save_baseline(findings: List[Finding], directory: str) -> str:
-    """Save baseline."""
+    """Save baseline.
+
+    Manages save baseline operations and coordinates related state changes for the component.
+
+    Args:
+        findings (List[Finding]): The findings parameter.
+        directory (str): The directory parameter.
+
+    Returns:
+        str: Formatted string or path.
+    """
     path = os.path.join(directory, BASELINE_FILENAME)
     with open(path, 'w') as f:
         json.dump({
@@ -1432,7 +1774,16 @@ def save_baseline(findings: List[Finding], directory: str) -> str:
     return path
 
 def load_baseline(directory: str) -> Optional[Dict]:
-    """Load baseline."""
+    """Load baseline.
+
+    Manages load baseline operations and coordinates related state changes for the component.
+
+    Args:
+        directory (str): The directory parameter.
+
+    Returns:
+        Optional[Dict]: Dictionary mapping identifiers to status or values.
+    """
     path = os.path.join(directory, BASELINE_FILENAME)
     if not os.path.exists(path):
         return None
@@ -1440,7 +1791,17 @@ def load_baseline(directory: str) -> Optional[Dict]:
         return json.load(f)
 
 def compute_delta(findings: List[Finding], baseline: Dict) -> Tuple[List[Finding], int]:
-    """Compute delta."""
+    """Compute delta.
+
+    Manages compute delta operations and coordinates related state changes for the component.
+
+    Args:
+        findings (List[Finding]): The findings parameter.
+        baseline (Dict): The baseline parameter.
+
+    Returns:
+        Tuple[List[Finding], int]: List of processed items or identifiers.
+    """
     known = set(baseline.get("fingerprints", {}).keys())
     new = [f for f in findings if f.fingerprint not in known]
     resolved = len(known - {f.fingerprint for f in findings})
@@ -1449,13 +1810,29 @@ def compute_delta(findings: List[Finding], baseline: Dict) -> Tuple[List[Finding
 # ─── False Positive Management ────────────────────────────────────────────────
 
 def _fp_path(directory: str) -> str:
-    """_fp_path."""
+    """_fp_path.
+
+    Manages fp path operations and coordinates related state changes for the component.
+
+    Args:
+        directory (str): The directory parameter.
+
+    Returns:
+        str: Formatted string or path.
+    """
     return os.path.join(directory, FP_DB_FILENAME)
-    """_fp_path."""
-    """_fp_path."""
 
 def load_fp_db(directory: str) -> Dict:
-    """Load fp db."""
+    """Load fp db.
+
+    Manages load fp db operations and coordinates related state changes for the component.
+
+    Args:
+        directory (str): The directory parameter.
+
+    Returns:
+        Dict: Dictionary mapping identifiers to status or values.
+    """
     p = _fp_path(directory)
     if os.path.exists(p):
         with open(p) as f:
@@ -1463,19 +1840,44 @@ def load_fp_db(directory: str) -> Dict:
     return {"suppressions": {}}
 
 def save_fp_db(db: Dict, directory: str):
-    """Save fp db."""
+    """Save fp db.
+
+    Manages save fp db operations and coordinates related state changes for the component.
+
+    Args:
+        db (Dict): The db parameter.
+        directory (str): The directory parameter.
+    """
     with open(_fp_path(directory), 'w') as f:
         json.dump(db, f, indent=2)
 
 def add_fp(fingerprint: str, directory: str, reason: str = ""):
-    """Add fp."""
+    """Add fp.
+
+    Manages add fp operations and coordinates related state changes for the component.
+
+    Args:
+        fingerprint (str): The fingerprint parameter.
+        directory (str): The directory parameter.
+        reason (str): The reason parameter.
+    """
     db = load_fp_db(directory)
     db["suppressions"][fingerprint] = {"suppressed_at": datetime.now(timezone.utc).isoformat(), "reason": reason}
     save_fp_db(db, directory)
     print(f"✅ Fingerprint {fingerprint} suppressed in {_fp_path(directory)}")
 
 def apply_fp_filter(findings: List[Finding], directory: str) -> Tuple[List[Finding], int]:
-    """Apply fp filter."""
+    """Apply fp filter.
+
+    Manages apply fp filter operations and coordinates related state changes for the component.
+
+    Args:
+        findings (List[Finding]): The findings parameter.
+        directory (str): The directory parameter.
+
+    Returns:
+        Tuple[List[Finding], int]: List of processed items or identifiers.
+    """
     db = load_fp_db(directory)
     sups = db.get("suppressions", {})
     kept, suppressed = [], 0
@@ -1489,7 +1891,14 @@ def apply_fp_filter(findings: List[Finding], directory: str) -> Tuple[List[Findi
 # ─── Scan History ─────────────────────────────────────────────────────────────
 
 def save_to_history(stats: ScanStats, live_count: int = 0):
-    """Save to history."""
+    """Save to history.
+
+    Manages save to history operations and coordinates related state changes for the component.
+
+    Args:
+        stats (ScanStats): The stats parameter.
+        live_count (int): The live count parameter.
+    """
     os.makedirs(HISTORY_DIR, exist_ok=True)
     scan_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     record = {
@@ -1504,7 +1913,16 @@ def save_to_history(stats: ScanStats, live_count: int = 0):
         json.dump(record, f)
 
 def load_history(limit: int = 20) -> List[Dict]:
-    """Load history."""
+    """Load history.
+
+    Manages load history operations and coordinates related state changes for the component.
+
+    Args:
+        limit (int): The limit parameter.
+
+    Returns:
+        List[Dict]: List of processed items or identifiers.
+    """
     if not os.path.exists(HISTORY_DIR):
         return []
     records = []
@@ -1520,7 +1938,20 @@ def load_history(limit: int = 20) -> List[Dict]:
 # ─── Jira / GitHub Issues Integration ────────────────────────────────────────
 
 def create_jira_ticket(finding: Finding, jira_url: str, jira_user: str, jira_token: str, project_key: str) -> Optional[str]:
-    """Create a Jira issue from a finding. Returns issue key or None."""
+    """Create a Jira issue from a finding. Returns issue key or None.
+
+    Manages create jira ticket operations and coordinates related state changes for the component.
+
+    Args:
+        finding (Finding): The finding parameter.
+        jira_url (str): The jira url parameter.
+        jira_user (str): The jira user parameter.
+        jira_token (str): The jira token parameter.
+        project_key (str): The project key parameter.
+
+    Returns:
+        Optional[str]: Formatted string or path.
+    """
     payload = json.dumps({
         "fields": {
             "project": {"key": project_key},
@@ -1556,7 +1987,18 @@ def create_jira_ticket(finding: Finding, jira_url: str, jira_user: str, jira_tok
         return None
 
 def create_github_issue(finding: Finding, github_token: str, repo: str) -> Optional[str]:
-    """Create a GitHub issue from a finding. Returns issue URL or None."""
+    """Create a GitHub issue from a finding. Returns issue URL or None.
+
+    Manages create github issue operations and coordinates related state changes for the component.
+
+    Args:
+        finding (Finding): The finding parameter.
+        github_token (str): The github token parameter.
+        repo (str): The repo parameter.
+
+    Returns:
+        Optional[str]: Formatted string or path.
+    """
     payload = json.dumps({
         "title": f"[SENTINEL] {finding.severity} — {finding.pattern_name} in {Path(finding.file_path).name}",
         "body": (
@@ -1589,12 +2031,26 @@ def create_github_issue(finding: Finding, github_token: str, repo: str) -> Optio
 # ─── Export Formats ───────────────────────────────────────────────────────────
 
 def export_json(stats: ScanStats, path: str):
-    """Export json."""
+    """Export json.
+
+    Manages export json operations and coordinates related state changes for the component.
+
+    Args:
+        stats (ScanStats): The stats parameter.
+        path (str): Filesystem path to the target file or directory.
+    """
     with open(path, 'w') as f:
         json.dump(stats.to_dict(), f, indent=2, default=str)
 
 def export_csv(stats: ScanStats, path: str):
-    """Export csv."""
+    """Export csv.
+
+    Manages export csv operations and coordinates related state changes for the component.
+
+    Args:
+        stats (ScanStats): The stats parameter.
+        path (str): Filesystem path to the target file or directory.
+    """
     fields = ["severity","category","pattern_name","file_path","line_number",
               "match_preview","compliance","remediation","confidence","entropy",
               "verified","identity","blast_radius"]
@@ -1607,7 +2063,14 @@ def export_csv(stats: ScanStats, path: str):
             w.writerow({k: row.get(k, '') for k in fields})
 
 def export_sarif(stats: ScanStats, path: str):
-    """Export sarif."""
+    """Export sarif.
+
+    Manages export sarif operations and coordinates related state changes for the component.
+
+    Args:
+        stats (ScanStats): The stats parameter.
+        path (str): Filesystem path to the target file or directory.
+    """
     rules = {}
     for p in PATTERNS:
         if p.name not in rules:
@@ -1637,7 +2100,17 @@ def export_sarif(stats: ScanStats, path: str):
         json.dump(sarif, f, indent=2)
 
 def send_slack(stats: ScanStats, webhook_url: str) -> bool:
-    """Send slack."""
+    """Send slack.
+
+    Manages send slack operations and coordinates related state changes for the component.
+
+    Args:
+        stats (ScanStats): The stats parameter.
+        webhook_url (str): The webhook url parameter.
+
+    Returns:
+        bool: True if the operation succeeded, False otherwise.
+    """
     risk_color = "#ef4444" if stats.risk_score >= 70 else "#f97316" if stats.risk_score >= 40 else "#22c55e"
     live = len(stats.live_credentials)
     payload = json.dumps({
@@ -1667,7 +2140,14 @@ def send_slack(stats: ScanStats, webhook_url: str) -> bool:
 # ─── HTML Report Generator ────────────────────────────────────────────────────
 
 def generate_html_report(stats: ScanStats, output_path: str):
-    """Generate html report."""
+    """Generate html report.
+
+    Manages generate html report operations and coordinates related state changes for the component.
+
+    Args:
+        stats (ScanStats): The stats parameter.
+        output_path (str): Filesystem path to the target file or directory.
+    """
     _e = html_mod.escape
     findings_js = json.dumps([f.to_dict() for f in stats.findings], indent=2, default=str)
     history_js = json.dumps(load_history(), indent=2)
@@ -1975,7 +2455,13 @@ function downloadCSV() {{
 # ─── Terminal Report ──────────────────────────────────────────────────────────
 
 def print_terminal_report(stats: ScanStats):
-    """Print terminal report."""
+    """Print terminal report.
+
+    Manages print terminal report operations and coordinates related state changes for the component.
+
+    Args:
+        stats (ScanStats): The stats parameter.
+    """
     if RICH_AVAILABLE:
         console = Console()
         console.print()
@@ -2143,12 +2629,24 @@ function triggerScan() {
 </html>"""
 
 class DashboardHandler(http.server.BaseHTTPRequestHandler):
-    """Dashboard Handler."""
+    """Dashboardhandler.
+
+    Manages DashboardHandler operations and coordinates related state changes for the component.
+    """
     def log_message(self, format, *args):
-        """Log message."""
+        """Log message.
+
+        Manages log message operations and coordinates related state changes for the component.
+
+        Args:
+            format: The format parameter.
+        """
         pass  # suppress logs
     def do_GET(self):
-        """Do GET."""
+        """Do GET.
+
+        Manages do GET operations and coordinates related state changes for the component.
+        """
         if self.path == '/api/history':
             data = json.dumps(load_history()).encode()
             self.send_response(200)
@@ -2164,7 +2662,13 @@ class DashboardHandler(http.server.BaseHTTPRequestHandler):
             self.wfile.write(html)
 
 def serve_dashboard(port: int = 8080):
-    """Serve dashboard."""
+    """Serve dashboard.
+
+    Manages serve dashboard operations and coordinates related state changes for the component.
+
+    Args:
+        port (int): The port parameter.
+    """
     print(f"\n🌐 Sentinel Dashboard running at http://localhost:{port}")
     print(f"   Press Ctrl+C to stop.\n")
     server = http.server.HTTPServer(('127.0.0.1', port), DashboardHandler)
@@ -2176,7 +2680,13 @@ def serve_dashboard(port: int = 8080):
 # ─── CLI ─────────────────────────────────────────────────────────────────────
 
 def cmd_scan(args):
-    """Cmd scan."""
+    """Cmd scan.
+
+    Manages cmd scan operations and coordinates related state changes for the component.
+
+    Args:
+        args: The args parameter.
+    """
     directory = os.path.abspath(args.directory)
     if not os.path.isdir(directory):
         print(f"Error: '{directory}' is not a directory.", file=sys.stderr)
@@ -2311,7 +2821,13 @@ def cmd_scan(args):
 
 
 def cmd_baseline(args):
-    """Cmd baseline."""
+    """Cmd baseline.
+
+    Manages cmd baseline operations and coordinates related state changes for the component.
+
+    Args:
+        args: The args parameter.
+    """
     directory = os.path.abspath(args.directory)
     if args.baseline_action == "save":
         stats = run_scan(directory=directory, quiet=True)
@@ -2339,7 +2855,13 @@ def cmd_baseline(args):
 
 
 def cmd_fp(args):
-    """Cmd fp."""
+    """Cmd fp.
+
+    Manages cmd fp operations and coordinates related state changes for the component.
+
+    Args:
+        args: The args parameter.
+    """
     if args.fp_action == "add":
         add_fp(args.fingerprint, os.getcwd(), getattr(args,"reason",""))
     elif args.fp_action == "list":
@@ -2361,7 +2883,13 @@ def cmd_fp(args):
 
 
 def cmd_verify(args):
-    """Cmd verify."""
+    """Cmd verify.
+
+    Manages cmd verify operations and coordinates related state changes for the component.
+
+    Args:
+        args: The args parameter.
+    """
     with open(args.file) as f:
         data = json.load(f)
     findings_raw = data.get("findings", data) if isinstance(data, dict) else data
@@ -2381,13 +2909,25 @@ def cmd_verify(args):
 
 
 def cmd_serve(args):
-    """Cmd serve."""
+    """Cmd serve.
+
+    Manages cmd serve operations and coordinates related state changes for the component.
+
+    Args:
+        args: The args parameter.
+    """
     serve_dashboard(getattr(args,"port",8080))
     return 0
 
 
 def cmd_patterns(args):
-    """Cmd patterns."""
+    """Cmd patterns.
+
+    Manages cmd patterns operations and coordinates related state changes for the component.
+
+    Args:
+        args: The args parameter.
+    """
     if RICH_AVAILABLE:
         console = Console()
         table = Table(title=f"Sentinel Pro — {len(PATTERNS)} Detection Patterns", box=box.SIMPLE)
@@ -2406,7 +2946,10 @@ def cmd_patterns(args):
 
 
 def build_parser():
-    """Build parser."""
+    """Build parser.
+
+    Manages build parser operations and coordinates related state changes for the component.
+    """
     parser = argparse.ArgumentParser(
         prog="sentinel_pro",
         description=f"Sentinel Pro v{VERSION} — Enterprise Data Security Scanner",
@@ -2468,7 +3011,13 @@ def build_parser():
 
 
 def main() -> int:
-    """Main."""
+    """Main.
+
+    Manages main operations and coordinates related state changes for the component.
+
+    Returns:
+        int: Result of the operation.
+    """
     parser = build_parser()
     args = parser.parse_args()
 

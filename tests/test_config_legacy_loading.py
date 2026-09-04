@@ -18,7 +18,14 @@ from cortex_unified.core.config import DEFAULT_CONFIG, Config
 
 
 def test_missing_file_is_silent_and_yields_defaults(tmp_path, caplog):
-    """An absent config is the normal case - defaults apply, no warning."""
+    """An absent config is the normal case - defaults apply, no warning.
+
+    Manages test missing file is silent and yields defaults operations and coordinates related state changes for the component.
+
+    Args:
+        tmp_path: Filesystem path to the target file or directory.
+        caplog: The caplog parameter.
+    """
     target = tmp_path / "nope.yaml"
     with caplog.at_level(logging.WARNING, logger="cortex.core.config"):
         cfg = Config(str(target))
@@ -27,7 +34,13 @@ def test_missing_file_is_silent_and_yields_defaults(tmp_path, caplog):
 
 
 def test_valid_yaml_is_loaded_over_the_defaults(tmp_path):
-    """test_valid_yaml_is_loaded_over_the_defaults."""
+    """test_valid_yaml_is_loaded_over_the_defaults.
+
+    Manages test valid yaml is loaded over the defaults operations and coordinates related state changes for the component.
+
+    Args:
+        tmp_path: Filesystem path to the target file or directory.
+    """
     path = tmp_path / "ok.yaml"
     path.write_text("exclude_dirs:\n  - node_modules\n", encoding="utf-8")
     cfg = Config(str(path))
@@ -38,7 +51,14 @@ def test_valid_yaml_is_loaded_over_the_defaults(tmp_path):
 
 
 def test_malformed_yaml_warns_and_falls_back(tmp_path, caplog):
-    """A syntax error must be reported, not silently ignored."""
+    """A syntax error must be reported, not silently ignored.
+
+    Manages test malformed yaml warns and falls back operations and coordinates related state changes for the component.
+
+    Args:
+        tmp_path: Filesystem path to the target file or directory.
+        caplog: The caplog parameter.
+    """
     path = tmp_path / "bad.yaml"
     path.write_text("exclude_dirs: [unclosed\n", encoding="utf-8")
     with caplog.at_level(logging.WARNING, logger="cortex.core.config"):
@@ -48,7 +68,14 @@ def test_malformed_yaml_warns_and_falls_back(tmp_path, caplog):
 
 
 def test_non_mapping_top_level_warns_and_falls_back(tmp_path, caplog):
-    """A YAML list/scalar at the top level is a user mistake worth reporting."""
+    """A YAML list/scalar at the top level is a user mistake worth reporting.
+
+    Manages test non mapping top level warns and falls back operations and coordinates related state changes for the component.
+
+    Args:
+        tmp_path: Filesystem path to the target file or directory.
+        caplog: The caplog parameter.
+    """
     path = tmp_path / "list.yaml"
     path.write_text("- just\n- a\n- list\n", encoding="utf-8")
     with caplog.at_level(logging.WARNING, logger="cortex.core.config"):
@@ -58,7 +85,14 @@ def test_non_mapping_top_level_warns_and_falls_back(tmp_path, caplog):
 
 
 def test_empty_file_is_treated_as_no_settings(tmp_path, caplog):
-    """An empty file parses to None; that is defaults, not an error."""
+    """An empty file parses to None; that is defaults, not an error.
+
+    Manages test empty file is treated as no settings operations and coordinates related state changes for the component.
+
+    Args:
+        tmp_path: Filesystem path to the target file or directory.
+        caplog: The caplog parameter.
+    """
     path = tmp_path / "empty.yaml"
     path.write_text("", encoding="utf-8")
     with caplog.at_level(logging.WARNING, logger="cortex.core.config"):
@@ -68,7 +102,14 @@ def test_empty_file_is_treated_as_no_settings(tmp_path, caplog):
 
 
 def test_non_utf8_bytes_warn_and_fall_back(tmp_path, caplog):
-    """Explicit UTF-8 decoding means bad bytes are reported, not locale-luck."""
+    """Explicit UTF-8 decoding means bad bytes are reported, not locale-luck.
+
+    Manages test non utf8 bytes warn and fall back operations and coordinates related state changes for the component.
+
+    Args:
+        tmp_path: Filesystem path to the target file or directory.
+        caplog: The caplog parameter.
+    """
     path = tmp_path / "latin.yaml"
     # 0xFF is not valid UTF-8, so this must be reported as a read failure.
     path.write_bytes(b"exclude_dirs:\n  - caf\xff\n")
@@ -79,7 +120,13 @@ def test_non_utf8_bytes_warn_and_fall_back(tmp_path, caplog):
 
 
 def test_unicode_paths_load_correctly(tmp_path):
-    """Non-ASCII config content must load regardless of system locale."""
+    """Non-ASCII config content must load regardless of system locale.
+
+    Manages test unicode paths load correctly operations and coordinates related state changes for the component.
+
+    Args:
+        tmp_path: Filesystem path to the target file or directory.
+    """
     path = tmp_path / "unicode.yaml"
     path.write_text("exclude_dirs:\n  - \u30c6\u30b9\u30c8\n", encoding="utf-8")
     cfg = Config(str(path))
@@ -98,7 +145,14 @@ _PROTECTED = (".git", "node_modules", "__pycache__")
 
 @pytest.mark.parametrize("name", _PROTECTED)
 def test_protected_directories_are_excluded_by_default(tmp_path, name):
-    """With no config file, the safety exclusions must still apply."""
+    """With no config file, the safety exclusions must still apply.
+
+    Manages test protected directories are excluded by default operations and coordinates related state changes for the component.
+
+    Args:
+        tmp_path: Filesystem path to the target file or directory.
+        name: The name parameter.
+    """
     cfg = Config(str(tmp_path / "absent.yaml"))
     assert cfg.matches_exclude_patterns(str(tmp_path / name)), (
         f"{name} must be excluded by default; deleting inside it can corrupt "
@@ -107,7 +161,13 @@ def test_protected_directories_are_excluded_by_default(tmp_path, name):
 
 
 def test_defaults_are_the_baseline_when_no_file_exists(tmp_path):
-    """test_defaults_are_the_baseline_when_no_file_exists."""
+    """test_defaults_are_the_baseline_when_no_file_exists.
+
+    Manages test defaults are the baseline when no file exists operations and coordinates related state changes for the component.
+
+    Args:
+        tmp_path: Filesystem path to the target file or directory.
+    """
     cfg = Config(str(tmp_path / "absent.yaml"))
     assert cfg.exclude_dirs == DEFAULT_CONFIG["exclude_dirs"]
     assert cfg.exclude_patterns == DEFAULT_CONFIG["exclude_patterns"]
@@ -115,7 +175,14 @@ def test_defaults_are_the_baseline_when_no_file_exists(tmp_path):
 
 
 def test_defaults_still_apply_when_the_file_is_broken(tmp_path, caplog):
-    """A malformed file must not silently drop the safety exclusions."""
+    """A malformed file must not silently drop the safety exclusions.
+
+    Manages test defaults still apply when the file is broken operations and coordinates related state changes for the component.
+
+    Args:
+        tmp_path: Filesystem path to the target file or directory.
+        caplog: The caplog parameter.
+    """
     path = tmp_path / "bad.yaml"
     path.write_text("exclude_dirs: [unclosed\n", encoding="utf-8")
     with caplog.at_level(logging.WARNING, logger="cortex.core.config"):
@@ -125,7 +192,13 @@ def test_defaults_still_apply_when_the_file_is_broken(tmp_path, caplog):
 
 
 def test_user_settings_override_defaults_key_by_key(tmp_path):
-    """An explicit list replaces the default; untouched keys are inherited."""
+    """An explicit list replaces the default; untouched keys are inherited.
+
+    Manages test user settings override defaults key by key operations and coordinates related state changes for the component.
+
+    Args:
+        tmp_path: Filesystem path to the target file or directory.
+    """
     path = tmp_path / "c.yaml"
     path.write_text("exclude_dirs:\n  - only_mine\nmin_age_days: 30\n",
                     encoding="utf-8")

@@ -20,7 +20,10 @@ from cortex_unified.system_tools.storage_growth_tracker import StorageGrowthTrac
 
 
 def test_vss_manager():
-    """test_vss_manager."""
+    """test_vss_manager.
+
+    Manages test vss manager operations and coordinates related state changes for the component.
+    """
     mgr = VssManager()
     rep = mgr.audit()
     assert isinstance(rep, VssAuditReport)
@@ -31,7 +34,10 @@ def test_vss_manager():
 
 
 def test_dev_drive_optimizer():
-    """test_dev_drive_optimizer."""
+    """test_dev_drive_optimizer.
+
+    Manages test dev drive optimizer operations and coordinates related state changes for the component.
+    """
     opt = DevDriveOptimizer()
     rep = opt.audit()
     assert isinstance(rep, DevDriveAuditReport)
@@ -43,7 +49,10 @@ def test_dev_drive_optimizer():
 
 
 def test_bitlocker_auditor():
-    """test_bitlocker_auditor."""
+    """test_bitlocker_auditor.
+
+    Manages test bitlocker auditor operations and coordinates related state changes for the component.
+    """
     aud = BitLockerAuditor()
     rep = aud.audit()
     assert isinstance(rep, BitLockerAuditReport)
@@ -53,7 +62,10 @@ def test_bitlocker_auditor():
 
 
 def test_junction_auditor():
-    """test_junction_auditor."""
+    """test_junction_auditor.
+
+    Manages test junction auditor operations and coordinates related state changes for the component.
+    """
     with tempfile.TemporaryDirectory() as tmpdir:
         tmp = Path(tmpdir)
         sub = tmp / "real_folder"
@@ -68,7 +80,13 @@ def test_junction_auditor():
 
 
 def test_bitrot_scrubber(tmp_path):
-    """test_bitrot_scrubber."""
+    """test_bitrot_scrubber.
+
+    Manages test bitrot scrubber operations and coordinates related state changes for the component.
+
+    Args:
+        tmp_path: Filesystem path to the target file or directory.
+    """
     db_file = tmp_path / "scrub_db" / "test_scrub.db"
     db_file.parent.mkdir(parents=True, exist_ok=True)
     scan_dir = tmp_path / "scan_data"
@@ -102,7 +120,10 @@ def test_bitrot_scrubber(tmp_path):
 
 
 def test_memory_compression_tuner():
-    """test_memory_compression_tuner."""
+    """test_memory_compression_tuner.
+
+    Manages test memory compression tuner operations and coordinates related state changes for the component.
+    """
     tuner = MemoryCompressionTuner()
     rep = tuner.audit()
     assert isinstance(rep, MemoryTunerReport)
@@ -113,7 +134,10 @@ def test_memory_compression_tuner():
 
 
 def test_sandbox_cleaner():
-    """test_sandbox_cleaner."""
+    """test_sandbox_cleaner.
+
+    Manages test sandbox cleaner operations and coordinates related state changes for the component.
+    """
     cleaner = SandboxCleaner()
     rep = cleaner.scan()
     assert isinstance(rep, SandboxCleanReport)
@@ -122,7 +146,10 @@ def test_sandbox_cleaner():
 
 
 def test_smb_share_auditor():
-    """test_smb_share_auditor."""
+    """test_smb_share_auditor.
+
+    Manages test smb share auditor operations and coordinates related state changes for the component.
+    """
     aud = SmbShareAuditor()
     rep = aud.audit()
     assert isinstance(rep, SmbSecurityReport)
@@ -131,7 +158,10 @@ def test_smb_share_auditor():
 
 
 def test_process_token_auditor():
-    """test_process_token_auditor."""
+    """test_process_token_auditor.
+
+    Manages test process token auditor operations and coordinates related state changes for the component.
+    """
     aud = ProcessTokenAuditor()
     rep = aud.audit(max_processes=20)
     assert isinstance(rep, ProcessTokenAuditReport)
@@ -142,7 +172,13 @@ def test_process_token_auditor():
 
 
 def test_storage_growth_tracker(tmp_path):
-    """test_storage_growth_tracker."""
+    """test_storage_growth_tracker.
+
+    Manages test storage growth tracker operations and coordinates related state changes for the component.
+
+    Args:
+        tmp_path: Filesystem path to the target file or directory.
+    """
     db_file = tmp_path / "tracker_db" / "growth.db"
     db_file.parent.mkdir(parents=True, exist_ok=True)
     scan_dir = tmp_path / "tracked_dir"

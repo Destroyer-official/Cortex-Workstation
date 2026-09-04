@@ -18,28 +18,35 @@ from typing import Callable, Dict, List, Optional, Set, Tuple
 
 
 class DiffStatus(Enum):
-    """DiffStatus."""
+    """Diffstatus.
+
+    Manages DiffStatus operations and coordinates related state changes for the component.
+    """
     IDENTICAL = "Identical"
     LEFT_ONLY = "Left Only"
     RIGHT_ONLY = "Right Only"
     NEWER_LEFT = "Newer on Left"
     NEWER_RIGHT = "Newer on Right"
     CONTENT_DIFF = "Content Mismatch"
-    """DiffStatus class."""
 
 
 class SyncMode(Enum):
-    """SyncMode."""
+    """Syncmode.
+
+    Manages SyncMode operations and coordinates related state changes for the component.
+    """
     MIRROR_LEFT_TO_RIGHT = "Mirror Left -> Right"
     MIRROR_RIGHT_TO_LEFT = "Mirror Right -> Left"
     TWO_WAY_MERGE = "Two-Way Bidirectional Merge"
     UPDATE_NEWER = "Update Newer Files Only"
-    """SyncMode class."""
 
 
 @dataclass
 class DiffEntry:
-    """DiffEntry."""
+    """Diffentry.
+
+    Manages DiffEntry operations and coordinates related state changes for the component.
+    """
     relative_path: str
     left_path: Optional[str]
     right_path: Optional[str]
@@ -49,12 +56,14 @@ class DiffEntry:
     left_mtime: float = 0.0
     right_mtime: float = 0.0
     is_dir: bool = False
-    """DiffEntry class."""
 
 
 @dataclass
 class SyncStats:
-    """SyncStats."""
+    """Syncstats.
+
+    Manages SyncStats operations and coordinates related state changes for the component.
+    """
     copied: int = 0
     updated: int = 0
     deleted: int = 0
@@ -63,19 +72,23 @@ class SyncStats:
     errors: List[str] = None
 
     def __post_init__(self):
-        """__post_init__."""
+        """__post_init__.
+
+        Manages post init operations and coordinates related state changes for the component.
+        """
         if self.errors is None:
             self.errors = []
-        """__post_init__."""
-    """SyncStats class."""
 
 
 class DirectoryDiffEngine:
-    """Production directory comparison and folder synchronization engine."""
+    """Directorydiffengine.
+
+    Manages DirectoryDiffEngine operations and coordinates related state changes for the component.
+    """
 
     @staticmethod
     def _quick_hash(path_str: str) -> str:
-        """Compute SHA256 of first/last 64KB + total size for fast accurate verification."""
+        """Heuristic hash: first/last 64KB sample only; fast but not accurate — interior changes can be missed."""
         try:
             h = hashlib.sha256()
             size = os.path.getsize(path_str)
@@ -98,7 +111,20 @@ class DirectoryDiffEngine:
         progress_cb: Optional[Callable[[int, str], None]] = None,
         cancel_check: Optional[Callable[[], bool]] = None,
     ) -> List[DiffEntry]:
-        """Compare two folders recursively and return a list of DiffEntry items."""
+        """Compare two folders recursively and return a list of DiffEntry items.
+
+        Manages compare directories operations and coordinates related state changes for the component.
+
+        Args:
+            left_dir (str | Path): The left dir parameter.
+            right_dir (str | Path): The right dir parameter.
+            compare_content_hash (bool): The compare content hash parameter.
+            progress_cb (Optional[Callable[[int, str], None]]): Callback invoked with progress updates.
+            cancel_check (Optional[Callable[[], bool]]): Threading event or callable to check for cancellation.
+
+        Returns:
+            List[DiffEntry]: List of processed items or identifiers.
+        """
         left_base = Path(left_dir).resolve()
         right_base = Path(right_dir).resolve()
 
@@ -231,7 +257,21 @@ class DirectoryDiffEngine:
         progress_cb: Optional[Callable[[int, int, str], None]] = None,
         cancel_check: Optional[Callable[[], bool]] = None,
     ) -> SyncStats:
-        """Execute folder synchronization according to selected SyncMode strategy."""
+        """Execute folder synchronization according to selected SyncMode strategy.
+
+        Manages execute sync operations and coordinates related state changes for the component.
+
+        Args:
+            diff_list (List[DiffEntry]): The diff list parameter.
+            left_dir (str | Path): The left dir parameter.
+            right_dir (str | Path): The right dir parameter.
+            mode (SyncMode): The mode parameter.
+            progress_cb (Optional[Callable[[int, int, str], None]]): Callback invoked with progress updates.
+            cancel_check (Optional[Callable[[], bool]]): Threading event or callable to check for cancellation.
+
+        Returns:
+            SyncStats: Result of the operation.
+        """
         left_base = Path(left_dir).resolve()
         right_base = Path(right_dir).resolve()
         stats = SyncStats()

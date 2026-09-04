@@ -26,7 +26,10 @@ _NO_WINDOW = 0x08000000 if _IS_WINDOWS else 0
 
 @dataclass(slots=True)
 class DriverInfo:
-    """Driver Info data container."""
+    """Driverinfo.
+
+    Manages DriverInfo operations and coordinates related state changes for the component.
+    """
     device_name: str
     provider: str
     version: str
@@ -34,7 +37,13 @@ class DriverInfo:
     device_class: str = ""
 
     def to_dict(self) -> dict[str, Any]:
-        """To dict."""
+        """To dict.
+
+        Manages to dict operations and coordinates related state changes for the component.
+
+        Returns:
+            dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         return {
             "device_name": self.device_name,
             "provider": self.provider,
@@ -45,15 +54,30 @@ class DriverInfo:
 
 
 class DriverInventory:
-    """Read-only inventory of signed device drivers (Windows)."""
+    """Driverinventory.
+
+    Manages DriverInventory operations and coordinates related state changes for the component.
+    """
 
     @staticmethod
     def is_supported() -> bool:
-        """Is supported."""
+        """Is supported.
+
+        Manages is supported operations and coordinates related state changes for the component.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         return _IS_WINDOWS
 
     def list_drivers(self) -> list[DriverInfo]:
-        """List drivers."""
+        """List drivers.
+
+        Manages list drivers operations and coordinates related state changes for the component.
+
+        Returns:
+            list[DriverInfo]: List of processed items or identifiers.
+        """
         if not _IS_WINDOWS:
             return []
         script = (
@@ -66,7 +90,16 @@ class DriverInventory:
 
     @staticmethod
     def _parse(out: str | None) -> list[DriverInfo]:
-        """_parse."""
+        """Parse and decode structured data from strings or byte streams.
+
+        Extracts fields, validates expected formats, and instantiates corresponding strongly-typed model objects.
+
+        Args:
+            out (str | None): The out parameter.
+
+        Returns:
+            list[DriverInfo]: List of processed items or identifiers.
+        """
         if not out:
             return []
         try:
@@ -98,12 +131,19 @@ class DriverInventory:
             ))
         drivers.sort(key=lambda x: (x.device_class, x.device_name))
         return drivers
-        """_parse."""
-        """_parse."""
 
     @staticmethod
     def _clean_date(raw: Any) -> str:
-        """_clean_date."""
+        """_clean_date.
+
+        Permanently purges or removes specified target items, reclaiming storage space and logging actions taken.
+
+        Args:
+            raw (Any): The raw parameter.
+
+        Returns:
+            str: Formatted string or path.
+        """
         if not raw:
             return ""
         s = str(raw)
@@ -118,11 +158,18 @@ class DriverInventory:
         if len(s) >= 8 and s[:8].isdigit():
             return f"{s[:4]}-{s[4:6]}-{s[6:8]}"
         return s
-        """_clean_date."""
-        """_clean_date."""
 
     def _run(self, script: str) -> str | None:
-        """_run."""
+        """Run.
+
+        Manages run operations and coordinates related state changes for the component.
+
+        Args:
+            script (str): The script parameter.
+
+        Returns:
+            str | None: Formatted string or path.
+        """
         try:
             proc = _proc.run(
                 ["powershell", "-NoProfile", "-NonInteractive", "-Command", script],
@@ -132,5 +179,3 @@ class DriverInventory:
         except (_proc.ProcessCancelled, OSError, subprocess.SubprocessError) as exc:
             _LOG.debug("driver inventory query failed: %s", exc)
             return None
-        """_run."""
-        """_run."""

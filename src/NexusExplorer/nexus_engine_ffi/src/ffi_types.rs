@@ -1,6 +1,7 @@
 use libc::{c_char, c_int, c_uint, c_ulonglong, c_void, size_t};
 use std::ptr;
 
+/// C-compatible file or directory row; string fields are owned null-terminated `char*`.
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct FileEntry {
@@ -17,6 +18,7 @@ pub struct FileEntry {
     pub ext: *mut c_char,
 }
 
+/// C-compatible drive/volume description with capacity and readiness fields.
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct DriveInfo {
@@ -29,6 +31,7 @@ pub struct DriveInfo {
     pub is_ready: c_int,
 }
 
+/// C-compatible search options: recursion, result cap, and hidden-file inclusion flags.
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct SearchOptions {
@@ -37,6 +40,7 @@ pub struct SearchOptions {
     pub include_hidden: c_int,
 }
 
+/// C-compatible bounded text preview with truncation flag and total size.
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct TextPreview {
@@ -45,6 +49,7 @@ pub struct TextPreview {
     pub size: c_ulonglong,
 }
 
+/// C-compatible progress snapshot for a copy/move/delete job.
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct JobSummary {

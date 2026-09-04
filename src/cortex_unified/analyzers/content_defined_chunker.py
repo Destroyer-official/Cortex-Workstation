@@ -75,17 +75,33 @@ except ImportError:
 # ---------------------------------------------------------------------------
 
 def _build_gear_table(seed: int = 0x9E3779B97F4A7C15) -> List[int]:
-    """_build_gear_table."""
+    """_build_gear_table.
+
+    Manages build gear table operations and coordinates related state changes for the component.
+
+    Args:
+        seed (int): The seed parameter.
+
+    Returns:
+        List[int]: List of processed items or identifiers.
+    """
     rnd = random.Random(seed)
     return [rnd.getrandbits(64) for _ in range(256)]
-    """_build_gear_table."""
-    """_build_gear_table."""
 
 _GEAR = _build_gear_table()
 
 # Precompute mask bits for common avg sizes to avoid recomputation
 def _mask_for_avg(avg: int) -> int:
-    """Mask with probability 1/avg (avg assumed power-of-two-ish)."""
+    """Mask with probability 1/avg (avg assumed power-of-two-ish).
+
+    Manages mask for avg operations and coordinates related state changes for the component.
+
+    Args:
+        avg (int): The avg parameter.
+
+    Returns:
+        int: Result of the operation.
+    """
     # FastCDC derives mask from avg: bits = log2(avg)
     # For non-power-of-two, use closest power-of-two expectation.
     # The exact dedup ratio is mask-insensitive; stability matters more.
@@ -100,40 +116,54 @@ def _mask_for_avg(avg: int) -> int:
 
 @dataclass(frozen=True, slots=True)
 class Chunk:
-    """Chunk."""
+    """Chunk.
+
+    Manages Chunk operations and coordinates related state changes for the component.
+    """
     offset: int
     length: int
     fingerprint: int  # 64-bit
 
     def to_dict(self) -> dict:
-        """to_dict."""
+        """to_dict.
+
+        Manages to dict operations and coordinates related state changes for the component.
+
+        Returns:
+            dict: Dictionary mapping identifiers to status or values.
+        """
         return {"offset": self.offset, "length": self.length, "fp": hex(self.fingerprint)}
-        """to_dict."""
-    """Chunk class."""
-    """Chunk class."""
 
 @dataclass(slots=True)
 class ChunkStats:
-    """ChunkStats."""
+    """Chunkstats.
+
+    Manages ChunkStats operations and coordinates related state changes for the component.
+    """
     chunks: int = 0
     bytes: int = 0
     avg_size: float = 0.0
     min_size: int = 0
     max_size: int = 0
-    """ChunkStats class."""
-    """ChunkStats class."""
 
 # ---------------------------------------------------------------------------
 # Core chunker
 # ---------------------------------------------------------------------------
 
 def _chunk_hash(data: bytes) -> int:
-    """_chunk_hash."""
+    """_chunk_hash.
+
+    Manages chunk hash operations and coordinates related state changes for the component.
+
+    Args:
+        data (bytes): The data parameter.
+
+    Returns:
+        int: Result of the operation.
+    """
     if HAS_XXHASH:
         return xxhash.xxh64(data, seed=0).intdigest() & 0xFFFFFFFFFFFFFFFF
     return int.from_bytes(hashlib.blake2b(data, digest_size=8).digest(), "little")
-    """_chunk_hash."""
-    """_chunk_hash."""
 
 def gear_chunk(
     data: bytes,
@@ -194,7 +224,20 @@ def file_chunks(
     max_size: int = 65536,
     cap_bytes: int = 16 * 1024 * 1024,
 ) -> List[Chunk]:
-    """Chunk a file (streamed, bounded)."""
+    """Chunk a file's leading bytes (reads whole file, truncates to cap_bytes).
+
+    Manages file chunks operations and coordinates related state changes for the component.
+
+    Args:
+        path (Path | str): Filesystem path to the target file or directory.
+        avg_size (int): The avg size parameter.
+        min_size (int): The min size parameter.
+        max_size (int): The max size parameter.
+        cap_bytes (int): The cap bytes parameter.
+
+    Returns:
+        List[Chunk]: List of processed items or identifiers.
+    """
     p = Path(path)
     try:
         data = p.read_bytes()[:cap_bytes]
@@ -203,7 +246,17 @@ def file_chunks(
     return gear_chunk(data, avg_size=avg_size, min_size=min_size, max_size=max_size)
 
 def jaccard(a: Iterable[int], b: Iterable[int]) -> float:
-    """Jaccard similarity of two fingerprint sets (0..1)."""
+    """Jaccard.
+
+    Manages jaccard operations and coordinates related state changes for the component.
+
+    Args:
+        a (Iterable[int]): The a parameter.
+        b (Iterable[int]): Integer number of bytes to format or process.
+
+    Returns:
+        float: Result of the operation.
+    """
     sa, sb = set(a), set(b)
     if not sa and not sb:
         return 1.0
@@ -220,7 +273,20 @@ def chunk_similarity(
     min_size: int = 2048,
     max_size: int = 65536,
 ) -> float:
-    """CDC-Jaccard similarity between two byte strings (1.0 = identical)."""
+    """CDC-Jaccard similarity between two byte strings (1.0 = identical).
+
+    Manages chunk similarity operations and coordinates related state changes for the component.
+
+    Args:
+        data_a (bytes): The data a parameter.
+        data_b (bytes): The data b parameter.
+        avg_size (int): The avg size parameter.
+        min_size (int): The min size parameter.
+        max_size (int): The max size parameter.
+
+    Returns:
+        float: Result of the operation.
+    """
     ca = gear_chunk(data_a, avg_size, min_size, max_size)
     cb = gear_chunk(data_b, avg_size, min_size, max_size)
     return jaccard((c.fingerprint for c in ca), (c.fingerprint for c in cb))
@@ -252,7 +318,18 @@ class ContentDefinedChunker:
         max_size: int = 65536,
         config=None,
     ) -> None:
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            root_path (str | os.PathLike): Filesystem path to the target file or directory.
+            threshold (float): The threshold parameter.
+            avg_size (int): The avg size parameter.
+            min_size (int): The min size parameter.
+            max_size (int): The max size parameter.
+            config: The config parameter.
+        """
         from cortex_unified.core.config import Config
         from cortex_unified.core.utils import normalize_path
 
@@ -274,11 +351,18 @@ class ContentDefinedChunker:
         self.file_count = 0
         self.error_count = 0
         self.duplicates: Dict[str, List[Path]] = {}
-        """__init__."""
-        """__init__."""
 
     def _should_exclude(self, path: Path) -> bool:
-        """_should_exclude."""
+        """_should_exclude.
+
+        Manages should exclude operations and coordinates related state changes for the component.
+
+        Args:
+            path (Path): Filesystem path to the target file or directory.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         if path.name in self.exclude_dirs:
             return True
         s = str(path)
@@ -286,8 +370,6 @@ class ContentDefinedChunker:
             if pat in s or pat in path.name:
                 return True
         return False
-        """_should_exclude."""
-        """_should_exclude."""
 
     def find_cdc_duplicates(
         self,
@@ -295,7 +377,18 @@ class ContentDefinedChunker:
         progress_callback: Optional[Callable[[str, int], None]] = None,
         cancel_event: Optional[threading.Event] = None,
     ) -> Dict[str, List[Path]]:
-        """find_cdc_duplicates."""
+        """find_cdc_duplicates.
+
+        Manages find cdc duplicates operations and coordinates related state changes for the component.
+
+        Args:
+            threads (int): The threads parameter.
+            progress_callback (Optional[Callable[[str, int], None]]): The progress callback parameter.
+            cancel_event (Optional[threading.Event]): Threading event or callable to check for cancellation.
+
+        Returns:
+            Dict[str, List[Path]]: List of processed items or identifiers.
+        """
         if threads <= 0:
             threads = min(16, (os.cpu_count() or 4) + 4)
         files: List[Path] = []
@@ -335,14 +428,18 @@ class ContentDefinedChunker:
         chunk_sets: Dict[Path, set[int]] = {}
 
         def _one(p: Path):
-            """_one."""
+            """One.
+
+            Manages one operations and coordinates related state changes for the component.
+
+            Args:
+                p (Path): The p parameter.
+            """
             try:
                 cs = file_chunks(p, self.avg_size, self.min_size, self.max_size)
                 return p, {c.fingerprint for c in cs} if cs else None
             except Exception:
                 return p, None
-            """_one."""
-            """_one."""
 
         with ThreadPoolExecutor(max_workers=threads) as ex:
             futures = {ex.submit(_one, p): p for p in files}
@@ -386,21 +483,33 @@ class ContentDefinedChunker:
         parent: Dict[Path, Path] = {p: p for p in chunk_sets}
 
         def _find(x: Path) -> Path:
-            """_find."""
+            """Search and locate items matching specific criteria.
+
+            Traverses filesystem directories or cached registries to find resources that satisfy the specified filters.
+
+            Args:
+                x (Path): The x parameter.
+
+            Returns:
+                Path: Result of the operation.
+            """
             while parent[x] != x:
                 parent[x] = parent[parent[x]]
                 x = parent[x]
             return x
-            """_find."""
-            """_find."""
 
         def _union(a: Path, b: Path) -> None:
-            """_union."""
+            """Union.
+
+            Manages union operations and coordinates related state changes for the component.
+
+            Args:
+                a (Path): The a parameter.
+                b (Path): Integer number of bytes to format or process.
+            """
             ra, rb = _find(a), _find(b)
             if ra != rb:
                 parent[rb] = ra
-            """_union."""
-            """_union."""
 
         for a, b in pairs:
             if cancel_event and getattr(cancel_event, "is_set", lambda: False)():
@@ -419,11 +528,15 @@ class ContentDefinedChunker:
                 result[gid] = members
         self.duplicates = result
         return result
-        """find_cdc_duplicates."""
-        """find_cdc_duplicates."""
 
     def get_stats(self) -> dict:
-        """get_stats."""
+        """get_stats.
+
+        Manages get stats operations and coordinates related state changes for the component.
+
+        Returns:
+            dict: Dictionary mapping identifiers to status or values.
+        """
         total = sum(len(v) for v in self.duplicates.values())
         return {
             "total_files_scanned": self.file_count,
@@ -433,8 +546,6 @@ class ContentDefinedChunker:
             "threshold": self.threshold,
             "avg_size": self.avg_size,
         }
-        """get_stats."""
-        """get_stats."""
 
 
 # ---------------------------------------------------------------------------
@@ -498,23 +609,39 @@ class IdeaInvertedIndex:
     without all-pairs O(N^2) Jaccard scanning.
     """
     def __init__(self) -> None:
-        """__init__."""
+        """Initialize the instance and configure internal state.
+
+        Sets up sub-widgets, event signal connections, and default options.
+        """
         self.chunk_to_files: Dict[int, List[Path]] = defaultdict(list)
         self.file_to_chunks: Dict[Path, set[int]] = {}
-        """__init__."""
-        """__init__."""
 
     def insert(self, path: Path, chunks: Iterable[Chunk]) -> None:
-        """insert."""
+        """Insert.
+
+        Manages insert operations and coordinates related state changes for the component.
+
+        Args:
+            path (Path): Filesystem path to the target file or directory.
+            chunks (Iterable[Chunk]): The chunks parameter.
+        """
         fps = {c.fingerprint for c in chunks}
         self.file_to_chunks[path] = fps
         for fp in fps:
             self.chunk_to_files[fp].append(path)
-        """insert."""
-        """insert."""
 
     def find_similar(self, path: Path, threshold: float = 0.5) -> List[Tuple[Path, float]]:
-        """Find files sharing chunks with `path` exceeding Jaccard `threshold`."""
+        """Find files sharing chunks with `path` exceeding Jaccard `threshold`.
+
+        Manages find similar operations and coordinates related state changes for the component.
+
+        Args:
+            path (Path): Filesystem path to the target file or directory.
+            threshold (float): The threshold parameter.
+
+        Returns:
+            List[Tuple[Path, float]]: List of processed items or identifiers.
+        """
         fps = self.file_to_chunks.get(path)
         if not fps:
             return []

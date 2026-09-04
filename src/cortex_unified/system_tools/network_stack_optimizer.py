@@ -15,7 +15,10 @@ from typing import Dict, List, Optional, Tuple
 
 @dataclass
 class TcpGlobalSettings:
-    """Tcp Global Settings data container."""
+    """Tcpglobalsettings.
+
+    Manages TcpGlobalSettings operations and coordinates related state changes for the component.
+    """
     autotuning_level: str = "normal"
     receive_side_scaling: str = "enabled"
     ecn_capability: str = "disabled"
@@ -26,7 +29,10 @@ class TcpGlobalSettings:
 
 @dataclass
 class NetworkResetReport:
-    """Network Reset Report data container."""
+    """Networkresetreport.
+
+    Manages NetworkResetReport operations and coordinates related state changes for the component.
+    """
     dns_flushed: bool = False
     arp_cleared: bool = False
     winsock_reset: bool = False
@@ -34,19 +40,29 @@ class NetworkResetReport:
     output_messages: List[str] = None
 
     def __post_init__(self):
-        """__post_init__."""
+        """__post_init__.
+
+        Manages post init operations and coordinates related state changes for the component.
+        """
         if self.output_messages is None:
             self.output_messages = []
-        """__post_init__."""
-        """__post_init__."""
 
 
 class NetworkStackOptimizer:
-    """Production Windows network stack diagnostic and optimization engine."""
+    """Networkstackoptimizer.
+
+    Manages NetworkStackOptimizer operations and coordinates related state changes for the component.
+    """
 
     @classmethod
     def flush_dns(cls) -> Tuple[bool, str]:
-        """Flush the Windows DNS Resolver cache (ipconfig /flushdns)."""
+        """Flush the Windows DNS Resolver cache (ipconfig /flushdns).
+
+        Manages flush dns operations and coordinates related state changes for the component.
+
+        Returns:
+            Tuple[bool, str]: True if the operation succeeded, False otherwise.
+        """
         if platform.system() != "Windows":
             return False, "Windows only"
 
@@ -60,7 +76,13 @@ class NetworkStackOptimizer:
 
     @classmethod
     def clear_arp_cache(cls) -> Tuple[bool, str]:
-        """Purge ARP cache tables (netsh interface ip delete arpcache)."""
+        """Purge ARP cache tables (netsh interface ip delete arpcache).
+
+        Manages clear arp cache operations and coordinates related state changes for the component.
+
+        Returns:
+            Tuple[bool, str]: True if the operation succeeded, False otherwise.
+        """
         if platform.system() != "Windows":
             return False, "Windows only"
 
@@ -74,7 +96,13 @@ class NetworkStackOptimizer:
 
     @classmethod
     def reset_winsock(cls) -> Tuple[bool, str]:
-        """Reset the Winsock catalog back to default configuration."""
+        """Reset the Winsock catalog back to default configuration.
+
+        Manages reset winsock operations and coordinates related state changes for the component.
+
+        Returns:
+            Tuple[bool, str]: True if the operation succeeded, False otherwise.
+        """
         if platform.system() != "Windows":
             return False, "Windows only"
 
@@ -88,7 +116,13 @@ class NetworkStackOptimizer:
 
     @classmethod
     def reset_tcp_ip_stack(cls) -> Tuple[bool, str]:
-        """Reset the TCP/IP stack configuration."""
+        """Reset the TCP/IP stack configuration.
+
+        Manages reset tcp ip stack operations and coordinates related state changes for the component.
+
+        Returns:
+            Tuple[bool, str]: True if the operation succeeded, False otherwise.
+        """
         if platform.system() != "Windows":
             return False, "Windows only"
 
@@ -102,7 +136,13 @@ class NetworkStackOptimizer:
 
     @classmethod
     def get_tcp_settings(cls) -> TcpGlobalSettings:
-        """Query active Windows TCP global parameters."""
+        """Query active Windows TCP global parameters.
+
+        Manages get tcp settings operations and coordinates related state changes for the component.
+
+        Returns:
+            TcpGlobalSettings: Result of the operation.
+        """
         if platform.system() != "Windows":
             return TcpGlobalSettings()
 
@@ -130,7 +170,16 @@ class NetworkStackOptimizer:
 
     @classmethod
     def set_tcp_autotuning(cls, level: str = "normal") -> Tuple[bool, str]:
-        """Configure TCP Window Auto-Tuning (disabled, highlyrestricted, restricted, normal, experimental)."""
+        """Configure TCP Window Auto-Tuning (disabled, highlyrestricted, restricted, normal, experimental).
+
+        Manages set tcp autotuning operations and coordinates related state changes for the component.
+
+        Args:
+            level (str): The level parameter.
+
+        Returns:
+            Tuple[bool, str]: True if the operation succeeded, False otherwise.
+        """
         if platform.system() != "Windows":
             return False, "Windows only"
 
@@ -148,7 +197,16 @@ class NetworkStackOptimizer:
 
     @classmethod
     def set_ecn_capability(cls, state: str = "enabled") -> Tuple[bool, str]:
-        """Configure Explicit Congestion Notification (enabled / disabled)."""
+        """Configure Explicit Congestion Notification (enabled / disabled).
+
+        Manages set ecn capability operations and coordinates related state changes for the component.
+
+        Args:
+            state (str): The state parameter.
+
+        Returns:
+            Tuple[bool, str]: True if the operation succeeded, False otherwise.
+        """
         if platform.system() != "Windows":
             return False, "Windows only"
 
@@ -162,7 +220,13 @@ class NetworkStackOptimizer:
 
     @classmethod
     def execute_complete_network_repair(cls) -> NetworkResetReport:
-        """Perform a complete flush and reset of DNS, ARP, Winsock, and TCP/IP."""
+        """Perform a complete flush and reset of DNS, ARP, Winsock, and TCP/IP.
+
+        Manages execute complete network repair operations and coordinates related state changes for the component.
+
+        Returns:
+            NetworkResetReport: Result of the operation.
+        """
         report = NetworkResetReport()
 
         ok, msg = cls.flush_dns()

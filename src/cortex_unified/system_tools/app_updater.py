@@ -30,7 +30,10 @@ _NO_WINDOW = 0x08000000 if _IS_WINDOWS else 0
 
 @dataclass(slots=True)
 class UpgradableApp:
-    """Upgradable App data container."""
+    """Upgradableapp.
+
+    Manages UpgradableApp operations and coordinates related state changes for the component.
+    """
     name: str
     package_id: str
     current: str
@@ -38,7 +41,13 @@ class UpgradableApp:
     source: str = "winget"
 
     def to_dict(self) -> dict[str, Any]:
-        """To dict."""
+        """To dict.
+
+        Manages to dict operations and coordinates related state changes for the component.
+
+        Returns:
+            dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         return {
             "name": self.name,
             "id": self.package_id,
@@ -49,19 +58,37 @@ class UpgradableApp:
 
 
 class AppUpdater:
-    """List and apply application updates via winget."""
+    """Appupdater.
+
+    Manages AppUpdater operations and coordinates related state changes for the component.
+    """
 
     def __init__(self) -> None:
-        """Initialize App Updater."""
+        """Initialize App Updater.
+
+        Initializes the instance and configures internal state.
+        """
         self.logger = _LOG
 
     @staticmethod
     def is_available() -> bool:
-        """True if winget is installed and usable."""
+        """True if winget is installed and usable.
+
+        Manages is available operations and coordinates related state changes for the component.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         return _IS_WINDOWS and shutil.which("winget") is not None
 
     def list_upgradable(self) -> list[UpgradableApp]:
-        """Return apps with available updates. Empty list if winget is absent."""
+        """Return apps with available updates. Empty list if winget is absent.
+
+        Manages list upgradable operations and coordinates related state changes for the component.
+
+        Returns:
+            list[UpgradableApp]: List of processed items or identifiers.
+        """
         if not self.is_available():
             return []
         out = self._run([
@@ -70,7 +97,16 @@ class AppUpdater:
         return self.parse_upgrade_output(out or "")
 
     def upgrade(self, package_id: str) -> tuple[bool, str]:
-        """Upgrade a single package by its winget Id."""
+        """Upgrade.
+
+        Manages upgrade operations and coordinates related state changes for the component.
+
+        Args:
+            package_id (str): The package id parameter.
+
+        Returns:
+            tuple[bool, str]: True if the operation succeeded, False otherwise.
+        """
         if not self.is_available():
             return False, "winget is not available."
         if not package_id:
@@ -89,7 +125,13 @@ class AppUpdater:
         return False, "Update did not report success (it may need elevation or a reboot)."
 
     def upgrade_all(self) -> tuple[bool, str]:
-        """Upgrade every upgradable package (caller must confirm first)."""
+        """Upgrade every upgradable package (caller must confirm first).
+
+        Manages upgrade all operations and coordinates related state changes for the component.
+
+        Returns:
+            tuple[bool, str]: True if the operation succeeded, False otherwise.
+        """
         if not self.is_available():
             return False, "winget is not available."
         out = self._run([
@@ -103,7 +145,16 @@ class AppUpdater:
 
     @staticmethod
     def parse_upgrade_output(text: str) -> list[UpgradableApp]:
-        """Parse winget's fixed-width upgrade table into structured rows."""
+        """Parse winget's fixed-width upgrade table into structured rows.
+
+        Manages parse upgrade output operations and coordinates related state changes for the component.
+
+        Args:
+            text (str): Display text string.
+
+        Returns:
+            list[UpgradableApp]: List of processed items or identifiers.
+        """
         lines = text.splitlines()
         header_idx = -1
         for i, line in enumerate(lines):
@@ -151,7 +202,17 @@ class AppUpdater:
     # -- helper -------------------------------------------------------------
 
     def _run(self, cmd: list[str], timeout: int) -> str | None:
-        """_run."""
+        """Run.
+
+        Manages run operations and coordinates related state changes for the component.
+
+        Args:
+            cmd (list[str]): The cmd parameter.
+            timeout (int): The timeout parameter.
+
+        Returns:
+            str | None: Formatted string or path.
+        """
         try:
             # upgrade_all() can run for a long time updating many packages;
             # poll the timeout rather than block uninterruptibly, and kill the
@@ -162,5 +223,3 @@ class AppUpdater:
         except (_proc.ProcessCancelled, OSError, subprocess.SubprocessError) as exc:
             self.logger.debug("winget invocation failed: %s", exc)
             return None
-        """_run."""
-        """_run."""

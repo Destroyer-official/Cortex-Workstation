@@ -20,7 +20,10 @@ from typing import Any, Dict, List, Optional, Tuple
 
 @dataclass
 class SystemRamMetrics:
-    """System Ram Metrics data container."""
+    """Systemrammetrics.
+
+    Manages SystemRamMetrics operations and coordinates related state changes for the component.
+    """
     total_bytes: int
     available_bytes: int
     used_bytes: int
@@ -32,7 +35,10 @@ class SystemRamMetrics:
 
 @dataclass
 class ProcessMemoryItem:
-    """Process Memory Item data container."""
+    """Processmemoryitem.
+
+    Manages ProcessMemoryItem operations and coordinates related state changes for the component.
+    """
     pid: int
     name: str
     working_set_bytes: int
@@ -42,33 +48,55 @@ class ProcessMemoryItem:
 
 @dataclass
 class MemoryOptimizeResult:
-    """Memory Optimize Result data container."""
+    """Memoryoptimizeresult.
+
+    Manages MemoryOptimizeResult operations and coordinates related state changes for the component.
+    """
     processes_trimmed: int
     bytes_freed_estimate: int
     errors: List[str] = None
     dry_run: bool = False
 
     def __post_init__(self):
-        """__post_init__."""
+        """__post_init__.
+
+        Manages post init operations and coordinates related state changes for the component.
+        """
         if self.errors is None:
             self.errors = []
-        """__post_init__."""
-        """__post_init__."""
 
     @property
     def ok(self) -> bool:
-        """Ok."""
+        """Ok.
+
+        Manages ok operations and coordinates related state changes for the component.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         return len(self.errors) == 0
 
     @property
     def message(self) -> str:
-        """Message."""
+        """Message.
+
+        Manages message operations and coordinates related state changes for the component.
+
+        Returns:
+            str: Formatted string or path.
+        """
         mb = self.bytes_freed_estimate / (1024 * 1024)
         action = "Would trim" if self.dry_run else "Trimmed"
         return f"{action} working sets of {self.processes_trimmed} processes, freeing ~{mb:.1f} MB."
 
     def to_dict(self) -> Dict[str, Any]:
-        """To dict."""
+        """To dict.
+
+        Manages to dict operations and coordinates related state changes for the component.
+
+        Returns:
+            Dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         return {
             "ok": self.ok,
             "processes_trimmed": self.processes_trimmed,
@@ -80,7 +108,10 @@ class MemoryOptimizeResult:
 
 
 class MemoryOptimizer:
-    """Production Windows RAM composition inspector and process working set optimizer."""
+    """Memoryoptimizer.
+
+    Manages MemoryOptimizer operations and coordinates related state changes for the component.
+    """
 
     PROTECTED_SYSTEM_PROCESSES = {
         "system", "system idle process", "smss.exe", "csrss.exe",
@@ -90,7 +121,13 @@ class MemoryOptimizer:
 
     @classmethod
     def get_system_ram_metrics(cls) -> SystemRamMetrics:
-        """Query physical RAM metrics using psutil and Win32 GlobalMemoryStatusEx."""
+        """Query physical RAM metrics using psutil and Win32 GlobalMemoryStatusEx.
+
+        Manages get system ram metrics operations and coordinates related state changes for the component.
+
+        Returns:
+            SystemRamMetrics: Result of the operation.
+        """
         vm = psutil.virtual_memory()
         cached = getattr(vm, "cached", 0)
 
@@ -110,7 +147,16 @@ class MemoryOptimizer:
 
     @classmethod
     def scan_process_memory(cls, limit: int = 30) -> List[ProcessMemoryItem]:
-        """Scan active processes and sort by Working Set (physical RAM consumption)."""
+        """Scan active processes and sort by Working Set (physical RAM consumption).
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+        Args:
+            limit (int): The limit parameter.
+
+        Returns:
+            List[ProcessMemoryItem]: List of processed items or identifiers.
+        """
         items: List[ProcessMemoryItem] = []
 
         for proc in psutil.process_iter(["pid", "name", "memory_info"]):
@@ -141,7 +187,16 @@ class MemoryOptimizer:
 
     @classmethod
     def trim_process_working_set(cls, pid: int) -> Tuple[bool, int]:
-        """Trim the working set of a specific process via Win32 EmptyWorkingSet."""
+        """Trim the working set of a specific process via Win32 EmptyWorkingSet.
+
+        Manages trim process working set operations and coordinates related state changes for the component.
+
+        Args:
+            pid (int): The pid parameter.
+
+        Returns:
+            Tuple[bool, int]: True if the operation succeeded, False otherwise.
+        """
         if platform.system() != "Windows":
             return False, 0
 
@@ -177,7 +232,16 @@ class MemoryOptimizer:
 
     @classmethod
     def optimize_all_background_working_sets(cls, pids: Optional[List[int]] = None) -> MemoryOptimizeResult:
-        """Trim working sets of non-critical processes."""
+        """Trim working sets of non-critical processes.
+
+        Manages optimize all background working sets operations and coordinates related state changes for the component.
+
+        Args:
+            pids (Optional[List[int]]): The pids parameter.
+
+        Returns:
+            MemoryOptimizeResult: Result of the operation.
+        """
         if platform.system() != "Windows":
             return MemoryOptimizeResult(0, 0, ["Windows only"])
 
@@ -202,7 +266,13 @@ class MemoryOptimizer:
 
 
 def memory_stats() -> Dict[str, Any]:
-    """Query current system RAM statistics and top consumer processes."""
+    """Query current system RAM statistics and top consumer processes.
+
+    Manages memory stats operations and coordinates related state changes for the component.
+
+    Returns:
+        Dict[str, Any]: Dictionary mapping identifiers to status or values.
+    """
     if not hasattr(psutil, "virtual_memory"):
         return {"supported": False}
     try:
@@ -227,7 +297,17 @@ def memory_stats() -> Dict[str, Any]:
 
 
 def optimize(min_rss_mb: int = 50, dry_run: bool = True) -> MemoryOptimizeResult:
-    """Optimize working sets of non-critical background processes."""
+    """Optimize.
+
+    Manages optimize operations and coordinates related state changes for the component.
+
+    Args:
+        min_rss_mb (int): The min rss mb parameter.
+        dry_run (bool): The dry run parameter.
+
+    Returns:
+        MemoryOptimizeResult: Result of the operation.
+    """
     if platform.system() != "Windows":
         return MemoryOptimizeResult(0, 0, errors=["Windows only"], dry_run=dry_run)
     procs = MemoryOptimizer.scan_process_memory(limit=50)

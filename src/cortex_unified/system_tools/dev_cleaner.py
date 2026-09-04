@@ -22,7 +22,10 @@ from typing import Callable, Dict, List, Optional, Tuple
 
 @dataclass
 class DevCacheItem:
-    """Dev Cache Item data container."""
+    """Devcacheitem.
+
+    Manages DevCacheItem operations and coordinates related state changes for the component.
+    """
     ecosystem: str  # "Docker", "Python", "Node.js", "Rust/Cargo", "Java/Gradle", "Go", ".NET"
     name: str
     path: str
@@ -34,25 +37,41 @@ class DevCacheItem:
 
 @dataclass
 class DevCleanResult:
-    """Dev Clean Result data container."""
+    """Devcleanresult.
+
+    Manages DevCleanResult operations and coordinates related state changes for the component.
+    """
     items_cleaned: int
     bytes_freed: int
     errors: List[str] = None
 
     def __post_init__(self):
-        """__post_init__."""
+        """__post_init__.
+
+        Manages post init operations and coordinates related state changes for the component.
+        """
         if self.errors is None:
             self.errors = []
-        """__post_init__."""
-        """__post_init__."""
 
 
 class DevCleaner:
-    """Production Developer Ecosystem build artifact and cache purge engine."""
+    """Devcleaner.
+
+    Manages DevCleaner operations and coordinates related state changes for the component.
+    """
 
     @classmethod
     def _dir_metrics(cls, dir_path: Path) -> Tuple[int, int]:
-        """Compute directory size and file count."""
+        """Compute directory size and file count.
+
+        Manages dir metrics operations and coordinates related state changes for the component.
+
+        Args:
+            dir_path (Path): Filesystem path to the target file or directory.
+
+        Returns:
+            Tuple[int, int]: Result of the operation.
+        """
         if not dir_path.is_dir():
             return 0, 0
         total_size = 0
@@ -72,7 +91,13 @@ class DevCleaner:
 
     @classmethod
     def scan_dev_caches(cls) -> List[DevCacheItem]:
-        """Scan system for all developer ecosystem build caches and artifacts."""
+        """Scan system for all developer ecosystem build caches and artifacts.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+        Returns:
+            List[DevCacheItem]: List of processed items or identifiers.
+        """
         items: List[DevCacheItem] = []
         home = Path.home()
         local_app = Path(os.environ.get("LOCALAPPDATA", str(home / "AppData" / "Local")))
@@ -170,7 +195,16 @@ class DevCleaner:
 
     @classmethod
     def clean_items(cls, items: List[DevCacheItem]) -> DevCleanResult:
-        """Purge selected developer cache locations."""
+        """Purge selected developer cache locations.
+
+        Permanently purges or removes specified target items, reclaiming storage space and logging actions taken.
+
+        Args:
+            items (List[DevCacheItem]): Collection of items or entries to process.
+
+        Returns:
+            DevCleanResult: Result of the operation.
+        """
         result = DevCleanResult(0, 0)
 
         for item in items:

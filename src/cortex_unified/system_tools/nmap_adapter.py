@@ -38,32 +38,53 @@ _ALL_MODES = _SCAN_MODES | {"version", "os"}
 
 
 class NmapError(RuntimeError):
-    """Base exception for adapter failures."""
+    """Nmaperror.
+
+    Manages NmapError operations and coordinates related state changes for the component.
+    """
 
 
 class NmapUnavailableError(NmapError):
-    """Raised when the optional Nmap executable cannot be found."""
+    """Nmapunavailableerror.
+
+    Manages NmapUnavailableError operations and coordinates related state changes for the component.
+    """
 
 
 class NmapAuthorizationError(NmapError):
-    """Raised when any requested target is not explicitly authorized."""
+    """Nmapauthorizationerror.
+
+    Manages NmapAuthorizationError operations and coordinates related state changes for the component.
+    """
 
 
 class NmapPrivilegeError(NmapError):
-    """Raised when an expert mode is requested without Windows elevation."""
+    """Nmapprivilegeerror.
+
+    Manages NmapPrivilegeError operations and coordinates related state changes for the component.
+    """
 
 
 class NmapExecutionError(NmapError):
-    """Raised when Nmap exits unsuccessfully."""
+    """Nmapexecutionerror.
+
+    Manages NmapExecutionError operations and coordinates related state changes for the component.
+    """
 
 
 class NmapOutputError(NmapError):
-    """Raised when Nmap XML is malformed, unsafe, or exceeds a bound."""
+    """Nmapoutputerror.
+
+    Manages NmapOutputError operations and coordinates related state changes for the component.
+    """
 
 
 @dataclass(frozen=True, slots=True)
 class NmapStatus:
-    """Side-effect-free optional executable status."""
+    """Nmapstatus.
+
+    Manages NmapStatus operations and coordinates related state changes for the component.
+    """
 
     available: bool
     executable: str | None
@@ -71,7 +92,13 @@ class NmapStatus:
 
 
 def _is_windows_admin() -> bool:
-    """Return true only when Windows confirms this process is elevated."""
+    """Return true only when Windows confirms this process is elevated.
+
+    Manages is windows admin operations and coordinates related state changes for the component.
+
+    Returns:
+        bool: True if the operation succeeded, False otherwise.
+    """
     if sys.platform != "win32":
         return False
     try:
@@ -81,28 +108,60 @@ def _is_windows_admin() -> bool:
 
 
 def _local_name(tag: str) -> str:
-    """_local_name."""
+    """_local_name.
+
+    Manages local name operations and coordinates related state changes for the component.
+
+    Args:
+        tag (str): The tag parameter.
+
+    Returns:
+        str: Formatted string or path.
+    """
     return tag.rsplit("}", 1)[-1]
-    """_local_name."""
-    """_local_name."""
 
 
 def _children(element: ET.Element, name: str) -> list[ET.Element]:
-    """_children."""
+    """Children.
+
+    Manages children operations and coordinates related state changes for the component.
+
+    Args:
+        element (ET.Element): The element parameter.
+        name (str): The name parameter.
+
+    Returns:
+        list[ET.Element]: List of processed items or identifiers.
+    """
     return [child for child in element if _local_name(child.tag) == name]
-    """_children."""
-    """_children."""
 
 
 def _descendants(element: ET.Element, name: str) -> list[ET.Element]:
-    """_descendants."""
+    """Descendants.
+
+    Manages descendants operations and coordinates related state changes for the component.
+
+    Args:
+        element (ET.Element): The element parameter.
+        name (str): The name parameter.
+
+    Returns:
+        list[ET.Element]: List of processed items or identifiers.
+    """
     return [item for item in element.iter() if _local_name(item.tag) == name]
-    """_descendants."""
-    """_descendants."""
 
 
 def _bounded_root(payload: bytes | str) -> ET.Element:
-    """_bounded_root."""
+    """_bounded_root.
+
+    Manages bounded root operations and coordinates related state changes for the component.
+
+    Args:
+        payload (bytes | str): The payload parameter.
+
+    Returns:
+        ET.Element: Result of the operation.
+    """
     if isinstance(payload, str):
         data = payload.encode("utf-8")
     elif isinstance(payload, bytes):
@@ -131,15 +190,23 @@ def _bounded_root(payload: bytes | str) -> ET.Element:
             raise NmapOutputError("Nmap XML exceeds the depth limit")
         stack.extend((child, depth + 1) for child in node)
     return root
-    """_bounded_root."""
-    """_bounded_root."""
 
 
 def _normalize_targets(
     targets: Iterable[str],
     allowed_networks: Iterable[str | ipaddress.IPv4Network],
 ) -> tuple[tuple[str, ...], tuple[ipaddress.IPv4Network, ...]]:
-    """_normalize_targets."""
+    """_normalize_targets.
+
+    Manages normalize targets operations and coordinates related state changes for the component.
+
+    Args:
+        targets (Iterable[str]): The targets parameter.
+        allowed_networks (Iterable[str | ipaddress.IPv4Network]): The allowed networks parameter.
+
+    Returns:
+        tuple[tuple[str, ...], tuple[ipaddress.IPv4Network, ...]]: Formatted string or path.
+    """
     scopes = parse_allowed_networks(allowed_networks)
     if not scopes:
         raise NmapAuthorizationError(
@@ -162,12 +229,19 @@ def _normalize_targets(
             f"target count exceeds the limit of {MAX_TARGETS}"
         )
     return tuple(map(str, unique)), scopes
-    """_normalize_targets."""
-    """_normalize_targets."""
 
 
 def _normalize_ports(ports: Iterable[int]) -> tuple[int, ...]:
-    """_normalize_ports."""
+    """_normalize_ports.
+
+    Manages normalize ports operations and coordinates related state changes for the component.
+
+    Args:
+        ports (Iterable[int]): The ports parameter.
+
+    Returns:
+        tuple[int, ...]: Result of the operation.
+    """
     normalized: list[int] = []
     for value in ports:
         if isinstance(value, bool):
@@ -185,12 +259,19 @@ def _normalize_ports(ports: Iterable[int]) -> tuple[int, ...]:
     if len(unique) > MAX_PORTS:
         raise ValueError(f"port count exceeds the limit of {MAX_PORTS}")
     return unique
-    """_normalize_ports."""
-    """_normalize_ports."""
 
 
 def _normalize_modes(modes: Iterable[str] | str | None) -> tuple[str, ...]:
-    """_normalize_modes."""
+    """_normalize_modes.
+
+    Manages normalize modes operations and coordinates related state changes for the component.
+
+    Args:
+        modes (Iterable[str] | str | None): The modes parameter.
+
+    Returns:
+        tuple[str, ...]: Formatted string or path.
+    """
     if modes is None:
         values = _DEFAULT_MODES
     elif isinstance(modes, str):
@@ -212,8 +293,6 @@ def _normalize_modes(modes: Iterable[str] | str | None) -> tuple[str, ...]:
             "expert modes require explicit Windows administrator access"
         )
     return normalized
-    """_normalize_modes."""
-    """_normalize_modes."""
 
 
 def parse_nmap_xml(
@@ -322,25 +401,50 @@ def parse_nmap_xml(
 
 
 class NmapAdapter:
-    """Discover and invoke optional Nmap without shell or script support."""
+    """Nmapadapter.
+
+    Manages NmapAdapter operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, executable: str = "nmap") -> None:
-        """Initialize Nmap Adapter."""
+        """Initialize Nmap Adapter.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            executable (str): The executable parameter.
+        """
         self._requested_executable = executable
 
     def _executable(self) -> str | None:
-        """_executable."""
+        """Executable.
+
+        Manages executable operations and coordinates related state changes for the component.
+
+        Returns:
+            str | None: Formatted string or path.
+        """
         return shutil.which(self._requested_executable)
-        """_executable."""
-        """_executable."""
 
     @property
     def available(self) -> bool:
-        """Available."""
+        """Available.
+
+        Manages available operations and coordinates related state changes for the component.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         return self._executable() is not None
 
     def status(self) -> NmapStatus:
-        """Status."""
+        """Status.
+
+        Manages status operations and coordinates related state changes for the component.
+
+        Returns:
+            NmapStatus: Result of the operation.
+        """
         executable = self._executable()
         if executable:
             return NmapStatus(True, executable, "Nmap is available")
@@ -426,12 +530,30 @@ class NmapAdapter:
 
 
 def nmap_status(executable: str = "nmap") -> NmapStatus:
-    """Return side-effect-free Nmap availability information."""
+    """Return side-effect-free Nmap availability information.
+
+    Manages nmap status operations and coordinates related state changes for the component.
+
+    Args:
+        executable (str): The executable parameter.
+
+    Returns:
+        NmapStatus: Result of the operation.
+    """
     return NmapAdapter(executable).status()
 
 
 def is_nmap_available(executable: str = "nmap") -> bool:
-    """Return whether the optional executable can be resolved."""
+    """Return whether the optional executable can be resolved.
+
+    Manages is nmap available operations and coordinates related state changes for the component.
+
+    Args:
+        executable (str): The executable parameter.
+
+    Returns:
+        bool: True if the operation succeeded, False otherwise.
+    """
     return NmapAdapter(executable).available
 
 
@@ -445,7 +567,19 @@ def scan_nmap(
     cancel_event: threading.Event | None = None,
     executable: str = "nmap",
 ) -> list[ServiceObservation]:
-    """Explicit function API for a bounded optional Nmap scan."""
+    """Explicit function API for a bounded optional Nmap scan.
+
+    Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+    Args:
+        targets (Iterable[str]): The targets parameter.
+        allowed_networks (Iterable[str | ipaddress.IPv4Network]): The allowed networks parameter.
+        ports (Iterable[int]): The ports parameter.
+        modes (Iterable[str] | str | None): The modes parameter.
+
+    Returns:
+        list[ServiceObservation]: List of processed items or identifiers.
+    """
     return NmapAdapter(executable).scan(
         targets, allowed_networks, ports, modes,
         timeout=timeout, cancel_event=cancel_event,

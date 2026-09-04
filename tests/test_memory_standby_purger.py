@@ -11,7 +11,10 @@ from cortex_unified.system_tools.memory_standby_purger import (
 
 
 def test_memory_snapshot():
-    """test_memory_snapshot."""
+    """test_memory_snapshot.
+
+    Manages test memory snapshot operations and coordinates related state changes for the component.
+    """
     purger = MemoryStandbyPurger()
     snap = purger.get_memory_snapshot()
     assert isinstance(snap, MemorySnapshot)
@@ -24,7 +27,10 @@ def test_memory_snapshot():
 
 
 def test_privilege_enable():
-    """test_privilege_enable."""
+    """test_privilege_enable.
+
+    Manages test privilege enable operations and coordinates related state changes for the component.
+    """
     purger = MemoryStandbyPurger()
     if sys.platform == "win32":
         # Does not crash regardless of whether process is elevated or not
@@ -33,7 +39,10 @@ def test_privilege_enable():
 
 
 def test_purge_actions_safe():
-    """test_purge_actions_safe."""
+    """test_purge_actions_safe.
+
+    Manages test purge actions safe operations and coordinates related state changes for the component.
+    """
     purger = MemoryStandbyPurger()
     res1 = purger.purge_standby_list()
     assert isinstance(res1, PurgeResult)

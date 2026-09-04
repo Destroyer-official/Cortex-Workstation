@@ -37,7 +37,10 @@ from cortex_unified.analyzers.registry_cleaner_ai import AIRegistryCleaner, Scan
 
 
 class _RegistryWorker(QObject):
-    """_RegistryWorker class."""
+    """Registryworker.
+
+    Manages RegistryWorker operations and coordinates related state changes for the component.
+    """
     finished = Signal(object)
     progress = Signal(str)
     failed = Signal(str)
@@ -49,7 +52,16 @@ class _RegistryWorker(QObject):
         risk_threshold: float,
         create_restore_point: bool = True,
     ):
-        """Initialize worker."""
+        """Initialize worker.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            root (str): Filesystem path to the target file or directory.
+            categories (list[str]): The categories parameter.
+            risk_threshold (float): The risk threshold parameter.
+            create_restore_point (bool): The create restore point parameter.
+        """
         super().__init__()
         self._root = root
         self._categories = categories
@@ -58,11 +70,17 @@ class _RegistryWorker(QObject):
         self._cancel = threading.Event()
 
     def cancel(self):
-        """cancel."""
+        """cancel.
+
+        Sets the internal cancellation event to cooperatively stop worker execution at the next safe boundary.
+        """
         self._cancel.set()
 
     def run(self):
-        """run."""
+        """run.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         try:
             cleaner = AIRegistryCleaner(
                 create_restore_point=False,
@@ -90,12 +108,21 @@ class _RegistryWorker(QObject):
 
 
 class RegistryAICleanerPage(_Page):
-    """AI-enhanced registry cleaner with ML risk scoring."""
+    """Registryaicleanerpage.
+
+    Manages RegistryAICleanerPage operations and coordinates related state changes for the component.
+    """
 
     _DEFAULT_ROOT = r"HKLM\Software\Microsoft\Windows\CurrentVersion"
 
     def __init__(self, win):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win: Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(
             title_block(
@@ -177,7 +204,10 @@ class RegistryAICleanerPage(_Page):
         self._worker = None
 
     def _pick(self):
-        """_pick."""
+        """Prompt the user to select a filesystem directory or file.
+
+        Launches a native file dialog and populates the selected path into the corresponding target input widget.
+        """
         from PySide6.QtWidgets import QFileDialog
 
         folder = QFileDialog.getExistingDirectory(self, "Select folder", self._folder)
@@ -186,7 +216,10 @@ class RegistryAICleanerPage(_Page):
             self.path_label.setText(folder)
 
     def _run(self):
-        """_run."""
+        """Run.
+
+        Manages run operations and coordinates related state changes for the component.
+        """
         self.run_btn.setEnabled(False)
         self.progress.setVisible(True)
         self.state.show_loading("Scanning registry (AI risk scoring)…")
@@ -214,17 +247,32 @@ class RegistryAICleanerPage(_Page):
         self.win.run_worker(w, self._on_done, self._fail, on_progress=self._on_progress)
 
     def _all_categories(self):
-        """_all_categories."""
+        """_all_categories.
+
+        Manages all categories operations and coordinates related state changes for the component.
+        """
         from cortex_unified.analyzers.registry_cleaner_ai import _CATEGORY_DEFS
 
         return _CATEGORY_DEFS.keys()
 
     def _on_progress(self, msg: str):
-        """_on_progress."""
+        """_on_progress.
+
+        Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
+
+        Args:
+            msg (str): Informational or progress status message.
+        """
         self.status.setText(msg)
 
     def _on_done(self, data: dict):
-        """_on_done."""
+        """_on_done.
+
+        Receives the completed data from the  background worker, populates the view with results, and restores button states.
+
+        Args:
+            data (dict): The data parameter.
+        """
         self._worker = None
         self.progress.setVisible(False)
         self.run_btn.setEnabled(True)
@@ -268,7 +316,13 @@ class RegistryAICleanerPage(_Page):
         )
 
     def _fail(self, msg):
-        """_fail."""
+        """Handle an operation failure and notify the user.
+
+        Captures error details, displays an informative failure state in the UI, resets progress indicators, and re-enables interactive controls.
+
+        Args:
+            msg: Informational or progress status message.
+        """
         self._worker = None
         self.progress.setVisible(False)
         self.run_btn.setEnabled(True)

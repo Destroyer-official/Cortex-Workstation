@@ -143,6 +143,12 @@ int nexus_read_dir_sync(
 
 void nexus_free_entries(NexusFileEntry* entries, size_t count);
 
+int nexus_read_dir_sync_json(
+    NexusHandle ctx,
+    const char* path,
+    char** out_json
+);
+
 // File operations
 /* Contract: NexusHandle must remain valid for as long as any scan, search,
  * watch or job started from it may still invoke callbacks. */
@@ -236,6 +242,7 @@ int nexus_read_text_file(
 );
 int nexus_open_path(NexusHandle ctx, const char* path);
 int nexus_reveal_in_shell(NexusHandle ctx, const char* path);
+int nexus_orphans_json(char** out_json);
 
 #ifdef __cplusplus
 }

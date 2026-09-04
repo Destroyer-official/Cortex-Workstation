@@ -323,8 +323,6 @@ def _clean(data: bytes) -> str:
         char if char.isprintable() or char in "\r\n\t" else "."
         for char in text
     ).strip()
-    """_clean."""
-    """_clean."""
 
 
 def _recv(sock: socket.socket, limit: int = _MAX_RESPONSE) -> bytes:
@@ -343,8 +341,6 @@ def _recv(sock: socket.socket, limit: int = _MAX_RESPONSE) -> bytes:
         if len(chunk) < 2048:
             break
     return b"".join(chunks)
-    """_recv."""
-    """_recv."""
 
 
 def _product_version(text: str) -> tuple[str, str]:
@@ -358,8 +354,6 @@ def _product_version(text: str) -> tuple[str, str]:
         if match:
             return match.group(1)[:120], (match.group(2) or "")[:80]
     return "", ""
-    """_product_version."""
-    """_product_version."""
 
 
 def _service_from_banner(text: str) -> str:
@@ -468,8 +462,6 @@ class NetworkServiceScanner:
                 progress(message)
             except Exception:
                 pass
-        """_progress."""
-        """_progress."""
 
     @staticmethod
     def _jobs(
@@ -480,8 +472,6 @@ class NetworkServiceScanner:
         for address in addresses:
             for port in ports:
                 yield str(address), port
-        """_jobs."""
-        """_jobs."""
 
     def _scan_tcp(
         self,
@@ -527,8 +517,6 @@ class NetworkServiceScanner:
             if cancel.is_set():
                 for future in pending:
                     future.cancel()
-        """_scan_tcp."""
-        """_scan_tcp."""
 
     def _probe_tcp(
         self,
@@ -577,8 +565,6 @@ class NetworkServiceScanner:
             return observation
         self._identify(observation, profile, cancel)
         return observation
-        """_probe_tcp."""
-        """_probe_tcp."""
 
     def _connect(self, observation: ServiceObservation) -> socket.socket:
         """Open a TCP socket to the observed endpoint with the scan timeout."""
@@ -586,8 +572,6 @@ class NetworkServiceScanner:
             (observation.ip, observation.port), timeout=self.timeout)
         sock.settimeout(self.timeout)
         return sock
-        """_connect."""
-        """_connect."""
 
     def _identify(
         self,
@@ -611,8 +595,6 @@ class NetworkServiceScanner:
             self._probe_mqtt(observation)
         if observation.port == 6379 and not cancel.is_set():
             self._probe_redis(observation)
-        """_identify."""
-        """_identify."""
 
     def _probe_tls(self, observation: ServiceObservation) -> None:
         """TLS handshake (cert unverified) recording version, cipher, and cert hash."""
@@ -635,8 +617,6 @@ class NetworkServiceScanner:
                     observation.confidence = max(observation.confidence, 0.9)
         except (OSError, ValueError, ssl.SSLError):
             return
-        """_probe_tls."""
-        """_probe_tls."""
 
     def _probe_http(self, observation: ServiceObservation, path: str) -> None:
         """Bounded HEAD/GET request to fingerprint HTTP servers (Docker, ES)."""
@@ -701,8 +681,6 @@ class NetworkServiceScanner:
         observation.product = observation.product or product
         observation.version = observation.version or version
         observation.confidence = max(observation.confidence, 0.9)
-        """_probe_http."""
-        """_probe_http."""
 
     def _probe_mqtt(self, observation: ServiceObservation) -> None:
         """Credential-free MQTT CONNECT; flags brokers that accept it (CONNACK 0)."""
@@ -725,8 +703,6 @@ class NetworkServiceScanner:
             observation.metadata["evidence"].append(
                 f"MQTT CONNACK received for credential-free CONNECT (code {code})")
             observation.confidence = 0.98
-        """_probe_mqtt."""
-        """_probe_mqtt."""
 
     def _probe_redis(self, observation: ServiceObservation) -> None:
         """Redis PING probe detecting unauthenticated access (+PONG vs NOAUTH)."""
@@ -747,8 +723,6 @@ class NetworkServiceScanner:
             observation.metadata["redis_unauthenticated"] = False
             observation.metadata["evidence"].append("Redis required authentication")
             observation.confidence = 0.95
-        """_probe_redis."""
-        """_probe_redis."""
 
     def _scan_udp(
         self,
@@ -769,8 +743,6 @@ class NetworkServiceScanner:
                 item = self._probe_udp(str(address), port, name, payload)
                 if item is not None:
                     observations.append(item)
-        """_scan_udp."""
-        """_scan_udp."""
 
     def _probe_udp(
         self,
@@ -808,8 +780,6 @@ class NetworkServiceScanner:
             latency_ms=round((time.monotonic() - started) * 1000, 2),
             confidence=0.95,
         )
-        """_probe_udp."""
-        """_probe_udp."""
 
 
 # Compatibility name retained for callers that imported this helper directly.

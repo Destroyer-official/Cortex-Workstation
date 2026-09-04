@@ -38,7 +38,16 @@ def get_system_excludes() -> Set[str]:
         }
 
 def is_system_directory(path: Path) -> bool:
-    """True if *path* names one of the platform's protected directories."""
+    """True if *path* names one of the platform's protected directories.
+
+    Manages is system directory operations and coordinates related state changes for the component.
+
+    Args:
+        path (Path): Filesystem path to the target file or directory.
+
+    Returns:
+        bool: True if the operation succeeded, False otherwise.
+    """
     system_excludes = get_system_excludes()
     return path.name in system_excludes
 
@@ -77,9 +86,18 @@ def setup_logging(verbose: bool = False, log_file: str = None, json_logging: boo
     if json_logging:
         import json
         class JSONFormatter(logging.Formatter):
-            """JSONFormatter."""
+            """JSONFormatter.
+
+            Converts raw numeric values into formatted, localized, and human-readable string representations.
+            """
             def format(self, record):
-                """format."""
+                """format.
+
+                Converts raw numeric values into formatted, localized, and human-readable string representations.
+
+                Args:
+                    record: The record parameter.
+                """
                 log_entry = {
                     "timestamp": self.formatTime(record),
                     "level": record.levelname,
@@ -105,8 +123,6 @@ def setup_logging(verbose: bool = False, log_file: str = None, json_logging: boo
                     log_entry["bytes_processed"] = record.bytes_processed
                 
                 return json.dumps(log_entry)
-                """format."""
-            """JSONFormatter class."""
         
         formatter = JSONFormatter()
     else:
@@ -163,14 +179,21 @@ def setup_logging(verbose: bool = False, log_file: str = None, json_logging: boo
 
     if verbose:
         class PerformanceFilter(logging.Filter):
-            """PerformanceFilter."""
+            """Performancefilter.
+
+            Manages PerformanceFilter operations and coordinates related state changes for the component.
+            """
             def filter(self, record):
-                """filter."""
+                """Filter.
+
+                Manages filter operations and coordinates related state changes for the component.
+
+                Args:
+                    record: The record parameter.
+                """
                 if not hasattr(record, 'start_time'):
                     record.start_time = datetime.now()
                 return True
-                """filter."""
-            """PerformanceFilter class."""
 
         logger.addFilter(PerformanceFilter())
 
@@ -255,16 +278,40 @@ def log_performance_metrics(logger: logging.Logger, operation: str, metrics: dic
     logger.info(f"Performance metrics for {operation}: {metrics}", extra=context)
 
 def generate_manifest_filename() -> str:
-    """Generate a timestamped filename for the manifest file."""
+    """Generate a timestamped filename for the manifest file.
+
+    Manages generate manifest filename operations and coordinates related state changes for the component.
+
+    Returns:
+        str: Formatted string or path.
+    """
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     return f"cortex_cleaner_manifest_{timestamp}.json"
 
 def normalize_path(path: str) -> Path:
-    """Normalize a path string to a Path object."""
+    """Normalize a path string to a Path object.
+
+    Manages normalize path operations and coordinates related state changes for the component.
+
+    Args:
+        path (str): Filesystem path to the target file or directory.
+
+    Returns:
+        Path: Result of the operation.
+    """
     return Path(os.path.expanduser(path)).resolve()
 
 def get_file_age_days(filepath: Path) -> int:
-    """Get the age of a file in days."""
+    """Get the age of a file in days.
+
+    Manages get file age days operations and coordinates related state changes for the component.
+
+    Args:
+        filepath (Path): Filesystem path to the target file or directory.
+
+    Returns:
+        int: Result of the operation.
+    """
     try:
         mtime = filepath.stat().st_mtime
         mtime_dt = datetime.fromtimestamp(mtime)
@@ -283,37 +330,64 @@ class DeepCleanerError(Exception):
 
     def __init__(self, message: str, operation: str = None, component: str = None, 
                  error_code: str = None, details: dict = None):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            message (str): Informational or progress status message.
+            operation (str): The operation parameter.
+            component (str): The component parameter.
+            error_code (str): Error message string or exception instance.
+            details (dict): The details parameter.
+        """
         super().__init__(message)
         self.operation = operation
         self.component = component
         self.error_code = error_code
         self.details = details or {}
         self.timestamp = datetime.now()
-        """__init__."""
 
 class DockerError(DeepCleanerError):
-    """Docker-specific errors."""
+    """Dockererror.
+
+    Manages DockerError operations and coordinates related state changes for the component.
+    """
     pass
 
 class VisualizationError(DeepCleanerError):
-    """Visualization-specific errors."""
+    """Visualizationerror.
+
+    Manages VisualizationError operations and coordinates related state changes for the component.
+    """
     pass
 
 class HeuristicsError(DeepCleanerError):
-    """Heuristics and ML-specific errors."""
+    """Heuristicserror.
+
+    Manages HeuristicsError operations and coordinates related state changes for the component.
+    """
     pass
 
 class PackageManagerError(DeepCleanerError):
-    """Package manager-specific errors."""
+    """Packagemanagererror.
+
+    Manages PackageManagerError operations and coordinates related state changes for the component.
+    """
     pass
 
 class PerformanceError(DeepCleanerError):
-    """Performance and resource-specific errors."""
+    """Performanceerror.
+
+    Manages PerformanceError operations and coordinates related state changes for the component.
+    """
     pass
 
 class AccessibilityError(DeepCleanerError):
-    """Accessibility-specific errors."""
+    """Accessibilityerror.
+
+    Manages AccessibilityError operations and coordinates related state changes for the component.
+    """
     pass
 
 def handle_error(logger: logging.Logger, error: Exception, operation: str = None, 
@@ -371,28 +445,47 @@ def safe_execute(func, logger: logging.Logger, operation: str = None,
         return default_return
 
 class ResourceManager:
-    """Context manager for resource cleanup and monitoring."""
+    """Resourcemanager.
+
+    Manages ResourceManager operations and coordinates related state changes for the component.
+    """
     
     def __init__(self, logger: logging.Logger, operation: str = None):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            logger (logging.Logger): The logger parameter.
+            operation (str): The operation parameter.
+        """
         self.logger = logger
         self.operation = operation
         self.resources = []
         self.start_time = None
         self.context = {}
-        """__init__."""
     
     def __enter__(self):
-        """__enter__."""
+        """Manage context lifecycle and resource acquisition or cleanup.
+
+        Acquires necessary lock or file resources on entry and guarantees safe release and error propagation on exit.
+        """
         self.start_time = datetime.now()
         self.context = log_operation_start(self.logger, self.operation or "resource_operation")
         return self
-        """__enter__."""
     
     def __exit__(self, exc_type, exc_val, exc_tb):
         # Release in reverse registration order, mirroring how nested
         # resources were acquired. Cleanup failures are logged, never raised.
-        """__exit__."""
+        """Manage context lifecycle and resource acquisition or cleanup.
+
+        Acquires necessary lock or file resources on entry and guarantees safe release and error propagation on exit.
+
+        Args:
+            exc_type: Error message string or exception instance.
+            exc_val: Error message string or exception instance.
+            exc_tb: Error message string or exception instance.
+        """
         for resource in reversed(self.resources):
             try:
                 if hasattr(resource, 'close'):
@@ -408,16 +501,26 @@ class ResourceManager:
         log_operation_end(self.logger, self.context, success, exc_val)
 
         return False  # never suppress the caller's exception
-        """__exit__."""
     
     def add_resource(self, resource):
-        """Add a resource to be cleaned up."""
+        """Add a resource to be cleaned up.
+
+        Manages add resource operations and coordinates related state changes for the component.
+
+        Args:
+            resource: The resource parameter.
+        """
         self.resources.append(resource)
     
     def add_cleanup_function(self, func, *args, **kwargs):
-        """add_cleanup_function."""
+        """add_cleanup_function.
+
+        Manages add cleanup function operations and coordinates related state changes for the component.
+
+        Args:
+            func: The func parameter.
+        """
         self.resources.append(lambda: func(*args, **kwargs))
-        """add_cleanup_function."""
 
 def format_bytes(bytes_value: int) -> str:
     """Format a byte count for display.
@@ -446,7 +549,16 @@ def format_bytes(bytes_value: int) -> str:
     return f"{size:.{precision}f} {units[unit_index]}"
 
 def format_duration(seconds: float) -> str:
-    """Format duration in human-readable format."""
+    """Format duration in human-readable format.
+
+    Converts raw numeric values into formatted, localized, and human-readable string representations.
+
+    Args:
+        seconds (float): The seconds parameter.
+
+    Returns:
+        str: Formatted string or path.
+    """
     if seconds < 1:
         return f"{seconds*1000:.0f}ms"
     elif seconds < 60:
@@ -518,7 +630,13 @@ def ensure_directory(path: Path, create: bool = True) -> Path:
         raise OSError(f"Cannot ensure directory '{path}': {e}")
 
 def get_system_info() -> dict:
-    """Get comprehensive system information for diagnostics."""
+    """Get comprehensive system information for diagnostics.
+
+    Manages get system info operations and coordinates related state changes for the component.
+
+    Returns:
+        dict: Dictionary mapping identifiers to status or values.
+    """
     import platform
     import psutil
     

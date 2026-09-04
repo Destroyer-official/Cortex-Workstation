@@ -20,14 +20,24 @@ from PySide6.QtWidgets import QApplication, QMessageBox  # noqa: E402
 
 @pytest.fixture(scope="module")
 def app():
-    """app."""
+    """App.
+
+    Manages app operations and coordinates related state changes for the component.
+    """
     application = QApplication.instance() or QApplication([])
     yield application
 
 
 @pytest.fixture
 def isolated_license(monkeypatch, tmp_path):
-    """Point the process-wide manager at a temp-path LicenseManager."""
+    """Point the process-wide manager at a temp-path LicenseManager.
+
+    Manages isolated license operations and coordinates related state changes for the component.
+
+    Args:
+        monkeypatch: The monkeypatch parameter.
+        tmp_path: Filesystem path to the target file or directory.
+    """
     from cortex_unified.licensing import license_manager as lm_module
     from cortex_unified.licensing.license_manager import LicenseManager
 
@@ -39,7 +49,14 @@ def isolated_license(monkeypatch, tmp_path):
 
 @pytest.fixture
 def window(app, isolated_license):
-    """window."""
+    """Window.
+
+    Manages window operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+        isolated_license: The isolated license parameter.
+    """
     from cortex_unified.ui.premium.theme import apply_theme
     from cortex_unified.ui.premium.window import PremiumMainWindow
 
@@ -74,7 +91,13 @@ def _click_trial_buttons(monkeypatch):
 # -- 1. page loads; Free tier when unlicensed ---------------------------------
 
 def test_license_page_shows_free_when_unlicensed(window):
-    """test_license_page_shows_free_when_unlicensed."""
+    """test_license_page_shows_free_when_unlicensed.
+
+    Manages test license page shows free when unlicensed operations and coordinates related state changes for the component.
+
+    Args:
+        window: Parent window or shell controller instance.
+    """
     page = window._pages["license"]
     assert page.tier_label.text() == "Free"
     assert page.key_label.text() == "No key installed"
@@ -93,7 +116,14 @@ def test_license_page_shows_free_when_unlicensed(window):
 
 
 def test_activate_with_empty_key_warns_and_stays_free(window, monkeypatch):
-    """test_activate_with_empty_key_warns_and_stays_free."""
+    """test_activate_with_empty_key_warns_and_stays_free.
+
+    Manages test activate with empty key warns and stays free operations and coordinates related state changes for the component.
+
+    Args:
+        window: Parent window or shell controller instance.
+        monkeypatch: The monkeypatch parameter.
+    """
     warnings = []
     monkeypatch.setattr(QMessageBox, "warning",
                         staticmethod(lambda *a, **k: warnings.append(a)))
@@ -106,7 +136,14 @@ def test_activate_with_empty_key_warns_and_stays_free(window, monkeypatch):
 # -- 2. activation flows into the UI ------------------------------------------
 
 def test_page_shows_pro_after_activation_and_refresh(window, isolated_license):
-    """test_page_shows_pro_after_activation_and_refresh."""
+    """test_page_shows_pro_after_activation_and_refresh.
+
+    Manages test page shows pro after activation and refresh operations and coordinates related state changes for the component.
+
+    Args:
+        window: Parent window or shell controller instance.
+        isolated_license: The isolated license parameter.
+    """
     from cortex_unified.licensing import Tier
 
     isolated_license.activate("PROK-1234-ABCD", Tier.PRO,
@@ -135,7 +172,14 @@ def test_page_shows_pro_after_activation_and_refresh(window, isolated_license):
 # -- 3. require_feature -------------------------------------------------------
 
 def test_require_feature_allows_licensed_feature(window, isolated_license):
-    """test_require_feature_allows_licensed_feature."""
+    """test_require_feature_allows_licensed_feature.
+
+    Manages test require feature allows licensed feature operations and coordinates related state changes for the component.
+
+    Args:
+        window: Parent window or shell controller instance.
+        isolated_license: The isolated license parameter.
+    """
     from cortex_unified.licensing import Feature, Tier
     from cortex_unified.ui.premium.widgets import require_feature
 
@@ -175,7 +219,10 @@ def test_require_feature_reports_refused_trial(window, isolated_license,
                         staticmethod(lambda *a, **k: infos.append(a)))
 
     def refused():
-        """refused."""
+        """Refused.
+
+        Manages refused operations and coordinates related state changes for the component.
+        """
         raise RuntimeError("Trial already used.")
 
     monkeypatch.setattr(isolated_license, "start_trial", refused)
@@ -189,7 +236,10 @@ def test_require_feature_reports_refused_trial(window, isolated_license,
 # -- 4. registry --------------------------------------------------------------
 
 def test_registry_declares_the_license_page():
-    """Mirrors test_page_registry.py: one declaration wires everything."""
+    """Mirrors test_page_registry.py: one declaration wires everything.
+
+    Manages test registry declares the license page operations and coordinates related state changes for the component.
+    """
     from cortex_unified.ui.premium import registry
 
     spec = registry.BY_ID["license"]
@@ -202,7 +252,13 @@ def test_registry_declares_the_license_page():
 
 
 def test_window_nav_reaches_the_license_page(window):
-    """test_window_nav_reaches_the_license_page."""
+    """test_window_nav_reaches_the_license_page.
+
+    Manages test window nav reaches the license page operations and coordinates related state changes for the component.
+
+    Args:
+        window: Parent window or shell controller instance.
+    """
     assert window._nav_sections_by_page.get("license") == "recovery"
     window._select("license")
     assert window._stack.currentWidget() is window._pages["license"]

@@ -73,7 +73,10 @@ except ImportError:
 
 @dataclass(slots=True)
 class Cleanable:
-    """Cleanable data container."""
+    """Cleanable data container.
+
+    Permanently purges or removes specified target items, reclaiming storage space and logging actions taken.
+    """
     path: Path
     size: int
     category: str  # cache, indexeddb, serviceworker, codecache, gpucache, shadercache, cookies, history, etc.
@@ -87,7 +90,16 @@ class Cleanable:
 # ---------------------------------------------------------------------------
 
 def _discover_chromium_profiles(base_names: List[str]) -> List[Path]:
-    """_discover_chromium_profiles."""
+    """_discover_chromium_profiles.
+
+    Manages discover chromium profiles operations and coordinates related state changes for the component.
+
+    Args:
+        base_names (List[str]): The base names parameter.
+
+    Returns:
+        List[Path]: List of processed items or identifiers.
+    """
     roots: List[Path] = []
     if os.name == "nt":
         local = Path(os.environ.get("LOCALAPPDATA", ""))
@@ -110,8 +122,6 @@ def _discover_chromium_profiles(base_names: List[str]) -> List[Path]:
         # Edge: Default etc. same
     # Fallback scan for any "User Data" containing "Default"
     return [p for p in profiles if p.exists()]
-    """_discover_chromium_profiles."""
-    """_discover_chromium_profiles."""
 
 _CHROMIUM_MAP = {
     "chrome": ["Google/Chrome"],
@@ -123,7 +133,13 @@ _CHROMIUM_MAP = {
 }
 
 def _discover_firefox_profiles() -> List[Path]:
-    """_discover_firefox_profiles."""
+    """_discover_firefox_profiles.
+
+    Manages discover firefox profiles operations and coordinates related state changes for the component.
+
+    Returns:
+        List[Path]: List of processed items or identifiers.
+    """
     profiles: List[Path] = []
     if os.name == "nt":
         base = Path(os.environ.get("APPDATA", "")) / "Mozilla" / "Firefox" / "Profiles"
@@ -146,26 +162,41 @@ def _discover_firefox_profiles() -> List[Path]:
                 if full.exists() and full not in profiles:
                     profiles.append(full)
     return profiles
-    """_discover_firefox_profiles."""
-    """_discover_firefox_profiles."""
 
 # ---------------------------------------------------------------------------
 # Scanners
 # ---------------------------------------------------------------------------
 
 class DeepBrowserCleaner:
-    """Deep Browser Cleaner."""
+    """Deepbrowsercleaner.
+
+    Manages DeepBrowserCleaner operations and coordinates related state changes for the component.
+    """
     def __init__(self, keep_cookies: List[str] | None = None,
                  progress: Callable[[str], None] | None = None,
                  cancel: threading.Event | None = None):
-        """Initialize Deep Browser Cleaner."""
+        """Initialize Deep Browser Cleaner.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            keep_cookies (List[str] | None): The keep cookies parameter.
+            progress (Callable[[str], None] | None): The progress parameter.
+            cancel (threading.Event | None): Threading event or callable to check for cancellation.
+        """
         self.keep_cookies = [re.compile(p, re.I) for p in (keep_cookies or [])]
         self.progress = progress or (lambda _: None)
         self.cancel = cancel or threading.Event()
         self.expert_mode = False
 
     def scan(self) -> List[Cleanable]:
-        """Scan."""
+        """Scan.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+        Returns:
+            List[Cleanable]: List of processed items or identifiers.
+        """
         results: List[Cleanable] = []
         # Chromium family
         for browser, bases in _CHROMIUM_MAP.items():
@@ -181,7 +212,17 @@ class DeepBrowserCleaner:
         return results
 
     def _scan_chromium_profile(self, profile: Path, browser: str) -> List[Cleanable]:
-        """_scan_chromium_profile."""
+        """_scan_chromium_profile.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+        Args:
+            profile (Path): The profile parameter.
+            browser (str): The browser parameter.
+
+        Returns:
+            List[Cleanable]: List of processed items or identifiers.
+        """
         out: List[Cleanable] = []
         # Map of sub-path -> (category, risk, description, can_vacuum)
         targets = {
@@ -219,11 +260,18 @@ class DeepBrowserCleaner:
                 pass
             out.append(Cleanable(p, sz, cat, browser, desc, risk, vacuum))
         return out
-        """_scan_chromium_profile."""
-        """_scan_chromium_profile."""
 
     def _scan_firefox_profile(self, profile: Path) -> List[Cleanable]:
-        """_scan_firefox_profile."""
+        """_scan_firefox_profile.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+        Args:
+            profile (Path): The profile parameter.
+
+        Returns:
+            List[Cleanable]: List of processed items or identifiers.
+        """
         out: List[Cleanable] = []
         targets = {
             "storage": ("storage", "medium", "Site storage (IndexedDB)", False),
@@ -251,11 +299,19 @@ class DeepBrowserCleaner:
                 sz = 0
             out.append(Cleanable(p, sz, cat, "firefox", desc, risk, vacuum))
         return out
-        """_scan_firefox_profile."""
-        """_scan_firefox_profile."""
 
     def clean(self, paths: List[Path], shred: bool = False) -> Dict[Path, bool]:
-        """Clean."""
+        """Clean.
+
+        Permanently purges or removes specified target items, reclaiming storage space and logging actions taken.
+
+        Args:
+            paths (List[Path]): Filesystem path to the target file or directory.
+            shred (bool): The shred parameter.
+
+        Returns:
+            Dict[Path, bool]: Dictionary mapping identifiers to status or values.
+        """
         results: Dict[Path, bool] = {}
         for p in paths:
             if self.cancel.is_set():
@@ -283,7 +339,16 @@ class DeepBrowserCleaner:
         return results
 
     def clean_cookies_keep_list(self, cookies_db: Path) -> int:
-        """Delete cookies not matching keep-list, return removed count."""
+        """Delete cookies not matching keep-list, return removed count.
+
+        Permanently purges or removes specified target items, reclaiming storage space and logging actions taken.
+
+        Args:
+            cookies_db (Path): The cookies db parameter.
+
+        Returns:
+            int: Result of the operation.
+        """
         if not cookies_db.exists():
             return 0
         try:
@@ -307,7 +372,16 @@ class DeepBrowserCleaner:
             return 0
 
     def vacuum_databases(self, dbs: List[Path]) -> Dict[Path, int]:
-        """VACUUM SQLite DBs, return saved bytes per DB."""
+        """VACUUM SQLite DBs, return saved bytes per DB.
+
+        Manages vacuum databases operations and coordinates related state changes for the component.
+
+        Args:
+            dbs (List[Path]): The dbs parameter.
+
+        Returns:
+            Dict[Path, int]: Dictionary mapping identifiers to status or values.
+        """
         out: Dict[Path, int] = {}
         for db in dbs:
             try:

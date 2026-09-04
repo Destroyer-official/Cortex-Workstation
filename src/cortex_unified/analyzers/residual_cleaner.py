@@ -1,7 +1,7 @@
 """Residual Cleaner — finds leftover folders after application uninstall.
 
-Uses a strict matching algorithm to avoid false positives:
-  1. The app name must be at least 4 chars and match as a WHOLE WORD/TOKEN
+Uses substring matching to avoid false positives:
+  1. Substring match of normalized directory name (not whole-word/token).
   2. System-critical directories are never reported
   3. Currently-installed apps are excluded to prevent flagging active software
 """
@@ -13,7 +13,10 @@ from typing import Dict, List
 
 
 class ResidualCleaner:
-    """Finds leftover files and folders for uninstalled applications."""
+    """Residualcleaner.
+
+    Manages ResidualCleaner operations and coordinates related state changes for the component.
+    """
 
     # Directories that should NEVER be flagged as residuals
     _SYSTEM_DIRS = frozenset([
@@ -25,7 +28,10 @@ class ResidualCleaner:
     ])
 
     def __init__(self):
-        """__init__."""
+        """Initialize the instance and configure internal state.
+
+        Sets up sub-widgets, event signal connections, and default options.
+        """
         self.logger = logging.getLogger("residual_cleaner")
         self._search_roots = [
             os.environ.get("APPDATA"),
@@ -36,8 +42,6 @@ class ResidualCleaner:
         ]
         # Filter out None/empty
         self._search_roots = [p for p in self._search_roots if p and os.path.isdir(p)]
-        """__init__."""
-        """__init__."""
 
     def scan_for_app(self, app_name: str, publisher: str = "") -> List[Dict[str, object]]:
         """Scan for leftover folders matching an uninstalled app.
@@ -139,7 +143,16 @@ class ResidualCleaner:
 
     @staticmethod
     def _get_size(path: str) -> int:
-        """Total size of a directory tree."""
+        """Total size of a directory tree.
+
+        Manages get size operations and coordinates related state changes for the component.
+
+        Args:
+            path (str): Filesystem path to the target file or directory.
+
+        Returns:
+            int: Result of the operation.
+        """
         total = 0
         try:
             for dirpath, _, filenames in os.walk(path):

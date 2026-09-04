@@ -24,7 +24,10 @@ from cortex_unified.ui.premium import registry  # noqa: E402
 
 
 def test_registry_is_internally_consistent():
-    """Ids unique, groups known, factories well formed."""
+    """Ids unique, groups known, factories well formed.
+
+    Manages test registry is internally consistent operations and coordinates related state changes for the component.
+    """
     ids = [spec.id for spec in registry.PAGES]
     assert len(ids) == len(set(ids)), "duplicate page id"
     group_ids = {group.id for group in registry.GROUPS}
@@ -35,7 +38,10 @@ def test_registry_is_internally_consistent():
 
 
 def test_every_declared_factory_actually_resolves():
-    """A typo must fail here, not when a user clicks the tool."""
+    """A typo must fail here, not when a user clicks the tool.
+
+    Manages test every declared factory actually resolves operations and coordinates related state changes for the component.
+    """
     for spec in registry.PAGES:
         cls = spec.load()
         assert isinstance(cls, type), spec.id
@@ -43,14 +49,20 @@ def test_every_declared_factory_actually_resolves():
 
 
 def test_malformed_factory_is_rejected_with_a_clear_message():
-    """test_malformed_factory_is_rejected_with_a_clear_message."""
+    """test_malformed_factory_is_rejected_with_a_clear_message.
+
+    Manages test malformed factory is rejected with a clear message operations and coordinates related state changes for the component.
+    """
     bad = registry.PageSpec("x", "X", "!", registry.GROUPS[0].id, "no-colon")
     with pytest.raises(ValueError, match="malformed factory"):
         bad.load()
 
 
 def test_ordering_is_group_order_then_declaration_order():
-    """Sidebar order must be predictable and total."""
+    """Sidebar order must be predictable and total.
+
+    Manages test ordering is group order then declaration order operations and coordinates related state changes for the component.
+    """
     expected: list[str] = []
     for group in registry.GROUPS:
         expected += [s.id for s in registry.PAGES if s.group == group.id]
@@ -60,7 +72,10 @@ def test_ordering_is_group_order_then_declaration_order():
 
 
 def test_grouped_covers_every_page_exactly_once():
-    """test_grouped_covers_every_page_exactly_once."""
+    """test_grouped_covers_every_page_exactly_once.
+
+    Manages test grouped covers every page exactly once operations and coordinates related state changes for the component.
+    """
     seen: list[str] = []
     for group, specs in registry.grouped():
         assert specs, f"group {group.id} has no pages"
@@ -69,21 +84,30 @@ def test_grouped_covers_every_page_exactly_once():
 
 
 def test_by_id_and_group_of_agree_with_pages():
-    """test_by_id_and_group_of_agree_with_pages."""
+    """test_by_id_and_group_of_agree_with_pages.
+
+    Manages test by id and group of agree with pages operations and coordinates related state changes for the component.
+    """
     for spec in registry.PAGES:
         assert registry.BY_ID[spec.id] is spec
         assert registry.group_of(spec.id) == spec.group
 
 
 def test_default_page_exists_and_is_reachable():
-    """test_default_page_exists_and_is_reachable."""
+    """test_default_page_exists_and_is_reachable.
+
+    Manages test default page exists and is reachable operations and coordinates related state changes for the component.
+    """
     assert registry.DEFAULT_PAGE_ID in registry.BY_ID
 
 
 # --- the shell must derive from the registry, not duplicate it -------------
 
 def test_window_aliases_are_derived_from_the_registry():
-    """``_NAV``/``_NAV_GROUPS``/``_PAGE_FACTORIES`` are views, not sources."""
+    """``_NAV``/``_NAV_GROUPS``/``_PAGE_FACTORIES`` are views, not sources.
+
+    Manages test window aliases are derived from the registry operations and coordinates related state changes for the component.
+    """
     from cortex_unified.ui.premium import window
 
     assert [pid for pid, _t, _i in window._NAV] == list(registry.ordered_ids())
@@ -95,7 +119,13 @@ def test_window_aliases_are_derived_from_the_registry():
 
 
 def test_adding_one_spec_wires_nav_group_search_and_stack(monkeypatch):
-    """A single declaration must be sufficient to add a working tool."""
+    """A single declaration must be sufficient to add a working tool.
+
+    Manages test adding one spec wires nav group search and stack operations and coordinates related state changes for the component.
+
+    Args:
+        monkeypatch: The monkeypatch parameter.
+    """
     from PySide6.QtWidgets import QApplication
 
     from cortex_unified.ui.premium.theme import apply_theme

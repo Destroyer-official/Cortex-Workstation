@@ -27,7 +27,13 @@ _BACKUP_DIR = Path.home() / ".cortex_cleaner" / "telemetry_backups"
 
 
 def _get_windows_build() -> Optional[int]:
-    """_get_windows_build."""
+    """_get_windows_build.
+
+    Manages get windows build operations and coordinates related state changes for the component.
+
+    Returns:
+        Optional[int]: Result of the operation.
+    """
     try:
         v = platform.version()
         parts = v.split(".")
@@ -36,34 +42,54 @@ def _get_windows_build() -> Optional[int]:
     except (ValueError, IndexError):
         pass
     return None
-    """_get_windows_build."""
-    """_get_windows_build."""
 
 
 def _is_win11_24h2_plus() -> bool:
-    """_is_win11_24h2_plus."""
+    """_is_win11_24h2_plus.
+
+    Manages is win11 24h2 plus operations and coordinates related state changes for the component.
+
+    Returns:
+        bool: True if the operation succeeded, False otherwise.
+    """
     build = _get_windows_build()
     return build is not None and build >= 26100
-    """_is_win11_24h2_plus."""
-    """_is_win11_24h2_plus."""
 
 
 class TelemetryBlocker:
-    """Disables OS telemetry and diagnostic tracking via Windows Registry."""
+    """Telemetryblocker.
+
+    Manages TelemetryBlocker operations and coordinates related state changes for the component.
+    """
 
     def __init__(self):
-        """Initialize Telemetry Blocker."""
+        """Initialize Telemetry Blocker.
+
+        Initializes the instance and configures internal state.
+        """
         self.logger = logging.getLogger("telemetry_blocker")
         self._rules = self._build_rules()
 
     @property
     def rules(self) -> List[dict]:
-        """Rules."""
+        """Rules.
+
+        Manages rules operations and coordinates related state changes for the component.
+
+        Returns:
+            List[dict]: List of processed items or identifiers.
+        """
         return self._rules
 
     @staticmethod
     def _build_rules() -> List[dict]:
-        """Define all telemetry registry rules."""
+        """Define all telemetry registry rules.
+
+        Manages build rules operations and coordinates related state changes for the component.
+
+        Returns:
+            List[dict]: List of processed items or identifiers.
+        """
         try:
             import winreg
         except ImportError:
@@ -227,7 +253,16 @@ class TelemetryBlocker:
     # ──────────────────────────────────────────────────────────────────
 
     def _backup_key(self, rule: dict) -> Optional[dict]:
-        """_backup_key."""
+        """_backup_key.
+
+        Creates a backup archive or export of target resources, reporting the final output location upon success.
+
+        Args:
+            rule (dict): The rule parameter.
+
+        Returns:
+            Optional[dict]: Dictionary mapping identifiers to status or values.
+        """
         try:
             import winreg
         except ImportError:
@@ -242,22 +277,33 @@ class TelemetryBlocker:
         except Exception as exc:
             self.logger.debug("Backup read failed for %s: %s", rule["label"], exc)
             return None
-        """_backup_key."""
-        """_backup_key."""
 
     def _save_backup(self, entries: List[dict]) -> Path:
-        """_save_backup."""
+        """_save_backup.
+
+        Manages save backup operations and coordinates related state changes for the component.
+
+        Args:
+            entries (List[dict]): Collection of items or entries to process.
+
+        Returns:
+            Path: Result of the operation.
+        """
         _BACKUP_DIR.mkdir(parents=True, exist_ok=True)
         ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
         path = _BACKUP_DIR / f"backup_{ts}.json"
         with open(path, "w", encoding="utf-8") as fh:
             json.dump(entries, fh, indent=2)
         return path
-        """_save_backup."""
-        """_save_backup."""
 
     def backup_telemetry(self) -> Optional[Path]:
-        """Backup telemetry."""
+        """Backup telemetry.
+
+        Creates a backup archive or export of target resources, reporting the final output location upon success.
+
+        Returns:
+            Optional[Path]: Result of the operation.
+        """
         try:
             import winreg
         except ImportError:
@@ -282,7 +328,16 @@ class TelemetryBlocker:
         return path
 
     def restore_from_backup(self, backup_path: Optional[Path] = None) -> bool:
-        """Restore from backup."""
+        """Restore from backup.
+
+        Manages restore from backup operations and coordinates related state changes for the component.
+
+        Args:
+            backup_path (Optional[Path]): Filesystem path to the target file or directory.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         try:
             import winreg
         except ImportError:
@@ -334,7 +389,13 @@ class TelemetryBlocker:
         return all_ok
 
     def check_status(self) -> Dict[str, bool]:
-        """Return {label: is_blocked} for every rule."""
+        """Return {label: is_blocked} for every rule.
+
+        Manages check status operations and coordinates related state changes for the component.
+
+        Returns:
+            Dict[str, bool]: Dictionary mapping identifiers to status or values.
+        """
         try:
             import winreg
         except ImportError:
@@ -358,7 +419,13 @@ class TelemetryBlocker:
         return status
 
     def block_telemetry(self) -> bool:
-        """Apply all rules. Returns True if ALL succeeded."""
+        """Apply all rules. Returns True if ALL succeeded.
+
+        Manages block telemetry operations and coordinates related state changes for the component.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         try:
             import winreg
         except ImportError:
@@ -398,7 +465,13 @@ class TelemetryBlocker:
         return all_ok
 
     def restore_defaults(self) -> bool:
-        """Remove all custom telemetry registry values (restore OS defaults)."""
+        """Remove all custom telemetry registry values (restore OS defaults).
+
+        Manages restore defaults operations and coordinates related state changes for the component.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         try:
             import winreg
         except ImportError:

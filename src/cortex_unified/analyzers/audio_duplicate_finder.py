@@ -96,7 +96,13 @@ def _build_band_edges() -> List[Tuple[int, int]]:
     # Map Hz -> FFT bin: bin = hz * N / sr  (N=4096, sr=11025)
     # 33 bands → 32 subfingerprint bits (16 intra + 16 inter)
     # Use exponential spacing: f_i = 300 * (3000/300)**(i/32)
-    """_build_band_edges."""
+    """_build_band_edges.
+
+    Manages build band edges operations and coordinates related state changes for the component.
+
+    Returns:
+        List[Tuple[int, int]]: List of processed items or identifiers.
+    """
     edges: List[Tuple[int, int]] = []
     low, high = 300.0, 3000.0
     # 33 bands need 34 edges; last edge is high+epsilon
@@ -108,8 +114,6 @@ def _build_band_edges() -> List[Tuple[int, int]]:
         b1 = max(b0 + 1, min(b1, _FRAME_SIZE // 2))
         edges.append((b0, b1))
     return edges
-    """_build_band_edges."""
-    """_build_band_edges."""
 
 _BAND_EDGES = _build_band_edges()
 
@@ -118,7 +122,16 @@ _BAND_EDGES = _build_band_edges()
 # ---------------------------------------------------------------------------
 
 def _fft(mag: List[float]) -> List[complex]:
-    """Cooley-Tukey FFT for power-of-two real input (returns complex spectrum)."""
+    """Fft.
+
+    Manages fft operations and coordinates related state changes for the component.
+
+    Args:
+        mag (List[float]): The mag parameter.
+
+    Returns:
+        List[complex]: List of processed items or identifiers.
+    """
     n = len(mag)
     if n & (n - 1):
         raise ValueError("FFT size must be power of two")
@@ -149,7 +162,16 @@ def _fft(mag: List[float]) -> List[complex]:
     return a
 
 def _magnitude_spectrum(frame: List[float]) -> List[float]:
-    """Windowed FFT magnitude (Hann window, half spectrum)."""
+    """Windowed FFT magnitude (Hann window, half spectrum).
+
+    Manages magnitude spectrum operations and coordinates related state changes for the component.
+
+    Args:
+        frame (List[float]): The frame parameter.
+
+    Returns:
+        List[float]: List of processed items or identifiers.
+    """
     n = len(frame)
     # Hann window
     windowed = [
@@ -165,7 +187,16 @@ def _magnitude_spectrum(frame: List[float]) -> List[float]:
 # ---------------------------------------------------------------------------
 
 def _decode_wav(path: Path) -> Tuple[List[float], int]:
-    """Decode WAV to mono float samples in [-1, 1]; returns (samples, sr)."""
+    """Decode WAV to mono float samples in [-1, 1]; returns (samples, sr).
+
+    Manages decode wav operations and coordinates related state changes for the component.
+
+    Args:
+        path (Path): Filesystem path to the target file or directory.
+
+    Returns:
+        Tuple[List[float], int]: List of processed items or identifiers.
+    """
     with wave.open(str(path), "rb") as wf:
         nch = wf.getnchannels()
         sampwidth = wf.getsampwidth()
@@ -226,7 +257,18 @@ def _decode_wav(path: Path) -> Tuple[List[float], int]:
 
 
 def _resample(samples: List[float], sr_in: int, sr_out: int = _TARGET_SR) -> List[float]:
-    """Simple linear resampling; preserves duration."""
+    """Resample.
+
+    Manages resample operations and coordinates related state changes for the component.
+
+    Args:
+        samples (List[float]): The samples parameter.
+        sr_in (int): The sr in parameter.
+        sr_out (int): The sr out parameter.
+
+    Returns:
+        List[float]: List of processed items or identifiers.
+    """
     if sr_in == sr_out or not samples:
         return samples
     ratio = sr_in / sr_out
@@ -245,7 +287,16 @@ def _resample(samples: List[float], sr_in: int, sr_out: int = _TARGET_SR) -> Lis
 # Optional decoder for non-WAV via pydub/ffmpeg or librosa (soft deps)
 
 def _decode_generic(path: Path) -> Optional[Tuple[List[float], int]]:
-    """Try optional decoders for non-WAV; returns None if unavailable."""
+    """Try optional decoders for non-WAV; returns None if unavailable.
+
+    Manages decode generic operations and coordinates related state changes for the component.
+
+    Args:
+        path (Path): Filesystem path to the target file or directory.
+
+    Returns:
+        Optional[Tuple[List[float], int]]: List of processed items or identifiers.
+    """
     # Try pydub (ffmpeg) first – it handles MP3/FLAC/OGG/M4A
     try:
         from pydub import AudioSegment  # type: ignore
@@ -290,7 +341,16 @@ def _decode_generic(path: Path) -> Optional[Tuple[List[float], int]]:
 # ---------------------------------------------------------------------------
 
 def _band_energies(mag: List[float]) -> List[float]:
-    """33 log-spaced band energies (sum of squared magnitudes)."""
+    """33 log-spaced band energies (sum of squared magnitudes).
+
+    Manages band energies operations and coordinates related state changes for the component.
+
+    Args:
+        mag (List[float]): The mag parameter.
+
+    Returns:
+        List[float]: List of processed items or identifiers.
+    """
     energies: List[float] = []
     for b0, b1 in _BAND_EDGES:
         # Clamp to mag length
@@ -338,7 +398,16 @@ def _subfingerprint_for_frame(
 
 
 def _fingerprint_from_samples(samples: List[float]) -> List[int]:
-    """Compute sequence fingerprint (list of 32-bit subfingerprints)."""
+    """Compute sequence fingerprint (list of 32-bit subfingerprints).
+
+    Manages fingerprint from samples operations and coordinates related state changes for the component.
+
+    Args:
+        samples (List[float]): The samples parameter.
+
+    Returns:
+        List[int]: List of processed items or identifiers.
+    """
     if len(samples) < _FRAME_SIZE:
         return []
     # Truncate to first 120 s as in Chromaprint (dupsonic uses 120 s max)
@@ -446,10 +515,18 @@ def compute_audio_fingerprint(path: Path | str) -> List[int]:
 
 
 def _hamming32(a: int, b: int) -> int:
-    """_hamming32."""
+    """Hamming32.
+
+    Manages hamming32 operations and coordinates related state changes for the component.
+
+    Args:
+        a (int): The a parameter.
+        b (int): Integer number of bytes to format or process.
+
+    Returns:
+        int: Result of the operation.
+    """
     return bin(a ^ b).count("1")
-    """_hamming32."""
-    """_hamming32."""
 
 
 def audio_compare(fp_a: List[int], fp_b: List[int]) -> float:
@@ -520,7 +597,15 @@ class AudioDuplicateFinder:
         threshold: float = 0.75,
         config: Config | None = None,
     ) -> None:
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            root_path (str | os.PathLike): Filesystem path to the target file or directory.
+            threshold (float): The threshold parameter.
+            config (Config | None): The config parameter.
+        """
         if isinstance(root_path, (list, tuple)):
             roots = [normalize_path(p) for p in root_path]
         else:
@@ -536,13 +621,20 @@ class AudioDuplicateFinder:
         self.file_count = 0
         self.error_count = 0
         self.duplicates: Dict[str, List[Path]] = {}
-        """__init__."""
-        """__init__."""
 
     # -- helpers
 
     def _should_exclude(self, path: Path) -> bool:
-        """_should_exclude."""
+        """_should_exclude.
+
+        Manages should exclude operations and coordinates related state changes for the component.
+
+        Args:
+            path (Path): Filesystem path to the target file or directory.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         if path.name in self.exclude_dirs:
             return True
         s = str(path)
@@ -550,14 +642,19 @@ class AudioDuplicateFinder:
             if pat in s or pat in path.name:
                 return True
         return False
-        """_should_exclude."""
-        """_should_exclude."""
 
     def _is_audio(self, path: Path) -> bool:
-        """_is_audio."""
+        """_is_audio.
+
+        Manages is audio operations and coordinates related state changes for the component.
+
+        Args:
+            path (Path): Filesystem path to the target file or directory.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         return path.suffix.lower() in _AUDIO_SUFFIXES
-        """_is_audio."""
-        """_is_audio."""
 
     # -- main API
 
@@ -567,7 +664,18 @@ class AudioDuplicateFinder:
         progress_callback: Optional[Callable[[str, int], None]] = None,
         cancel_event: Optional[threading.Event] = None,
     ) -> Dict[str, List[Path]]:
-        """Scan roots and return acoustically-duplicate groups (size >= 2)."""
+        """Scan roots and return acoustically-duplicate groups (size >= 2).
+
+        Manages find audio duplicates operations and coordinates related state changes for the component.
+
+        Args:
+            threads (int): The threads parameter.
+            progress_callback (Optional[Callable[[str, int], None]]): The progress callback parameter.
+            cancel_event (Optional[threading.Event]): Threading event or callable to check for cancellation.
+
+        Returns:
+            Dict[str, List[Path]]: List of processed items or identifiers.
+        """
         if threads <= 0:
             threads = min(16, (os.cpu_count() or 4) + 4)
 
@@ -602,14 +710,21 @@ class AudioDuplicateFinder:
         fingerprints: Dict[Path, List[int]] = {}
 
         def _fp_one(p: Path) -> Tuple[Path, Optional[List[int]]]:
-            """_fp_one."""
+            """_fp_one.
+
+            Manages fp one operations and coordinates related state changes for the component.
+
+            Args:
+                p (Path): The p parameter.
+
+            Returns:
+                Tuple[Path, Optional[List[int]]]: List of processed items or identifiers.
+            """
             try:
                 fp = compute_audio_fingerprint(p)
                 return p, fp if fp else None
             except Exception:
                 return p, None
-            """_fp_one."""
-            """_fp_one."""
 
         with ThreadPoolExecutor(max_workers=threads) as ex:
             futures = {ex.submit(_fp_one, p): p for p in files}
@@ -665,21 +780,33 @@ class AudioDuplicateFinder:
         parent: Dict[Path, Path] = {p: p for p in fingerprints}
 
         def _find(x: Path) -> Path:
-            """_find."""
+            """Search and locate items matching specific criteria.
+
+            Traverses filesystem directories or cached registries to find resources that satisfy the specified filters.
+
+            Args:
+                x (Path): The x parameter.
+
+            Returns:
+                Path: Result of the operation.
+            """
             while parent[x] != x:
                 parent[x] = parent[parent[x]]
                 x = parent[x]
             return x
-            """_find."""
-            """_find."""
 
         def _union(a: Path, b: Path) -> None:
-            """_union."""
+            """Union.
+
+            Manages union operations and coordinates related state changes for the component.
+
+            Args:
+                a (Path): The a parameter.
+                b (Path): Integer number of bytes to format or process.
+            """
             ra, rb = _find(a), _find(b)
             if ra != rb:
                 parent[rb] = ra
-            """_union."""
-            """_union."""
 
         for a, b in candidate_pairs:
             if cancel_event and getattr(cancel_event, "is_set", lambda: False)():
@@ -702,7 +829,13 @@ class AudioDuplicateFinder:
         return result
 
     def get_stats(self) -> dict:
-        """get_stats."""
+        """get_stats.
+
+        Manages get stats operations and coordinates related state changes for the component.
+
+        Returns:
+            dict: Dictionary mapping identifiers to status or values.
+        """
         total = sum(len(v) for v in self.duplicates.values())
         return {
             "total_audio_scanned": self.file_count,
@@ -711,8 +844,6 @@ class AudioDuplicateFinder:
             "errors": self.error_count,
             "threshold": self.threshold,
         }
-        """get_stats."""
-        """get_stats."""
 
 
 __all__ = [

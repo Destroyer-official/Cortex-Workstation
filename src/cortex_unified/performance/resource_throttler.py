@@ -12,7 +12,10 @@ from typing import Optional
 
 @dataclass
 class SystemLoad:
-    """Data structure for system load information."""
+    """Systemload.
+
+    Manages SystemLoad operations and coordinates related state changes for the component.
+    """
     cpu_percent: float
     memory_percent: float
     disk_io_percent: float
@@ -20,15 +23,36 @@ class SystemLoad:
     load_average: Optional[float] = None  # Unix systems only
     
     def is_high_load(self, cpu_threshold: float = 80.0, memory_threshold: float = 85.0) -> bool:
-        """Check if system is under high load."""
+        """Check if system is under high load.
+
+        Manages is high load operations and coordinates related state changes for the component.
+
+        Args:
+            cpu_threshold (float): The cpu threshold parameter.
+            memory_threshold (float): The memory threshold parameter.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         return (self.cpu_percent > cpu_threshold or 
                 self.memory_percent > memory_threshold)
 
 class ResourceThrottler:
-    """Manages system resource usage and throttling."""
+    """Resourcethrottler.
+
+    Manages ResourceThrottler operations and coordinates related state changes for the component.
+    """
     
     def __init__(self, cpu_limit: float = 0.8, io_priority: str = "low", memory_limit: float = 0.85):
-        """Initialize resource throttler with limits."""
+        """Initialize resource throttler with limits.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            cpu_limit (float): The cpu limit parameter.
+            io_priority (str): The io priority parameter.
+            memory_limit (float): The memory limit parameter.
+        """
         self.cpu_limit = cpu_limit * 100  # Convert to percentage
         self.memory_limit = memory_limit * 100  # Convert to percentage
         self.io_priority = io_priority
@@ -48,7 +72,13 @@ class ResourceThrottler:
         self.set_process_priority(io_priority)
     
     def set_process_priority(self, priority: str) -> None:
-        """Set process priority for CPU and I/O operations."""
+        """Set process priority for CPU and I/O operations.
+
+        Manages set process priority operations and coordinates related state changes for the component.
+
+        Args:
+            priority (str): The priority parameter.
+        """
         try:
             system = platform.system().lower()
             
@@ -100,13 +130,15 @@ class ResourceThrottler:
             from ctypes import wintypes
 
             class PROCESS_POWER_THROTTLING_STATE(ctypes.Structure):
-                """PROCESS_POWER_THROTTLING_STATE."""
+                """PROCESS_POWER_THROTTLING_STATE.
+
+                Manages PROCESS POWER THROTTLING STATE operations and coordinates related state changes for the component.
+                """
                 _fields_ = [
                     ("Version", wintypes.ULONG),
                     ("ControlMask", wintypes.ULONG),
                     ("StateMask", wintypes.ULONG),
                 ]
-                """PROCESS_POWER_THROTTLING_STATE class."""
 
             ProcessPowerThrottling = 4
             PROCESS_POWER_THROTTLING_EXECUTION_SPEED = 0x1
@@ -135,7 +167,13 @@ class ResourceThrottler:
             return False
     
     def get_system_load(self) -> SystemLoad:
-        """Get current system load information."""
+        """Get current system load information.
+
+        Manages get system load operations and coordinates related state changes for the component.
+
+        Returns:
+            SystemLoad: Result of the operation.
+        """
         try:
             # CPU usage
             cpu_percent = psutil.cpu_percent(interval=0.1)
@@ -187,7 +225,10 @@ class ResourceThrottler:
             )
     
     def throttle_if_needed(self) -> None:
-        """Apply throttling if system resources are constrained."""
+        """Apply throttling if system resources are constrained.
+
+        Manages throttle if needed operations and coordinates related state changes for the component.
+        """
         load = self.get_system_load()
         
         should_throttle = (
@@ -212,7 +253,16 @@ class ResourceThrottler:
                 self._throttle_delay = 0.0
     
     def adjust_thread_count(self, current_threads: int) -> int:
-        """Adjust thread count based on system load."""
+        """Adjust thread count based on system load.
+
+        Manages adjust thread count operations and coordinates related state changes for the component.
+
+        Args:
+            current_threads (int): The current threads parameter.
+
+        Returns:
+            int: Result of the operation.
+        """
         load = self.get_system_load()
         
         # Get optimal thread count based on CPU cores
@@ -236,14 +286,23 @@ class ResourceThrottler:
         return new_threads
     
     def start_monitoring(self, interval: float = 1.0) -> None:
-        """Start continuous system monitoring."""
+        """Start continuous system monitoring.
+
+        Manages start monitoring operations and coordinates related state changes for the component.
+
+        Args:
+            interval (float): The interval parameter.
+        """
         if self._monitoring:
             return
         
         self._monitoring = True
         
         def monitor_loop():
-            """monitor_loop."""
+            """monitor_loop.
+
+            Manages monitor loop operations and coordinates related state changes for the component.
+            """
             while self._monitoring:
                 try:
                     self.get_system_load()
@@ -251,31 +310,54 @@ class ResourceThrottler:
                 except Exception:
                     # Continue monitoring even if individual checks fail
                     time.sleep(interval)
-            """monitor_loop."""
         
         self._monitor_thread = threading.Thread(target=monitor_loop, daemon=True)
         self._monitor_thread.start()
     
     def stop_monitoring(self) -> None:
-        """Stop continuous system monitoring."""
+        """Stop continuous system monitoring.
+
+        Manages stop monitoring operations and coordinates related state changes for the component.
+        """
         self._monitoring = False
         if self._monitor_thread and self._monitor_thread.is_alive():
             self._monitor_thread.join(timeout=2.0)
     
     def get_cached_load(self) -> Optional[SystemLoad]:
-        """Get the last cached system load without new measurement."""
+        """Get the last cached system load without new measurement.
+
+        Manages get cached load operations and coordinates related state changes for the component.
+
+        Returns:
+            Optional[SystemLoad]: Result of the operation.
+        """
         with self._load_lock:
             return self._last_load
     
     def is_throttling_active(self) -> bool:
-        """Check if throttling is currently active."""
+        """Check if throttling is currently active.
+
+        Manages is throttling active operations and coordinates related state changes for the component.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         return self._throttle_active
     
     def get_throttle_delay(self) -> float:
-        """Get current throttling delay."""
+        """Get current throttling delay.
+
+        Manages get throttle delay operations and coordinates related state changes for the component.
+
+        Returns:
+            float: Result of the operation.
+        """
         return self._throttle_delay
     
     def reset_throttling(self) -> None:
-        """Reset throttling state."""
+        """Reset throttling state.
+
+        Manages reset throttling operations and coordinates related state changes for the component.
+        """
         self._throttle_active = False
         self._throttle_delay = 0.0

@@ -60,7 +60,10 @@ MAX_DIR_DEPTH = 50
 
 @dataclass
 class ContentMatch:
-    """A single content search match."""
+    """Contentmatch.
+
+    Manages ContentMatch operations and coordinates related state changes for the component.
+    """
     path: str
     line_number: int
     line_text: str
@@ -70,14 +73,26 @@ class ContentMatch:
 
 @dataclass
 class ContentSearchResult:
-    """Aggregated content search results for a file."""
+    """Contentsearchresult.
+
+    Manages ContentSearchResult operations and coordinates related state changes for the component.
+    """
     path: str
     matches: list[ContentMatch]
     truncated: bool = False
 
 
 def is_searchable(path: str | Path) -> bool:
-    """Check if a file is safe to search as text."""
+    """Check if a file is safe to search as text.
+
+    Manages is searchable operations and coordinates related state changes for the component.
+
+    Args:
+        path (str | Path): Filesystem path to the target file or directory.
+
+    Returns:
+        bool: True if the operation succeeded, False otherwise.
+    """
     ext = Path(path).suffix.lower()
     if ext in TEXT_EXTENSIONS:
         return True
@@ -153,7 +168,10 @@ def search_file_content(
 
 
 class _ContentSearchWorker(QThread):
-    """Background thread for parallel content search."""
+    """Contentsearchworker.
+
+    Manages ContentSearchWorker operations and coordinates related state changes for the component.
+    """
 
     result_found = Signal(ContentSearchResult)
     progress = Signal(int, int)    # files_searched, total_files
@@ -170,7 +188,19 @@ class _ContentSearchWorker(QThread):
         file_filter: Callable[[str], bool] | None = None,
         cancel_event: threading.Event | None = None,
     ):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            root (str): Filesystem path to the target file or directory.
+            query (str): The query parameter.
+            case_sensitive (bool): The case sensitive parameter.
+            use_regex (bool): The use regex parameter.
+            max_results (int): The max results parameter.
+            file_filter (Callable[[str], bool] | None): The file filter parameter.
+            cancel_event (threading.Event | None): Threading event or callable to check for cancellation.
+        """
         super().__init__()
         self._root = root
         self._query = query
@@ -179,10 +209,12 @@ class _ContentSearchWorker(QThread):
         self._max_results = max_results
         self._file_filter = file_filter
         self._cancel = cancel_event or threading.Event()
-        """__init__."""
 
     def run(self):
-        """run."""
+        """run.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         total_matches = 0
         files_searched = 0
 
@@ -255,10 +287,20 @@ class _ContentSearchWorker(QThread):
 
         except Exception as e:
             self.error.emit(str(e))
-        """run."""
 
     def _process_batch(self, executor, batch, compiled_re, total_matches, files_searched, total_files):
-        """_process_batch."""
+        """_process_batch.
+
+        Manages process batch operations and coordinates related state changes for the component.
+
+        Args:
+            executor: The executor parameter.
+            batch: The batch parameter.
+            compiled_re: The compiled re parameter.
+            total_matches: The total matches parameter.
+            files_searched: The files searched parameter.
+            total_files: The total files parameter.
+        """
         futures = {}
         for fpath in batch:
             future = executor.submit(
@@ -285,11 +327,13 @@ class _ContentSearchWorker(QThread):
             self.progress.emit(files_searched, total_files)
 
         return total_matches
-        """_process_batch."""
 
 
 class ContentSearchEngine(QObject):
-    """Content search engine with background execution."""
+    """Contentsearchengine.
+
+    Manages ContentSearchEngine operations and coordinates related state changes for the component.
+    """
 
     result_found = Signal(ContentSearchResult)
     search_started = Signal()
@@ -298,11 +342,16 @@ class ContentSearchEngine(QObject):
     search_error = Signal(str)
 
     def __init__(self, parent=None):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            parent: Parent window or shell controller instance.
+        """
         super().__init__(parent)
         self._worker: _ContentSearchWorker | None = None
         self._cancel = threading.Event()
-        """__init__."""
 
     def search(
         self,
@@ -313,7 +362,18 @@ class ContentSearchEngine(QObject):
         max_results: int = 1000,
         file_filter: Callable[[str], bool] | None = None,
     ):
-        """Start a content search."""
+        """Search.
+
+        Manages search operations and coordinates related state changes for the component.
+
+        Args:
+            root (str): Filesystem path to the target file or directory.
+            query (str): The query parameter.
+            case_sensitive (bool): The case sensitive parameter.
+            use_regex (bool): The use regex parameter.
+            max_results (int): The max results parameter.
+            file_filter (Callable[[str], bool] | None): The file filter parameter.
+        """
         self.stop()
         self._cancel.clear()
 
@@ -334,14 +394,21 @@ class ContentSearchEngine(QObject):
         self._worker.start()
 
     def stop(self):
-        """stop."""
+        """Stop active background operations.
+
+        Manages worker thread execution states, signaling termination flags or initializing scheduled execution timers.
+        """
         self._cancel.set()
         if self._worker and self._worker.isRunning():
             self._worker.wait(5000)
         self._worker = None
-        """stop."""
 
     def is_searching(self) -> bool:
-        """is_searching."""
+        """is_searching.
+
+        Manages is searching operations and coordinates related state changes for the component.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         return self._worker is not None and self._worker.isRunning()
-        """is_searching."""

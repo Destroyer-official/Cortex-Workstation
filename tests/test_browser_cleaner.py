@@ -30,7 +30,19 @@ from cortex_unified.system_tools.browser_cleaner import (
 def _make_sqlite(
     path: Path, table: str = "cookies", rows: list | None = None, populate: bool = True
 ) -> Path:
-    """Create a tiny SQLite DB at *path* and return the path."""
+    """Create a tiny SQLite DB at *path* and return the path.
+
+    Manages make sqlite operations and coordinates related state changes for the component.
+
+    Args:
+        path (Path): Filesystem path to the target file or directory.
+        table (str): The table parameter.
+        rows (list | None): Table row index or list of row indices.
+        populate (bool): The populate parameter.
+
+    Returns:
+        Path: Result of the operation.
+    """
     path.parent.mkdir(parents=True, exist_ok=True)
     con = sqlite3.connect(str(path))
     cur = con.cursor()
@@ -59,7 +71,17 @@ def _make_sqlite(
 def _make_cache_dir(
     base: Path, category: str, *, count: int = 3, file_size: int = 100
 ) -> Path:
-    """Populate a cache sub-directory with dummy files."""
+    """Populate a cache sub-directory with dummy files.
+
+    Manages make cache dir operations and coordinates related state changes for the component.
+
+    Args:
+        base (Path): The base parameter.
+        category (str): The category parameter.
+
+    Returns:
+        Path: Result of the operation.
+    """
     d = base / category
     d.mkdir(parents=True, exist_ok=True)
     for i in range(count):
@@ -68,7 +90,16 @@ def _make_cache_dir(
 
 
 def _make_chromium_profile(root: Path, *, browser: str = "chrome") -> Path:
-    """Build a realistic Chromium profile tree under *root*."""
+    """Build a realistic Chromium profile tree under *root*.
+
+    Manages make chromium profile operations and coordinates related state changes for the component.
+
+    Args:
+        root (Path): Filesystem path to the target file or directory.
+
+    Returns:
+        Path: Result of the operation.
+    """
     profile = root / "Default"
     profile.mkdir(parents=True)
 
@@ -105,7 +136,16 @@ def _make_chromium_profile(root: Path, *, browser: str = "chrome") -> Path:
 
 
 def _make_firefox_profile(base: Path) -> Path:
-    """Build a realistic Firefox profile tree under *base*."""
+    """Build a realistic Firefox profile tree under *base*.
+
+    Manages make firefox profile operations and coordinates related state changes for the component.
+
+    Args:
+        base (Path): The base parameter.
+
+    Returns:
+        Path: Result of the operation.
+    """
     profile = base / "default-release"
     profile.mkdir(parents=True)
 
@@ -142,7 +182,14 @@ def _make_firefox_profile(base: Path) -> Path:
 
 @pytest.fixture
 def fake_chromium_home(tmp_path, monkeypatch):
-    """Redirect LOCALAPPDATA so Chromium discovery hits our fake profiles."""
+    """Redirect LOCALAPPDATA so Chromium discovery hits our fake profiles.
+
+    Manages fake chromium home operations and coordinates related state changes for the component.
+
+    Args:
+        tmp_path: Filesystem path to the target file or directory.
+        monkeypatch: The monkeypatch parameter.
+    """
     local = tmp_path / "AppData" / "Local"
     local.mkdir(parents=True)
     monkeypatch.setenv("LOCALAPPDATA", str(local))
@@ -153,7 +200,14 @@ def fake_chromium_home(tmp_path, monkeypatch):
 
 @pytest.fixture
 def fake_firefox_home(tmp_path, monkeypatch):
-    """Redirect APPDATA so Firefox discovery hits our fake profiles."""
+    """Redirect APPDATA so Firefox discovery hits our fake profiles.
+
+    Manages fake firefox home operations and coordinates related state changes for the component.
+
+    Args:
+        tmp_path: Filesystem path to the target file or directory.
+        monkeypatch: The monkeypatch parameter.
+    """
     appdata = tmp_path / "AppData" / "Roaming"
     appdata.mkdir(parents=True)
     monkeypatch.setenv("APPDATA", str(appdata))
@@ -165,7 +219,14 @@ def fake_firefox_home(tmp_path, monkeypatch):
 
 @pytest.fixture
 def fake_multi_browser(tmp_path, monkeypatch):
-    """A single LOCALAPPDATA tree with Chrome, Edge, and Brave profiles."""
+    """A single LOCALAPPDATA tree with Chrome, Edge, and Brave profiles.
+
+    Manages fake multi browser operations and coordinates related state changes for the component.
+
+    Args:
+        tmp_path: Filesystem path to the target file or directory.
+        monkeypatch: The monkeypatch parameter.
+    """
     local = tmp_path / "AppData" / "Local"
     local.mkdir(parents=True)
     monkeypatch.setenv("LOCALAPPDATA", str(local))
@@ -185,9 +246,15 @@ def fake_multi_browser(tmp_path, monkeypatch):
 
 
 class TestDeepBrowserCleanerInit:
-    """TestDeepBrowserCleanerInit."""
+    """Testdeepbrowsercleanerinit.
+
+    Manages TestDeepBrowserCleanerInit operations and coordinates related state changes for the component.
+    """
     def test_default_init(self):
-        """test_default_init."""
+        """test_default_init.
+
+        Manages test default init operations and coordinates related state changes for the component.
+        """
         cleaner = DeepBrowserCleaner()
         assert cleaner.keep_cookies == []
         assert callable(cleaner.progress)
@@ -196,27 +263,39 @@ class TestDeepBrowserCleanerInit:
         assert cleaner.expert_mode is False
 
     def test_keep_cookies_compiled(self):
-        """test_keep_cookies_compiled."""
+        """test_keep_cookies_compiled.
+
+        Manages test keep cookies compiled operations and coordinates related state changes for the component.
+        """
         cleaner = DeepBrowserCleaner(keep_cookies=["example\\.com", ".*google.*"])
         assert len(cleaner.keep_cookies) == 2
         assert all(isinstance(p, re.Pattern) for p in cleaner.keep_cookies)
 
     def test_progress_callback_stored(self):
-        """test_progress_callback_stored."""
+        """test_progress_callback_stored.
+
+        Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
+        """
         calls = []
         cleaner = DeepBrowserCleaner(progress=lambda msg: calls.append(msg))
         cleaner.progress("hello")
         assert calls == ["hello"]
 
     def test_custom_cancel_event(self):
-        """test_custom_cancel_event."""
+        """test_custom_cancel_event.
+
+        Manages test custom cancel event operations and coordinates related state changes for the component.
+        """
         evt = threading.Event()
         evt.set()
         cleaner = DeepBrowserCleaner(cancel=evt)
         assert cleaner.cancel.is_set()
 
     def test_expert_mode_default_off(self):
-        """test_expert_mode_default_off."""
+        """test_expert_mode_default_off.
+
+        Manages test expert mode default off operations and coordinates related state changes for the component.
+        """
         assert DeepBrowserCleaner().expert_mode is False
 
 
@@ -226,26 +305,55 @@ class TestDeepBrowserCleanerInit:
 
 
 class TestProfileDiscovery:
-    """TestProfileDiscovery."""
+    """Testprofilediscovery.
+
+    Manages TestProfileDiscovery operations and coordinates related state changes for the component.
+    """
     def test_chromium_discovers_default_profile(self, fake_chromium_home):
-        """test_chromium_discovers_default_profile."""
+        """test_chromium_discovers_default_profile.
+
+        Manages test chromium discovers default profile operations and coordinates related state changes for the component.
+
+        Args:
+            fake_chromium_home: The fake chromium home parameter.
+        """
         _, root = fake_chromium_home
         profiles = _discover_chromium_profiles(["Google/Chrome"])
         assert any("Default" in str(p) for p in profiles)
 
     def test_chromium_skips_nonexistent_root(self, fake_chromium_home, monkeypatch):
-        """test_chromium_skips_nonexistent_root."""
+        """test_chromium_skips_nonexistent_root.
+
+        Manages test chromium skips nonexistent root operations and coordinates related state changes for the component.
+
+        Args:
+            fake_chromium_home: The fake chromium home parameter.
+            monkeypatch: The monkeypatch parameter.
+        """
         profiles = _discover_chromium_profiles(["Nonexistent/Browser"])
         assert profiles == []
 
     def test_firefox_discovers_profile(self, fake_firefox_home):
-        """test_firefox_discovers_profile."""
+        """test_firefox_discovers_profile.
+
+        Manages test firefox discovers profile operations and coordinates related state changes for the component.
+
+        Args:
+            fake_firefox_home: The fake firefox home parameter.
+        """
         _, profiles_dir = fake_firefox_home
         profiles = _discover_firefox_profiles()
         assert any("default-release" in str(p) for p in profiles)
 
     def test_firefox_profiles_ini_parsing(self, fake_firefox_home, monkeypatch):
-        """test_firefox_profiles_ini_parsing."""
+        """test_firefox_profiles_ini_parsing.
+
+        Manages test firefox profiles ini parsing operations and coordinates related state changes for the component.
+
+        Args:
+            fake_firefox_home: The fake firefox home parameter.
+            monkeypatch: The monkeypatch parameter.
+        """
         _, profiles_dir = fake_firefox_home
         parent = profiles_dir.parent
         ini = parent / "profiles.ini"
@@ -262,7 +370,14 @@ class TestProfileDiscovery:
         assert any("custom-profile" in str(p) for p in profiles)
 
     def test_firefox_absolute_profile_in_ini(self, fake_firefox_home, tmp_path):
-        """test_firefox_absolute_profile_in_ini."""
+        """test_firefox_absolute_profile_in_ini.
+
+        Manages test firefox absolute profile in ini operations and coordinates related state changes for the component.
+
+        Args:
+            fake_firefox_home: The fake firefox home parameter.
+            tmp_path: Filesystem path to the target file or directory.
+        """
         _, profiles_dir = fake_firefox_home
         parent = profiles_dir.parent
         ini = parent / "profiles.ini"
@@ -279,9 +394,18 @@ class TestProfileDiscovery:
 
 
 class TestCookieCleaning:
-    """TestCookieCleaning."""
+    """Testcookiecleaning.
+
+    Manages TestCookieCleaning operations and coordinates related state changes for the component.
+    """
     def test_delete_non_matching_cookies(self, fake_chromium_home):
-        """test_delete_non_matching_cookies."""
+        """test_delete_non_matching_cookies.
+
+        Manages test delete non matching cookies operations and coordinates related state changes for the component.
+
+        Args:
+            fake_chromium_home: The fake chromium home parameter.
+        """
         _, root = fake_chromium_home
         cookies_db = root / "Default" / "Cookies"
         cleaner = DeepBrowserCleaner(keep_cookies=["example\\.com"])
@@ -297,7 +421,13 @@ class TestCookieCleaning:
         con.close()
 
     def test_keep_all_matching_cookies(self, fake_chromium_home):
-        """test_keep_all_matching_cookies."""
+        """test_keep_all_matching_cookies.
+
+        Manages test keep all matching cookies operations and coordinates related state changes for the component.
+
+        Args:
+            fake_chromium_home: The fake chromium home parameter.
+        """
         _, root = fake_chromium_home
         cookies_db = root / "Default" / "Cookies"
         cleaner = DeepBrowserCleaner(keep_cookies=[".*"])
@@ -310,14 +440,26 @@ class TestCookieCleaning:
         assert removed == 0
 
     def test_missing_db_returns_zero(self, fake_chromium_home):
-        """test_missing_db_returns_zero."""
+        """test_missing_db_returns_zero.
+
+        Manages test missing db returns zero operations and coordinates related state changes for the component.
+
+        Args:
+            fake_chromium_home: The fake chromium home parameter.
+        """
         _, root = fake_chromium_home
         fake_db = root / "Default" / "NoSuchFile.sqlite"
         cleaner = DeepBrowserCleaner()
         assert cleaner.clean_cookies_keep_list(fake_db) == 0
 
     def test_keep_list_regex_case_insensitive(self, fake_chromium_home):
-        """test_keep_list_regex_case_insensitive."""
+        """test_keep_list_regex_case_insensitive.
+
+        Manages test keep list regex case insensitive operations and coordinates related state changes for the component.
+
+        Args:
+            fake_chromium_home: The fake chromium home parameter.
+        """
         _, root = fake_chromium_home
         cookies_db = root / "Default" / "Cookies"
         cleaner = DeepBrowserCleaner(keep_cookies=["EXAMPLE\\.COM"])
@@ -329,7 +471,13 @@ class TestCookieCleaning:
         assert "example.com" in hosts
 
     def test_empty_keep_list_deletes_all(self, fake_chromium_home):
-        """test_empty_keep_list_deletes_all."""
+        """test_empty_keep_list_deletes_all.
+
+        Manages test empty keep list deletes all operations and coordinates related state changes for the component.
+
+        Args:
+            fake_chromium_home: The fake chromium home parameter.
+        """
         _, root = fake_chromium_home
         cookies_db = root / "Default" / "Cookies"
         cleaner = DeepBrowserCleaner(keep_cookies=[])
@@ -348,9 +496,18 @@ class TestCookieCleaning:
 
 
 class TestClean:
-    """TestClean."""
+    """Testclean.
+
+    Manages TestClean operations and coordinates related state changes for the component.
+    """
     def test_clean_removes_file(self, tmp_path):
-        """test_clean_removes_file."""
+        """test_clean_removes_file.
+
+        Manages test clean removes file operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         f = tmp_path / "to_delete.txt"
         f.write_bytes(b"data")
         cleaner = DeepBrowserCleaner()
@@ -359,7 +516,13 @@ class TestClean:
         assert not f.exists()
 
     def test_clean_removes_directory(self, tmp_path):
-        """test_clean_removes_directory."""
+        """test_clean_removes_directory.
+
+        Manages test clean removes directory operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         d = tmp_path / "cache_dir"
         d.mkdir()
         (d / "file.bin").write_bytes(b"x" * 50)
@@ -369,7 +532,13 @@ class TestClean:
         assert not d.exists()
 
     def test_clean_multiple_paths(self, tmp_path):
-        """test_clean_multiple_paths."""
+        """test_clean_multiple_paths.
+
+        Manages test clean multiple paths operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         files = [tmp_path / f"f{i}.dat" for i in range(5)]
         for f in files:
             f.write_bytes(b"x")
@@ -379,7 +548,13 @@ class TestClean:
         assert all(not f.exists() for f in files)
 
     def test_clean_missing_path_handled_gracefully(self, tmp_path):
-        """test_clean_missing_path_handled_gracefully."""
+        """test_clean_missing_path_handled_gracefully.
+
+        Manages test clean missing path handled gracefully operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         missing = tmp_path / "does_not_exist"
         cleaner = DeepBrowserCleaner()
         results = cleaner.clean([missing])
@@ -388,7 +563,13 @@ class TestClean:
         assert results[missing] is True
 
     def test_clean_shred_overwrites(self, tmp_path):
-        """test_clean_shred_overwrites."""
+        """test_clean_shred_overwrites.
+
+        Manages test clean shred overwrites operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         f = tmp_path / "secret.dat"
         f.write_bytes(b"SENSITIVE" * 100)
         cleaner = DeepBrowserCleaner()
@@ -397,7 +578,13 @@ class TestClean:
         assert not f.exists()
 
     def test_clean_respects_cancel(self, tmp_path):
-        """test_clean_respects_cancel."""
+        """test_clean_respects_cancel.
+
+        Manages test clean respects cancel operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         files = [tmp_path / f"f{i}.dat" for i in range(5)]
         for f in files:
             f.write_bytes(b"x")
@@ -408,7 +595,13 @@ class TestClean:
         assert results == {}
 
     def test_clean_progress_callback(self, tmp_path):
-        """test_clean_progress_callback."""
+        """test_clean_progress_callback.
+
+        Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         f = tmp_path / "tracked.dat"
         f.write_bytes(b"y")
         calls = []
@@ -417,7 +610,13 @@ class TestClean:
         assert any("Cleaned" in c for c in calls)
 
     def test_clean_permission_error(self, tmp_path):
-        """test_clean_permission_error."""
+        """test_clean_permission_error.
+
+        Manages test clean permission error operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         calls = []
         cleaner = DeepBrowserCleaner(progress=lambda m: calls.append(m))
         # Create a read-only file, then try to shred it (requires write)
@@ -438,9 +637,18 @@ class TestClean:
 
 
 class TestVacuum:
-    """TestVacuum."""
+    """Testvacuum.
+
+    Manages TestVacuum operations and coordinates related state changes for the component.
+    """
     def test_vacuum_runs_without_error(self, tmp_path):
-        """test_vacuum_runs_without_error."""
+        """test_vacuum_runs_without_error.
+
+        Manages test vacuum runs without error operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         db = _make_sqlite(
             tmp_path / "big.sqlite",
             table="history",
@@ -452,14 +660,26 @@ class TestVacuum:
         assert results[db] >= 0
 
     def test_vacuum_missing_db_no_crash(self, tmp_path):
-        """test_vacuum_missing_db_no_crash."""
+        """test_vacuum_missing_db_no_crash.
+
+        Manages test vacuum missing db no crash operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         missing = tmp_path / "nope.sqlite"
         cleaner = DeepBrowserCleaner()
         results = cleaner.vacuum_databases([missing])
         assert missing not in results
 
     def test_vacuum_progress_callback(self, tmp_path):
-        """test_vacuum_progress_callback."""
+        """test_vacuum_progress_callback.
+
+        Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         db = _make_sqlite(tmp_path / "vacuum_test.sqlite", table="history")
         calls = []
         cleaner = DeepBrowserCleaner(progress=lambda m: calls.append(m))
@@ -467,7 +687,13 @@ class TestVacuum:
         assert any("Vacuumed" in c for c in calls)
 
     def test_vacuum_multiple_dbs(self, tmp_path):
-        """test_vacuum_multiple_dbs."""
+        """test_vacuum_multiple_dbs.
+
+        Manages test vacuum multiple dbs operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         dbs = []
         for i in range(3):
             db = _make_sqlite(tmp_path / f"db{i}.sqlite", table="history")
@@ -483,9 +709,18 @@ class TestVacuum:
 
 
 class TestBrowserDetection:
-    """TestBrowserDetection."""
+    """Testbrowserdetection.
+
+    Manages TestBrowserDetection operations and coordinates related state changes for the component.
+    """
     def test_scan_chromium_profile(self, fake_chromium_home):
-        """test_scan_chromium_profile."""
+        """test_scan_chromium_profile.
+
+        Manages test scan chromium profile operations and coordinates related state changes for the component.
+
+        Args:
+            fake_chromium_home: The fake chromium home parameter.
+        """
         _, root = fake_chromium_home
         cleaner = DeepBrowserCleaner()
         items = cleaner._scan_chromium_profile(root / "Default", "chrome")
@@ -497,7 +732,13 @@ class TestBrowserDetection:
         assert "history" in categories
 
     def test_scan_firefox_profile(self, fake_firefox_home):
-        """test_scan_firefox_profile."""
+        """test_scan_firefox_profile.
+
+        Manages test scan firefox profile operations and coordinates related state changes for the component.
+
+        Args:
+            fake_firefox_home: The fake firefox home parameter.
+        """
         _, profiles_dir = fake_firefox_home
         profile = next(profiles_dir.iterdir())
         cleaner = DeepBrowserCleaner()
@@ -509,7 +750,13 @@ class TestBrowserDetection:
         assert "indexeddb" in categories
 
     def test_all_browsers_detected(self, fake_multi_browser):
-        """test_all_browsers_detected."""
+        """test_all_browsers_detected.
+
+        Manages test all browsers detected operations and coordinates related state changes for the component.
+
+        Args:
+            fake_multi_browser: The fake multi browser parameter.
+        """
         cleaner = DeepBrowserCleaner()
         items = cleaner.scan()
         browsers = {i.browser for i in items}
@@ -518,14 +765,26 @@ class TestBrowserDetection:
         assert "brave" in browsers
 
     def test_firefox_browser_label(self, fake_firefox_home):
-        """test_firefox_browser_label."""
+        """test_firefox_browser_label.
+
+        Manages test firefox browser label operations and coordinates related state changes for the component.
+
+        Args:
+            fake_firefox_home: The fake firefox home parameter.
+        """
         cleaner = DeepBrowserCleaner()
         items = cleaner.scan()
         firefox_items = [i for i in items if i.browser == "firefox"]
         assert len(firefox_items) > 0
 
     def test_vivaldi_not_in_scope(self, fake_multi_browser):
-        """test_vivaldi_not_in_scope."""
+        """test_vivaldi_not_in_scope.
+
+        Manages test vivaldi not in scope operations and coordinates related state changes for the component.
+
+        Args:
+            fake_multi_browser: The fake multi browser parameter.
+        """
         cleaner = DeepBrowserCleaner()
         items = cleaner.scan()
         browsers = {i.browser for i in items}
@@ -538,9 +797,18 @@ class TestBrowserDetection:
 
 
 class TestProgressCallback:
-    """TestProgressCallback."""
+    """TestProgressCallback.
+
+    Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
+    """
     def test_progress_called_during_clean(self, tmp_path):
-        """test_progress_called_during_clean."""
+        """test_progress_called_during_clean.
+
+        Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         f = tmp_path / "a.dat"
         f.write_bytes(b"x")
         calls = []
@@ -549,7 +817,13 @@ class TestProgressCallback:
         assert len(calls) >= 1
 
     def test_progress_called_during_vacuum(self, tmp_path):
-        """test_progress_called_during_vacuum."""
+        """test_progress_called_during_vacuum.
+
+        Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         db = _make_sqlite(tmp_path / "p.sqlite", table="history")
         calls = []
         cleaner = DeepBrowserCleaner(progress=lambda m: calls.append(m))
@@ -563,9 +837,18 @@ class TestProgressCallback:
 
 
 class TestCancellation:
-    """TestCancellation."""
+    """Testcancellation.
+
+    Manages TestCancellation operations and coordinates related state changes for the component.
+    """
     def test_cancel_stops_scan(self, fake_chromium_home):
-        """test_cancel_stops_scan."""
+        """test_cancel_stops_scan.
+
+        Manages test cancel stops scan operations and coordinates related state changes for the component.
+
+        Args:
+            fake_chromium_home: The fake chromium home parameter.
+        """
         cancel = threading.Event()
         cleaner = DeepBrowserCleaner(cancel=cancel)
         cancel.set()
@@ -573,7 +856,13 @@ class TestCancellation:
         assert items == []
 
     def test_cancel_stops_clean(self, tmp_path):
-        """test_cancel_stops_clean."""
+        """test_cancel_stops_clean.
+
+        Manages test cancel stops clean operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         files = [tmp_path / f"f{i}.dat" for i in range(5)]
         for f in files:
             f.write_bytes(b"x")
@@ -584,19 +873,31 @@ class TestCancellation:
         assert results == {}
 
     def test_default_cancel_not_set(self):
-        """test_default_cancel_not_set."""
+        """test_default_cancel_not_set.
+
+        Manages test default cancel not set operations and coordinates related state changes for the component.
+        """
         cleaner = DeepBrowserCleaner()
         assert not cleaner.cancel.is_set()
 
     def test_cancel_event_prevents_scan_iteration(self, fake_chromium_home):
-        """test_cancel_event_prevents_scan_iteration."""
+        """test_cancel_event_prevents_scan_iteration.
+
+        Manages test cancel event prevents scan iteration operations and coordinates related state changes for the component.
+
+        Args:
+            fake_chromium_home: The fake chromium home parameter.
+        """
         cancel = threading.Event()
         cleaner = DeepBrowserCleaner(cancel=cancel)
         # Let scan start, then cancel mid-way
         original_scan = cleaner.scan
 
         def interrupting_scan():
-            """interrupting_scan."""
+            """interrupting_scan.
+
+            Manages interrupting scan operations and coordinates related state changes for the component.
+            """
             cancel.set()
             return original_scan()
 
@@ -611,9 +912,18 @@ class TestCancellation:
 
 
 class TestExpertMode:
-    """TestExpertMode."""
+    """Testexpertmode.
+
+    Manages TestExpertMode operations and coordinates related state changes for the component.
+    """
     def test_passwords_excluded_by_default(self, fake_chromium_home):
-        """test_passwords_excluded_by_default."""
+        """test_passwords_excluded_by_default.
+
+        Manages test passwords excluded by default operations and coordinates related state changes for the component.
+
+        Args:
+            fake_chromium_home: The fake chromium home parameter.
+        """
         _, root = fake_chromium_home
         login_db = root / "Default" / "Login Data"
         _make_sqlite(login_db, table="history")
@@ -623,7 +933,13 @@ class TestExpertMode:
         assert len(password_items) == 0
 
     def test_passwords_included_with_expert_mode(self, fake_chromium_home):
-        """test_passwords_included_with_expert_mode."""
+        """test_passwords_included_with_expert_mode.
+
+        Manages test passwords included with expert mode operations and coordinates related state changes for the component.
+
+        Args:
+            fake_chromium_home: The fake chromium home parameter.
+        """
         _, root = fake_chromium_home
         login_db = root / "Default" / "Login Data"
         _make_sqlite(login_db, table="history")
@@ -635,7 +951,13 @@ class TestExpertMode:
         assert password_items[0].risk == "high"
 
     def test_forms_always_included(self, fake_chromium_home):
-        """test_forms_always_included."""
+        """test_forms_always_included.
+
+        Manages test forms always included operations and coordinates related state changes for the component.
+
+        Args:
+            fake_chromium_home: The fake chromium home parameter.
+        """
         _, root = fake_chromium_home
         web_data = root / "Default" / "Web Data"
         _make_sqlite(web_data, table="history")
@@ -645,7 +967,13 @@ class TestExpertMode:
         assert len(form_items) == 1
 
     def test_passwords_risk_is_high(self, fake_chromium_home):
-        """test_passwords_risk_is_high."""
+        """test_passwords_risk_is_high.
+
+        Manages test passwords risk is high operations and coordinates related state changes for the component.
+
+        Args:
+            fake_chromium_home: The fake chromium home parameter.
+        """
         _, root = fake_chromium_home
         login_db = root / "Default" / "Login Data"
         _make_sqlite(login_db, table="history")
@@ -663,16 +991,31 @@ class TestExpertMode:
 
 
 class TestSizeCalculation:
-    """TestSizeCalculation."""
+    """Testsizecalculation.
+
+    Manages TestSizeCalculation operations and coordinates related state changes for the component.
+    """
     def test_file_size_reported(self, tmp_path):
-        """test_file_size_reported."""
+        """test_file_size_reported.
+
+        Manages test file size reported operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         f = tmp_path / "big.bin"
         f.write_bytes(b"x" * 1024)
         c = Cleanable(f, f.stat().st_size, "cache", "test", "test", "low")
         assert c.size == 1024
 
     def test_directory_size_summed(self, tmp_path):
-        """test_directory_size_summed."""
+        """test_directory_size_summed.
+
+        Manages test directory size summed operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         d = tmp_path / "cache"
         d.mkdir()
         for i in range(3):
@@ -681,20 +1024,38 @@ class TestSizeCalculation:
         assert total == 300
 
     def test_scan_returns_sizes(self, fake_chromium_home):
-        """test_scan_returns_sizes."""
+        """test_scan_returns_sizes.
+
+        Manages test scan returns sizes operations and coordinates related state changes for the component.
+
+        Args:
+            fake_chromium_home: The fake chromium home parameter.
+        """
         cleaner = DeepBrowserCleaner()
         items = cleaner.scan()
         for item in items:
             assert item.size >= 0
 
     def test_nonexistent_profile_returns_empty(self, tmp_path):
-        """test_nonexistent_profile_returns_empty."""
+        """test_nonexistent_profile_returns_empty.
+
+        Manages test nonexistent profile returns empty operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         cleaner = DeepBrowserCleaner()
         items = cleaner._scan_chromium_profile(tmp_path / "nope", "test")
         assert items == []
 
     def test_cleanable_dataclass_fields(self, tmp_path):
-        """test_cleanable_dataclass_fields."""
+        """test_cleanable_dataclass_fields.
+
+        Manages test cleanable dataclass fields operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         p = tmp_path / "test"
         c = Cleanable(p, 42, "cache", "chrome", "HTTP cache", "low", False)
         assert c.path == p
@@ -706,7 +1067,10 @@ class TestSizeCalculation:
         assert c.can_vacuum is False
 
     def test_zero_size_item(self):
-        """test_zero_size_item."""
+        """test_zero_size_item.
+
+        Manages test zero size item operations and coordinates related state changes for the component.
+        """
         c = Cleanable(Path("/tmp/x"), 0, "cache", "chrome", "desc", "low")
         assert c.size == 0
 
@@ -717,37 +1081,70 @@ class TestSizeCalculation:
 
 
 class TestScanIntegration:
-    """TestScanIntegration."""
+    """Testscanintegration.
+
+    Manages TestScanIntegration operations and coordinates related state changes for the component.
+    """
     def test_scan_returns_list(self, fake_chromium_home):
-        """test_scan_returns_list."""
+        """test_scan_returns_list.
+
+        Manages test scan returns list operations and coordinates related state changes for the component.
+
+        Args:
+            fake_chromium_home: The fake chromium home parameter.
+        """
         cleaner = DeepBrowserCleaner()
         items = cleaner.scan()
         assert isinstance(items, list)
         assert len(items) > 0
 
     def test_all_items_are_cleanable(self, fake_chromium_home):
-        """test_all_items_are_cleanable."""
+        """test_all_items_are_cleanable.
+
+        Manages test all items are cleanable operations and coordinates related state changes for the component.
+
+        Args:
+            fake_chromium_home: The fake chromium home parameter.
+        """
         cleaner = DeepBrowserCleaner()
         items = cleaner.scan()
         for item in items:
             assert isinstance(item, Cleanable)
 
     def test_no_duplicate_paths_in_scan(self, fake_chromium_home):
-        """test_no_duplicate_paths_in_scan."""
+        """test_no_duplicate_paths_in_scan.
+
+        Manages test no duplicate paths in scan operations and coordinates related state changes for the component.
+
+        Args:
+            fake_chromium_home: The fake chromium home parameter.
+        """
         cleaner = DeepBrowserCleaner()
         items = cleaner.scan()
         paths = [i.path for i in items]
         assert len(paths) == len(set(paths))
 
     def test_cookie_risk_medium(self, fake_chromium_home):
-        """test_cookie_risk_medium."""
+        """test_cookie_risk_medium.
+
+        Manages test cookie risk medium operations and coordinates related state changes for the component.
+
+        Args:
+            fake_chromium_home: The fake chromium home parameter.
+        """
         cleaner = DeepBrowserCleaner()
         items = cleaner.scan()
         cookie_items = [i for i in items if i.category == "cookies"]
         assert all(i.risk == "medium" for i in cookie_items)
 
     def test_cache_risk_low(self, fake_chromium_home):
-        """test_cache_risk_low."""
+        """test_cache_risk_low.
+
+        Manages test cache risk low operations and coordinates related state changes for the component.
+
+        Args:
+            fake_chromium_home: The fake chromium home parameter.
+        """
         cleaner = DeepBrowserCleaner()
         items = cleaner.scan()
         cache_items = [
@@ -758,7 +1155,13 @@ class TestScanIntegration:
         assert all(i.risk == "low" for i in cache_items)
 
     def test_vacuumable_items_flagged(self, fake_chromium_home):
-        """test_vacuumable_items_flagged."""
+        """test_vacuumable_items_flagged.
+
+        Manages test vacuumable items flagged operations and coordinates related state changes for the component.
+
+        Args:
+            fake_chromium_home: The fake chromium home parameter.
+        """
         cleaner = DeepBrowserCleaner()
         items = cleaner.scan()
         vacuumable = [i for i in items if i.can_vacuum]

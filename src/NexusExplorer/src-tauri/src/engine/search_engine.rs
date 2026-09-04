@@ -18,14 +18,17 @@ pub struct SearchRegistry {
 }
 
 impl SearchRegistry {
+    /// Creates an empty search registry with no active searches.
     pub fn new() -> Self {
         Self::default()
     }
 
+    /// Registers a running search id with its cancellation flag.
     pub fn register(&self, id: String, flag: Arc<AtomicBool>) {
         self.flags.lock().insert(id, flag);
     }
 
+    /// Signals cancellation for the given search id; returns false when the id is unknown.
     pub fn cancel(&self, id: &str) -> bool {
         match self.flags.lock().get(id) {
             Some(flag) => {
@@ -36,6 +39,7 @@ impl SearchRegistry {
         }
     }
 
+    /// Removes and returns the cancellation flag for a finished search id.
     pub fn remove(&self, id: &str) -> Option<Arc<AtomicBool>> {
         self.flags.lock().remove(id)
     }
@@ -137,6 +141,7 @@ fn build_entry(entry: &jwalk::DirEntry<((), ())>) -> Option<FileEntry> {
     })
 }
 
+/// Walks `root` matching file names against `query` on the calling thread, streaming batches via `sink`.
 pub fn run_search_blocking(
     root: String,
     query: String,

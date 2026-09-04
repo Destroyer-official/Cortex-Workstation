@@ -7,10 +7,11 @@ Features:
   - Detailed tree-view with per-category checkboxes
 """
 
+from pathlib import Path
 from PySide6.QtWidgets import (
     QVBoxLayout, QHBoxLayout, QPushButton, QLabel,
     QGroupBox, QMessageBox, QTreeWidget, QTreeWidgetItem,
-    QProgressBar,
+    QProgressBar, QLineEdit, QFileDialog,
 )
 from PySide6.QtCore import Qt, QThread, Signal, QObject
 from PySide6.QtGui import QFont
@@ -18,6 +19,7 @@ from PySide6.QtGui import QFont
 from .base_tab import BaseTab
 from cortex_unified.analyzers.privacy_cleaner import PrivacyCleaner
 from cortex_unified.system_tools.telemetry_blocker import TelemetryBlocker
+from cortex_unified.analyzers.czkawka_tools import ExifCleaner
 
 
 # ──────────────────────────────────────────────────────────────────────
@@ -25,7 +27,10 @@ from cortex_unified.system_tools.telemetry_blocker import TelemetryBlocker
 # ──────────────────────────────────────────────────────────────────────
 
 class BrowserScanWorker(QObject):
-    """Scan browsers + system traces in a background thread."""
+    """Browserscanworker.
+
+    Manages BrowserScanWorker operations and coordinates related state changes for the component.
+    """
     finished = Signal(dict, dict)  # browser_data, system_traces
 
     def run(self):
@@ -40,15 +45,68 @@ class BrowserScanWorker(QObject):
         self.finished.emit(browsers, traces)
 
 
+class ExifScanWorker(QThread):
+    """Exifscanworker.
+
+    Manages ExifScanWorker operations and coordinates related state changes for the component.
+    """
+    scan_finished = Signal(list)
+    strip_finished = Signal(dict)
+    error = Signal(str)
+
+    def __init__(self, root: str, action: str = "scan", paths_to_strip: list | None = None):
+        """Init.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            root (str): Filesystem path to the target file or directory.
+            action (str): The action parameter.
+            paths_to_strip (list | None): Filesystem path to the target file or directory.
+        """
+        super().__init__()
+        self.root = root
+        self.action = action
+        self.paths_to_strip = paths_to_strip or []
+
+    def run(self):
+        """Run.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
+        try:
+            cleaner = ExifCleaner(root=self.root)
+            if self.action == "scan":
+                findings = cleaner.scan()
+                self.scan_finished.emit([(str(p), tags) for p, tags in findings])
+            elif self.action == "strip":
+                res = cleaner.strip([Path(p) for p in self.paths_to_strip])
+                self.strip_finished.emit({str(p): ok for p, ok in res.items()})
+        except Exception as exc:
+            self.error.emit(str(exc))
+
+
 # ──────────────────────────────────────────────────────────────────────
 # Privacy Tab
 # ──────────────────────────────────────────────────────────────────────
 
 class PrivacyTab(BaseTab):
-    """Privacy Shield — telemetry blocking and browser data management."""
+    """Privacytab.
+
+    Manages PrivacyTab operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, config, logger, safety_manager, parent=None):
-        """Create the PrivacyCleaner/TelemetryBlocker backends and scan state."""
+        """Create the PrivacyCleaner/TelemetryBlocker backends and scan state.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            config: The config parameter.
+            logger: The logger parameter.
+            safety_manager: The safety manager parameter.
+            parent: Parent window or shell controller instance.
+        """
         self.cleaner = PrivacyCleaner()
         self.telemetry = TelemetryBlocker()
         self._scan_thread = None
@@ -122,6 +180,10 @@ class PrivacyTab(BaseTab):
         self.browser_tree.setHeaderLabels(["Browser / Data Type", "Size"])
         browser_layout.addWidget(self.browser_tree)
 
+        self.chk_sweep_strip_exif = QCheckBox("Also Strip Photo EXIF metadata during sweep (Czkawka)")
+        self.chk_sweep_strip_exif.setToolTip("Strip GPS locations and camera metadata from photos in the target folder during privacy sweep")
+        browser_layout.addWidget(self.chk_sweep_strip_exif)
+
         self.btn_sweep = QPushButton("Sweep Selected Data")
         self.btn_sweep.setMinimumHeight(38)
         self.btn_sweep.setStyleSheet(
@@ -132,13 +194,55 @@ class PrivacyTab(BaseTab):
         browser_layout.addWidget(self.btn_sweep)
 
         main_layout.addWidget(browser_group)
+
+        # ── EXIF Privacy Group (Czkawka) ──────────────────────────────
+        exif_group = QGroupBox("Photo EXIF & Location Privacy (Czkawka)")
+        exif_layout = QVBoxLayout(exif_group)
+
+        self._exif_findings = []
+        path_row = QHBoxLayout()
+        self.exif_path_edit = QLineEdit(str(Path.home() / "Pictures"))
+        path_row.addWidget(self.exif_path_edit)
+        self.btn_exif_browse = QPushButton("Browse...")
+        self.btn_exif_browse.clicked.connect(self._pick_exif_folder)
+        path_row.addWidget(self.btn_exif_browse)
+        exif_layout.addLayout(path_row)
+
+        btn_row2 = QHBoxLayout()
+        self.btn_exif_scan = QPushButton("Scan Photos for EXIF")
+        self.btn_exif_scan.setStyleSheet("padding: 8px; font-weight: bold;")
+        self.btn_exif_scan.clicked.connect(self._scan_exif)
+        btn_row2.addWidget(self.btn_exif_scan)
+
+        self.btn_exif_strip = QPushButton("Strip EXIF Metadata")
+        self.btn_exif_strip.setStyleSheet(
+            "background-color: #E91E63; color: white; padding: 8px; font-weight: bold; border-radius: 5px;"
+        )
+        self.btn_exif_strip.setEnabled(False)
+        self.btn_exif_strip.clicked.connect(self._strip_exif)
+        btn_row2.addWidget(self.btn_exif_strip)
+        exif_layout.addLayout(btn_row2)
+
+        self.exif_progress = QProgressBar()
+        self.exif_progress.setRange(0, 0)
+        self.exif_progress.setVisible(False)
+        exif_layout.addWidget(self.exif_progress)
+
+        self.lbl_exif_status = QLabel("Ready to scan photo library for GPS coordinates and camera metadata.")
+        self.lbl_exif_status.setWordWrap(True)
+        exif_layout.addWidget(self.lbl_exif_status)
+
+        main_layout.addWidget(exif_group)
         main_layout.addStretch()
 
         # Initial telemetry check
         self._refresh_telemetry()
 
     def setup_tooltips(self):
-        """Set tooltips for the telemetry block/restore buttons."""
+        """Set tooltips for the telemetry block/restore buttons.
+
+        Manages setup tooltips operations and coordinates related state changes for the component.
+        """
         self.btn_block.setToolTip("Modify registry to disable Windows telemetry (Admin required)")
         self.btn_restore.setToolTip("Remove custom telemetry blocks and restore Windows defaults")
 
@@ -365,6 +469,12 @@ class PrivacyTab(BaseTab):
         if clean_system:
             self.cleaner.clean_system_traces()
 
+        if self.chk_sweep_strip_exif.isChecked():
+            if self._exif_findings:
+                self._strip_exif()
+            else:
+                self._scan_exif()
+
         if all_ok:
             QMessageBox.information(self, "Success", "Selected privacy traces have been cleared.")
         else:
@@ -376,5 +486,122 @@ class PrivacyTab(BaseTab):
 
         # Rescan
         self._scan_browsers()
-        """_clean_browsers."""
-        """_clean_browsers."""
+
+    # ── Photo EXIF Metadata (Czkawka) ─────────────────────────────────
+
+    def _pick_exif_folder(self):
+        """Browse to select a photo folder for EXIF scanning.
+
+        Manages pick exif folder operations and coordinates related state changes for the component.
+        """
+        folder = QFileDialog.getExistingDirectory(self, "Select Photos Directory", self.exif_path_edit.text())
+        if folder:
+            self.exif_path_edit.setText(folder)
+
+    def _scan_exif(self):
+        """Scan selected photo folder for embedded EXIF metadata.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+        """
+        target = self.exif_path_edit.text().strip()
+        if not target or not Path(target).exists():
+            QMessageBox.warning(self, "Invalid Path", "Please select a valid folder.")
+            return
+        self.exif_progress.setVisible(True)
+        self.btn_exif_scan.setEnabled(False)
+        self.btn_exif_strip.setEnabled(False)
+        self.lbl_exif_status.setText("Scanning photos for EXIF metadata...")
+
+        worker = ExifScanWorker(root=target, action="scan")
+        self.add_worker_thread(worker)
+        worker.scan_finished.connect(self._on_exif_scan_done)
+        worker.error.connect(self._on_exif_error)
+        worker.finished.connect(lambda: self._teardown_worker(worker))
+        worker.start()
+
+    def _on_exif_scan_done(self, findings: list):
+        """Handle completion of photo EXIF scan.
+
+        Receives the completed data from the exif scan background worker, populates the view with results, and restores button states.
+
+        Args:
+            findings (list): The findings parameter.
+        """
+        self.exif_progress.setVisible(False)
+        self.btn_exif_scan.setEnabled(True)
+        self._exif_findings = findings
+        if not findings:
+            self.lbl_exif_status.setText("✅ No photo files with exposed EXIF metadata found.")
+            self.btn_exif_strip.setEnabled(False)
+        else:
+            gps_count = sum(1 for _, tags in findings if any("gps" in str(k).lower() for k in tags.keys()))
+            self.lbl_exif_status.setText(
+                f"Found {len(findings)} photos with EXIF metadata ({gps_count} containing GPS location coordinates)."
+            )
+            self.btn_exif_strip.setEnabled(True)
+
+    def _strip_exif(self):
+        """Strip EXIF metadata in-place from scanned photos.
+
+        Manages strip exif operations and coordinates related state changes for the component.
+        """
+        if not self._exif_findings:
+            return
+        reply = QMessageBox.question(
+            self, "Confirm EXIF Strip",
+            f"This will remove EXIF metadata (including GPS location coordinates) in-place from {len(self._exif_findings)} photos.\n\nProceed?",
+            QMessageBox.Yes | QMessageBox.No, QMessageBox.No,
+        )
+        if reply != QMessageBox.Yes:
+            return
+        self.exif_progress.setVisible(True)
+        self.btn_exif_scan.setEnabled(False)
+        self.btn_exif_strip.setEnabled(False)
+        self.lbl_exif_status.setText("Stripping EXIF metadata...")
+
+        paths = [p for p, _ in self._exif_findings]
+        worker = ExifScanWorker(root=self.exif_path_edit.text(), action="strip", paths_to_strip=paths)
+        self.add_worker_thread(worker)
+        worker.strip_finished.connect(self._on_exif_strip_done)
+        worker.error.connect(self._on_exif_error)
+        worker.finished.connect(lambda: self._teardown_worker(worker))
+        worker.start()
+
+    def _on_exif_strip_done(self, results: dict):
+        """Handle completion of EXIF stripping.
+
+        Receives the completed data from the exif strip background worker, populates the view with results, and restores button states.
+
+        Args:
+            results (dict): Dictionary or data object holding operation results.
+        """
+        self.exif_progress.setVisible(False)
+        self.btn_exif_scan.setEnabled(True)
+        success_count = sum(1 for ok in results.values() if ok)
+        self.lbl_exif_status.setText(f"Successfully stripped EXIF metadata from {success_count} / {len(results)} photos.")
+        QMessageBox.information(self, "EXIF Scrubbed", f"Stripped EXIF metadata from {success_count} photos.")
+        self._scan_exif()
+
+    def _on_exif_error(self, err: str):
+        """Handle EXIF worker error.
+
+        Manages on exif error operations and coordinates related state changes for the component.
+
+        Args:
+            err (str): Error message string or exception instance.
+        """
+        self.exif_progress.setVisible(False)
+        self.btn_exif_scan.setEnabled(True)
+        self.lbl_exif_status.setText(f"Error: {err}")
+        QMessageBox.critical(self, "EXIF Processing Error", err)
+
+    def _teardown_worker(self, worker):
+        """Teardown finished worker.
+
+        Manages teardown worker operations and coordinates related state changes for the component.
+
+        Args:
+            worker: The worker parameter.
+        """
+        self.remove_worker_thread(worker)
+        worker.deleteLater()

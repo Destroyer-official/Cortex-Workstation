@@ -11,14 +11,30 @@ from cortex_unified.core.smart_suggest import SmartSuggester, featurize
 
 
 def _ctx(category="user_temp", ext="tmp", size=5_000_000, age=40, path="C:/Users/x/AppData/Local/Temp/f.tmp"):
-    """_ctx."""
+    """Ctx.
+
+    Manages ctx operations and coordinates related state changes for the component.
+
+    Args:
+        category: The category parameter.
+        ext: The ext parameter.
+        size: Integer number of bytes to format or process.
+        age: The age parameter.
+        path: Filesystem path to the target file or directory.
+    """
     return {"category": category, "extension": ext, "size": size, "age_days": age, "path": path}
 
 
 class TestFeaturize:
-    """TestFeaturize."""
+    """Testfeaturize.
+
+    Manages TestFeaturize operations and coordinates related state changes for the component.
+    """
     def test_includes_bias_and_known_features(self):
-        """test_includes_bias_and_known_features."""
+        """test_includes_bias_and_known_features.
+
+        Manages test includes bias and known features operations and coordinates related state changes for the component.
+        """
         feats = featurize(_ctx())
         assert "bias" in feats
         assert "cat:user_temp" in feats
@@ -28,20 +44,38 @@ class TestFeaturize:
         assert "loc:temp" in feats or "loc:appdata" in feats
 
     def test_handles_sparse_context(self):
-        """test_handles_sparse_context."""
+        """test_handles_sparse_context.
+
+        Manages test handles sparse context operations and coordinates related state changes for the component.
+        """
         assert featurize({}) == ["bias"]
         assert "cat:cache" in featurize({"category": "Cache"})
 
 
 class TestLearning:
-    """TestLearning."""
+    """Testlearning.
+
+    Manages TestLearning operations and coordinates related state changes for the component.
+    """
     def test_score_in_unit_interval(self, tmp_path):
-        """test_score_in_unit_interval."""
+        """test_score_in_unit_interval.
+
+        Manages test score in unit interval operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         s = SmartSuggester(model_path=tmp_path / "m.json")
         assert 0.0 <= s.score(_ctx()) <= 1.0
 
     def test_learns_to_favor_accepted_pattern(self, tmp_path):
-        """test_learns_to_favor_accepted_pattern."""
+        """test_learns_to_favor_accepted_pattern.
+
+        Manages test learns to favor accepted pattern operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         s = SmartSuggester(model_path=tmp_path / "m.json")
         ctx = _ctx()
         before = s.score(ctx)
@@ -53,7 +87,13 @@ class TestLearning:
         assert after > 0.7
 
     def test_learns_to_avoid_skipped_pattern(self, tmp_path):
-        """test_learns_to_avoid_skipped_pattern."""
+        """test_learns_to_avoid_skipped_pattern.
+
+        Manages test learns to avoid skipped pattern operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         s = SmartSuggester(model_path=tmp_path / "m.json")
         ctx = _ctx(category="documents", ext="docx", path="C:/Users/x/Documents/report.docx")
         for _ in range(40):
@@ -61,13 +101,25 @@ class TestLearning:
         assert s.score(ctx) < 0.3
 
     def test_recommend_defaults_true_until_trained(self, tmp_path):
-        """test_recommend_defaults_true_until_trained."""
+        """test_recommend_defaults_true_until_trained.
+
+        Manages test recommend defaults true until trained operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         s = SmartSuggester(model_path=tmp_path / "m.json")
         # Fewer than 10 updates -> don't second-guess the user.
         assert s.recommend(_ctx()) is True
 
     def test_rank_orders_by_score(self, tmp_path):
-        """test_rank_orders_by_score."""
+        """test_rank_orders_by_score.
+
+        Manages test rank orders by score operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         s = SmartSuggester(model_path=tmp_path / "m.json")
         good = _ctx(category="user_temp")
         bad = _ctx(category="documents", ext="docx", path="C:/Users/x/Documents/a.docx")
@@ -79,9 +131,18 @@ class TestLearning:
 
 
 class TestBoundsAndPersistence:
-    """TestBoundsAndPersistence."""
+    """Testboundsandpersistence.
+
+    Manages TestBoundsAndPersistence operations and coordinates related state changes for the component.
+    """
     def test_model_size_is_capped(self, tmp_path):
-        """test_model_size_is_capped."""
+        """test_model_size_is_capped.
+
+        Manages test model size is capped operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         s = SmartSuggester(model_path=tmp_path / "m.json")
         # Feed many distinct extensions to blow past the cap, ensure it's bounded.
         from cortex_unified.core import smart_suggest
@@ -90,7 +151,13 @@ class TestBoundsAndPersistence:
         assert s.stats()["feature_count"] <= smart_suggest._MAX_FEATURES
 
     def test_save_and_reload_roundtrip(self, tmp_path):
-        """test_save_and_reload_roundtrip."""
+        """test_save_and_reload_roundtrip.
+
+        Manages test save and reload roundtrip operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         path = tmp_path / "m.json"
         s = SmartSuggester(model_path=path)
         for _ in range(20):
@@ -104,14 +171,26 @@ class TestBoundsAndPersistence:
         assert s2.stats()["updates"] == 20
 
     def test_corrupt_model_does_not_crash(self, tmp_path):
-        """test_corrupt_model_does_not_crash."""
+        """test_corrupt_model_does_not_crash.
+
+        Manages test corrupt model does not crash operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         path = tmp_path / "m.json"
         path.write_text("{ this is not valid json", encoding="utf-8")
         s = SmartSuggester(model_path=path)            # must not raise
         assert s.stats()["updates"] == 0
 
     def test_reset(self, tmp_path):
-        """test_reset."""
+        """test_reset.
+
+        Manages test reset operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         s = SmartSuggester(model_path=tmp_path / "m.json")
         for _ in range(15):
             s.observe(_ctx(), cleaned=True)

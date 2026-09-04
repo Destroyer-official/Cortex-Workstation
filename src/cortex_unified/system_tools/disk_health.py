@@ -25,7 +25,10 @@ _NO_WINDOW = 0x08000000 if _IS_WINDOWS else 0
 
 @dataclass(slots=True)
 class DiskHealth:
-    """Disk Health data container."""
+    """Diskhealth.
+
+    Manages DiskHealth operations and coordinates related state changes for the component.
+    """
     name: str
     media_type: str
     health_status: str          # Healthy / Warning / Unhealthy / Unknown
@@ -38,11 +41,23 @@ class DiskHealth:
 
     @property
     def is_healthy(self) -> bool:
-        """Is healthy."""
+        """Is healthy.
+
+        Manages is healthy operations and coordinates related state changes for the component.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         return self.health_status.lower() == "healthy"
 
     def to_dict(self) -> dict[str, Any]:
-        """To dict."""
+        """To dict.
+
+        Manages to dict operations and coordinates related state changes for the component.
+
+        Returns:
+            dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         return {
             "name": self.name,
             "media_type": self.media_type,
@@ -57,15 +72,30 @@ class DiskHealth:
 
 
 class DiskHealthMonitor:
-    """Reads S.M.A.R.T. / physical-disk health information."""
+    """Diskhealthmonitor.
+
+    Manages DiskHealthMonitor operations and coordinates related state changes for the component.
+    """
 
     @staticmethod
     def is_supported() -> bool:
-        """Is supported."""
+        """Is supported.
+
+        Manages is supported operations and coordinates related state changes for the component.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         return _IS_WINDOWS
 
     def get_health(self) -> list[DiskHealth]:
-        """Get health."""
+        """Get health.
+
+        Manages get health operations and coordinates related state changes for the component.
+
+        Returns:
+            list[DiskHealth]: List of processed items or identifiers.
+        """
         if not _IS_WINDOWS:
             return []
         script = (
@@ -90,7 +120,16 @@ class DiskHealthMonitor:
 
     @staticmethod
     def _parse(out: str | None) -> list[DiskHealth]:
-        """_parse."""
+        """Parse and decode structured data from strings or byte streams.
+
+        Extracts fields, validates expected formats, and instantiates corresponding strongly-typed model objects.
+
+        Args:
+            out (str | None): The out parameter.
+
+        Returns:
+            list[DiskHealth]: List of processed items or identifiers.
+        """
         if not out:
             return []
         try:
@@ -101,13 +140,17 @@ class DiskHealthMonitor:
             data = [data]
 
         def _int(v):
-            """_int."""
+            """Int.
+
+            Manages int operations and coordinates related state changes for the component.
+
+            Args:
+                v: The v parameter.
+            """
             try:
                 return int(v) if v is not None else None
             except (ValueError, TypeError):
                 return None
-            """_int."""
-            """_int."""
 
         disks: list[DiskHealth] = []
         for d in data:
@@ -123,11 +166,18 @@ class DiskHealthMonitor:
                 power_on_hours=_int(d.get("Hours")),
             ))
         return disks
-        """_parse."""
-        """_parse."""
 
     def _run(self, script: str) -> str | None:
-        """_run."""
+        """Run.
+
+        Manages run operations and coordinates related state changes for the component.
+
+        Args:
+            script (str): The script parameter.
+
+        Returns:
+            str | None: Formatted string or path.
+        """
         try:
             proc = _proc.run(
                 ["powershell", "-NoProfile", "-NonInteractive", "-Command", script],
@@ -137,5 +187,3 @@ class DiskHealthMonitor:
         except (_proc.ProcessCancelled, OSError, subprocess.SubprocessError) as exc:
             _LOG.debug("disk health query failed: %s", exc)
             return None
-        """_run."""
-        """_run."""

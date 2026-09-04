@@ -10,7 +10,10 @@ from typing import List, Dict, Any, Optional
 
 
 class AppUninstaller:
-    """Lists and uninstalls Windows applications via the Registry."""
+    """Appuninstaller.
+
+    Manages AppUninstaller operations and coordinates related state changes for the component.
+    """
 
     # The three standard registry locations where Windows stores uninstall info.
     _UNINSTALL_PATHS = [
@@ -20,7 +23,10 @@ class AppUninstaller:
     ]
 
     def __init__(self):
-        """Initialize App Uninstaller."""
+        """Initialize App Uninstaller.
+
+        Initializes the instance and configures internal state.
+        """
         self.logger = logging.getLogger("app_uninstaller")
 
     # ------------------------------------------------------------------
@@ -28,7 +34,13 @@ class AppUninstaller:
     # ------------------------------------------------------------------
 
     def get_installed_apps(self) -> List[Dict[str, Any]]:
-        """Return a deduplicated, sorted list of installed applications."""
+        """Return a deduplicated, sorted list of installed applications.
+
+        Manages get installed apps operations and coordinates related state changes for the component.
+
+        Returns:
+            List[Dict[str, Any]]: List of processed items or identifiers.
+        """
         try:
             import winreg
         except ImportError:
@@ -117,7 +129,16 @@ class AppUninstaller:
             return False
 
     def get_app_size_mb(self, app_info: Dict[str, Any]) -> float:
-        """Return estimated size in MB from the registry's EstimatedSize (KB) value."""
+        """Return estimated size in MB from the registry's EstimatedSize (KB) value.
+
+        Manages get app size mb operations and coordinates related state changes for the component.
+
+        Args:
+            app_info (Dict[str, Any]): The app info parameter.
+
+        Returns:
+            float: Result of the operation.
+        """
         est_kb = app_info.get("estimated_size_kb", 0)
         if isinstance(est_kb, (int, float)):
             return est_kb / 1024.0
@@ -129,7 +150,19 @@ class AppUninstaller:
 
     @staticmethod
     def _read_app_entry(winreg, hive, parent_path: str, subkey_name: str) -> Optional[Dict[str, Any]]:
-        """Read a single Uninstall subkey and return an app dict, or None."""
+        """Read a single Uninstall subkey and return an app dict, or None.
+
+        Manages read app entry operations and coordinates related state changes for the component.
+
+        Args:
+            winreg: The winreg parameter.
+            hive: The hive parameter.
+            parent_path (str): Filesystem path to the target file or directory.
+            subkey_name (str): The subkey name parameter.
+
+        Returns:
+            Optional[Dict[str, Any]]: Dictionary mapping identifiers to status or values.
+        """
         full_path = f"{parent_path}\\{subkey_name}"
         try:
             sk = winreg.OpenKey(hive, full_path, 0, winreg.KEY_READ | winreg.KEY_WOW64_64KEY)
@@ -137,13 +170,18 @@ class AppUninstaller:
             return None
 
         def _val(name: str, default=""):
-            """_val."""
+            """Val.
+
+            Manages val operations and coordinates related state changes for the component.
+
+            Args:
+                name (str): The name parameter.
+                default: The default parameter.
+            """
             try:
                 return winreg.QueryValueEx(sk, name)[0]
             except (FileNotFoundError, OSError):
                 return default
-            """_val."""
-            """_val."""
 
         try:
             display_name = _val("DisplayName")

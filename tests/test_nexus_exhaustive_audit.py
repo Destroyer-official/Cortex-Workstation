@@ -27,7 +27,10 @@ from NexusExplorer.native.nexus_explorer import (
 
 @pytest.fixture(scope="session")
 def qapp():
-    """qapp."""
+    """Qapp.
+
+    Manages qapp operations and coordinates related state changes for the component.
+    """
     app = QApplication.instance()
     if app is None:
         app = QApplication([])
@@ -35,13 +38,22 @@ def qapp():
 
 
 def test_audit_in_place_copy_protection(qapp):
-    """Test copying a file into the same directory generates a duplicate safely without data loss."""
+    """Test copying a file into the same directory generates a duplicate safely without data loss.
+
+    Manages test audit in place copy protection operations and coordinates related state changes for the component.
+
+    Args:
+        qapp: The qapp parameter.
+    """
     with tempfile.TemporaryDirectory() as tmpdir:
         src = Path(tmpdir) / "document.pdf"
         src.write_text("critical document contents", encoding="utf-8")
 
         class _DummyEngine:
-            """_DummyEngine."""
+            """Dummyengine.
+
+            Manages DummyEngine operations and coordinates related state changes for the component.
+            """
             ffi = None
             cli = ""
 
@@ -69,7 +81,13 @@ def test_audit_in_place_copy_protection(qapp):
 
 
 def test_audit_circular_directory_protection(qapp):
-    """Test that copying a folder into its own subfolder is prevented safely."""
+    """Test that copying a folder into its own subfolder is prevented safely.
+
+    Manages test audit circular directory protection operations and coordinates related state changes for the component.
+
+    Args:
+        qapp: The qapp parameter.
+    """
     with tempfile.TemporaryDirectory() as tmpdir:
         parent_dir = Path(tmpdir) / "ParentDir"
         sub_dir = parent_dir / "SubDir"
@@ -78,7 +96,10 @@ def test_audit_circular_directory_protection(qapp):
         f.write_text("data", encoding="utf-8")
 
         class _DummyEngine:
-            """_DummyEngine."""
+            """Dummyengine.
+
+            Manages DummyEngine operations and coordinates related state changes for the component.
+            """
             ffi = None
             cli = ""
 
@@ -101,7 +122,13 @@ def test_audit_circular_directory_protection(qapp):
 
 
 def test_audit_empty_directory_preservation_on_copy(qapp):
-    """Test copying nested directory tree preserves empty subdirectories."""
+    """Test copying nested directory tree preserves empty subdirectories.
+
+    Manages test audit empty directory preservation on copy operations and coordinates related state changes for the component.
+
+    Args:
+        qapp: The qapp parameter.
+    """
     with tempfile.TemporaryDirectory() as src_dir, tempfile.TemporaryDirectory() as dst_dir:
         d1 = Path(src_dir) / "Tree" / "EmptyFolder1"
         d2 = Path(src_dir) / "Tree" / "EmptyFolder2"
@@ -110,7 +137,10 @@ def test_audit_empty_directory_preservation_on_copy(qapp):
         (Path(src_dir) / "Tree" / "file.txt").write_text("content", encoding="utf-8")
 
         class _DummyEngine:
-            """_DummyEngine."""
+            """Dummyengine.
+
+            Manages DummyEngine operations and coordinates related state changes for the component.
+            """
             ffi = None
             cli = ""
 
@@ -134,7 +164,13 @@ def test_audit_empty_directory_preservation_on_copy(qapp):
 
 
 def test_audit_tab_management_and_closing(qapp):
-    """Test creating multiple tabs and closing specific tabs without index corruption."""
+    """Test creating multiple tabs and closing specific tabs without index corruption.
+
+    Manages test audit tab management and closing operations and coordinates related state changes for the component.
+
+    Args:
+        qapp: The qapp parameter.
+    """
     with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmpdir:
         d1 = Path(tmpdir) / "Tab1"
         d2 = Path(tmpdir) / "Tab2"
@@ -166,7 +202,13 @@ def test_audit_tab_management_and_closing(qapp):
 
 
 def test_audit_engine_python_simple_and_delete(qapp):
-    """Test Python fallback implementations for rename, delete, mkdir, and hash."""
+    """Test Python fallback implementations for rename, delete, mkdir, and hash.
+
+    Manages test audit engine python simple and delete operations and coordinates related state changes for the component.
+
+    Args:
+        qapp: The qapp parameter.
+    """
     with tempfile.TemporaryDirectory() as tmpdir:
         engine = Engine()
         test_f = Path(tmpdir) / "rename_me.txt"
@@ -200,7 +242,13 @@ def test_audit_engine_python_simple_and_delete(qapp):
 
 
 def test_audit_bulk_rename_modes(qapp):
-    """Test BulkRenameDialog rename transformations."""
+    """Test BulkRenameDialog rename transformations.
+
+    Manages test audit bulk rename modes operations and coordinates related state changes for the component.
+
+    Args:
+        qapp: The qapp parameter.
+    """
     with tempfile.TemporaryDirectory() as tmpdir:
         f1 = Path(tmpdir) / "IMG_101.jpg"
         f2 = Path(tmpdir) / "IMG_102.jpg"

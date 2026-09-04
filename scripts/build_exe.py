@@ -9,7 +9,10 @@ import sys
 import shutil
 
 def build_app():
-    """build_app."""
+    """build_app.
+
+    Manages build app operations and coordinates related state changes for the component.
+    """
     print("=" * 60)
     print("Cortex Cleaner Suite - Release Compiler")
     print("=" * 60)
@@ -48,10 +51,15 @@ def build_app():
         print("\n" + "=" * 60)
         print("BUILD SUCCESSFUL!")
         print("=" * 60)
-        print("Your military-grade standalone application has been compiled.")
-        print(f"Location: {os.path.abspath('dist/CortexCleaner')}")
-        print("You can zip this 'CortexCleaner' folder and distribute it to your customers!")
+        out_dir = os.path.abspath("dist/CortexCleaner")
+        print(f"Location: {out_dir}")
         print("Note: The executable 'CortexCleaner.exe' inside will automatically prompt UAC for Admin Rights.")
+        
+        # Package into distributable zip archive
+        zip_base = os.path.join("dist", "Cortex-Workstation-v1.2.0-Windows-x64")
+        print(f"[*] Packaging standalone distribution zip: {zip_base}.zip ...")
+        shutil.make_archive(zip_base, "zip", "dist", "CortexCleaner")
+        print(f"[✓] Distribution package created: {os.path.abspath(zip_base + '.zip')}")
     except subprocess.CalledProcessError as e:
         print("\nBuild failed! Consult the logs above.")
         sys.exit(1)

@@ -24,50 +24,88 @@ try:
     from cortex_unified.analyzers.package_manager_cleaner import PackageManagerCleaner
 except ImportError:
     class PackageManagerCleaner:
-        """PackageManagerCleaner fallback class."""
+        """Packagemanagercleaner.
+
+        Manages PackageManagerCleaner operations and coordinates related state changes for the component.
+        """
         def __init__(self, *args, **kwargs):
-            """Accept any arguments; fallback stub does nothing."""
+            """Accept any arguments; fallback stub does nothing.
+
+            Initializes the instance and configures internal state.
+            """
             pass
         def detect_package_managers(self):
-            """Report no package managers (fallback stub)."""
+            """Report no package managers (fallback stub).
+
+            Manages detect package managers operations and coordinates related state changes for the component.
+            """
             return {}
         def scan_caches(self):
-            """Report no caches found (fallback stub)."""
+            """Report no caches found (fallback stub).
+
+            Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+            """
             return []
         def cleanup_caches(self):
-            """Report no cleanup results (fallback stub)."""
+            """Report no cleanup results (fallback stub).
+
+            Permanently purges or removes specified target items, reclaiming storage space and logging actions taken.
+            """
             return {}
 
 class PMSearchWorker(QThread):
-    """Detects installed package managers off the GUI thread."""
+    """Pmsearchworker.
+
+    Manages PMSearchWorker operations and coordinates related state changes for the component.
+    """
     finished = Signal(dict)
     error = Signal(str)
 
     def __init__(self, config: Config):
-        """Store the config used to build the cleaner."""
+        """Store the config used to build the cleaner.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            config (Config): The config parameter.
+        """
         super().__init__()
         self.config = config
-        """__init__."""
 
     def run(self):
-        """Detect package managers (emits finished with them, or error)."""
+        """Detect package managers (emits finished with them, or error).
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         try:
             cleaner = PackageManagerCleaner(self.config)
             managers = cleaner.detect_package_managers()
             self.finished.emit(managers)
         except Exception as e:
             self.error.emit(str(e))
-        """run."""
-    """PMSearchWorker class."""
 
 class PMScanWorker(QThread):
-    """Scans package-manager/project caches off the GUI thread."""
+    """Pmscanworker.
+
+    Manages PMScanWorker operations and coordinates related state changes for the component.
+    """
     finished = Signal(dict)
     error = Signal(str)
 
     def __init__(self, config: Config, managers: dict, target_folders: List[str], 
                  keep_recent: int, orphaned: bool, include_python: bool):
-        """Store config, manager flags, target folders, retention, and scope flags."""
+        """Store config, manager flags, target folders, retention, and scope flags.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            config (Config): The config parameter.
+            managers (dict): The managers parameter.
+            target_folders (List[str]): The target folders parameter.
+            keep_recent (int): The keep recent parameter.
+            orphaned (bool): The orphaned parameter.
+            include_python (bool): The include python parameter.
+        """
         super().__init__()
         self.config = config
         self.managers = managers
@@ -75,10 +113,12 @@ class PMScanWorker(QThread):
         self.keep_recent = keep_recent
         self.orphaned = orphaned
         self.include_python = include_python
-        """__init__."""
 
     def run(self):
-        """Scan system or project caches (emits finished with {resources, stats}, or error)."""
+        """Scan system or project caches (emits finished with {resources, stats}, or error).
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         try:
             cleaner = PackageManagerCleaner(self.config)
             
@@ -100,43 +140,65 @@ class PMScanWorker(QThread):
             self.finished.emit({"resources": resources, "stats": stats})
         except Exception as e:
             self.error.emit(str(e))
-        """run."""
-    """PMScanWorker class."""
 
 class PMCleanWorker(QThread):
-    """Cleans scanned cache resources (optionally dry-run) off the GUI thread."""
+    """Pmcleanworker.
+
+    Manages PMCleanWorker operations and coordinates related state changes for the component.
+    """
     finished = Signal(dict)
     error = Signal(str)
 
     def __init__(self, config: Config, resources: list, dry_run: bool):
-        """Store the config, resources to clean, and dry-run flag."""
+        """Store the config, resources to clean, and dry-run flag.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            config (Config): The config parameter.
+            resources (list): The resources parameter.
+            dry_run (bool): The dry run parameter.
+        """
         super().__init__()
         self.config = config
         self.resources = resources
         self.dry_run = dry_run
-        """__init__."""
 
     def run(self):
-        """Clean the caches (emits finished with a results dict, or error)."""
+        """Clean the caches (emits finished with a results dict, or error).
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         try:
             cleaner = PackageManagerCleaner(self.config)
             results = cleaner.cleanup_caches(self.resources, dry_run=self.dry_run)
             self.finished.emit(results)
         except Exception as e:
             self.error.emit(str(e))
-        """run."""
-    """PMCleanWorker class."""
 
 class PackageManagerTab(BaseTab):
-    """Tab for package manager tab functionality."""
+    """Packagemanagertab.
+
+    Manages PackageManagerTab operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, config, logger, safety_manager):
-        """Initialize the tab and call setup_ui."""
+        """Initialize the tab and call setup_ui.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            config: The config parameter.
+            logger: The logger parameter.
+            safety_manager: The safety manager parameter.
+        """
         super().__init__(config, logger, safety_manager)
-        """__init__."""
 
     def setup_ui(self):
-        """Create the Package Manager tab with tabs for different scan modes."""
+        """Create the Package Manager tab with tabs for different scan modes.
+
+        Manages setup ui operations and coordinates related state changes for the component.
+        """
         main_layout = QVBoxLayout()
         self.setLayout(main_layout)
         
@@ -325,7 +387,10 @@ class PackageManagerTab(BaseTab):
         self.pm_resources: List[Dict] = []
 
     def detect_package_managers(self):
-        """Launch the detection worker and show busy state."""
+        """Launch the detection worker and show busy state.
+
+        Manages detect package managers operations and coordinates related state changes for the component.
+        """
         self.pm_summary_label.setText("Detecting Package Managers...")
         self.pm_progress_bar.setVisible(True)
         self.pm_progress_bar.setRange(0, 0)
@@ -338,10 +403,15 @@ class PackageManagerTab(BaseTab):
         worker.finished.connect(lambda: self._on_worker_finished(worker))
         worker.error.connect(lambda: self._on_worker_finished(worker))
         worker.start()
-        """detect_package_managers."""
 
     def _on_detect_finished(self, managers):
-        """List detected manager names, or report none found."""
+        """List detected manager names, or report none found.
+
+        Manages on detect finished operations and coordinates related state changes for the component.
+
+        Args:
+            managers: The managers parameter.
+        """
         self.pm_progress_bar.setVisible(False)
         self.pm_detect_button.setEnabled(True)
         
@@ -358,17 +428,24 @@ class PackageManagerTab(BaseTab):
         else:
             self.pm_detect_status.setText("✗ No compatible package managers found on system.")
             self.pm_detect_status.setStyleSheet("color: #d13438; font-weight: bold;")
-        """_on_detect_finished."""
 
     def _on_detect_error(self, err):
-        """Reset the detect button and warn about the failure."""
+        """Reset the detect button and warn about the failure.
+
+        Manages on detect error operations and coordinates related state changes for the component.
+
+        Args:
+            err: Error message string or exception instance.
+        """
         self.pm_progress_bar.setVisible(False)
         self.pm_detect_button.setEnabled(True)
         QMessageBox.warning(self, "Detection Failed", str(err))
-        """_on_detect_error."""
     
     def add_folder_to_scan(self):
-        """Append a chosen folder to the scan list if not already present."""
+        """Append a chosen folder to the scan list if not already present.
+
+        Manages add folder to scan operations and coordinates related state changes for the component.
+        """
         folder = QFileDialog.getExistingDirectory(self, 'Select Folder to Scan')
         if folder:
             if folder not in self.pm_folders:
@@ -376,17 +453,22 @@ class PackageManagerTab(BaseTab):
                 self.pm_folders_list.addItem(folder)
             else:
                 QMessageBox.information(self, "Folder Already Added", f"{folder} is already in the list.")
-        """add_folder_to_scan."""
     
     def remove_selected_folder(self):
-        """Remove the selected folder from the scan list."""
+        """Remove the selected folder from the scan list.
+
+        Manages remove selected folder operations and coordinates related state changes for the component.
+        """
         current = self.pm_folders_list.currentRow()
         if current >= 0:
             self.pm_folders.pop(current)
             self.pm_folders_list.takeItem(current)
     
     def clear_all_folders(self):
-        """Clear all folders from the scan list."""
+        """Clear all folders from the scan list.
+
+        Manages clear all folders operations and coordinates related state changes for the component.
+        """
         reply = QMessageBox.question(
             self, "Clear All Folders",
             "Remove all folders from the scan list?",
@@ -399,7 +481,10 @@ class PackageManagerTab(BaseTab):
 
     def start_pm_scan(self):
         # Determine which tab is active
-        """Collect mode/manager options and launch the cache scan worker."""
+        """Collect mode/manager options and launch the cache scan worker.
+
+        Manages start pm scan operations and coordinates related state changes for the component.
+        """
         if self.mode_tabs.currentIndex() == 0:
             # System Package Managers tab
             target_folders = []
@@ -436,10 +521,15 @@ class PackageManagerTab(BaseTab):
         worker.finished.connect(lambda: self._on_worker_finished(worker))
         worker.error.connect(lambda: self._on_worker_finished(worker))
         worker.start()
-        """start_pm_scan."""
 
     def _on_scan_finished(self, data):
-        """Fill the results table and enable cleanup when caches were found."""
+        """Fill the results table and enable cleanup when caches were found.
+
+        Manages on scan finished operations and coordinates related state changes for the component.
+
+        Args:
+            data: The data parameter.
+        """
         self.pm_progress_bar.setVisible(False)
         self.pm_scan_button.setEnabled(True)
         
@@ -473,17 +563,24 @@ class PackageManagerTab(BaseTab):
         self.pm_summary_label.setText(f"Found {len(self.pm_resources)} cache locations: {self.format_bytes(total_size)} total")
         if total_size > 0:
             self.pm_cleanup_button.setEnabled(True)
-        """_on_scan_finished."""
 
     def _on_scan_error(self, err):
-        """Reset the scan button and warn about the scan failure."""
+        """Reset the scan button and warn about the scan failure.
+
+        Manages on scan error operations and coordinates related state changes for the component.
+
+        Args:
+            err: Error message string or exception instance.
+        """
         self.pm_progress_bar.setVisible(False)
         self.pm_scan_button.setEnabled(True)
         QMessageBox.warning(self, "Scan Error", str(err))
-        """_on_scan_error."""
 
     def start_pm_cleanup(self):
-        """Confirm, then launch the cleanup worker (dry-run aware)."""
+        """Confirm, then launch the cleanup worker (dry-run aware).
+
+        Manages start pm cleanup operations and coordinates related state changes for the component.
+        """
         if not self.pm_resources:
             QMessageBox.warning(self, "No Caches", "No caches to clean. Run 'Scan' first.")
             return
@@ -514,10 +611,15 @@ class PackageManagerTab(BaseTab):
         worker.finished.connect(lambda: self._on_worker_finished(worker))
         worker.error.connect(lambda: self._on_worker_finished(worker))
         worker.start()
-        """start_pm_cleanup."""
 
     def _on_clean_finished(self, data):
-        """Report freed space and errors; clear results unless dry run."""
+        """Report freed space and errors; clear results unless dry run.
+
+        Manages on clean finished operations and coordinates related state changes for the component.
+
+        Args:
+            data: The data parameter.
+        """
         self.pm_progress_bar.setVisible(False)
         self.pm_scan_button.setEnabled(True)
         
@@ -540,18 +642,27 @@ class PackageManagerTab(BaseTab):
         if not dry_run:
             self.pm_table.setRowCount(0)
             self.pm_resources = []
-        """_on_clean_finished."""
 
     def _on_clean_error(self, err):
-        """Reset the buttons and warn about the cleanup failure."""
+        """Reset the buttons and warn about the cleanup failure.
+
+        Manages on clean error operations and coordinates related state changes for the component.
+
+        Args:
+            err: Error message string or exception instance.
+        """
         self.pm_progress_bar.setVisible(False)
         self.pm_scan_button.setEnabled(True)
         self.pm_cleanup_button.setEnabled(True)
         QMessageBox.warning(self, "Cleanup Error", str(err))
-        """_on_clean_error."""
 
     def _on_worker_finished(self, worker):
-        """Unregister a finished worker thread and delete it."""
+        """Unregister a finished worker thread and delete it.
+
+        Manages on worker finished operations and coordinates related state changes for the component.
+
+        Args:
+            worker: The worker parameter.
+        """
         self.remove_worker_thread(worker)
         worker.deleteLater()
-        """_on_worker_finished."""

@@ -23,10 +23,16 @@ except ImportError:
 
 
 class SmartScanReport:
-    """Holds the result of a Smart Scan."""
+    """Smartscanreport.
+
+    Manages SmartScanReport operations and coordinates related state changes for the component.
+    """
 
     def __init__(self):
-        """__init__."""
+        """Initialize the instance and configure internal state.
+
+        Sets up sub-widgets, event signal connections, and default options.
+        """
         self.health_score: int = 100
         self.total_junk_mb: float = 0.0
         self.browser_cache_mb: float = 0.0
@@ -40,18 +46,25 @@ class SmartScanReport:
         self.privacy_risks_count: int = 0
         self.scan_time_seconds: float = 0.0
         self.issues: List[Dict[str, Any]] = []
-        """__init__."""
 
     @property
     def total_cleanable_mb(self) -> float:
-        """total_cleanable_mb."""
+        """total_cleanable_mb.
+
+        Manages total cleanable mb operations and coordinates related state changes for the component.
+
+        Returns:
+            float: Result of the operation.
+        """
         return (self.total_junk_mb + self.browser_cache_mb +
                 self.win_update_cache_mb + self.recycle_bin_mb +
                 self.prefetch_mb + self.thumbnail_cache_mb)
-        """total_cleanable_mb."""
 
     def calculate_score(self):
-        """Calculate 0-100 health score from real metrics."""
+        """Calculate 0-100 health score from real metrics.
+
+        Manages calculate score operations and coordinates related state changes for the component.
+        """
         deductions = 0
 
         # 1 point per 200 MB of junk (up to 30)
@@ -71,22 +84,33 @@ class SmartScanReport:
 
 
 class SmartScannerWorker(QObject):
-    """Worker that runs in a QThread to perform the full smart scan."""
+    """Smartscannerworker.
+
+    Manages SmartScannerWorker operations and coordinates related state changes for the component.
+    """
 
     finished = Signal(object)   # SmartScanReport
     error = Signal(str)
     progress_updated = Signal(str, int)  # (status_msg, percentage)
 
     def __init__(self, config: Config):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            config (Config): The config parameter.
+        """
         super().__init__()
         self.config = config
         self.logger = logging.getLogger("smart_scanner")
         self._should_stop = False
-        """__init__."""
 
     def run(self):
-        """run."""
+        """run.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         try:
             report = SmartScanReport()
             start_time = time.time()
@@ -158,10 +182,12 @@ class SmartScannerWorker(QObject):
         except Exception as exc:
             self.logger.error("Smart Scan failed: %s", exc, exc_info=True)
             self.error.emit(str(exc))
-        """run."""
 
     def stop(self):
-        """Cooperative cancel: checked between phases and inside directory walks."""
+        """Stop active background operations.
+
+        Manages worker thread execution states, signaling termination flags or initializing scheduled execution timers.
+        """
         self._should_stop = True
 
     # ──────────────────────────────────────────────────────────────────
@@ -169,7 +195,13 @@ class SmartScannerWorker(QObject):
     # ──────────────────────────────────────────────────────────────────
 
     def _scan_temp_dirs(self) -> float:
-        """Walk every temp directory and sum file sizes.  Returns MB."""
+        """Walk every temp directory and sum file sizes.  Returns MB.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+        Returns:
+            float: Result of the operation.
+        """
         temp_paths = set()
         for var in ("TEMP", "TMP"):
             val = os.environ.get(var)
@@ -193,7 +225,13 @@ class SmartScannerWorker(QObject):
         return total / (1024 * 1024)
 
     def _scan_browser_caches(self) -> tuple:
-        """Return (total_mb, number_of_browsers_with_data)."""
+        """Return (total_mb, number_of_browsers_with_data).
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+        Returns:
+            tuple: Result of the operation.
+        """
         local = os.environ.get("LOCALAPPDATA", "")
         appdata = os.environ.get("APPDATA", "")
 
@@ -218,7 +256,17 @@ class SmartScannerWorker(QObject):
         return total, count
 
     def _scan_dir_mb(self, path: str, max_depth: int = 5) -> float:
-        """Recursively sum file sizes under *path*. Returns MB."""
+        """Recursively sum file sizes under *path*. Returns MB.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+        Args:
+            path (str): Filesystem path to the target file or directory.
+            max_depth (int): The max depth parameter.
+
+        Returns:
+            float: Result of the operation.
+        """
         if not path or not os.path.isdir(path):
             return 0.0
         total = 0
@@ -237,7 +285,13 @@ class SmartScannerWorker(QObject):
         return total / (1024 * 1024)
 
     def _scan_recycle_bin(self) -> float:
-        """Return approximate Recycle Bin size in MB."""
+        """Return approximate Recycle Bin size in MB.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+        Returns:
+            float: Result of the operation.
+        """
         recycle = os.path.join(os.environ.get("SystemDrive", "C:"), "$Recycle.Bin")
         if not os.path.isdir(recycle):
             return 0.0

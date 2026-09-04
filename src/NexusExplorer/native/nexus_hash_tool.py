@@ -18,7 +18,10 @@ from typing import Callable, Dict, List, Optional, Tuple
 
 
 class HashAlgorithm(Enum):
-    """HashAlgorithm."""
+    """Hashalgorithm.
+
+    Manages HashAlgorithm operations and coordinates related state changes for the component.
+    """
     MD5 = "MD5"
     SHA1 = "SHA-1"
     SHA256 = "SHA-256"
@@ -26,12 +29,14 @@ class HashAlgorithm(Enum):
     BLAKE3 = "BLAKE3"
     CRC32 = "CRC32"
     XXHASH64 = "xxHash64"
-    """HashAlgorithm class."""
 
 
 @dataclass
 class HashResult:
-    """HashResult."""
+    """Hashresult.
+
+    Manages HashResult operations and coordinates related state changes for the component.
+    """
     path: str
     filename: str
     size: int
@@ -39,23 +44,27 @@ class HashResult:
     digest: str
     elapsed_seconds: float
     error: Optional[str] = None
-    """HashResult class."""
 
 
 @dataclass
 class VerifyItem:
-    """VerifyItem."""
+    """Verifyitem.
+
+    Manages VerifyItem operations and coordinates related state changes for the component.
+    """
     path: str
     expected_hash: str
     actual_hash: str
     algorithm: HashAlgorithm
     status: str  # "MATCH", "MISMATCH", "MISSING", "ERROR"
     error_message: str = ""
-    """VerifyItem class."""
 
 
 class HashTool:
-    """Production file hashing engine with multi-algorithm streaming and manifest support."""
+    """Hashtool.
+
+    Manages HashTool operations and coordinates related state changes for the component.
+    """
 
     CHUNK_SIZE = 64 * 1024  # 64 KB streaming buffer
 
@@ -67,7 +76,19 @@ class HashTool:
         progress_cb: Optional[Callable[[int, int], None]] = None,
         cancel_check: Optional[Callable[[], bool]] = None,
     ) -> HashResult:
-        """Compute the cryptographic or CRC32 hash for a single file."""
+        """Compute the cryptographic or CRC32 hash for a single file.
+
+        Manages compute hash operations and coordinates related state changes for the component.
+
+        Args:
+            file_path (str | Path): Filesystem path to the target file or directory.
+            algorithm (HashAlgorithm): The algorithm parameter.
+            progress_cb (Optional[Callable[[int, int], None]]): Callback invoked with progress updates.
+            cancel_check (Optional[Callable[[], bool]]): Threading event or callable to check for cancellation.
+
+        Returns:
+            HashResult: Result of the operation.
+        """
         path_obj = Path(file_path)
         if not path_obj.is_file():
             return HashResult(
@@ -174,7 +195,18 @@ class HashTool:
         progress_cb: Optional[Callable[[int, int], None]] = None,
         cancel_check: Optional[Callable[[], bool]] = None,
     ) -> Dict[HashAlgorithm, HashResult]:
-        """Compute MD5, SHA1, SHA256, SHA512, and CRC32 in a single stream pass."""
+        """Compute MD5, SHA1, SHA256, SHA512, and CRC32 in a single stream pass.
+
+        Manages compute all hashes operations and coordinates related state changes for the component.
+
+        Args:
+            file_path (str | Path): Filesystem path to the target file or directory.
+            progress_cb (Optional[Callable[[int, int], None]]): Callback invoked with progress updates.
+            cancel_check (Optional[Callable[[], bool]]): Threading event or callable to check for cancellation.
+
+        Returns:
+            Dict[HashAlgorithm, HashResult]: Dictionary mapping identifiers to status or values.
+        """
         path_obj = Path(file_path)
         if not path_obj.is_file():
             empty_err = "File not found"
@@ -231,7 +263,20 @@ class HashTool:
         progress_cb: Optional[Callable[[int, int, str], None]] = None,
         cancel_check: Optional[Callable[[], bool]] = None,
     ) -> bool:
-        """Create a checksum manifest file (.sfv, .md5, .sha256, etc.)."""
+        """Create a checksum manifest file (.sfv, .md5, .sha256, etc.).
+
+        Manages create manifest operations and coordinates related state changes for the component.
+
+        Args:
+            files (List[str | Path]): The files parameter.
+            output_file (str | Path): The output file parameter.
+            algorithm (HashAlgorithm): The algorithm parameter.
+            progress_cb (Optional[Callable[[int, int, str], None]]): Callback invoked with progress updates.
+            cancel_check (Optional[Callable[[], bool]]): Threading event or callable to check for cancellation.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         lines = []
         out_path = Path(output_file)
         base_dir = out_path.parent
@@ -277,7 +322,18 @@ class HashTool:
         progress_cb: Optional[Callable[[int, int, str], None]] = None,
         cancel_check: Optional[Callable[[], bool]] = None,
     ) -> List[VerifyItem]:
-        """Verify files against a checksum manifest (.sfv, .md5, .sha256, .sha512)."""
+        """Verify files against a checksum manifest (.sfv, .md5, .sha256, .sha512).
+
+        Manages verify manifest operations and coordinates related state changes for the component.
+
+        Args:
+            manifest_file (str | Path): The manifest file parameter.
+            progress_cb (Optional[Callable[[int, int, str], None]]): Callback invoked with progress updates.
+            cancel_check (Optional[Callable[[], bool]]): Threading event or callable to check for cancellation.
+
+        Returns:
+            List[VerifyItem]: List of processed items or identifiers.
+        """
         manifest_path = Path(manifest_file)
         if not manifest_path.is_file():
             return []

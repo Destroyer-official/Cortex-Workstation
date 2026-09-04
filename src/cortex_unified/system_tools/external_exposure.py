@@ -16,12 +16,18 @@ Transport = Callable[[str, Mapping[str, str], float], Mapping[str, Any]]
 
 
 class ExposureLookupError(RuntimeError):
-    """Raised for invalid consent, target, credentials, or provider output."""
+    """Exposurelookuperror.
+
+    Manages ExposureLookupError operations and coordinates related state changes for the component.
+    """
 
 
 @dataclass(frozen=True, slots=True)
 class ExternalService:
-    """External Service data container."""
+    """Externalservice.
+
+    Manages ExternalService operations and coordinates related state changes for the component.
+    """
     port: int
     transport: str = "tcp"
     product: str = ""
@@ -30,7 +36,13 @@ class ExternalService:
     evidence: tuple[str, ...] = field(default_factory=tuple)
 
     def to_dict(self) -> dict[str, Any]:
-        """To dict."""
+        """To dict.
+
+        Manages to dict operations and coordinates related state changes for the component.
+
+        Returns:
+            dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         return {
             "port": self.port, "transport": self.transport,
             "product": self.product, "version": self.version,
@@ -40,14 +52,23 @@ class ExternalService:
 
 @dataclass(frozen=True, slots=True)
 class ExposureResult:
-    """Exposure Result data container."""
+    """Exposureresult.
+
+    Manages ExposureResult operations and coordinates related state changes for the component.
+    """
     provider: str
     public_ip: str
     services: tuple[ExternalService, ...]
     last_observed: str = ""
 
     def to_dict(self) -> dict[str, Any]:
-        """To dict."""
+        """To dict.
+
+        Manages to dict operations and coordinates related state changes for the component.
+
+        Returns:
+            dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         return {
             "provider": self.provider, "public_ip": self.public_ip,
             "services": [item.to_dict() for item in self.services],
@@ -60,7 +81,16 @@ class ExposureResult:
 
 
 def _public_ipv4(value: str) -> str:
-    """_public_ipv4."""
+    """_public_ipv4.
+
+    Manages public ipv4 operations and coordinates related state changes for the component.
+
+    Args:
+        value (str): The value parameter.
+
+    Returns:
+        str: Formatted string or path.
+    """
     try:
         address = ipaddress.ip_address(str(value))
     except ValueError as exc:
@@ -70,14 +100,23 @@ def _public_ipv4(value: str) -> str:
         raise ExposureLookupError(
             "external exposure lookup requires a globally routable IPv4")
     return str(address)
-    """_public_ipv4."""
-    """_public_ipv4."""
 
 
 def _default_transport(
     url: str, headers: Mapping[str, str], timeout: float,
 ) -> Mapping[str, Any]:
-    """_default_transport."""
+    """_default_transport.
+
+    Manages default transport operations and coordinates related state changes for the component.
+
+    Args:
+        url (str): The url parameter.
+        headers (Mapping[str, str]): The headers parameter.
+        timeout (float): The timeout parameter.
+
+    Returns:
+        Mapping[str, Any]: Formatted string or path.
+    """
     request = urllib.request.Request(url, headers=dict(headers), method="GET")
     try:
         with urllib.request.urlopen(request, timeout=timeout) as response:
@@ -98,18 +137,28 @@ def _default_transport(
     if not isinstance(value, Mapping):
         raise ExposureLookupError("provider response must be an object")
     return value
-    """_default_transport."""
-    """_default_transport."""
 
 
 class ExternalExposureClient:
-    """Opt-in Shodan/Censys host lookup with an injectable transport."""
+    """Externalexposureclient.
+
+    Manages ExternalExposureClient operations and coordinates related state changes for the component.
+    """
 
     def __init__(
         self, provider: str, api_key: str, api_secret: str = "",
         transport: Transport | None = None,
     ) -> None:
-        """Initialize External Exposure Client."""
+        """Initialize External Exposure Client.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            provider (str): The provider parameter.
+            api_key (str): The api key parameter.
+            api_secret (str): The api secret parameter.
+            transport (Transport | None): The transport parameter.
+        """
         self.provider = provider.strip().lower()
         if self.provider not in {"shodan", "censys"}:
             raise ValueError("provider must be shodan or censys")
@@ -124,7 +173,16 @@ class ExternalExposureClient:
     def lookup(
         self, public_ip: str, *, consent: bool = False, timeout: float = 10.0,
     ) -> ExposureResult:
-        """Lookup."""
+        """Lookup.
+
+        Manages lookup operations and coordinates related state changes for the component.
+
+        Args:
+            public_ip (str): The public ip parameter.
+
+        Returns:
+            ExposureResult: Result of the operation.
+        """
         if not consent:
             raise ExposureLookupError(
                 "explicit external lookup consent is required")
@@ -152,7 +210,16 @@ class ExternalExposureClient:
 
     @staticmethod
     def _parse_shodan(payload: Mapping[str, Any]) -> list[ExternalService]:
-        """_parse_shodan."""
+        """_parse_shodan.
+
+        Manages parse shodan operations and coordinates related state changes for the component.
+
+        Args:
+            payload (Mapping[str, Any]): The payload parameter.
+
+        Returns:
+            list[ExternalService]: List of processed items or identifiers.
+        """
         services = []
         data = payload.get("data", [])
         if not isinstance(data, list):
@@ -173,14 +240,21 @@ class ExternalExposureClient:
                 port, transport, product, version, "shodan",
                 ("Shodan host-index observation",)))
         return _deduplicate(services)
-        """_parse_shodan."""
-        """_parse_shodan."""
 
     @staticmethod
     def _parse_censys(
         payload: Mapping[str, Any],
     ) -> tuple[list[ExternalService], str]:
-        """_parse_censys."""
+        """_parse_censys.
+
+        Manages parse censys operations and coordinates related state changes for the component.
+
+        Args:
+            payload (Mapping[str, Any]): The payload parameter.
+
+        Returns:
+            tuple[list[ExternalService], str]: List of processed items or identifiers.
+        """
         result = payload.get("result", {})
         if not isinstance(result, Mapping):
             raise ExposureLookupError("invalid Censys host response")
@@ -210,20 +284,25 @@ class ExternalExposureClient:
                 ("Censys host-index observation",)))
         observed = str(result.get("last_updated_at", ""))[:64]
         return _deduplicate(services), observed
-        """_parse_censys."""
-        """_parse_censys."""
 
 
 def _deduplicate(values: list[ExternalService]) -> list[ExternalService]:
-    """_deduplicate."""
+    """Deduplicate.
+
+    Manages deduplicate operations and coordinates related state changes for the component.
+
+    Args:
+        values (list[ExternalService]): The values parameter.
+
+    Returns:
+        list[ExternalService]: List of processed items or identifiers.
+    """
     unique = {
         (item.port, item.transport, item.product, item.version): item
         for item in values
     }
     return sorted(unique.values(), key=lambda item: (
         item.port, item.transport, item.product, item.version))
-    """_deduplicate."""
-    """_deduplicate."""
 
 
 __all__ = [

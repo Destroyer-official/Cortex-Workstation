@@ -31,31 +31,52 @@ from .window import _Page, fmt_bytes
 
 
 class _SearchWorker(QObject):
-    """_SearchWorker class."""
+    """Searchworker.
+
+    Manages SearchWorker operations and coordinates related state changes for the component.
+    """
     status_ready = Signal(object)
     op_finished = Signal(object)
 
     def run_status(self) -> None:
-        """run_status."""
+        """run_status.
+
+        Manages run status operations and coordinates related state changes for the component.
+        """
         status = SearchIndexOptimizer.get_status()
         self.status_ready.emit(status)
 
     def run_compact(self) -> None:
-        """run_compact."""
+        """run_compact.
+
+        Manages run compact operations and coordinates related state changes for the component.
+        """
         res = SearchIndexOptimizer.compact_database()
         self.op_finished.emit(res)
 
     def run_rebuild(self) -> None:
-        """run_rebuild."""
+        """run_rebuild.
+
+        Manages run rebuild operations and coordinates related state changes for the component.
+        """
         res = SearchIndexOptimizer.rebuild_index()
         self.op_finished.emit(res)
 
 
 class SearchIndexOptimizerPage(_Page):
-    """UI page for Windows Search Index (Windows.edb) compaction and catalog reset."""
+    """Searchindexoptimizerpage.
+
+    Manages SearchIndexOptimizerPage operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, win) -> None:
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win: Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.current_status: Optional[SearchIndexStatus] = None
         self._thread: Optional[QThread] = None
@@ -133,7 +154,10 @@ class SearchIndexOptimizerPage(_Page):
         self.v.addWidget(self.note)
 
     def _start_status_query(self) -> None:
-        """_start_status_query."""
+        """_start_status_query.
+
+        Manages start status query operations and coordinates related state changes for the component.
+        """
         if self._thread and self._thread.isRunning():
             return
         self.progress_bar.setVisible(True)
@@ -147,7 +171,13 @@ class SearchIndexOptimizerPage(_Page):
         self._thread.start()
 
     def _on_status_ready(self, status: SearchIndexStatus) -> None:
-        """_on_status_ready."""
+        """_on_status_ready.
+
+        Manages on status ready operations and coordinates related state changes for the component.
+
+        Args:
+            status (SearchIndexStatus): The status parameter.
+        """
         self.current_status = status
         if self._thread:
             self._thread.quit()
@@ -165,7 +195,10 @@ class SearchIndexOptimizerPage(_Page):
         self.lbl_status.setText("Diagnostics updated.")
 
     def _start_compact(self) -> None:
-        """_start_compact."""
+        """_start_compact.
+
+        Manages start compact operations and coordinates related state changes for the component.
+        """
         confirm = QMessageBox.question(
             self,
             "Confirm Database Compaction",
@@ -179,7 +212,10 @@ class SearchIndexOptimizerPage(_Page):
         self._run_async_op(lambda w: w.run_compact, "Compacting Windows.edb database...")
 
     def _start_rebuild(self) -> None:
-        """_start_rebuild."""
+        """_start_rebuild.
+
+        Manages start rebuild operations and coordinates related state changes for the component.
+        """
         confirm = QMessageBox.question(
             self,
             "Confirm Index Rebuild",
@@ -193,7 +229,14 @@ class SearchIndexOptimizerPage(_Page):
         self._run_async_op(lambda w: w.run_rebuild, "Initiating catalog rebuild...")
 
     def _run_async_op(self, call_fn, status_text: str) -> None:
-        """_run_async_op."""
+        """_run_async_op.
+
+        Manages run async op operations and coordinates related state changes for the component.
+
+        Args:
+            call_fn: The call fn parameter.
+            status_text (str): The status text parameter.
+        """
         self.btn_refresh.setEnabled(False)
         self.btn_compact.setEnabled(False)
         self.btn_rebuild.setEnabled(False)
@@ -208,7 +251,13 @@ class SearchIndexOptimizerPage(_Page):
         self._thread.start()
 
     def _on_op_finished(self, res: SearchIndexOperationResult) -> None:
-        """_on_op_finished."""
+        """_on_op_finished.
+
+        Manages on op finished operations and coordinates related state changes for the component.
+
+        Args:
+            res (SearchIndexOperationResult): The res parameter.
+        """
         if self._thread:
             self._thread.quit()
             self._thread.wait()

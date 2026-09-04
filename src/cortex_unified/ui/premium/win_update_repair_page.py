@@ -34,24 +34,39 @@ from .window import _Page, fmt_bytes
 
 
 class _RepairWorker(QObject):
-    """Background worker for Windows Update repair phases."""
+    """Repairworker.
+
+    Manages RepairWorker operations and coordinates related state changes for the component.
+    """
 
     finished = Signal(dict)
     progress = Signal(str)
     failed = Signal(str)
 
     def __init__(self, phases: list[str]):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            phases (list[str]): The phases parameter.
+        """
         super().__init__()
         self._phases = phases
         self._cancel = threading.Event()
 
     def cancel(self):
-        """cancel."""
+        """cancel.
+
+        Sets the internal cancellation event to cooperatively stop worker execution at the next safe boundary.
+        """
         self._cancel.set()
 
     def run(self):
-        """run."""
+        """run.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         try:
             from cortex_unified.system_tools.windows_update_repair import (
                 WindowsUpdateRepair,
@@ -89,13 +104,19 @@ class _RepairWorker(QObject):
 
 
 class _PreflightWorker(QObject):
-    """Run preflight diagnostics in background."""
+    """Preflightworker.
+
+    Manages PreflightWorker operations and coordinates related state changes for the component.
+    """
 
     finished = Signal(dict)
     failed = Signal(str)
 
     def run(self):
-        """run."""
+        """run.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         try:
             from cortex_unified.system_tools.windows_update_repair import (
                 WindowsUpdateRepair,
@@ -141,10 +162,19 @@ _PHASES = [
 
 
 class WinUpdateRepairPage(_Page):
-    """Comprehensive Windows Update component repair with phase-based control."""
+    """Winupdaterepairpage.
+
+    Manages WinUpdateRepairPage operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, win):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win: Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(
             title_block(
@@ -263,7 +293,10 @@ class WinUpdateRepairPage(_Page):
     # -- Preflight --
 
     def _run_preflight(self):
-        """_run_preflight."""
+        """_run_preflight.
+
+        Manages run preflight operations and coordinates related state changes for the component.
+        """
         self._pf_btn.setEnabled(False)
         self._state.show_loading("Running preflight diagnostics\u2026")
         self.win.statusBar().showMessage("Running preflight diagnostics\u2026")
@@ -272,7 +305,13 @@ class WinUpdateRepairPage(_Page):
         self.win.run_worker(w, self._pf_done, self._pf_fail)
 
     def _pf_done(self, data: dict):
-        """_pf_done."""
+        """Handle completion of the pf asynchronous task.
+
+        Processes the returned result payload, updates corresponding tables or UI views, and restores interactive controls.
+
+        Args:
+            data (dict): The data parameter.
+        """
         self._pf_worker = None
         self._pf_btn.setEnabled(True)
         self._state.clear()
@@ -308,7 +347,13 @@ class WinUpdateRepairPage(_Page):
         self.win.statusBar().showMessage(f"Preflight: {len(issues)} issue(s)", 5000)
 
     def _pf_fail(self, msg: str):
-        """_pf_fail."""
+        """Handle an operation failure and notify the user.
+
+        Captures error details, displays an informative failure state in the UI, resets progress indicators, and re-enables interactive controls.
+
+        Args:
+            msg (str): Informational or progress status message.
+        """
         self._pf_worker = None
         self._pf_btn.setEnabled(True)
         self._state.show_error(msg, on_retry=self._run_preflight)
@@ -316,7 +361,10 @@ class WinUpdateRepairPage(_Page):
     # -- Repair --
 
     def _run_repair(self):
-        """_run_repair."""
+        """_run_repair.
+
+        Manages run repair operations and coordinates related state changes for the component.
+        """
         phases = [k for k, cb in self._checkboxes.items() if cb.isChecked()]
         if not phases:
             QMessageBox.information(
@@ -350,11 +398,23 @@ class WinUpdateRepairPage(_Page):
         )
 
     def _on_progress(self, msg: str):
-        """_on_progress."""
+        """_on_progress.
+
+        Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
+
+        Args:
+            msg (str): Informational or progress status message.
+        """
         self._status.setText(msg)
 
     def _on_done(self, data: dict):
-        """_on_done."""
+        """_on_done.
+
+        Receives the completed data from the  background worker, populates the view with results, and restores button states.
+
+        Args:
+            data (dict): The data parameter.
+        """
         self._worker = None
         self._progress.setVisible(False)
         self._run_btn.setEnabled(True)
@@ -386,7 +446,13 @@ class WinUpdateRepairPage(_Page):
             self._status.setText(self._status.text() + "  [Cancelled]")
 
     def _on_fail(self, msg: str):
-        """_on_fail."""
+        """_on_fail.
+
+        Captures worker error messages, presents diagnostic feedback to the user, and resets interactive controls for retry.
+
+        Args:
+            msg (str): Informational or progress status message.
+        """
         self._worker = None
         self._progress.setVisible(False)
         self._run_btn.setEnabled(True)

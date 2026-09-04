@@ -14,7 +14,10 @@ from cortex_unified.core.config import Config
 
 @dataclass
 class BrokenLink:
-    """Base class for broken link information."""
+    """Brokenlink.
+
+    Manages BrokenLink operations and coordinates related state changes for the component.
+    """
     path: Path
     target: str
     link_type: str
@@ -27,43 +30,58 @@ class BrokenLink:
 
 @dataclass
 class BrokenSymlink(BrokenLink):
-    """Information about a broken symlink."""
+    """Brokensymlink.
+
+    Manages BrokenSymlink operations and coordinates related state changes for the component.
+    """
     is_absolute: bool = False
     
     def __post_init__(self):
-        """__post_init__."""
+        """__post_init__.
+
+        Manages post init operations and coordinates related state changes for the component.
+        """
         self.link_type = "symlink"
-        """__post_init__."""
-        """__post_init__."""
 
 @dataclass
 class BrokenShortcut(BrokenLink):
-    """Information about a broken Windows shortcut (.lnk file)."""
+    """Brokenshortcut.
+
+    Manages BrokenShortcut operations and coordinates related state changes for the component.
+    """
     working_directory: str = ""
     arguments: str = ""
     icon_path: str = ""
     
     def __post_init__(self):
-        """__post_init__."""
+        """__post_init__.
+
+        Manages post init operations and coordinates related state changes for the component.
+        """
         self.link_type = "shortcut"
-        """__post_init__."""
-        """__post_init__."""
 
 @dataclass
 class BrokenRegistryRef(BrokenLink):
-    """Information about a broken registry reference (Windows only)."""
+    """Brokenregistryref.
+
+    Manages BrokenRegistryRef operations and coordinates related state changes for the component.
+    """
     registry_key: str = ""
     registry_value: str = ""
     
     def __post_init__(self):
-        """__post_init__."""
+        """__post_init__.
+
+        Manages post init operations and coordinates related state changes for the component.
+        """
         self.link_type = "registry_ref"
-        """__post_init__."""
-        """__post_init__."""
 
 @dataclass
 class RepairResult:
-    """Result of a repair attempt."""
+    """Repairresult.
+
+    Manages RepairResult operations and coordinates related state changes for the component.
+    """
     success: bool
     original_path: Path
     new_target: Optional[str] = None
@@ -74,7 +92,10 @@ class RepairResult:
 
 @dataclass
 class RepairOutcome:
-    """Per-item outcome of a :func:`repair` run."""
+    """Repairoutcome.
+
+    Manages RepairOutcome operations and coordinates related state changes for the component.
+    """
     path: Path
     action: str
     ok: bool
@@ -100,7 +121,10 @@ def _is_reparse_link(path: Path) -> bool:
 
 
 def _resolve_send2trash():
-    """Return ``send2trash`` or ``None`` when the package is unavailable."""
+    """Return ``send2trash`` or ``None`` when the package is unavailable.
+
+    Manages resolve send2trash operations and coordinates related state changes for the component.
+    """
     try:
         from send2trash import send2trash  # noqa: PLC0415 - optional dependency
         return send2trash
@@ -210,10 +234,19 @@ def repair(items, use_trash=True, dry_run=True) -> List[RepairOutcome]:
     return outcomes
 
 class BrokenLinkDetector:
-    """Detector for broken symlinks, shortcuts, and registry references."""
+    """Brokenlinkdetector.
+
+    Manages BrokenLinkDetector operations and coordinates related state changes for the component.
+    """
     
     def __init__(self, config: Config = None):
-        """Initialize broken link detector."""
+        """Initialize broken link detector.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            config (Config): The config parameter.
+        """
         self.config = config or Config()
         self.logger = logging.getLogger(__name__)
         
@@ -237,7 +270,10 @@ class BrokenLinkDetector:
         self._setup_windows_modules()
     
     def _setup_windows_modules(self):
-        """Set up Windows-specific modules for shortcut and registry handling."""
+        """Set up Windows-specific modules for shortcut and registry handling.
+
+        Manages setup windows modules operations and coordinates related state changes for the component.
+        """
         self.has_win32 = False
         self.has_winreg = False
         
@@ -259,7 +295,16 @@ class BrokenLinkDetector:
                 self.logger.warning("winreg not available - registry reference checking disabled")
     
     def _should_exclude_path(self, path: Path) -> bool:
-        """Check if a path should be excluded based on patterns."""
+        """Check if a path should be excluded based on patterns.
+
+        Manages should exclude path operations and coordinates related state changes for the component.
+
+        Args:
+            path (Path): Filesystem path to the target file or directory.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         if path.name in self.exclude_dirs:
             return True
         
@@ -279,7 +324,16 @@ class BrokenLinkDetector:
         return False
     
     def _get_file_stats(self, path: Path) -> Tuple[int, datetime, datetime]:
-        """Get file size and timestamps."""
+        """Get file size and timestamps.
+
+        Manages get file stats operations and coordinates related state changes for the component.
+
+        Args:
+            path (Path): Filesystem path to the target file or directory.
+
+        Returns:
+            Tuple[int, datetime, datetime]: Result of the operation.
+        """
         try:
             stat = path.stat()
             size = stat.st_size
@@ -290,7 +344,16 @@ class BrokenLinkDetector:
             return 0, datetime.now(), datetime.now()
     
     def scan_symlinks(self, path: str) -> List[BrokenSymlink]:
-        """Scan for broken symlinks in the given path."""
+        """Scan for broken symlinks in the given path.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+        Args:
+            path (str): Filesystem path to the target file or directory.
+
+        Returns:
+            List[BrokenSymlink]: List of processed items or identifiers.
+        """
         self.logger.info(f"Scanning for broken symlinks in: {path}")
         broken_symlinks = []
         scan_path = normalize_path(path)
@@ -367,7 +430,16 @@ class BrokenLinkDetector:
         return broken_symlinks
     
     def scan_windows_shortcuts(self, path: str) -> List[BrokenShortcut]:
-        """Scan for broken Windows shortcuts (.lnk files)."""
+        """Scan for broken Windows shortcuts (.lnk files).
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+        Args:
+            path (str): Filesystem path to the target file or directory.
+
+        Returns:
+            List[BrokenShortcut]: List of processed items or identifiers.
+        """
         if not self.is_windows:
             self.logger.debug("Not on Windows - skipping shortcut scan")
             return []
@@ -431,7 +503,16 @@ class BrokenLinkDetector:
         return broken_shortcuts
     
     def _analyze_shortcut(self, lnk_path: Path) -> Optional[Dict]:
-        """Analyze a Windows shortcut file to extract target information."""
+        """Analyze a Windows shortcut file to extract target information.
+
+        Manages analyze shortcut operations and coordinates related state changes for the component.
+
+        Args:
+            lnk_path (Path): Filesystem path to the target file or directory.
+
+        Returns:
+            Optional[Dict]: Dictionary mapping identifiers to status or values.
+        """
         if not self.has_win32:
             # Fallback: basic parsing without COM
             return self._analyze_shortcut_basic(lnk_path)
@@ -473,7 +554,16 @@ class BrokenLinkDetector:
                 pass
     
     def _analyze_shortcut_basic(self, lnk_path: Path) -> Optional[Dict]:
-        """Basic shortcut analysis without COM (limited functionality)."""
+        """Basic shortcut analysis without COM (limited functionality).
+
+        Manages analyze shortcut basic operations and coordinates related state changes for the component.
+
+        Args:
+            lnk_path (Path): Filesystem path to the target file or directory.
+
+        Returns:
+            Optional[Dict]: Dictionary mapping identifiers to status or values.
+        """
         try:
             # In a real scenario, you'd need to parse the .lnk file format
             # For now, we'll just check if the file exists and assume it's broken
@@ -504,7 +594,13 @@ class BrokenLinkDetector:
             return None
     
     def scan_registry_references(self) -> List[BrokenRegistryRef]:
-        """Scan for broken registry references (Windows only)."""
+        """Scan for broken registry references (Windows only).
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+        Returns:
+            List[BrokenRegistryRef]: List of processed items or identifiers.
+        """
         if not self.is_windows or not self.has_winreg:
             self.logger.debug("Registry scanning not available")
             return []
@@ -530,7 +626,17 @@ class BrokenLinkDetector:
         return broken_refs
     
     def _scan_registry_key(self, hkey, subkey_path: str) -> List[BrokenRegistryRef]:
-        """Scan a specific registry key for broken file references."""
+        """Scan a specific registry key for broken file references.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+        Args:
+            hkey: The hkey parameter.
+            subkey_path (str): Filesystem path to the target file or directory.
+
+        Returns:
+            List[BrokenRegistryRef]: List of processed items or identifiers.
+        """
         broken_refs = []
         
         try:
@@ -575,7 +681,16 @@ class BrokenLinkDetector:
         return broken_refs
     
     def _extract_paths_from_string(self, text: str) -> List[str]:
-        """Extract potential file paths from a string."""
+        """Extract potential file paths from a string.
+
+        Manages extract paths from string operations and coordinates related state changes for the component.
+
+        Args:
+            text (str): Display text string.
+
+        Returns:
+            List[str]: List of processed items or identifiers.
+        """
         import re
         
         paths = []
@@ -619,18 +734,45 @@ class BrokenLinkDetector:
         return len(potential_targets) > 0
     
     def _assess_shortcut_repairability(self, broken_shortcut: BrokenShortcut) -> bool:
-        """True when a plausible new target for the shortcut exists."""
+        """True when a plausible new target for the shortcut exists.
+
+        Manages assess shortcut repairability operations and coordinates related state changes for the component.
+
+        Args:
+            broken_shortcut (BrokenShortcut): The broken shortcut parameter.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         potential_targets = self.find_moved_targets(broken_shortcut.target)
         return len(potential_targets) > 0
     
     def _assess_registry_repairability(self, broken_ref: BrokenRegistryRef) -> bool:
-        """Assess if a broken registry reference can potentially be repaired."""
+        """Assess if a broken registry reference can potentially be repaired.
+
+        Manages assess registry repairability operations and coordinates related state changes for the component.
+
+        Args:
+            broken_ref (BrokenRegistryRef): The broken ref parameter.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         # Registry references are generally not repairable automatically
         # as they require careful registry editing
         return False
     
     def _calculate_confidence_score(self, broken_link: BrokenLink) -> float:
-        """Calculate confidence score for a broken link detection."""
+        """Calculate confidence score for a broken link detection.
+
+        Manages calculate confidence score operations and coordinates related state changes for the component.
+
+        Args:
+            broken_link (BrokenLink): The broken link parameter.
+
+        Returns:
+            float: Result of the operation.
+        """
         score = 0.5  # Base confidence
         
         # Higher confidence for recently accessed files
@@ -656,7 +798,16 @@ class BrokenLinkDetector:
         return max(0.0, min(1.0, score)) 
    
     def find_moved_targets(self, original_target: str) -> List[str]:
-        """Find potential new locations for a moved target using heuristics."""
+        """Find potential new locations for a moved target using heuristics.
+
+        Manages find moved targets operations and coordinates related state changes for the component.
+
+        Args:
+            original_target (str): The original target parameter.
+
+        Returns:
+            List[str]: List of processed items or identifiers.
+        """
         self.logger.debug(f"Searching for moved target: {original_target}")
         potential_targets = []
         
@@ -693,7 +844,16 @@ class BrokenLinkDetector:
         return potential_targets
     
     def _get_search_locations(self, original_path: Path) -> List[Path]:
-        """Get prioritized list of locations to search for moved files."""
+        """Get prioritized list of locations to search for moved files.
+
+        Manages get search locations operations and coordinates related state changes for the component.
+
+        Args:
+            original_path (Path): Filesystem path to the target file or directory.
+
+        Returns:
+            List[Path]: List of processed items or identifiers.
+        """
         search_locations = []
         
         # 1. Parent directory and siblings
@@ -748,7 +908,16 @@ class BrokenLinkDetector:
         return search_locations
     
     def attempt_repair(self, broken_link: BrokenLink) -> RepairResult:
-        """attempt_repair."""
+        """attempt_repair.
+
+        Manages attempt repair operations and coordinates related state changes for the component.
+
+        Args:
+            broken_link (BrokenLink): The broken link parameter.
+
+        Returns:
+            RepairResult: Result of the operation.
+        """
         self.logger.info(f"Attempting to repair broken link: {broken_link.path}")
         
         potential_targets = self.find_moved_targets(broken_link.target)
@@ -788,11 +957,18 @@ class BrokenLinkDetector:
                 backup_path=backup_result.get('backup_path'),
                 error_message=str(e)
             )
-        """attempt_repair."""
-        """attempt_repair."""
     
     def _create_backup(self, original_path: Path) -> Dict:
-        """Create a backup of the original link before repair."""
+        """Create a backup of the original link before repair.
+
+        Manages create backup operations and coordinates related state changes for the component.
+
+        Args:
+            original_path (Path): Filesystem path to the target file or directory.
+
+        Returns:
+            Dict: Dictionary mapping identifiers to status or values.
+        """
         try:
             backup_dir = original_path.parent / ".deepcleaner_backups"
             backup_dir.mkdir(exist_ok=True)
@@ -818,7 +994,18 @@ class BrokenLinkDetector:
             }
     
     def _repair_symlink(self, broken_link: BrokenSymlink, new_target: str, backup_result: Dict) -> RepairResult:
-        """Repair a broken symlink."""
+        """Repair a broken symlink.
+
+        Manages repair symlink operations and coordinates related state changes for the component.
+
+        Args:
+            broken_link (BrokenSymlink): The broken link parameter.
+            new_target (str): The new target parameter.
+            backup_result (Dict): The backup result parameter.
+
+        Returns:
+            RepairResult: Result of the operation.
+        """
         try:
             broken_link.path.unlink()
             
@@ -842,7 +1029,18 @@ class BrokenLinkDetector:
             )
     
     def _repair_shortcut(self, broken_shortcut: BrokenShortcut, new_target: str, backup_result: Dict) -> RepairResult:
-        """Repair a broken Windows shortcut."""
+        """Repair a broken Windows shortcut.
+
+        Manages repair shortcut operations and coordinates related state changes for the component.
+
+        Args:
+            broken_shortcut (BrokenShortcut): The broken shortcut parameter.
+            new_target (str): The new target parameter.
+            backup_result (Dict): The backup result parameter.
+
+        Returns:
+            RepairResult: Result of the operation.
+        """
         if not self.has_win32:
             return RepairResult(
                 success=False,
@@ -897,7 +1095,18 @@ class BrokenLinkDetector:
                 pass
     
     def _repair_registry_ref(self, broken_ref: BrokenRegistryRef, new_target: str, backup_result: Dict) -> RepairResult:
-        """Repair a broken registry reference (not implemented for safety)."""
+        """Repair a broken registry reference (not implemented for safety).
+
+        Manages repair registry ref operations and coordinates related state changes for the component.
+
+        Args:
+            broken_ref (BrokenRegistryRef): The broken ref parameter.
+            new_target (str): The new target parameter.
+            backup_result (Dict): The backup result parameter.
+
+        Returns:
+            RepairResult: Result of the operation.
+        """
         # Registry editing is dangerous and should be done manually
         return RepairResult(
             success=False,
@@ -908,7 +1117,16 @@ class BrokenLinkDetector:
         )
     
     def categorize_broken_links(self, links: List[BrokenLink]) -> Dict[str, List[BrokenLink]]:
-        """Categorize broken links by type and repairability."""
+        """Categorize broken links by type and repairability.
+
+        Manages categorize broken links operations and coordinates related state changes for the component.
+
+        Args:
+            links (List[BrokenLink]): The links parameter.
+
+        Returns:
+            Dict[str, List[BrokenLink]]: List of processed items or identifiers.
+        """
         categories = {
             'symlinks': [],
             'shortcuts': [],
@@ -986,25 +1204,39 @@ class BrokenLinkDetector:
         return self.broken_links.copy()
 
     def _cancelled(self) -> bool:
-        """_cancelled."""
+        """Cancelled.
+
+        Manages cancelled operations and coordinates related state changes for the component.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         ev = getattr(self, "_cancel_event", None)
         return ev is not None and ev.is_set()
-        """_cancelled."""
-        """_cancelled."""
 
     def _emit(self, text: str) -> None:
-        """_emit."""
+        """Emit.
+
+        Manages emit operations and coordinates related state changes for the component.
+
+        Args:
+            text (str): Display text string.
+        """
         cb = getattr(self, "_progress", None)
         if cb is not None:
             try:
                 cb(text)
             except Exception:  # noqa: BLE001 - never let UI callback break the scan
                 pass
-        """_emit."""
-        """_emit."""
     
     def get_scan_statistics(self) -> Dict[str, int]:
-        """Get statistics about the last scan."""
+        """Get statistics about the last scan.
+
+        Manages get scan statistics operations and coordinates related state changes for the component.
+
+        Returns:
+            Dict[str, int]: Dictionary mapping identifiers to status or values.
+        """
         categories = self.categorize_broken_links(self.broken_links)
         
         return {

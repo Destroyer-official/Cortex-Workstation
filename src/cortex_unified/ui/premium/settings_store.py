@@ -44,7 +44,13 @@ _VALID_THEMES = ("dark", "light")
 
 
 def settings_path() -> Path:
-    """Return the settings file path (``~/.cortex_cleaner/settings.json``)."""
+    """Return the settings file path (``~/.cortex_cleaner/settings.json``).
+
+    Manages settings path operations and coordinates related state changes for the component.
+
+    Returns:
+        Path: Result of the operation.
+    """
     return Path.home() / ".cortex_cleaner" / "settings.json"
 
 
@@ -59,7 +65,13 @@ class SettingsStore:
     """
 
     def __init__(self, path: Path | None = None):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            path (Path | None): Filesystem path to the target file or directory.
+        """
         self._path = path or settings_path()
         self._data: dict[str, Any] = dict(_DEFAULTS)
         self._load()
@@ -67,7 +79,10 @@ class SettingsStore:
     # -- persistence --------------------------------------------------------
 
     def _load(self) -> None:
-        """_load."""
+        """Fetch and reload the latest data entries into the view.
+
+        Queries the underlying system service or storage cache and refreshes view tables with up-to-date state.
+        """
         try:
             if self._path.exists():
                 raw = json.loads(self._path.read_text(encoding="utf-8"))
@@ -85,7 +100,10 @@ class SettingsStore:
         self._sanitize()
 
     def _sanitize(self) -> None:
-        """_sanitize."""
+        """Sanitize.
+
+        Manages sanitize operations and coordinates related state changes for the component.
+        """
         if self._data.get("theme") not in _VALID_THEMES:
             self._data["theme"] = _DEFAULTS["theme"]
         self._data["close_to_tray"] = bool(self._data.get("close_to_tray", False))
@@ -96,7 +114,13 @@ class SettingsStore:
             self._data.get("leftover_restore_point", True))
 
     def save(self) -> bool:
-        """Persist all settings atomically. Returns True on success."""
+        """Save configuration settings or analysis reports to persistent storage.
+
+        Serializes current user preferences or generated report data to disk with integrity validation.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         try:
             self._path.parent.mkdir(parents=True, exist_ok=True)
             payload = {"version": _VERSION, "settings": self._data}
@@ -111,11 +135,28 @@ class SettingsStore:
     # -- accessors ----------------------------------------------------------
 
     def get(self, key: str, default: Any = None) -> Any:
-        """get."""
+        """Get.
+
+        Manages get operations and coordinates related state changes for the component.
+
+        Args:
+            key (str): The key parameter.
+            default (Any): The default parameter.
+
+        Returns:
+            Any: Result of the operation.
+        """
         return self._data.get(key, default)
 
     def set(self, key: str, value: Any) -> None:
-        """Set *key* to *value*, sanitise, and write through to disk."""
+        """Set.
+
+        Manages set operations and coordinates related state changes for the component.
+
+        Args:
+            key (str): The key parameter.
+            value (Any): The value parameter.
+        """
         self._data[key] = value
         self._sanitize()
         self.save()
@@ -124,50 +165,110 @@ class SettingsStore:
 
     @property
     def theme(self) -> str:
-        """theme."""
+        """Theme.
+
+        Manages theme operations and coordinates related state changes for the component.
+
+        Returns:
+            str: Formatted string or path.
+        """
         return str(self._data.get("theme", _DEFAULTS["theme"]))
 
     @theme.setter
     def theme(self, value: str) -> None:
-        """theme."""
+        """Theme.
+
+        Manages theme operations and coordinates related state changes for the component.
+
+        Args:
+            value (str): The value parameter.
+        """
         self.set("theme", value)
 
     @property
     def close_to_tray(self) -> bool:
-        """close_to_tray."""
+        """close_to_tray.
+
+        Manages close to tray operations and coordinates related state changes for the component.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         return bool(self._data.get("close_to_tray", False))
 
     @close_to_tray.setter
     def close_to_tray(self, value: bool) -> None:
-        """close_to_tray."""
+        """close_to_tray.
+
+        Manages close to tray operations and coordinates related state changes for the component.
+
+        Args:
+            value (bool): The value parameter.
+        """
         self.set("close_to_tray", bool(value))
 
     @property
     def reduced_motion(self) -> bool:
-        """reduced_motion."""
+        """reduced_motion.
+
+        Manages reduced motion operations and coordinates related state changes for the component.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         return bool(self._data.get("reduced_motion", False))
 
     @reduced_motion.setter
     def reduced_motion(self, value: bool) -> None:
-        """reduced_motion."""
+        """reduced_motion.
+
+        Manages reduced motion operations and coordinates related state changes for the component.
+
+        Args:
+            value (bool): The value parameter.
+        """
         self.set("reduced_motion", bool(value))
 
     @property
     def update_check(self) -> bool:
-        """update_check."""
+        """update_check.
+
+        Manages update check operations and coordinates related state changes for the component.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         return bool(self._data.get("update_check", False))
 
     @update_check.setter
     def update_check(self, value: bool) -> None:
-        """update_check."""
+        """update_check.
+
+        Manages update check operations and coordinates related state changes for the component.
+
+        Args:
+            value (bool): The value parameter.
+        """
         self.set("update_check", bool(value))
 
     @property
     def leftover_restore_point(self) -> bool:
-        """leftover_restore_point."""
+        """leftover_restore_point.
+
+        Manages leftover restore point operations and coordinates related state changes for the component.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         return bool(self._data.get("leftover_restore_point", True))
 
     @leftover_restore_point.setter
     def leftover_restore_point(self, value: bool) -> None:
-        """leftover_restore_point."""
+        """leftover_restore_point.
+
+        Manages leftover restore point operations and coordinates related state changes for the component.
+
+        Args:
+            value (bool): The value parameter.
+        """
         self.set("leftover_restore_point", bool(value))

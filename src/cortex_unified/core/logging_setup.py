@@ -21,14 +21,36 @@ from structlog.types import EventDict, Processor
 correlation_id_var: ContextVar[Optional[str]] = ContextVar("correlation_id", default=None)
 
 def add_correlation_id(logger: Any, method_name: str, event_dict: EventDict) -> EventDict:
-    """Add correlation ID to log events if present."""
+    """Add correlation ID to log events if present.
+
+    Manages add correlation id operations and coordinates related state changes for the component.
+
+    Args:
+        logger (Any): The logger parameter.
+        method_name (str): The method name parameter.
+        event_dict (EventDict): The event dict parameter.
+
+    Returns:
+        EventDict: Dictionary mapping identifiers to status or values.
+    """
     correlation_id = correlation_id_var.get()
     if correlation_id:
         event_dict["correlation_id"] = correlation_id
     return event_dict
 
 def add_app_context(logger: Any, method_name: str, event_dict: EventDict) -> EventDict:
-    """Add application context to all log events."""
+    """Add application context to all log events.
+
+    Manages add app context operations and coordinates related state changes for the component.
+
+    Args:
+        logger (Any): The logger parameter.
+        method_name (str): The method name parameter.
+        event_dict (EventDict): The event dict parameter.
+
+    Returns:
+        EventDict: Dictionary mapping identifiers to status or values.
+    """
     event_dict["app"] = "cortex_cleaner"
     try:
         from cortex_unified import __version__ as app_version
@@ -49,7 +71,16 @@ def censor_sensitive_data(logger: Any, method_name: str, event_dict: EventDict) 
     }
     
     def _censor_dict(d: Dict[str, Any]) -> Dict[str, Any]:
-        """_censor_dict."""
+        """_censor_dict.
+
+        Manages censor dict operations and coordinates related state changes for the component.
+
+        Args:
+            d (Dict[str, Any]): The d parameter.
+
+        Returns:
+            Dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         result = {}
         for key, value in d.items():
             key_lower = key.lower()
@@ -65,7 +96,6 @@ def censor_sensitive_data(logger: Any, method_name: str, event_dict: EventDict) 
             else:
                 result[key] = value
         return result
-        """_censor_dict."""
     
     return _censor_dict(event_dict)
 
@@ -205,9 +235,11 @@ def set_correlation_id(correlation_id: str) -> None:
     correlation_id_var.set(correlation_id)
 
 def clear_correlation_id() -> None:
-    """clear_correlation_id."""
+    """clear_correlation_id.
+
+    Manages clear correlation id operations and coordinates related state changes for the component.
+    """
     correlation_id_var.set(None)
-    """clear_correlation_id."""
 
 class LogContext:
     """
@@ -221,17 +253,31 @@ class LogContext:
     """
     
     def __init__(self, **kwargs):
-        """Initialize with context key-value pairs."""
+        """Initialize with context key-value pairs.
+
+        Initializes the instance and configures internal state.
+        """
         self.context = kwargs
         self.token = None
     
     def __enter__(self):
-        """Enter context and bind variables."""
+        """Manage context lifecycle and resource acquisition or cleanup.
+
+        Acquires necessary lock or file resources on entry and guarantees safe release and error propagation on exit.
+        """
         self.token = structlog.contextvars.bind_contextvars(**self.context)
         return self
     
     def __exit__(self, exc_type, exc_val, exc_tb):
-        """Exit context and unbind variables."""
+        """Manage context lifecycle and resource acquisition or cleanup.
+
+        Acquires necessary lock or file resources on entry and guarantees safe release and error propagation on exit.
+
+        Args:
+            exc_type: Error message string or exception instance.
+            exc_val: Error message string or exception instance.
+            exc_tb: Error message string or exception instance.
+        """
         if self.token:
             structlog.contextvars.unbind_contextvars(*self.context.keys())
         return False
@@ -242,7 +288,15 @@ def log_scan_start(
     root_path: str,
     **kwargs
 ) -> None:
-    """Log the start of a scan operation."""
+    """Log the start of a scan operation.
+
+    Manages log scan start operations and coordinates related state changes for the component.
+
+    Args:
+        logger (structlog.BoundLogger): The logger parameter.
+        scan_type (str): The scan type parameter.
+        root_path (str): Filesystem path to the target file or directory.
+    """
     logger.info(
         "scan_started",
         scan_type=scan_type,
@@ -258,7 +312,17 @@ def log_scan_complete(
     duration_seconds: float,
     **kwargs
 ) -> None:
-    """Log the completion of a scan operation."""
+    """Log the completion of a scan operation.
+
+    Manages log scan complete operations and coordinates related state changes for the component.
+
+    Args:
+        logger (structlog.BoundLogger): The logger parameter.
+        scan_type (str): The scan type parameter.
+        items_found (int): The items found parameter.
+        bytes_found (int): The bytes found parameter.
+        duration_seconds (float): The duration seconds parameter.
+    """
     logger.info(
         "scan_completed",
         scan_type=scan_type,
@@ -274,7 +338,15 @@ def log_scan_error(
     error: Exception,
     **kwargs
 ) -> None:
-    """Log a scan error with exception details."""
+    """Log a scan error with exception details.
+
+    Manages log scan error operations and coordinates related state changes for the component.
+
+    Args:
+        logger (structlog.BoundLogger): The logger parameter.
+        scan_type (str): The scan type parameter.
+        error (Exception): Error message string or exception instance.
+    """
     logger.error(
         "scan_failed",
         scan_type=scan_type,
@@ -291,7 +363,16 @@ def log_file_operation(
     success: bool,
     **kwargs
 ) -> None:
-    """log_file_operation."""
+    """log_file_operation.
+
+    Manages log file operation operations and coordinates related state changes for the component.
+
+    Args:
+        logger (structlog.BoundLogger): The logger parameter.
+        operation (str): The operation parameter.
+        path (str): Filesystem path to the target file or directory.
+        success (bool): The success parameter.
+    """
     level = "info" if success else "warning"
     getattr(logger, level)(
         "file_operation",
@@ -300,7 +381,6 @@ def log_file_operation(
         success=success,
         **kwargs
     )
-    """log_file_operation."""
 
 def log_performance_metric(
     logger: structlog.BoundLogger,
@@ -309,7 +389,16 @@ def log_performance_metric(
     unit: str = "seconds",
     **kwargs
 ) -> None:
-    """log_performance_metric."""
+    """log_performance_metric.
+
+    Manages log performance metric operations and coordinates related state changes for the component.
+
+    Args:
+        logger (structlog.BoundLogger): The logger parameter.
+        metric_name (str): The metric name parameter.
+        value (float): The value parameter.
+        unit (str): The unit parameter.
+    """
     logger.info(
         "performance_metric",
         metric=metric_name,
@@ -317,7 +406,6 @@ def log_performance_metric(
         unit=unit,
         **kwargs
     )
-    """log_performance_metric."""
 
 if __name__ == "__main__":
     print("Testing structured logging...\n")

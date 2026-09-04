@@ -33,7 +33,10 @@ IS_WINDOWS = platform.system() == "Windows"
 # ---------------------------------------------------------------------------
 
 def test_recall_attributes_mean_dehydrated():
-    """test_recall_attributes_mean_dehydrated."""
+    """test_recall_attributes_mean_dehydrated.
+
+    Manages test recall attributes mean dehydrated operations and coordinates related state changes for the component.
+    """
     assert wa.is_dehydrated(wa.FILE_ATTRIBUTE_RECALL_ON_DATA_ACCESS)
     assert wa.is_dehydrated(wa.FILE_ATTRIBUTE_RECALL_ON_OPEN)
     assert wa.is_dehydrated(wa.FILE_ATTRIBUTE_OFFLINE)
@@ -44,7 +47,10 @@ def test_recall_attributes_mean_dehydrated():
 
 def test_cloud_tag_family_is_matched():
     # The cloud filter reserves 0x9000?01A for CLOUD and CLOUD_1..CLOUD_F.
-    """test_cloud_tag_family_is_matched."""
+    """test_cloud_tag_family_is_matched.
+
+    Manages test cloud tag family is matched operations and coordinates related state changes for the component.
+    """
     assert wa.is_cloud_tag(wa.IO_REPARSE_TAG_CLOUD)
     assert wa.is_cloud_tag(0x9000701A)
     assert wa.is_cloud_tag(0x9000F01A)
@@ -53,14 +59,20 @@ def test_cloud_tag_family_is_matched():
 
 
 def test_junction_detected_by_tag_only():
-    """test_junction_detected_by_tag_only."""
+    """test_junction_detected_by_tag_only.
+
+    Manages test junction detected by tag only operations and coordinates related state changes for the component.
+    """
     assert wa.is_junction(wa.IO_REPARSE_TAG_MOUNT_POINT)
     assert not wa.is_junction(wa.IO_REPARSE_TAG_SYMLINK)
     assert not wa.is_junction(0)
 
 
 def test_describe_explains_each_special_case():
-    """test_describe_explains_each_special_case."""
+    """test_describe_explains_each_special_case.
+
+    Manages test describe explains each special case operations and coordinates related state changes for the component.
+    """
     assert "not stored on this disk" in wa.describe(wa.FILE_ATTRIBUTE_OFFLINE)
     assert "junction" in wa.describe(
         wa.FILE_ATTRIBUTE_REPARSE_POINT, wa.IO_REPARSE_TAG_MOUNT_POINT)
@@ -70,9 +82,15 @@ def test_describe_explains_each_special_case():
 
 
 def test_pure_helpers_never_raise_on_missing_attributes():
-    """Non-Windows stat results have no attribute fields; that must be fine."""
+    """Non-Windows stat results have no attribute fields; that must be fine.
+
+    Manages test pure helpers never raise on missing attributes operations and coordinates related state changes for the component.
+    """
     class Bare:
-        """Bare."""
+        """Bare.
+
+        Manages Bare operations and coordinates related state changes for the component.
+        """
         pass
 
     assert wa.attrs_of(Bare()) == 0
@@ -84,7 +102,16 @@ def test_pure_helpers_never_raise_on_missing_attributes():
 # ---------------------------------------------------------------------------
 
 def _mark_offline(path) -> bool:
-    """Flag *path* with FILE_ATTRIBUTE_OFFLINE; False if the OS refused."""
+    """Flag *path* with FILE_ATTRIBUTE_OFFLINE; False if the OS refused.
+
+    Manages mark offline operations and coordinates related state changes for the component.
+
+    Args:
+        path: Filesystem path to the target file or directory.
+
+    Returns:
+        bool: True if the operation succeeded, False otherwise.
+    """
     import ctypes
     from ctypes import wintypes
 
@@ -95,7 +122,13 @@ def _mark_offline(path) -> bool:
 
 @pytest.fixture
 def cloud_tree(tmp_path):
-    """A folder with one local file, one simulated placeholder, one junction."""
+    """A folder with one local file, one simulated placeholder, one junction.
+
+    Manages cloud tree operations and coordinates related state changes for the component.
+
+    Args:
+        tmp_path: Filesystem path to the target file or directory.
+    """
     real = tmp_path / "real"
     real.mkdir()
     (real / "local.bin").write_bytes(b"a" * 4096)
@@ -114,7 +147,13 @@ def cloud_tree(tmp_path):
 
 @pytest.mark.skipif(not IS_WINDOWS, reason="reparse points are a Windows concept")
 def test_placeholder_excluded_and_reported(cloud_tree):
-    """test_placeholder_excluded_and_reported."""
+    """test_placeholder_excluded_and_reported.
+
+    Manages test placeholder excluded and reported operations and coordinates related state changes for the component.
+
+    Args:
+        cloud_tree: The cloud tree parameter.
+    """
     root, stub = cloud_tree
     result = FastWalker(WalkOptions()).scan(root)
 
@@ -129,7 +168,13 @@ def test_placeholder_excluded_and_reported(cloud_tree):
 
 @pytest.mark.skipif(not IS_WINDOWS, reason="reparse points are a Windows concept")
 def test_junction_not_descended(cloud_tree):
-    """test_junction_not_descended."""
+    """test_junction_not_descended.
+
+    Manages test junction not descended operations and coordinates related state changes for the component.
+
+    Args:
+        cloud_tree: The cloud tree parameter.
+    """
     root, _ = cloud_tree
     result = FastWalker(WalkOptions()).scan(root)
     # Without junction handling the target's file would be counted twice.
@@ -139,7 +184,13 @@ def test_junction_not_descended(cloud_tree):
 
 @pytest.mark.skipif(not IS_WINDOWS, reason="reparse points are a Windows concept")
 def test_placeholder_skip_is_opt_out(cloud_tree):
-    """Read-only inventory callers can still see placeholders."""
+    """Read-only inventory callers can still see placeholders.
+
+    Manages test placeholder skip is opt out operations and coordinates related state changes for the component.
+
+    Args:
+        cloud_tree: The cloud tree parameter.
+    """
     root, _ = cloud_tree
     result = FastWalker(WalkOptions(skip_cloud_placeholders=False)).scan(root)
     assert result.files_scanned == 2
@@ -153,7 +204,13 @@ def test_placeholder_skip_is_opt_out(cloud_tree):
 
 @pytest.mark.skipif(not IS_WINDOWS, reason="reparse points are a Windows concept")
 def test_placeholder_is_not_reported_as_empty(cloud_tree):
-    """find_empty must not offer a placeholder as a deletable empty file."""
+    """find_empty must not offer a placeholder as a deletable empty file.
+
+    Manages test placeholder is not reported as empty operations and coordinates related state changes for the component.
+
+    Args:
+        cloud_tree: The cloud tree parameter.
+    """
     root, _ = cloud_tree
     empty_files, _ = FastWalker(WalkOptions()).find_empty(root)
     assert all(p.name != "cloud_only.bin" for p in empty_files)
@@ -161,7 +218,13 @@ def test_placeholder_is_not_reported_as_empty(cloud_tree):
 
 @pytest.mark.skipif(not IS_WINDOWS, reason="reparse points are a Windows concept")
 def test_shredder_refuses_cloud_placeholder(cloud_tree):
-    """Overwriting a placeholder would download it first - refuse instead."""
+    """Overwriting a placeholder would download it first - refuse instead.
+
+    Manages test shredder refuses cloud placeholder operations and coordinates related state changes for the component.
+
+    Args:
+        cloud_tree: The cloud tree parameter.
+    """
     from cortex_unified.engine.models import DeletionMethod, DeletionOutcome
     from cortex_unified.engine.secure_delete import SecureDeleter
 
@@ -181,7 +244,13 @@ def test_shredder_refuses_cloud_placeholder(cloud_tree):
 # ---------------------------------------------------------------------------
 
 def test_on_disk_size_matches_a_plain_file(tmp_path):
-    """test_on_disk_size_matches_a_plain_file."""
+    """test_on_disk_size_matches_a_plain_file.
+
+    Manages test on disk size matches a plain file operations and coordinates related state changes for the component.
+
+    Args:
+        tmp_path: Filesystem path to the target file or directory.
+    """
     f = tmp_path / "plain.bin"
     f.write_bytes(b"x" * 5000)
     measured = wa.on_disk_size(f, 5000)
@@ -191,12 +260,24 @@ def test_on_disk_size_matches_a_plain_file(tmp_path):
 
 
 def test_on_disk_size_returns_none_for_missing_path(tmp_path):
-    """test_on_disk_size_returns_none_for_missing_path."""
+    """test_on_disk_size_returns_none_for_missing_path.
+
+    Manages test on disk size returns none for missing path operations and coordinates related state changes for the component.
+
+    Args:
+        tmp_path: Filesystem path to the target file or directory.
+    """
     assert wa.on_disk_size(tmp_path / "nope.bin", 0) in (None, 0)
 
 
 def test_entry_falls_back_to_logical_size_when_unmeasured(tmp_path):
-    """reclaimable_size must never under-report an ordinary file."""
+    """reclaimable_size must never under-report an ordinary file.
+
+    Manages test entry falls back to logical size when unmeasured operations and coordinates related state changes for the component.
+
+    Args:
+        tmp_path: Filesystem path to the target file or directory.
+    """
     f = tmp_path / "plain.bin"
     f.write_bytes(b"x" * 2048)
     result = FastWalker(WalkOptions(measure_on_disk=False)).scan(tmp_path)

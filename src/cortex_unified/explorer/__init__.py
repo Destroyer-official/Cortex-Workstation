@@ -18,23 +18,26 @@ if _NATIVE_DIR.is_dir() and str(_NATIVE_DIR) not in sys.path:
 
 try:
     from NexusExplorer.native.nexus_core import (  # type: ignore
-        FileEntry,
         FileTableModel,
-        SortFilterProxy,
+        SortProxy as SortFilterProxy,
         fmt_ms,
         human,
     )
 except ImportError:
     try:
         from nexus_core import (  # type: ignore
-            FileEntry,
             FileTableModel,
-            SortFilterProxy,
+            SortProxy as SortFilterProxy,
             fmt_ms,
             human,
         )
     except ImportError:
-        FileEntry = FileTableModel = SortFilterProxy = fmt_ms = human = None  # type: ignore
+        FileTableModel = SortFilterProxy = fmt_ms = human = None  # type: ignore
+
+try:
+    from cortex_unified.engine.models import FileEntry  # type: ignore
+except ImportError:
+    FileEntry = None  # type: ignore
 
 try:
     from NexusExplorer.native.nexus_explorer import (  # type: ignore

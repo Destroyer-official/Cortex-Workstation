@@ -1,9 +1,5 @@
-"""Fluent Design icon library for NexusExplorer.
-
-All icons are defined as SVG path data in a 20x20 viewport with 1.5px stroke,
-matching Windows 11's Fluent UI icon style. Rendered via QPainter onto QPixmap
-at any requested size — no external assets required.
-"""
+"""Icon system using Material Design SVGs loaded from disk (MATERIAL_DIR) with inline Fluent fallback.
+No OS shell icons are used; all icons are rendered from embedded SVG resources."""
 from __future__ import annotations
 
 __all__ = [
@@ -564,7 +560,6 @@ class _LRUCache:
         """Create the OrderedDict store with the given capacity."""
         self._data: OrderedDict[str, QIcon] = OrderedDict()
         self._maxsize = maxsize
-        """Create the OrderedDict store with the given capacity."""
 
     def get(self, key: str) -> QIcon | None:
         """Return the cached icon (refreshing LRU position) or None."""
@@ -572,7 +567,6 @@ class _LRUCache:
             self._data.move_to_end(key)
             return self._data[key]
         return None
-        """Return the cached icon (refreshing LRU position) or None."""
 
     def set(self, key: str, value: QIcon) -> None:
         """Insert/refresh an entry, evicting the oldest when the cache
@@ -582,8 +576,6 @@ class _LRUCache:
         self._data[key] = value
         while len(self._data) > self._maxsize:
             self._data.popitem(last=False)
-        """Insert/refresh an entry, evicting the oldest when the cache
-        exceeds maxsize."""
     """Ordered-dict LRU cache mapping string keys to rendered QIcons,
     evicting the least recently used entry beyond maxsize."""
 
@@ -620,9 +612,6 @@ def _render_svg(path_d: str, size: int, color: str,
     renderer.render(painter)
     painter.end()
     return pixmap
-    """Render an inline SVG (20×20 viewBox, 1.5 px stroke, round joins)
-    built from path_d into a transparent antialiased QPixmap of the
-    requested size; renderers are cached per (path, colors) up to 200."""
 
 
 def _render_svg_file(svg_content: str, size: int, default_color: str = "#FFB900") -> QPixmap:
@@ -665,9 +654,6 @@ def icon(name: str, size: int = 20, color: str = _CLR_DEFAULT,
         _ICON_CACHE.pop(next(iter(_ICON_CACHE)))
     _ICON_CACHE[cache_key] = ico
     return ico
-    """Return a Fluent icon by name at the requested size/color/fill,
-    served from a bounded icon cache; unknown names fall back to
-    file_unknown (ValueError when even that is missing)."""
 
 
 def _material_icon(material_name: str, size: int = 32, default_color: str = "#FFB900") -> QIcon:
@@ -1267,10 +1253,7 @@ _MATERIAL_EXT_MAP: dict[str, str] = {
 
 def icon_for_ext(ext: str, size: int = 32,
                  color: str = _CLR_DEFAULT) -> QIcon:
-    """Return a file-type icon for the given extension.
-
-    Priority: Material icon from disk > inline Fluent SVG > OS shell icon.
-    """
+    """Return icon from Material SVG on disk, falling back to inline Fluent SVG; no OS shell lookup."""
     # Try Material icon from disk first
     mat_name = _MATERIAL_EXT_MAP.get(ext.lower())
     if mat_name:

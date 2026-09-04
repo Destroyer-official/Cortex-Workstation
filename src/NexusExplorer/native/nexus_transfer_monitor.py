@@ -32,10 +32,21 @@ _KIND_BADGE = {"copy": "COPY", "move": "MOVE", "delete": "DELETE"}
 
 
 class _JobRow(QWidget):
-    """One visual row per transfer job."""
+    """Jobrow.
+
+    Manages JobRow operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, job_id: str, queue: TransferQueue, parent=None):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            job_id (str): The job id parameter.
+            queue (TransferQueue): The queue parameter.
+            parent: Parent window or shell controller instance.
+        """
         super().__init__(parent)
         self.job_id = job_id
         self.queue = queue
@@ -94,12 +105,20 @@ class _JobRow(QWidget):
         self._last_file = job.current_file if job else ""
 
         self._refresh(job)
-        """__init__."""
 
     # ------------------------------------------------------------- helpers
     @staticmethod
     def _describe(job) -> str:
-        """_describe."""
+        """Describe.
+
+        Manages describe operations and coordinates related state changes for the component.
+
+        Args:
+            job: The job parameter.
+
+        Returns:
+            str: Formatted string or path.
+        """
         if job is None:
             return "Transfer"
         if job.kind == "delete":
@@ -109,10 +128,15 @@ class _JobRow(QWidget):
         src = Path(job.sources[0]).name if job.sources else "?"
         more = f"  +{len(job.sources) - 1} more" if len(job.sources) > 1 else ""
         return f"{src}{more}   →   {Path(job.dest).name or job.dest}"
-        """_describe."""
 
     def _refresh(self, job):
-        """_refresh."""
+        """Fetch and reload the latest data entries into the view.
+
+        Queries the underlying system service or storage cache and refreshes view tables with up-to-date state.
+
+        Args:
+            job: The job parameter.
+        """
         if job is None:
             return
         new_progress = job.progress
@@ -154,11 +178,13 @@ class _JobRow(QWidget):
         if job.state is JobState.FAILED:
             self.badge.setStyleSheet(
                 "color:#f85149; font-weight:700;")
-        """_refresh."""
 
     # ------------------------------------------------------------ handlers
     def _toggle_pause(self):
-        """_toggle_pause."""
+        """_toggle_pause.
+
+        Toggles selection states or operational modes, recalculating active selection counts and enabling/disabling dependent actions.
+        """
         job = self.queue.get_job(self.job_id)
         if job is None:
             return
@@ -167,20 +193,31 @@ class _JobRow(QWidget):
         elif job.state is JobState.PAUSED:
             self.queue.resume(self.job_id)
         self._refresh(self.queue.get_job(self.job_id))
-        """_toggle_pause."""
 
     def _cancel(self):
-        """_cancel."""
+        """Cancel.
+
+        Manages cancel operations and coordinates related state changes for the component.
+        """
         self.queue.cancel(self.job_id)
         self._refresh(self.queue.get_job(self.job_id))
-        """_cancel."""
 
 
 class TransferMonitorDialog(QDialog):
-    """The transfers window. One instance per ExplorerWidget."""
+    """Transfermonitordialog.
+
+    Manages TransferMonitorDialog operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, queue: TransferQueue, parent=None):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            queue (TransferQueue): The queue parameter.
+            parent: Parent window or shell controller instance.
+        """
         super().__init__(parent)
         self.setWindowTitle("Nexus Transfers")
         self.setModal(False)
@@ -229,11 +266,16 @@ class TransferMonitorDialog(QDialog):
         self._timer.setInterval(250)
         self._timer.timeout.connect(self._tick)
         self._timer.start()
-        """__init__."""
 
     # ------------------------------------------------------------- slots
     def _on_job_added(self, job_id: str):
-        """_on_job_added."""
+        """_on_job_added.
+
+        Manages on job added operations and coordinates related state changes for the component.
+
+        Args:
+            job_id (str): The job id parameter.
+        """
         if job_id in self._rows:
             return
         row = _JobRow(job_id, self._queue)
@@ -242,27 +284,36 @@ class TransferMonitorDialog(QDialog):
         self.show()
         self.raise_()
         self.activateWindow()
-        """_on_job_added."""
 
     def _on_progress(self, job_id: str, *_a):
-        """_on_progress."""
+        """_on_progress.
+
+        Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
+
+        Args:
+            job_id (str): The job id parameter.
+        """
         row = self._rows.get(job_id)
         if row is not None:
             row._refresh(self._queue.get_job(job_id))
         self._update_summary()
-        """_on_progress."""
 
     def _tick(self):
-        """_tick."""
+        """Handle recurring timer events for real-time metric updates.
+
+        Samples live system performance statistics, advances animation counters, and updates graphical meters.
+        """
         for jid, row in list(self._rows.items()):
             job = self._queue.get_job(jid)
             if job is not None and job.state is JobState.RUNNING:
                 row._refresh(job)
         self._update_summary()
-        """_tick."""
 
     def _update_summary(self):
-        """_update_summary."""
+        """_update_summary.
+
+        Manages update summary operations and coordinates related state changes for the component.
+        """
         jobs = self._queue.get_all_jobs()
         active = [j for j in jobs if j.state in (
             JobState.QUEUED, JobState.RUNNING, JobState.PAUSED)]
@@ -276,10 +327,12 @@ class TransferMonitorDialog(QDialog):
             self.summary.setText(f"{len(done)} completed  ·  queue idle")
         else:
             self.summary.setText("No active transfers")
-        """_update_summary."""
 
     def _clear_finished(self):
-        """_clear_finished."""
+        """_clear_finished.
+
+        Manages clear finished operations and coordinates related state changes for the component.
+        """
         n = self._queue.clear_finished()
         for jid, row in list(self._rows.items()):
             job = self._queue.get_job(jid)
@@ -288,17 +341,21 @@ class TransferMonitorDialog(QDialog):
                 row.deleteLater()
                 self._rows.pop(jid, None)
         log.debug("cleared %d finished jobs", n)
-        """_clear_finished."""
 
     def open_for(self) -> None:
-        """open_for."""
+        """open_for.
+
+        Manages open for operations and coordinates related state changes for the component.
+        """
         self.show()
         self.raise_()
         self.activateWindow()
-        """open_for."""
 
     def cleanup(self) -> None:
-        """Stop timers and release all row widgets."""
+        """Stop timers and release all row widgets.
+
+        Permanently purges or removes specified target items, reclaiming storage space and logging actions taken.
+        """
         self._timer.stop()
         for row in self._rows.values():
             row.setParent(None)
@@ -306,7 +363,12 @@ class TransferMonitorDialog(QDialog):
         self._rows.clear()
 
     def closeEvent(self, event) -> None:
-        """closeEvent."""
+        """Handle the window or widget close event.
+
+        Performs graceful shutdown, releases active workers and system hooks, persists window geometry, and accepts the close event.
+
+        Args:
+            event: The Qt event object.
+        """
         self.cleanup()
         super().closeEvent(event)
-        """closeEvent."""

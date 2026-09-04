@@ -27,7 +27,17 @@ _NO_WINDOW = 0x08000000 if _IS_WINDOWS else 0
 
 
 def _describe(name: str, exe: str) -> str:
-    """Friendly description via process_meta; never raises."""
+    """Describe.
+
+    Manages describe operations and coordinates related state changes for the component.
+
+    Args:
+        name (str): The name parameter.
+        exe (str): The exe parameter.
+
+    Returns:
+        str: Formatted string or path.
+    """
     try:
         from cortex_unified.system_tools.process_meta import describe
         return describe(name, exe)
@@ -46,13 +56,22 @@ class TaskManager:
 
     @classmethod
     def instance(cls) -> "TaskManager":
-        """Instance."""
+        """Instance.
+
+        Manages instance operations and coordinates related state changes for the component.
+
+        Returns:
+            'TaskManager': Result of the operation.
+        """
         if cls._instance is None:
             cls._instance = cls()
         return cls._instance
 
     def __init__(self) -> None:
-        """Initialize Task Manager."""
+        """Initialize Task Manager.
+
+        Initializes the instance and configures internal state.
+        """
         self._cache: dict[int, Any] = {}   # pid -> psutil.Process
         self._installed_bytes: int | None = None  # physical RAM incl. reserved
 
@@ -104,7 +123,16 @@ class TaskManager:
         }
 
     def _refresh_handles(self, psutil) -> dict[int, Any]:
-        """Return {pid: Process} reusing cached handles; drop dead ones."""
+        """Return {pid: Process} reusing cached handles; drop dead ones.
+
+        Manages refresh handles operations and coordinates related state changes for the component.
+
+        Args:
+            psutil: The psutil parameter.
+
+        Returns:
+            dict[int, Any]: Dictionary mapping identifiers to status or values.
+        """
         live: dict[int, Any] = {}
         for p in psutil.process_iter(["pid"]):
             pid = p.info.get("pid")
@@ -116,14 +144,27 @@ class TaskManager:
         return live
 
     def end_process(self, pid: int, force: bool = False) -> tuple[bool, str]:
-        """Terminate (or kill) a process by PID. Returns (ok, message)."""
+        """Terminate (or kill) a process by PID. Returns (ok, message).
+
+        Manages end process operations and coordinates related state changes for the component.
+
+        Args:
+            pid (int): The pid parameter.
+            force (bool): The force parameter.
+
+        Returns:
+            tuple[bool, str]: True if the operation succeeded, False otherwise.
+        """
         try:
             import psutil
         except ImportError:
             return False, "psutil is not installed."
         try:
+            from cortex_unified.core.proc import is_protected_process
             proc = psutil.Process(pid)
-            name = proc.name()
+            name = proc.name() or ""
+            if is_protected_process(pid) or is_protected_process(name):
+                return False, f"Action denied: '{name}' is a protected Windows system process. Terminating it would destabilize the OS or crash the desktop shell."
             if force:
                 proc.kill()
             else:
@@ -140,7 +181,18 @@ class TaskManager:
 
     def _collect_processes(self, psutil, cores: int,
                            handles: dict[int, Any]) -> list[dict[str, Any]]:
-        """_collect_processes."""
+        """_collect_processes.
+
+        Manages collect processes operations and coordinates related state changes for the component.
+
+        Args:
+            psutil: The psutil parameter.
+            cores (int): The cores parameter.
+            handles (dict[int, Any]): The handles parameter.
+
+        Returns:
+            list[dict[str, Any]]: List of processed items or identifiers.
+        """
         procs: list[dict[str, Any]] = []
         for pid, handle in handles.items():
             try:
@@ -176,11 +228,19 @@ class TaskManager:
                 continue
         procs.sort(key=lambda d: d["rss"], reverse=True)
         return procs
-        """_collect_processes."""
-        """_collect_processes."""
 
     def _collect_memory(self, psutil, processes: list[dict]) -> dict[str, Any]:
-        """_collect_memory."""
+        """_collect_memory.
+
+        Manages collect memory operations and coordinates related state changes for the component.
+
+        Args:
+            psutil: The psutil parameter.
+            processes (list[dict]): The processes parameter.
+
+        Returns:
+            dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         vm = psutil.virtual_memory()
         sum_ws = sum(p["rss"] for p in processes)
         used = vm.total - vm.available
@@ -210,8 +270,6 @@ class TaskManager:
             out["installed"] = installed
             out["hardware_reserved"] = installed - vm.total
         return out
-        """_collect_memory."""
-        """_collect_memory."""
 
     def _installed_ram(self, psutil) -> int | None:
         """Physically-installed RAM (may exceed OS-usable due to reservations).

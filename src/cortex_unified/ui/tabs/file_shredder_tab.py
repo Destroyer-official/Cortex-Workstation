@@ -24,25 +24,39 @@ from cortex_unified.licensing import Feature, allowed
 
 
 class FileShredderWorker(QThread):
-    """Runs DoD 5220.22-M multi-pass overwrite shredding in background."""
+    """Fileshredderworker.
+
+    Manages FileShredderWorker operations and coordinates related state changes for the component.
+    """
     finished = Signal(dict)
     error = Signal(str)
     progress_update = Signal(str, int)
 
     def __init__(self, config: Config, target_paths: List[str], passes: int, method: str,
                  wipe_drive: Optional[str] = None):
-        """Store config, target paths, passes/method, and optional wipe drive."""
+        """Store config, target paths, passes/method, and optional wipe drive.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            config (Config): The config parameter.
+            target_paths (List[str]): Filesystem path to the target file or directory.
+            passes (int): The passes parameter.
+            method (str): The method parameter.
+            wipe_drive (Optional[str]): The wipe drive parameter.
+        """
         super().__init__()
         self.config = config
         self.target_paths = target_paths
         self.passes = passes
         self.method = method
         self.wipe_drive = wipe_drive
-        """__init__."""
-        """__init__."""
 
     def run(self):
-        """Shred each path (file or directory) and optionally wipe free space, emitting progress and finished/error."""
+        """Shred each path (file or directory) and optionally wipe free space, emitting progress and finished/error.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         try:
             shredder = AdvancedShredder()
             results = {'successes': [], 'failures': []}
@@ -88,22 +102,32 @@ class FileShredderWorker(QThread):
             self.finished.emit(results)
         except Exception as e:
             self.error.emit(str(e))
-        """run."""
-        """run."""
 
 
 class FileShredderTab(BaseTab):
-    """Tab for file shredder tab functionality."""
+    """Fileshreddertab.
+
+    Manages FileShredderTab operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, config, logger, safety_manager):
-        """Initialize the tab and its empty shred-set."""
+        """Initialize the tab and its empty shred-set.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            config: The config parameter.
+            logger: The logger parameter.
+            safety_manager: The safety manager parameter.
+        """
         super().__init__(config, logger, safety_manager)
         self.files_to_shred = set()
-        """__init__."""
-        """__init__."""
 
     def setup_ui(self):
-        """Create the file shredder tab."""
+        """Create the file shredder tab.
+
+        Manages setup ui operations and coordinates related state changes for the component.
+        """
         layout = QVBoxLayout(self)
         
         warning_label = QLabel('⚠️ WARNING: File shredding permanently destroys data and cannot be undone!')
@@ -199,51 +223,59 @@ class FileShredderTab(BaseTab):
         layout.addWidget(self.shred_results)
 
     def _sync_list(self):
-        """Rebuild the list widget from the shred set and toggle the start button."""
+        """Rebuild the list widget from the shred set and toggle the start button.
+
+        Manages sync list operations and coordinates related state changes for the component.
+        """
         self.shredder_file_list.clear()
         for f in self.files_to_shred:
             self.shredder_file_list.addItem(f)
         self.start_shred_button.setEnabled(len(self.files_to_shred) > 0)
-        """_sync_list."""
-        """_sync_list."""
 
     def add_files_to_shred(self):
-        """Add chosen files to the shred set and refresh the list."""
+        """Add chosen files to the shred set and refresh the list.
+
+        Manages add files to shred operations and coordinates related state changes for the component.
+        """
         files, _ = QFileDialog.getOpenFileNames(self, "Select Files to Shred")
         if files:
             for f in files:
                 self.files_to_shred.add(f)
             self._sync_list()
-        """add_files_to_shred."""
-        """add_files_to_shred."""
 
     def add_folder_to_shred(self):
-        """Add a chosen folder to the shred set and refresh the list."""
+        """Add a chosen folder to the shred set and refresh the list.
+
+        Manages add folder to shred operations and coordinates related state changes for the component.
+        """
         folder = QFileDialog.getExistingDirectory(self, "Select Directory to Shred")
         if folder:
             self.files_to_shred.add(folder)
             self._sync_list()
-        """add_folder_to_shred."""
-        """add_folder_to_shred."""
 
     def remove_files_from_shred(self):
-        """Discard the selected entries from the shred set."""
+        """Discard the selected entries from the shred set.
+
+        Manages remove files from shred operations and coordinates related state changes for the component.
+        """
         items = self.shredder_file_list.selectedItems()
         for item in items:
             self.files_to_shred.discard(item.text())
         self._sync_list()
-        """remove_files_from_shred."""
-        """remove_files_from_shred."""
 
     def clear_shred_list(self):
-        """Empty the shred set and refresh the list."""
+        """Empty the shred set and refresh the list.
+
+        Manages clear shred list operations and coordinates related state changes for the component.
+        """
         self.files_to_shred.clear()
         self._sync_list()
-        """clear_shred_list."""
-        """clear_shred_list."""
 
     def _resolve_passes(self):
-        """Entitlement-checked pass count; never exceeds the licensed cap."""
+        """Entitlement-checked pass count; never exceeds the licensed cap.
+
+        Manages resolve passes operations and coordinates related state changes for the component.
+        """
         passes = self.shred_passes_spinbox.value()
         if passes > 1 and not allowed(Feature.SHRED_MULTIPASS):
             self.shred_results.append(
@@ -253,7 +285,13 @@ class FileShredderTab(BaseTab):
 
     @staticmethod
     def _derive_drive_letter(paths):
-        """Single drive letter shared by all target paths, else None."""
+        """Single drive letter shared by all target paths, else None.
+
+        Manages derive drive letter operations and coordinates related state changes for the component.
+
+        Args:
+            paths: Filesystem path to the target file or directory.
+        """
         anchors = {Path(p).anchor for p in paths}
         if len(anchors) != 1:
             return None
@@ -261,7 +299,10 @@ class FileShredderTab(BaseTab):
         return anchor or None
 
     def start_file_shredding(self):
-        """Confirm destructiveness, resolve passes/wipe drive, and launch the worker."""
+        """Confirm destructiveness, resolve passes/wipe drive, and launch the worker.
+
+        Manages start file shredding operations and coordinates related state changes for the component.
+        """
         if not self.files_to_shred:
             return
             
@@ -315,25 +356,38 @@ class FileShredderTab(BaseTab):
         worker.finished.connect(lambda: self._on_worker_finished(worker))
         worker.error.connect(lambda: self._on_worker_finished(worker))
         worker.start()
-        """start_file_shredding."""
-        """start_file_shredding."""
 
     def _on_shred_progress(self, msg, pct):
-        """Show the current shredding message and percentage."""
+        """Show the current shredding message and percentage.
+
+        Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
+
+        Args:
+            msg: Informational or progress status message.
+            pct: The pct parameter.
+        """
         self.shred_status_label.setText(msg)
         self.shred_progress_bar.setValue(pct)
-        """_on_shred_progress."""
-        """_on_shred_progress."""
 
     def _on_worker_finished(self, worker):
-        """Unregister a finished worker thread and delete it."""
+        """Unregister a finished worker thread and delete it.
+
+        Manages on worker finished operations and coordinates related state changes for the component.
+
+        Args:
+            worker: The worker parameter.
+        """
         self.remove_worker_thread(worker)
         worker.deleteLater()
-        """_on_worker_finished."""
-        """_on_worker_finished."""
 
     def _on_shred_complete(self, results):
-        """Report shredded/failed paths and the free-space wipe result, then clear the list."""
+        """Report shredded/failed paths and the free-space wipe result, then clear the list.
+
+        Manages on shred complete operations and coordinates related state changes for the component.
+
+        Args:
+            results: Collection or dictionary holding operation results.
+        """
         self.start_shred_button.setEnabled(True)
         self.shred_progress_bar.setVisible(False)
         
@@ -358,14 +412,16 @@ class FileShredderTab(BaseTab):
         self._sync_list()
         
         QMessageBox.information(self, "Sequence Complete", summary)
-        """_on_shred_complete."""
-        """_on_shred_complete."""
 
     def _on_shred_error(self, error):
-        """Re-enable shredding and report the fatal error."""
+        """Re-enable shredding and report the fatal error.
+
+        Manages on shred error operations and coordinates related state changes for the component.
+
+        Args:
+            error: Error message string or exception instance.
+        """
         self.start_shred_button.setEnabled(True)
         self.shred_progress_bar.setVisible(False)
         self.shred_results.append(f"FATAL ERROR: {error}")
         QMessageBox.critical(self, "Error", f"Execution failed:\n{error}")
-        """_on_shred_error."""
-        """_on_shred_error."""

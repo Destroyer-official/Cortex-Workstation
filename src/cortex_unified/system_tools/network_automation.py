@@ -24,7 +24,10 @@ _WEEKDAYS = {
 
 @dataclass(frozen=True, slots=True)
 class NetworkSchedule:
-    """Network Schedule data container."""
+    """Networkschedule.
+
+    Manages NetworkSchedule operations and coordinates related state changes for the component.
+    """
     frequency: str = "daily"
     time: str = "09:00"
     weekday: str = "MON"
@@ -36,11 +39,23 @@ class NetworkSchedule:
 
 
 class NetworkScheduleError(RuntimeError):
-    """Raised when schedule validation or OS task creation fails."""
+    """Networkscheduleerror.
+
+    Manages NetworkScheduleError operations and coordinates related state changes for the component.
+    """
 
 
 def _validated(spec: NetworkSchedule) -> NetworkSchedule:
-    """_validated."""
+    """Validated.
+
+    Manages validated operations and coordinates related state changes for the component.
+
+    Args:
+        spec (NetworkSchedule): The spec parameter.
+
+    Returns:
+        NetworkSchedule: Result of the operation.
+    """
     frequency = spec.frequency.strip().lower()
     if frequency not in {"hourly", "daily", "weekly"}:
         raise ValueError("frequency must be hourly, daily, or weekly")
@@ -65,12 +80,19 @@ def _validated(spec: NetworkSchedule) -> NetworkSchedule:
         frequency, spec.time, weekday, interval, spec.profile,
         scopes, ports, output,
     )
-    """_validated."""
-    """_validated."""
 
 
 def build_scan_command(spec: NetworkSchedule) -> list[str]:
-    """Build the fixed CLI command; no user-provided executable is accepted."""
+    """Build the fixed CLI command; no user-provided executable is accepted.
+
+    Manages build scan command operations and coordinates related state changes for the component.
+
+    Args:
+        spec (NetworkSchedule): The spec parameter.
+
+    Returns:
+        list[str]: List of processed items or identifiers.
+    """
     selected = _validated(spec)
     command = [
         sys.executable, "-m",
@@ -87,7 +109,16 @@ def build_scan_command(spec: NetworkSchedule) -> list[str]:
 
 
 def build_windows_arguments(spec: NetworkSchedule) -> list[str]:
-    """Build windows arguments."""
+    """Build windows arguments.
+
+    Manages build windows arguments operations and coordinates related state changes for the component.
+
+    Args:
+        spec (NetworkSchedule): The spec parameter.
+
+    Returns:
+        list[str]: List of processed items or identifiers.
+    """
     selected = _validated(spec)
     trigger = ["/sc", selected.frequency]
     if selected.frequency == "hourly":
@@ -104,15 +135,30 @@ def build_windows_arguments(spec: NetworkSchedule) -> list[str]:
 
 
 class NetworkScanScheduler:
-    """Purpose-built adapter that can only schedule Cortex LAN scans."""
+    """Networkscanscheduler.
+
+    Manages NetworkScanScheduler operations and coordinates related state changes for the component.
+    """
 
     @staticmethod
     def supported() -> bool:
-        """Supported."""
+        """Supported.
+
+        Manages supported operations and coordinates related state changes for the component.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         return platform.system() == "Windows"
 
     def create(self, spec: NetworkSchedule) -> None:
-        """Create."""
+        """Create.
+
+        Manages create operations and coordinates related state changes for the component.
+
+        Args:
+            spec (NetworkSchedule): The spec parameter.
+        """
         if not self.supported():
             raise NetworkScheduleError(
                 "recurring network scans currently require Windows Task "
@@ -125,7 +171,13 @@ class NetworkScanScheduler:
                 f"Task Scheduler rejected the network scan: {detail[:512]}")
 
     def delete(self) -> bool:
-        """Delete."""
+        """Delete.
+
+        Manages delete operations and coordinates related state changes for the component.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         if not self.supported():
             return False
         result = proc.run(
@@ -134,7 +186,13 @@ class NetworkScanScheduler:
         return result.returncode == 0
 
     def status(self) -> dict[str, str | bool]:
-        """Status."""
+        """Status.
+
+        Manages status operations and coordinates related state changes for the component.
+
+        Returns:
+            dict[str, str | bool]: Dictionary mapping identifiers to status or values.
+        """
         if not self.supported():
             return {"installed": False, "detail": "unsupported platform"}
         result = proc.run(

@@ -19,7 +19,10 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 
 def find_all_python_files():
-    """Find all actual Python files in the repository."""
+    """Find all actual Python files in the repository.
+
+    Manages find all python files operations and coordinates related state changes for the component.
+    """
     py_files = []
     for p in sorted(REPO_ROOT.rglob("*.py")):
         if "__pycache__" not in str(p) and ".pytest_cache" not in str(p) and ".hypothesis" not in str(p):
@@ -28,7 +31,13 @@ def find_all_python_files():
 
 
 def verify_file(p: Path):
-    """Deeply verify a single python program file."""
+    """Deeply verify a single python program file.
+
+    Manages verify file operations and coordinates related state changes for the component.
+
+    Args:
+        p (Path): The p parameter.
+    """
     rel_path = p.relative_to(REPO_ROOT).as_posix()
     result = {
         "path": rel_path,
@@ -100,7 +109,10 @@ def verify_file(p: Path):
 
 
 def main():
-    """main."""
+    """Main.
+
+    Manages main operations and coordinates related state changes for the component.
+    """
     print("=" * 80)
     print("  DEEP ONE-BY-ONE VERIFICATION OF ALL PROGRAM FILES IN REPOSITORY")
     print("=" * 80)

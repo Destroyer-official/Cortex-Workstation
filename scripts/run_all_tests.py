@@ -7,15 +7,27 @@ import pytest
 sys.path.insert(0, 'src')
 
 class FailureCollector:
-    """FailureCollector."""
+    """Failurecollector.
+
+    Manages FailureCollector operations and coordinates related state changes for the component.
+    """
     def __init__(self):
-        """__init__."""
+        """Initialize the instance and configure internal state.
+
+        Sets up sub-widgets, event signal connections, and default options.
+        """
         self.failed = []
         self.passed = 0
         self.skipped = 0
 
     def pytest_runtest_logreport(self, report):
-        """pytest_runtest_logreport."""
+        """pytest_runtest_logreport.
+
+        Manages pytest runtest logreport operations and coordinates related state changes for the component.
+
+        Args:
+            report: The generated report data object from the backend.
+        """
         if report.when == 'call':
             if report.failed:
                 self.failed.append((report.nodeid, str(report.longrepr)))

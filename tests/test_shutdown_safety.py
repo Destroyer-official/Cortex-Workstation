@@ -33,13 +33,22 @@ from PySide6.QtWidgets import QApplication  # noqa: E402
 
 @pytest.fixture(scope="module")
 def app():
-    """app."""
+    """App.
+
+    Manages app operations and coordinates related state changes for the component.
+    """
     return QApplication.instance() or QApplication([])
 
 
 @pytest.fixture
 def window(app):
-    """window."""
+    """Window.
+
+    Manages window operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+    """
     from cortex_unified.ui.premium.theme import apply_theme
     from cortex_unified.ui.premium.window import PremiumMainWindow
     apply_theme(app, "dark")
@@ -53,23 +62,38 @@ def window(app):
 
 
 class _CooperativeWorker(QObject):
-    """Simulates a proc.run()-style call: polls cancel_event in small slices."""
+    """Cooperativeworker.
+
+    Manages CooperativeWorker operations and coordinates related state changes for the component.
+    """
 
     finished = Signal(str)
     failed = Signal(str)
 
     def __init__(self, poll_s: float = 0.05):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            poll_s (float): The poll s parameter.
+        """
         super().__init__()
         self._cancel = threading.Event()
         self._poll_s = poll_s
 
     def cancel(self) -> None:
-        """cancel."""
+        """cancel.
+
+        Sets the internal cancellation event to cooperatively stop worker execution at the next safe boundary.
+        """
         self._cancel.set()
 
     def run(self) -> None:
-        """run."""
+        """run.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         for _ in range(200):  # up to 10s if never cancelled
             if self._cancel.is_set():
                 return
@@ -88,23 +112,42 @@ class _StubbornWorker(QObject):
     failed = Signal(str)
 
     def __init__(self, sleep_s: float = 30.0):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            sleep_s (float): The sleep s parameter.
+        """
         super().__init__()
         self.cancel_called = threading.Event()
         self._sleep_s = sleep_s
 
     def cancel(self) -> None:
-        """cancel."""
+        """cancel.
+
+        Sets the internal cancellation event to cooperatively stop worker execution at the next safe boundary.
+        """
         self.cancel_called.set()
 
     def run(self) -> None:
-        """run."""
+        """run.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         time.sleep(self._sleep_s)
         self.finished.emit("done")
 
 
 def test_cooperative_worker_lets_close_return_promptly(app, window):
-    """test_cooperative_worker_lets_close_return_promptly."""
+    """test_cooperative_worker_lets_close_return_promptly.
+
+    Manages test cooperative worker lets close return promptly operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+        window: Parent window or shell controller instance.
+    """
     worker = _CooperativeWorker()
     window.run_worker(worker, lambda *_: None)
 
@@ -136,7 +179,14 @@ def _wait_for_natural_completion(thread, timeout_s: float = 15.0) -> None:
 def test_uncooperative_worker_is_detached_not_terminated(app, window):
     # Long enough that it is still running at the end of the grace period,
     # short enough that the test doesn't hang waiting for it to finish.
-    """test_uncooperative_worker_is_detached_not_terminated."""
+    """test_uncooperative_worker_is_detached_not_terminated.
+
+    Manages test uncooperative worker is detached not terminated operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+        window: Parent window or shell controller instance.
+    """
     stub_sleep = window._CLOSE_GRACE_S + 1.0
     worker = _StubbornWorker(sleep_s=stub_sleep)
     window.run_worker(worker, lambda *_: None)
@@ -161,14 +211,25 @@ def test_uncooperative_worker_is_detached_not_terminated(app, window):
 
 
 def test_shutdown_workers_never_calls_terminate(app, window, monkeypatch):
-    """Guard against the unsafe fallback ever being reintroduced."""
+    """Guard against the unsafe fallback ever being reintroduced.
+
+    Manages test shutdown workers never calls terminate operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+        window: Parent window or shell controller instance.
+        monkeypatch: The monkeypatch parameter.
+    """
     from PySide6.QtCore import QThread
 
     calls = []
     original = QThread.terminate
 
     def _tracking_terminate(self):
-        """_tracking_terminate."""
+        """_tracking_terminate.
+
+        Manages tracking terminate operations and coordinates related state changes for the component.
+        """
         calls.append(self)
         return original(self)
 
@@ -186,7 +247,14 @@ def test_shutdown_workers_never_calls_terminate(app, window, monkeypatch):
 
 
 def test_multiple_workers_shut_down_within_one_shared_deadline(app, window):
-    """Several workers must be waited on concurrently, not N times serially."""
+    """Several workers must be waited on concurrently, not N times serially.
+
+    Manages test multiple workers shut down within one shared deadline operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+        window: Parent window or shell controller instance.
+    """
     workers = [_CooperativeWorker() for _ in range(5)]
     for w in workers:
         window.run_worker(w, lambda *_: None)

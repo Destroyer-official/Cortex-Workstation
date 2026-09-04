@@ -76,7 +76,10 @@ def _shade(color: str, factor: float) -> str:
 
 @dataclass(frozen=True)
 class Palette:
-    """A complete set of design tokens for one theme."""
+    """Palette.
+
+    Manages Palette operations and coordinates related state changes for the component.
+    """
 
     name: str
     is_dark: bool
@@ -119,7 +122,13 @@ class Palette:
     # convenience gradients
     @property
     def accent_gradient(self) -> str:
-        """accent_gradient."""
+        """accent_gradient.
+
+        Manages accent gradient operations and coordinates related state changes for the component.
+
+        Returns:
+            str: Formatted string or path.
+        """
         return (f"qlineargradient(x1:0, y1:0, x2:1, y2:1, "
                 f"stop:0 {self.accent}, stop:1 {self.accent_2})")
 
@@ -847,7 +856,17 @@ def load_fonts() -> None:
 
 
 def apply_theme(app: "QApplication", theme: str = "dark") -> Palette:
-    """Apply a named theme ('dark'|'light') to the whole application."""
+    """Apply a named theme ('dark'|'light') to the whole application.
+
+    Manages apply theme operations and coordinates related state changes for the component.
+
+    Args:
+        app ('QApplication'): The app parameter.
+        theme (str): The theme parameter.
+
+    Returns:
+        Palette: Result of the operation.
+    """
     palette = THEMES.get(theme, MIDNIGHT)
     if _HAS_QT and app is not None:
         load_fonts()

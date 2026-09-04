@@ -31,7 +31,10 @@ from .window import _Page
 
 
 class _PrivacyWorker(QObject):
-    """Apply or revert privacy tweaks on a background thread."""
+    """Privacyworker.
+
+    Manages PrivacyWorker operations and coordinates related state changes for the component.
+    """
 
     finished = Signal(list)
     progress = Signal(str)
@@ -40,7 +43,15 @@ class _PrivacyWorker(QObject):
     def __init__(
         self, mode: str, profile: str | None = None, tweak_ids: list[str] | None = None
     ):
-        """Initialize worker."""
+        """Initialize worker.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            mode (str): The mode parameter.
+            profile (str | None): The profile parameter.
+            tweak_ids (list[str] | None): The tweak ids parameter.
+        """
         super().__init__()
         self._mode = mode  # "apply" | "revert"
         self._profile = profile
@@ -50,11 +61,17 @@ class _PrivacyWorker(QObject):
         self._cancel = threading.Event()
 
     def cancel(self):
-        """cancel."""
+        """cancel.
+
+        Sets the internal cancellation event to cooperatively stop worker execution at the next safe boundary.
+        """
         self._cancel.set()
 
     def run(self):
-        """run."""
+        """run.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         try:
             from cortex_unified.system_tools.privacy_blocker import (
                 PrivacyBlocker,
@@ -104,10 +121,19 @@ _PROFILE_MAP = {
 
 
 class PrivacyBlockerPage(_Page):
-    """Block Windows telemetry via profiles and per-category tweak control."""
+    """Privacyblockerpage.
+
+    Manages PrivacyBlockerPage operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, win):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win: Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(
             title_block(
@@ -214,13 +240,25 @@ class PrivacyBlockerPage(_Page):
 
     @staticmethod
     def _discover_categories() -> list[str]:
-        """Extract unique categories from the tweak catalog."""
+        """Extract unique categories from the tweak catalog.
+
+        Manages discover categories operations and coordinates related state changes for the component.
+
+        Returns:
+            list[str]: List of processed items or identifiers.
+        """
         from cortex_unified.system_tools.privacy_blocker import TELEMETRY_TWEAKS
 
         return sorted({t.category for t in TELEMETRY_TWEAKS if t.category})
 
     def _selected_tweak_ids(self) -> list[str]:
-        """Return tweak IDs matching the chosen profile and checked categories."""
+        """Return tweak IDs matching the chosen profile and checked categories.
+
+        Manages selected tweak ids operations and coordinates related state changes for the component.
+
+        Returns:
+            list[str]: List of processed items or identifiers.
+        """
         from cortex_unified.system_tools.privacy_blocker import TELEMETRY_TWEAKS
 
         profile_key = _PROFILE_MAP.get(self.profile_combo.currentText(), "privacy")
@@ -234,7 +272,10 @@ class PrivacyBlockerPage(_Page):
     # -- apply / revert ----------------------------------------------------
 
     def _apply(self):
-        """_apply."""
+        """Apply.
+
+        Manages apply operations and coordinates related state changes for the component.
+        """
         profile = self.profile_combo.currentText()
         ids = self._selected_tweak_ids()
         if not ids:
@@ -252,7 +293,10 @@ class PrivacyBlockerPage(_Page):
         self.win.run_worker(w, self._on_done, self._fail, on_progress=self._on_progress)
 
     def _revert(self):
-        """_revert."""
+        """Revert.
+
+        Manages revert operations and coordinates related state changes for the component.
+        """
         self._set_busy(True)
         self.state.show_loading("Reverting all tweaks…")
         self.status.setText("Reverting all applied tweaks…")
@@ -262,7 +306,13 @@ class PrivacyBlockerPage(_Page):
         self.win.run_worker(w, self._on_done, self._fail, on_progress=self._on_progress)
 
     def _set_busy(self, busy: bool):
-        """_set_busy."""
+        """_set_busy.
+
+        Manages set busy operations and coordinates related state changes for the component.
+
+        Args:
+            busy (bool): The busy parameter.
+        """
         self.apply_btn.setEnabled(not busy)
         self.revert_btn.setEnabled(not busy)
         self.profile_combo.setEnabled(not busy)
@@ -271,11 +321,23 @@ class PrivacyBlockerPage(_Page):
     # -- callbacks ---------------------------------------------------------
 
     def _on_progress(self, msg: str):
-        """_on_progress."""
+        """_on_progress.
+
+        Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
+
+        Args:
+            msg (str): Informational or progress status message.
+        """
         self.status.setText(msg)
 
     def _on_done(self, rows: list):
-        """_on_done."""
+        """_on_done.
+
+        Receives the completed data from the  background worker, populates the view with results, and restores button states.
+
+        Args:
+            rows (list): Table row index or list of row indices.
+        """
         self._worker = None
         self._set_busy(False)
         if not rows:
@@ -300,7 +362,13 @@ class PrivacyBlockerPage(_Page):
         self.win.statusBar().showMessage(summary, 5000)
 
     def _fail(self, msg: str):
-        """_fail."""
+        """Handle an operation failure and notify the user.
+
+        Captures error details, displays an informative failure state in the UI, resets progress indicators, and re-enables interactive controls.
+
+        Args:
+            msg (str): Informational or progress status message.
+        """
         self._worker = None
         self._set_busy(False)
         self.state.show_error(msg, on_retry=self._apply)

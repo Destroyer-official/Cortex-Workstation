@@ -29,7 +29,10 @@ _DEDUCT = {"good": 0, "info": 0, "warning": 12, "critical": 30}
 
 @dataclass(slots=True)
 class HealthCheck:
-    """Health Check data container."""
+    """Healthcheck.
+
+    Manages HealthCheck operations and coordinates related state changes for the component.
+    """
     id: str
     title: str
     severity: str          # good / warning / critical / info
@@ -37,20 +40,35 @@ class HealthCheck:
     action_page: str = ""  # page id to jump to, if any
 
     def to_dict(self) -> dict[str, Any]:
-        """To dict."""
+        """To dict.
+
+        Manages to dict operations and coordinates related state changes for the component.
+
+        Returns:
+            dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         return {"id": self.id, "title": self.title, "severity": self.severity,
                 "detail": self.detail, "action_page": self.action_page}
 
 
 @dataclass(slots=True)
 class HealthReport:
-    """Health Report data container."""
+    """Healthreport.
+
+    Manages HealthReport operations and coordinates related state changes for the component.
+    """
     checks: list[HealthCheck] = field(default_factory=list)
     score: int = 100
     grade: str = "A"
 
     def to_dict(self) -> dict[str, Any]:
-        """To dict."""
+        """To dict.
+
+        Manages to dict operations and coordinates related state changes for the component.
+
+        Returns:
+            dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         return {"checks": [c.to_dict() for c in self.checks],
                 "score": self.score, "grade": self.grade}
 
@@ -59,10 +77,22 @@ ProgressCB = Callable[[str], None]
 
 
 class HealthChecker:
-    """Runs the read-only health checks and scores them."""
+    """Healthchecker.
+
+    Manages HealthChecker operations and coordinates related state changes for the component.
+    """
 
     def run(self, progress: ProgressCB | None = None) -> HealthReport:
-        """Run."""
+        """Run.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+
+        Args:
+            progress (ProgressCB | None): The progress parameter.
+
+        Returns:
+            HealthReport: Result of the operation.
+        """
         checks: list[HealthCheck] = []
         steps = [
             ("Checking free disk space\u2026", self._check_disk_space),
@@ -88,7 +118,16 @@ class HealthChecker:
 
     @staticmethod
     def _score(checks: list[HealthCheck]) -> tuple[int, str]:
-        """_score."""
+        """Score.
+
+        Manages score operations and coordinates related state changes for the component.
+
+        Args:
+            checks (list[HealthCheck]): The checks parameter.
+
+        Returns:
+            tuple[int, str]: Formatted string or path.
+        """
         score = 100
         for c in checks:
             score -= _DEDUCT.get(c.severity, 0)
@@ -104,14 +143,18 @@ class HealthChecker:
         else:
             grade = "F"
         return score, grade
-        """_score."""
-        """_score."""
 
     # -- individual checks --------------------------------------------------
 
     @staticmethod
     def _check_disk_space() -> HealthCheck:
-        """_check_disk_space."""
+        """_check_disk_space.
+
+        Manages check disk space operations and coordinates related state changes for the component.
+
+        Returns:
+            HealthCheck: Result of the operation.
+        """
         import shutil
         root = str(Path.home().anchor or (os.environ.get("SystemDrive", "C:") + "\\")) if _IS_WINDOWS else "/"
         total, used, free = shutil.disk_usage(root)
@@ -126,12 +169,16 @@ class HealthChecker:
         else:
             sev, detail = "good", f"{pct_free:.0f}% free ({free_gb:.0f} GB). Plenty of room."
         return HealthCheck("disk_space", "Free disk space", sev, detail, "dashboard")
-        """_check_disk_space."""
-        """_check_disk_space."""
 
     @staticmethod
     def _check_memory() -> HealthCheck:
-        """_check_memory."""
+        """_check_memory.
+
+        Manages check memory operations and coordinates related state changes for the component.
+
+        Returns:
+            HealthCheck: Result of the operation.
+        """
         try:
             import psutil
         except ImportError:
@@ -143,12 +190,16 @@ class HealthChecker:
         else:
             sev, detail = "good", f"Memory is {vm.percent:.0f}% used - comfortable."
         return HealthCheck("memory", "Memory usage", sev, detail, "processes")
-        """_check_memory."""
-        """_check_memory."""
 
     @staticmethod
     def _check_disk_health() -> HealthCheck | None:
-        """_check_disk_health."""
+        """_check_disk_health.
+
+        Manages check disk health operations and coordinates related state changes for the component.
+
+        Returns:
+            HealthCheck | None: Result of the operation.
+        """
         if not _IS_WINDOWS:
             return None
         from cortex_unified.system_tools.disk_health import DiskHealthMonitor
@@ -165,12 +216,16 @@ class HealthChecker:
                                "diskhealth")
         return HealthCheck("disk_health", "Drive health", "good",
                            f"All {len(disks)} drive(s) report healthy.", "diskhealth")
-        """_check_disk_health."""
-        """_check_disk_health."""
 
     @staticmethod
     def _check_boot() -> HealthCheck | None:
-        """_check_boot."""
+        """_check_boot.
+
+        Manages check boot operations and coordinates related state changes for the component.
+
+        Returns:
+            HealthCheck | None: Result of the operation.
+        """
         if not _IS_WINDOWS:
             return None
         from cortex_unified.system_tools.boot_performance import BootPerformanceMonitor
@@ -190,12 +245,16 @@ class HealthChecker:
         else:
             sev, detail = "good", f"Boot takes {latest:.0f}s - fast."
         return HealthCheck("boot", "Boot performance", sev, detail, "bootperf")
-        """_check_boot."""
-        """_check_boot."""
 
     @staticmethod
     def _check_security() -> HealthCheck | None:
-        """_check_security."""
+        """_check_security.
+
+        Manages check security operations and coordinates related state changes for the component.
+
+        Returns:
+            HealthCheck | None: Result of the operation.
+        """
         if not _IS_WINDOWS:
             return None
         from cortex_unified.system_tools.defender import WindowsDefender
@@ -213,12 +272,16 @@ class HealthChecker:
                                "security")
         return HealthCheck("security", "Security", "good",
                            "Defender is on with current signatures.", "security")
-        """_check_security."""
-        """_check_security."""
 
     @staticmethod
     def _check_updates() -> HealthCheck | None:
-        """_check_updates."""
+        """_check_updates.
+
+        Manages check updates operations and coordinates related state changes for the component.
+
+        Returns:
+            HealthCheck | None: Result of the operation.
+        """
         if not _IS_WINDOWS:
             return None
         from cortex_unified.system_tools.windows_update import WindowsUpdate
@@ -241,5 +304,3 @@ class HealthChecker:
             sev = "good"
             detail = f"Last update installed {age_days} day(s) ago."
         return HealthCheck("updates", "Windows Update", sev, detail, "winupdate")
-        """_check_updates."""
-        """_check_updates."""

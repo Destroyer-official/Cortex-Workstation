@@ -95,7 +95,10 @@ def _fsb_hash(chunk: bytes) -> str:
 
 
 class DuplicateFinder:
-    """Finds duplicate files via size grouping followed by content hashing."""
+    """Duplicatefinder.
+
+    Manages DuplicateFinder operations and coordinates related state changes for the component.
+    """
     
     def __init__(self, config: Config = None, root_path: str = "."):
         """
@@ -123,7 +126,16 @@ class DuplicateFinder:
         self.error_count = 0
     
     def _should_exclude_path(self, path: Path) -> bool:
-        """True when *path* hits an excluded directory name or pattern."""
+        """True when *path* hits an excluded directory name or pattern.
+
+        Manages should exclude path operations and coordinates related state changes for the component.
+
+        Args:
+            path (Path): Filesystem path to the target file or directory.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         if path.name in self.exclude_dirs:
             return True
         
@@ -189,7 +201,16 @@ class DuplicateFinder:
             return None
     
     def _get_file_size(self, filepath: Path) -> int:
-        """Size in bytes, or -1 when the file cannot be stat'ed."""
+        """Size in bytes, or -1 when the file cannot be stat'ed.
+
+        Manages get file size operations and coordinates related state changes for the component.
+
+        Args:
+            filepath (Path): Filesystem path to the target file or directory.
+
+        Returns:
+            int: Result of the operation.
+        """
         try:
             return filepath.stat().st_size
         except Exception:
@@ -238,7 +259,16 @@ class DuplicateFinder:
         return {size: paths for size, paths in size_map.items() if len(paths) > 1}
     
     def find_duplicates(self, threads: int = 0) -> Dict[str, List[Path]]:
-        """Return ``{hash: [paths]}`` for groups of 2+ identical files."""
+        """Return ``{hash: [paths]}`` for groups of 2+ identical files.
+
+        Manages find duplicates operations and coordinates related state changes for the component.
+
+        Args:
+            threads (int): The threads parameter.
+
+        Returns:
+            Dict[str, List[Path]]: List of processed items or identifiers.
+        """
         if threads <= 0:
             threads = min(32, (os.cpu_count() or 4) + 4)
         
@@ -272,7 +302,13 @@ class DuplicateFinder:
         return self.duplicates
     
     def get_stats(self) -> dict:
-        """Get statistics about the duplicate finding process."""
+        """Get statistics about the duplicate finding process.
+
+        Manages get stats operations and coordinates related state changes for the component.
+
+        Returns:
+            dict: Dictionary mapping identifiers to status or values.
+        """
         duplicate_count = sum(len(paths) for paths in self.duplicates.values())
         unique_files = len(self.duplicates)
         
@@ -285,7 +321,13 @@ class DuplicateFinder:
         }
     
     def _calculate_potential_savings(self) -> int:
-        """Calculate potential bytes that could be saved by removing duplicates."""
+        """Calculate potential bytes that could be saved by removing duplicates.
+
+        Manages calculate potential savings operations and coordinates related state changes for the component.
+
+        Returns:
+            int: Result of the operation.
+        """
         total_savings = 0
         for paths in self.duplicates.values():
             if paths:
@@ -330,7 +372,16 @@ class DuplicateFinder:
         return files_to_delete
     
     def _format_bytes(self, size: int) -> str:
-        """Format bytes to human-readable string."""
+        """Format bytes to human-readable string.
+
+        Converts raw numeric values into formatted, localized, and human-readable string representations.
+
+        Args:
+            size (int): Integer number of bytes to format or process.
+
+        Returns:
+            str: Formatted string or path.
+        """
         for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
             if size < 1024.0:
                 return f"{size:.2f} {unit}"
@@ -338,7 +389,13 @@ class DuplicateFinder:
         return f"{size:.2f} PB"
     
     def get_hash_algorithm_info(self) -> dict:
-        """Get information about the current hash algorithm."""
+        """Get information about the current hash algorithm.
+
+        Manages get hash algorithm info operations and coordinates related state changes for the component.
+
+        Returns:
+            dict: Dictionary mapping identifiers to status or values.
+        """
         return {
             "algorithm": self.hash_algorithm,
             "xxhash_available": HAS_XXHASH,
@@ -468,7 +525,13 @@ class DuplicateFinder:
         lock = threading.Lock()
 
         def _process_file(p: Path) -> None:
-            """_process_file."""
+            """_process_file.
+
+            Manages process file operations and coordinates related state changes for the component.
+
+            Args:
+                p (Path): The p parameter.
+            """
             try:
                 data = p.read_bytes()
             except OSError:
@@ -487,8 +550,6 @@ class DuplicateFinder:
                     progress_callback(f"Chunked {p.name} → {len(chunks)} chunks", len(files))
                 except Exception:
                     pass
-            """_process_file."""
-            """_process_file."""
 
         with ThreadPoolExecutor(max_workers=threads) as ex:
             futures = {ex.submit(_process_file, p): p for p in files}
@@ -507,7 +568,16 @@ class DuplicateFinder:
         return dups
 
     def get_chunked_stats(self, dup_chunks: Dict[str, List[Tuple[Path, int, int]]]) -> dict:
-        """Stats for chunked dedup."""
+        """Stats for chunked dedup.
+
+        Manages get chunked stats operations and coordinates related state changes for the component.
+
+        Args:
+            dup_chunks (Dict[str, List[Tuple[Path, int, int]]]): The dup chunks parameter.
+
+        Returns:
+            dict: Dictionary mapping identifiers to status or values.
+        """
         total_dup_chunks = len(dup_chunks)
         total_saved = 0
         for locs in dup_chunks.values():

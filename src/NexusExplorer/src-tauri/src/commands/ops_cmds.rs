@@ -48,6 +48,7 @@ fn spawn_transfer(
     Ok(job_id)
 }
 
+/// Starts a copy job for `sources` into `dest_dir`, streaming `JobEvent`s over `on_event`.
 #[tauri::command]
 pub async fn copy_entries(
     sources: Vec<String>,
@@ -58,6 +59,7 @@ pub async fn copy_entries(
     spawn_transfer(JobKind::Copy, sources, dest_dir, on_event, &jobs)
 }
 
+/// Starts a move job for `sources` into `dest_dir`, streaming `JobEvent`s over `on_event`.
 #[tauri::command]
 pub async fn move_entries(
     sources: Vec<String>,
@@ -68,6 +70,7 @@ pub async fn move_entries(
     spawn_transfer(JobKind::Move, sources, dest_dir, on_event, &jobs)
 }
 
+/// Starts a delete job for `paths` (to trash when `to_trash`), streaming `JobEvent`s over `on_event`.
 #[tauri::command]
 pub async fn delete_entries(
     paths: Vec<String>,
@@ -100,6 +103,7 @@ fn control_or_err(jobs: &JobManager, job_id: &str) -> Result<Arc<JobControl>, St
     jobs.get(job_id).ok_or_else(|| "job not found".to_string())
 }
 
+/// Pauses a running job and returns its updated summary.
 #[tauri::command]
 pub async fn pause_job(
     job_id: String,
@@ -111,6 +115,7 @@ pub async fn pause_job(
     Ok(control.snapshot(&job_id))
 }
 
+/// Resumes a paused job and returns its updated summary.
 #[tauri::command]
 pub async fn resume_job(
     job_id: String,
@@ -125,6 +130,7 @@ pub async fn resume_job(
     Ok(control.snapshot(&job_id))
 }
 
+/// Requests cancellation of a job and returns its current summary.
 #[tauri::command]
 pub async fn cancel_job(
     job_id: String,
@@ -136,6 +142,7 @@ pub async fn cancel_job(
     Ok(control.snapshot(&job_id))
 }
 
+/// Delivers a conflict resolution (`skip`/`overwrite`/`keepBoth`) to a waiting transfer job.
 #[tauri::command]
 pub async fn resolve_conflict(
     job_id: String,
@@ -150,6 +157,7 @@ pub async fn resolve_conflict(
     jobs.resolve(&job_id, &conflict_id, resolution, apply_to_all)
 }
 
+/// Returns snapshot summaries for all tracked jobs.
 #[tauri::command]
 pub async fn get_active_jobs(jobs: State<'_, JobManager>) -> Result<Vec<JobSummary>, String> {
     Ok(jobs.list_summaries())

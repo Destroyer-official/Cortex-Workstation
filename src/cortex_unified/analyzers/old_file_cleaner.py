@@ -45,7 +45,7 @@ class OldFileCleaner:
         return False
     
     def find_old_files(self, min_age_days: int = None) -> List[Tuple[Path, int]]:
-        """Find files that haven't been accessed in the specified number of days.
+        """Find files that haven't been modified (uses mtime age, not access time) in the specified number of days.
         
         Args:
             min_age_days: Minimum age in days (defaults to self.min_age_days)

@@ -19,7 +19,10 @@ from typing import Callable, Dict, List, Optional, Tuple
 
 
 class CaseTransformation(Enum):
-    """CaseTransformation."""
+    """CaseTransformation.
+
+    Converts raw numeric values into formatted, localized, and human-readable string representations.
+    """
     NONE = "None"
     UPPERCASE = "UPPERCASE"
     LOWERCASE = "lowercase"
@@ -27,12 +30,14 @@ class CaseTransformation(Enum):
     CAMEL_CASE = "camelCase"
     SNAKE_CASE = "snake_case"
     KEBAB_CASE = "kebab-case"
-    """CaseTransformation class."""
 
 
 @dataclass
 class RenamePlanItem:
-    """RenamePlanItem."""
+    """Renameplanitem.
+
+    Manages RenamePlanItem operations and coordinates related state changes for the component.
+    """
     original_path: str
     original_name: str
     new_name: str
@@ -40,28 +45,44 @@ class RenamePlanItem:
     is_valid: bool = True
     error_message: str = ""
     is_changed: bool = False
-    """RenamePlanItem class."""
 
 
 @dataclass
 class RenameTransaction:
-    """RenameTransaction."""
+    """Renametransaction.
+
+    Manages RenameTransaction operations and coordinates related state changes for the component.
+    """
     timestamp: float
     items: List[Tuple[str, str]]  # (old_path, new_path)
-    """RenameTransaction class."""
 
 
 class BatchRenamer:
-    """Production multi-file renaming engine with preview and safety checks."""
+    """Batchrenamer.
+
+    Manages BatchRenamer operations and coordinates related state changes for the component.
+    """
 
     def __init__(self):
-        """__init__."""
+        """Initialize the instance and configure internal state.
+
+        Sets up sub-widgets, event signal connections, and default options.
+        """
         self._history: List[RenameTransaction] = []
-        """__init__."""
 
     @staticmethod
     def _apply_case(text: str, transformation: CaseTransformation) -> str:
-        """_apply_case."""
+        """_apply_case.
+
+        Manages apply case operations and coordinates related state changes for the component.
+
+        Args:
+            text (str): Display text string.
+            transformation (CaseTransformation): The transformation parameter.
+
+        Returns:
+            str: Formatted string or path.
+        """
         if transformation == CaseTransformation.UPPERCASE:
             return text.upper()
         if transformation == CaseTransformation.LOWERCASE:
@@ -82,11 +103,19 @@ class BatchRenamer:
                 return text
             return words[0].lower() + "".join(w.capitalize() for w in words[1:])
         return text
-        """_apply_case."""
 
     @staticmethod
     def _extract_exif_metadata(file_path: Path) -> Dict[str, str]:
-        """_extract_exif_metadata."""
+        """_extract_exif_metadata.
+
+        Manages extract exif metadata operations and coordinates related state changes for the component.
+
+        Args:
+            file_path (Path): Filesystem path to the target file or directory.
+
+        Returns:
+            Dict[str, str]: Dictionary mapping identifiers to status or values.
+        """
         meta = {"camera": "", "date": "", "dimensions": ""}
         ext = file_path.suffix.lower()
         if ext not in (".jpg", ".jpeg", ".png", ".webp", ".tiff"):
@@ -108,11 +137,19 @@ class BatchRenamer:
         except Exception:
             pass
         return meta
-        """_extract_exif_metadata."""
 
     @staticmethod
     def _extract_id3_metadata(file_path: Path) -> Dict[str, str]:
-        """_extract_id3_metadata."""
+        """_extract_id3_metadata.
+
+        Manages extract id3 metadata operations and coordinates related state changes for the component.
+
+        Args:
+            file_path (Path): Filesystem path to the target file or directory.
+
+        Returns:
+            Dict[str, str]: Dictionary mapping identifiers to status or values.
+        """
         meta = {"artist": "", "title": "", "album": "", "track": ""}
         ext = file_path.suffix.lower()
         if ext not in (".mp3", ".flac", ".ogg", ".m4a"):
@@ -133,7 +170,6 @@ class BatchRenamer:
         except Exception:
             pass
         return meta
-        """_extract_id3_metadata."""
 
     def preview_rename(
         self,
@@ -147,7 +183,24 @@ class BatchRenamer:
         start_counter: int = 1,
         step_counter: int = 1,
     ) -> List[RenamePlanItem]:
-        """Generate a live preview plan for renaming a batch of files."""
+        """Generate a live preview plan for renaming a batch of files.
+
+        Manages preview rename operations and coordinates related state changes for the component.
+
+        Args:
+            file_paths (List[str | Path]): Filesystem path to the target file or directory.
+            search_pattern (str): The search pattern parameter.
+            replace_pattern (str): The replace pattern parameter.
+            use_regex (bool): The use regex parameter.
+            prefix (str): The prefix parameter.
+            suffix (str): The suffix parameter.
+            case_transform (CaseTransformation): The case transform parameter.
+            start_counter (int): The start counter parameter.
+            step_counter (int): The step counter parameter.
+
+        Returns:
+            List[RenamePlanItem]: List of processed items or identifiers.
+        """
         plan: List[RenamePlanItem] = []
         seen_targets: Dict[str, str] = {}  # target_path -> source_path for collision detection
 
@@ -200,7 +253,16 @@ class BatchRenamer:
             id3_meta = self._extract_id3_metadata(path_obj)
 
             def _replace_tokens(text: str) -> str:
-                """_replace_tokens."""
+                """_replace_tokens.
+
+                Manages replace tokens operations and coordinates related state changes for the component.
+
+                Args:
+                    text (str): Display text string.
+
+                Returns:
+                    str: Formatted string or path.
+                """
                 t = text
                 t = t.replace("<name>", stem)
                 t = t.replace("<ext>", ext.lstrip("."))
@@ -240,7 +302,6 @@ class BatchRenamer:
                 t = t.replace("<id3:track>", id3_meta["track"])
                 t = t.replace("<track>", id3_meta["track"])
                 return t
-                """_replace_tokens."""
 
             working_name = _replace_tokens(working_name)
             p_prefix = _replace_tokens(prefix)
@@ -290,7 +351,17 @@ class BatchRenamer:
         plan: List[RenamePlanItem],
         progress_cb: Optional[Callable[[int, int, str], None]] = None,
     ) -> Tuple[int, int, List[str]]:
-        """Execute the renaming plan atomically with rollback recording."""
+        """Execute the renaming plan atomically with rollback recording.
+
+        Manages execute rename operations and coordinates related state changes for the component.
+
+        Args:
+            plan (List[RenamePlanItem]): The plan parameter.
+            progress_cb (Optional[Callable[[int, int, str], None]]): Callback invoked with progress updates.
+
+        Returns:
+            Tuple[int, int, List[str]]: List of processed items or identifiers.
+        """
         executed: List[Tuple[str, str]] = []
         errors: List[str] = []
         total = len(plan)
@@ -323,7 +394,13 @@ class BatchRenamer:
         return len(executed), len(errors), errors
 
     def undo_last(self) -> Tuple[int, List[str]]:
-        """Undo the most recent batch rename operation."""
+        """Undo the most recent batch rename operation.
+
+        Manages undo last operations and coordinates related state changes for the component.
+
+        Returns:
+            Tuple[int, List[str]]: List of processed items or identifiers.
+        """
         if not self._history:
             return 0, ["No rename operations to undo."]
 

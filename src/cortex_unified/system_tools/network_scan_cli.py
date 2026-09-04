@@ -15,7 +15,13 @@ from cortex_unified.system_tools.network_service_scanner import (
 
 
 def _parser() -> argparse.ArgumentParser:
-    """_parser."""
+    """Parser.
+
+    Manages parser operations and coordinates related state changes for the component.
+
+    Returns:
+        argparse.ArgumentParser: Result of the operation.
+    """
     parser = argparse.ArgumentParser(
         description="Run a bounded Cortex private-LAN inventory scan")
     parser.add_argument(
@@ -24,12 +30,17 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--ports", default="")
     parser.add_argument("--output", default="")
     return parser
-    """_parser."""
-    """_parser."""
 
 
 def _write_atomic(path: str, payload: dict) -> None:
-    """_write_atomic."""
+    """_write_atomic.
+
+    Manages write atomic operations and coordinates related state changes for the component.
+
+    Args:
+        path (str): Filesystem path to the target file or directory.
+        payload (dict): The payload parameter.
+    """
     target = Path(path).expanduser()
     target.parent.mkdir(parents=True, exist_ok=True)
     temporary = target.with_name(target.name + f".{os.getpid()}.tmp")
@@ -43,12 +54,19 @@ def _write_atomic(path: str, payload: dict) -> None:
             temporary.unlink(missing_ok=True)
         except OSError:
             pass
-    """_write_atomic."""
-    """_write_atomic."""
 
 
 def main(argv: list[str] | None = None) -> int:
-    """Main."""
+    """Main.
+
+    Manages main operations and coordinates related state changes for the component.
+
+    Args:
+        argv (list[str] | None): The argv parameter.
+
+    Returns:
+        int: Result of the operation.
+    """
     args = _parser().parse_args(argv)
     try:
         ports = parse_custom_port_spec(args.ports)

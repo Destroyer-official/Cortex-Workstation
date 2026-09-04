@@ -18,17 +18,22 @@ if platform.system() == "Windows":
     from ctypes import wintypes
 
     class WIN32_FIND_STREAM_DATA(ctypes.Structure):
-        """WIN32_FIND_STREAM_DATA."""
+        """WIN32_FIND_STREAM_DATA.
+
+        Manages WIN32 FIND STREAM DATA operations and coordinates related state changes for the component.
+        """
         _fields_ = [
             ("StreamSize", ctypes.c_longlong),
             ("cStreamName", wintypes.WCHAR * 296),
         ]
-        """WIN32_FIND_STREAM_DATA class."""
 
 
 @dataclass
 class AlternateDataStream:
-    """AlternateDataStream."""
+    """Alternatedatastream.
+
+    Manages AlternateDataStream operations and coordinates related state changes for the component.
+    """
     file_path: str
     stream_full_name: str  # e.g. ":Zone.Identifier:$DATA"
     stream_name: str       # e.g. "Zone.Identifier"
@@ -36,15 +41,26 @@ class AlternateDataStream:
     size_bytes: int
     is_zone_identifier: bool = False
     content_preview: str = ""
-    """AlternateDataStream class."""
 
 
 class AlternateDataStreamsManager:
-    """Production NTFS Alternate Data Stream inspector and unblocker."""
+    """Alternatedatastreamsmanager.
+
+    Manages AlternateDataStreamsManager operations and coordinates related state changes for the component.
+    """
 
     @classmethod
     def list_streams(cls, file_path: str | Path) -> List[AlternateDataStream]:
-        """Enumerate all alternate data streams for the target file."""
+        """Enumerate all alternate data streams for the target file.
+
+        Manages list streams operations and coordinates related state changes for the component.
+
+        Args:
+            file_path (str | Path): Filesystem path to the target file or directory.
+
+        Returns:
+            List[AlternateDataStream]: List of processed items or identifiers.
+        """
         target = str(Path(file_path).resolve())
         kernel32 = ctypes.windll.kernel32
         find_data = WIN32_FIND_STREAM_DATA()
@@ -114,7 +130,17 @@ class AlternateDataStreamsManager:
 
     @classmethod
     def read_stream_text(cls, file_path: str | Path, stream_name: str) -> str:
-        """Read text contents of a specific alternate data stream."""
+        """Read text contents of a specific alternate data stream.
+
+        Manages read stream text operations and coordinates related state changes for the component.
+
+        Args:
+            file_path (str | Path): Filesystem path to the target file or directory.
+            stream_name (str): The stream name parameter.
+
+        Returns:
+            str: Formatted string or path.
+        """
         target = str(Path(file_path).resolve())
         stream_id = stream_name.strip(":").split(":")[0]
         stream_path = f"{target}:{stream_id}"
@@ -127,7 +153,17 @@ class AlternateDataStreamsManager:
 
     @classmethod
     def delete_stream(cls, file_path: str | Path, stream_name: str) -> Tuple[bool, str]:
-        """Delete an alternate data stream using kernel32.DeleteFileW."""
+        """Delete an alternate data stream using kernel32.DeleteFileW.
+
+        Manages delete stream operations and coordinates related state changes for the component.
+
+        Args:
+            file_path (str | Path): Filesystem path to the target file or directory.
+            stream_name (str): The stream name parameter.
+
+        Returns:
+            Tuple[bool, str]: True if the operation succeeded, False otherwise.
+        """
         target = str(Path(file_path).resolve())
         stream_id = stream_name.strip(":").split(":")[0]
         stream_path = f"{target}:{stream_id}"
@@ -148,12 +184,30 @@ class AlternateDataStreamsManager:
 
     @classmethod
     def unblock_file(cls, file_path: str | Path) -> Tuple[bool, str]:
-        """Unblock downloaded file by removing its Zone.Identifier alternate data stream."""
+        """Unblock downloaded file by removing its Zone.Identifier alternate data stream.
+
+        Manages unblock file operations and coordinates related state changes for the component.
+
+        Args:
+            file_path (str | Path): Filesystem path to the target file or directory.
+
+        Returns:
+            Tuple[bool, str]: True if the operation succeeded, False otherwise.
+        """
         return cls.delete_stream(file_path, "Zone.Identifier")
 
     @classmethod
     def strip_all_streams(cls, file_path: str | Path) -> Tuple[int, int]:
-        """Remove all alternate data streams from a file."""
+        """Remove all alternate data streams from a file.
+
+        Manages strip all streams operations and coordinates related state changes for the component.
+
+        Args:
+            file_path (str | Path): Filesystem path to the target file or directory.
+
+        Returns:
+            Tuple[int, int]: Result of the operation.
+        """
         streams = cls.list_streams(file_path)
         success = 0
         failed = 0

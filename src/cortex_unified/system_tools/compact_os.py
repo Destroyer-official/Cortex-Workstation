@@ -95,7 +95,10 @@ _BLOCKED_NAMES = {
 
 @dataclass(slots=True)
 class FolderEstimate:
-    """Folder Estimate data container."""
+    """Folderestimate.
+
+    Manages FolderEstimate operations and coordinates related state changes for the component.
+    """
     path: str
     size_bytes: int
     estimated_savings: int
@@ -104,7 +107,13 @@ class FolderEstimate:
     note: str = ""
 
     def to_dict(self) -> Dict[str, Any]:
-        """To dict."""
+        """To dict.
+
+        Manages to dict operations and coordinates related state changes for the component.
+
+        Returns:
+            Dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         return {
             "path": self.path,
             "size_bytes": self.size_bytes,
@@ -117,7 +126,10 @@ class FolderEstimate:
 
 @dataclass(slots=True)
 class CompressionResult:
-    """Compression Result data container."""
+    """Compressionresult.
+
+    Manages CompressionResult operations and coordinates related state changes for the component.
+    """
     path: str
     success: bool
     message: str
@@ -126,10 +138,16 @@ class CompressionResult:
 
 
 class CompactOSManager:
-    """Read-first NTFS compaction support (estimate + explicit action)."""
+    """Compactosmanager.
+
+    Manages CompactOSManager operations and coordinates related state changes for the component.
+    """
 
     def __init__(self) -> None:
-        """Initialize Compact O S Manager."""
+        """Initialize Compact O S Manager.
+
+        Initializes the instance and configures internal state.
+        """
         self.logger = _LOG
         self._is_admin: Optional[bool] = None
 
@@ -137,11 +155,23 @@ class CompactOSManager:
 
     @staticmethod
     def is_supported() -> bool:
-        """Is supported."""
+        """Is supported.
+
+        Manages is supported operations and coordinates related state changes for the component.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         return _IS_WINDOWS
 
     def is_admin(self) -> bool:
-        """Whether the current process can run elevated ``compact`` commands."""
+        """Whether the current process can run elevated ``compact`` commands.
+
+        Manages is admin operations and coordinates related state changes for the component.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         if self._is_admin is not None:
             return self._is_admin
         if not _IS_WINDOWS:
@@ -175,7 +205,16 @@ class CompactOSManager:
         }
 
     def drive_compression_state(self, drive: str = "C:") -> str:
-        """Per-drive compression state via ``fsutil volume compression``."""
+        """Per-drive compression state via ``fsutil volume compression``.
+
+        Manages drive compression state operations and coordinates related state changes for the component.
+
+        Args:
+            drive (str): The drive parameter.
+
+        Returns:
+            str: Formatted string or path.
+        """
         if not _IS_WINDOWS:
             return ""
         letter = drive.rstrip(":\\").upper()
@@ -237,7 +276,18 @@ class CompactOSManager:
         cancel_event: "threading.Event | None" = None,
         progress_callback=None,
     ) -> Optional[FolderEstimate]:
-        """Walk *folder* and estimate compressible bytes + savings."""
+        """Walk *folder* and estimate compressible bytes + savings.
+
+        Manages estimate folder operations and coordinates related state changes for the component.
+
+        Args:
+            folder (Path): Filesystem path to the target file or directory.
+            cancel_event ('threading.Event | None'): Threading event or callable to check for cancellation.
+            progress_callback: The progress callback parameter.
+
+        Returns:
+            Optional[FolderEstimate]: Result of the operation.
+        """
         total = 0
         compressible = 0            # bytes of clearly-compressible content
         known = 0                   # bytes with a known (good/bad) extension
@@ -290,7 +340,16 @@ class CompactOSManager:
         )
 
     def _check_compression_attribute(self, folder: Path) -> bool:
-        """Best-effort: is the folder already flagged compressed on NTFS?"""
+        """Best-effort: is the folder already flagged compressed on NTFS?.
+
+        Manages check compression attribute operations and coordinates related state changes for the component.
+
+        Args:
+            folder (Path): Filesystem path to the target file or directory.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         if not _IS_WINDOWS:
             return False
         try:
@@ -347,7 +406,16 @@ class CompactOSManager:
 
     @staticmethod
     def _parse_failure(out: Optional[str]) -> str:
-        """_parse_failure."""
+        """_parse_failure.
+
+        Manages parse failure operations and coordinates related state changes for the component.
+
+        Args:
+            out (Optional[str]): The out parameter.
+
+        Returns:
+            str: Formatted string or path.
+        """
         if not out:
             return "No output from compact."
         low = out.lower()
@@ -356,8 +424,6 @@ class CompactOSManager:
         if "is not a valid" in low:
             return "Invalid path."
         return ""
-        """_parse_failure."""
-        """_parse_failure."""
 
     # -- helpers --------------------------------------------------------------
 
@@ -367,7 +433,18 @@ class CompactOSManager:
         timeout: int,
         cancel_event: "threading.Event | None" = None,
     ) -> Optional[str]:
-        """_run."""
+        """Run.
+
+        Manages run operations and coordinates related state changes for the component.
+
+        Args:
+            args (List[str]): The args parameter.
+            timeout (int): The timeout parameter.
+            cancel_event ('threading.Event | None'): Threading event or callable to check for cancellation.
+
+        Returns:
+            Optional[str]: Formatted string or path.
+        """
         try:
             proc = _proc.run(
                 args, text=True, timeout=timeout,
@@ -378,5 +455,3 @@ class CompactOSManager:
         except (_proc.ProcessCancelled, OSError, subprocess.SubprocessError) as exc:
             self.logger.debug("command %s failed: %s", args, exc)
             return None
-        """_run."""
-        """_run."""

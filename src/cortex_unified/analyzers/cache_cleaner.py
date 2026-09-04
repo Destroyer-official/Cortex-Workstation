@@ -15,12 +15,19 @@ from cortex_unified.core.config import Config
 
 
 class CacheCleaner:
-    """Finds cache/log files and directories under the platform's cache roots."""
+    """Cachecleaner.
+
+    Manages CacheCleaner operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, config: Config = None):
-        """
-        Args:
+        """Args:
             config: Exclusion rules; defaults to ``Config()``.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            config (Config): The config parameter.
         """
         self.config = config or Config()
         self.exclude_patterns = set(self.config.exclude_patterns)
@@ -122,7 +129,13 @@ class CacheCleaner:
     ARCHIVE_SUFFIXES = {".zip", ".tar", ".gz", ".tgz", ".rar", ".7z"}
 
     def _get_platform_cache_paths(self) -> List[Path]:
-        """Cache roots for this platform, deduplicated, existing ones only."""
+        """Cache roots for this platform, deduplicated, existing ones only.
+
+        Manages get platform cache paths operations and coordinates related state changes for the component.
+
+        Returns:
+            List[Path]: List of processed items or identifiers.
+        """
         paths = []
 
         home = Path.home()
@@ -193,14 +206,32 @@ class CacheCleaner:
         return candidates
 
     def is_archive(self, path: Path) -> bool:
-        """True when *path* is a keep-as-backup archive (.zip/.tar.gz)."""
+        """True when *path* is a keep-as-backup archive (.zip/.tar.gz).
+
+        Manages is archive operations and coordinates related state changes for the component.
+
+        Args:
+            path (Path): Filesystem path to the target file or directory.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         name = path.name.lower()
         return any(
             name.endswith(suf) for suf in self.ARCHIVE_SUFFIXES
         ) or name.endswith(".tar.gz")
 
     def _should_exclude_path(self, path: Path) -> bool:
-        """True when *path* hits an excluded directory name or pattern."""
+        """True when *path* hits an excluded directory name or pattern.
+
+        Manages should exclude path operations and coordinates related state changes for the component.
+
+        Args:
+            path (Path): Filesystem path to the target file or directory.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         if path.name in self.exclude_dirs:
             return True
 
@@ -212,7 +243,16 @@ class CacheCleaner:
         return False
 
     def _is_cache_directory(self, path: Path) -> bool:
-        """True when the directory name contains a known cache marker."""
+        """True when the directory name contains a known cache marker.
+
+        Manages is cache directory operations and coordinates related state changes for the component.
+
+        Args:
+            path (Path): Filesystem path to the target file or directory.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         for pattern in self.cache_patterns:
             if pattern.lower() in path.name.lower():
                 return True
@@ -220,7 +260,16 @@ class CacheCleaner:
         return False
 
     def _is_cache_file(self, path: Path) -> bool:
-        """True when the file name matches a cache/log/build-artifact glob."""
+        """True when the file name matches a cache/log/build-artifact glob.
+
+        Manages is cache file operations and coordinates related state changes for the component.
+
+        Args:
+            path (Path): Filesystem path to the target file or directory.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         from fnmatch import fnmatch
 
         for pattern in self.cache_file_patterns:
@@ -256,10 +305,17 @@ class CacheCleaner:
         log_patterns = ("*.log", "*.log.*", "*.txt", "*.out", "*.err")
 
         def _is_log(name: str) -> bool:
-            """_is_log."""
+            """_is_log.
+
+            Manages is log operations and coordinates related state changes for the component.
+
+            Args:
+                name (str): The name parameter.
+
+            Returns:
+                bool: True if the operation succeeded, False otherwise.
+            """
             return any(_fnm.fnmatch(name, pat) for pat in log_patterns)
-            """_is_log."""
-            """_is_log."""
 
         for root in roots:
             if cancel_event and getattr(cancel_event, "is_set", lambda: False)():
@@ -378,7 +434,13 @@ class CacheCleaner:
         return self.found_files, self.found_dirs
 
     def get_stats(self) -> dict:
-        """Get statistics about the cache file finding process."""
+        """Get statistics about the cache file finding process.
+
+        Manages get stats operations and coordinates related state changes for the component.
+
+        Returns:
+            dict: Dictionary mapping identifiers to status or values.
+        """
         total_size = 0
         try:
             for filepath in self.found_files:
@@ -399,7 +461,16 @@ class CacheCleaner:
         }
 
     def _format_bytes(self, bytes_count: int) -> str:
-        """Format bytes into human-readable format."""
+        """Format bytes into human-readable format.
+
+        Converts raw numeric values into formatted, localized, and human-readable string representations.
+
+        Args:
+            bytes_count (int): The bytes count parameter.
+
+        Returns:
+            str: Formatted string or path.
+        """
         for unit in ["B", "KB", "MB", "GB", "TB"]:
             if bytes_count < 1024.0:
                 return f"{bytes_count:.1f} {unit}"
@@ -407,5 +478,11 @@ class CacheCleaner:
         return f"{bytes_count:.1f} PB"
 
     def get_cache_directories(self) -> List[Path]:
-        """Get list of cache directories that would be scanned."""
+        """Get list of cache directories that would be scanned.
+
+        Manages get cache directories operations and coordinates related state changes for the component.
+
+        Returns:
+            List[Path]: List of processed items or identifiers.
+        """
         return self.cache_paths

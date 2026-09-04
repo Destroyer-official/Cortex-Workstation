@@ -86,14 +86,15 @@ _AVG_SIZE = 64        # 64x64 -> 64 mean bits (aHash over 4096 px)
 
 
 def _validate_pil() -> None:
-    """_validate_pil."""
+    """_validate_pil.
+
+    Manages validate pil operations and coordinates related state changes for the component.
+    """
     if not HAS_PIL:
         raise ImportError(
             "Perceptual image duplicate detection requires Pillow "
             "(pip install Pillow)."
         )
-    """_validate_pil."""
-    """_validate_pil."""
 
 
 # ---------------------------------------------------------------------------
@@ -101,7 +102,16 @@ def _validate_pil() -> None:
 # ---------------------------------------------------------------------------
 
 def _cos_table(n: int) -> List[List[float]]:
-    """``n x n`` cosine kernel ``cos((2x+1) u pi / 2n)``."""
+    """``n x n`` cosine kernel ``cos((2x+1) u pi / 2n)``.
+
+    Manages cos table operations and coordinates related state changes for the component.
+
+    Args:
+        n (int): The n parameter.
+
+    Returns:
+        List[List[float]]: List of processed items or identifiers.
+    """
     pi = math.pi
     return [
         [math.cos((2 * x + 1) * u * pi / (2 * n)) for x in range(n)]
@@ -114,7 +124,18 @@ _COS_8 = _cos_table(8) if HAS_PIL else None
 
 
 def _dct2d(rows: List[List[float]], cos: List[List[float]], size: int) -> List[List[float]]:
-    """Full 2D-DCT of a ``size x size`` matrix using precomputed cosine table."""
+    """Dct2d.
+
+    Manages dct2d operations and coordinates related state changes for the component.
+
+    Args:
+        rows (List[List[float]]): Table row index or list of row indices.
+        cos (List[List[float]]): The cos parameter.
+        size (int): Integer number of bytes to format or process.
+
+    Returns:
+        List[List[float]]: List of processed items or identifiers.
+    """
     out = [[0.0] * size for _ in range(size)]
     for u in range(size):
         cu = cos[u]
@@ -155,7 +176,16 @@ def average_hash(path: Path) -> int:
 
 
 def difference_hash(path: Path) -> int:
-    """dHash: 64 bits from horizontal left-vs-right gradients of an 8x9 grid."""
+    """dHash: 64 bits from horizontal left-vs-right gradients of an 8x9 grid.
+
+    Manages difference hash operations and coordinates related state changes for the component.
+
+    Args:
+        path (Path): Filesystem path to the target file or directory.
+
+    Returns:
+        int: Result of the operation.
+    """
     _validate_pil()
     with Image.open(path) as im:
         gray = im.convert("L").resize(
@@ -209,7 +239,16 @@ def perceptual_hash(path: Path) -> int:
 
 
 def _haar_1d(arr: List[float]) -> List[float]:
-    """Single-level Haar transform (averages + differences)."""
+    """Single-level Haar transform (averages + differences).
+
+    Manages haar 1d operations and coordinates related state changes for the component.
+
+    Args:
+        arr (List[float]): The arr parameter.
+
+    Returns:
+        List[float]: List of processed items or identifiers.
+    """
     n = len(arr)
     out = [0.0] * n
     half = n // 2
@@ -221,7 +260,18 @@ def _haar_1d(arr: List[float]) -> List[float]:
 
 
 def _haar_2d_grayscale(pixels: List[int], size: int, levels: int) -> List[List[float]]:
-    """2-D Haar DWT on size×size grayscale block; returns LL subband after levels."""
+    """2-D Haar DWT on size×size grayscale block; returns LL subband after levels.
+
+    Manages haar 2d grayscale operations and coordinates related state changes for the component.
+
+    Args:
+        pixels (List[int]): The pixels parameter.
+        size (int): Integer number of bytes to format or process.
+        levels (int): The levels parameter.
+
+    Returns:
+        List[List[float]]: List of processed items or identifiers.
+    """
     # Convert to float matrix
     mat: List[List[float]] = [
         [float(pixels[y * size + x]) for x in range(size)] for y in range(size)
@@ -278,7 +328,17 @@ _HASHERS = {
 
 
 def compute_hash(path: Path, kind: str = "phash") -> int:
-    """Compute a single perceptual hash of *kind* for an image."""
+    """Compute a single perceptual hash of *kind* for an image.
+
+    Manages compute hash operations and coordinates related state changes for the component.
+
+    Args:
+        path (Path): Filesystem path to the target file or directory.
+        kind (str): The kind parameter.
+
+    Returns:
+        int: Result of the operation.
+    """
     fn = _HASHERS.get(kind.lower())
     if fn is None:
         raise ValueError(f"unknown hash kind {kind!r}; choose one of {HASH_KINDS}")
@@ -289,7 +349,17 @@ def compute_hash(path: Path, kind: str = "phash") -> int:
 
 
 def hamming_distance(a: int, b: int) -> int:
-    """Number of differing bits between two hashes (0..64)."""
+    """Number of differing bits between two hashes (0..64).
+
+    Manages hamming distance operations and coordinates related state changes for the component.
+
+    Args:
+        a (int): The a parameter.
+        b (int): Integer number of bytes to format or process.
+
+    Returns:
+        int: Result of the operation.
+    """
     return (a ^ b).bit_count()
 
 
@@ -321,7 +391,17 @@ class PerceptualDuplicateFinder:
         require_all_kinds: bool = False,
         config: Config | None = None,
     ) -> None:
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            root_path (str | os.PathLike): Filesystem path to the target file or directory.
+            max_distance (int): The max distance parameter.
+            kinds (Tuple[str, ...]): The kinds parameter.
+            require_all_kinds (bool): The require all kinds parameter.
+            config (Config | None): The config parameter.
+        """
         if not HAS_PIL:
             raise ImportError("Pillow is required for perceptual duplicate detection")
         if isinstance(root_path, (list, tuple)):
@@ -344,13 +424,20 @@ class PerceptualDuplicateFinder:
         self.file_count = 0
         self.error_count = 0
         self.duplicates: Dict[str, List[Path]] = {}
-        """__init__."""
-        """__init__."""
 
     # ---------------------------------------------------------------- helpers
 
     def _should_exclude(self, path: Path) -> bool:
-        """_should_exclude."""
+        """_should_exclude.
+
+        Manages should exclude operations and coordinates related state changes for the component.
+
+        Args:
+            path (Path): Filesystem path to the target file or directory.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         if path.name in self.exclude_dirs:
             return True
         s = str(path)
@@ -358,14 +445,19 @@ class PerceptualDuplicateFinder:
             if pat in s or pat in path.name:
                 return True
         return False
-        """_should_exclude."""
-        """_should_exclude."""
 
     def _is_image(self, path: Path) -> bool:
-        """_is_image."""
+        """_is_image.
+
+        Manages is image operations and coordinates related state changes for the component.
+
+        Args:
+            path (Path): Filesystem path to the target file or directory.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         return path.suffix.lower() in _RASTER_SUFFIXES
-        """_is_image."""
-        """_is_image."""
 
     # ---------------------------------------------------------------- main API
 
@@ -375,7 +467,18 @@ class PerceptualDuplicateFinder:
         progress_callback: Optional[Callable[[str, int], None]] = None,
         cancel_event: Optional[threading.Event] = None,
     ) -> Dict[str, List[Path]]:
-        """Scan the roots and return visual-duplicate groups (size >= 2)."""
+        """Scan the roots and return visual-duplicate groups (size >= 2).
+
+        Manages find perceptual duplicates operations and coordinates related state changes for the component.
+
+        Args:
+            threads (int): The threads parameter.
+            progress_callback (Optional[Callable[[str, int], None]]): The progress callback parameter.
+            cancel_event (Optional[threading.Event]): Threading event or callable to check for cancellation.
+
+        Returns:
+            Dict[str, List[Path]]: List of processed items or identifiers.
+        """
         if threads <= 0:
             threads = min(16, (os.cpu_count() or 4) + 4)
         _validate_pil()
@@ -413,13 +516,20 @@ class PerceptualDuplicateFinder:
         hashes: Dict[Path, Dict[str, int]] = {}
 
         def _hash_one(p: Path) -> Tuple[Path, Optional[Dict[str, int]]]:
-            """_hash_one."""
+            """_hash_one.
+
+            Manages hash one operations and coordinates related state changes for the component.
+
+            Args:
+                p (Path): The p parameter.
+
+            Returns:
+                Tuple[Path, Optional[Dict[str, int]]]: Dictionary mapping identifiers to status or values.
+            """
             try:
                 return p, {kind: _HASHERS[kind](p) for kind in self.kinds}
             except Exception:  # noqa: BLE001
                 return p, None
-            """_hash_one."""
-            """_hash_one."""
 
         with ThreadPoolExecutor(max_workers=threads) as ex:
             futures = {ex.submit(_hash_one, p): p for p in files}
@@ -466,21 +576,33 @@ class PerceptualDuplicateFinder:
         parent: Dict[Path, Path] = {p: p for p in hashes}
 
         def _find(x: Path) -> Path:
-            """_find."""
+            """Search and locate items matching specific criteria.
+
+            Traverses filesystem directories or cached registries to find resources that satisfy the specified filters.
+
+            Args:
+                x (Path): The x parameter.
+
+            Returns:
+                Path: Result of the operation.
+            """
             while parent[x] != x:
                 parent[x] = parent[parent[x]]
                 x = parent[x]
             return x
-            """_find."""
-            """_find."""
 
         def _union(a: Path, b: Path) -> None:
-            """_union."""
+            """Union.
+
+            Manages union operations and coordinates related state changes for the component.
+
+            Args:
+                a (Path): The a parameter.
+                b (Path): Integer number of bytes to format or process.
+            """
             ra, rb = _find(a), _find(b)
             if ra != rb:
                 parent[rb] = ra
-            """_union."""
-            """_union."""
 
         for a, b in candidate_pairs:
             if cancel_event and getattr(cancel_event, "is_set", lambda: False)():
@@ -509,7 +631,16 @@ class PerceptualDuplicateFinder:
         return result
 
     def _window_size(self, n: int) -> int:
-        """Neighbourhood size for the sorted-hash candidate scan."""
+        """Neighbourhood size for the sorted-hash candidate scan.
+
+        Manages window size operations and coordinates related state changes for the component.
+
+        Args:
+            n (int): The n parameter.
+
+        Returns:
+            int: Result of the operation.
+        """
         if n <= 500:
             return 16
         if n <= 5000:
@@ -517,7 +648,13 @@ class PerceptualDuplicateFinder:
         return 32
 
     def get_stats(self) -> dict:
-        """Aggregate stats akin to ``DuplicateFinder.get_stats``."""
+        """Aggregate stats akin to ``DuplicateFinder.get_stats``.
+
+        Manages get stats operations and coordinates related state changes for the component.
+
+        Returns:
+            dict: Dictionary mapping identifiers to status or values.
+        """
         total = sum(len(v) for v in self.duplicates.values())
         return {
             "total_images_scanned": self.file_count,

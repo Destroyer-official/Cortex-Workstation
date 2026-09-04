@@ -27,15 +27,24 @@ IS_WINDOWS = sys.platform == "win32"
 
 
 class TestGameModeLogic:
-    """TestGameModeLogic."""
+    """Testgamemodelogic.
+
+    Manages TestGameModeLogic operations and coordinates related state changes for the component.
+    """
     def test_protected_never_in_candidates(self):
-        """test_protected_never_in_candidates."""
+        """test_protected_never_in_candidates.
+
+        Manages test protected never in candidates operations and coordinates related state changes for the component.
+        """
         assert not (
             _PROTECTED & set(_DEFAULT_SUSPEND_CANDIDATES)
         ), "a suspend candidate must never also be protected"
 
     def test_boost_report_serializes(self):
-        """test_boost_report_serializes."""
+        """test_boost_report_serializes.
+
+        Manages test boost report serializes operations and coordinates related state changes for the component.
+        """
         report = BoostReport(ok=True, phase="start", power_to="High")
         report.suspended.append("OneDrive.exe")
         data = report.to_dict()
@@ -44,7 +53,13 @@ class TestGameModeLogic:
         assert "OneDrive.exe" in data["suspended"]
 
     def test_unsupported_reports_cleanly(self, monkeypatch):
-        """test_unsupported_reports_cleanly."""
+        """test_unsupported_reports_cleanly.
+
+        Manages test unsupported reports cleanly operations and coordinates related state changes for the component.
+
+        Args:
+            monkeypatch: The monkeypatch parameter.
+        """
         game = GameMode()
         if not GameMode.is_supported():
             result = game.start()
@@ -56,7 +71,10 @@ class TestGameModeLogic:
             assert not result.ok
 
     def test_stop_without_start_is_safe(self):
-        """test_stop_without_start_is_safe."""
+        """test_stop_without_start_is_safe.
+
+        Manages test stop without start is safe operations and coordinates related state changes for the component.
+        """
         game = GameMode(dry_run=True)
         report = game.stop()
         assert report.ok
@@ -67,15 +85,24 @@ class TestGameModeLogic:
     not IS_WINDOWS, reason="power plan + process suspension are Windows-only"
 )
 class TestGameModeWindows:
-    """TestGameModeWindows."""
+    """Testgamemodewindows.
+
+    Manages TestGameModeWindows operations and coordinates related state changes for the component.
+    """
     def test_preview_is_read_only(self):
-        """test_preview_is_read_only."""
+        """test_preview_is_read_only.
+
+        Manages test preview is read only operations and coordinates related state changes for the component.
+        """
         preview = GameMode().preview()
         assert preview["supported"] is True
         assert "would_suspend" in preview
 
     def test_dry_run_changes_nothing(self):
-        """test_dry_run_changes_nothing."""
+        """test_dry_run_changes_nothing.
+
+        Manages test dry run changes nothing operations and coordinates related state changes for the component.
+        """
         game = GameMode(
             extra_suspend=("nonexistent_noise_process_xyz.exe",), dry_run=True
         )
@@ -86,7 +113,13 @@ class TestGameModeWindows:
         game.stop()
 
     def test_pick_prefers_high_performance(self, tmp_path_factory):
-        """test_pick_prefers_high_performance."""
+        """test_pick_prefers_high_performance.
+
+        Manages test pick prefers high performance operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path_factory: Filesystem path to the target file or directory.
+        """
         from cortex_unified.system_tools.performance_tuner import PowerPlan
 
         game = GameMode(dry_run=True)
@@ -100,7 +133,10 @@ class TestGameModeWindows:
         assert picked.name == "High performance"
 
     def test_candidates_exclude_protected_and_self(self):
-        """test_candidates_exclude_protected_and_self."""
+        """test_candidates_exclude_protected_and_self.
+
+        Manages test candidates exclude protected and self operations and coordinates related state changes for the component.
+        """
         game = GameMode(
             extra_suspend=("explorer.exe", "svchost.exe"),  # must be ignored
             dry_run=True,
@@ -110,9 +146,15 @@ class TestGameModeWindows:
 
 
 class TestMemoryOptimizer:
-    """TestMemoryOptimizer."""
+    """Testmemoryoptimizer.
+
+    Manages TestMemoryOptimizer operations and coordinates related state changes for the component.
+    """
     def test_stats_shape(self):
-        """test_stats_shape."""
+        """test_stats_shape.
+
+        Manages test stats shape operations and coordinates related state changes for the component.
+        """
         optimizer = MemoryOptimizer()
         stats = optimizer.get_system_ram_metrics()
         assert isinstance(stats, SystemRamMetrics)
@@ -121,7 +163,10 @@ class TestMemoryOptimizer:
 
     @pytest.mark.skipif(not IS_WINDOWS, reason="trimming is Windows-only")
     def test_optimize_returns_result(self):
-        """test_optimize_returns_result."""
+        """test_optimize_returns_result.
+
+        Manages test optimize returns result operations and coordinates related state changes for the component.
+        """
         optimizer = MemoryOptimizer()
         result = optimizer.optimize_all_background_working_sets()
         assert isinstance(result, MemoryOptimizeResult)
@@ -130,7 +175,10 @@ class TestMemoryOptimizer:
         assert isinstance(result.errors, list)
 
     def test_optimize_off_platform_no_crash(self):
-        """test_optimize_off_platform_no_crash."""
+        """test_optimize_off_platform_no_crash.
+
+        Manages test optimize off platform no crash operations and coordinates related state changes for the component.
+        """
         optimizer = MemoryOptimizer()
         result = optimizer.optimize_all_background_working_sets()
         assert isinstance(result, MemoryOptimizeResult)

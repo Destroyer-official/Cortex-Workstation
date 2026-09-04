@@ -27,13 +27,23 @@ from cortex_unified.analyzers.near_duplicate_finder import NearDuplicateFinder
 
 
 class _NearDupWorker(QObject):
-    """_NearDupWorker class."""
+    """Neardupworker.
+
+    Manages NearDupWorker operations and coordinates related state changes for the component.
+    """
     finished = Signal(dict)
     progress = Signal(str)
     failed = Signal(str)
 
     def __init__(self, root: str, threshold: float = 0.8):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            root (str): Filesystem path to the target file or directory.
+            threshold (float): The threshold parameter.
+        """
         super().__init__()
         self._root = root
         self._thr = threshold
@@ -42,11 +52,17 @@ class _NearDupWorker(QObject):
         self._cancel = threading.Event()
 
     def cancel(self):
-        """cancel."""
+        """cancel.
+
+        Sets the internal cancellation event to cooperatively stop worker execution at the next safe boundary.
+        """
         self._cancel.set()
 
     def run(self):
-        """run."""
+        """run.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         try:
             from cortex_unified.analyzers.near_duplicate_finder import NearDuplicateFinder
 
@@ -61,10 +77,19 @@ class _NearDupWorker(QObject):
 
 
 class NearDuplicatesPage(_Page):
-    """Find near-duplicate files (80%+ Jaccard) via MinHash LSH + Bloom."""
+    """Nearduplicatespage.
+
+    Manages NearDuplicatesPage operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, win):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win: Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(title_block(
             "Near Duplicates",
@@ -115,7 +140,10 @@ class NearDuplicatesPage(_Page):
         self._worker = None
 
     def _pick(self):
-        """_pick."""
+        """Prompt the user to select a filesystem directory or file.
+
+        Launches a native file dialog and populates the selected path into the corresponding target input widget.
+        """
         from pathlib import Path
         from PySide6.QtWidgets import QFileDialog
 
@@ -125,7 +153,10 @@ class NearDuplicatesPage(_Page):
             self.path_label.setText(folder)
 
     def _run(self):
-        """_run."""
+        """Run.
+
+        Manages run operations and coordinates related state changes for the component.
+        """
         self.run_btn.setEnabled(False)
         self.progress.setVisible(True)
         self.state.show_loading("Finding near-duplicates (MinHash)…")
@@ -136,11 +167,23 @@ class NearDuplicatesPage(_Page):
         self.win.run_worker(w, self._on_done, self._fail, on_progress=self._on_progress)
 
     def _on_progress(self, msg: str):
-        """_on_progress."""
+        """_on_progress.
+
+        Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
+
+        Args:
+            msg (str): Informational or progress status message.
+        """
         self.status.setText(msg)
 
     def _on_done(self, groups: dict):
-        """_on_done."""
+        """_on_done.
+
+        Receives the completed data from the  background worker, populates the view with results, and restores button states.
+
+        Args:
+            groups (dict): The groups parameter.
+        """
         self._worker = None
         self.progress.setVisible(False)
         self.run_btn.setEnabled(True)
@@ -166,7 +209,13 @@ class NearDuplicatesPage(_Page):
         self.win.statusBar().showMessage(f"{len(groups)} near-duplicate groups", 5000)
 
     def _fail(self, msg):
-        """_fail."""
+        """Handle an operation failure and notify the user.
+
+        Captures error details, displays an informative failure state in the UI, resets progress indicators, and re-enables interactive controls.
+
+        Args:
+            msg: Informational or progress status message.
+        """
         self._worker = None
         self.progress.setVisible(False)
         self.run_btn.setEnabled(True)

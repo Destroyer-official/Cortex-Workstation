@@ -33,37 +33,64 @@ from cortex_unified.system_tools.network_discovery import (
 # ---------------------------------------------------------------------------
 
 class TestUsableHost:
-    """TestUsableHost."""
+    """Testusablehost.
+
+    Manages TestUsableHost operations and coordinates related state changes for the component.
+    """
     def test_zero_mac_is_absence_not_presence(self):
-        """An all-zero MAC means the ARP probe got no reply."""
+        """An all-zero MAC means the ARP probe got no reply.
+
+        Manages test zero mac is absence not presence operations and coordinates related state changes for the component.
+        """
         assert NetworkDiscovery._usable_host("192.168.1.50", "00:00:00:00:00:00") is False
 
     def test_broadcast_mac_rejected(self):
-        """test_broadcast_mac_rejected."""
+        """test_broadcast_mac_rejected.
+
+        Manages test broadcast mac rejected operations and coordinates related state changes for the component.
+        """
         assert NetworkDiscovery._usable_host("192.168.1.50", "ff:ff:ff:ff:ff:ff") is False
 
     def test_multicast_mac_rejected(self):
-        """test_multicast_mac_rejected."""
+        """test_multicast_mac_rejected.
+
+        Manages test multicast mac rejected operations and coordinates related state changes for the component.
+        """
         assert NetworkDiscovery._usable_host("224.0.0.22", "01:00:5e:00:00:16") is False
 
     def test_broadcast_ip_rejected(self):
-        """test_broadcast_ip_rejected."""
+        """test_broadcast_ip_rejected.
+
+        Manages test broadcast ip rejected operations and coordinates related state changes for the component.
+        """
         assert NetworkDiscovery._usable_host("192.168.1.255", "aa:bb:cc:dd:ee:ff") is False
 
     def test_multicast_ip_rejected(self):
-        """test_multicast_ip_rejected."""
+        """test_multicast_ip_rejected.
+
+        Manages test multicast ip rejected operations and coordinates related state changes for the component.
+        """
         assert NetworkDiscovery._usable_host("239.255.255.250", "aa:bb:cc:dd:ee:ff") is False
 
     def test_real_device_accepted(self):
-        """test_real_device_accepted."""
+        """test_real_device_accepted.
+
+        Manages test real device accepted operations and coordinates related state changes for the component.
+        """
         assert NetworkDiscovery._usable_host("192.168.1.50", "20:51:f5:61:77:60") is True
 
     def test_missing_mac_rejected(self):
-        """test_missing_mac_rejected."""
+        """test_missing_mac_rejected.
+
+        Manages test missing mac rejected operations and coordinates related state changes for the component.
+        """
         assert NetworkDiscovery._usable_host("192.168.1.50", "") is False
 
     def test_garbage_ip_rejected(self):
-        """test_garbage_ip_rejected."""
+        """test_garbage_ip_rejected.
+
+        Manages test garbage ip rejected operations and coordinates related state changes for the component.
+        """
         assert NetworkDiscovery._usable_host("not-an-ip", "20:51:f5:61:77:60") is False
 
 
@@ -101,19 +128,28 @@ class TestMacIdentity:
                         reason="IEEE registry not downloaded on this machine")
     def test_real_assignments_resolve_from_the_registry(self):
         # Espressif is the ESP32/ESP8266 maker - the classic "mystery device".
-        """test_real_assignments_resolve_from_the_registry."""
+        """test_real_assignments_resolve_from_the_registry.
+
+        Manages test real assignments resolve from the registry operations and coordinates related state changes for the component.
+        """
         assert "espressif" in oui.lookup("fc:e8:c0:11:22:33").lower()
         # A Raspberry Pi Foundation block.
         assert oui.lookup("b8:27:eb:00:00:01") != ""
 
     def test_lookup_never_invents_a_vendor(self):
-        """Unassigned/locally-administered addresses must return empty."""
+        """Unassigned/locally-administered addresses must return empty.
+
+        Manages test lookup never invents a vendor operations and coordinates related state changes for the component.
+        """
         assert oui.lookup("aa:aa:aa:aa:aa:aa") == ""
         assert oui.lookup("not-a-mac") == ""
         assert oui.lookup("") == ""
 
     def test_longer_assignments_win_over_the_containing_block(self):
-        """MA-S/MA-M blocks are more specific than the 24-bit OUI they sit in."""
+        """MA-S/MA-M blocks are more specific than the 24-bit OUI they sit in.
+
+        Manages test longer assignments win over the containing block operations and coordinates related state changes for the component.
+        """
         oui.ensure_registry_loaded()
         oui._OUI["11:22:33"] = "Broad Block Owner"
         oui._LONG_ASSIGNMENTS["1122334"] = "Specific Sub-Block Owner"
@@ -125,7 +161,13 @@ class TestMacIdentity:
             oui._LONG_ASSIGNMENTS.pop("1122334", None)
 
     def test_ieee_placeholder_org_is_not_recorded_as_a_vendor(self, tmp_path):
-        """'IEEE Registration Authority' names no vendor - recording it lies."""
+        """IEEE Registration Authority' names no vendor - recording it lies.
+
+        Manages test ieee placeholder org is not recorded as a vendor operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         csv_file = tmp_path / "reg.csv"
         csv_file.write_text(
             "Registry,Assignment,Organization Name,Organization Address\n"
@@ -137,7 +179,10 @@ class TestMacIdentity:
         assert oui.lookup("ab:cd:e0:00:00:01") == "Real Vendor Inc."
 
     def test_shorten_is_cosmetic_only(self):
-        """test_shorten_is_cosmetic_only."""
+        """test_shorten_is_cosmetic_only.
+
+        Manages test shorten is cosmetic only operations and coordinates related state changes for the component.
+        """
         assert oui.shorten("Espressif Inc.") == "Espressif"
         assert oui.shorten("TP-LINK TECHNOLOGIES CO.,LTD.") == "TP-LINK"
         assert oui.shorten("") == ""
@@ -146,28 +191,43 @@ class TestMacIdentity:
 
     def test_randomized_mac_detected(self):
         # Locally-administered bit (0x02) set -> a privacy address.
-        """test_randomized_mac_detected."""
+        """test_randomized_mac_detected.
+
+        Manages test randomized mac detected operations and coordinates related state changes for the component.
+        """
         for mac in ("36:fe:fa:8b:25:6b", "96:e7:e1:46:92:5f", "b2:04:d2:38:db:00"):
             assert oui.is_randomized(mac), mac
 
     def test_real_vendor_mac_is_not_randomized(self):
-        """test_real_vendor_mac_is_not_randomized."""
+        """test_real_vendor_mac_is_not_randomized.
+
+        Manages test real vendor mac is not randomized operations and coordinates related state changes for the component.
+        """
         for mac in ("20:51:f5:61:77:60", "84:28:d6:14:54:e3", "24:0a:c4:11:22:33"):
             assert not oui.is_randomized(mac), mac
 
     def test_multicast_is_not_treated_as_randomized(self):
-        """test_multicast_is_not_treated_as_randomized."""
+        """test_multicast_is_not_treated_as_randomized.
+
+        Manages test multicast is not treated as randomized operations and coordinates related state changes for the component.
+        """
         assert oui.is_multicast("01:00:5e:00:00:16")
         assert not oui.is_randomized("01:00:5e:00:00:16")
 
     def test_private_address_explained_not_called_unknown(self):
-        """The honest answer to 'why is my phone unnamed?'."""
+        """The honest answer to 'why is my phone unnamed?'.
+
+        Manages test private address explained not called unknown operations and coordinates related state changes for the component.
+        """
         described = oui.describe_vendor("36:fe:fa:8b:25:6b")
         assert "private" in described.lower()
         assert "randomiz" in described.lower()
 
     def test_missing_registry_is_distinguished_from_unknown_vendor(self):
-        """'We couldn't look it up' must not masquerade as 'no such vendor'."""
+        """We couldn't look it up' must not masquerade as 'no such vendor'.
+
+        Manages test missing registry is distinguished from unknown vendor operations and coordinates related state changes for the component.
+        """
         described = oui.describe_vendor("10:11:22:33:44:55")
         if oui.has_full_registry():
             # Either a real name, or genuinely unassigned -> empty.
@@ -176,7 +236,10 @@ class TestMacIdentity:
             assert "database not downloaded" in described
 
     def test_normalize_handles_formats(self):
-        """test_normalize_handles_formats."""
+        """test_normalize_handles_formats.
+
+        Converts raw numeric values into formatted, localized, and human-readable string representations.
+        """
         assert oui.normalize("84-28-D6-14-54-E3") == "84:28:d6:14:54:e3"
         assert oui.normalize("8428.d614.54e3") == ""      # not 6 groups
         assert oui.normalize("garbage") == ""
@@ -188,9 +251,15 @@ class TestMacIdentity:
 # ---------------------------------------------------------------------------
 
 class TestDeviceLabelling:
-    """TestDeviceLabelling."""
+    """Testdevicelabelling.
+
+    Manages TestDeviceLabelling operations and coordinates related state changes for the component.
+    """
     def test_friendly_name_beats_uuid_hostname(self):
-        """Chromecasts use a raw UUID as hostname; the user's own name wins."""
+        """Chromecasts use a raw UUID as hostname; the user's own name wins.
+
+        Manages test friendly name beats uuid hostname operations and coordinates related state changes for the component.
+        """
         dev = Device(
             ip="192.168.31.134",
             hostname="fd722296-10f6-0827-0c2e-1684fd064082",
@@ -199,43 +268,67 @@ class TestDeviceLabelling:
         assert dev.label == "Family Room TV"
 
     def test_model_used_when_no_friendly_name(self):
-        """test_model_used_when_no_friendly_name."""
+        """test_model_used_when_no_friendly_name.
+
+        Manages test model used when no friendly name operations and coordinates related state changes for the component.
+        """
         dev = Device(ip="192.168.31.138", hostname="67334274-6f36-cd6c-16e2-66e0b3178c34",
                      services={"model": "R3G"})
         assert dev.label == "R3G"
 
     def test_real_hostname_is_used(self):
-        """test_real_hostname_is_used."""
+        """test_real_hostname_is_used.
+
+        Manages test real hostname is used operations and coordinates related state changes for the component.
+        """
         dev = Device(ip="192.168.31.182", hostname="destroyer")
         assert dev.label == "destroyer"
 
     def test_uuid_detection(self):
-        """test_uuid_detection."""
+        """test_uuid_detection.
+
+        Manages test uuid detection operations and coordinates related state changes for the component.
+        """
         assert Device._looks_like_uuid("fd722296-10f6-0827-0c2e-1684fd064082")
         assert not Device._looks_like_uuid("destroyer")
         assert not Device._looks_like_uuid("Family Room TV")
 
     def test_gateway_without_a_name_reads_as_router(self):
-        """test_gateway_without_a_name_reads_as_router."""
+        """test_gateway_without_a_name_reads_as_router.
+
+        Manages test gateway without a name reads as router operations and coordinates related state changes for the component.
+        """
         dev = Device(ip="192.168.31.1", is_gateway=True)
         assert dev.label == "Router"
 
     def test_private_address_is_not_used_as_a_name(self):
-        """test_private_address_is_not_used_as_a_name."""
+        """test_private_address_is_not_used_as_a_name.
+
+        Manages test private address is not used as a name operations and coordinates related state changes for the component.
+        """
         dev = Device(ip="192.168.31.246", mac="36:fe:fa:8b:25:6b",
                      vendor="private address (randomized by the device)")
         # Falling back to the IP is more useful than repeating the caveat.
         assert dev.label == "192.168.31.246"
 
     def test_label_never_empty(self):
-        """test_label_never_empty."""
+        """test_label_never_empty.
+
+        Manages test label never empty operations and coordinates related state changes for the component.
+        """
         assert Device(ip="10.0.0.5").label == "10.0.0.5"
 
 
 class TestDeviceKind:
-    """TestDeviceKind."""
+    """Testdevicekind.
+
+    Manages TestDeviceKind operations and coordinates related state changes for the component.
+    """
     def test_chromecast_classified_from_service_and_port(self):
-        """test_chromecast_classified_from_service_and_port."""
+        """test_chromecast_classified_from_service_and_port.
+
+        Manages test chromecast classified from service and port operations and coordinates related state changes for the component.
+        """
         dev = Device(ip="1.1.1.1", services={"_googlecast._tcp": ""}, open_ports=[8009])
         assert dev.kind == "TV / streaming device"
 
@@ -249,52 +342,85 @@ class TestDeviceKind:
         assert Device(ip="1.1.1.3", services={"_esphomelib._tcp": ""}).kind.startswith("IoT")
 
     def test_classified_from_self_reported_model(self):
-        """A device's own UPnP/mDNS model text is enough, with no MAC at all."""
+        """A device's own UPnP/mDNS model text is enough, with no MAC at all.
+
+        Manages test classified from self reported model operations and coordinates related state changes for the component.
+        """
         dev = Device(ip="1.1.1.1", services={"model": "Hikvision DS-2CD"})
         assert dev.kind == "Camera"
 
     def test_unknown_vendor_is_not_guessed_into_a_category(self):
-        """test_unknown_vendor_is_not_guessed_into_a_category."""
+        """test_unknown_vendor_is_not_guessed_into_a_category.
+
+        Manages test unknown vendor is not guessed into a category operations and coordinates related state changes for the component.
+        """
         dev = Device(ip="1.1.1.1", vendor="Totally Unheard Of Gmbh")
         assert dev.kind == "Unknown"
 
     def test_printer_classified(self):
-        """test_printer_classified."""
+        """test_printer_classified.
+
+        Manages test printer classified operations and coordinates related state changes for the component.
+        """
         assert Device(ip="1.1.1.1", open_ports=[9100]).kind == "Printer"
         assert Device(ip="1.1.1.2", services={"_ipp._tcp": ""}).kind == "Printer"
 
     def test_randomized_mac_reads_as_phone_or_laptop(self):
-        """test_randomized_mac_reads_as_phone_or_laptop."""
+        """test_randomized_mac_reads_as_phone_or_laptop.
+
+        Manages test randomized mac reads as phone or laptop operations and coordinates related state changes for the component.
+        """
         dev = Device(ip="1.1.1.1", mac="36:fe:fa:8b:25:6b")
         assert "private address" in dev.kind
 
     def test_gateway_and_self_win(self):
-        """test_gateway_and_self_win."""
+        """test_gateway_and_self_win.
+
+        Manages test gateway and self win operations and coordinates related state changes for the component.
+        """
         assert Device(ip="1.1.1.1", is_gateway=True, open_ports=[80]).kind == "Router / gateway"
         assert Device(ip="1.1.1.2", is_self=True, open_ports=[445]).kind == "This PC"
 
     def test_unknown_stays_unknown(self):
-        """test_unknown_stays_unknown."""
+        """test_unknown_stays_unknown.
+
+        Manages test unknown stays unknown operations and coordinates related state changes for the component.
+        """
         assert Device(ip="1.1.1.1", mac="20:51:f5:00:00:01").kind == "Unknown"
 
 
 class TestEvidence:
-    """TestEvidence."""
+    """Testevidence.
+
+    Manages TestEvidence operations and coordinates related state changes for the component.
+    """
     def test_evidence_lists_every_source(self):
-        """test_evidence_lists_every_source."""
+        """test_evidence_lists_every_source.
+
+        Manages test evidence lists every source operations and coordinates related state changes for the component.
+        """
         dev = Device(ip="1.1.1.1", sources={"neighbor", "mdns", "ssdp"})
         text = dev.evidence
         assert "ARP" in text and "mDNS" in text and "UPnP" in text
 
     def test_evidence_never_empty(self):
-        """test_evidence_never_empty."""
+        """test_evidence_never_empty.
+
+        Manages test evidence never empty operations and coordinates related state changes for the component.
+        """
         assert Device(ip="1.1.1.1").evidence
 
 
 class TestMerge:
-    """TestMerge."""
+    """Testmerge.
+
+    Manages TestMerge operations and coordinates related state changes for the component.
+    """
     def test_observations_combine_without_losing_data(self):
-        """test_observations_combine_without_losing_data."""
+        """test_observations_combine_without_losing_data.
+
+        Manages test observations combine without losing data operations and coordinates related state changes for the component.
+        """
         first = Device(ip="1.1.1.1", mac="20:51:f5:61:77:60", sources={"neighbor"},
                        open_ports=[8009])
         second = Device(ip="1.1.1.1", hostname="tv", sources={"mdns"},
@@ -307,7 +433,10 @@ class TestMerge:
         assert first.services["friendly"] == "Family Room TV"
 
     def test_merge_does_not_overwrite_existing_values(self):
-        """test_merge_does_not_overwrite_existing_values."""
+        """test_merge_does_not_overwrite_existing_values.
+
+        Manages test merge does not overwrite existing values operations and coordinates related state changes for the component.
+        """
         first = Device(ip="1.1.1.1", hostname="real-name")
         first.merge(Device(ip="1.1.1.1", hostname="other"))
         assert first.hostname == "real-name"
@@ -318,9 +447,15 @@ class TestMerge:
 # ---------------------------------------------------------------------------
 
 class TestDnsParsing:
-    """TestDnsParsing."""
+    """Testdnsparsing.
+
+    Manages TestDnsParsing operations and coordinates related state changes for the component.
+    """
     def test_query_is_well_formed(self):
-        """test_query_is_well_formed."""
+        """test_query_is_well_formed.
+
+        Manages test query is well formed operations and coordinates related state changes for the component.
+        """
         query = NetworkDiscovery._build_dns_query("_googlecast._tcp.local")
         # Header is 12 bytes, one question, PTR type, IN class.
         qdcount = struct.unpack(">H", query[4:6])[0]
@@ -330,7 +465,10 @@ class TestDnsParsing:
 
     def test_parses_an_a_record(self):
         # name: esp32.local -> A 192.168.31.77
-        """test_parses_an_a_record."""
+        """test_parses_an_a_record.
+
+        Manages test parses an a record operations and coordinates related state changes for the component.
+        """
         payload = (
             struct.pack(">HHHHHH", 0, 0x8400, 0, 1, 0, 0)
             + b"\x05esp32\x05local\x00"
@@ -355,7 +493,10 @@ class TestDnsParsing:
         assert records[1][2] == "10.0.0.2"
 
     def test_malformed_packet_does_not_raise(self):
-        """test_malformed_packet_does_not_raise."""
+        """test_malformed_packet_does_not_raise.
+
+        Manages test malformed packet does not raise operations and coordinates related state changes for the component.
+        """
         assert NetworkDiscovery._parse_dns_records(b"") == []
         assert NetworkDiscovery._parse_dns_records(b"\x00\x01\x02") == []
         # Truncated mid-record.
@@ -365,14 +506,20 @@ class TestDnsParsing:
             list)
 
     def test_compression_loop_is_bounded(self):
-        """A pointer cycle must terminate instead of hanging the scan."""
+        """A pointer cycle must terminate instead of hanging the scan.
+
+        Manages test compression loop is bounded operations and coordinates related state changes for the component.
+        """
         # A name at offset 12 that points at itself.
         payload = struct.pack(">HHHHHH", 0, 0x8400, 0, 1, 0, 0) + struct.pack(">H", 0xC000 | 12)
         name, _ = NetworkDiscovery._read_name(payload, 12)
         assert isinstance(name, str)
 
     def test_txt_record_decoded(self):
-        """test_txt_record_decoded."""
+        """test_txt_record_decoded.
+
+        Manages test txt record decoded operations and coordinates related state changes for the component.
+        """
         txt = b"\x0bfn=Bedroom\x0bmd=Chromecast"
         payload = (
             struct.pack(">HHHHHH", 0, 0x8400, 0, 1, 0, 0)
@@ -385,28 +532,43 @@ class TestDnsParsing:
 
 
 class TestServiceSplitting:
-    """TestServiceSplitting."""
+    """Testservicesplitting.
+
+    Manages TestServiceSplitting operations and coordinates related state changes for the component.
+    """
     def test_splits_instance_and_type(self):
-        """test_splits_instance_and_type."""
+        """test_splits_instance_and_type.
+
+        Manages test splits instance and type operations and coordinates related state changes for the component.
+        """
         service, instance = NetworkDiscovery._split_service_instance(
             "Family Room._googlecast._tcp.local")
         assert service == "_googlecast._tcp"
         assert instance == "Family Room"
 
     def test_bare_service_type(self):
-        """test_bare_service_type."""
+        """test_bare_service_type.
+
+        Manages test bare service type operations and coordinates related state changes for the component.
+        """
         service, instance = NetworkDiscovery._split_service_instance("_ipp._tcp.local")
         assert service == "_ipp._tcp"
         assert instance == ""
 
     def test_non_service_name(self):
-        """test_non_service_name."""
+        """test_non_service_name.
+
+        Manages test non service name operations and coordinates related state changes for the component.
+        """
         assert NetworkDiscovery._split_service_instance("host.local") == ("", "")
         assert NetworkDiscovery._split_service_instance("") == ("", "")
 
 
 def test_ssdp_headers_parsed_case_insensitively():
-    """test_ssdp_headers_parsed_case_insensitively."""
+    """test_ssdp_headers_parsed_case_insensitively.
+
+    Manages test ssdp headers parsed case insensitively operations and coordinates related state changes for the component.
+    """
     raw = (b"HTTP/1.1 200 OK\r\n"
            b"SERVER: Linux/4.14 UPnP/1.0 Chromecast/1.6\r\n"
            b"ST: urn:dial-multiscreen-org:service:dial:1\r\n\r\n")
@@ -420,18 +582,30 @@ def test_ssdp_headers_parsed_case_insensitively():
 # ---------------------------------------------------------------------------
 
 class TestScanScope:
-    """TestScanScope."""
+    """Testscanscope.
+
+    Manages TestScanScope operations and coordinates related state changes for the component.
+    """
     def test_interface_network_computed(self):
-        """test_interface_network_computed."""
+        """test_interface_network_computed.
+
+        Manages test interface network computed operations and coordinates related state changes for the component.
+        """
         iface = Interface("Wi-Fi", "192.168.31.182", "255.255.255.0")
         assert str(iface.network) == "192.168.31.0/24"
 
     def test_bad_netmask_is_survivable(self):
-        """test_bad_netmask_is_survivable."""
+        """test_bad_netmask_is_survivable.
+
+        Manages test bad netmask is survivable operations and coordinates related state changes for the component.
+        """
         assert Interface("x", "192.168.1.1", "not-a-mask").network is None
 
     def test_real_interfaces_are_private_only(self):
-        """Whatever this machine has, we must never target public space."""
+        """Whatever this machine has, we must never target public space.
+
+        Manages test real interfaces are private only operations and coordinates related state changes for the component.
+        """
         import ipaddress
         for iface in NetworkDiscovery.local_interfaces():
             addr = ipaddress.IPv4Address(iface.ip)
@@ -439,7 +613,13 @@ class TestScanScope:
             assert not addr.is_loopback
 
     def test_oversized_subnet_is_skipped_with_an_explanation(self, monkeypatch):
-        """A /8 must not be swept host-by-host; say so rather than hang."""
+        """A /8 must not be swept host-by-host; say so rather than hang.
+
+        Manages test oversized subnet is skipped with an explanation operations and coordinates related state changes for the component.
+
+        Args:
+            monkeypatch: The monkeypatch parameter.
+        """
         disco = NetworkDiscovery()
         monkeypatch.setattr(
             NetworkDiscovery, "local_interfaces",
@@ -453,7 +633,10 @@ class TestScanScope:
         monkeypatch.setattr(disco, "_fingerprint", lambda d, c: None)
 
         def _no_sweep(*_a, **_k):
-            """_no_sweep."""
+            """_no_sweep.
+
+            Manages no sweep operations and coordinates related state changes for the component.
+            """
             raise AssertionError("a /8 must never be swept host-by-host")
 
         monkeypatch.setattr(disco, "_arp_sweep", _no_sweep)
@@ -463,7 +646,13 @@ class TestScanScope:
         assert any("too large" in note for note in result.notes)
 
     def test_manual_scope_can_only_narrow_active_interface(self, monkeypatch):
-        """test_manual_scope_can_only_narrow_active_interface."""
+        """test_manual_scope_can_only_narrow_active_interface.
+
+        Manages test manual scope can only narrow active interface operations and coordinates related state changes for the component.
+
+        Args:
+            monkeypatch: The monkeypatch parameter.
+        """
         disco = NetworkDiscovery()
         monkeypatch.setattr(
             NetworkDiscovery, "local_interfaces",
@@ -489,7 +678,13 @@ class TestScanScope:
                 deep=False, requested_networks=["192.168.51.0/24"])
 
     def test_no_interfaces_reports_clearly(self, monkeypatch):
-        """test_no_interfaces_reports_clearly."""
+        """test_no_interfaces_reports_clearly.
+
+        Manages test no interfaces reports clearly operations and coordinates related state changes for the component.
+
+        Args:
+            monkeypatch: The monkeypatch parameter.
+        """
         disco = NetworkDiscovery()
         monkeypatch.setattr(NetworkDiscovery, "local_interfaces",
                             staticmethod(lambda: []))
@@ -499,9 +694,18 @@ class TestScanScope:
 
 
 class TestCancellation:
-    """TestCancellation."""
+    """Testcancellation.
+
+    Manages TestCancellation operations and coordinates related state changes for the component.
+    """
     def test_already_cancelled_scan_does_almost_nothing(self, monkeypatch):
-        """test_already_cancelled_scan_does_almost_nothing."""
+        """test_already_cancelled_scan_does_almost_nothing.
+
+        Manages test already cancelled scan does almost nothing operations and coordinates related state changes for the component.
+
+        Args:
+            monkeypatch: The monkeypatch parameter.
+        """
         disco = NetworkDiscovery()
         event = threading.Event()
         event.set()
@@ -512,7 +716,10 @@ class TestCancellation:
         monkeypatch.setattr(disco, "_read_neighbors", lambda: [])
 
         def _boom(*_a, **_k):
-            """_boom."""
+            """Boom.
+
+            Manages boom operations and coordinates related state changes for the component.
+            """
             raise AssertionError("no probing after cancellation")
 
         monkeypatch.setattr(disco, "_arp_sweep", _boom)
@@ -527,15 +734,24 @@ class TestCancellation:
 # ---------------------------------------------------------------------------
 
 class TestNotes:
-    """TestNotes."""
+    """Testnotes.
+
+    Manages TestNotes operations and coordinates related state changes for the component.
+    """
     def test_randomized_macs_are_explained(self):
-        """test_randomized_macs_are_explained."""
+        """test_randomized_macs_are_explained.
+
+        Manages test randomized macs are explained operations and coordinates related state changes for the component.
+        """
         devices = [Device(ip="1.1.1.1", mac="36:fe:fa:8b:25:6b")]
         notes = NetworkDiscovery._build_notes(devices, [], set())
         assert any("randomized" in n for n in notes)
 
     def test_client_isolation_suggested_when_only_router_answers(self):
-        """test_client_isolation_suggested_when_only_router_answers."""
+        """test_client_isolation_suggested_when_only_router_answers.
+
+        Manages test client isolation suggested when only router answers operations and coordinates related state changes for the component.
+        """
         import ipaddress
         devices = [Device(ip="192.168.1.1", mac="84:28:d6:14:54:e3", is_gateway=True)]
         notes = NetworkDiscovery._build_notes(
@@ -543,7 +759,10 @@ class TestNotes:
         assert any("isolation" in n for n in notes)
 
     def test_no_spurious_notes_for_a_healthy_scan(self):
-        """test_no_spurious_notes_for_a_healthy_scan."""
+        """test_no_spurious_notes_for_a_healthy_scan.
+
+        Manages test no spurious notes for a healthy scan operations and coordinates related state changes for the component.
+        """
         import ipaddress
         # All globally-assigned MACs, so no privacy-address note is expected.
         devices = [
@@ -557,7 +776,10 @@ class TestNotes:
 
 
 def test_result_serializes_to_json():
-    """test_result_serializes_to_json."""
+    """test_result_serializes_to_json.
+
+    Manages test result serializes to json operations and coordinates related state changes for the component.
+    """
     import json
     result = DiscoveryResult(
         devices=[Device(ip="192.168.1.5", mac="24:0a:c4:11:22:33",
@@ -574,7 +796,10 @@ def test_result_serializes_to_json():
 
 
 def test_ip_sort_key_orders_numerically():
-    """test_ip_sort_key_orders_numerically."""
+    """test_ip_sort_key_orders_numerically.
+
+    Manages test ip sort key orders numerically operations and coordinates related state changes for the component.
+    """
     ips = ["192.168.1.100", "192.168.1.2", "192.168.1.20"]
     assert sorted(ips, key=NetworkDiscovery._ip_sort_key) == [
         "192.168.1.2", "192.168.1.20", "192.168.1.100"]
@@ -582,5 +807,11 @@ def test_ip_sort_key_orders_numerically():
 
 @pytest.mark.parametrize("bad", ["", "not-an-ip", "999.1.1.1"])
 def test_ip_validation_rejects_garbage(bad):
-    """test_ip_validation_rejects_garbage."""
+    """test_ip_validation_rejects_garbage.
+
+    Manages test ip validation rejects garbage operations and coordinates related state changes for the component.
+
+    Args:
+        bad: The bad parameter.
+    """
     assert NetworkDiscovery._is_ipv4(bad) is False

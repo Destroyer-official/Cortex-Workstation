@@ -52,7 +52,17 @@ IS_WINDOWS = sys.platform == "win32"
 
 
 def _windows_only(page: _Page, feature: str) -> bool:
-    """Return True (after showing a notice on *page*) unless on Windows."""
+    """Return True (after showing a notice on *page*) unless on Windows.
+
+    Manages windows only operations and coordinates related state changes for the component.
+
+    Args:
+        page (_Page): The page parameter.
+        feature (str): The feature parameter.
+
+    Returns:
+        bool: True if the operation succeeded, False otherwise.
+    """
     if IS_WINDOWS:
         return False
     note = status_note(
@@ -67,12 +77,18 @@ def _windows_only(page: _Page, feature: str) -> bool:
 # =====================================================================
 
 class PrivacyScanWorker(QObject):
-    """Background worker scanning browsers and system traces for privacy data."""
+    """Privacyscanworker.
+
+    Manages PrivacyScanWorker operations and coordinates related state changes for the component.
+    """
     finished = Signal(dict, dict)   # browsers, traces
     failed = Signal(str)
 
     def run(self):
-        """Scan browser data and system traces; emit both results."""
+        """Scan browser data and system traces; emit both results.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         try:
             from cortex_unified.analyzers.privacy_cleaner import PrivacyCleaner
             pc = PrivacyCleaner()
@@ -82,18 +98,31 @@ class PrivacyScanWorker(QObject):
 
 
 class PrivacyCleanWorker(QObject):
-    """Background worker deleting selected browser items and system traces."""
+    """Privacycleanworker.
+
+    Manages PrivacyCleanWorker operations and coordinates related state changes for the component.
+    """
     finished = Signal(bool)
     failed = Signal(str)
 
     def __init__(self, to_clean: dict, clean_system: bool):
-        """Store the per-browser item map and the system-traces flag."""
+        """Store the per-browser item map and the system-traces flag.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            to_clean (dict): The to clean parameter.
+            clean_system (bool): The clean system parameter.
+        """
         super().__init__()
         self._to_clean = to_clean
         self._clean_system = clean_system
 
     def run(self):
-        """Clean the selected browser items (and system traces if requested)."""
+        """Clean the selected browser items (and system traces if requested).
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         try:
             from cortex_unified.analyzers.privacy_cleaner import PrivacyCleaner
             pc = PrivacyCleaner()
@@ -109,12 +138,18 @@ class PrivacyCleanWorker(QObject):
 
 
 class StartupListWorker(QObject):
-    """Background worker listing startup items from the startup manager."""
+    """Startuplistworker.
+
+    Manages StartupListWorker operations and coordinates related state changes for the component.
+    """
     finished = Signal(list)
     failed = Signal(str)
 
     def run(self):
-        """Fetch the startup item list; emit it as a list of dicts."""
+        """Fetch the startup item list; emit it as a list of dicts.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         try:
             from cortex_unified.system_tools.startup_manager import StartupManager
             self.finished.emit(StartupManager().list_startup_items())
@@ -123,13 +158,19 @@ class StartupListWorker(QObject):
 
 
 class TaskSnapshotWorker(QObject):
-    """Full task-manager snapshot: CPU, memory reconciliation + process list."""
+    """Tasksnapshotworker.
+
+    Manages TaskSnapshotWorker operations and coordinates related state changes for the component.
+    """
 
     finished = Signal(dict)
     failed = Signal(str)
 
     def run(self):
-        """Take a task-manager snapshot; emit the error or the snapshot dict."""
+        """Take a task-manager snapshot; emit the error or the snapshot dict.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         try:
             from cortex_unified.system_tools.task_manager import TaskManager
             snap = TaskManager.instance().snapshot()
@@ -142,13 +183,19 @@ class TaskSnapshotWorker(QObject):
 
 
 class NetworkWorker(QObject):
-    """Read-only snapshot of active network connections + a summary."""
+    """Networkworker.
+
+    Manages NetworkWorker operations and coordinates related state changes for the component.
+    """
 
     finished = Signal(list, dict)   # (connections, summary)
     failed = Signal(str)
 
     def run(self):
-        """Snapshot active connections and emit them with a summary dict."""
+        """Snapshot active connections and emit them with a summary dict.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         try:
             from cortex_unified.system_tools.network_monitor import NetworkMonitor
             mon = NetworkMonitor()
@@ -163,10 +210,19 @@ class NetworkWorker(QObject):
 # =====================================================================
 
 class PrivacyPage(_Page):
-    """Scan and sweep browser data + system privacy traces."""
+    """Privacypage.
+
+    Manages PrivacyPage operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, win):
-        """Build the scan/sweep buttons, results tree and state panel."""
+        """Build the scan/sweep buttons, results tree and state panel.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win: Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(title_block(
             "Privacy Shield",
@@ -206,7 +262,10 @@ class PrivacyPage(_Page):
         self.v.addWidget(self.state, 1)
 
     def _scan(self):
-        """Launch the privacy scan worker with buttons disabled."""
+        """Launch the privacy scan worker with buttons disabled.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+        """
         self.scan_btn.setEnabled(False)
         self.sweep_btn.setEnabled(False)
         self.state.show_loading("Scanning browsers & traces…")
@@ -214,7 +273,14 @@ class PrivacyPage(_Page):
         self.win.run_worker(PrivacyScanWorker(), self._on_scan, self._fail)
 
     def _on_scan(self, browsers: dict, traces: dict):
-        """Populate the checkable results tree from the scan results."""
+        """Populate the checkable results tree from the scan results.
+
+        Manages on scan operations and coordinates related state changes for the component.
+
+        Args:
+            browsers (dict): The browsers parameter.
+            traces (dict): The traces parameter.
+        """
         self.scan_btn.setEnabled(True)
         self._results = {"browsers": browsers, "traces": traces}
         total = 0
@@ -253,7 +319,10 @@ class PrivacyPage(_Page):
             "No privacy traces found." if total == 0 else f"Found {fmt_bytes(total)} of traces", 5000)
 
     def _sweep(self):
-        """Confirm and delete the checked browser/system items via a worker."""
+        """Sweep.
+
+        Manages sweep operations and coordinates related state changes for the component.
+        """
         to_clean: dict[str, list[str]] = {}
         clean_system = False
         for i in range(self.tree.topLevelItemCount()):
@@ -283,7 +352,13 @@ class PrivacyPage(_Page):
         self.win.run_worker(PrivacyCleanWorker(to_clean, clean_system), self._on_swept, self._fail)
 
     def _on_swept(self, ok: bool):
-        """Report the sweep result, then re-scan."""
+        """Report the sweep result, then re-scan.
+
+        Manages on swept operations and coordinates related state changes for the component.
+
+        Args:
+            ok (bool): The ok parameter.
+        """
         self.progress.setVisible(False)
         msg = "Privacy traces cleared." if ok else "Some items could not be deleted (browser open?)."
         self.win.statusBar().showMessage(msg, 6000)
@@ -291,16 +366,31 @@ class PrivacyPage(_Page):
         self._scan()
 
     def _fail(self, msg: str):
-        """Re-enable the scan button and show the error with a retry."""
+        """Handle an operation failure and notify the user.
+
+        Captures error details, displays an informative failure state in the UI, resets progress indicators, and re-enables interactive controls.
+
+        Args:
+            msg (str): Informational or progress status message.
+        """
         self.scan_btn.setEnabled(True)
         self.state.show_error(msg, on_retry=self._scan)
 
 
 class StartupPage(_Page):
-    """List startup items and disable selected ones."""
+    """Startuppage.
+
+    Manages StartupPage operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, win):
-        """Build the startup table with refresh/disable controls."""
+        """Build the startup table with refresh/disable controls.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win: Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(title_block(
             "Startup Manager",
@@ -344,13 +434,22 @@ class StartupPage(_Page):
         self._loaded = False
 
     def _load(self):
-        """Kick off the startup-items listing worker."""
+        """Fetch and reload the latest data entries into the view.
+
+        Queries the underlying system service or storage cache and refreshes view tables with up-to-date state.
+        """
         self.refresh_btn.setEnabled(False)
         self.state.show_loading("Reading startup items…")
         self.win.run_worker(StartupListWorker(), self._on_loaded, self._fail)
 
     def _on_loaded(self, items: list):
-        """Fill the table with the fetched startup items."""
+        """Fill the table with the fetched startup items.
+
+        Manages on loaded operations and coordinates related state changes for the component.
+
+        Args:
+            items (list): Collection of items or entries to process.
+        """
         self.refresh_btn.setEnabled(True)
         if not items:
             self.state.show_empty("No startup items found.")
@@ -367,7 +466,10 @@ class StartupPage(_Page):
         self.win.statusBar().showMessage(f"{len(items)} startup items", 5000)
 
     def _disable(self):
-        """Confirm and disable each selected startup item, then reload."""
+        """Disable.
+
+        Manages disable operations and coordinates related state changes for the component.
+        """
         rows = sorted({idx.row() for idx in self.tbl.selectedIndexes()})
         if not rows:
             QMessageBox.information(self, "No selection", "Select startup items to disable.")
@@ -396,7 +498,13 @@ class StartupPage(_Page):
         self._load()
 
     def _fail(self, msg: str):
-        """Re-enable refresh and show the error with a retry."""
+        """Handle an operation failure and notify the user.
+
+        Captures error details, displays an informative failure state in the UI, resets progress indicators, and re-enables interactive controls.
+
+        Args:
+            msg (str): Informational or progress status message.
+        """
         self.refresh_btn.setEnabled(True)
         self.state.show_error(msg, on_retry=self._load)
 
@@ -541,7 +649,13 @@ class ProcessesPage(_Page):
         a byte count.
         """
         def name_icon(p: dict):
-            """Return the process's native exe icon, or a placeholder glyph."""
+            """Return the process's native exe icon, or a placeholder glyph.
+
+            Manages name icon operations and coordinates related state changes for the component.
+
+            Args:
+                p (dict): The p parameter.
+            """
             # Real native icon where available; a token placeholder glyph when
             # the icon is unavailable so the row is never left blank (Req 8.3).
             icon = icon_for_exe(p.get("exe", ""))
@@ -564,13 +678,22 @@ class ProcessesPage(_Page):
 
     # -- live lifecycle --
     def _start_live(self):
-        """Load once and start the live timer if "Live" is checked."""
+        """Load once and start the live timer if "Live" is checked.
+
+        Manages start live operations and coordinates related state changes for the component.
+        """
         self._load()
         if self.auto_chk.isChecked():
             self._timer.start()
 
     def _toggle_live(self, on: bool):
-        """Start or stop the live refresh timer."""
+        """Start or stop the live refresh timer.
+
+        Toggles selection states or operational modes, recalculating active selection counts and enabling/disabling dependent actions.
+
+        Args:
+            on (bool): The on parameter.
+        """
         if on:
             self._timer.start()
             self._tick()
@@ -578,12 +701,18 @@ class ProcessesPage(_Page):
             self._timer.stop()
 
     def _tick(self):
-        """Reload the snapshot when visible and no load is in flight."""
+        """Handle recurring timer events for real-time metric updates.
+
+        Samples live system performance statistics, advances animation counters, and updates graphical meters.
+        """
         if self.isVisible() and not self._loading:
             self._load()
 
     def _load(self):
-        """Launch a snapshot worker, skipping if one is already running."""
+        """Fetch and reload the latest data entries into the view.
+
+        Queries the underlying system service or storage cache and refreshes view tables with up-to-date state.
+        """
         if self._loading:
             return
         self._loading = True
@@ -661,7 +790,13 @@ class ProcessesPage(_Page):
         return "".join(parts)
 
     def _toggle_why(self, on: bool):
-        """Expand/collapse the detailed memory explanation."""
+        """Expand/collapse the detailed memory explanation.
+
+        Toggles selection states or operational modes, recalculating active selection counts and enabling/disabling dependent actions.
+
+        Args:
+            on (bool): The on parameter.
+        """
         self.why_btn.setText(
             "Hide the memory explanation" if on
             else "Why don't these numbers add up?")
@@ -672,7 +807,10 @@ class ProcessesPage(_Page):
             self.breakdown.setText(self._breakdown_html)
 
     def _apply_filter(self):
-        """Forward the search box text to the model's proxy filter."""
+        """Forward the search box text to the model's proxy filter.
+
+        Manages apply filter operations and coordinates related state changes for the component.
+        """
         # Search is the proxy's job now. The model keeps the whole snapshot and
         # the view simply stops asking for rows that don't match, so a keystroke
         # costs no list copy and no cell rebuild - and the "Processes" card keeps
@@ -681,7 +819,10 @@ class ProcessesPage(_Page):
         self._restore_selection()
 
     def _on_select(self, *_):
-        """Enable End Task when a row is selected; remember its PID."""
+        """Enable End Task when a row is selected; remember its PID.
+
+        Manages on select operations and coordinates related state changes for the component.
+        """
         record = self.table.selected_record()
         self.kill_btn.setEnabled(record is not None)
         if record is not None:
@@ -690,13 +831,19 @@ class ProcessesPage(_Page):
             self._selected_pid = record["pid"]
 
     def _restore_selection(self):
-        """Reselect the previously selected PID after model/filter changes."""
+        """Reselect the previously selected PID after model/filter changes.
+
+        Manages restore selection operations and coordinates related state changes for the component.
+        """
         if self._selected_pid is None:
             return
         self.table.select_where(lambda p: p["pid"] == self._selected_pid)
 
     def _kill(self):
-        """Confirm and end the selected process's task, then reload."""
+        """Kill.
+
+        Manages kill operations and coordinates related state changes for the component.
+        """
         record = self.table.selected_record()
         if record is None:
             return
@@ -730,7 +877,10 @@ class ProcessesPage(_Page):
 
 
 class NetworkPage(_Page):
-    """Security-minded view of active network connections and their owners."""
+    """Networkpage.
+
+    Manages NetworkPage operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, win):
         """Build summary cards, search/live controls and the risk-coloured
@@ -822,13 +972,22 @@ class NetworkPage(_Page):
         self._loaded = False
 
     def _start_live(self):
-        """Load once and start the live timer if "Live" is checked."""
+        """Load once and start the live timer if "Live" is checked.
+
+        Manages start live operations and coordinates related state changes for the component.
+        """
         self._load()
         if self.auto_chk.isChecked():
             self._timer.start()
 
     def _toggle_live(self, on: bool):
-        """Start or stop the live refresh timer."""
+        """Start or stop the live refresh timer.
+
+        Toggles selection states or operational modes, recalculating active selection counts and enabling/disabling dependent actions.
+
+        Args:
+            on (bool): The on parameter.
+        """
         if on:
             self._timer.start()
             self._tick()
@@ -836,12 +995,18 @@ class NetworkPage(_Page):
             self._timer.stop()
 
     def _tick(self):
-        """Reload when visible and no load is in flight."""
+        """Handle recurring timer events for real-time metric updates.
+
+        Samples live system performance statistics, advances animation counters, and updates graphical meters.
+        """
         if self.isVisible() and not self._loading:
             self._load()
 
     def _load(self):
-        """Launch a connections snapshot worker, skipping if one is running."""
+        """Fetch and reload the latest data entries into the view.
+
+        Queries the underlying system service or storage cache and refreshes view tables with up-to-date state.
+        """
         if self._loading:
             return
         self._loading = True
@@ -851,7 +1016,14 @@ class NetworkPage(_Page):
         self.win.run_worker(NetworkWorker(), self._on_loaded, self._fail)
 
     def _on_loaded(self, conns: list, summary: dict):
-        """Update the summary cards and hint, then reapply the filter."""
+        """Update the summary cards and hint, then reapply the filter.
+
+        Manages on loaded operations and coordinates related state changes for the component.
+
+        Args:
+            conns (list): The conns parameter.
+            summary (dict): The summary parameter.
+        """
         self._loading = False
         self.refresh_btn.setEnabled(True)
         self._conns = conns
@@ -918,11 +1090,26 @@ class NetworkPage(_Page):
         return ""
 
     def _risk_colour(self, c: dict):
-        """_risk_colour."""
+        """Return the row colour for a process risk level.
+
+        Manages risk colour operations and coordinates related state changes for the component.
+
+        Args:
+            c (dict): The c parameter.
+        """
         return self._RISK_COLOUR.get(self._risk(c))
 
     def _risk_tooltip(self, c: dict) -> str:
-        """_risk_tooltip."""
+        """Return the tooltip text explaining a process risk level.
+
+        Manages risk tooltip operations and coordinates related state changes for the component.
+
+        Args:
+            c (dict): The c parameter.
+
+        Returns:
+            str: Formatted string or path.
+        """
         return self._RISK_TIP.get(self._risk(c), "")
 
     def _process_icon(self, c: dict):
@@ -932,7 +1119,13 @@ class NetworkPage(_Page):
         return icon if icon is not None else placeholder_icon(self.p)
 
     def _columns(self) -> list[Column]:
-        """_columns."""
+        """Columns.
+
+        Manages columns operations and coordinates related state changes for the component.
+
+        Returns:
+            list[Column]: List of processed items or identifiers.
+        """
         colour = self._risk_colour
         tip = self._risk_tooltip
         return [
@@ -957,19 +1150,43 @@ class NetworkPage(_Page):
         ]
 
     def _local_text(self, c: dict) -> str:
-        """_local_text."""
+        """Format the local endpoint address for the connections table.
+
+        Manages local text operations and coordinates related state changes for the component.
+
+        Args:
+            c (dict): The c parameter.
+
+        Returns:
+            str: Formatted string or path.
+        """
         if self._risk(c) == "public":
             return f"{c['local']}  (public)"
         return c["local"]
 
     def _remote_text(self, c: dict) -> str:
-        """_remote_text."""
+        """Format the remote endpoint address for the connections table.
+
+        Manages remote text operations and coordinates related state changes for the component.
+
+        Args:
+            c (dict): The c parameter.
+
+        Returns:
+            str: Formatted string or path.
+        """
         if self._risk(c) == "external":
             return f"{c['remote']}  (external)"
         return c["remote"]
 
     def _fill(self, rows: list[dict]):
-        """_fill."""
+        """Fill via the results view; results return through worker signals.
+
+        Refreshes table or tree items with formatted values, tooltips, and status indicators based on the provided dataset.
+
+        Args:
+            rows (list[dict]): Table row index or list of row indices.
+        """
         # Keep the user's selection across the 3-second live refresh. The item
         # table lost it on every tick because setRowCount destroyed the items,
         # which made "End Owning Task" nearly unusable while Live was on. The
@@ -983,11 +1200,23 @@ class NetworkPage(_Page):
 
     @staticmethod
     def _socket_key(c: dict) -> tuple:
-        """Identity of a connection, stable across refreshes."""
+        """Identity of a connection, stable across refreshes.
+
+        Manages socket key operations and coordinates related state changes for the component.
+
+        Args:
+            c (dict): The c parameter.
+
+        Returns:
+            tuple: Result of the operation.
+        """
         return (c.get("pid"), c.get("protocol"), c.get("local"), c.get("remote"))
 
     def _kill(self):
-        """_kill."""
+        """Kill.
+
+        Manages kill operations and coordinates related state changes for the component.
+        """
         conn = self.table.selected_record()
         if conn is None:
             return
@@ -1014,7 +1243,13 @@ class NetworkPage(_Page):
         self._load()
 
     def _fail(self, msg: str):
-        """_fail."""
+        """Handle an operation failure and notify the user.
+
+        Captures error details, displays an informative failure state in the UI, resets progress indicators, and re-enables interactive controls.
+
+        Args:
+            msg (str): Informational or progress status message.
+        """
         self._loading = False
         self.refresh_btn.setEnabled(True)
         if not self._has_data:
@@ -1028,12 +1263,18 @@ class NetworkPage(_Page):
 # =====================================================================
 
 class UninstallerListWorker(QObject):
-    """UninstallerListWorker class."""
+    """Uninstallerlistworker.
+
+    Manages UninstallerListWorker operations and coordinates related state changes for the component.
+    """
     finished = Signal(list)
     failed = Signal(str)
 
     def run(self):
-        """run."""
+        """Run the AppUninstaller (app uninstaller) backend call off the UI thread; emit finished/failed with results.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         try:
             from cortex_unified.system_tools.app_uninstaller import AppUninstaller
             self.finished.emit(AppUninstaller().get_installed_apps())
@@ -1042,13 +1283,23 @@ class UninstallerListWorker(QObject):
 
 
 class LeftoverScanWorker(QObject):
-    """Sweep standard locations for the recently uninstalled apps' leftovers."""
+    """Leftoverscanworker.
+
+    Manages LeftoverScanWorker operations and coordinates related state changes for the component.
+    """
 
     finished = Signal(list)   # list[dict] findings
     failed = Signal(str)
 
     def __init__(self, apps: list[dict], exclusions=None):
-        """__init__."""
+        """Store constructor arguments (apps, exclusions) and initialize worker signals.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            apps (list[dict]): The apps parameter.
+            exclusions: Error message string or exception instance.
+        """
         super().__init__()
         self._apps = apps
         self._exclusions = exclusions
@@ -1056,11 +1307,17 @@ class LeftoverScanWorker(QObject):
         self._cancel = Event()
 
     def cancel(self):
-        """Cooperative stop: checked between apps and inside every sweep."""
+        """Cooperative stop: checked between apps and inside every sweep.
+
+        Sets the internal cancellation event to cooperatively stop worker execution at the next safe boundary.
+        """
         self._cancel.set()
 
     def run(self):
-        """run."""
+        """Run the leftover cleaner backend call off the UI thread; emit finished/failed with results.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         try:
             from cortex_unified.system_tools.leftover_cleaner import (
                 InstalledApp,
@@ -1090,24 +1347,39 @@ class LeftoverScanWorker(QObject):
 
 
 class OrphanScanWorker(QObject):
-    """Find orphaned Program Files folders no installed app claims."""
+    """Orphanscanworker.
+
+    Manages OrphanScanWorker operations and coordinates related state changes for the component.
+    """
 
     finished = Signal(list)
     failed = Signal(str)
 
     def __init__(self, exclusions=None):
-        """__init__."""
+        """Store constructor arguments (exclusions) and initialize worker signals.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            exclusions: Error message string or exception instance.
+        """
         super().__init__()
         self._exclusions = exclusions
         from threading import Event
         self._cancel = Event()
 
     def cancel(self):
-        """cancel."""
+        """Request cooperative cancellation so the background operation stops promptly.
+
+        Sets the internal cancellation event to cooperatively stop worker execution at the next safe boundary.
+        """
         self._cancel.set()
 
     def run(self):
-        """run."""
+        """Run the leftover cleaner backend call off the UI thread; emit finished/failed with results.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         try:
             from cortex_unified.system_tools.leftover_cleaner import (
                 LeftoverScanner,
@@ -1122,14 +1394,25 @@ class OrphanScanWorker(QObject):
 
 
 class LeftoverCleanWorker(QObject):
-    """Clean a reviewed batch: one journal, one restore point, cancellable."""
+    """Leftovercleanworker.
+
+    Manages LeftoverCleanWorker operations and coordinates related state changes for the component.
+    """
 
     finished = Signal(list)   # list[dict] outcomes
     failed = Signal(str)
 
     def __init__(self, findings: list[dict], create_restore_point: bool = False,
                  exclusions=None):
-        """Initialize worker."""
+        """Initialize worker.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            findings (list[dict]): The findings parameter.
+            create_restore_point (bool): The create restore point parameter.
+            exclusions: Error message string or exception instance.
+        """
         super().__init__()
         self._findings = findings
         self._create_restore_point = create_restore_point
@@ -1138,11 +1421,17 @@ class LeftoverCleanWorker(QObject):
         self._cancel = Event()
 
     def cancel(self):
-        """Stop before the next item; items already cleaned stay cleaned."""
+        """Stop before the next item; items already cleaned stay cleaned.
+
+        Sets the internal cancellation event to cooperatively stop worker execution at the next safe boundary.
+        """
         self._cancel.set()
 
     def run(self):
-        """run."""
+        """Run the leftover cleaner backend call off the UI thread; emit finished/failed with results.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         try:
             from cortex_unified.system_tools.leftover_cleaner import (
                 LeftoverCleaner,
@@ -1161,12 +1450,18 @@ class LeftoverCleanWorker(QObject):
 
 
 class TelemetryStatusWorker(QObject):
-    """TelemetryStatusWorker class."""
+    """Telemetrystatusworker.
+
+    Manages TelemetryStatusWorker operations and coordinates related state changes for the component.
+    """
     finished = Signal(dict)
     failed = Signal(str)
 
     def run(self):
-        """run."""
+        """Run the TelemetryBlocker (telemetry blocker) backend call off the UI thread; emit finished/failed with results.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         try:
             from cortex_unified.system_tools.telemetry_blocker import TelemetryBlocker
             self.finished.emit(TelemetryBlocker().check_status())
@@ -1175,17 +1470,29 @@ class TelemetryStatusWorker(QObject):
 
 
 class TelemetryApplyWorker(QObject):
-    """TelemetryApplyWorker class."""
+    """Telemetryapplyworker.
+
+    Manages TelemetryApplyWorker operations and coordinates related state changes for the component.
+    """
     finished = Signal(bool)
     failed = Signal(str)
 
     def __init__(self, restore: bool):
-        """__init__."""
+        """Store constructor arguments (restore) and initialize worker signals.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            restore (bool): The restore parameter.
+        """
         super().__init__()
         self._restore = restore
 
     def run(self):
-        """run."""
+        """Run the TelemetryBlocker (telemetry blocker) backend call off the UI thread; emit finished/failed with results.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         try:
             from cortex_unified.system_tools.telemetry_blocker import TelemetryBlocker
             tb = TelemetryBlocker()
@@ -1196,12 +1503,18 @@ class TelemetryApplyWorker(QObject):
 
 
 class RegistryScanWorker(QObject):
-    """RegistryScanWorker class."""
+    """Registryscanworker.
+
+    Manages RegistryScanWorker operations and coordinates related state changes for the component.
+    """
     finished = Signal(list)
     failed = Signal(str)
 
     def run(self):
-        """run."""
+        """Run the RegistryCleaner (registry cleaner) backend call off the UI thread; emit finished/failed with results.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         try:
             from cortex_unified.system_tools.registry_cleaner import RegistryCleaner
             self.finished.emit(RegistryCleaner().scan_orphaned_entries())
@@ -1210,17 +1523,29 @@ class RegistryScanWorker(QObject):
 
 
 class RegistryCleanWorker(QObject):
-    """RegistryCleanWorker class."""
+    """Registrycleanworker.
+
+    Manages RegistryCleanWorker operations and coordinates related state changes for the component.
+    """
     finished = Signal(int, str)   # (removed_count, backup_path)
     failed = Signal(str)
 
     def __init__(self, entries: list):
-        """__init__."""
+        """Store constructor arguments (entries) and initialize worker signals.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            entries (list): Collection of items or entries to process.
+        """
         super().__init__()
         self._entries = entries
 
     def run(self):
-        """run."""
+        """Run the RegistryCleaner (registry cleaner) backend call off the UI thread; emit finished/failed with results.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         try:
             from cortex_unified.system_tools.registry_cleaner import RegistryCleaner
             rc = RegistryCleaner()
@@ -1254,22 +1579,43 @@ _LEVEL_LABELS = {"VeryGood": "Very good", "Good": "Good",
 
 
 def _level_label(level: str) -> str:
-    """_level_label."""
+    """Return the display label for a registry/telemetry protection level.
+
+    Manages level label operations and coordinates related state changes for the component.
+
+    Args:
+        level (str): The level parameter.
+
+    Returns:
+        str: Formatted string or path.
+    """
     return _LEVEL_LABELS.get(level, level or "?")
 
 
 def _level_color(level: str):
-    """Traffic-light the confidence tier so review is instant."""
+    """Traffic-light the confidence tier so review is instant.
+
+    Manages level color operations and coordinates related state changes for the component.
+
+    Args:
+        level (str): The level parameter.
+    """
     from PySide6.QtGui import QColor
     return {"VeryGood": QColor("#3fb950"), "Good": QColor("#8ddb6a"),
             "Questionable": QColor("#d29922")}.get(level, QColor("#f85149"))
 
 
 class _LeftoverSection:
-    """Mixin wiring the leftover scan/clean UI into UninstallerPage."""
+    """Leftoversection.
+
+    Manages LeftoverSection operations and coordinates related state changes for the component.
+    """
 
     def _build_leftover_section(self) -> None:
-        """_build_leftover_section."""
+        """Handle build leftover section for the page widgets and worker state.
+
+        Manages build leftover section operations and coordinates related state changes for the component.
+        """
         self.v.addWidget(title_block(
             "Leftover Scanner",
             "Finds the files, folders, caches, shortcuts and registry keys "
@@ -1343,19 +1689,31 @@ class _LeftoverSection:
     # -- preferences / exclusions -------------------------------------------
 
     def _persist_restore_pref(self, checked: bool):
-        """_persist_restore_pref."""
+        """Handle persist restore pref for the page widgets and worker state.
+
+        Manages persist restore pref operations and coordinates related state changes for the component.
+
+        Args:
+            checked (bool): The checked parameter.
+        """
         settings = getattr(self.win, "settings", None)
         if settings is not None:
             settings.leftover_restore_point = bool(checked)
 
     @staticmethod
     def _exclusions_store():
-        """_exclusions_store."""
+        """Compute and return the value for exclusions store used by the page.
+
+        Manages exclusions store operations and coordinates related state changes for the component.
+        """
         from cortex_unified.system_tools.leftover_cleaner import ExclusionsStore
         return ExclusionsStore()
 
     def _keep_selected(self):
-        """Exclude the selected findings from every future scan."""
+        """Exclude the selected findings from every future scan.
+
+        Manages keep selected operations and coordinates related state changes for the component.
+        """
         selected = self._selected_findings()
         if not selected:
             return
@@ -1390,7 +1748,10 @@ class _LeftoverSection:
         return buf
 
     def _scan_leftovers(self):
-        """_scan_leftovers."""
+        """Handle scan leftovers for the page widgets and worker state.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+        """
         pending = self._pending_apps()
         if not pending:
             QMessageBox.information(
@@ -1409,14 +1770,23 @@ class _LeftoverSection:
             self._on_leftovers, self._leftover_fail)
 
     def _scan_orphans(self):
-        """_scan_orphans."""
+        """Handle scan orphans for the page widgets and worker state.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+        """
         self.leftover_progress.setVisible(True)
         self.leftover_state.show_loading("Scanning Program Files orphans\u2026")
         self.win.run_worker(OrphanScanWorker(exclusions=self._exclusions_store()),
                             self._on_leftovers, self._leftover_fail)
 
     def _on_leftovers(self, findings: list):
-        """_on_leftovers."""
+        """Handle worker results: refresh tables/trees, update the state panel, note status and clear the busy state.
+
+        Manages on leftovers operations and coordinates related state changes for the component.
+
+        Args:
+            findings (list): The findings parameter.
+        """
         self.leftover_progress.setVisible(False)
         if not findings:
             self.leftover_state.show_empty(
@@ -1430,14 +1800,26 @@ class _LeftoverSection:
             8000)
 
     def _leftover_fail(self, msg: str):
-        """_leftover_fail."""
+        """Handle an operation failure and notify the user.
+
+        Captures error details, displays an informative failure state in the UI, resets progress indicators, and re-enables interactive controls.
+
+        Args:
+            msg (str): Informational or progress status message.
+        """
         self.leftover_progress.setVisible(False)
         self.leftover_state.show_error(msg)
 
     # -- cleaning ---------------------------------------------------------
 
     def _selected_findings(self) -> list[dict]:
-        """_selected_findings."""
+        """Handle selected findings for the page widgets and worker state.
+
+        Manages selected findings operations and coordinates related state changes for the component.
+
+        Returns:
+            list[dict]: List of processed items or identifiers.
+        """
         selection = self.leftover_tbl.selectionModel()
         if selection is None:
             return []
@@ -1452,13 +1834,19 @@ class _LeftoverSection:
         return out
 
     def _on_leftover_select(self, *_):
-        """_on_leftover_select."""
+        """Handle worker results: re-enable buttons and clear the busy state.
+
+        Manages on leftover select operations and coordinates related state changes for the component.
+        """
         has = bool(self._selected_findings())
         self.clean_leftover_btn.setEnabled(has)
         self.keep_leftover_btn.setEnabled(has)
 
     def _clean_leftovers(self):
-        """_clean_leftovers."""
+        """Handle clean leftovers for the page widgets and worker state.
+
+        Permanently purges or removes specified target items, reclaiming storage space and logging actions taken.
+        """
         selected = self._selected_findings()
         if not selected:
             return
@@ -1489,7 +1877,13 @@ class _LeftoverSection:
             self._on_cleaned, self._leftover_fail)
 
     def _on_cleaned(self, outcomes: list):
-        """_on_cleaned."""
+        """Handle worker results: refresh tables/trees, update the state panel and clear the busy state.
+
+        Manages on cleaned operations and coordinates related state changes for the component.
+
+        Args:
+            outcomes (list): The outcomes parameter.
+        """
         self.leftover_progress.setVisible(False)
         ok = [o for o in outcomes if o.get("ok")]
         failed = [o for o in outcomes if not o.get("ok")]
@@ -1527,7 +1921,13 @@ class UninstallerPage(_Page):
     Scanner page (sidebar: Apps & Security -> Leftover Scanner)."""
 
     def __init__(self, win):
-        """__init__."""
+        """Build the page layout (buttons, tables, title header, state panel) and connect button/worker actions.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win: Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(title_block(
             "Deep Uninstaller",
@@ -1612,13 +2012,22 @@ class UninstallerPage(_Page):
         ]
 
     def _load(self):
-        """_load."""
+        """Fetch and reload the latest data entries into the view.
+
+        Queries the underlying system service or storage cache and refreshes view tables with up-to-date state.
+        """
         self.refresh_btn.setEnabled(False)
         self.state.show_loading("Listing installed apps…")
         self.win.run_worker(UninstallerListWorker(), self._on_loaded, self._fail)
 
     def _on_loaded(self, apps: list):
-        """_on_loaded."""
+        """Handle worker results: refresh tables/trees, update the state panel, note status and clear the busy state.
+
+        Manages on loaded operations and coordinates related state changes for the component.
+
+        Args:
+            apps (list): The apps parameter.
+        """
         self.refresh_btn.setEnabled(True)
         if not apps:
             self.state.show_empty("No installed applications found.")
@@ -1631,7 +2040,13 @@ class UninstallerPage(_Page):
         self.win.statusBar().showMessage(f"{len(apps)} installed applications", 5000)
 
     def _filter(self, text: str):
-        """_filter."""
+        """Filter.
+
+        Manages filter operations and coordinates related state changes for the component.
+
+        Args:
+            text (str): Display text string.
+        """
         # Searching is the proxy's job now. It matches every searchable column,
         # so the name/publisher pair the old python filter checked is still
         # covered, plus the version - and no rows are rebuilt.
@@ -1659,11 +2074,17 @@ class UninstallerPage(_Page):
         return apps
 
     def _on_select(self, *_):
-        """_on_select."""
+        """Handle worker results: re-enable buttons and clear the busy state.
+
+        Manages on select operations and coordinates related state changes for the component.
+        """
         self.uninstall_btn.setEnabled(bool(self._selected_apps()))
 
     def _uninstall(self):
-        """_uninstall."""
+        """Uninstall.
+
+        Manages uninstall operations and coordinates related state changes for the component.
+        """
         apps = self._selected_apps()
         if not apps:
             return
@@ -1705,7 +2126,13 @@ class UninstallerPage(_Page):
                                 "Could not launch the uninstaller(s) (may need elevation).")
 
     def _fail(self, msg: str):
-        """_fail."""
+        """Handle an operation failure and notify the user.
+
+        Captures error details, displays an informative failure state in the UI, resets progress indicators, and re-enables interactive controls.
+
+        Args:
+            msg (str): Informational or progress status message.
+        """
         self.refresh_btn.setEnabled(True)
         self.state.show_error(msg, on_retry=self._load)
 
@@ -1717,7 +2144,13 @@ class LeftoverScannerPage(_Page, _LeftoverSection):
     """
 
     def __init__(self, win):
-        """__init__."""
+        """Build the page layout (widgets) and connect button/worker actions.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win: Parent window or shell controller instance.
+        """
         super().__init__(win)
         if _windows_only(self, "The Leftover Scanner"):
             return
@@ -1727,10 +2160,19 @@ class LeftoverScannerPage(_Page, _LeftoverSection):
 
 
 class TelemetryPage(_Page):
-    """Block / restore Windows telemetry (Windows, admin required to apply)."""
+    """Telemetrypage.
+
+    Manages TelemetryPage operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, win):
-        """__init__."""
+        """Build the page layout (buttons, trees, title header, state panel) and connect button/worker actions.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win: Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(title_block(
             "Telemetry Blocker",
@@ -1770,12 +2212,21 @@ class TelemetryPage(_Page):
         self._loaded = False
 
     def _refresh(self):
-        """_refresh."""
+        """Fetch and reload the latest data entries into the view.
+
+        Queries the underlying system service or storage cache and refreshes view tables with up-to-date state.
+        """
         self.state.show_loading("Reading telemetry status…")
         self.win.run_worker(TelemetryStatusWorker(), self._on_status, self._fail)
 
     def _on_status(self, status: dict):
-        """_on_status."""
+        """Handle worker results: refresh tables/trees, update cards/labels and clear the busy state.
+
+        Manages on status operations and coordinates related state changes for the component.
+
+        Args:
+            status (dict): The status parameter.
+        """
         self.state.clear()
         self.tree.clear()
         blocked = sum(1 for v in status.values() if v)
@@ -1785,7 +2236,13 @@ class TelemetryPage(_Page):
         self.status_lbl.setText(f"{blocked} of {total} telemetry features blocked.")
 
     def _apply(self, restore: bool):
-        """_apply."""
+        """Apply.
+
+        Manages apply operations and coordinates related state changes for the component.
+
+        Args:
+            restore (bool): The restore parameter.
+        """
         if not require_feature(self, Feature.TELEMETRY_BLOCKER):
             return
         action = "restore Windows defaults" if restore else "block all telemetry"
@@ -1803,7 +2260,13 @@ class TelemetryPage(_Page):
         self.win.run_worker(TelemetryApplyWorker(restore), self._on_applied, self._fail)
 
     def _on_applied(self, ok: bool):
-        """_on_applied."""
+        """Handle worker results: re-enable buttons and clear the busy state.
+
+        Manages on applied operations and coordinates related state changes for the component.
+
+        Args:
+            ok (bool): The ok parameter.
+        """
         self.block_btn.setEnabled(True)
         self.restore_btn.setEnabled(True)
         if not ok:
@@ -1811,17 +2274,32 @@ class TelemetryPage(_Page):
         self._refresh()
 
     def _fail(self, msg: str):
-        """_fail."""
+        """Handle an operation failure and notify the user.
+
+        Captures error details, displays an informative failure state in the UI, resets progress indicators, and re-enables interactive controls.
+
+        Args:
+            msg (str): Informational or progress status message.
+        """
         self.block_btn.setEnabled(True)
         self.restore_btn.setEnabled(True)
         self.state.show_error(msg, on_retry=self._refresh)
 
 
 class RegistryPage(_Page):
-    """Scan for orphaned registry entries and remove them with a backup first."""
+    """Registrypage.
+
+    Manages RegistryPage operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, win):
-        """__init__."""
+        """Build the page layout (buttons, tables, title header, state panel) and connect button/worker actions.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win: Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(title_block(
             "Registry Cleaner",
@@ -1879,7 +2357,13 @@ class RegistryPage(_Page):
 
     # -- columns --
     def _columns(self) -> list[Column]:
-        """Declare the three entry columns once, instead of filling cells."""
+        """Columns.
+
+        Manages columns operations and coordinates related state changes for the component.
+
+        Returns:
+            list[Column]: List of processed items or identifiers.
+        """
         return [
             Column("Subkey", lambda e: str(e.get("path", "")), stretch=True),
             Column("Hive", lambda e: str(e.get("hive", ""))),
@@ -1887,7 +2371,10 @@ class RegistryPage(_Page):
         ]
 
     def _scan(self):
-        """_scan."""
+        """Scan via the background worker, progress state, results view; results return through worker signals.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+        """
         if not require_feature(self, Feature.REGISTRY_CLEANER):
             return
         self.scan_btn.setEnabled(False)
@@ -1897,7 +2384,13 @@ class RegistryPage(_Page):
         self.win.run_worker(RegistryScanWorker(), self._on_scan, self._fail)
 
     def _on_scan(self, entries: list):
-        """_on_scan."""
+        """Handle worker results: refresh tables/trees, update the state panel, note status and clear the busy state.
+
+        Manages on scan operations and coordinates related state changes for the component.
+
+        Args:
+            entries (list): Collection of items or entries to process.
+        """
         self.scan_btn.setEnabled(True)
         if not entries:
             self.state.show_empty("No orphaned registry entries found.")
@@ -1912,7 +2405,10 @@ class RegistryPage(_Page):
         self.win.statusBar().showMessage(f"{len(entries)} orphaned entries found", 5000)
 
     def _clean(self):
-        """_clean."""
+        """Clean via the background worker, confirmation dialog, progress state; results return through worker signals.
+
+        Permanently purges or removes specified target items, reclaiming storage space and logging actions taken.
+        """
         if not self._entries:
             return
         if not require_feature(self, Feature.REGISTRY_CLEANER):
@@ -1931,7 +2427,14 @@ class RegistryPage(_Page):
         self.win.run_worker(RegistryCleanWorker(list(self._entries)), self._on_clean, self._fail)
 
     def _on_clean(self, removed: int, backup: str):
-        """_on_clean."""
+        """Handle worker results: note status and clear the busy state.
+
+        Manages on clean operations and coordinates related state changes for the component.
+
+        Args:
+            removed (int): The removed parameter.
+            backup (str): The backup parameter.
+        """
         self.progress.setVisible(False)
         note = f"Removed {removed} entries." + (f"\nBackup: {backup}" if backup else "")
         QMessageBox.information(self, "Done", note)
@@ -1939,6 +2442,12 @@ class RegistryPage(_Page):
         self._scan()
 
     def _fail(self, msg: str):
-        """_fail."""
+        """Handle an operation failure and notify the user.
+
+        Captures error details, displays an informative failure state in the UI, resets progress indicators, and re-enables interactive controls.
+
+        Args:
+            msg (str): Informational or progress status message.
+        """
         self.scan_btn.setEnabled(True)
         self.state.show_error(msg, on_retry=self._scan)

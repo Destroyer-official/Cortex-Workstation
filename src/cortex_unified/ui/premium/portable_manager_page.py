@@ -39,24 +39,40 @@ from cortex_unified.analyzers.portable_manager import PortableManager
 
 
 class _PortableWorker(QObject):
-    """_PortableWorker class."""
+    """Portableworker.
+
+    Manages PortableWorker operations and coordinates related state changes for the component.
+    """
     finished = Signal(list)
     progress = Signal(str)
     failed = Signal(str)
 
     def __init__(self, roots: list[str], target_apps: list[str] | None = None):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            roots (list[str]): The roots parameter.
+            target_apps (list[str] | None): The target apps parameter.
+        """
         super().__init__()
         self._roots = [Path(r) for r in roots]
         self._target_apps = target_apps
         self._cancel = threading.Event()
 
     def cancel(self):
-        """cancel."""
+        """cancel.
+
+        Sets the internal cancellation event to cooperatively stop worker execution at the next safe boundary.
+        """
         self._cancel.set()
 
     def run(self):
-        """run."""
+        """run.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         try:
             mgr = PortableManager(
                 progress=lambda msg: self.progress.emit(str(msg)),
@@ -76,23 +92,38 @@ class _PortableWorker(QObject):
 
 
 class _UpdateWorker(QObject):
-    """_UpdateWorker class."""
+    """Updateworker.
+
+    Manages UpdateWorker operations and coordinates related state changes for the component.
+    """
     finished = Signal(list)
     progress = Signal(str)
     failed = Signal(str)
 
     def __init__(self, apps: list):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            apps (list): The apps parameter.
+        """
         super().__init__()
         self._apps = apps
         self._cancel = threading.Event()
 
     def cancel(self):
-        """cancel."""
+        """cancel.
+
+        Sets the internal cancellation event to cooperatively stop worker execution at the next safe boundary.
+        """
         self._cancel.set()
 
     def run(self):
-        """run."""
+        """run.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         try:
             mgr = PortableManager(
                 progress=lambda msg: self.progress.emit(str(msg)),
@@ -119,10 +150,19 @@ _TARGET_APPS = [
 
 
 class PortableManagerPage(_Page):
-    """Scan, track, and update portable apps on removable and local drives."""
+    """Portablemanagerpage.
+
+    Manages PortableManagerPage operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, win):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win: Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(
             title_block(
@@ -204,7 +244,10 @@ class PortableManagerPage(_Page):
         self._worker = None
 
     def _add_root(self):
-        """_add_root."""
+        """_add_root.
+
+        Manages add root operations and coordinates related state changes for the component.
+        """
         from PySide6.QtWidgets import QFileDialog
 
         folder = QFileDialog.getExistingDirectory(self, "Select portable app root")
@@ -216,21 +259,36 @@ class PortableManagerPage(_Page):
                 self.roots_entry.setText(folder)
 
     def _parse_roots(self) -> list[str]:
-        """_parse_roots."""
+        """_parse_roots.
+
+        Manages parse roots operations and coordinates related state changes for the component.
+
+        Returns:
+            list[str]: List of processed items or identifiers.
+        """
         text = self.roots_entry.text().strip()
         if not text:
             return []
         return [r.strip() for r in text.split(",") if r.strip()]
 
     def _get_target_apps(self) -> list[str] | None:
-        """_get_target_apps."""
+        """_get_target_apps.
+
+        Manages get target apps operations and coordinates related state changes for the component.
+
+        Returns:
+            list[str] | None: List of processed items or identifiers.
+        """
         idx = self.app_combo.currentIndex()
         if idx == 0:
             return None
         return [_TARGET_APPS[idx - 1]]
 
     def _run(self):
-        """_run."""
+        """Run.
+
+        Manages run operations and coordinates related state changes for the component.
+        """
         self.scan_btn.setEnabled(False)
         self.progress.setVisible(True)
         self.state.show_loading("Scanning for portable apps…")
@@ -245,11 +303,23 @@ class PortableManagerPage(_Page):
         self.win.run_worker(w, self._on_done, self._fail, on_progress=self._on_progress)
 
     def _on_progress(self, msg: str):
-        """_on_progress."""
+        """_on_progress.
+
+        Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
+
+        Args:
+            msg (str): Informational or progress status message.
+        """
         self.status.setText(msg)
 
     def _on_done(self, apps: list):
-        """_on_done."""
+        """_on_done.
+
+        Receives the completed data from the  background worker, populates the view with results, and restores button states.
+
+        Args:
+            apps (list): The apps parameter.
+        """
         self._worker = None
         self.progress.setVisible(False)
         self.scan_btn.setEnabled(True)
@@ -288,7 +358,13 @@ class PortableManagerPage(_Page):
             self._auto_update(apps)
 
     def _auto_update(self, apps: list):
-        """_auto_update."""
+        """_auto_update.
+
+        Manages auto update operations and coordinates related state changes for the component.
+
+        Args:
+            apps (list): The apps parameter.
+        """
         from PySide6.QtWidgets import QMessageBox
 
         to_update = [a for a in apps if a.update_available]
@@ -316,7 +392,13 @@ class PortableManagerPage(_Page):
             )
 
     def _on_update_done(self, result):
-        """_on_update_done."""
+        """_on_update_done.
+
+        Receives the completed data from the update background worker, populates the view with results, and restores button states.
+
+        Args:
+            result: Dictionary or data object holding operation results.
+        """
         self._worker = None
         self.progress.setVisible(False)
         self.scan_btn.setEnabled(True)
@@ -325,14 +407,26 @@ class PortableManagerPage(_Page):
         self._run()
 
     def _on_update_fail(self, msg):
-        """_on_update_fail."""
+        """_on_update_fail.
+
+        Captures worker error messages, presents diagnostic feedback to the user, and resets interactive controls for retry.
+
+        Args:
+            msg: Informational or progress status message.
+        """
         self._worker = None
         self.progress.setVisible(False)
         self.scan_btn.setEnabled(True)
         self.status.setText(f"Update failed: {msg}")
 
     def _fail(self, msg):
-        """_fail."""
+        """Handle an operation failure and notify the user.
+
+        Captures error details, displays an informative failure state in the UI, resets progress indicators, and re-enables interactive controls.
+
+        Args:
+            msg: Informational or progress status message.
+        """
         self._worker = None
         self.progress.setVisible(False)
         self.scan_btn.setEnabled(True)

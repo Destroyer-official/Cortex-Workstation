@@ -10,7 +10,13 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "native"))
 
 
 def run_smoke_test() -> int:
-    """run_smoke_test."""
+    """run_smoke_test.
+
+    Manages run smoke test operations and coordinates related state changes for the component.
+
+    Returns:
+        int: Result of the operation.
+    """
     from PySide6.QtCore import QEventLoop, QTimer
     from PySide6.QtWidgets import QApplication
 
@@ -34,7 +40,14 @@ def run_smoke_test() -> int:
     results = []
 
     def test(name, fn):
-        """test."""
+        """Test.
+
+        Manages test operations and coordinates related state changes for the component.
+
+        Args:
+            name: The name parameter.
+            fn: The fn parameter.
+        """
         try:
             fn()
             results.append((name, "PASS"))
@@ -236,8 +249,15 @@ def run_smoke_test() -> int:
         status = "PASS" if r == "PASS" else "FAIL"
         print(f"  [{status}] {name}" + (f" - {r}" if r != "PASS" else ""))
 
-    return 0 if passed == total else 1
+    try:
+        w.close()
+        d.close()
+    except Exception:
+        pass
+
+    sys.stdout.flush()
+    os._exit(0 if passed == total else 1)
 
 
 if __name__ == "__main__":
-    sys.exit(run_smoke_test())
+    run_smoke_test()

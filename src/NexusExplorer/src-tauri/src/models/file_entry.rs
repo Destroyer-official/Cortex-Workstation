@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 
+/// A single file or directory row returned by listing and search.
 #[derive(Serialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct FileEntry {
@@ -16,6 +17,7 @@ pub struct FileEntry {
     pub ext: String,
 }
 
+/// A mounted drive/volume with capacity and readiness info.
 #[derive(Serialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct DriveInfo {
@@ -28,6 +30,7 @@ pub struct DriveInfo {
     pub is_ready: bool,
 }
 
+/// Identifies a started directory scan and the root it covers.
 #[derive(Serialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct ScanStart {
@@ -35,6 +38,7 @@ pub struct ScanStart {
     pub root_path: String,
 }
 
+/// Bounded text preview of a file with truncation and total-size metadata.
 #[derive(Serialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct TextPreview {
@@ -43,6 +47,7 @@ pub struct TextPreview {
     pub size: u64,
 }
 
+/// Point-in-time progress snapshot for a copy/move/delete job.
 #[derive(Serialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct JobSummary {
@@ -59,6 +64,7 @@ pub struct JobSummary {
     pub conflicts_pending: u32,
 }
 
+/// Filename search options: recursion, result cap, and hidden-file inclusion.
 #[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct SearchOptions {

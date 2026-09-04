@@ -46,12 +46,31 @@ MTIME_TOLERANCE_MS = 2500
 
 
 def _norm(path: str) -> str:
-    """_norm."""
+    """Norm.
+
+    Manages norm operations and coordinates related state changes for the component.
+
+    Args:
+        path (str): Filesystem path to the target file or directory.
+
+    Returns:
+        str: Formatted string or path.
+    """
     return str(Path(path))
 
 
 def _cli_run(cli: Path, args: list[str]) -> str:
-    """_cli_run."""
+    """_cli_run.
+
+    Manages cli run operations and coordinates related state changes for the component.
+
+    Args:
+        cli (Path): The cli parameter.
+        args (list[str]): The args parameter.
+
+    Returns:
+        str: Formatted string or path.
+    """
     proc = subprocess.run(
         [str(cli), *args],
         capture_output=True,
@@ -64,7 +83,17 @@ def _cli_run(cli: Path, args: list[str]) -> str:
 
 
 def _cli_list(cli: Path, path: Path) -> list[dict]:
-    """_cli_list."""
+    """_cli_list.
+
+    Manages cli list operations and coordinates related state changes for the component.
+
+    Args:
+        cli (Path): The cli parameter.
+        path (Path): Filesystem path to the target file or directory.
+
+    Returns:
+        list[dict]: List of processed items or identifiers.
+    """
     return json.loads(_cli_run(cli, ["list", str(path), "--json"]))
 
 
@@ -80,7 +109,16 @@ def _cli_search(cli: Path, root: Path, query: str, limit: int = 5000) -> list[st
 
 
 def _cli_drives(cli: Path) -> list[dict]:
-    """_cli_drives."""
+    """_cli_drives.
+
+    Manages cli drives operations and coordinates related state changes for the component.
+
+    Args:
+        cli (Path): The cli parameter.
+
+    Returns:
+        list[dict]: List of processed items or identifiers.
+    """
     return json.loads(_cli_run(cli, ["drives", "--json"]))
 
 
@@ -104,7 +142,10 @@ def _make_tree(root: Path) -> None:
 
 @pytest.fixture(scope="module")
 def ffi():
-    """ffi."""
+    """Ffi.
+
+    Manages ffi operations and coordinates related state changes for the component.
+    """
     try:
         from nexus_ffi import NexusFfi
     except Exception as e:  # noqa: BLE001 - any import failure means unusable bridge
@@ -122,7 +163,10 @@ def ffi():
 
 @pytest.fixture(scope="module")
 def parity_tree():
-    """parity_tree."""
+    """parity_tree.
+
+    Manages parity tree operations and coordinates related state changes for the component.
+    """
     with tempfile.TemporaryDirectory(prefix="nexus_parity_") as tmp:
         root = Path(tmp)
         _make_tree(root)
@@ -131,7 +175,10 @@ def parity_tree():
 
 @pytest.fixture(scope="module")
 def cli():
-    """cli."""
+    """Cli.
+
+    Manages cli operations and coordinates related state changes for the component.
+    """
     try:
         return find_cli()
     except FileNotFoundError as e:
@@ -139,9 +186,20 @@ def cli():
 
 
 class TestTransportParity:
-    """TestTransportParity."""
+    """Testtransportparity.
+
+    Manages TestTransportParity operations and coordinates related state changes for the component.
+    """
     def test_parity_list_names_and_meta(self, cli, ffi, parity_tree):
-        """test_parity_list_names_and_meta."""
+        """test_parity_list_names_and_meta.
+
+        Manages test parity list names and meta operations and coordinates related state changes for the component.
+
+        Args:
+            cli: The cli parameter.
+            ffi: The ffi parameter.
+            parity_tree: The parity tree parameter.
+        """
         try:
             cli_rows = _cli_list(cli, parity_tree)
         except OSError as e:
@@ -179,7 +237,15 @@ class TestTransportParity:
         )
 
     def test_parity_search(self, cli, ffi, parity_tree):
-        """test_parity_search."""
+        """test_parity_search.
+
+        Manages test parity search operations and coordinates related state changes for the component.
+
+        Args:
+            cli: The cli parameter.
+            ffi: The ffi parameter.
+            parity_tree: The parity tree parameter.
+        """
         try:
             cli_hits = _cli_search(cli, parity_tree, TOKEN)
         except OSError as e:
@@ -199,7 +265,14 @@ class TestTransportParity:
         )
 
     def test_parity_drives(self, cli, ffi):
-        """test_parity_drives."""
+        """test_parity_drives.
+
+        Manages test parity drives operations and coordinates related state changes for the component.
+
+        Args:
+            cli: The cli parameter.
+            ffi: The ffi parameter.
+        """
         try:
             cli_rows = _cli_drives(cli)
         except OSError as e:
@@ -213,7 +286,13 @@ class TestTransportParity:
         assert len(ffi_rows) >= 1, "ffi reported no drives"
 
         def letters(rows):
-            """letters."""
+            """Letters.
+
+            Manages letters operations and coordinates related state changes for the component.
+
+            Args:
+                rows: Table row index or list of row indices.
+            """
             return {Path(r["path"]).drive.upper(): r for r in rows}
 
         cli_by, ffi_by = letters(cli_rows), letters(ffi_rows)

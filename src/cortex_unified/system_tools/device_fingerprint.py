@@ -11,7 +11,10 @@ from cortex_unified.system_tools.network_service_scanner import ServiceObservati
 
 @dataclass(frozen=True, slots=True)
 class FingerprintEvidence:
-    """Fingerprint Evidence data container."""
+    """Fingerprintevidence.
+
+    Manages FingerprintEvidence operations and coordinates related state changes for the component.
+    """
     source: str
     value: str
     strength: str = "weak"
@@ -19,7 +22,13 @@ class FingerprintEvidence:
     detail: str = ""
 
     def to_dict(self) -> dict[str, Any]:
-        """To dict."""
+        """To dict.
+
+        Manages to dict operations and coordinates related state changes for the component.
+
+        Returns:
+            dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         return {
             "source": self.source,
             "value": self.value,
@@ -31,7 +40,10 @@ class FingerprintEvidence:
 
 @dataclass(slots=True)
 class DeviceFingerprint:
-    """Device Fingerprint data container."""
+    """Devicefingerprint.
+
+    Manages DeviceFingerprint operations and coordinates related state changes for the component.
+    """
     os_family: str = "unknown"
     device_type: str = "unknown"
     confidence: float = 0.0
@@ -41,7 +53,13 @@ class DeviceFingerprint:
     alternatives: list[str] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
-        """To dict."""
+        """To dict.
+
+        Manages to dict operations and coordinates related state changes for the component.
+
+        Returns:
+            dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         return {
             "os_family": self.os_family,
             "device_type": self.device_type,
@@ -72,14 +90,32 @@ _OS_TERMS = (
 
 
 def _get(value: Any, name: str, default: Any = None) -> Any:
-    """_get."""
+    """Get.
+
+    Manages get operations and coordinates related state changes for the component.
+
+    Args:
+        value (Any): The value parameter.
+        name (str): The name parameter.
+        default (Any): The default parameter.
+
+    Returns:
+        Any: Result of the operation.
+    """
     return value.get(name, default) if isinstance(value, Mapping) else getattr(value, name, default)
-    """_get."""
-    """_get."""
 
 
 def _observations(device: Any) -> list[ServiceObservation]:
-    """_observations."""
+    """Observations.
+
+    Manages observations operations and coordinates related state changes for the component.
+
+    Args:
+        device (Any): The device parameter.
+
+    Returns:
+        list[ServiceObservation]: List of processed items or identifiers.
+    """
     if isinstance(device, ServiceObservation):
         return [device]
     if isinstance(device, Iterable) and not isinstance(device, (str, bytes, Mapping)):
@@ -94,8 +130,6 @@ def _observations(device: Any) -> list[ServiceObservation]:
     if isinstance(raw, Iterable) and not isinstance(raw, (str, bytes, Mapping)):
         return [item for item in raw if isinstance(item, ServiceObservation)]
     return []
-    """_observations."""
-    """_observations."""
 
 
 def _add(
@@ -106,18 +140,37 @@ def _add(
     weight: float,
     detail: str,
 ) -> None:
-    """_add."""
+    """Add.
+
+    Manages add operations and coordinates related state changes for the component.
+
+    Args:
+        evidence (list[FingerprintEvidence]): The evidence parameter.
+        source (str): Filesystem path to the target file or directory.
+        value (Any): The value parameter.
+        strength (str): The strength parameter.
+        weight (float): The weight parameter.
+        detail (str): The detail parameter.
+    """
     text = str(value or "").strip()
     if text:
         evidence.append(FingerprintEvidence(
             source=source[:200], value=text[:512], strength=strength,
             weight=weight, detail=detail[:512]))
-    """_add."""
-    """_add."""
 
 
 def _collect(device: Any, observations: list[ServiceObservation]) -> list[FingerprintEvidence]:
-    """_collect."""
+    """Aggregate discovered files or telemetry metrics into collections.
+
+    Iterates over raw subsystem records, filters excluded paths, and collates findings into a structured report list.
+
+    Args:
+        device (Any): The device parameter.
+        observations (list[ServiceObservation]): The observations parameter.
+
+    Returns:
+        list[FingerprintEvidence]: List of processed items or identifiers.
+    """
     evidence: list[FingerprintEvidence] = []
     _add(evidence, "vendor", _get(device, "vendor", ""), "medium", 0.5,
          "Vendor was resolved or reported by discovery")
@@ -149,12 +202,20 @@ def _collect(device: Any, observations: list[ServiceObservation]) -> list[Finger
                 _add(evidence, f"{prefix} advertisement", item, "medium", 0.6,
                      "Service advertisement was observed")
     return evidence
-    """_collect."""
-    """_collect."""
 
 
 def _rank(text: str, rules: tuple[tuple[tuple[str, ...], str], ...]) -> list[tuple[str, float]]:
-    """_rank."""
+    """Rank.
+
+    Manages rank operations and coordinates related state changes for the component.
+
+    Args:
+        text (str): Display text string.
+        rules (tuple[tuple[tuple[str, ...], str], ...]): The rules parameter.
+
+    Returns:
+        list[tuple[str, float]]: List of processed items or identifiers.
+    """
     scores: dict[str, float] = {}
     lowered = text.casefold()
     for terms, label in rules:
@@ -162,12 +223,19 @@ def _rank(text: str, rules: tuple[tuple[tuple[str, ...], str], ...]) -> list[tup
         if matches:
             scores[label] = min(1.0, 0.35 + 0.2 * matches)
     return sorted(scores.items(), key=lambda item: (-item[1], item[0]))
-    """_rank."""
-    """_rank."""
 
 
 def _product_version(evidence: Iterable[FingerprintEvidence]) -> tuple[str, str]:
-    """_product_version."""
+    """_product_version.
+
+    Manages product version operations and coordinates related state changes for the component.
+
+    Args:
+        evidence (Iterable[FingerprintEvidence]): The evidence parameter.
+
+    Returns:
+        tuple[str, str]: Formatted string or path.
+    """
     candidates = sorted(
         (item for item in evidence if item.strength in {"strong", "medium"}),
         key=lambda item: item.weight,
@@ -182,12 +250,19 @@ def _product_version(evidence: Iterable[FingerprintEvidence]) -> tuple[str, str]
             if product:
                 return product[:200], match.group(1)[:100]
     return "", ""
-    """_product_version."""
-    """_product_version."""
 
 
 def fingerprint_device(device: Any) -> DeviceFingerprint:
-    """Combine duck-typed discovery data and observations without certainty from ports."""
+    """Combine duck-typed discovery data and observations without certainty from ports.
+
+    Manages fingerprint device operations and coordinates related state changes for the component.
+
+    Args:
+        device (Any): The device parameter.
+
+    Returns:
+        DeviceFingerprint: Result of the operation.
+    """
     observations = _observations(device)
     evidence = _collect(device, observations)
     evidence_text = " ".join(item.value for item in evidence)

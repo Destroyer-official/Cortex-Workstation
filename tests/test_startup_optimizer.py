@@ -28,14 +28,23 @@ from cortex_unified.system_tools.startup_optimizer import (
 
 
 class TestAppType:
-    """TestAppType."""
+    """Testapptype.
+
+    Manages TestAppType operations and coordinates related state changes for the component.
+    """
     def test_all_members(self):
-        """test_all_members."""
+        """test_all_members.
+
+        Manages test all members operations and coordinates related state changes for the component.
+        """
         members = {e.value for e in AppType}
         assert members == {"gui", "network", "service", "background"}
 
     def test_member_count(self):
-        """test_member_count."""
+        """test_member_count.
+
+        Manages test member count operations and coordinates related state changes for the component.
+        """
         assert len(AppType) == 4
 
 
@@ -43,7 +52,10 @@ class TestAppType:
 
 
 class TestStartupEntry:
-    """TestStartupEntry."""
+    """Teststartupentry.
+
+    Manages TestStartupEntry operations and coordinates related state changes for the component.
+    """
     REQUIRED_FIELDS = {
         "id",
         "name",
@@ -63,17 +75,26 @@ class TestStartupEntry:
     }
 
     def test_required_fields_exist(self):
-        """test_required_fields_exist."""
+        """test_required_fields_exist.
+
+        Manages test required fields exist operations and coordinates related state changes for the component.
+        """
         names = {f.name for f in fields(StartupEntry)}
         assert self.REQUIRED_FIELDS <= names
 
     def test_optional_fields_exist(self):
-        """test_optional_fields_exist."""
+        """test_optional_fields_exist.
+
+        Manages test optional fields exist operations and coordinates related state changes for the component.
+        """
         names = {f.name for f in fields(StartupEntry)}
         assert self.OPTIONAL_FIELDS <= names
 
     def test_defaults(self):
-        """test_defaults."""
+        """test_defaults.
+
+        Manages test defaults operations and coordinates related state changes for the component.
+        """
         e = StartupEntry(
             id="r1",
             name="X",
@@ -91,7 +112,10 @@ class TestStartupEntry:
         assert e.is_service_dependent is False
 
     def test_to_dict_round_trip(self):
-        """test_to_dict_round_trip."""
+        """test_to_dict_round_trip.
+
+        Manages test to dict round trip operations and coordinates related state changes for the component.
+        """
         e = StartupEntry(
             id="r2",
             name="Y",
@@ -110,7 +134,10 @@ class TestStartupEntry:
         assert d["enabled"] is False
 
     def test_slots_prevents_arbitrary_attr(self):
-        """test_slots_prevents_arbitrary_attr."""
+        """test_slots_prevents_arbitrary_attr.
+
+        Manages test slots prevents arbitrary attr operations and coordinates related state changes for the component.
+        """
         e = StartupEntry(
             id="r3",
             name="Z",
@@ -128,16 +155,25 @@ class TestStartupEntry:
 
 
 class TestInit:
-    """TestInit."""
+    """Testinit.
+
+    Manages TestInit operations and coordinates related state changes for the component.
+    """
     def test_default_progress_and_cancel(self):
-        """test_default_progress_and_cancel."""
+        """test_default_progress_and_cancel.
+
+        Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
+        """
         opt = StartupOptimizer()
         assert callable(opt.progress)
         assert isinstance(opt.cancel, threading.Event)
         assert not opt.cancel.is_set()
 
     def test_custom_progress_and_cancel(self):
-        """test_custom_progress_and_cancel."""
+        """test_custom_progress_and_cancel.
+
+        Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
+        """
         logs: List[str] = []
         evt = threading.Event()
         opt = StartupOptimizer(progress=logs.append, cancel=evt)
@@ -151,16 +187,33 @@ class TestInit:
 
 
 class TestConfigPath:
-    """TestConfigPath."""
+    """Testconfigpath.
+
+    Manages TestConfigPath operations and coordinates related state changes for the component.
+    """
     def test_config_path_is_json(self, tmp_path, monkeypatch):
-        """test_config_path_is_json."""
+        """test_config_path_is_json.
+
+        Manages test config path is json operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+            monkeypatch: The monkeypatch parameter.
+        """
         monkeypatch.setenv("LOCALAPPDATA", str(tmp_path))
         p = _config_path()
         assert p.suffix == ".json"
         assert p.parent.exists()
 
     def test_config_path_creates_dirs(self, tmp_path, monkeypatch):
-        """test_config_path_creates_dirs."""
+        """test_config_path_creates_dirs.
+
+        Manages test config path creates dirs operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+            monkeypatch: The monkeypatch parameter.
+        """
         monkeypatch.setenv("LOCALAPPDATA", str(tmp_path / "nonexistent" / "sub"))
         p = _config_path()
         assert p.parent.exists()
@@ -170,15 +223,32 @@ class TestConfigPath:
 
 
 class TestPersistence:
-    """TestPersistence."""
+    """Testpersistence.
+
+    Manages TestPersistence operations and coordinates related state changes for the component.
+    """
     def test_load_delays_missing_file(self, tmp_path, monkeypatch):
-        """test_load_delays_missing_file."""
+        """test_load_delays_missing_file.
+
+        Manages test load delays missing file operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+            monkeypatch: The monkeypatch parameter.
+        """
         monkeypatch.setenv("LOCALAPPDATA", str(tmp_path))
         opt = StartupOptimizer()
         assert opt._load_delays() == {}
 
     def test_save_and_load_round_trip(self, tmp_path, monkeypatch):
-        """test_save_and_load_round_trip."""
+        """test_save_and_load_round_trip.
+
+        Manages test save and load round trip operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+            monkeypatch: The monkeypatch parameter.
+        """
         monkeypatch.setenv("LOCALAPPDATA", str(tmp_path))
         opt = StartupOptimizer()
         data = {"entry1": {"delay": 5, "conditions": {}}}
@@ -187,7 +257,14 @@ class TestPersistence:
         assert loaded == data
 
     def test_load_corrupt_json_returns_empty(self, tmp_path, monkeypatch):
-        """test_load_corrupt_json_returns_empty."""
+        """test_load_corrupt_json_returns_empty.
+
+        Manages test load corrupt json returns empty operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+            monkeypatch: The monkeypatch parameter.
+        """
         monkeypatch.setenv("LOCALAPPDATA", str(tmp_path))
         p = _config_path()
         p.write_text("not json {{{", encoding="utf-8")
@@ -199,9 +276,19 @@ class TestPersistence:
 
 
 class TestDelayOperations:
-    """TestDelayOperations."""
+    """Testdelayoperations.
+
+    Manages TestDelayOperations operations and coordinates related state changes for the component.
+    """
     def test_set_delay_persists(self, tmp_path, monkeypatch):
-        """test_set_delay_persists."""
+        """test_set_delay_persists.
+
+        Manages test set delay persists operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+            monkeypatch: The monkeypatch parameter.
+        """
         monkeypatch.setenv("LOCALAPPDATA", str(tmp_path))
         opt = StartupOptimizer()
         opt.set_delay("e1", 15)
@@ -209,7 +296,14 @@ class TestDelayOperations:
         assert loaded["e1"]["delay"] == 15
 
     def test_set_delay_clamps_to_0_120(self, tmp_path, monkeypatch):
-        """test_set_delay_clamps_to_0_120."""
+        """test_set_delay_clamps_to_0_120.
+
+        Manages test set delay clamps to 0 120 operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+            monkeypatch: The monkeypatch parameter.
+        """
         monkeypatch.setenv("LOCALAPPDATA", str(tmp_path))
         opt = StartupOptimizer()
         opt.set_delay("e1", -5)
@@ -218,7 +312,14 @@ class TestDelayOperations:
         assert opt._load_delays()["e1"]["delay"] == 120
 
     def test_set_delay_with_conditions(self, tmp_path, monkeypatch):
-        """test_set_delay_with_conditions."""
+        """test_set_delay_with_conditions.
+
+        Manages test set delay with conditions operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+            monkeypatch: The monkeypatch parameter.
+        """
         monkeypatch.setenv("LOCALAPPDATA", str(tmp_path))
         opt = StartupOptimizer()
         conds = {"require_internet": True, "days": ["Mon", "Tue"]}
@@ -227,7 +328,14 @@ class TestDelayOperations:
         assert loaded["e1"]["conditions"] == conds
 
     def test_remove_delay(self, tmp_path, monkeypatch):
-        """test_remove_delay."""
+        """test_remove_delay.
+
+        Manages test remove delay operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+            monkeypatch: The monkeypatch parameter.
+        """
         monkeypatch.setenv("LOCALAPPDATA", str(tmp_path))
         opt = StartupOptimizer()
         opt.set_delay("e1", 10)
@@ -235,7 +343,14 @@ class TestDelayOperations:
         assert "e1" not in opt._load_delays()
 
     def test_remove_delay_nonexistent_is_noop(self, tmp_path, monkeypatch):
-        """test_remove_delay_nonexistent_is_noop."""
+        """test_remove_delay_nonexistent_is_noop.
+
+        Manages test remove delay nonexistent is noop operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+            monkeypatch: The monkeypatch parameter.
+        """
         monkeypatch.setenv("LOCALAPPDATA", str(tmp_path))
         opt = StartupOptimizer()
         opt.remove_delay("nonexistent")
@@ -246,13 +361,31 @@ class TestDelayOperations:
 
 
 class TestRegistryEnumeration:
-    """TestRegistryEnumeration."""
+    """Testregistryenumeration.
+
+    Manages TestRegistryEnumeration operations and coordinates related state changes for the component.
+    """
     def test_empty_on_no_keys(self, monkeypatch):
-        """test_empty_on_no_keys."""
+        """test_empty_on_no_keys.
+
+        Manages test empty on no keys operations and coordinates related state changes for the component.
+
+        Args:
+            monkeypatch: The monkeypatch parameter.
+        """
         import winreg
 
         def fake_open(hive, sub, reserved, access):
-            """fake_open."""
+            """fake_open.
+
+            Manages fake open operations and coordinates related state changes for the component.
+
+            Args:
+                hive: The hive parameter.
+                sub: The sub parameter.
+                reserved: The reserved parameter.
+                access: The access parameter.
+            """
             raise FileNotFoundError("key not found")
 
         monkeypatch.setattr(winreg, "OpenKey", fake_open)
@@ -260,27 +393,58 @@ class TestRegistryEnumeration:
         assert result == []
 
     def test_returns_entries(self, monkeypatch):
-        """test_returns_entries."""
+        """test_returns_entries.
+
+        Manages test returns entries operations and coordinates related state changes for the component.
+
+        Args:
+            monkeypatch: The monkeypatch parameter.
+        """
         import winreg
 
         call_count = {"n": 0}
 
         class FakeKey:
-            """FakeKey."""
+            """Fakekey.
+
+            Manages FakeKey operations and coordinates related state changes for the component.
+            """
             def __enter__(self):
-                """__enter__."""
+                """Manage context lifecycle and resource acquisition or cleanup.
+
+                Acquires necessary lock or file resources on entry and guarantees safe release and error propagation on exit.
+                """
                 return self
 
             def __exit__(self, *a):
-                """__exit__."""
+                """Manage context lifecycle and resource acquisition or cleanup.
+
+                Acquires necessary lock or file resources on entry and guarantees safe release and error propagation on exit.
+                """
                 pass
 
         def fake_open(hive, sub, reserved, access):
-            """fake_open."""
+            """fake_open.
+
+            Manages fake open operations and coordinates related state changes for the component.
+
+            Args:
+                hive: The hive parameter.
+                sub: The sub parameter.
+                reserved: The reserved parameter.
+                access: The access parameter.
+            """
             return FakeKey()
 
         def fake_enum(key, i):
-            """fake_enum."""
+            """fake_enum.
+
+            Manages fake enum operations and coordinates related state changes for the component.
+
+            Args:
+                key: The key parameter.
+                i: The i parameter.
+            """
             call_count["n"] += 1
             if call_count["n"] == 1:
                 return ("AppA", r"C:\Apps\A.exe", winreg.REG_SZ)
@@ -306,7 +470,10 @@ class TestRegistryEnumeration:
         real_fn = mod._enumerate_registry
 
         def patched_reg():
-            """patched_reg."""
+            """patched_reg.
+
+            Manages patched reg operations and coordinates related state changes for the component.
+            """
             return [
                 StartupEntry(
                     id=f"reg_{hash('test') & 0xFFFFFFFF:x}",
@@ -331,16 +498,32 @@ class TestRegistryEnumeration:
 
 
 class TestStartupFolderEnumeration:
-    """TestStartupFolderEnumeration."""
+    """Teststartupfolderenumeration.
+
+    Manages TestStartupFolderEnumeration operations and coordinates related state changes for the component.
+    """
     def test_no_env_vars_returns_empty(self, monkeypatch):
-        """test_no_env_vars_returns_empty."""
+        """test_no_env_vars_returns_empty.
+
+        Manages test no env vars returns empty operations and coordinates related state changes for the component.
+
+        Args:
+            monkeypatch: The monkeypatch parameter.
+        """
         monkeypatch.delenv("APPDATA", raising=False)
         monkeypatch.delenv("PROGRAMDATA", raising=False)
         result = _enumerate_startup_folders()
         assert result == []
 
     def test_finds_lnk_files(self, tmp_path, monkeypatch):
-        """test_finds_lnk_files."""
+        """test_finds_lnk_files.
+
+        Manages test finds lnk files operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+            monkeypatch: The monkeypatch parameter.
+        """
         startup = tmp_path / "startup"
         startup.mkdir()
         (startup / "myapp.lnk").write_text("shortcut")
@@ -350,7 +533,10 @@ class TestStartupFolderEnumeration:
         from cortex_unified.system_tools import startup_optimizer as mod
 
         def patched():
-            """patched."""
+            """Patched.
+
+            Manages patched operations and coordinates related state changes for the component.
+            """
             entries = []
             for p in startup.iterdir():
                 if p.is_file():
@@ -377,9 +563,18 @@ class TestStartupFolderEnumeration:
 
 
 class TestClassifyEntry:
-    """TestClassifyEntry."""
+    """Testclassifyentry.
+
+    Manages TestClassifyEntry operations and coordinates related state changes for the component.
+    """
     def test_nonexistent_exe_no_change(self, tmp_path):
-        """test_nonexistent_exe_no_change."""
+        """test_nonexistent_exe_no_change.
+
+        Manages test nonexistent exe no change operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         e = StartupEntry(
             id="x",
             name="X",
@@ -395,7 +590,13 @@ class TestClassifyEntry:
         assert result.is_service_dependent is False
 
     def test_pe_with_gui_symbols(self, tmp_path):
-        """test_pe_with_gui_symbols."""
+        """test_pe_with_gui_symbols.
+
+        Manages test pe with gui symbols operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         exe = tmp_path / "gui_app.exe"
         # Minimal PE header + USER32 import hint
         exe.write_bytes(b"MZ" + b"\x00" * 100 + b"USER32" + b"\x00" * 100)
@@ -412,7 +613,13 @@ class TestClassifyEntry:
         assert result.is_gui_heavy is True
 
     def test_pe_with_network_symbols(self, tmp_path):
-        """test_pe_with_network_symbols."""
+        """test_pe_with_network_symbols.
+
+        Manages test pe with network symbols operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         exe = tmp_path / "net_app.exe"
         exe.write_bytes(b"MZ" + b"\x00" * 100 + b"WININET" + b"\x00" * 100)
         e = StartupEntry(
@@ -428,7 +635,13 @@ class TestClassifyEntry:
         assert result.is_network_bound is True
 
     def test_pe_with_service_symbols(self, tmp_path):
-        """test_pe_with_service_symbols."""
+        """test_pe_with_service_symbols.
+
+        Manages test pe with service symbols operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         exe = tmp_path / "svc_app.exe"
         exe.write_bytes(
             b"MZ"
@@ -455,9 +668,19 @@ class TestClassifyEntry:
 
 
 class TestImpactRating:
-    """TestImpactRating."""
+    """Testimpactrating.
+
+    Manages TestImpactRating operations and coordinates related state changes for the component.
+    """
     def _make_opt_with_mock_enumerate(self, tmp_path, monkeypatch):
-        """_make_opt_with_mock_enumerate."""
+        """_make_opt_with_mock_enumerate.
+
+        Manages make opt with mock enumerate operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+            monkeypatch: The monkeypatch parameter.
+        """
         monkeypatch.setenv("LOCALAPPDATA", str(tmp_path))
         monkeypatch.setattr(
             "cortex_unified.system_tools.startup_optimizer._enumerate_registry",
@@ -474,12 +697,22 @@ class TestImpactRating:
         return StartupOptimizer()
 
     def test_impact_low_for_small_exe(self, tmp_path, monkeypatch):
-        """test_impact_low_for_small_exe."""
+        """test_impact_low_for_small_exe.
+
+        Manages test impact low for small exe operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+            monkeypatch: The monkeypatch parameter.
+        """
         exe = tmp_path / "small.exe"
         exe.write_bytes(b"MZ" + b"\x00" * 100)
 
         def fake_reg():
-            """fake_reg."""
+            """fake_reg.
+
+            Manages fake reg operations and coordinates related state changes for the component.
+            """
             return [
                 StartupEntry(
                     id="r1",
@@ -510,13 +743,23 @@ class TestImpactRating:
         assert entries[0].impact == "low"
 
     def test_impact_high_for_large_exe(self, tmp_path, monkeypatch):
-        """test_impact_high_for_large_exe."""
+        """test_impact_high_for_large_exe.
+
+        Manages test impact high for large exe operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+            monkeypatch: The monkeypatch parameter.
+        """
         exe = tmp_path / "huge.exe"
         # 60 MB
         exe.write_bytes(b"MZ" + b"\x00" * (60 * 1024 * 1024))
 
         def fake_reg():
-            """fake_reg."""
+            """fake_reg.
+
+            Manages fake reg operations and coordinates related state changes for the component.
+            """
             return [
                 StartupEntry(
                     id="r2",
@@ -551,9 +794,19 @@ class TestImpactRating:
 
 
 class TestBackupRestore:
-    """TestBackupRestore."""
+    """Testbackuprestore.
+
+    Manages TestBackupRestore operations and coordinates related state changes for the component.
+    """
     def test_backup_creates_file(self, tmp_path, monkeypatch):
-        """test_backup_creates_file."""
+        """test_backup_creates_file.
+
+        Manages test backup creates file operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+            monkeypatch: The monkeypatch parameter.
+        """
         monkeypatch.setenv("LOCALAPPDATA", str(tmp_path))
         opt = StartupOptimizer()
         opt.set_delay("e1", 10)
@@ -564,7 +817,14 @@ class TestBackupRestore:
         assert data["e1"]["delay"] == 10
 
     def test_restore_overwrites_current(self, tmp_path, monkeypatch):
-        """test_restore_overwrites_current."""
+        """test_restore_overwrites_current.
+
+        Manages test restore overwrites current operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+            monkeypatch: The monkeypatch parameter.
+        """
         monkeypatch.setenv("LOCALAPPDATA", str(tmp_path))
         opt = StartupOptimizer()
         opt.set_delay("e1", 10)
@@ -579,14 +839,27 @@ class TestBackupRestore:
 
 
 class TestProgressCallback:
-    """TestProgressCallback."""
+    """TestProgressCallback.
+
+    Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
+    """
     def test_progress_called_on_enumerate_error(self, tmp_path, monkeypatch):
-        """test_progress_called_on_enumerate_error."""
+        """test_progress_called_on_enumerate_error.
+
+        Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+            monkeypatch: The monkeypatch parameter.
+        """
         logs: List[str] = []
         monkeypatch.setenv("LOCALAPPDATA", str(tmp_path))
 
         def boom():
-            """boom."""
+            """Boom.
+
+            Manages boom operations and coordinates related state changes for the component.
+            """
             raise RuntimeError("boom")
 
         monkeypatch.setattr(
@@ -610,9 +883,19 @@ class TestProgressCallback:
 
 
 class TestCancellation:
-    """TestCancellation."""
+    """Testcancellation.
+
+    Manages TestCancellation operations and coordinates related state changes for the component.
+    """
     def test_cancel_stops_launch(self, tmp_path, monkeypatch):
-        """test_cancel_stops_launch."""
+        """test_cancel_stops_launch.
+
+        Manages test cancel stops launch operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+            monkeypatch: The monkeypatch parameter.
+        """
         monkeypatch.setenv("LOCALAPPDATA", str(tmp_path))
         cancel = threading.Event()
         cancel.set()  # immediately cancelled
@@ -636,12 +919,22 @@ class TestCancellation:
         assert "Launching C1" not in logs
 
     def test_cancel_mid_loop(self, tmp_path, monkeypatch):
-        """test_cancel_mid_loop."""
+        """test_cancel_mid_loop.
+
+        Manages test cancel mid loop operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+            monkeypatch: The monkeypatch parameter.
+        """
         monkeypatch.setenv("LOCALAPPDATA", str(tmp_path))
         cancel = threading.Event()
 
         def cancel_soon():
-            """cancel_soon."""
+            """cancel_soon.
+
+            Manages cancel soon operations and coordinates related state changes for the component.
+            """
             cancel.set()
 
         launched: List[str] = []
@@ -676,18 +969,30 @@ class TestCancellation:
 
 
 class TestStartupLocations:
-    """TestStartupLocations."""
+    """Teststartuplocations.
+
+    Manages TestStartupLocations operations and coordinates related state changes for the component.
+    """
     def test_locations_list_not_empty(self):
-        """test_locations_list_not_empty."""
+        """test_locations_list_not_empty.
+
+        Manages test locations list not empty operations and coordinates related state changes for the component.
+        """
         assert len(_STARTUP_LOCATIONS) > 0
 
     def test_all_entries_have_valid_prefix(self):
-        """test_all_entries_have_valid_prefix."""
+        """test_all_entries_have_valid_prefix.
+
+        Manages test all entries have valid prefix operations and coordinates related state changes for the component.
+        """
         for path, cat in _STARTUP_LOCATIONS:
             assert path.startswith("HK") or path.startswith("HKLM")
 
     def test_categories_are_known(self):
-        """test_categories_are_known."""
+        """test_categories_are_known.
+
+        Manages test categories are known operations and coordinates related state changes for the component.
+        """
         valid = {"logon", "explorer", "winlogon", "service", "ie", "codec"}
         for _, cat in _STARTUP_LOCATIONS:
             assert cat in valid
@@ -697,9 +1002,15 @@ class TestStartupLocations:
 
 
 class TestExports:
-    """TestExports."""
+    """Testexports.
+
+    Manages TestExports operations and coordinates related state changes for the component.
+    """
     def test_all_contains_expected(self):
-        """test_all_contains_expected."""
+        """test_all_contains_expected.
+
+        Manages test all contains expected operations and coordinates related state changes for the component.
+        """
         from cortex_unified.system_tools import startup_optimizer as mod
 
         assert set(mod.__all__) == {"AppType", "StartupOptimizer", "StartupEntry"}

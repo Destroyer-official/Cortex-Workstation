@@ -28,13 +28,22 @@ SCOPES = ("192.168.50.0/24",)
 
 @pytest.fixture(scope="module")
 def app():
-    """app."""
+    """App.
+
+    Manages app operations and coordinates related state changes for the component.
+    """
     return QApplication.instance() or QApplication([])
 
 
 @pytest.fixture
 def window(app):
-    """window."""
+    """Window.
+
+    Manages window operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+    """
     from cortex_unified.ui.premium.theme import apply_theme
     from cortex_unified.ui.premium.window import (
         PremiumMainWindow,
@@ -46,7 +55,14 @@ def window(app):
 
 
 def _observation(port=443, name="https", **kwargs):
-    """_observation."""
+    """Observation.
+
+    Manages observation operations and coordinates related state changes for the component.
+
+    Args:
+        port: The port parameter.
+        name: The name parameter.
+    """
     metadata = kwargs.pop(
         "metadata",
         {"evidence": ["TCP connection accepted"]},
@@ -57,7 +73,10 @@ def _observation(port=443, name="https", **kwargs):
 
 
 def _device(**kwargs):
-    """_device."""
+    """Device.
+
+    Manages device operations and coordinates related state changes for the component.
+    """
     payload = dict(
         ip="192.168.50.20",
         mac="00:11:22:33:44:55",
@@ -73,7 +92,13 @@ def _device(**kwargs):
 
 
 def test_window_renders_discovery_evidence_before_any_scan(window):
-    """test_window_renders_discovery_evidence_before_any_scan."""
+    """test_window_renders_discovery_evidence_before_any_scan.
+
+    Manages test window renders discovery evidence before any scan operations and coordinates related state changes for the component.
+
+    Args:
+        window: Parent window or shell controller instance.
+    """
     win = device_window_module.DeviceDetailWindow(window, _device(), SCOPES)
     try:
         assert "192.168.50.20" in win.windowTitle()
@@ -90,7 +115,13 @@ def test_window_renders_discovery_evidence_before_any_scan(window):
 
 
 def test_window_renders_completed_scan_payload_with_severity_badge(window):
-    """test_window_renders_completed_scan_payload_with_severity_badge."""
+    """test_window_renders_completed_scan_payload_with_severity_badge.
+
+    Manages test window renders completed scan payload with severity badge operations and coordinates related state changes for the component.
+
+    Args:
+        window: Parent window or shell controller instance.
+    """
     from cortex_unified.system_tools.device_fingerprint import (
         fingerprint_device,
     )
@@ -157,9 +188,18 @@ def test_window_renders_completed_scan_payload_with_severity_badge(window):
 
 
 def test_worker_refuses_target_outside_authorized_scope(monkeypatch):
-    """test_worker_refuses_target_outside_authorized_scope."""
+    """test_worker_refuses_target_outside_authorized_scope.
+
+    Manages test worker refuses target outside authorized scope operations and coordinates related state changes for the component.
+
+    Args:
+        monkeypatch: The monkeypatch parameter.
+    """
     def fail_scan(*_args, **_kwargs):
-        """fail_scan."""
+        """fail_scan.
+
+        Manages fail scan operations and coordinates related state changes for the component.
+        """
         raise AssertionError("an out-of-scope device must never be scanned")
 
     from cortex_unified.system_tools import network_service_scanner
@@ -175,7 +215,13 @@ def test_worker_refuses_target_outside_authorized_scope(monkeypatch):
 
 
 def test_worker_collects_services_findings_and_history(monkeypatch):
-    """test_worker_collects_services_findings_and_history."""
+    """test_worker_collects_services_findings_and_history.
+
+    Manages test worker collects services findings and history operations and coordinates related state changes for the component.
+
+    Args:
+        monkeypatch: The monkeypatch parameter.
+    """
     from cortex_unified.system_tools import (
         network_service_scanner,
         network_tools,
@@ -216,7 +262,13 @@ def test_worker_collects_services_findings_and_history(monkeypatch):
 
 
 def test_worker_reports_missing_nmap_without_failing(monkeypatch):
-    """test_worker_reports_missing_nmap_without_failing."""
+    """test_worker_reports_missing_nmap_without_failing.
+
+    Manages test worker reports missing nmap without failing operations and coordinates related state changes for the component.
+
+    Args:
+        monkeypatch: The monkeypatch parameter.
+    """
     from cortex_unified.system_tools import (
         network_service_scanner,
         nmap_adapter,
@@ -250,7 +302,13 @@ def test_worker_reports_missing_nmap_without_failing(monkeypatch):
 
 
 def test_worker_does_not_claim_port_source_without_observation(monkeypatch):
-    """test_worker_does_not_claim_port_source_without_observation."""
+    """test_worker_does_not_claim_port_source_without_observation.
+
+    Manages test worker does not claim port source without observation operations and coordinates related state changes for the component.
+
+    Args:
+        monkeypatch: The monkeypatch parameter.
+    """
     from cortex_unified.system_tools import network_service_scanner
 
     monkeypatch.setattr(
@@ -293,14 +351,23 @@ def test_worker_does_not_claim_port_source_without_observation(monkeypatch):
 
 
 def test_ping_worker_is_scope_checked_and_does_not_scan_ports(monkeypatch):
-    """test_ping_worker_is_scope_checked_and_does_not_scan_ports."""
+    """test_ping_worker_is_scope_checked_and_does_not_scan_ports.
+
+    Manages test ping worker is scope checked and does not scan ports operations and coordinates related state changes for the component.
+
+    Args:
+        monkeypatch: The monkeypatch parameter.
+    """
     from cortex_unified.system_tools import (
         network_service_scanner,
         network_tools,
     )
 
     def fail_scan(*_args, **_kwargs):
-        """fail_scan."""
+        """fail_scan.
+
+        Manages fail scan operations and coordinates related state changes for the component.
+        """
         raise AssertionError("the Ping action must not start a service scan")
 
     monkeypatch.setattr(
@@ -330,7 +397,14 @@ def test_ping_worker_is_scope_checked_and_does_not_scan_ports(monkeypatch):
 
 
 def test_failed_scan_restores_capability_based_actions(window, monkeypatch):
-    """test_failed_scan_restores_capability_based_actions."""
+    """test_failed_scan_restores_capability_based_actions.
+
+    Manages test failed scan restores capability based actions operations and coordinates related state changes for the component.
+
+    Args:
+        window: Parent window or shell controller instance.
+        monkeypatch: The monkeypatch parameter.
+    """
     device = _device(mac="02:11:22:33:44:55")
     win = device_window_module.DeviceDetailWindow(window, device, SCOPES)
     monkeypatch.setattr(
@@ -356,23 +430,47 @@ def test_lan_page_opens_retains_and_safely_closes_device_window(
     window,
     monkeypatch,
 ):
-    """test_lan_page_opens_retains_and_safely_closes_device_window."""
+    """test_lan_page_opens_retains_and_safely_closes_device_window.
+
+    Manages test lan page opens retains and safely closes device window operations and coordinates related state changes for the component.
+
+    Args:
+        app: The app parameter.
+        window: Parent window or shell controller instance.
+        monkeypatch: The monkeypatch parameter.
+    """
     from cortex_unified.system_tools.network_discovery import DiscoveryResult
 
     class FakeWorker:
-        """FakeWorker."""
+        """Fakeworker.
+
+        Manages FakeWorker operations and coordinates related state changes for the component.
+        """
         def __init__(self):
-            """__init__."""
+            """Initialize the instance and configure internal state.
+
+            Sets up sub-widgets, event signal connections, and default options.
+            """
             self.cancelled = False
 
         def cancel(self):
-            """cancel."""
+            """cancel.
+
+            Sets the internal cancellation event to cooperatively stop worker execution at the next safe boundary.
+            """
             self.cancelled = True
 
     started: list[tuple[object, str]] = []
 
     def fake_start_scan(detail_window, profile="advanced"):
-        """fake_start_scan."""
+        """fake_start_scan.
+
+        Manages fake start scan operations and coordinates related state changes for the component.
+
+        Args:
+            detail_window: The detail window parameter.
+            profile: The profile parameter.
+        """
         detail_window._worker = FakeWorker()
         detail_window._busy(True)
         started.append((detail_window, profile))

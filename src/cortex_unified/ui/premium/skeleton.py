@@ -32,7 +32,16 @@ class ShimmerSkeleton(QWidget):
 
     def __init__(self, palette: Palette, rows: int = 5, row_height: int = 20,
                  parent: QWidget | None = None):
-        """Initialize skeleton."""
+        """Initialize skeleton.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            palette (Palette): The palette parameter.
+            rows (int): Table row index or list of row indices.
+            row_height (int): The row height parameter.
+            parent (QWidget | None): Parent window or shell controller instance.
+        """
         super().__init__(parent)
         self._p = palette
         self._rows = max(1, int(rows))
@@ -49,11 +58,23 @@ class ShimmerSkeleton(QWidget):
 
     # animatable sweep phase ------------------------------------------------
     def _get_phase(self) -> float:
-        """_get_phase."""
+        """_get_phase.
+
+        Manages get phase operations and coordinates related state changes for the component.
+
+        Returns:
+            float: Result of the operation.
+        """
         return self._phase
 
     def _set_phase(self, v: float) -> None:
-        """_set_phase."""
+        """_set_phase.
+
+        Manages set phase operations and coordinates related state changes for the component.
+
+        Args:
+            v (float): The v parameter.
+        """
         self._phase = v
         self.update()
 
@@ -61,7 +82,10 @@ class ShimmerSkeleton(QWidget):
 
     # lifecycle -------------------------------------------------------------
     def start(self) -> None:
-        """Begin shimmering (static bars only under reduced motion)."""
+        """Start active background operations.
+
+        Manages worker thread execution states, signaling termination flags or initializing scheduled execution timers.
+        """
         if motion.prefers_reduced_motion():
             self.update()
             return
@@ -69,17 +93,32 @@ class ShimmerSkeleton(QWidget):
             self._anim.start()
 
     def stop(self) -> None:
-        """stop."""
+        """Stop active background operations.
+
+        Manages worker thread execution states, signaling termination flags or initializing scheduled execution timers.
+        """
         self._anim.stop()
 
     def set_palette(self, palette: Palette) -> None:
-        """set_palette."""
+        """set_palette.
+
+        Manages set palette operations and coordinates related state changes for the component.
+
+        Args:
+            palette (Palette): The palette parameter.
+        """
         self._p = palette
         self.update()
 
     # painting --------------------------------------------------------------
     def paintEvent(self, event) -> None:  # noqa: N802 (Qt signature)
-        """paintEvent."""
+        """Render custom visual elements and borders for the widget.
+
+        Uses QPainter with active theme colors, gradients, and font metrics to draw specialized UI graphics.
+
+        Args:
+            event: The Qt event object.
+        """
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
 

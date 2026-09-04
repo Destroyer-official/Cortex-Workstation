@@ -38,7 +38,10 @@ from cortex_unified.analyzers.advanced_uninstaller import (
 
 
 class _UninstallWorker(QObject):
-    """_UninstallWorker class."""
+    """Uninstallworker.
+
+    Manages UninstallWorker operations and coordinates related state changes for the component.
+    """
     finished = Signal(list)
     progress = Signal(str)
     failed = Signal(str)
@@ -51,7 +54,17 @@ class _UninstallWorker(QObject):
         max_leftovers_mb: int,
         sources: list[str],
     ):
-        """Initialize worker."""
+        """Initialize worker.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            app_ids (list[str]): The app ids parameter.
+            force (bool): The force parameter.
+            scan_leftovers (bool): The scan leftovers parameter.
+            max_leftovers_mb (int): The max leftovers mb parameter.
+            sources (list[str]): The sources parameter.
+        """
         super().__init__()
         self._app_ids = app_ids
         self._force = force
@@ -61,11 +74,17 @@ class _UninstallWorker(QObject):
         self._cancel = threading.Event()
 
     def cancel(self):
-        """cancel."""
+        """cancel.
+
+        Sets the internal cancellation event to cooperatively stop worker execution at the next safe boundary.
+        """
         self._cancel.set()
 
     def run(self):
-        """run."""
+        """run.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         try:
             uninstaller = AdvancedUninstaller(
                 create_restore_point=True,
@@ -109,10 +128,19 @@ class _UninstallWorker(QObject):
 
 
 class AdvancedUninstallerPage(_Page):
-    """Multi-source uninstaller with forced removal and leftover detection."""
+    """Advanceduninstallerpage.
+
+    Manages AdvancedUninstallerPage operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, win):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win: Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(
             title_block(
@@ -241,7 +269,10 @@ class AdvancedUninstallerPage(_Page):
         self._results: list[UninstallResult] = []
 
     def _pick_root(self):
-        """_pick_root."""
+        """_pick_root.
+
+        Manages pick root operations and coordinates related state changes for the component.
+        """
         folder = QFileDialog.getExistingDirectory(
             self, "Select root folder", self._root
         )
@@ -251,7 +282,10 @@ class AdvancedUninstallerPage(_Page):
             self.root_label.setObjectName("")
 
     def _scan(self):
-        """_scan."""
+        """_scan.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+        """
         self.scan_btn.setEnabled(False)
         self.progress.setVisible(True)
         self.state.show_loading("Enumerating applications…")
@@ -275,11 +309,23 @@ class AdvancedUninstallerPage(_Page):
         )
 
     def _on_progress(self, msg: str):
-        """_on_progress."""
+        """_on_progress.
+
+        Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
+
+        Args:
+            msg (str): Informational or progress status message.
+        """
         self.status.setText(msg)
 
     def _on_scan_done(self, apps: list[AppInfo]):
-        """_on_scan_done."""
+        """_on_scan_done.
+
+        Receives the completed data from the scan background worker, populates the view with results, and restores button states.
+
+        Args:
+            apps (list[AppInfo]): The apps parameter.
+        """
         self._worker = None
         self.progress.setVisible(False)
         self.scan_btn.setEnabled(True)
@@ -306,7 +352,10 @@ class AdvancedUninstallerPage(_Page):
         self.win.statusBar().showMessage(f"Found {len(apps)} applications", 5000)
 
     def _confirm_uninstall(self):
-        """_confirm_uninstall."""
+        """_confirm_uninstall.
+
+        Manages confirm uninstall operations and coordinates related state changes for the component.
+        """
         selected = self._selected_apps()
         if not selected:
             QMessageBox.information(
@@ -368,7 +417,13 @@ class AdvancedUninstallerPage(_Page):
         self._run_uninstall(selected)
 
     def _run_uninstall(self, apps: list[AppInfo]):
-        """_run_uninstall."""
+        """_run_uninstall.
+
+        Manages run uninstall operations and coordinates related state changes for the component.
+
+        Args:
+            apps (list[AppInfo]): The apps parameter.
+        """
         self.scan_btn.setEnabled(False)
         self.uninstall_btn.setEnabled(False)
         self.progress.setVisible(True)
@@ -390,7 +445,13 @@ class AdvancedUninstallerPage(_Page):
         )
 
     def _on_uninstall_done(self, results: list[UninstallResult]):
-        """_on_uninstall_done."""
+        """_on_uninstall_done.
+
+        Receives the completed data from the uninstall background worker, populates the view with results, and restores button states.
+
+        Args:
+            results (list[UninstallResult]): Dictionary or data object holding operation results.
+        """
         self._worker = None
         self.progress.setVisible(False)
         self.scan_btn.setEnabled(True)
@@ -441,7 +502,13 @@ class AdvancedUninstallerPage(_Page):
         QMessageBox.information(self, "Uninstall Complete", msg)
 
     def _on_fail(self, msg: str):
-        """_on_fail."""
+        """_on_fail.
+
+        Captures worker error messages, presents diagnostic feedback to the user, and resets interactive controls for retry.
+
+        Args:
+            msg (str): Informational or progress status message.
+        """
         self._worker = None
         self.progress.setVisible(False)
         self.scan_btn.setEnabled(True)
@@ -450,7 +517,13 @@ class AdvancedUninstallerPage(_Page):
         self.win._default_fail(msg)
 
     def _selected_apps(self) -> list[AppInfo]:
-        """_selected_apps."""
+        """_selected_apps.
+
+        Manages selected apps operations and coordinates related state changes for the component.
+
+        Returns:
+            list[AppInfo]: List of processed items or identifiers.
+        """
         rows = {idx.row() for idx in self.tbl.selectedIndexes()}
         out = []
         for r in sorted(rows):
@@ -464,5 +537,11 @@ class AdvancedUninstallerPage(_Page):
         return out
 
     def _fail(self, msg: str):
-        """_fail."""
+        """Handle an operation failure and notify the user.
+
+        Captures error details, displays an informative failure state in the UI, resets progress indicators, and re-enables interactive controls.
+
+        Args:
+            msg (str): Informational or progress status message.
+        """
         self._on_fail(msg)

@@ -7,7 +7,7 @@ Technical specifications for Cortex Workstation's algorithmic caching data struc
 ## ⚡ High-Throughput Eviction Caches
 
 ### 1. `S3FifoCache`
-* **Module:** `cortex_unified.performance.s3_fifo`
+* **Module:** `cortex_unified.system_tools.s3_fifo`
 * **Architecture:** State-of-the-art Simple, Scalable, Small (S3-FIFO) cache with small FIFO ($S$), main FIFO ($M$), and ghost FIFO ($G$) queues.
 * **Key Properties:**
   * Drastically reduces cache pollution from "one-hit wonder" scan operations.
@@ -18,7 +18,7 @@ Technical specifications for Cortex Workstation's algorithmic caching data struc
   * `stats() -> CacheStats`
 
 ### 2. `SieveCache`
-* **Module:** `cortex_unified.performance.sieve_cache`
+* **Module:** `cortex_unified.system_tools.sieve_cache`
 * **Architecture:** SIEVE cache eviction algorithm using a circular queue hand pointer with visited bits.
 * **Key Properties:**
   * Ultra-lightweight with $O(1)$ amortized eviction time.

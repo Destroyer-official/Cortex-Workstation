@@ -6,7 +6,13 @@ import builtins
 import sys
 
 def check_undefined_names_in_file(filepath):
-    """check_undefined_names_in_file."""
+    """check_undefined_names_in_file.
+
+    Manages check undefined names in file operations and coordinates related state changes for the component.
+
+    Args:
+        filepath: Filesystem path to the target file or directory.
+    """
     with open(filepath, 'r', encoding='utf-8', errors='ignore') as f:
         code = f.read()
     try:
@@ -24,18 +30,47 @@ try:
     import io
 
     class Reporter:
-        """Reporter."""
+        """Reporter.
+
+        Manages Reporter operations and coordinates related state changes for the component.
+        """
         def __init__(self):
-            """__init__."""
+            """Initialize the instance and configure internal state.
+
+            Sets up sub-widgets, event signal connections, and default options.
+            """
             self.errors = []
         def unexpectedError(self, filename, msg):
-            """unexpectedError."""
+            """Unexpectederror.
+
+            Manages unexpectedError operations and coordinates related state changes for the component.
+
+            Args:
+                filename: The filename parameter.
+                msg: Informational or progress status message.
+            """
             self.errors.append(f"{filename}: unexpected error: {msg}")
         def syntaxError(self, filename, msg, lineno, offset, text):
-            """syntaxError."""
+            """Syntaxerror.
+
+            Manages syntaxError operations and coordinates related state changes for the component.
+
+            Args:
+                filename: The filename parameter.
+                msg: Informational or progress status message.
+                lineno: The lineno parameter.
+                offset: The offset parameter.
+                text: Display text string.
+            """
             self.errors.append(f"{filename}:{lineno}: syntax error: {msg}")
         def flake(self, msg):
-            """flake."""
+            """Flake.
+
+            Manages flake operations and coordinates related state changes for the component.
+
+            Args:
+                msg: Informational or progress status message.
+            """
             self.errors.append(str(msg))
 
     rep = Reporter()

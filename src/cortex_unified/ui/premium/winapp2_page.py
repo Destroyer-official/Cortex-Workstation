@@ -29,24 +29,40 @@ from .window import _Page, fmt_bytes
 
 
 class _Winapp2Worker(QObject):
-    """_Winapp2Worker class."""
+    """Winapp2worker.
+
+    Manages Winapp2Worker operations and coordinates related state changes for the component.
+    """
     progress = Signal(int, int, str)
     finished = Signal(object)
     clean_finished = Signal(int, int)
 
     def __init__(self, cleaner: Winapp2Cleaner, targets: Optional[List[AppCleanTarget]] = None) -> None:
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            cleaner (Winapp2Cleaner): The cleaner parameter.
+            targets (Optional[List[AppCleanTarget]]): The targets parameter.
+        """
         super().__init__()
         self.cleaner = cleaner
         self.targets = targets
 
     def run_scan(self) -> None:
-        """run_scan."""
+        """run_scan.
+
+        Manages run scan operations and coordinates related state changes for the component.
+        """
         report = self.cleaner.scan(progress_cb=lambda cur, tot, name: self.progress.emit(cur, tot, name))
         self.finished.emit(report)
 
     def run_clean(self) -> None:
-        """run_clean."""
+        """run_clean.
+
+        Manages run clean operations and coordinates related state changes for the component.
+        """
         b, count = self.cleaner.clean(
             self.targets,
             dry_run=False,
@@ -56,10 +72,19 @@ class _Winapp2Worker(QObject):
 
 
 class Winapp2CleanerPage(_Page):
-    """UI page for Winapp2 community third-party application cleaning."""
+    """Winapp2cleanerpage.
+
+    Manages Winapp2CleanerPage operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, win) -> None:
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win: Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.cleaner = Winapp2Cleaner()
         self.current_report: Optional[Winapp2Report] = None
@@ -120,7 +145,10 @@ class Winapp2CleanerPage(_Page):
         self.add_scrolling_list(self.table, stretch=1)
 
     def _start_scan(self) -> None:
-        """_start_scan."""
+        """_start_scan.
+
+        Manages start scan operations and coordinates related state changes for the component.
+        """
         self.btn_scan.setEnabled(False)
         self.btn_clean.setEnabled(False)
         self.progress_bar.setVisible(True)
@@ -136,13 +164,27 @@ class Winapp2CleanerPage(_Page):
         self._thread.start()
 
     def _on_progress(self, current: int, total: int, name: str) -> None:
-        """_on_progress."""
+        """_on_progress.
+
+        Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
+
+        Args:
+            current (int): The current parameter.
+            total (int): The total parameter.
+            name (str): The name parameter.
+        """
         if total > 0:
             self.progress_bar.setValue(int((current / total) * 100))
         self.lbl_status.setText(f"Checking: {name[:40]}...")
 
     def _on_scan_finished(self, report: Winapp2Report) -> None:
-        """_on_scan_finished."""
+        """_on_scan_finished.
+
+        Manages on scan finished operations and coordinates related state changes for the component.
+
+        Args:
+            report (Winapp2Report): The generated report data object from the backend.
+        """
         self.current_report = report
         if self._thread:
             self._thread.quit()
@@ -164,7 +206,10 @@ class Winapp2CleanerPage(_Page):
             self.table.setItem(row, 3, QTableWidgetItem(fmt_bytes(tgt.size_bytes)))
 
     def _start_clean(self) -> None:
-        """_start_clean."""
+        """_start_clean.
+
+        Manages start clean operations and coordinates related state changes for the component.
+        """
         if not self.current_report or not self.current_report.targets:
             return
 
@@ -192,7 +237,14 @@ class Winapp2CleanerPage(_Page):
         self._thread.start()
 
     def _on_clean_finished(self, cleaned_bytes: int, cleaned_count: int) -> None:
-        """_on_clean_finished."""
+        """_on_clean_finished.
+
+        Manages on clean finished operations and coordinates related state changes for the component.
+
+        Args:
+            cleaned_bytes (int): The cleaned bytes parameter.
+            cleaned_count (int): The cleaned count parameter.
+        """
         if self._thread:
             self._thread.quit()
             self._thread.wait()

@@ -22,7 +22,10 @@ from typing import Dict, List, Optional, Tuple
 
 @dataclass
 class PrefetchEntry:
-    """Prefetch Entry data container."""
+    """Prefetchentry.
+
+    Manages PrefetchEntry operations and coordinates related state changes for the component.
+    """
     path: str
     filename: str
     executable_name: str
@@ -34,7 +37,10 @@ class PrefetchEntry:
 
 @dataclass
 class PrefetchStatus:
-    """Prefetch Status data container."""
+    """Prefetchstatus.
+
+    Manages PrefetchStatus operations and coordinates related state changes for the component.
+    """
     prefetch_dir: str
     total_files: int
     total_size_bytes: int
@@ -44,25 +50,38 @@ class PrefetchStatus:
 
 @dataclass
 class PrefetchCleanResult:
-    """Prefetch Clean Result data container."""
+    """Prefetchcleanresult.
+
+    Manages PrefetchCleanResult operations and coordinates related state changes for the component.
+    """
     files_deleted: int = 0
     bytes_freed: int = 0
     errors: List[str] = None
 
     def __post_init__(self):
-        """__post_init__."""
+        """__post_init__.
+
+        Manages post init operations and coordinates related state changes for the component.
+        """
         if self.errors is None:
             self.errors = []
-        """__post_init__."""
-        """__post_init__."""
 
 
 class PrefetchAnalyzer:
-    """Production Windows Prefetch and SuperFetch diagnostic engine."""
+    """Prefetchanalyzer.
+
+    Manages PrefetchAnalyzer operations and coordinates related state changes for the component.
+    """
 
     @classmethod
     def get_status(cls) -> PrefetchStatus:
-        """Query Prefetch directory metrics and SysMain service status."""
+        """Query Prefetch directory metrics and SysMain service status.
+
+        Manages get status operations and coordinates related state changes for the component.
+
+        Returns:
+            PrefetchStatus: Result of the operation.
+        """
         if platform.system() != "Windows":
             return PrefetchStatus("", 0, 0, "Non-Windows", False)
 
@@ -113,7 +132,13 @@ class PrefetchAnalyzer:
 
     @classmethod
     def scan_prefetch_files(cls) -> List[PrefetchEntry]:
-        """Scan and parse all .pf files in the Windows Prefetch directory."""
+        """Scan and parse all .pf files in the Windows Prefetch directory.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+        Returns:
+            List[PrefetchEntry]: List of processed items or identifiers.
+        """
         if platform.system() != "Windows":
             return []
 
@@ -154,7 +179,16 @@ class PrefetchAnalyzer:
 
     @classmethod
     def clean_prefetch(cls, file_paths: Optional[List[str]] = None) -> PrefetchCleanResult:
-        """Purge selected or all prefetch files."""
+        """Purge selected or all prefetch files.
+
+        Permanently purges or removes specified target items, reclaiming storage space and logging actions taken.
+
+        Args:
+            file_paths (Optional[List[str]]): Filesystem path to the target file or directory.
+
+        Returns:
+            PrefetchCleanResult: Result of the operation.
+        """
         if platform.system() != "Windows":
             return PrefetchCleanResult(0, 0, ["Windows only"])
 

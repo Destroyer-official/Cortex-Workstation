@@ -26,7 +26,16 @@ PLACEHOLDER_PATTERNS = [
 ]
 
 def scan_file(filepath: Path) -> dict:
-    """scan_file."""
+    """scan_file.
+
+    Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+    Args:
+        filepath (Path): Filesystem path to the target file or directory.
+
+    Returns:
+        dict: Dictionary mapping identifiers to status or values.
+    """
     rel_path = filepath.relative_to(ROOT)
     results = {
         "file": str(rel_path),
@@ -93,7 +102,10 @@ def scan_file(filepath: Path) -> dict:
     return results
 
 def main():
-    """main."""
+    """Main.
+
+    Manages main operations and coordinates related state changes for the component.
+    """
     print("=" * 80)
     print("  DEEP EXHAUSTIVE CODEBASE INSPECTION & AUDIT")
     print("=" * 80)

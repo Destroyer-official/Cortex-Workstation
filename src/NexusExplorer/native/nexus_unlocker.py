@@ -23,20 +23,27 @@ if platform.system() == "Windows":
     CCH_RM_MAX_SVC_NAME = 63
 
     class RM_UNIQUE_PROCESS(ctypes.Structure):
-        """RM_UNIQUE_PROCESS."""
+        """RM_UNIQUE_PROCESS.
+
+        Manages RM UNIQUE PROCESS operations and coordinates related state changes for the component.
+        """
         _fields_ = [
             ("dwProcessId", wintypes.DWORD),
             ("ProcessStartTime", wintypes.FILETIME),
         ]
-        """RM_UNIQUE_PROCESS class."""
 
     class RM_APP_TYPE(ctypes.c_int):
-        """RM_APP_TYPE."""
+        """RM_APP_TYPE.
+
+        Manages RM APP TYPE operations and coordinates related state changes for the component.
+        """
         pass
-        """RM_APP_TYPE class."""
 
     class RM_PROCESS_INFO(ctypes.Structure):
-        """RM_PROCESS_INFO."""
+        """RM_PROCESS_INFO.
+
+        Manages RM PROCESS INFO operations and coordinates related state changes for the component.
+        """
         _fields_ = [
             ("Process", RM_UNIQUE_PROCESS),
             ("strAppName", wintypes.WCHAR * (CCH_RM_MAX_APP_NAME + 1)),
@@ -46,12 +53,14 @@ if platform.system() == "Windows":
             ("TSSessionId", wintypes.DWORD),
             ("bRestartable", wintypes.BOOL),
         ]
-        """RM_PROCESS_INFO class."""
 
 
 @dataclass
 class LockingProcessInfo:
-    """LockingProcessInfo."""
+    """Lockingprocessinfo.
+
+    Manages LockingProcessInfo operations and coordinates related state changes for the component.
+    """
     pid: int
     name: str
     executable_path: str
@@ -59,15 +68,26 @@ class LockingProcessInfo:
     service_name: str = ""
     user: str = ""
     memory_mb: float = 0.0
-    """LockingProcessInfo class."""
 
 
 class FileUnlocker:
-    """Production Windows file unlocker and process handle inspector."""
+    """Fileunlocker.
+
+    Manages FileUnlocker operations and coordinates related state changes for the component.
+    """
 
     @classmethod
     def get_locking_processes(cls, file_path: str | Path) -> List[LockingProcessInfo]:
-        """Query which processes currently hold an open lock on the target file."""
+        """Query which processes currently hold an open lock on the target file.
+
+        Manages get locking processes operations and coordinates related state changes for the component.
+
+        Args:
+            file_path (str | Path): Filesystem path to the target file or directory.
+
+        Returns:
+            List[LockingProcessInfo]: List of processed items or identifiers.
+        """
         target = str(Path(file_path).resolve())
         if not os.path.exists(target):
             return []
@@ -82,7 +102,16 @@ class FileUnlocker:
 
     @classmethod
     def _query_restart_manager(cls, file_paths: List[str]) -> List[LockingProcessInfo]:
-        """Invoke Windows Restart Manager to enumerate locking processes."""
+        """Invoke Windows Restart Manager to enumerate locking processes.
+
+        Manages query restart manager operations and coordinates related state changes for the component.
+
+        Args:
+            file_paths (List[str]): Filesystem path to the target file or directory.
+
+        Returns:
+            List[LockingProcessInfo]: List of processed items or identifiers.
+        """
         if platform.system() != "Windows":
             return []
 
@@ -187,7 +216,16 @@ class FileUnlocker:
 
     @classmethod
     def _query_psutil_handles(cls, target_path: str) -> List[LockingProcessInfo]:
-        """Fallback process inspection via psutil open_files."""
+        """Fallback process inspection via psutil open_files.
+
+        Manages query psutil handles operations and coordinates related state changes for the component.
+
+        Args:
+            target_path (str): Filesystem path to the target file or directory.
+
+        Returns:
+            List[LockingProcessInfo]: List of processed items or identifiers.
+        """
         target_lower = target_path.lower()
         locking_procs: List[LockingProcessInfo] = []
 
@@ -217,13 +255,27 @@ class FileUnlocker:
 
     @classmethod
     def unlock_and_terminate(cls, pid: int, force: bool = False) -> Tuple[bool, str]:
-        """Terminate a locking process by PID to release locked files."""
+        """Terminate a locking process by PID to release locked files.
+
+        Manages unlock and terminate operations and coordinates related state changes for the component.
+
+        Args:
+            pid (int): The pid parameter.
+            force (bool): The force parameter.
+
+        Returns:
+            Tuple[bool, str]: True if the operation succeeded, False otherwise.
+        """
         if pid in (0, 4):
             return False, "Cannot terminate critical Windows System Process (PID 0/4)"
 
         try:
             import psutil
+            from cortex_unified.core.proc import is_protected_process
             proc = psutil.Process(pid)
+            p_name = proc.name() or ""
+            if is_protected_process(pid) or is_protected_process(p_name):
+                return False, f"Action denied: '{p_name}' is a protected Windows system process. Terminating it would crash your desktop shell or cause system instability."
             if force:
                 proc.kill()
             else:

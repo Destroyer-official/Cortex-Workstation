@@ -18,7 +18,10 @@ from cortex_unified.analyzers.content_defined_chunker import (
 # --- chunker primitives ---
 
 def test_gear_chunk_deterministic():
-    """test_gear_chunk_deterministic."""
+    """test_gear_chunk_deterministic.
+
+    Manages test gear chunk deterministic operations and coordinates related state changes for the component.
+    """
     data = b"hello world " * 2000
     a = gear_chunk(data)
     b = gear_chunk(data)
@@ -28,7 +31,10 @@ def test_gear_chunk_deterministic():
 
 
 def test_gear_chunk_shift_resistant():
-    """test_gear_chunk_shift_resistant."""
+    """test_gear_chunk_shift_resistant.
+
+    Manages test gear chunk shift resistant operations and coordinates related state changes for the component.
+    """
     import random
     rnd = random.Random(0xC0FFEE)
     base = bytes(rnd.getrandbits(8) for _ in range(50000))
@@ -42,18 +48,27 @@ def test_gear_chunk_shift_resistant():
 
 
 def test_gear_chunk_empty():
-    """test_gear_chunk_empty."""
+    """test_gear_chunk_empty.
+
+    Manages test gear chunk empty operations and coordinates related state changes for the component.
+    """
     assert gear_chunk(b"") == []
 
 
 def test_gear_chunk_invalid_params():
-    """test_gear_chunk_invalid_params."""
+    """test_gear_chunk_invalid_params.
+
+    Manages test gear chunk invalid params operations and coordinates related state changes for the component.
+    """
     with pytest.raises(ValueError):
         gear_chunk(b"data", avg_size=100, min_size=200, max_size=300)
 
 
 def test_jaccard_basic():
-    """test_jaccard_basic."""
+    """test_jaccard_basic.
+
+    Manages test jaccard basic operations and coordinates related state changes for the component.
+    """
     assert jaccard([], []) == 1.0
     assert jaccard([1, 2], []) == 0.0
     assert jaccard([1, 2, 3], [1, 2, 3]) == 1.0
@@ -61,20 +76,32 @@ def test_jaccard_basic():
 
 
 def test_chunk_similarity_identical_is_one():
-    """test_chunk_similarity_identical_is_one."""
+    """test_chunk_similarity_identical_is_one.
+
+    Manages test chunk similarity identical is one operations and coordinates related state changes for the component.
+    """
     data = b"identical content " * 1000
     assert chunk_similarity(data, data) == 1.0
 
 
 def test_chunk_similarity_different_is_low():
-    """test_chunk_similarity_different_is_low."""
+    """test_chunk_similarity_different_is_low.
+
+    Manages test chunk similarity different is low operations and coordinates related state changes for the component.
+    """
     a = b"A" * 10000
     b = b"Z" * 10000
     assert chunk_similarity(a, b) < 0.2
 
 
 def test_file_chunks_reads_file(tmp_path: Path):
-    """test_file_chunks_reads_file."""
+    """test_file_chunks_reads_file.
+
+    Manages test file chunks reads file operations and coordinates related state changes for the component.
+
+    Args:
+        tmp_path (Path): Filesystem path to the target file or directory.
+    """
     p = tmp_path / "data.bin"
     p.write_bytes(b"file content " * 2000)
     cs = file_chunks(p)
@@ -83,7 +110,13 @@ def test_file_chunks_reads_file(tmp_path: Path):
 
 
 def test_file_chunks_missing_raises(tmp_path: Path):
-    """test_file_chunks_missing_raises."""
+    """test_file_chunks_missing_raises.
+
+    Manages test file chunks missing raises operations and coordinates related state changes for the component.
+
+    Args:
+        tmp_path (Path): Filesystem path to the target file or directory.
+    """
     with pytest.raises(OSError):
         file_chunks(tmp_path / "nope.bin")
 
@@ -91,7 +124,13 @@ def test_file_chunks_missing_raises(tmp_path: Path):
 # --- finder ---
 
 def test_finder_groups_shifted_duplicates(tmp_path: Path):
-    """test_finder_groups_shifted_duplicates."""
+    """test_finder_groups_shifted_duplicates.
+
+    Manages test finder groups shifted duplicates operations and coordinates related state changes for the component.
+
+    Args:
+        tmp_path (Path): Filesystem path to the target file or directory.
+    """
     import random
     rnd = random.Random(1)
     base = bytes(rnd.getrandbits(8) for _ in range(60000))
@@ -113,7 +152,13 @@ def test_finder_groups_shifted_duplicates(tmp_path: Path):
 
 
 def test_finder_excludes_non_eligible_or_empty(tmp_path: Path):
-    """test_finder_excludes_non_eligible_or_empty."""
+    """test_finder_excludes_non_eligible_or_empty.
+
+    Manages test finder excludes non eligible or empty operations and coordinates related state changes for the component.
+
+    Args:
+        tmp_path (Path): Filesystem path to the target file or directory.
+    """
     (tmp_path / "empty.bin").write_bytes(b"")
     (tmp_path / "image.jpg").write_bytes(b"jpg-like-but-skipped" * 1000)
     finder = ContentDefinedChunker(str(tmp_path))
@@ -121,7 +166,13 @@ def test_finder_excludes_non_eligible_or_empty(tmp_path: Path):
 
 
 def test_finder_respects_exclude_dirs(tmp_path: Path):
-    """test_finder_respects_exclude_dirs."""
+    """test_finder_respects_exclude_dirs.
+
+    Manages test finder respects exclude dirs operations and coordinates related state changes for the component.
+
+    Args:
+        tmp_path (Path): Filesystem path to the target file or directory.
+    """
     sub = tmp_path / "skip"
     sub.mkdir()
     base = b"dup for skip test " * 500
@@ -140,7 +191,13 @@ def test_finder_respects_exclude_dirs(tmp_path: Path):
 
 
 def test_finder_stats(tmp_path: Path):
-    """test_finder_stats."""
+    """test_finder_stats.
+
+    Manages test finder stats operations and coordinates related state changes for the component.
+
+    Args:
+        tmp_path (Path): Filesystem path to the target file or directory.
+    """
     base = b"stats test " * 800
     (tmp_path / "a.bin").write_bytes(base)
     (tmp_path / "b.bin").write_bytes(base + b"X")  # still similar enough at 0.5
@@ -152,7 +209,10 @@ def test_finder_stats(tmp_path: Path):
 
 
 def test_vector_cdc_chunk_produces_valid_chunks():
-    """test_vector_cdc_chunk_produces_valid_chunks."""
+    """test_vector_cdc_chunk_produces_valid_chunks.
+
+    Manages test vector cdc chunk produces valid chunks operations and coordinates related state changes for the component.
+    """
     from cortex_unified.analyzers.content_defined_chunker import vector_cdc_chunk
     data = b"VectorCDC fast test data stream " * 1000
     chunks = vector_cdc_chunk(data, avg_size=4096, min_size=1024, max_size=16384)
@@ -162,7 +222,10 @@ def test_vector_cdc_chunk_produces_valid_chunks():
 
 
 def test_idea_inverted_index():
-    """test_idea_inverted_index."""
+    """test_idea_inverted_index.
+
+    Manages test idea inverted index operations and coordinates related state changes for the component.
+    """
     import random
     from cortex_unified.analyzers.content_defined_chunker import IdeaInvertedIndex, vector_cdc_chunk
     rnd = random.Random(42)

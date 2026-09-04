@@ -20,7 +20,10 @@ from typing import Dict, List, Optional, Tuple
 
 @dataclass
 class DriverPackage:
-    """Driver Package data container."""
+    """Driverpackage.
+
+    Manages DriverPackage operations and coordinates related state changes for the component.
+    """
     published_name: str  # "oem12.inf"
     original_name: str  # "nv_dispi.inf"
     provider_name: str  # "NVIDIA"
@@ -34,25 +37,38 @@ class DriverPackage:
 
 @dataclass
 class DriverCleanResult:
-    """Driver Clean Result data container."""
+    """Drivercleanresult.
+
+    Manages DriverCleanResult operations and coordinates related state changes for the component.
+    """
     drivers_deleted: int
     bytes_freed_estimate: int
     errors: List[str] = None
 
     def __post_init__(self):
-        """__post_init__."""
+        """__post_init__.
+
+        Manages post init operations and coordinates related state changes for the component.
+        """
         if self.errors is None:
             self.errors = []
-        """__post_init__."""
-        """__post_init__."""
 
 
 class DriverStoreCleaner:
-    """Production Driver Store Explorer (RAPR) and superseded INF driver purger."""
+    """Driverstorecleaner.
+
+    Manages DriverStoreCleaner operations and coordinates related state changes for the component.
+    """
 
     @classmethod
     def enumerate_drivers(cls) -> List[DriverPackage]:
-        """Query and parse all third-party driver packages via pnputil /enum-drivers."""
+        """Query and parse all third-party driver packages via pnputil /enum-drivers.
+
+        Manages enumerate drivers operations and coordinates related state changes for the component.
+
+        Returns:
+            List[DriverPackage]: List of processed items or identifiers.
+        """
         if platform.system() != "Windows":
             return []
 
@@ -114,7 +130,17 @@ class DriverStoreCleaner:
 
     @classmethod
     def delete_driver(cls, published_name: str, force: bool = True) -> Tuple[bool, str]:
-        """Delete a single third-party driver package from the Windows Driver Store."""
+        """Delete a single third-party driver package from the Windows Driver Store.
+
+        Manages delete driver operations and coordinates related state changes for the component.
+
+        Args:
+            published_name (str): The published name parameter.
+            force (bool): The force parameter.
+
+        Returns:
+            Tuple[bool, str]: True if the operation succeeded, False otherwise.
+        """
         if platform.system() != "Windows":
             return False, "Windows only"
 
@@ -136,7 +162,16 @@ class DriverStoreCleaner:
 
     @classmethod
     def export_all_drivers(cls, backup_dir: str | Path) -> Tuple[bool, str]:
-        """Export and backup all installed third-party drivers to directory."""
+        """Export and backup all installed third-party drivers to directory.
+
+        Manages export all drivers operations and coordinates related state changes for the component.
+
+        Args:
+            backup_dir (str | Path): The backup dir parameter.
+
+        Returns:
+            Tuple[bool, str]: True if the operation succeeded, False otherwise.
+        """
         if platform.system() != "Windows":
             return False, "Windows only"
 

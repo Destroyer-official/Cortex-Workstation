@@ -16,7 +16,10 @@ from cortex_unified.core.config import Config
 from cortex_unified.core.security import check_deletion_safety
 
 class FileShredder:
-    """Securely deletes files by overwriting contents before unlinking."""
+    """Fileshredder.
+
+    Manages FileShredder operations and coordinates related state changes for the component.
+    """
     
     def __init__(self, config: Config = None):
         """
@@ -32,16 +35,31 @@ class FileShredder:
         self.errors: List[Dict[str, str]] = []
     
     def _generate_random_data(self, size: int) -> bytes:
-        """_generate_random_data."""
+        """_generate_random_data.
+
+        Manages generate random data operations and coordinates related state changes for the component.
+
+        Args:
+            size (int): Integer number of bytes to format or process.
+
+        Returns:
+            bytes: Result of the operation.
+        """
         return os.urandom(size)
-        """_generate_random_data."""
-        """_generate_random_data."""
     
     def _generate_pattern_data(self, size: int, pattern: int) -> bytes:
-        """_generate_pattern_data."""
+        """_generate_pattern_data.
+
+        Manages generate pattern data operations and coordinates related state changes for the component.
+
+        Args:
+            size (int): Integer number of bytes to format or process.
+            pattern (int): The pattern parameter.
+
+        Returns:
+            bytes: Result of the operation.
+        """
         return bytes([pattern] * size)
-        """_generate_pattern_data."""
-        """_generate_pattern_data."""
     
     def shred_file(self, filepath: Path, passes: int = None, allow_system_files: bool = False) -> bool:
         """Overwrite *filepath* in place, then unlink it.
@@ -148,7 +166,13 @@ class FileShredder:
         }
     
     def get_stats(self) -> dict:
-        """Get statistics about the shredding process."""
+        """Get statistics about the shredding process.
+
+        Manages get stats operations and coordinates related state changes for the component.
+
+        Returns:
+            dict: Dictionary mapping identifiers to status or values.
+        """
         return {
             "files_shredded": len(self.shredded_files),
             "errors": len(self.errors),
@@ -156,11 +180,23 @@ class FileShredder:
         }
     
     def set_passes(self, passes: int):
-        """Set the number of overwrite passes."""
+        """Set the number of overwrite passes.
+
+        Manages set passes operations and coordinates related state changes for the component.
+
+        Args:
+            passes (int): The passes parameter.
+        """
         if passes < 1:
             raise ValueError("Number of passes must be at least 1")
         self.passes = passes
     
     def verify_deletion(self, verify: bool):
-        """Set whether to verify file deletion."""
+        """Set whether to verify file deletion.
+
+        Manages verify deletion operations and coordinates related state changes for the component.
+
+        Args:
+            verify (bool): The verify parameter.
+        """
         self.verify = verify

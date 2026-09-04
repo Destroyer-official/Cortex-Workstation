@@ -24,13 +24,23 @@ from cortex_unified.analyzers.perceptual_duplicate_finder import PerceptualDupli
 
 
 class _PerceptualWorker(QObject):
-    """_PerceptualWorker class."""
+    """Perceptualworker.
+
+    Manages PerceptualWorker operations and coordinates related state changes for the component.
+    """
     finished = Signal(dict)
     progress = Signal(str)
     failed = Signal(str)
 
     def __init__(self, root: str, max_distance: int = 10):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            root (str): Filesystem path to the target file or directory.
+            max_distance (int): The max distance parameter.
+        """
         super().__init__()
         self._root = root
         self._dist = max_distance
@@ -39,11 +49,17 @@ class _PerceptualWorker(QObject):
         self._cancel = threading.Event()
 
     def cancel(self):
-        """cancel."""
+        """cancel.
+
+        Sets the internal cancellation event to cooperatively stop worker execution at the next safe boundary.
+        """
         self._cancel.set()
 
     def run(self):
-        """run."""
+        """run.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         try:
             from cortex_unified.analyzers.perceptual_duplicate_finder import (
                 PerceptualDuplicateFinder,
@@ -61,10 +77,19 @@ class _PerceptualWorker(QObject):
 
 
 class PerceptualDuplicatesPage(_Page):
-    """Find visually-similar photos via perceptual hashing (pHash)."""
+    """Perceptualduplicatespage.
+
+    Manages PerceptualDuplicatesPage operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, win):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win: Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(title_block(
             "Duplicate Photos (Perceptual)",
@@ -119,7 +144,10 @@ class PerceptualDuplicatesPage(_Page):
         self._worker = None
 
     def _pick(self):
-        """_pick."""
+        """Prompt the user to select a filesystem directory or file.
+
+        Launches a native file dialog and populates the selected path into the corresponding target input widget.
+        """
         from PySide6.QtWidgets import QFileDialog
 
         folder = QFileDialog.getExistingDirectory(self, "Select folder", self._folder)
@@ -128,7 +156,10 @@ class PerceptualDuplicatesPage(_Page):
             self.path_label.setText(folder)
 
     def _run(self):
-        """_run."""
+        """Run.
+
+        Manages run operations and coordinates related state changes for the component.
+        """
         self.run_btn.setEnabled(False)
         self.progress.setVisible(True)
         self.state.show_loading("Hashing photos (pHash)…")
@@ -139,11 +170,23 @@ class PerceptualDuplicatesPage(_Page):
         self.win.run_worker(w, self._on_done, self._fail, on_progress=self._on_progress)
 
     def _on_progress(self, msg: str):
-        """_on_progress."""
+        """_on_progress.
+
+        Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
+
+        Args:
+            msg (str): Informational or progress status message.
+        """
         self.status.setText(msg)
 
     def _on_done(self, groups: dict):
-        """_on_done."""
+        """_on_done.
+
+        Receives the completed data from the  background worker, populates the view with results, and restores button states.
+
+        Args:
+            groups (dict): The groups parameter.
+        """
         self._worker = None
         self.progress.setVisible(False)
         self.run_btn.setEnabled(True)
@@ -176,7 +219,13 @@ class PerceptualDuplicatesPage(_Page):
         self.win.statusBar().showMessage(f"{len(groups)} visual-duplicate groups", 5000)
 
     def _fail(self, msg):
-        """_fail."""
+        """Handle an operation failure and notify the user.
+
+        Captures error details, displays an informative failure state in the UI, resets progress indicators, and re-enables interactive controls.
+
+        Args:
+            msg: Informational or progress status message.
+        """
         self._worker = None
         self.progress.setVisible(False)
         self.run_btn.setEnabled(True)

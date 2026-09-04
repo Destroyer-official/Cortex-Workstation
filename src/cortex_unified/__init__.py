@@ -80,6 +80,11 @@ def __getattr__(name: str) -> Any:
 
 
 def __dir__() -> list[str]:
-    """__dir__."""
+    """Dir.
+
+    Manages dir operations and coordinates related state changes for the component.
+
+    Returns:
+        list[str]: List of processed items or identifiers.
+    """
     return sorted(__all__)
-    """__dir__."""

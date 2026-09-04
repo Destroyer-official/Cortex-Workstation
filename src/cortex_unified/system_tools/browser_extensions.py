@@ -25,7 +25,10 @@ _IS_WINDOWS = sys.platform == "win32"
 
 @dataclass(slots=True)
 class BrowserExtension:
-    """Browser Extension data container."""
+    """Browserextension.
+
+    Manages BrowserExtension operations and coordinates related state changes for the component.
+    """
     browser: str
     name: str
     version: str
@@ -34,14 +37,26 @@ class BrowserExtension:
 
     @property
     def broad_permissions(self) -> bool:
-        """True if the extension requests notably powerful permissions."""
+        """True if the extension requests notably powerful permissions.
+
+        Manages broad permissions operations and coordinates related state changes for the component.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         risky = {"<all_urls>", "tabs", "webRequest", "webRequestBlocking",
                  "history", "cookies", "downloads", "management",
                  "nativeMessaging", "debugger", "proxy", "*://*/*"}
         return any(p in risky for p in self.permissions)
 
     def to_dict(self) -> dict[str, Any]:
-        """To dict."""
+        """To dict.
+
+        Manages to dict operations and coordinates related state changes for the component.
+
+        Returns:
+            dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         return {
             "browser": self.browser,
             "name": self.name,
@@ -53,7 +68,10 @@ class BrowserExtension:
 
 
 class BrowserExtensionAuditor:
-    """Read-only inventory of installed browser extensions."""
+    """Browserextensionauditor.
+
+    Manages BrowserExtensionAuditor operations and coordinates related state changes for the component.
+    """
 
     # Chromium user-data roots, relative to LOCALAPPDATA on Windows.
     _CHROMIUM = {
@@ -64,20 +82,36 @@ class BrowserExtensionAuditor:
     }
 
     def __init__(self, home: Path | None = None):
-        """Initialize Browser Extension Auditor."""
+        """Initialize Browser Extension Auditor.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            home (Path | None): The home parameter.
+        """
         self._home = home or Path.home()
 
     def _localappdata(self) -> Path:
-        """_localappdata."""
+        """Localappdata.
+
+        Manages localappdata operations and coordinates related state changes for the component.
+
+        Returns:
+            Path: Result of the operation.
+        """
         if _IS_WINDOWS:
             return Path(os.environ.get("LOCALAPPDATA", self._home / "AppData" / "Local"))
         # Reasonable fallbacks so the scanner still works cross-platform in tests.
         return self._home / ".config"
-        """_localappdata."""
-        """_localappdata."""
 
     def audit(self) -> list[BrowserExtension]:
-        """Audit."""
+        """Audit.
+
+        Manages audit operations and coordinates related state changes for the component.
+
+        Returns:
+            list[BrowserExtension]: List of processed items or identifiers.
+        """
         out: list[BrowserExtension] = []
         out.extend(self._scan_chromium())
         out.extend(self._scan_firefox())
@@ -86,7 +120,13 @@ class BrowserExtensionAuditor:
     # -- Chromium -----------------------------------------------------------
 
     def _scan_chromium(self) -> list[BrowserExtension]:
-        """_scan_chromium."""
+        """_scan_chromium.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+        Returns:
+            list[BrowserExtension]: List of processed items or identifiers.
+        """
         found: list[BrowserExtension] = []
         base = self._localappdata()
         for browser, parts in self._CHROMIUM.items():
@@ -100,11 +140,19 @@ class BrowserExtensionAuditor:
                     continue
                 found.extend(self._scan_chromium_ext_root(browser, ext_root))
         return found
-        """_scan_chromium."""
-        """_scan_chromium."""
 
     def _scan_chromium_ext_root(self, browser: str, ext_root: Path) -> list[BrowserExtension]:
-        """_scan_chromium_ext_root."""
+        """_scan_chromium_ext_root.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+        Args:
+            browser (str): The browser parameter.
+            ext_root (Path): The ext root parameter.
+
+        Returns:
+            list[BrowserExtension]: List of processed items or identifiers.
+        """
         found: list[BrowserExtension] = []
         try:
             ext_ids = list(ext_root.iterdir())
@@ -123,12 +171,21 @@ class BrowserExtensionAuditor:
                 continue
             found.append(self._from_chromium_manifest(browser, ext_dir.name, manifest))
         return found
-        """_scan_chromium_ext_root."""
-        """_scan_chromium_ext_root."""
 
     @staticmethod
     def _from_chromium_manifest(browser: str, ext_id: str, manifest: dict) -> BrowserExtension:
-        """_from_chromium_manifest."""
+        """_from_chromium_manifest.
+
+        Manages from chromium manifest operations and coordinates related state changes for the component.
+
+        Args:
+            browser (str): The browser parameter.
+            ext_id (str): The ext id parameter.
+            manifest (dict): The manifest parameter.
+
+        Returns:
+            BrowserExtension: Result of the operation.
+        """
         name = str(manifest.get("name", ext_id))
         perms = [p for p in manifest.get("permissions", []) if isinstance(p, str)]
         host_perms = [p for p in manifest.get("host_permissions", []) if isinstance(p, str)]
@@ -139,22 +196,30 @@ class BrowserExtensionAuditor:
             ext_id=ext_id,
             permissions=perms + host_perms,
         )
-        """_from_chromium_manifest."""
-        """_from_chromium_manifest."""
 
     # -- Firefox ------------------------------------------------------------
 
     def _firefox_root(self) -> Path:
-        """_firefox_root."""
+        """_firefox_root.
+
+        Manages firefox root operations and coordinates related state changes for the component.
+
+        Returns:
+            Path: Result of the operation.
+        """
         if _IS_WINDOWS:
             return Path(os.environ.get("APPDATA", self._home / "AppData" / "Roaming")) \
                 / "Mozilla" / "Firefox" / "Profiles"
         return self._home / ".mozilla" / "firefox"
-        """_firefox_root."""
-        """_firefox_root."""
 
     def _scan_firefox(self) -> list[BrowserExtension]:
-        """_scan_firefox."""
+        """_scan_firefox.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+        Returns:
+            list[BrowserExtension]: List of processed items or identifiers.
+        """
         found: list[BrowserExtension] = []
         root = self._firefox_root()
         if not root.is_dir():
@@ -180,29 +245,41 @@ class BrowserExtensionAuditor:
                     if isinstance(addon.get("userPermissions"), dict) else [],
                 ))
         return found
-        """_scan_firefox."""
-        """_scan_firefox."""
 
     # -- helpers ------------------------------------------------------------
 
     @staticmethod
     def _safe_iterdir(path: Path) -> list[Path]:
-        """_safe_iterdir."""
+        """_safe_iterdir.
+
+        Manages safe iterdir operations and coordinates related state changes for the component.
+
+        Args:
+            path (Path): Filesystem path to the target file or directory.
+
+        Returns:
+            list[Path]: List of processed items or identifiers.
+        """
         try:
             return list(path.iterdir())
         except OSError:
             return []
-        """_safe_iterdir."""
-        """_safe_iterdir."""
 
     @staticmethod
     def _read_manifest(path: Path) -> dict | None:
-        """_read_manifest."""
+        """_read_manifest.
+
+        Manages read manifest operations and coordinates related state changes for the component.
+
+        Args:
+            path (Path): Filesystem path to the target file or directory.
+
+        Returns:
+            dict | None: Dictionary mapping identifiers to status or values.
+        """
         try:
             with open(path, "r", encoding="utf-8", errors="replace") as fh:
                 data = json.load(fh)
             return data if isinstance(data, dict) else None
         except (OSError, ValueError):
             return None
-        """_read_manifest."""
-        """_read_manifest."""

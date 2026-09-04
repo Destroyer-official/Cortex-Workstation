@@ -10,14 +10,23 @@ IS_WINDOWS = platform.system() == "Windows"
 
 
 class TestPendingParse:
-    """TestPendingParse."""
+    """Testpendingparse.
+
+    Manages TestPendingParse operations and coordinates related state changes for the component.
+    """
     def test_empty(self):
-        """test_empty."""
+        """test_empty.
+
+        Manages test empty operations and coordinates related state changes for the component.
+        """
         assert WindowsUpdate._parse_pending(None) == []
         assert WindowsUpdate._parse_pending("bad{") == []
 
     def test_single(self):
-        """test_single."""
+        """test_single.
+
+        Manages test single operations and coordinates related state changes for the component.
+        """
         payload = ('{"Title":"2026-07 Cumulative Update","KB":"5001234",'
                    '"Severity":"Critical","Size":123456789}')
         ups = WindowsUpdate._parse_pending(payload)
@@ -29,25 +38,40 @@ class TestPendingParse:
         assert u.size_bytes == 123456789
 
     def test_array(self):
-        """test_array."""
+        """test_array.
+
+        Manages test array operations and coordinates related state changes for the component.
+        """
         payload = ('[{"Title":"Update A","KB":"1","Size":10},'
                    '{"Title":"Update B","KB":"2","Size":20}]')
         assert len(WindowsUpdate._parse_pending(payload)) == 2
 
     def test_titleless_skipped(self):
-        """test_titleless_skipped."""
+        """test_titleless_skipped.
+
+        Manages test titleless skipped operations and coordinates related state changes for the component.
+        """
         assert WindowsUpdate._parse_pending('{"Title":"","KB":"1"}') == []
 
     def test_no_kb(self):
-        """test_no_kb."""
+        """test_no_kb.
+
+        Manages test no kb operations and coordinates related state changes for the component.
+        """
         u = WindowsUpdate._parse_pending('{"Title":"Defender def update","Size":0}')[0]
         assert u.kb == ""
 
 
 class TestHistoryParse:
-    """TestHistoryParse."""
+    """Testhistoryparse.
+
+    Manages TestHistoryParse operations and coordinates related state changes for the component.
+    """
     def test_success_and_fail(self):
-        """test_success_and_fail."""
+        """Handle an operation failure and notify the user.
+
+        Captures error details, displays an informative failure state in the UI, resets progress indicators, and re-enables interactive controls.
+        """
         payload = ('[{"Title":"KB1","Date":"2026-07-01T10:00:00","Result":2},'
                    '{"Title":"KB2","Date":"2026-06-01T10:00:00","Result":4}]')
         rows = WindowsUpdate._parse_history(payload)
@@ -56,34 +80,55 @@ class TestHistoryParse:
         assert rows[1]["result"] == "Failed" and rows[1]["succeeded"] is False
 
     def test_date_formatted(self):
-        """test_date_formatted."""
+        """test_date_formatted.
+
+        Converts raw numeric values into formatted, localized, and human-readable string representations.
+        """
         rows = WindowsUpdate._parse_history('{"Title":"X","Date":"2026-07-01T10:00:00","Result":2}')
         assert rows[0]["date"] == "2026-07-01 10:00:00"
 
     def test_empty(self):
-        """test_empty."""
+        """test_empty.
+
+        Manages test empty operations and coordinates related state changes for the component.
+        """
         assert WindowsUpdate._parse_history(None) == []
         assert WindowsUpdate._parse_history("") == []
 
 
 class TestGating:
-    """TestGating."""
+    """Testgating.
+
+    Manages TestGating operations and coordinates related state changes for the component.
+    """
     def test_is_supported(self):
-        """test_is_supported."""
+        """test_is_supported.
+
+        Manages test is supported operations and coordinates related state changes for the component.
+        """
         assert WindowsUpdate.is_supported() == IS_WINDOWS
 
     def test_last_activity_shape(self):
-        """test_last_activity_shape."""
+        """test_last_activity_shape.
+
+        Manages test last activity shape operations and coordinates related state changes for the component.
+        """
         a = WindowsUpdate().last_activity()
         assert set(a) == {"last_check", "last_install"}
 
     def test_check_pending_returns_list(self):
         # Off-Windows returns []; on Windows it may query online but must be a list.
-        """test_check_pending_returns_list."""
+        """test_check_pending_returns_list.
+
+        Manages test check pending returns list operations and coordinates related state changes for the component.
+        """
         result = WindowsUpdate().check_pending() if not IS_WINDOWS else []
         assert isinstance(result, list)
 
     def test_to_dict(self):
-        """test_to_dict."""
+        """test_to_dict.
+
+        Manages test to dict operations and coordinates related state changes for the component.
+        """
         d = PendingUpdate("Title", "KB1", "Important", 100).to_dict()
         assert set(d) == {"title", "kb", "severity", "size_bytes"}

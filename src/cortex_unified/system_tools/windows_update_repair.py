@@ -93,7 +93,10 @@ from cortex_unified.system_tools.component_store_cleaner import ComponentStoreCl
 
 @dataclass(frozen=True, slots=True)
 class PhaseResult:
-    """Phase Result data container."""
+    """Phaseresult.
+
+    Manages PhaseResult operations and coordinates related state changes for the component.
+    """
     phase: str
     success: bool
     changes: List[str] = field(default_factory=list)
@@ -104,7 +107,10 @@ class PhaseResult:
 
 @dataclass(frozen=True, slots=True)
 class DiagnosticReport:
-    """Diagnostic Report data container."""
+    """Diagnosticreport.
+
+    Manages DiagnosticReport operations and coordinates related state changes for the component.
+    """
     timestamp: str
     os_version: str
     services: Dict[str, str]  # name -> status
@@ -116,14 +122,23 @@ class DiagnosticReport:
     issues: List[str]
 
     def to_json(self) -> str:
-        """To json."""
+        """To json.
+
+        Manages to json operations and coordinates related state changes for the component.
+
+        Returns:
+            str: Formatted string or path.
+        """
         import dataclasses
         return json.dumps(dataclasses.asdict(self), indent=2)
 
 
 @dataclass(frozen=True, slots=True)
 class RepairResult:
-    """Repair Result data container."""
+    """Repairresult.
+
+    Manages RepairResult operations and coordinates related state changes for the component.
+    """
     timestamp: str
     phases: List[PhaseResult]
     preflight: DiagnosticReport
@@ -131,7 +146,13 @@ class RepairResult:
     cancelled: bool = False
 
     def summary(self) -> str:
-        """Summary."""
+        """Summary.
+
+        Manages summary operations and coordinates related state changes for the component.
+
+        Returns:
+            str: Formatted string or path.
+        """
         ok = sum(1 for p in self.phases if p.success)
         total = len(self.phases)
         return f"Windows Update Repair: {ok}/{total} phases succeeded"
@@ -183,7 +204,10 @@ MICROSOFT_TELEMETRY_DOMAINS = [
 # ---------------------------------------------------------------------------
 
 class WindowsUpdateRepair:
-    """Comprehensive Windows Update component repair."""
+    """Windowsupdaterepair.
+
+    Manages WindowsUpdateRepair operations and coordinates related state changes for the component.
+    """
 
     def __init__(
         self,
@@ -192,7 +216,16 @@ class WindowsUpdateRepair:
         cancel_event: Optional[threading.Event] = None,
         dry_run: bool = False,
     ):
-        """Initialize Windows Update Repair."""
+        """Initialize Windows Update Repair.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            create_restore_point (bool): The create restore point parameter.
+            progress_callback (Optional[Callable[[str], None]]): The progress callback parameter.
+            cancel_event (Optional[threading.Event]): Threading event or callable to check for cancellation.
+            dry_run (bool): The dry run parameter.
+        """
         self.create_restore_point = create_restore_point
         self.progress = progress_callback or (lambda _: None)
         self.cancel_event = cancel_event or threading.Event()
@@ -209,7 +242,18 @@ class WindowsUpdateRepair:
     # -- helpers
 
     def _run(self, cmd: List[str], timeout: int = 120, shell: bool = False) -> Tuple[int, str, str]:
-        """_run."""
+        """Run.
+
+        Manages run operations and coordinates related state changes for the component.
+
+        Args:
+            cmd (List[str]): The cmd parameter.
+            timeout (int): The timeout parameter.
+            shell (bool): The shell parameter.
+
+        Returns:
+            Tuple[int, str, str]: Formatted string or path.
+        """
         if self.cancel_event.is_set():
             raise RuntimeError("Cancelled")
         if self.dry_run:
@@ -225,34 +269,64 @@ class WindowsUpdateRepair:
             return -1, "", f"Timeout after {timeout}s"
         except Exception as exc:
             return -1, "", str(exc)
-        """_run."""
-        """_run."""
 
     def _run_ps(self, script: str, timeout: int = 180) -> Tuple[int, str, str]:
-        """_run_ps."""
+        """_run_ps.
+
+        Manages run ps operations and coordinates related state changes for the component.
+
+        Args:
+            script (str): The script parameter.
+            timeout (int): The timeout parameter.
+
+        Returns:
+            Tuple[int, str, str]: Formatted string or path.
+        """
         return self._run(["powershell", "-NoProfile", "-Command", script], timeout=timeout)
-        """_run_ps."""
-        """_run_ps."""
 
     def _sc_query(self, name: str) -> str:
-        """_sc_query."""
+        """_sc_query.
+
+        Manages sc query operations and coordinates related state changes for the component.
+
+        Args:
+            name (str): The name parameter.
+
+        Returns:
+            str: Formatted string or path.
+        """
         rc, out, _ = self._run(["sc", "query", name])
         return out.strip() if rc == 0 else ""
-        """_sc_query."""
-        """_sc_query."""
 
     def _service_status(self, name: str) -> str:
-        """_service_status."""
+        """_service_status.
+
+        Manages service status operations and coordinates related state changes for the component.
+
+        Args:
+            name (str): The name parameter.
+
+        Returns:
+            str: Formatted string or path.
+        """
         out = self._sc_query(name)
         for line in out.splitlines():
             if "STATE" in line:
                 return line.split(":")[-1].strip().split()[0]
         return "UNKNOWN"
-        """_service_status."""
-        """_service_status."""
 
     def _stop_service(self, name: str, retries: int = 3) -> bool:
-        """_stop_service."""
+        """_stop_service.
+
+        Manages stop service operations and coordinates related state changes for the component.
+
+        Args:
+            name (str): The name parameter.
+            retries (int): The retries parameter.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         for _ in range(retries):
             rc, _, _ = self._run(["net", "stop", name])
             if rc == 0:
@@ -261,20 +335,31 @@ class WindowsUpdateRepair:
                     return True
             time.sleep(1)
         return False
-        """_stop_service."""
-        """_stop_service."""
 
     def _start_service(self, name: str) -> bool:
-        """_start_service."""
+        """_start_service.
+
+        Manages start service operations and coordinates related state changes for the component.
+
+        Args:
+            name (str): The name parameter.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         rc, _, _ = self._run(["net", "start", name])
         return rc == 0
-        """_start_service."""
-        """_start_service."""
 
     # -- preflight
 
     def preflight(self) -> DiagnosticReport:
-        """Run diagnostic pre-checks."""
+        """Preflight.
+
+        Manages preflight operations and coordinates related state changes for the component.
+
+        Returns:
+            DiagnosticReport: Result of the operation.
+        """
         self.progress("Running preflight diagnostics...")
         issues: List[str] = []
 
@@ -352,7 +437,13 @@ class WindowsUpdateRepair:
     # -- phase implementations
 
     def _phase_stop_services(self) -> PhaseResult:
-        """_phase_stop_services."""
+        """_phase_stop_services.
+
+        Manages phase stop services operations and coordinates related state changes for the component.
+
+        Returns:
+            PhaseResult: Result of the operation.
+        """
         t0 = time.time()
         changes = []
         for svc in WU_SERVICES:
@@ -364,11 +455,15 @@ class WindowsUpdateRepair:
                                        error=f"Failed to stop {svc}",
                                        duration_seconds=time.time()-t0)
         return PhaseResult("stop_services", True, changes, duration_seconds=time.time()-t0)
-        """_phase_stop_services."""
-        """_phase_stop_services."""
 
     def _phase_clear_caches(self) -> PhaseResult:
-        """_phase_clear_caches."""
+        """_phase_clear_caches.
+
+        Manages phase clear caches operations and coordinates related state changes for the component.
+
+        Returns:
+            PhaseResult: Result of the operation.
+        """
         t0 = time.time()
         changes = []
         rollback = {}
@@ -404,11 +499,15 @@ class WindowsUpdateRepair:
                 shutil.move(str(do), str(bak))
             changes.append(f"Renamed DeliveryOptimization -> {bak.name}")
         return PhaseResult("clear_caches", True, changes, rollback, duration_seconds=time.time()-t0)
-        """_phase_clear_caches."""
-        """_phase_clear_caches."""
 
     def _phase_reset_registry_policies(self) -> PhaseResult:
-        """_phase_reset_registry_policies."""
+        """_phase_reset_registry_policies.
+
+        Manages phase reset registry policies operations and coordinates related state changes for the component.
+
+        Returns:
+            PhaseResult: Result of the operation.
+        """
         t0 = time.time()
         changes = []
         rollback = {}
@@ -431,11 +530,15 @@ class WindowsUpdateRepair:
                     pass
             changes.append(f"Reset policies at {path}")
         return PhaseResult("reset_registry_policies", True, changes, rollback, duration_seconds=time.time()-t0)
-        """_phase_reset_registry_policies."""
-        """_phase_reset_registry_policies."""
 
     def _phase_reset_security_descriptors(self) -> PhaseResult:
-        """_phase_reset_security_descriptors."""
+        """_phase_reset_security_descriptors.
+
+        Manages phase reset security descriptors operations and coordinates related state changes for the component.
+
+        Returns:
+            PhaseResult: Result of the operation.
+        """
         t0 = time.time()
         changes = []
         sd_bits = "D:(A;;CCLCSWRPWPDTLOCRRC;;;SY)(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;BA)(A;;CCLCSWLOCRRC;;;AU)(A;;CCLCSWRPWPDTLOCRRC;;;PU)"
@@ -446,11 +549,15 @@ class WindowsUpdateRepair:
         changes.append("Reset BITS security descriptor")
         changes.append("Reset wuauserv security descriptor")
         return PhaseResult("reset_security_descriptors", True, changes, duration_seconds=time.time()-t0)
-        """_phase_reset_security_descriptors."""
-        """_phase_reset_security_descriptors."""
 
     def _phase_reregister_dlls(self) -> PhaseResult:
-        """_phase_reregister_dlls."""
+        """_phase_reregister_dlls.
+
+        Manages phase reregister dlls operations and coordinates related state changes for the component.
+
+        Returns:
+            PhaseResult: Result of the operation.
+        """
         t0 = time.time()
         changes = []
         system32 = Path(os.environ.get("SYSTEMROOT", "C:\\Windows")) / "System32"
@@ -461,11 +568,15 @@ class WindowsUpdateRepair:
                     self._run(["regsvr32.exe", "/s", str(dll_path)])
                 changes.append(f"Re-registered {dll}")
         return PhaseResult("reregister_dlls", True, changes, duration_seconds=time.time()-t0)
-        """_phase_reregister_dlls."""
-        """_phase_reregister_dlls."""
 
     def _phase_reset_network(self) -> PhaseResult:
-        """_phase_reset_network."""
+        """_phase_reset_network.
+
+        Manages phase reset network operations and coordinates related state changes for the component.
+
+        Returns:
+            PhaseResult: Result of the operation.
+        """
         t0 = time.time()
         changes = []
         if not self.dry_run:
@@ -487,11 +598,15 @@ class WindowsUpdateRepair:
                     hosts.write_text("\n".join(filtered), encoding="utf-8")
                     changes.append(f"Cleaned {len(lines)-len(filtered)} telemetry entries from hosts file")
         return PhaseResult("reset_network", True, changes, duration_seconds=time.time()-t0)
-        """_phase_reset_network."""
-        """_phase_reset_network."""
 
     def _phase_dism_repair(self) -> PhaseResult:
-        """_phase_dism_repair."""
+        """_phase_dism_repair.
+
+        Manages phase dism repair operations and coordinates related state changes for the component.
+
+        Returns:
+            PhaseResult: Result of the operation.
+        """
         t0 = time.time()
         changes = []
         # ScanHealth
@@ -502,20 +617,28 @@ class WindowsUpdateRepair:
             rc, out, _ = self._run(["Dism.exe", "/Online", "/Cleanup-Image", "/RestoreHealth"], timeout=1800)
             changes.append(f"DISM RestoreHealth: {'OK' if rc==0 else 'Failed'}")
         return PhaseResult("dism_repair", rc==0, changes, duration_seconds=time.time()-t0)
-        """_phase_dism_repair."""
-        """_phase_dism_repair."""
 
     def _phase_sfc(self) -> PhaseResult:
-        """_phase_sfc."""
+        """_phase_sfc.
+
+        Manages phase sfc operations and coordinates related state changes for the component.
+
+        Returns:
+            PhaseResult: Result of the operation.
+        """
         t0 = time.time()
         rc, out, _ = self._run(["sfc.exe", "/scannow"], timeout=1800)
         changes = [out.strip()[:200]] if out else ["SFC completed"]
         return PhaseResult("sfc", rc==0, changes, duration_seconds=time.time()-t0)
-        """_phase_sfc."""
-        """_phase_sfc."""
 
     def _phase_component_store(self) -> PhaseResult:
-        """Analyze and optionally cleanup component store."""
+        """Analyze and optionally cleanup component store.
+
+        Manages phase component store operations and coordinates related state changes for the component.
+
+        Returns:
+            PhaseResult: Result of the operation.
+        """
         t0 = time.time()
         changes = []
         info = self._component_cleaner.analyze()
@@ -526,7 +649,13 @@ class WindowsUpdateRepair:
         return PhaseResult("component_store", True, changes, duration_seconds=time.time()-t0)
 
     def _phase_start_services(self) -> PhaseResult:
-        """_phase_start_services."""
+        """_phase_start_services.
+
+        Manages phase start services operations and coordinates related state changes for the component.
+
+        Returns:
+            PhaseResult: Result of the operation.
+        """
         t0 = time.time()
         changes = []
         for svc in WU_SERVICES:
@@ -538,11 +667,15 @@ class WindowsUpdateRepair:
         for svc in ["wuauserv", "bits", "DcomLaunch"]:
             self._run(["sc.exe", "config", svc, "start=", "auto"])
         return PhaseResult("start_services", True, changes, duration_seconds=time.time()-t0)
-        """_phase_start_services."""
-        """_phase_start_services."""
 
     def _phase_verify(self) -> PhaseResult:
-        """_phase_verify."""
+        """_phase_verify.
+
+        Manages phase verify operations and coordinates related state changes for the component.
+
+        Returns:
+            PhaseResult: Result of the operation.
+        """
         t0 = time.time()
         changes = []
         # Quick connectivity test
@@ -556,13 +689,20 @@ class WindowsUpdateRepair:
         self._run(["wuauclt.exe", "/detectnow"])
         changes.append("Triggered Windows Update detection")
         return PhaseResult("verify", True, changes, duration_seconds=time.time()-t0)
-        """_phase_verify."""
-        """_phase_verify."""
 
     # -- orchestration
 
     def repair_all(self, phases: Optional[List[str]] = None) -> RepairResult:
-        """Run all repair phases (or specified subset)."""
+        """Run all repair phases (or specified subset).
+
+        Manages repair all operations and coordinates related state changes for the component.
+
+        Args:
+            phases (Optional[List[str]]): The phases parameter.
+
+        Returns:
+            RepairResult: Result of the operation.
+        """
         all_phases = {
             "stop_services": self._phase_stop_services,
             "clear_caches": self._phase_clear_caches,
@@ -604,11 +744,26 @@ class WindowsUpdateRepair:
         )
 
     def repair_selective(self, phase_names: List[str]) -> RepairResult:
-        """Run only specified phases."""
+        """Run only specified phases.
+
+        Manages repair selective operations and coordinates related state changes for the component.
+
+        Args:
+            phase_names (List[str]): The phase names parameter.
+
+        Returns:
+            RepairResult: Result of the operation.
+        """
         return self.repair_all(phases=phase_names)
 
     def quick_reset(self) -> RepairResult:
-        """Minimal reset: services, caches, DLLs, network, restart."""
+        """Minimal reset: services, caches, DLLs, network, restart.
+
+        Manages quick reset operations and coordinates related state changes for the component.
+
+        Returns:
+            RepairResult: Result of the operation.
+        """
         return self.repair_all([
             "stop_services", "clear_caches", "reregister_dlls",
             "reset_network", "start_services", "verify"

@@ -28,6 +28,7 @@ use windows::Win32::Storage::FileSystem::{
 use crate::engine::job_manager::JobControl;
 use crate::models::JobEvent;
 
+/// Transfer mode for a blocking transfer job: copy keeps the source, move removes it after copy.
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub enum JobKind {
     Copy,
@@ -35,6 +36,7 @@ pub enum JobKind {
 }
 
 impl JobKind {
+    /// Returns the stable lowercase job-kind name (`"copy"` or `"move"`) used in events and the journal.
     pub fn as_str(self) -> &'static str {
         match self {
             JobKind::Copy => "copy",
@@ -881,6 +883,7 @@ fn transfer_one(
     }
 }
 
+/// Runs a copy/move transfer to completion on the calling blocking thread, emitting progress via `sink`.
 pub fn run_transfer_blocking(
     kind: JobKind,
     sources: Vec<String>,
@@ -1082,6 +1085,7 @@ fn count_paths(paths: &[String]) -> (u64, u64) {
     (files, bytes)
 }
 
+/// Runs a delete (permanent or to-trash) over `paths` on the calling blocking thread, emitting progress via `sink`.
 pub fn run_delete_blocking(
     paths: Vec<String>,
     to_trash: bool,

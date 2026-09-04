@@ -84,8 +84,6 @@ def human_bytes(n: float) -> str:
             return f"{n:.1f} {unit}"
         n /= 1024
     return f"{n:.1f} PB"
-    """Format a byte count as a human-readable string ('1.2 MB', '847 B'),
-    '' for negatives and PB overflow."""
 
 
 def fmt_eta(secs: float) -> str:
@@ -99,8 +97,6 @@ def fmt_eta(secs: float) -> str:
     if secs >= 60:
         return f"{secs // 60}m{secs % 60:02d}s"
     return f"{secs}s"
-    """Format seconds as a compact ETA ('2h05m', '3m12s', '45s'); '' for
-    non-positive or NaN inputs."""
 
 
 class TransferQueue(QObject):
@@ -132,15 +128,11 @@ class TransferQueue(QObject):
         self._poll.setInterval(500)
         self._poll.timeout.connect(self._refresh_running)
         self._poll.start()
-        """Store the engine (FFI handle + CLI path), the job/order/active
-        maps guarded by an RLock, and start the 500 ms progress re-emit
-        QTimer that keeps running jobs visible."""
 
     @property
     def max_concurrent(self) -> int:
         """Return the configured maximum number of concurrently running jobs."""
         return self._max_concurrent
-        """Return the configured maximum number of concurrently running jobs."""
 
     @max_concurrent.setter
     def max_concurrent(self, value: int) -> None:
@@ -148,8 +140,6 @@ class TransferQueue(QObject):
         start queued jobs freed up by the new limit."""
         self._max_concurrent = max(1, value)
         self._try_start_next()
-        """Clamp the concurrency limit to at least 1 and immediately try to
-        start queued jobs freed up by the new limit."""
 
     @property
     def is_busy(self) -> bool:
@@ -191,9 +181,6 @@ class TransferQueue(QObject):
         self.job_added.emit(job_id)
         self._try_start_next()
         return job_id
-        """Register a new job ('copy'/'move'/'delete') with a fresh job_N id,
-        insert it into priority order (bisect on descending priority), emit
-        job_added, and kick the scheduler; returns the job id."""
 
     def cancel(self, job_id: str) -> bool:
         """Cancel a queued or running job. Running jobs are cancelled via
@@ -225,9 +212,6 @@ class TransferQueue(QObject):
         self._try_start_next()
         self._maybe_queue_empty()
         return True
-        """Cancel a queued or running job. Running jobs are cancelled via
-        ffi.cancel_job or by killing the CLI QProcess. Emits job_cancelled,
-        schedules the next job, and emits queue_empty when drained."""
 
     def pause(self, job_id: str) -> bool:
         """Pause a RUNNING job via ffi.pause_job (state flips to PAUSED;
@@ -243,8 +227,6 @@ class TransferQueue(QObject):
                         log.exception("pause_job failed")
                 return True
         return False
-        """Pause a RUNNING job via ffi.pause_job (state flips to PAUSED;
-        only True when the job exists and was running)."""
 
     def resume(self, job_id: str) -> bool:
         """Resume a PAUSED job via ffi.resume_job and re-emit its last
@@ -268,18 +250,14 @@ class TransferQueue(QObject):
             f"{kind}: resumed {progress}%",
         )
         return True
-        """Resume a PAUSED job via ffi.resume_job and re-emit its last
-        progress as '<kind>: resumed N%'."""
 
     def get_job(self, job_id: str) -> TransferJob | None:
         """Return the TransferJob for job_id, or None if unknown."""
         return self._jobs.get(job_id)
-        """Return the TransferJob for job_id, or None if unknown."""
 
     def get_all_jobs(self) -> list[TransferJob]:
         """Return all known jobs in priority (_order) sequence."""
         return [self._jobs[jid] for jid in self._order if jid in self._jobs]
-        """Return all known jobs in priority (_order) sequence."""
 
     def clear_finished(self) -> int:
         """Drop COMPLETED/FAILED/CANCELLED jobs (cancelling stray FFI handles
@@ -308,9 +286,6 @@ class TransferQueue(QObject):
                 if jid in self._order:
                     self._order.remove(jid)
         return len(finished)
-        """Drop COMPLETED/FAILED/CANCELLED jobs (cancelling stray FFI handles
-        and killing/disposing leftover CLI processes); returns how many were
-        removed."""
 
     # --------------------------------------------------------------- engine
     def _try_start_next(self):
@@ -328,9 +303,6 @@ class TransferQueue(QObject):
                     self._start_job(job)
                     self.job_started.emit(jid)
                     break
-        """Scheduler: while below the concurrency limit, move the highest
-        priority QUEUED job to RUNNING, mark it active, launch it, and emit
-        job_started (one per call)."""
 
     def _start_job(self, job: TransferJob):
         """Dispatch the job to the best backend: FFI engine when available,
@@ -341,8 +313,6 @@ class TransferQueue(QObject):
             self._start_job_cli(job)
         else:
             self._start_job_python(job)
-        """Dispatch the job to the best backend: FFI engine when available,
-        otherwise the CLI subprocess, otherwise the pure-Python runner."""
 
     def _start_job_ffi(self, job: TransferJob):
         """Launch the job on the Rust engine via a QThreadPool worker:
@@ -371,17 +341,13 @@ class TransferQueue(QObject):
             )
             QTimer.singleShot(0, lambda j=job, p=job.progress, s=status:
                               self.job_progress.emit(j.job_id, p, s))
-            """Engine progress hook: update job percent/speed/ETA/current
-            file and re-emit job_progress on the GUI thread via a
-            QTimer.singleShot(0, ...) hop."""
 
         def on_started(handle: int) -> None:
             """Record the engine job handle for pause/resume/cancel."""
             job.handle = handle
-            """Record the engine job handle for pause/resume/cancel."""
 
         def _conflict_hook(info):
-            """Default conflict: ask user or skip."""
+            """Default conflict policy: always overwrite (return 1); no user prompt."""
             return 1  # overwrite for now; dialog pending
 
         hooks = {"progress": on_progress, "started": on_started,
@@ -400,9 +366,6 @@ class TransferQueue(QObject):
             else:
                 r = {"ok": False, "error": f"unknown kind {job.kind!r}"}
             return r
-            """Backend selector: run ffi.delete_paths for 'delete',
-            ffi.copy/ffi.move for transfers; unknown kinds yield an error
-            result dict."""
 
         class _Job(QRunnable):
             """Pool worker that executes job_fn and reports the result
@@ -416,16 +379,10 @@ class TransferQueue(QObject):
                     log.exception("queue job failed")
                     r = {"ok": False, "error": str(exc)}
                 self._finish(job, bool(r.get("ok")), r.get("error", ""))
-                """Run the FFI job, log exceptions, and finish the
-                TransferJob with the ok/error outcome."""
             """Pool worker that executes job_fn and reports the result
             through _finish (exceptions become a failure result)."""
 
         QThreadPool.globalInstance().start(_Job())
-        """Launch the job on the Rust engine via a QThreadPool worker:
-        wires progress/conflict/started hooks into the TransferJob record,
-        chooses ffi.delete_paths or ffi.copy/move by kind, and finishes
-        through _finish on the pool thread."""
 
     def _start_job_python(self, job: TransferJob):
         """Pure-Python asynchronous transfer runner with live progress and cancel support."""
@@ -443,8 +400,6 @@ class TransferQueue(QObject):
                 counter += 1
                 candidate = parent / f"{stem} - Copy ({counter}){ext}"
             return candidate
-            """Return target_path, or a non-colliding 'name - Copy [ (N)]'
-            sibling when a copy destination would overwrite itself."""
 
         def run_transfer():
             """Plan all (src, dst, size, is_dir) pairs — walking directory
@@ -564,9 +519,6 @@ class TransferQueue(QObject):
                                         func(path)
                                     except Exception:
                                         pass
-                                    """rmtree error handler: clear the
-                                    read-only/system file attributes and
-                                    retry the failing operation once."""
                                 shutil.rmtree(src_str, onerror=_onerror)
                                 if os.path.exists(src_str):
                                     time.sleep(0.1)
@@ -729,11 +681,6 @@ class TransferQueue(QObject):
                 self._finish(job, True, summary)
             else:
                 self._finish(job, True, "")
-            """Plan all (src, dst, size, is_dir) pairs — walking directory
-            trees, enforcing the circular-copy check, choosing copy-target
-            names — then execute with 256 KB chunks, pause/cancel polling,
-            10 Hz throttled progress, and Windows lock-aware error tagging;
-            finally finish via _finish with a success/skip summary."""
 
         class _PyJob(QRunnable):
             """Pool worker wrapper: names its thread after the job and
@@ -748,8 +695,6 @@ class TransferQueue(QObject):
                 except Exception as exc:
                     log.exception("Python transfer job failed: %s", exc)
                     self._finish(job, False, str(exc))
-                """Run run_transfer on a pool thread under a job-specific
-                thread name; exceptions report failure via _finish."""
             """Pool worker wrapper: names its thread after the job and
             funnels any exception into a failed _finish."""
 
@@ -771,9 +716,6 @@ class TransferQueue(QObject):
                 self._active.remove(job.job_id)
             self._pending_count = max(0, self._pending_count - 1)
         self._finish_emit(job, success)
-        """Mark a job COMPLETED/FAILED (skipping already-cancelled ones),
-        cap the short error at 500 chars while keeping the full text, drop
-        it from the active list, decrement pending, and emit completion."""
 
     def _finish_emit(self, job: TransferJob, success: bool):
         """Emit job_completed, then schedule the next queued job and emit
@@ -781,8 +723,6 @@ class TransferQueue(QObject):
         self.job_completed.emit(job.job_id, success, job.error)
         self._try_start_next()
         self._maybe_queue_empty()
-        """Emit job_completed, then schedule the next queued job and emit
-        queue_empty when nothing remains pending."""
 
     def _maybe_queue_empty(self):
         """Emit queue_empty when the pending count has dropped to zero."""
@@ -790,7 +730,6 @@ class TransferQueue(QObject):
             pending = self._pending_count > 0
         if not pending:
             self.queue_empty.emit()
-        """Emit queue_empty when the pending count has dropped to zero."""
 
     def _refresh_running(self):
         """Periodic re-emit so monitor speed/ETA/current-file stay live."""
@@ -830,9 +769,6 @@ class TransferQueue(QObject):
                     job.progress,
                     f"{job.kind}: {job.current_file or ''} {job.progress}%",
                 )
-            """Parse stderr chunks for '[#+-+] N%' progress and 'N files
-            (…) ->' counts, re-emitting job_progress with the current file
-            and percent."""
 
         def on_finished(code, _s):
             """CLI exit handler: skip when already cancelled; success
@@ -842,8 +778,6 @@ class TransferQueue(QObject):
                 return
             success = code == 0 and "completed" in out
             self._finish(job, success, out.strip() if not success else "")
-            """CLI exit handler: skip when already cancelled; success
-            requires exit code 0 and 'completed' in stdout."""
 
         proc.readyReadStandardError.connect(on_ready)
         proc.finished.connect(on_finished)
@@ -855,6 +789,3 @@ class TransferQueue(QObject):
 
         log.info("Starting transfer (cli): %s %s", job.kind, job.job_id)
         proc.start(self._cli, args)
-        """Run the job as a nexus-cli QProcess ('copy/move srcs --to dest'
-        or 'delete [--permanent] paths'); parse stderr progress bars and
-        file counts into job_progress, and finish on process exit."""

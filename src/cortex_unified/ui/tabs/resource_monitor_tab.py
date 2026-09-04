@@ -253,12 +253,17 @@ class ResourceMonitorTab(BaseTab):
         pid = int(pid_item.text())
         name = name_item.text()
         
+        from cortex_unified.core.proc import is_protected_process
         menu = QMenu()
-        kill_action = menu.addAction(f"💀 Force Kill: {name} (PID: {pid})")
+        if is_protected_process(pid) or is_protected_process(name):
+            kill_action = menu.addAction(f"🔒 Protected System Process: {name} (PID: {pid})")
+            kill_action.setEnabled(False)
+        else:
+            kill_action = menu.addAction(f"💀 Force Kill: {name} (PID: {pid})")
         
         action = menu.exec(self.resource_processes_table.viewport().mapToGlobal(position))
         
-        if action == kill_action:
+        if action == kill_action and kill_action.isEnabled():
             reply = QMessageBox.warning(
                 self, 'Confirm Force Kill',
                 f"Are you sure you want to force kill process '{name}' (PID: {pid})?\n\nWarning: Terminating system processes can cause instability or data loss.",
@@ -273,6 +278,15 @@ class ResourceMonitorTab(BaseTab):
 
         Refreshes the process table immediately after a successful kill.
         """
+        from cortex_unified.core.proc import is_protected_process
+        if is_protected_process(pid) or is_protected_process(name):
+            QMessageBox.critical(
+                self, "Action Denied",
+                f"Cannot terminate protected Windows OS component '{name}'.\n"
+                "Terminating this process would cause desktop blackouts or system instability."
+            )
+            return
+
         import psutil
         try:
             p = psutil.Process(pid)

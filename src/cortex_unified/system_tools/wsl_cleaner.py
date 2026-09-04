@@ -31,7 +31,10 @@ _NO_WINDOW = 0x08000000 if _IS_WINDOWS else 0
 
 @dataclass(slots=True)
 class WslDistro:
-    """One WSL distribution with its vhdx estimate."""
+    """Wsldistro.
+
+    Manages WslDistro operations and coordinates related state changes for the component.
+    """
     name: str
     state: str
     version: int
@@ -40,7 +43,13 @@ class WslDistro:
     vhdx_on_disk_bytes: int
 
     def to_dict(self) -> dict[str, Any]:
-        """To dict."""
+        """To dict.
+
+        Manages to dict operations and coordinates related state changes for the component.
+
+        Returns:
+            dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         return {
             "name": self.name,
             "state": self.state,
@@ -54,19 +63,35 @@ class WslDistro:
 
 
 def _fmt_bytes(n: int) -> str:
-    """_fmt_bytes."""
+    """_fmt_bytes.
+
+    Converts raw numeric values into formatted, localized, and human-readable string representations.
+
+    Args:
+        n (int): The n parameter.
+
+    Returns:
+        str: Formatted string or path.
+    """
     size = float(n)
     for unit in ("B", "KB", "MB", "GB", "TB"):
         if size < 1024 or unit == "TB":
             return f"{size:.1f} {unit}"
         size /= 1024
     return f"{n} B"
-    """_fmt_bytes."""
-    """_fmt_bytes."""
 
 
 def _decode(raw: bytes | str | None) -> str:
-    """_decode."""
+    """Decode.
+
+    Manages decode operations and coordinates related state changes for the component.
+
+    Args:
+        raw (bytes | str | None): The raw parameter.
+
+    Returns:
+        str: Formatted string or path.
+    """
     if raw is None:
         return ""
     if isinstance(raw, str):
@@ -77,20 +102,33 @@ def _decode(raw: bytes | str | None) -> str:
         except UnicodeDecodeError:
             continue
     return raw.decode("utf-8", errors="replace")
-    """_decode."""
-    """_decode."""
 
 
 class WslCleaner:
-    """Discover and clean WSL distro disks (Windows-only)."""
+    """Wslcleaner.
+
+    Manages WslCleaner operations and coordinates related state changes for the component.
+    """
 
     @staticmethod
     def is_supported() -> bool:
-        """Is supported."""
+        """Is supported.
+
+        Manages is supported operations and coordinates related state changes for the component.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         return _IS_WINDOWS
 
     def is_wsl_available(self) -> bool:
-        """Is wsl available."""
+        """Is wsl available.
+
+        Manages is wsl available operations and coordinates related state changes for the component.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         if not _IS_WINDOWS:
             return False
         try:
@@ -109,7 +147,13 @@ class WslCleaner:
                 return False
 
     def list_distros(self) -> list[WslDistro]:
-        """Enumerate distros via ``wsl --list --verbose`` + vhdx size probe."""
+        """Enumerate distros via ``wsl --list --verbose`` + vhdx size probe.
+
+        Manages list distros operations and coordinates related state changes for the component.
+
+        Returns:
+            list[WslDistro]: List of processed items or identifiers.
+        """
         if not _IS_WINDOWS:
             return []
         distros: list[WslDistro] = []
@@ -202,7 +246,16 @@ class WslCleaner:
         return distros
 
     def shutdown(self, timeout: int = 120) -> tuple[bool, str]:
-        """Run ``wsl --shutdown`` so vhdx files can be detached for compaction."""
+        """Shutdown.
+
+        Manages shutdown operations and coordinates related state changes for the component.
+
+        Args:
+            timeout (int): The timeout parameter.
+
+        Returns:
+            tuple[bool, str]: True if the operation succeeded, False otherwise.
+        """
         if not _IS_WINDOWS:
             return False, "Windows-only feature."
         try:
@@ -219,7 +272,18 @@ class WslCleaner:
 
     def compact_vhdx(self, vhdx_path: Path, timeout: int = 3600,
                      cancel_event=None) -> dict[str, Any]:
-        """Compact a single vhdx via VhdxManager.diskpart path (read-only attach)."""
+        """Compact a single vhdx via VhdxManager.diskpart path (read-only attach).
+
+        Manages compact vhdx operations and coordinates related state changes for the component.
+
+        Args:
+            vhdx_path (Path): Filesystem path to the target file or directory.
+            timeout (int): The timeout parameter.
+            cancel_event: Threading event or callable to check for cancellation.
+
+        Returns:
+            dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         from cortex_unified.system_tools.vhdx_manager import VhdxManager, VirtualDisk, DiskKind
         mgr = VhdxManager()
         # Find existing VirtualDisk for label/path if possible; else synthesize
@@ -243,30 +307,52 @@ class WslCleaner:
         }
 
     def get_total_vhdx_size(self) -> tuple[int, int]:
-        """Total (logical, on-disk) bytes across all distro vhdx files."""
+        """Total (logical, on-disk) bytes across all distro vhdx files.
+
+        Manages get total vhdx size operations and coordinates related state changes for the component.
+
+        Returns:
+            tuple[int, int]: Result of the operation.
+        """
         distros = self.list_distros()
         return sum(d.vhdx_bytes for d in distros), sum(d.vhdx_on_disk_bytes for d in distros)
 
     @staticmethod
     def _reg_str(key, name: str) -> str:
-        """_reg_str."""
+        """_reg_str.
+
+        Manages reg str operations and coordinates related state changes for the component.
+
+        Args:
+            key: The key parameter.
+            name (str): The name parameter.
+
+        Returns:
+            str: Formatted string or path.
+        """
         try:
             import winreg
             value, _ = winreg.QueryValueEx(key, name)
             return str(value)
         except (OSError, ImportError, ValueError):
             return ""
-        """_reg_str."""
-        """_reg_str."""
 
     @staticmethod
     def _reg_int(key, name: str) -> int:
-        """_reg_int."""
+        """_reg_int.
+
+        Manages reg int operations and coordinates related state changes for the component.
+
+        Args:
+            key: The key parameter.
+            name (str): The name parameter.
+
+        Returns:
+            int: Result of the operation.
+        """
         try:
             import winreg
             value, _ = winreg.QueryValueEx(key, name)
             return int(value)
         except (OSError, ImportError, ValueError, TypeError):
             return 0
-        """_reg_int."""
-        """_reg_int."""

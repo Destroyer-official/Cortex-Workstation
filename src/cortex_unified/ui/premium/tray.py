@@ -112,7 +112,14 @@ class PremiumTray(QObject):
     """
 
     def __init__(self, window, settings):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            window: Parent window or shell controller instance.
+            settings: The settings parameter.
+        """
         super().__init__(window)
         self._window = window
         self._settings = settings
@@ -151,7 +158,13 @@ class PremiumTray(QObject):
 
     @staticmethod
     def _tray_supported() -> bool:
-        """_tray_supported."""
+        """_tray_supported.
+
+        Manages tray supported operations and coordinates related state changes for the component.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         try:
             return bool(QSystemTrayIcon.isSystemTrayAvailable())
         except Exception:  # noqa: BLE001
@@ -159,13 +172,25 @@ class PremiumTray(QObject):
 
     @property
     def available(self) -> bool:
-        """True when a tray icon is actually installed and usable."""
+        """Available.
+
+        Manages available operations and coordinates related state changes for the component.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         return self._tray is not None
 
     # -- menu / activation --------------------------------------------------
 
     def _build_menu(self) -> QMenu:
-        """_build_menu."""
+        """_build_menu.
+
+        Manages build menu operations and coordinates related state changes for the component.
+
+        Returns:
+            QMenu: Result of the operation.
+        """
         menu = QMenu()
         open_act = QAction("Open Cortex Cleaner", menu)
         open_act.triggered.connect(self._restore_window)
@@ -182,7 +207,13 @@ class PremiumTray(QObject):
         return menu
 
     def _on_activated(self, reason) -> None:
-        """_on_activated."""
+        """_on_activated.
+
+        Manages on activated operations and coordinates related state changes for the component.
+
+        Args:
+            reason: The reason parameter.
+        """
         # A left click / double click on the icon restores the window; the
         # context menu (right click) is handled by Qt itself.
         try:
@@ -195,7 +226,10 @@ class PremiumTray(QObject):
             self._restore_window()
 
     def _restore_window(self) -> None:
-        """_restore_window."""
+        """_restore_window.
+
+        Manages restore window operations and coordinates related state changes for the component.
+        """
         w = self._window
         try:
             if w.isMinimized():
@@ -208,7 +242,10 @@ class PremiumTray(QObject):
             _LOG.debug("could not restore window from tray", exc_info=True)
 
     def _run_health_check(self) -> None:
-        """_run_health_check."""
+        """_run_health_check.
+
+        Manages run health check operations and coordinates related state changes for the component.
+        """
         self._restore_window()
         try:
             self._window._select("health")
@@ -222,7 +259,10 @@ class PremiumTray(QObject):
             _LOG.debug("could not start health check from tray", exc_info=True)
 
     def _quit_app(self) -> None:
-        """_quit_app."""
+        """_quit_app.
+
+        Manages quit app operations and coordinates related state changes for the component.
+        """
         # Mark a real quit so the window's close-to-tray guard steps aside, then
         # close normally (runs the staged worker shutdown).
         try:
@@ -237,7 +277,10 @@ class PremiumTray(QObject):
     # -- resource monitor (GUI-thread QTimer) -------------------------------
 
     def _start_monitor(self) -> None:
-        """_start_monitor."""
+        """_start_monitor.
+
+        Manages start monitor operations and coordinates related state changes for the component.
+        """
         try:
             import psutil
             self._psutil = psutil
@@ -256,7 +299,10 @@ class PremiumTray(QObject):
         self._timer.start()
 
     def _sample(self) -> None:
-        """Sample CPU/RAM/disk (non-blocking) and raise cooled-down alerts."""
+        """Sample.
+
+        Manages sample operations and coordinates related state changes for the component.
+        """
         ps = self._psutil
         if ps is None or self._tray is None:
             return
@@ -286,14 +332,20 @@ class PremiumTray(QObject):
             self._last_disk_alert = now
 
     def _start_network_alert_monitor(self) -> None:
-        """Poll only the bounded outcome written by the fixed scheduled CLI."""
+        """Poll only the bounded outcome written by the fixed scheduled CLI.
+
+        Manages start network alert monitor operations and coordinates related state changes for the component.
+        """
         self._network_timer = QTimer(self)
         self._network_timer.setInterval(_SAMPLE_INTERVAL_MS)
         self._network_timer.timeout.connect(self._poll_network_outcome)
         self._network_timer.start()
 
     def _poll_network_outcome(self) -> None:
-        """_poll_network_outcome."""
+        """_poll_network_outcome.
+
+        Manages poll network outcome operations and coordinates related state changes for the component.
+        """
         path = (
             Path.home() / ".cortex_cleaner" / "netdata" /
             "last-scheduled-network-scan.json")
@@ -316,11 +368,26 @@ class PremiumTray(QObject):
     # -- notifications ------------------------------------------------------
 
     def _alert(self, title: str, message: str) -> None:
-        """_alert."""
+        """Alert.
+
+        Manages alert operations and coordinates related state changes for the component.
+
+        Args:
+            title (str): Display text string.
+            message (str): Informational or progress status message.
+        """
         self.show_message(title, message)
 
     def show_message(self, title: str, message: str, msecs: int = 6000) -> None:
-        """Show a tray balloon notification (best-effort, never raises)."""
+        """Show a tray balloon notification (best-effort, never raises).
+
+        Manages show message operations and coordinates related state changes for the component.
+
+        Args:
+            title (str): Display text string.
+            message (str): Informational or progress status message.
+            msecs (int): The msecs parameter.
+        """
         if self._tray is None:
             return
         try:
@@ -331,7 +398,13 @@ class PremiumTray(QObject):
             _LOG.debug("tray message failed", exc_info=True)
 
     def notify_network_changes(self, changes) -> None:
-        """Show cooled-down local alerts for evidence-backed scan changes."""
+        """Show cooled-down local alerts for evidence-backed scan changes.
+
+        Manages notify network changes operations and coordinates related state changes for the component.
+
+        Args:
+            changes: The changes parameter.
+        """
         if self._tray is None or changes is None:
             return
         events = []
@@ -379,7 +452,13 @@ class PremiumTray(QObject):
     # -- theme + lifecycle --------------------------------------------------
 
     def refresh_theme(self, palette: Palette) -> None:
-        """Re-render the tray glyph so it matches a newly-applied theme."""
+        """Re-render the tray glyph so it matches a newly-applied theme.
+
+        Manages refresh theme operations and coordinates related state changes for the component.
+
+        Args:
+            palette (Palette): The palette parameter.
+        """
         if self._tray is None:
             return
         try:
@@ -388,7 +467,10 @@ class PremiumTray(QObject):
             _LOG.debug("could not refresh tray icon", exc_info=True)
 
     def stop(self) -> None:
-        """Stop the monitor and remove the tray icon (idempotent)."""
+        """Stop active background operations.
+
+        Manages worker thread execution states, signaling termination flags or initializing scheduled execution timers.
+        """
         if self._timer is not None:
             try:
                 self._timer.stop()

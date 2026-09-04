@@ -37,7 +37,10 @@ _ROLLBACK_DAYS = 10
 
 
 class LeftoverRisk(str, enum.Enum):
-    """What you give up by removing a leftover."""
+    """Leftoverrisk.
+
+    Manages LeftoverRisk operations and coordinates related state changes for the component.
+    """
 
     SAFE = "safe"              # regenerable; nothing is lost
     LOSES_ROLLBACK = "rollback"  # you can no longer go back to the old build
@@ -46,7 +49,10 @@ class LeftoverRisk(str, enum.Enum):
 
 @dataclass(slots=True)
 class StoreAnalysis:
-    """Result of ``DISM /AnalyzeComponentStore`` - all figures from Windows."""
+    """Storeanalysis.
+
+    Manages StoreAnalysis operations and coordinates related state changes for the component.
+    """
 
     supported: bool = True
     ok: bool = False
@@ -63,7 +69,13 @@ class StoreAnalysis:
 
     @property
     def explorer_gap_note(self) -> str:
-        """Why Explorer's WinSxS figure exceeds the actual on-disk size."""
+        """Why Explorer's WinSxS figure exceeds the actual on-disk size.
+
+        Manages explorer gap note operations and coordinates related state changes for the component.
+
+        Returns:
+            str: Formatted string or path.
+        """
         if not (self.reported_size and self.actual_size):
             return ""
         if self.reported_size <= self.actual_size:
@@ -86,7 +98,13 @@ class StoreAnalysis:
         return max(0, self.backups_and_features + self.cache_and_temp)
 
     def to_dict(self) -> dict[str, Any]:
-        """To dict."""
+        """To dict.
+
+        Manages to dict operations and coordinates related state changes for the component.
+
+        Returns:
+            dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         return {
             "supported": self.supported,
             "ok": self.ok,
@@ -105,7 +123,10 @@ class StoreAnalysis:
 
 @dataclass(slots=True)
 class Leftover:
-    """One upgrade/servicing leftover on disk."""
+    """Leftover.
+
+    Manages Leftover operations and coordinates related state changes for the component.
+    """
 
     path: Path
     label: str
@@ -118,16 +139,34 @@ class Leftover:
 
     @property
     def removable_here(self) -> bool:
-        """True when Cortex may delete this itself."""
+        """True when Cortex may delete this itself.
+
+        Manages removable here operations and coordinates related state changes for the component.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         return self.risk is not LeftoverRisk.MANAGED
 
     @property
     def rollback_expired(self) -> bool:
-        """True once Windows' own rollback window has passed."""
+        """True once Windows' own rollback window has passed.
+
+        Manages rollback expired operations and coordinates related state changes for the component.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         return self.age_days is not None and self.age_days > _ROLLBACK_DAYS
 
     def to_dict(self) -> dict[str, Any]:
-        """To dict."""
+        """To dict.
+
+        Manages to dict operations and coordinates related state changes for the component.
+
+        Returns:
+            dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         return {
             "path": str(self.path),
             "label": self.label,
@@ -143,7 +182,10 @@ class Leftover:
 
 @dataclass(slots=True)
 class CleanupOutcome:
-    """Result of a component-store cleanup, with measured before/after."""
+    """Result of a component-store cleanup, with measured before/after.
+
+    Permanently purges or removes specified target items, reclaiming storage space and logging actions taken.
+    """
 
     success: bool
     reset_base: bool = False
@@ -155,11 +197,23 @@ class CleanupOutcome:
 
     @property
     def freed_bytes(self) -> int:
-        """Freed bytes."""
+        """Freed bytes.
+
+        Manages freed bytes operations and coordinates related state changes for the component.
+
+        Returns:
+            int: Result of the operation.
+        """
         return max(0, self.before_bytes - self.after_bytes)
 
     def to_dict(self) -> dict[str, Any]:
-        """To dict."""
+        """To dict.
+
+        Manages to dict operations and coordinates related state changes for the component.
+
+        Returns:
+            dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         return {
             "success": self.success,
             "reset_base": self.reset_base,
@@ -172,20 +226,38 @@ class CleanupOutcome:
 
 
 class ComponentStore:
-    """Analyze and clean the WinSxS component store; inventory leftovers."""
+    """Componentstore.
+
+    Manages ComponentStore operations and coordinates related state changes for the component.
+    """
 
     def __init__(self) -> None:
-        """Initialize Component Store."""
+        """Initialize Component Store.
+
+        Initializes the instance and configures internal state.
+        """
         self.logger = _LOG
 
     @staticmethod
     def is_supported() -> bool:
-        """Is supported."""
+        """Is supported.
+
+        Manages is supported operations and coordinates related state changes for the component.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         return _IS_WINDOWS
 
     @staticmethod
     def is_elevated() -> bool:
-        """True when running as Administrator (required for every cleanup)."""
+        """True when running as Administrator (required for every cleanup).
+
+        Manages is elevated operations and coordinates related state changes for the component.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         if not _IS_WINDOWS:
             return False
         try:
@@ -198,7 +270,17 @@ class ComponentStore:
 
     def analyze(self, timeout: int = 900,
                cancel_event: "threading.Event | None" = None) -> StoreAnalysis:
-        """Run ``DISM /AnalyzeComponentStore`` and parse Windows' own figures."""
+        """Analyze.
+
+        Manages analyze operations and coordinates related state changes for the component.
+
+        Args:
+            timeout (int): The timeout parameter.
+            cancel_event ('threading.Event | None'): Threading event or callable to check for cancellation.
+
+        Returns:
+            StoreAnalysis: Result of the operation.
+        """
         if not _IS_WINDOWS:
             return StoreAnalysis(supported=False, message="Windows-only feature.")
 
@@ -226,7 +308,16 @@ class ComponentStore:
 
         def _bytes_after(label: str) -> int:
             # e.g. "Actual Size of Component Store : 7.32 GB"
-            """_bytes_after."""
+            """_bytes_after.
+
+            Manages bytes after operations and coordinates related state changes for the component.
+
+            Args:
+                label (str): Display text string.
+
+            Returns:
+                int: Result of the operation.
+            """
             m = re.search(
                 rf"{label}\s*:\s*([\d.,]+)\s*(bytes|kb|mb|gb|tb)", low)
             if not m:
@@ -239,8 +330,6 @@ class ComponentStore:
             factor = {"bytes": 1, "kb": 1024, "mb": 1024 ** 2,
                       "gb": 1024 ** 3, "tb": 1024 ** 4}[unit]
             return int(value * factor)
-            """_bytes_after."""
-            """_bytes_after."""
 
         res.reported_size = _bytes_after(r"windows explorer reported size of component store")
         res.actual_size = _bytes_after(r"actual size of component store")
@@ -600,7 +689,18 @@ class ComponentStore:
 
     def _run_dism(self, args: list[str], timeout: int,
                  cancel_event: "threading.Event | None" = None) -> str | None:
-        """_run_dism."""
+        """_run_dism.
+
+        Manages run dism operations and coordinates related state changes for the component.
+
+        Args:
+            args (list[str]): The args parameter.
+            timeout (int): The timeout parameter.
+            cancel_event ('threading.Event | None'): Threading event or callable to check for cancellation.
+
+        Returns:
+            str | None: Formatted string or path.
+        """
         try:
             # DISM can run for 10-30 minutes; poll timeout/cancel_event instead
             # of blocking uninterruptibly, and kill the whole tree on either -
@@ -617,12 +717,19 @@ class ComponentStore:
             return None
         text = self._decode(proc.stdout) + self._decode(proc.stderr)
         return text or None
-        """_run_dism."""
-        """_run_dism."""
 
     @staticmethod
     def _decode(raw: bytes | str | None) -> str:
-        """Decode DISM output, which is UTF-16LE with NULs on many consoles."""
+        """Decode.
+
+        Manages decode operations and coordinates related state changes for the component.
+
+        Args:
+            raw (bytes | str | None): The raw parameter.
+
+        Returns:
+            str: Formatted string or path.
+        """
         if raw is None:
             return ""
         if isinstance(raw, str):
@@ -636,7 +743,16 @@ class ComponentStore:
 
     @staticmethod
     def _dir_size(path: Path) -> int:
-        """Sum a directory tree, skipping what we cannot read (never raises)."""
+        """Sum a directory tree, skipping what we cannot read (never raises).
+
+        Manages dir size operations and coordinates related state changes for the component.
+
+        Args:
+            path (Path): Filesystem path to the target file or directory.
+
+        Returns:
+            int: Result of the operation.
+        """
         total = 0
         stack = [str(path)]
         while stack:
@@ -657,10 +773,17 @@ class ComponentStore:
 
     @staticmethod
     def _age_days(path: Path) -> float | None:
-        """_age_days."""
+        """_age_days.
+
+        Manages age days operations and coordinates related state changes for the component.
+
+        Args:
+            path (Path): Filesystem path to the target file or directory.
+
+        Returns:
+            float | None: Result of the operation.
+        """
         try:
             return max(0.0, (time.time() - path.stat().st_mtime) / 86400.0)
         except OSError:
             return None
-        """_age_days."""
-        """_age_days."""

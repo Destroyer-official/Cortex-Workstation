@@ -37,7 +37,10 @@ from cortex_unified.system_tools.secure_shredder import (
 
 
 class _ShredWorker(QObject):
-    """Background worker that shreds a list of files."""
+    """Shredworker.
+
+    Manages ShredWorker operations and coordinates related state changes for the component.
+    """
 
     finished = Signal(list)
     progress = Signal(str)
@@ -49,7 +52,15 @@ class _ShredWorker(QObject):
         standard: ShredStandard,
         verify: bool,
     ):
-        """Initialize worker."""
+        """Initialize worker.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            file_paths (list[str]): Filesystem path to the target file or directory.
+            standard (ShredStandard): The standard parameter.
+            verify (bool): The verify parameter.
+        """
         super().__init__()
         self._file_paths = file_paths
         self._standard = standard
@@ -57,11 +68,17 @@ class _ShredWorker(QObject):
         self._cancel = threading.Event()
 
     def cancel(self):
-        """cancel."""
+        """cancel.
+
+        Sets the internal cancellation event to cooperatively stop worker execution at the next safe boundary.
+        """
         self._cancel.set()
 
     def run(self):
-        """run."""
+        """run.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         try:
             engine = SecureShredder(
                 progress_callback=lambda msg, *_: self.progress.emit(str(msg)),
@@ -115,10 +132,19 @@ _STORAGE_LABELS: dict[StorageType, str] = {
 
 
 class SecureShredderPage(_Page):
-    """Production-grade secure file shredder with multi-standard support."""
+    """Secureshredderpage.
+
+    Manages SecureShredderPage operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, win):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win: Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(
             title_block(
@@ -260,7 +286,10 @@ class SecureShredderPage(_Page):
     # ── File selection ────────────────────────────────────────────────────────
 
     def _add_files(self):
-        """_add_files."""
+        """_add_files.
+
+        Manages add files operations and coordinates related state changes for the component.
+        """
         paths, _ = QFileDialog.getOpenFileNames(
             self,
             "Select files to shred",
@@ -271,7 +300,10 @@ class SecureShredderPage(_Page):
             self._update_file_count()
 
     def _add_folder(self):
-        """_add_folder."""
+        """_add_folder.
+
+        Manages add folder operations and coordinates related state changes for the component.
+        """
         folder = QFileDialog.getExistingDirectory(
             self,
             "Select folder to shred",
@@ -290,14 +322,20 @@ class SecureShredderPage(_Page):
             self.status.setText(f"No files found in {folder}")
 
     def _clear_list(self):
-        """_clear_list."""
+        """_clear_list.
+
+        Manages clear list operations and coordinates related state changes for the component.
+        """
         self._files.clear()
         self._update_file_count()
         self.tbl.setRowCount(0)
         self.state.clear()
 
     def _update_file_count(self):
-        """_update_file_count."""
+        """_update_file_count.
+
+        Manages update file count operations and coordinates related state changes for the component.
+        """
         n = len(self._files)
         if n == 0:
             self.file_count_label.setText("No files selected")
@@ -318,7 +356,10 @@ class SecureShredderPage(_Page):
     # ── Shred action ──────────────────────────────────────────────────────────
 
     def _confirm_shred(self):
-        """_confirm_shred."""
+        """_confirm_shred.
+
+        Manages confirm shred operations and coordinates related state changes for the component.
+        """
         if not self._files:
             return
 
@@ -348,7 +389,14 @@ class SecureShredderPage(_Page):
         self._run_shred(standard, verify)
 
     def _run_shred(self, standard: ShredStandard, verify: bool):
-        """_run_shred."""
+        """_run_shred.
+
+        Manages run shred operations and coordinates related state changes for the component.
+
+        Args:
+            standard (ShredStandard): The standard parameter.
+            verify (bool): The verify parameter.
+        """
         self.shred_btn.setEnabled(False)
         self.add_files_btn.setEnabled(False)
         self.add_folder_btn.setEnabled(False)
@@ -364,11 +412,23 @@ class SecureShredderPage(_Page):
         self.win.run_worker(w, self._on_done, self._fail, on_progress=self._on_progress)
 
     def _on_progress(self, msg: str):
-        """_on_progress."""
+        """_on_progress.
+
+        Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
+
+        Args:
+            msg (str): Informational or progress status message.
+        """
         self.status.setText(msg)
 
     def _on_done(self, results: list):
-        """_on_done."""
+        """_on_done.
+
+        Receives the completed data from the  background worker, populates the view with results, and restores button states.
+
+        Args:
+            results (list): Dictionary or data object holding operation results.
+        """
         self._worker = None
         self.progress.setVisible(False)
         self.shred_btn.setEnabled(True)
@@ -405,7 +465,13 @@ class SecureShredderPage(_Page):
         self.win.statusBar().showMessage(summary, 5000)
 
     def _fail(self, msg: str):
-        """_fail."""
+        """Handle an operation failure and notify the user.
+
+        Captures error details, displays an informative failure state in the UI, resets progress indicators, and re-enables interactive controls.
+
+        Args:
+            msg (str): Informational or progress status message.
+        """
         self._worker = None
         self.progress.setVisible(False)
         self.shred_btn.setEnabled(True)

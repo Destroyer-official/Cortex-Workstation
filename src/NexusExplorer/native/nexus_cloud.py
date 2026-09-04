@@ -168,14 +168,8 @@ def retry_on_rate_limit(max_retries: int = 4):
                         continue
                     raise
             raise last_exc or RuntimeError(f"Rate limit exceeded after {max_retries} retries")
-            """Call func, catching 429-shaped exceptions (code/status attr
-            or 'rate'/'throttl' text) and retrying with 2^attempt sleeps."""
         return wrapper
-        """Inner decorator capturing func."""
     return decorator
-    """Decorator factory: retry the wrapped call up to max_retries times
-    with exponential backoff (1s, 2s, 4s, ...) on HTTP 429 / rate-limit /
-    throttling errors; re-raises the last exception otherwise."""
 
 
 # ---------------------------------------------------------------------------
@@ -240,7 +234,6 @@ class CloudProvider(ABC):
     def provider_type(self) -> CloudProviderType:
         """Return the provider this implementation handles."""
         ...
-        """Return the provider this implementation handles."""
 
     @abstractmethod
     def authenticate(self) -> bool:
@@ -251,7 +244,6 @@ class CloudProvider(ABC):
     def is_authenticated(self) -> bool:
         """Return True when the provider holds valid credentials."""
         ...
-        """Return True when the provider holds valid credentials."""
 
     @abstractmethod
     def disconnect(self) -> None:
@@ -262,7 +254,6 @@ class CloudProvider(ABC):
     def get_account_info(self) -> CloudAccount | None:
         """Fetch account identity and quota; None when unavailable."""
         ...
-        """Fetch account identity and quota; None when unavailable."""
 
     @abstractmethod
     def list_files(self, path: str = "/", max_results: int = 1000) -> list[CloudFile]:
@@ -320,23 +311,17 @@ class OneDriveProvider(CloudProvider):
         if HAS_MSAL:
             cache_data = _secure_load("onedrive_cache")
             self._token_cache = msal.SerializableTokenCache(cache_data) if cache_data else msal.SerializableTokenCache()
-        """Set the app client id (arg or ONEDRIVE_CLIENT_ID env) and load
-        the persisted MSAL token cache from secure storage when msal is
-        installed."""
 
     @property
     def provider_type(self) -> CloudProviderType:
         """Return ONEDRIVE as this provider's type."""
         return CloudProviderType.ONEDRIVE
-        """Return ONEDRIVE as this provider's type."""
 
     def _persist_cache(self) -> None:
         """Serialize the MSAL token cache back to secure storage when it
         has changed."""
         if self._token_cache and self._token_cache.has_state_changed:
             _secure_store("onedrive_cache", self._token_cache.serialize())
-        """Serialize the MSAL token cache back to secure storage when it
-        has changed."""
 
     def _ensure_token(self) -> bool:
         """Attempt silent token acquisition. Returns True if a valid token is held."""
@@ -394,24 +379,18 @@ class OneDriveProvider(CloudProvider):
         except Exception as exc:
             log.warning("OneDrive interactive auth failed: %s", exc)
             return False
-        """Authenticate via MSAL: build the PublicClientApplication, try
-        silent token acquisition from the cache, then fall back to the
-        interactive browser flow (port 8080) — recording the account name
-        and persisting the token cache on success."""
 
     def is_authenticated(self) -> bool:
         """True when a token is held, else attempt a silent refresh."""
         if self._connected and self._token:
             return True
         return self._ensure_token()
-        """True when a token is held, else attempt a silent refresh."""
 
     def disconnect(self) -> None:
         """Drop the token/connection and delete the persisted MSAL cache."""
         self._token = ""
         self._connected = False
         _secure_delete("onedrive_cache")
-        """Drop the token/connection and delete the persisted MSAL cache."""
 
     def _graph_get(self, url: str) -> dict:
         """GET a Microsoft Graph URL with the bearer token (30 s timeout)
@@ -423,8 +402,6 @@ class OneDriveProvider(CloudProvider):
         req = urllib.request.Request(url, headers={"Authorization": f"Bearer {self._token}"})
         with urllib.request.urlopen(req, timeout=30) as resp:
             return json.loads(resp.read().decode("utf-8"))
-        """GET a Microsoft Graph URL with the bearer token (30 s timeout)
-        and return the parsed JSON body."""
 
     @retry_on_rate_limit()
     def get_account_info(self) -> CloudAccount | None:
@@ -444,7 +421,6 @@ class OneDriveProvider(CloudProvider):
         except Exception as exc:
             log.warning("OneDrive account info failed: %s", exc)
             return None
-        """Fetch /me/drive quota plus /me profile into a CloudAccount."""
 
     @retry_on_rate_limit()
     def list_files(self, path: str = "/", max_results: int = 1000) -> list[CloudFile]:
@@ -472,8 +448,6 @@ class OneDriveProvider(CloudProvider):
         except Exception as exc:
             log.warning("OneDrive list_files failed: %s", exc)
             return []
-        """List children of a OneDrive path via Graph, following
-        @odata.nextLink pages up to max_results (page size capped at 200)."""
 
     @retry_on_rate_limit()
     def search(self, query: str, max_results: int = 1000) -> list[CloudFile]:
@@ -499,8 +473,6 @@ class OneDriveProvider(CloudProvider):
         except Exception as exc:
             log.warning("OneDrive search failed: %s", exc)
             return []
-        """Search drive items by name via Graph search, deriving each
-        parent path from parentReference."""
 
     @retry_on_rate_limit()
     def download(self, cloud_id: str, local_path: str) -> bool:
@@ -526,8 +498,6 @@ class OneDriveProvider(CloudProvider):
         except Exception as exc:
             log.warning("OneDrive download failed: %s", exc)
             return False
-        """Stream an item's /content endpoint to local_path via a .tmp
-        file (64 KB chunks) and atomically os.replace it into place."""
 
     @retry_on_rate_limit()
     def upload(self, local_path: str, cloud_path: str) -> bool:
@@ -567,15 +537,11 @@ class OneDriveProvider(CloudProvider):
                         )
                         with urllib.request.urlopen(req, timeout=120):
                             pass
-                    """Repeatedly PUT the next 64 KB chunk of the open file
-                    to the Graph content URL until EOF."""
                 _upload_chunked()
             return True
         except Exception as exc:
             log.warning("OneDrive upload failed: %s", exc)
             return False
-        """PUT the local file to its Graph ':/content' URL in 64 KB
-        chunks; target parents resolve via the cloud path prefix."""
 
     @retry_on_rate_limit()
     def delete(self, cloud_id: str) -> bool:
@@ -596,7 +562,6 @@ class OneDriveProvider(CloudProvider):
         except Exception as exc:
             log.warning("OneDrive delete failed: %s", exc)
             return False
-        """DELETE the drive item by id via Graph."""
 
     @retry_on_rate_limit()
     def get_quota(self) -> tuple[int, int]:
@@ -608,8 +573,6 @@ class OneDriveProvider(CloudProvider):
             return (q.get("used", 0), q.get("total", 0))
         except Exception:
             return (0, 0)
-        """Return (used_bytes, total_bytes) from /me/drive quota; (0, 0)
-        on failure."""
 
 
 # ---------------------------------------------------------------------------
@@ -637,20 +600,16 @@ class GoogleDriveProvider(CloudProvider):
         self._creds: Credentials | None = None
         self._connected: bool = False
         self._account_email: str = ""
-        """Set the OAuth client-secrets file and the token storage
-        directory (defaults under ~/.nexus)."""
 
     @property
     def provider_type(self) -> CloudProviderType:
         """Return GOOGLE_DRIVE as this provider's type."""
         return CloudProviderType.GOOGLE_DRIVE
-        """Return GOOGLE_DRIVE as this provider's type."""
 
     def _token_path(self) -> Path:
         """Return the cached token file path, creating the token dir."""
         self._token_dir.mkdir(parents=True, exist_ok=True)
         return self._token_dir / "google_drive_token.json"
-        """Return the cached token file path, creating the token dir."""
 
     @retry_on_rate_limit()
     def authenticate(self) -> bool:
@@ -711,9 +670,6 @@ class GoogleDriveProvider(CloudProvider):
         except Exception as exc:
             log.warning("Google Drive service build failed: %s", exc)
             return False
-        """Authenticate: reuse the saved token, refresh it when expired,
-        or run the InstalledAppFlow OAuth loop; then build the Drive v3
-        service and capture the account email."""
 
     def is_authenticated(self) -> bool:
         """Verify the service exists and the token is still valid,
@@ -730,8 +686,6 @@ class GoogleDriveProvider(CloudProvider):
                         return False
             return True
         return False
-        """Verify the service exists and the token is still valid,
-        refreshing (and rebuilding the service) when expired."""
 
     def disconnect(self) -> None:
         """Drop the service/creds and delete the stored token file."""
@@ -741,7 +695,6 @@ class GoogleDriveProvider(CloudProvider):
         token_path = self._token_path()
         if token_path.exists():
             token_path.unlink(missing_ok=True)
-        """Drop the service/creds and delete the stored token file."""
 
     def get_account_info(self) -> CloudAccount | None:
         """Fetch user profile and storage quota via about().get."""
@@ -762,7 +715,6 @@ class GoogleDriveProvider(CloudProvider):
         except Exception as exc:
             log.warning("Google Drive account info failed: %s", exc)
             return None
-        """Fetch user profile and storage quota via about().get."""
 
     @retry_on_rate_limit()
     def list_files(self, path: str = "/", max_results: int = 1000) -> list[CloudFile]:
@@ -806,8 +758,6 @@ class GoogleDriveProvider(CloudProvider):
         except Exception as exc:
             log.warning("Google Drive list_files failed: %s", exc)
             return []
-        """List a Drive folder by files().list — root query by parent,
-        non-root by folder name (last path segment), trashed excluded."""
 
     @retry_on_rate_limit()
     def search(self, query: str, max_results: int = 1000) -> list[CloudFile]:
@@ -844,7 +794,6 @@ class GoogleDriveProvider(CloudProvider):
         except Exception as exc:
             log.warning("Google Drive search failed: %s", exc)
             return []
-        """Search Drive by 'name contains' query (trashed excluded)."""
 
     @retry_on_rate_limit()
     def download(self, cloud_id: str, local_path: str) -> bool:
@@ -869,8 +818,6 @@ class GoogleDriveProvider(CloudProvider):
         except Exception as exc:
             log.warning("Google Drive download failed: %s", exc)
             return False
-        """Download via MediaIoBaseDownload (64 KB chunks) into a .tmp
-        file, then atomically move to the destination."""
 
     @retry_on_rate_limit()
     def upload(self, local_path: str, cloud_path: str) -> bool:
@@ -893,8 +840,6 @@ class GoogleDriveProvider(CloudProvider):
         except Exception as exc:
             log.warning("Google Drive upload failed: %s", exc)
             return False
-        """Resumable MediaFileUpload to Drive with the cloud path's last
-        segment as the file name."""
 
     @retry_on_rate_limit()
     def delete(self, cloud_id: str) -> bool:
@@ -907,7 +852,6 @@ class GoogleDriveProvider(CloudProvider):
         except Exception as exc:
             log.warning("Google Drive delete failed: %s", exc)
             return False
-        """Delete a Drive file by id via files().delete."""
 
     @retry_on_rate_limit()
     def get_quota(self) -> tuple[int, int]:
@@ -921,8 +865,6 @@ class GoogleDriveProvider(CloudProvider):
             return (int(q.get("usage", 0)), int(q.get("limit", 0)))
         except Exception:
             return (0, 0)
-        """Return (used_bytes, total_bytes) from about().storageQuota;
-        (0, 0) on failure or when not connected."""
 
 
 # ---------------------------------------------------------------------------
@@ -938,14 +880,11 @@ class DropboxProvider(CloudProvider):
         self._access_token = access_token or _secure_load("dropbox_token")
         self._dbx: dropbox_sdk.Dropbox | None = None
         self._connected: bool = False
-        """Load the access token (arg or secure storage) and start
-        disconnected until authenticate() succeeds."""
 
     @property
     def provider_type(self) -> CloudProviderType:
         """Return DROPBOX as this provider's type."""
         return CloudProviderType.DROPBOX
-        """Return DROPBOX as this provider's type."""
 
     @retry_on_rate_limit()
     def authenticate(self) -> bool:
@@ -972,8 +911,6 @@ class DropboxProvider(CloudProvider):
             log.warning("Dropbox auth failed: %s", exc)
             self._connected = False
             return False
-        """Build a Dropbox client from the stored token, verify it via
-        users_get_current_account, and persist the token on success."""
 
     def is_authenticated(self) -> bool:
         """Probe the connection with users_get_current_account; a failure
@@ -986,8 +923,6 @@ class DropboxProvider(CloudProvider):
         except Exception:
             self._connected = False
             return False
-        """Probe the connection with users_get_current_account; a failure
-        marks the provider disconnected."""
 
     def disconnect(self) -> None:
         """Clear the token/client and delete the stored token."""
@@ -995,7 +930,6 @@ class DropboxProvider(CloudProvider):
         self._connected = False
         self._dbx = None
         _secure_delete("dropbox_token")
-        """Clear the token/client and delete the stored token."""
 
     @retry_on_rate_limit()
     def get_account_info(self) -> CloudAccount | None:
@@ -1021,8 +955,6 @@ class DropboxProvider(CloudProvider):
         except Exception as exc:
             log.warning("Dropbox account info failed: %s", exc)
             return None
-        """Fetch the current account plus space usage (individual
-        allocation) into a CloudAccount."""
 
     def _parse_dropbox_entry(self, entry: Any) -> CloudFile:
         """Convert a Dropbox file entry to a CloudFile."""
@@ -1057,8 +989,6 @@ class DropboxProvider(CloudProvider):
         except Exception as exc:
             log.warning("Dropbox list_files failed: %s", exc)
             return []
-        """List a Dropbox folder via files_list_folder, following the
-        cursor (files_list_folder_continue) up to max_results."""
 
     @retry_on_rate_limit()
     def search(self, query: str, max_results: int = 1000) -> list[CloudFile]:
@@ -1093,8 +1023,6 @@ class DropboxProvider(CloudProvider):
         except Exception as exc:
             log.warning("Dropbox search failed: %s", exc)
             return []
-        """Search via files_search_v2 (capped at 200), mapping file and
-        folder metadata matches to CloudFile."""
 
     @retry_on_rate_limit()
     def download(self, cloud_id: str, local_path: str) -> bool:
@@ -1114,8 +1042,6 @@ class DropboxProvider(CloudProvider):
         except Exception as exc:
             log.warning("Dropbox download failed: %s", exc)
             return False
-        """Download the file content into a .tmp file and atomically move
-        it into place."""
 
     @retry_on_rate_limit()
     def upload(self, local_path: str, cloud_path: str, mode: str = "overwrite") -> bool:
@@ -1159,8 +1085,6 @@ class DropboxProvider(CloudProvider):
         except Exception as exc:
             log.warning("Dropbox upload failed: %s", exc)
             return False
-        """Upload via files_upload (small files) or a chunked upload
-        session (64 KB pieces, append/finish) with overwrite/add mode."""
 
     @retry_on_rate_limit()
     def delete(self, cloud_id: str) -> bool:
@@ -1173,7 +1097,6 @@ class DropboxProvider(CloudProvider):
         except Exception as exc:
             log.warning("Dropbox delete failed: %s", exc)
             return False
-        """Delete a file/folder via files_delete_v2."""
 
     @retry_on_rate_limit()
     def get_quota(self) -> tuple[int, int]:
@@ -1190,8 +1113,6 @@ class DropboxProvider(CloudProvider):
             return (used, total)
         except Exception:
             return (0, 0)
-        """Return (used_bytes, total_bytes) from users_get_space_usage
-        (individual allocation); (0, 0) on failure."""
 
 
 class S3Provider(CloudProvider):
@@ -1204,14 +1125,11 @@ class S3Provider(CloudProvider):
         self._region = region or os.environ.get("AWS_REGION", "us-east-1")
         self._s3 = None
         self._authenticated = False
-        """Set the bucket (arg or AWS_S3_BUCKET env) and region (arg or
-        AWS_REGION env); the boto3 client is created at authenticate."""
 
     @property
     def provider_type(self) -> CloudProviderType:
         """Return S3 as this provider's type."""
         return CloudProviderType.S3
-        """Return S3 as this provider's type."""
 
     def authenticate(self) -> bool:
         """Create a boto3 S3 client (shared-credential chain) and verify
@@ -1227,38 +1145,29 @@ class S3Provider(CloudProvider):
             log.warning("S3 authentication failed: %s", exc)
             self._authenticated = False
             return False
-        """Create a boto3 S3 client (shared-credential chain) and verify
-        the configured bucket via head_bucket."""
 
     def is_authenticated(self) -> bool:
         """Return True when the client exists and auth succeeded."""
         return self._authenticated and self._s3 is not None
-        """Return True when the client exists and auth succeeded."""
 
     def disconnect(self) -> None:
         """Drop the client and clear the authenticated flag."""
         self._s3 = None
         self._authenticated = False
-        """Drop the client and clear the authenticated flag."""
 
     def get_account_info(self) -> CloudAccount | None:
         """Return a synthetic account descriptor for the bucket (S3 has
-        no email/quota model); note: field names below don't match the
-        current CloudAccount schema (space_used/space_total)."""
+        no email/quota model, so usage fields stay zero)."""
         if not self.is_authenticated():
             return None
         return CloudAccount(
             provider=CloudProviderType.S3,
-            account_id="AWS-S3",
-            display_name=f"Amazon S3 ({self._bucket_name or 'All Buckets'})",
             email="",
-            total_bytes=0,
-            used_bytes=0,
-            connected=True,
+            display_name=f"Amazon S3 ({self._bucket_name or 'All Buckets'})",
+            space_used=0,
+            space_total=0,
+            is_connected=True,
         )
-        """Return a synthetic account descriptor for the bucket (S3 has
-        no email/quota model); note: field names below don't match the
-        current CloudAccount schema (space_used/space_total)."""
 
     def list_files(self, path: str = "/", max_results: int = 1000) -> list[CloudFile]:
         """List objects under a key prefix via list_objects_v2 (paths
@@ -1286,8 +1195,6 @@ class S3Provider(CloudProvider):
         except Exception as exc:
             log.warning("S3 list_files failed: %s", exc)
             return []
-        """List objects under a key prefix via list_objects_v2 (paths
-        become '/<key>' and names the key's last segment)."""
 
     def search(self, query: str, max_results: int = 1000) -> list[CloudFile]:
         """Client-side substring search over the root listing (S3 has no
@@ -1295,8 +1202,6 @@ class S3Provider(CloudProvider):
         all_files = self.list_files("/", max_results=max_results)
         q = query.lower()
         return [f for f in all_files if q in f.name.lower()]
-        """Client-side substring search over the root listing (S3 has no
-        server-side name search)."""
 
     def download(self, cloud_id: str, local_path: str) -> bool:
         """Download an object (cloud_id = key) via download_file."""
@@ -1309,7 +1214,6 @@ class S3Provider(CloudProvider):
         except Exception as exc:
             log.warning("S3 download failed: %s", exc)
             return False
-        """Download an object (cloud_id = key) via download_file."""
 
     def upload(self, local_path: str, cloud_path: str) -> bool:
         """Upload a local file to the cloud_path key via upload_file."""
@@ -1322,7 +1226,6 @@ class S3Provider(CloudProvider):
         except Exception as exc:
             log.warning("S3 upload failed: %s", exc)
             return False
-        """Upload a local file to the cloud_path key via upload_file."""
 
     def delete(self, cloud_id: str) -> bool:
         """Delete an object (cloud_id = key) via delete_object."""
@@ -1334,12 +1237,10 @@ class S3Provider(CloudProvider):
         except Exception as exc:
             log.warning("S3 delete failed: %s", exc)
             return False
-        """Delete an object (cloud_id = key) via delete_object."""
 
     def get_quota(self) -> tuple[int, int]:
         """Return (0, 0) — S3 exposes no bucket quota."""
         return (0, 0)
-        """Return (0, 0) — S3 exposes no bucket quota."""
 
 
 # ---------------------------------------------------------------------------
@@ -1366,18 +1267,14 @@ class CloudManager(QObject):
         }
         self._cache_dir = Path.home() / ".nexus" / "cloud_cache"
         self._cache_dir.mkdir(parents=True, exist_ok=True)
-        """Instantiate all four providers (OneDrive, Google Drive,
-        Dropbox, S3) and prepare the ~/.nexus/cloud_cache directory."""
 
     def get_provider(self, provider_type: CloudProviderType) -> CloudProvider | None:
         """Return the provider instance for a type, or None."""
         return self._providers.get(provider_type)
-        """Return the provider instance for a type, or None."""
 
     def get_connected_providers(self) -> list[CloudProvider]:
         """Return only providers that currently report authenticated."""
         return [p for p in self._providers.values() if p.is_authenticated()]
-        """Return only providers that currently report authenticated."""
 
     def connect_provider(self, provider_type: CloudProviderType) -> bool:
         """Authenticate a provider and emit account_connected on
@@ -1389,8 +1286,6 @@ class CloudManager(QObject):
         if ok:
             self.account_connected.emit(provider_type.name)
         return ok
-        """Authenticate a provider and emit account_connected on
-        success."""
 
     def disconnect_provider(self, provider_type: CloudProviderType) -> None:
         """Disconnect a provider and emit account_disconnected."""
@@ -1398,7 +1293,6 @@ class CloudManager(QObject):
         if provider:
             provider.disconnect()
             self.account_disconnected.emit(provider_type.name)
-        """Disconnect a provider and emit account_disconnected."""
 
     def list_all_cloud_files(self, max_per_provider: int = 1000) -> list[CloudFile]:
         """List root files from every connected provider in parallel
@@ -1418,15 +1312,12 @@ class CloudManager(QObject):
             except Exception as exc:
                 log.warning("Failed to list files from %s: %s", provider.provider_type.name, exc)
                 return []
-            """List one provider's root, mapping exceptions to []."""
 
         with ThreadPoolExecutor(max_workers=min(len(connected), 4)) as executor:
             futures = {executor.submit(_fetch, p): p for p in connected}
             for future in as_completed(futures):
                 results.extend(future.result())
         return results
-        """List root files from every connected provider in parallel
-        (ThreadPoolExecutor, up to 4 workers) and merge the results."""
 
     def search_all(self, query: str, max_results: int = 1000) -> list[CloudFile]:
         """Run the name search sequentially across every connected
@@ -1439,5 +1330,3 @@ class CloudManager(QObject):
             except Exception as exc:
                 log.warning("Failed to search %s: %s", provider.provider_type.name, exc)
         return results
-        """Run the name search sequentially across every connected
-        provider, merging (not deduplicating) the results."""

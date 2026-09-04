@@ -18,45 +18,59 @@ except ImportError:
     HAS_PLOTLY = False
     # No-op stand-ins keep method bodies runnable without Plotly
     class go:
-        """go."""
+        """Go.
+
+        Manages go operations and coordinates related state changes for the component.
+        """
         class Figure:
-            """Figure."""
+            """Figure.
+
+            Manages Figure operations and coordinates related state changes for the component.
+            """
             def __init__(self, *args, **kwargs):
-                """__init__."""
+                """Initialize the instance and configure internal state.
+
+                Sets up sub-widgets, event signal connections, and default options.
+                """
                 pass
-                """__init__."""
-                """__init__."""
             def add_trace(self, *args, **kwargs):
-                """add_trace."""
+                """add_trace.
+
+                Manages add trace operations and coordinates related state changes for the component.
+                """
                 pass
-                """add_trace."""
-                """add_trace."""
             def update_layout(self, *args, **kwargs):
-                """update_layout."""
+                """update_layout.
+
+                Manages update layout operations and coordinates related state changes for the component.
+                """
                 pass
-                """update_layout."""
-            """Figure class."""
-        """go class."""
-        """go class."""
     class px:
-        """px."""
+        """Px.
+
+        Manages px operations and coordinates related state changes for the component.
+        """
         @staticmethod
         def sunburst(*args, **kwargs):
-            """sunburst."""
+            """Sunburst.
+
+            Manages sunburst operations and coordinates related state changes for the component.
+            """
             return go.Figure()
-            """sunburst."""
-        """px class."""
-        """px class."""
     def plot(*args, **kwargs):
-        """plot."""
+        """Plot.
+
+        Manages plot operations and coordinates related state changes for the component.
+        """
         pass
-        """plot."""
-        """plot."""
 import colorsys
 
 @dataclass
 class SunburstSegment:
-    """One ring slice: hierarchy identity plus precomputed polar extents."""
+    """Sunburstsegment.
+
+    Manages SunburstSegment operations and coordinates related state changes for the component.
+    """
     name: str
     size: int
     path: str
@@ -69,16 +83,28 @@ class SunburstSegment:
     file_type: Optional[str] = None
 
 class SunburstGenerator:
-    """Builds sunburst figures colored by file type, shaded by size share."""
+    """Sunburstgenerator.
+
+    Manages SunburstGenerator operations and coordinates related state changes for the component.
+    """
     
     def __init__(self, data: Any = None):
-        """Store data; ``segments`` stays empty on the Plotly path."""
+        """Store data; ``segments`` stays empty on the Plotly path.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            data (Any): The data parameter.
+        """
         self.data = data
         self.segments = []
         self._setup_color_scheme()
     
     def _setup_color_scheme(self):
-        """Palette per hierarchy depth plus per-extension overrides."""
+        """Palette per hierarchy depth plus per-extension overrides.
+
+        Manages setup color scheme operations and coordinates related state changes for the component.
+        """
         self.level_colors = [
             '#3498db',  # Level 0 - Blue
             '#2ecc71',  # Level 1 - Green  
@@ -109,7 +135,16 @@ class SunburstGenerator:
         }
     
     def _get_file_type_from_path(self, path: str) -> str:
-        """Extension tag for a path; 'directory'/'unknown' sentinels."""
+        """Extension tag for a path; 'directory'/'unknown' sentinels.
+
+        Manages get file type from path operations and coordinates related state changes for the component.
+
+        Args:
+            path (str): Filesystem path to the target file or directory.
+
+        Returns:
+            str: Formatted string or path.
+        """
         if os.path.isdir(path):
             return 'directory'
         ext = os.path.splitext(path)[1].lower()
@@ -158,7 +193,15 @@ class SunburstGenerator:
                 total_size = sum(child.get('size_bytes', 0) for child in tree_data['children'])
         
         def add_node(node_data: Dict, parent_id: str = "", level: int = 0):
-            """add_node."""
+            """add_node.
+
+            Manages add node operations and coordinates related state changes for the component.
+
+            Args:
+                node_data (Dict): The node data parameter.
+                parent_id (str): The parent id parameter.
+                level (int): The level parameter.
+            """
             if level >= max_depth:
                 return
             
@@ -190,8 +233,6 @@ class SunburstGenerator:
             for child in children:
                 if isinstance(child, dict):
                     add_node(child, node_id, level + 1)
-            """add_node."""
-            """add_node."""
         
         # Accepted shapes: rooted tree, mapping of trees, list of trees
         if isinstance(tree_data, dict):
@@ -347,7 +388,16 @@ class SunburstGenerator:
             raise RuntimeError(f"Failed to export sunburst as HTML: {str(e)}")
     
     def _format_bytes(self, bytes_count: int) -> str:
-        """Human-readable size using binary (1024-step) units."""
+        """Human-readable size using binary (1024-step) units.
+
+        Converts raw numeric values into formatted, localized, and human-readable string representations.
+
+        Args:
+            bytes_count (int): The bytes count parameter.
+
+        Returns:
+            str: Formatted string or path.
+        """
         if bytes_count == 0:
             return "0 B"
         

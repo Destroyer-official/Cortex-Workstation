@@ -37,7 +37,10 @@ def get_path_size_safe(path: Path) -> int:
         return 0
 
 class DeepCleaner:
-    """Finds temp files, caches, and orphaned app data across platforms."""
+    """Deepcleaner.
+
+    Manages DeepCleaner operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, config: Config = None):
         """
@@ -271,22 +274,33 @@ class DeepCleaner:
         return self.found_items
     
     def get_stats(self) -> dict:
-        """get_stats."""
+        """get_stats.
+
+        Manages get stats operations and coordinates related state changes for the component.
+
+        Returns:
+            dict: Dictionary mapping identifiers to status or values.
+        """
         total_size = sum(item["size"] for item in self.found_items)
         return {
             "items_found": len(self.found_items),
             "total_size_bytes": total_size,
             "total_size_human": self._format_bytes(total_size)
         }
-        """get_stats."""
-        """get_stats."""
     
     def _format_bytes(self, bytes_count: int) -> str:
-        """_format_bytes."""
+        """_format_bytes.
+
+        Converts raw numeric values into formatted, localized, and human-readable string representations.
+
+        Args:
+            bytes_count (int): The bytes count parameter.
+
+        Returns:
+            str: Formatted string or path.
+        """
         for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
             if bytes_count < 1024.0:
                 return f"{bytes_count:.1f} {unit}"
             bytes_count /= 1024.0
         return f"{bytes_count:.1f} PB"
-        """_format_bytes."""
-        """_format_bytes."""

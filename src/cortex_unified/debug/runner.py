@@ -34,62 +34,109 @@ USE_COLOR = sys.stdout.isatty() or os.environ.get("FORCE_COLOR") == "1"
 
 
 def _col(text: str, code: str) -> str:
-    """_col."""
+    """Col.
+
+    Manages col operations and coordinates related state changes for the component.
+
+    Args:
+        text (str): Display text string.
+        code (str): The code parameter.
+
+    Returns:
+        str: Formatted string or path.
+    """
     return f"\033[{code}m{text}\033[0m" if USE_COLOR else text
-    """_col."""
-    """_col."""
 
 
 def green(text: str) -> str:
-    """green."""
+    """Green.
+
+    Manages green operations and coordinates related state changes for the component.
+
+    Args:
+        text (str): Display text string.
+
+    Returns:
+        str: Formatted string or path.
+    """
     return _col(text, "32")
-    """green."""
-    """green."""
 
 
 def red(text: str) -> str:
-    """red."""
+    """Red.
+
+    Manages red operations and coordinates related state changes for the component.
+
+    Args:
+        text (str): Display text string.
+
+    Returns:
+        str: Formatted string or path.
+    """
     return _col(text, "31")
-    """red."""
-    """red."""
 
 
 def yellow(text: str) -> str:
-    """yellow."""
+    """Yellow.
+
+    Manages yellow operations and coordinates related state changes for the component.
+
+    Args:
+        text (str): Display text string.
+
+    Returns:
+        str: Formatted string or path.
+    """
     return _col(text, "33")
-    """yellow."""
-    """yellow."""
 
 
 def cyan(text: str) -> str:
-    """cyan."""
+    """Cyan.
+
+    Manages cyan operations and coordinates related state changes for the component.
+
+    Args:
+        text (str): Display text string.
+
+    Returns:
+        str: Formatted string or path.
+    """
     return _col(text, "36")
-    """cyan."""
-    """cyan."""
 
 
 def bold(text: str) -> str:
-    """bold."""
+    """Bold.
+
+    Manages bold operations and coordinates related state changes for the component.
+
+    Args:
+        text (str): Display text string.
+
+    Returns:
+        str: Formatted string or path.
+    """
     return _col(text, "1")
-    """bold."""
-    """bold."""
 
 
 @dataclass
 class DiagnosticItem:
-    """DiagnosticItem."""
+    """Diagnosticitem.
+
+    Manages DiagnosticItem operations and coordinates related state changes for the component.
+    """
     name: str
     status: str  # PASS, FAIL, SKIP, WARN
     message: str = ""
     duration_ms: float = 0.0
     details: Dict[str, Any] = field(default_factory=dict)
-    """DiagnosticItem class."""
-    """DiagnosticItem class."""
 
 
 @dataclass
 class DiagnosticSection:
-    """DiagnosticSection."""
+    """Diagnosticsection.
+
+    Manages DiagnosticSection operations and coordinates related state changes for the component.
+    """
     title: str
     items: List[DiagnosticItem] = field(default_factory=list)
     passed: int = 0
@@ -99,23 +146,33 @@ class DiagnosticSection:
 
     @property
     def total(self) -> int:
-        """total."""
+        """Total.
+
+        Manages total operations and coordinates related state changes for the component.
+
+        Returns:
+            int: Result of the operation.
+        """
         return len(self.items)
-        """total."""
-        """total."""
 
     @property
     def is_success(self) -> bool:
-        """is_success."""
+        """is_success.
+
+        Manages is success operations and coordinates related state changes for the component.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         return self.failed == 0
-        """is_success."""
-    """DiagnosticSection class."""
-    """DiagnosticSection class."""
 
 
 @dataclass
 class DiagnosticReport:
-    """DiagnosticReport."""
+    """Diagnosticreport.
+
+    Manages DiagnosticReport operations and coordinates related state changes for the component.
+    """
     timestamp: str
     total_duration_sec: float
     sections: List[DiagnosticSection] = field(default_factory=list)
@@ -126,7 +183,13 @@ class DiagnosticReport:
     is_production_ready: bool = True
 
     def to_dict(self) -> Dict[str, Any]:
-        """to_dict."""
+        """to_dict.
+
+        Manages to dict operations and coordinates related state changes for the component.
+
+        Returns:
+            Dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         return {
             "timestamp": self.timestamp,
             "total_duration_sec": self.total_duration_sec,
@@ -148,27 +211,41 @@ class DiagnosticReport:
                 for s in self.sections
             ],
         }
-        """to_dict."""
-    """DiagnosticReport class."""
-    """DiagnosticReport class."""
 
 
 class DiagnosticRunner:
-    """DiagnosticRunner."""
+    """Diagnosticrunner.
+
+    Manages DiagnosticRunner operations and coordinates related state changes for the component.
+    """
     def __init__(self, verbose: bool = False):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            verbose (bool): The verbose parameter.
+        """
         self.verbose = verbose
         self.report = DiagnosticReport(
             timestamp=time.strftime("%Y-%m-%d %H:%M:%S"),
             total_duration_sec=0.0,
         )
-        """__init__."""
-        """__init__."""
 
     def run_section(
         self, title: str, fn: Callable[[DiagnosticSection], None]
     ) -> DiagnosticSection:
-        """run_section."""
+        """run_section.
+
+        Manages run section operations and coordinates related state changes for the component.
+
+        Args:
+            title (str): Display text string.
+            fn (Callable[[DiagnosticSection], None]): The fn parameter.
+
+        Returns:
+            DiagnosticSection: Result of the operation.
+        """
         sec = DiagnosticSection(title=title)
         t0 = time.perf_counter()
         try:
@@ -191,11 +268,15 @@ class DiagnosticRunner:
         if sec.failed > 0:
             self.report.is_production_ready = False
         return sec
-        """run_section."""
-        """run_section."""
 
     def check_icons(self, sec: DiagnosticSection) -> None:
-        """Audit vector icon pipeline and SVG rendering."""
+        """Audit vector icon pipeline and SVG rendering.
+
+        Manages check icons operations and coordinates related state changes for the component.
+
+        Args:
+            sec (DiagnosticSection): The sec parameter.
+        """
         try:
             from cortex_unified.ui.premium import icons
 
@@ -241,7 +322,13 @@ class DiagnosticRunner:
             sec.failed += 1
 
     def check_system_tools(self, sec: DiagnosticSection) -> None:
-        """Audit all 55 system tools."""
+        """Audit all 55 system tools.
+
+        Manages check system tools operations and coordinates related state changes for the component.
+
+        Args:
+            sec (DiagnosticSection): The sec parameter.
+        """
         tools_dir = SRC_DIR / "cortex_unified" / "system_tools"
         tool_files = sorted(
             [f.stem for f in tools_dir.glob("*.py") if not f.name.startswith("__")]
@@ -273,7 +360,13 @@ class DiagnosticRunner:
                 sec.failed += 1
 
     def check_analyzers(self, sec: DiagnosticSection) -> None:
-        """Audit all 23 file and dedup analyzers."""
+        """Audit all 23 file and dedup analyzers.
+
+        Manages check analyzers operations and coordinates related state changes for the component.
+
+        Args:
+            sec (DiagnosticSection): The sec parameter.
+        """
         analyzers_dir = SRC_DIR / "cortex_unified" / "analyzers"
         analyzer_files = sorted(
             [f.stem for f in analyzers_dir.glob("*.py") if not f.name.startswith("__")]
@@ -305,7 +398,13 @@ class DiagnosticRunner:
                 sec.failed += 1
 
     def check_core_engine(self, sec: DiagnosticSection) -> None:
-        """Audit Core Engine, FastWalk, and Security Guards."""
+        """Audit Core Engine, FastWalk, and Security Guards.
+
+        Manages check core engine operations and coordinates related state changes for the component.
+
+        Args:
+            sec (DiagnosticSection): The sec parameter.
+        """
         try:
             from cortex_unified.core.security import (
                 check_deletion_safety,
@@ -362,7 +461,13 @@ class DiagnosticRunner:
             sec.failed += 1
 
     def check_caches_and_algorithms(self, sec: DiagnosticSection) -> None:
-        """Audit algorithmic performance caches & chunkers."""
+        """Audit algorithmic performance caches & chunkers.
+
+        Manages check caches and algorithms operations and coordinates related state changes for the component.
+
+        Args:
+            sec (DiagnosticSection): The sec parameter.
+        """
         try:
             from cortex_unified.analyzers.content_defined_chunker import gear_chunk
             from cortex_unified.system_tools.s3_fifo import S3FIFO
@@ -416,7 +521,13 @@ class DiagnosticRunner:
             sec.failed += 1
 
     def check_nexus_explorer(self, sec: DiagnosticSection) -> None:
-        """Audit Nexus File Manager subsystem & Fluent header."""
+        """Audit Nexus File Manager subsystem & Fluent header.
+
+        Manages check nexus explorer operations and coordinates related state changes for the component.
+
+        Args:
+            sec (DiagnosticSection): The sec parameter.
+        """
         try:
             from cortex_unified.explorer import (
                 CrumbBar,
@@ -652,7 +763,13 @@ class DiagnosticRunner:
             sec.failed += 1
 
     def check_ui_pages(self, sec: DiagnosticSection) -> None:
-        """Audit all 59 registered UI pages in shell."""
+        """Audit all 59 registered UI pages in shell.
+
+        Manages check ui pages operations and coordinates related state changes for the component.
+
+        Args:
+            sec (DiagnosticSection): The sec parameter.
+        """
         try:
             from cortex_unified.ui.premium.registry import PAGES
             from cortex_unified.ui.premium.window import PremiumMainWindow
@@ -697,7 +814,13 @@ class DiagnosticRunner:
             sec.failed += 1
 
     def run_all(self) -> DiagnosticReport:
-        """run_all."""
+        """run_all.
+
+        Manages run all operations and coordinates related state changes for the component.
+
+        Returns:
+            DiagnosticReport: Result of the operation.
+        """
         t_start = time.perf_counter()
 
         # Offscreen Qt platform for headless execution
@@ -768,11 +891,15 @@ class DiagnosticRunner:
         print(bold("=" * 80))
 
         return self.report
-        """run_all."""
-        """run_all."""
 
     def _print_section_summary(self, sec: DiagnosticSection) -> None:
-        """_print_section_summary."""
+        """_print_section_summary.
+
+        Manages print section summary operations and coordinates related state changes for the component.
+
+        Args:
+            sec (DiagnosticSection): The sec parameter.
+        """
         if sec.is_success:
             print(
                 f"  {green('✓')} {sec.title}: All {sec.passed}/{sec.total} checks passed ({sec.duration_ms:.1f}ms)"
@@ -784,21 +911,31 @@ class DiagnosticRunner:
             for it in sec.items:
                 if it.status == "FAIL":
                     print(f"    - {red(it.name)}: {it.message}")
-        """_print_section_summary."""
-    """DiagnosticRunner class."""
-    """DiagnosticRunner class."""
 
 
 def run_all_diagnostics(verbose: bool = False) -> DiagnosticReport:
-    """run_all_diagnostics."""
+    """run_all_diagnostics.
+
+    Manages run all diagnostics operations and coordinates related state changes for the component.
+
+    Args:
+        verbose (bool): The verbose parameter.
+
+    Returns:
+        DiagnosticReport: Result of the operation.
+    """
     runner = DiagnosticRunner(verbose=verbose)
     return runner.run_all()
-    """run_all_diagnostics."""
-    """run_all_diagnostics."""
 
 
 def main() -> int:
-    """main."""
+    """Main.
+
+    Manages main operations and coordinates related state changes for the component.
+
+    Returns:
+        int: Result of the operation.
+    """
     parser = argparse.ArgumentParser(
         description="Cortex Cleaner Production Diagnostics"
     )
@@ -817,8 +954,6 @@ def main() -> int:
         print(json.dumps(report.to_dict(), indent=2))
 
     return 0 if report.is_production_ready else 1
-    """main."""
-    """main."""
 
 
 if __name__ == "__main__":

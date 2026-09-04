@@ -23,7 +23,10 @@ class PrivacyCleaner:
     """
 
     def __init__(self):
-        """__init__."""
+        """Initialize the instance and configure internal state.
+
+        Sets up sub-widgets, event signal connections, and default options.
+        """
         self.logger = logging.getLogger("privacy_cleaner")
         self.local_appdata = os.environ.get("LOCALAPPDATA", "")
         self.appdata = os.environ.get("APPDATA", "")
@@ -36,15 +39,19 @@ class PrivacyCleaner:
             "Vivaldi":  os.path.join(self.local_appdata, "Vivaldi", "User Data"),
             "Firefox":  os.path.join(self.appdata, "Mozilla", "Firefox", "Profiles"),
         }
-        """__init__."""
-        """__init__."""
 
     # ──────────────────────────────────────────────────────────────────
     # Scanning
     # ──────────────────────────────────────────────────────────────────
 
     def scan_browsers(self) -> Dict[str, Dict[str, int]]:
-        """Scan all known browsers and return {browser: {category: size_bytes}}."""
+        """Scan all known browsers and return {browser: {category: size_bytes}}.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+        Returns:
+            Dict[str, Dict[str, int]]: Dictionary mapping identifiers to status or values.
+        """
         results: Dict[str, Dict[str, int]] = {}
 
         for browser, base_path in self.browser_paths.items():
@@ -70,7 +77,13 @@ class PrivacyCleaner:
         return results
 
     def scan_system_traces(self) -> Dict[str, int]:
-        """Return sizes of cleanable Windows system privacy traces."""
+        """Return sizes of cleanable Windows system privacy traces.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+        Returns:
+            Dict[str, int]: Dictionary mapping identifiers to status or values.
+        """
         traces: Dict[str, int] = {}
 
         # Shell MRU list: exposes which files were recently opened
@@ -132,7 +145,16 @@ class PrivacyCleaner:
         return success
 
     def clean_system_traces(self, clean_recent: bool = False) -> int:
-        """Clean system-level privacy traces, return bytes freed."""
+        """Clean system-level privacy traces, return bytes freed.
+
+        Permanently purges or removes specified target items, reclaiming storage space and logging actions taken.
+
+        Args:
+            clean_recent (bool): The clean recent parameter.
+
+        Returns:
+            int: Result of the operation.
+        """
         freed = 0
 
         if clean_recent:
@@ -159,7 +181,16 @@ class PrivacyCleaner:
 
     @staticmethod
     def _discover_chromium_profiles(base_path: str) -> List[str]:
-        """Dynamically find Chromium profile directories."""
+        """Dynamically find Chromium profile directories.
+
+        Manages discover chromium profiles operations and coordinates related state changes for the component.
+
+        Args:
+            base_path (str): Filesystem path to the target file or directory.
+
+        Returns:
+            List[str]: List of processed items or identifiers.
+        """
         profiles: List[str] = []
         if not os.path.isdir(base_path):
             return profiles
@@ -176,7 +207,14 @@ class PrivacyCleaner:
         return profiles
 
     def _scan_chromium_profile(self, prof_path: str, stats: Dict[str, int]):
-        """Accumulate sizes from one Chromium profile."""
+        """Accumulate sizes from one Chromium profile.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+        Args:
+            prof_path (str): Filesystem path to the target file or directory.
+            stats (Dict[str, int]): The stats parameter.
+        """
         # Cache (new Chromium stores it under Cache/Cache_Data)
         for cache_sub in ("Cache", os.path.join("Cache", "Cache_Data"),
                           "Code Cache", "GPUCache", "Service Worker"):
@@ -194,7 +232,17 @@ class PrivacyCleaner:
         stats["Sessions"] += self._get_file_size(os.path.join(prof_path, "Current Tabs"))
 
     def _clean_chromium_profile(self, prof_path: str, items: List[str]) -> bool:
-        """Delete specified items in one Chromium profile."""
+        """Delete specified items in one Chromium profile.
+
+        Permanently purges or removes specified target items, reclaiming storage space and logging actions taken.
+
+        Args:
+            prof_path (str): Filesystem path to the target file or directory.
+            items (List[str]): Collection of items or entries to process.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         ok = True
         if "Cache" in items:
             for sub in ("Cache", "Code Cache", "GPUCache", "Service Worker"):
@@ -218,7 +266,14 @@ class PrivacyCleaner:
     # ──────────────────────────────────────────────────────────────────
 
     def _scan_firefox(self, profiles_path: str, stats: Dict[str, int]):
-        """_scan_firefox."""
+        """_scan_firefox.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+        Args:
+            profiles_path (str): Filesystem path to the target file or directory.
+            stats (Dict[str, int]): The stats parameter.
+        """
         for profile in glob.glob(os.path.join(profiles_path, "*.*")):
             stats["Cookies"] += self._get_file_size(os.path.join(profile, "cookies.sqlite"))
             stats["History"] += self._get_file_size(os.path.join(profile, "places.sqlite"))
@@ -230,8 +285,6 @@ class PrivacyCleaner:
             stats["Cache"] += self._get_dir_size(cache2)
 
             stats["Cache"] += self._get_dir_size(os.path.join(profile, "startupCache"))
-        """_scan_firefox."""
-        """_scan_firefox."""
 
     # ──────────────────────────────────────────────────────────────────
     # Utility
@@ -239,17 +292,33 @@ class PrivacyCleaner:
 
     @staticmethod
     def _get_file_size(path: str) -> int:
-        """_get_file_size."""
+        """_get_file_size.
+
+        Manages get file size operations and coordinates related state changes for the component.
+
+        Args:
+            path (str): Filesystem path to the target file or directory.
+
+        Returns:
+            int: Result of the operation.
+        """
         try:
             return os.path.getsize(path) if os.path.isfile(path) else 0
         except OSError:
             return 0
-        """_get_file_size."""
-        """_get_file_size."""
 
     @staticmethod
     def _get_dir_size(path: str) -> int:
-        """_get_dir_size."""
+        """_get_dir_size.
+
+        Manages get dir size operations and coordinates related state changes for the component.
+
+        Args:
+            path (str): Filesystem path to the target file or directory.
+
+        Returns:
+            int: Result of the operation.
+        """
         total = 0
         if not os.path.isdir(path):
             return 0
@@ -263,12 +332,16 @@ class PrivacyCleaner:
         except OSError:
             pass
         return total
-        """_get_dir_size."""
-        """_get_dir_size."""
 
     @staticmethod
     def _safe_delete(path: str):
-        """Remove a file, ignoring errors (browsers commonly hold locks)."""
+        """Remove a file, ignoring errors (browsers commonly hold locks).
+
+        Manages safe delete operations and coordinates related state changes for the component.
+
+        Args:
+            path (str): Filesystem path to the target file or directory.
+        """
         if os.path.isfile(path):
             try:
                 os.remove(path)
@@ -277,7 +350,13 @@ class PrivacyCleaner:
 
     @staticmethod
     def _safe_delete_dir(path: str):
-        """Recursively remove a directory tree, ignoring failures."""
+        """Recursively remove a directory tree, ignoring failures.
+
+        Manages safe delete dir operations and coordinates related state changes for the component.
+
+        Args:
+            path (str): Filesystem path to the target file or directory.
+        """
         if os.path.isdir(path):
             shutil.rmtree(path, ignore_errors=True)
 

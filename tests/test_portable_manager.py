@@ -25,9 +25,18 @@ from cortex_unified.analyzers.portable_manager import (
 
 
 class TestPortableApp:
-    """TestPortableApp."""
+    """Testportableapp.
+
+    Manages TestPortableApp operations and coordinates related state changes for the component.
+    """
     def test_basic_construction(self, tmp_path):
-        """test_basic_construction."""
+        """test_basic_construction.
+
+        Manages test basic construction operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         app = PortableApp(
             id="notepad-plus-plus",
             name="Notepad++",
@@ -45,7 +54,13 @@ class TestPortableApp:
         assert app.launch_exe is None
 
     def test_to_dict_slots_incompatibility(self, tmp_path):
-        """test_to_dict_slots_incompatibility."""
+        """test_to_dict_slots_incompatibility.
+
+        Manages test to dict slots incompatibility operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         app = PortableApp(
             id="7zip",
             name="7-Zip",
@@ -66,15 +81,34 @@ class TestPortableApp:
 
 
 class TestParseAppinfo:
-    """TestParseAppinfo."""
+    """Testparseappinfo.
+
+    Manages TestParseAppinfo operations and coordinates related state changes for the component.
+    """
     def _write_appinfo(self, root: Path, content: str) -> Path:
-        """_write_appinfo."""
+        """_write_appinfo.
+
+        Manages write appinfo operations and coordinates related state changes for the component.
+
+        Args:
+            root (Path): Filesystem path to the target file or directory.
+            content (str): The content parameter.
+
+        Returns:
+            Path: Result of the operation.
+        """
         ini = root / "appinfo.ini"
         ini.write_text(content, encoding="utf-8")
         return ini
 
     def test_valid_appinfo(self, tmp_path):
-        """test_valid_appinfo."""
+        """test_valid_appinfo.
+
+        Manages test valid appinfo operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         content = (
             "[Details]\n"
             "Name=MyTool\n"
@@ -93,17 +127,35 @@ class TestParseAppinfo:
         assert app.launch_exe == tmp_path / "MyTool.exe"
 
     def test_missing_ini_returns_none(self, tmp_path):
-        """test_missing_ini_returns_none."""
+        """test_missing_ini_returns_none.
+
+        Manages test missing ini returns none operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         assert _parse_appinfo(tmp_path / "nope.ini") is None
 
     def test_garbage_ini_returns_none(self, tmp_path):
-        """test_garbage_ini_returns_none."""
+        """test_garbage_ini_returns_none.
+
+        Manages test garbage ini returns none operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         ini = tmp_path / "appinfo.ini"
         ini.write_text("this is not an ini", encoding="utf-8")
         assert _parse_appinfo(ini) is None
 
     def test_launch_exe_fallback_to_first_exe(self, tmp_path):
-        """test_launch_exe_fallback_to_first_exe."""
+        """test_launch_exe_fallback_to_first_exe.
+
+        Manages test launch exe fallback to first exe operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         content = "[Details]\nName=Tool\nDisplayVersion=1.0\n"
         self._write_appinfo(tmp_path, content)
         (tmp_path / "something_else.exe").touch()
@@ -113,7 +165,13 @@ class TestParseAppinfo:
         assert app.launch_exe == tmp_path / "something_else.exe"
 
     def test_no_exe(self, tmp_path):
-        """test_no_exe."""
+        """test_no_exe.
+
+        Manages test no exe operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         content = "[Details]\nName=Tool\nDisplayVersion=1.0\n"
         self._write_appinfo(tmp_path, content)
         app = _parse_appinfo(tmp_path / "appinfo.ini")
@@ -121,7 +179,13 @@ class TestParseAppinfo:
         assert app.launch_exe is None
 
     def test_fallback_to_first_section(self, tmp_path):
-        """test_fallback_to_first_section."""
+        """test_fallback_to_first_section.
+
+        Manages test fallback to first section operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         content = "[MySection]\nName=Fallback\nDisplayVersion=0.5\n"
         self._write_appinfo(tmp_path, content)
         (tmp_path / "Fallback.exe").touch()
@@ -137,23 +201,35 @@ class TestParseAppinfo:
 
 
 class TestPortableManagerInit:
-    """TestPortableManagerInit."""
+    """Testportablemanagerinit.
+
+    Manages TestPortableManagerInit operations and coordinates related state changes for the component.
+    """
     def test_default_init(self):
-        """test_default_init."""
+        """test_default_init.
+
+        Manages test default init operations and coordinates related state changes for the component.
+        """
         mgr = PortableManager()
         assert callable(mgr.progress)
         assert isinstance(mgr.cancel, threading.Event)
         assert not mgr.cancel.is_set()
 
     def test_custom_progress(self):
-        """test_custom_progress."""
+        """test_custom_progress.
+
+        Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
+        """
         log = []
         mgr = PortableManager(progress=log.append)
         mgr.progress("hello")
         assert log == ["hello"]
 
     def test_custom_cancel_event(self):
-        """test_custom_cancel_event."""
+        """test_custom_cancel_event.
+
+        Manages test custom cancel event operations and coordinates related state changes for the component.
+        """
         evt = threading.Event()
         evt.set()
         mgr = PortableManager(cancel=evt)
@@ -166,9 +242,20 @@ class TestPortableManagerInit:
 
 
 class TestScanPortableRoots:
-    """TestScanPortableRoots."""
+    """Testscanportableroots.
+
+    Manages TestScanPortableRoots operations and coordinates related state changes for the component.
+    """
     def _build_paf_app(self, root: Path, name: str, version: str = "1.0"):
-        """_build_paf_app."""
+        """_build_paf_app.
+
+        Manages build paf app operations and coordinates related state changes for the component.
+
+        Args:
+            root (Path): Filesystem path to the target file or directory.
+            name (str): The name parameter.
+            version (str): The version parameter.
+        """
         app_dir = root / name
         app_dir.mkdir()
         ini = (
@@ -180,7 +267,13 @@ class TestScanPortableRoots:
         return app_dir
 
     def test_scan_paf_apps(self, tmp_path):
-        """test_scan_paf_apps."""
+        """test_scan_paf_apps.
+
+        Manages test scan paf apps operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         self._build_paf_app(tmp_path, "ToolA", "2.0")
         self._build_paf_app(tmp_path, "ToolB", "3.1")
 
@@ -191,17 +284,35 @@ class TestScanPortableRoots:
         assert "toolb" in ids
 
     def test_scan_empty_root(self, tmp_path):
-        """test_scan_empty_root."""
+        """test_scan_empty_root.
+
+        Manages test scan empty root operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         mgr = PortableManager()
         assert mgr.scan_portable_roots([tmp_path]) == []
 
     def test_scan_nonexistent_root(self, tmp_path):
-        """test_scan_nonexistent_root."""
+        """test_scan_nonexistent_root.
+
+        Manages test scan nonexistent root operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         mgr = PortableManager()
         assert mgr.scan_portable_roots([tmp_path / "nope"]) == []
 
     def test_scan_liberkey_heuristic(self, tmp_path):
-        """test_scan_liberkey_heuristic."""
+        """test_scan_liberkey_heuristic.
+
+        Manages test scan liberkey heuristic operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         app_dir = tmp_path / "MyLiberApp"
         app_dir.mkdir()
         (app_dir / "app.exe").touch()
@@ -214,13 +325,25 @@ class TestScanPortableRoots:
         assert apps[0].version == ""
 
     def test_scan_skips_files(self, tmp_path):
-        """test_scan_skips_files."""
+        """test_scan_skips_files.
+
+        Manages test scan skips files operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         (tmp_path / "readme.txt").write_text("hello")
         mgr = PortableManager()
         assert mgr.scan_portable_roots([tmp_path]) == []
 
     def test_scan_cancellation(self, tmp_path):
-        """test_scan_cancellation."""
+        """test_scan_cancellation.
+
+        Manages test scan cancellation operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         self._build_paf_app(tmp_path, "ToolA")
         evt = threading.Event()
         evt.set()
@@ -235,11 +358,23 @@ class TestScanPortableRoots:
 
 
 class TestCheckUpdates:
-    """TestCheckUpdates."""
+    """Testcheckupdates.
+
+    Manages TestCheckUpdates operations and coordinates related state changes for the component.
+    """
     def _make_app_with_ini(
         self, root: Path, name: str, version: str, update_url: str | None = None
     ):
-        """_make_app_with_ini."""
+        """_make_app_with_ini.
+
+        Manages make app with ini operations and coordinates related state changes for the component.
+
+        Args:
+            root (Path): Filesystem path to the target file or directory.
+            name (str): The name parameter.
+            version (str): The version parameter.
+            update_url (str | None): The update url parameter.
+        """
         app_dir = root / name
         app_dir.mkdir()
         lines = [
@@ -265,7 +400,13 @@ class TestCheckUpdates:
         )
 
     def test_no_update_url_skipped(self, tmp_path):
-        """test_no_update_url_skipped."""
+        """test_no_update_url_skipped.
+
+        Manages test no update url skipped operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         app = self._make_app_with_ini(tmp_path, "Tool", "1.0")
         mgr = PortableManager()
         updated = mgr.check_updates([app])
@@ -273,7 +414,13 @@ class TestCheckUpdates:
         assert app.update_available is False
 
     def test_update_available(self, tmp_path):
-        """test_update_available."""
+        """test_update_available.
+
+        Manages test update available operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         remote_ini = "[Details]\nDisplayVersion=2.0\n"
         with patch(
             "cortex_unified.analyzers.portable_manager.urllib.request.urlopen"
@@ -295,7 +442,13 @@ class TestCheckUpdates:
             assert updated[0].latest_version == "2.0"
 
     def test_no_update_when_current(self, tmp_path):
-        """test_no_update_when_current."""
+        """test_no_update_when_current.
+
+        Manages test no update when current operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         remote_ini = "[Details]\nDisplayVersion=1.0\n"
         with patch(
             "cortex_unified.analyzers.portable_manager.urllib.request.urlopen"
@@ -316,7 +469,13 @@ class TestCheckUpdates:
             assert app.update_available is False
 
     def test_network_failure_continues(self, tmp_path):
-        """test_network_failure_continues."""
+        """test_network_failure_continues.
+
+        Manages test network failure continues operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         with patch(
             "cortex_unified.analyzers.portable_manager.urllib.request.urlopen",
             side_effect=Exception("network down"),
@@ -332,7 +491,13 @@ class TestCheckUpdates:
             assert any("failed" in msg.lower() for msg in log)
 
     def test_non_ini_response_skipped(self, tmp_path):
-        """test_non_ini_response_skipped."""
+        """test_non_ini_response_skipped.
+
+        Manages test non ini response skipped operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         with patch(
             "cortex_unified.analyzers.portable_manager.urllib.request.urlopen"
         ) as mock_urlopen:
@@ -351,7 +516,13 @@ class TestCheckUpdates:
             assert updated == []
 
     def test_empty_version_no_update(self, tmp_path):
-        """test_empty_version_no_update."""
+        """test_empty_version_no_update.
+
+        Manages test empty version no update operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         remote_ini = "[Details]\nDisplayVersion=2.0\n"
         with patch(
             "cortex_unified.analyzers.portable_manager.urllib.request.urlopen"
@@ -392,9 +563,18 @@ class TestCheckUpdates:
 
 
 class TestUpdateApp:
-    """TestUpdateApp."""
+    """Testupdateapp.
+
+    Manages TestUpdateApp operations and coordinates related state changes for the component.
+    """
     def test_update_no_installer_returns_false(self, tmp_path):
-        """test_update_no_installer_returns_false."""
+        """test_update_no_installer_returns_false.
+
+        Manages test update no installer returns false operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         app_dir = tmp_path / "Tool"
         app_dir.mkdir()
         app = PortableApp(
@@ -412,7 +592,13 @@ class TestUpdateApp:
         assert any("no bundled installer" in m for m in log)
 
     def test_update_with_installer(self, tmp_path):
-        """test_update_with_installer."""
+        """test_update_with_installer.
+
+        Manages test update with installer operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         app_dir = tmp_path / "Tool"
         app_dir.mkdir()
         installer = app_dir / "PortableApps.comInstaller.exe"
@@ -443,7 +629,13 @@ class TestUpdateApp:
             assert str(installer) in args
 
     def test_update_installer_failure(self, tmp_path):
-        """test_update_installer_failure."""
+        """test_update_installer_failure.
+
+        Manages test update installer failure operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         app_dir = tmp_path / "Tool"
         app_dir.mkdir()
         installer = app_dir / "App" / "AppInfo" / "installer.exe"
@@ -468,7 +660,13 @@ class TestUpdateApp:
             assert mgr.update_app(app) is False
 
     def test_update_subprocess_exception(self, tmp_path):
-        """test_update_subprocess_exception."""
+        """test_update_subprocess_exception.
+
+        Manages test update subprocess exception operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         app_dir = tmp_path / "Tool"
         app_dir.mkdir()
         installer = app_dir / "ToolInstaller.exe"
@@ -499,9 +697,18 @@ class TestUpdateApp:
 
 
 class TestSysinternalsDownload:
-    """TestSysinternalsDownload."""
+    """Testsysinternalsdownload.
+
+    Manages TestSysinternalsDownload operations and coordinates related state changes for the component.
+    """
     def test_download_success(self, tmp_path):
-        """test_download_success."""
+        """test_download_success.
+
+        Manages test download success operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         dest = tmp_path / "Autoruns.exe"
         fake_pe = b"MZ" + b"\x00" * 200
 
@@ -522,7 +729,13 @@ class TestSysinternalsDownload:
             assert dest.read_bytes()[:2] == b"MZ"
 
     def test_download_not_pe_rejected(self, tmp_path):
-        """test_download_not_pe_rejected."""
+        """test_download_not_pe_rejected.
+
+        Manages test download not pe rejected operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         dest = tmp_path / "bad.exe"
         fake_html = b"<html>Error 404</html>"
 
@@ -531,25 +744,46 @@ class TestSysinternalsDownload:
         ) as mock_urlopen:
 
             class FakeResp:
-                """FakeResp."""
+                """Fakeresp.
+
+                Manages FakeResp operations and coordinates related state changes for the component.
+                """
                 def __init__(self, data):
-                    """__init__."""
+                    """__init__.
+
+                    Initializes the instance and configures internal state.
+
+                    Args:
+                        data: The data parameter.
+                    """
                     self._data = data
                     self._read = False
 
                 def read(self, n=-1):
-                    """read."""
+                    """Read.
+
+                    Manages read operations and coordinates related state changes for the component.
+
+                    Args:
+                        n: The n parameter.
+                    """
                     if self._read:
                         return b""
                     self._read = True
                     return self._data
 
                 def __enter__(self):
-                    """__enter__."""
+                    """Manage context lifecycle and resource acquisition or cleanup.
+
+                    Acquires necessary lock or file resources on entry and guarantees safe release and error propagation on exit.
+                    """
                     return self
 
                 def __exit__(self, *a):
-                    """__exit__."""
+                    """Manage context lifecycle and resource acquisition or cleanup.
+
+                    Acquires necessary lock or file resources on entry and guarantees safe release and error propagation on exit.
+                    """
                     return False
 
             mock_urlopen.return_value = FakeResp(fake_html)
@@ -562,7 +796,13 @@ class TestSysinternalsDownload:
             assert result is False
 
     def test_download_network_error(self, tmp_path):
-        """test_download_network_error."""
+        """test_download_network_error.
+
+        Manages test download network error operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         dest = tmp_path / "procmon.exe"
 
         with patch(
@@ -584,9 +824,19 @@ class TestSysinternalsDownload:
 
 
 class TestExportToolkit:
-    """TestExportToolkit."""
+    """Testexporttoolkit.
+
+    Manages TestExportToolkit operations and coordinates related state changes for the component.
+    """
     def _build_paf_app(self, root: Path, name: str):
-        """_build_paf_app."""
+        """_build_paf_app.
+
+        Manages build paf app operations and coordinates related state changes for the component.
+
+        Args:
+            root (Path): Filesystem path to the target file or directory.
+            name (str): The name parameter.
+        """
         app_dir = root / name
         app_dir.mkdir()
         ini = "[Details]\nName=" + name + "\nDisplayVersion=1.0\n"
@@ -595,7 +845,14 @@ class TestExportToolkit:
 
     @patch("cortex_unified.analyzers.portable_manager._find_portable_roots")
     def test_export_copies_paf_apps(self, mock_roots, tmp_path):
-        """test_export_copies_paf_apps."""
+        """test_export_copies_paf_apps.
+
+        Manages test export copies paf apps operations and coordinates related state changes for the component.
+
+        Args:
+            mock_roots: The mock roots parameter.
+            tmp_path: Filesystem path to the target file or directory.
+        """
         source = tmp_path / "source"
         source.mkdir()
         self._build_paf_app(source, "ToolA")
@@ -610,7 +867,14 @@ class TestExportToolkit:
 
     @patch("cortex_unified.analyzers.portable_manager._find_portable_roots")
     def test_export_skips_existing(self, mock_roots, tmp_path):
-        """test_export_skips_existing."""
+        """test_export_skips_existing.
+
+        Manages test export skips existing operations and coordinates related state changes for the component.
+
+        Args:
+            mock_roots: The mock roots parameter.
+            tmp_path: Filesystem path to the target file or directory.
+        """
         source = tmp_path / "source"
         source.mkdir()
         self._build_paf_app(source, "ToolA")
@@ -628,7 +892,15 @@ class TestExportToolkit:
     @patch("cortex_unified.analyzers.portable_manager._find_portable_roots")
     @patch.object(PortableManager, "_download_sysinternals")
     def test_export_sysinternals(self, mock_dl, mock_roots, tmp_path):
-        """test_export_sysinternals."""
+        """test_export_sysinternals.
+
+        Manages test export sysinternals operations and coordinates related state changes for the component.
+
+        Args:
+            mock_dl: The mock dl parameter.
+            mock_roots: The mock roots parameter.
+            tmp_path: Filesystem path to the target file or directory.
+        """
         mock_roots.return_value = []
         mock_dl.return_value = True
 
@@ -643,7 +915,15 @@ class TestExportToolkit:
     @patch("cortex_unified.analyzers.portable_manager._find_portable_roots")
     @patch.object(PortableManager, "_download_sysinternals")
     def test_export_sysinternals_custom_tools(self, mock_dl, mock_roots, tmp_path):
-        """test_export_sysinternals_custom_tools."""
+        """test_export_sysinternals_custom_tools.
+
+        Manages test export sysinternals custom tools operations and coordinates related state changes for the component.
+
+        Args:
+            mock_dl: The mock dl parameter.
+            mock_roots: The mock roots parameter.
+            tmp_path: Filesystem path to the target file or directory.
+        """
         mock_roots.return_value = []
         mock_dl.return_value = True
 
@@ -663,7 +943,15 @@ class TestExportToolkit:
     @patch("cortex_unified.analyzers.portable_manager._find_portable_roots")
     @patch.object(PortableManager, "_download_sysinternals")
     def test_export_skips_existing_sysinternals(self, mock_dl, mock_roots, tmp_path):
-        """test_export_skips_existing_sysinternals."""
+        """test_export_skips_existing_sysinternals.
+
+        Manages test export skips existing sysinternals operations and coordinates related state changes for the component.
+
+        Args:
+            mock_dl: The mock dl parameter.
+            mock_roots: The mock roots parameter.
+            tmp_path: Filesystem path to the target file or directory.
+        """
         mock_roots.return_value = []
 
         target = tmp_path / "usb"
@@ -685,9 +973,18 @@ class TestExportToolkit:
 
 
 class TestProgressCallback:
-    """TestProgressCallback."""
+    """TestProgressCallback.
+
+    Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
+    """
     def test_progress_called_on_update_failure(self, tmp_path):
-        """test_progress_called_on_update_failure."""
+        """test_progress_called_on_update_failure.
+
+        Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         app_dir = tmp_path / "Tool"
         app_dir.mkdir()
         ini = (
@@ -717,7 +1014,13 @@ class TestProgressCallback:
             assert "failed" in log[0].lower()
 
     def test_progress_called_on_export(self, mock_find_roots=None):
-        """test_progress_called_on_export."""
+        """test_progress_called_on_export.
+
+        Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
+
+        Args:
+            mock_find_roots: The mock find roots parameter.
+        """
         log = []
         mgr = PortableManager(progress=log.append)
         mgr.progress("test message")
@@ -730,9 +1033,19 @@ class TestProgressCallback:
 
 
 class TestCancellation:
-    """TestCancellation."""
+    """Testcancellation.
+
+    Manages TestCancellation operations and coordinates related state changes for the component.
+    """
     def _build_paf_app(self, root: Path, name: str):
-        """_build_paf_app."""
+        """_build_paf_app.
+
+        Manages build paf app operations and coordinates related state changes for the component.
+
+        Args:
+            root (Path): Filesystem path to the target file or directory.
+            name (str): The name parameter.
+        """
         app_dir = root / name
         app_dir.mkdir()
         ini = "[Details]\nName=" + name + "\nDisplayVersion=1.0\n"
@@ -740,7 +1053,13 @@ class TestCancellation:
         (app_dir / f"{name}.exe").touch()
 
     def test_scan_respects_cancel(self, tmp_path):
-        """test_scan_respects_cancel."""
+        """test_scan_respects_cancel.
+
+        Manages test scan respects cancel operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         self._build_paf_app(tmp_path, "ToolA")
         self._build_paf_app(tmp_path, "ToolB")
 
@@ -748,7 +1067,13 @@ class TestCancellation:
         original_iterdir = Path.iterdir
 
         def counting_iterdir(self_inner):
-            """counting_iterdir."""
+            """counting_iterdir.
+
+            Manages counting iterdir operations and coordinates related state changes for the component.
+
+            Args:
+                self_inner: The self inner parameter.
+            """
             nonlocal call_count
             for item in original_iterdir(self_inner):
                 call_count += 1
@@ -759,7 +1084,10 @@ class TestCancellation:
             mgr = PortableManager(cancel=evt)
 
             def set_cancel_after_one(*a, **kw):
-                """set_cancel_after_one."""
+                """set_cancel_after_one.
+
+                Manages set cancel after one operations and coordinates related state changes for the component.
+                """
                 evt.set()
                 return []
 
@@ -777,13 +1105,22 @@ class TestCancellation:
 
 
 class TestPAFSilentFlag:
-    """TestPAFSilentFlag."""
+    """Testpafsilentflag.
+
+    Manages TestPAFSilentFlag operations and coordinates related state changes for the component.
+    """
     def test_silent_flag_value(self):
-        """test_silent_flag_value."""
+        """test_silent_flag_value.
+
+        Manages test silent flag value operations and coordinates related state changes for the component.
+        """
         assert PortableManager._PAF_SILENT_FLAG == "/SILENT"
 
     def test_sysinternals_live_url(self):
-        """test_sysinternals_live_url."""
+        """test_sysinternals_live_url.
+
+        Manages test sysinternals live url operations and coordinates related state changes for the component.
+        """
         assert PortableManager._SYSINTERNALS_LIVE == "https://live.sysinternals.com"
 
 
@@ -793,10 +1130,20 @@ class TestPAFSilentFlag:
 
 
 class TestExportToolkitIntegration:
-    """TestExportToolkitIntegration."""
+    """Testexporttoolkitintegration.
+
+    Manages TestExportToolkitIntegration operations and coordinates related state changes for the component.
+    """
     @patch("cortex_unified.analyzers.portable_manager._find_portable_roots")
     def test_export_creates_directory(self, mock_roots, tmp_path):
-        """test_export_creates_directory."""
+        """test_export_creates_directory.
+
+        Manages test export creates directory operations and coordinates related state changes for the component.
+
+        Args:
+            mock_roots: The mock roots parameter.
+            tmp_path: Filesystem path to the target file or directory.
+        """
         mock_roots.return_value = []
         target = tmp_path / "new_usb"
         mgr = PortableManager()
@@ -806,7 +1153,14 @@ class TestExportToolkitIntegration:
 
     @patch("cortex_unified.analyzers.portable_manager._find_portable_roots")
     def test_export_returns_true(self, mock_roots, tmp_path):
-        """test_export_returns_true."""
+        """test_export_returns_true.
+
+        Manages test export returns true operations and coordinates related state changes for the component.
+
+        Args:
+            mock_roots: The mock roots parameter.
+            tmp_path: Filesystem path to the target file or directory.
+        """
         mock_roots.return_value = []
         mgr = PortableManager()
         assert mgr.export_toolkit(tmp_path / "x", include_sysinternals=False) is True
@@ -816,7 +1170,14 @@ class TestExportToolkitIntegration:
         side_effect=Exception("disk full"),
     )
     def test_export_failure_returns_false(self, mock_roots, tmp_path):
-        """test_export_failure_returns_false."""
+        """test_export_failure_returns_false.
+
+        Manages test export failure returns false operations and coordinates related state changes for the component.
+
+        Args:
+            mock_roots: The mock roots parameter.
+            tmp_path: Filesystem path to the target file or directory.
+        """
         log = []
         mgr = PortableManager(progress=log.append)
         result = mgr.export_toolkit(tmp_path / "x", include_sysinternals=False)

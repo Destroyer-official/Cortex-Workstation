@@ -26,7 +26,10 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Signal, QObject
 
 def audit_all_pages():
-    """audit_all_pages."""
+    """audit_all_pages.
+
+    Manages audit all pages operations and coordinates related state changes for the component.
+    """
     app = QApplication.instance() or QApplication(sys.argv)
     from cortex_unified.ui.premium.window import PremiumMainWindow
     from cortex_unified.ui.premium.registry import PAGES
@@ -81,9 +84,11 @@ def audit_all_pages():
         print(f"  WARNINGS/FAILURES: {len(warnings)}")
         for pid, err in warnings:
             print(f"    - {pid}: {err}")
-    else:
-        print("  ALL 59 PAGES VERIFIED REAL PRODUCTION GRADE (0 ERRORS)")
-    print('=' * 80)
+    win.close()
+    sys.stdout.flush()
+    if warnings:
+        os._exit(1)
+    os._exit(0)
 
 if __name__ == '__main__':
     audit_all_pages()

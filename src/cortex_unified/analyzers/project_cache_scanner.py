@@ -36,7 +36,13 @@ _DRIVE_SKIP_PREFIXES = {".", "$"}
 
 
 def _fixed_drive_roots() -> List[Path]:
-    """Return fixed-drive mount points (C:\\, D:\\ ...) on Windows, or [home] elsewhere."""
+    r"""Return fixed-drive mount points (C:\, D:\ ...) on Windows, or [home] elsewhere.
+
+    Manages fixed drive roots operations and coordinates related state changes for the component.
+
+    Returns:
+        List[Path]: List of processed items or identifiers.
+    """
     if platform.system() != "Windows":
         return [Path.home()]
     roots: List[Path] = []
@@ -130,7 +136,14 @@ class ProjectCacheScanner:
         enabled_categories: Optional[List[str]] = None,
         keep_recent_days: int = 7,
     ):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            enabled_categories (Optional[List[str]]): The enabled categories parameter.
+            keep_recent_days (int): The keep recent days parameter.
+        """
         self.enabled_categories = enabled_categories
         self.keep_recent_days = keep_recent_days
         self.logger = logging.getLogger(__name__)
@@ -141,8 +154,6 @@ class ProjectCacheScanner:
             if cat_id in PROJECT_CACHE_CATEGORIES:
                 for pat, desc in PROJECT_CACHE_CATEGORIES[cat_id]["patterns"].items():
                     self._pattern_map[pat] = (cat_id, desc)
-        """__init__."""
-        """__init__."""
 
     def scan_fixed_drives(
         self,
@@ -151,7 +162,19 @@ class ProjectCacheScanner:
         max_depth: int = 5,
         prefer_code_roots: bool = True,
     ) -> List[Dict]:
-        """Scan all fixed drives (or known code roots) for project caches."""
+        """Scan all fixed drives (or known code roots) for project caches.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+        Args:
+            progress_callback (Optional[object]): The progress callback parameter.
+            cancel_event (Optional[object]): Threading event or callable to check for cancellation.
+            max_depth (int): The max depth parameter.
+            prefer_code_roots (bool): The prefer code roots parameter.
+
+        Returns:
+            List[Dict]: List of processed items or identifiers.
+        """
         resources: List[Dict] = []
         roots = _known_code_roots() if prefer_code_roots else []
         if roots:
@@ -190,13 +213,32 @@ class ProjectCacheScanner:
         cancel_event: Optional[object] = None,
         max_depth: Optional[int] = None,
     ) -> List[Dict]:
-        """Walk *folder* matching dir names against PROJECT_CACHE_CATEGORIES."""
+        """Walk *folder* matching dir names against PROJECT_CACHE_CATEGORIES.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+        Args:
+            folder (Path): Filesystem path to the target file or directory.
+            keep_recent_days (int): The keep recent days parameter.
+            progress_callback (Optional[object]): The progress callback parameter.
+            cancel_event (Optional[object]): Threading event or callable to check for cancellation.
+            max_depth (Optional[int]): The max depth parameter.
+
+        Returns:
+            List[Dict]: List of processed items or identifiers.
+        """
         from datetime import datetime as _dt
         resources: List[Dict] = []
         cutoff_date = _dt.now() - timedelta(days=keep_recent_days) if keep_recent_days > 0 else None
 
         def _match_dir(d_name: str):
-            """_match_dir."""
+            """_match_dir.
+
+            Manages match dir operations and coordinates related state changes for the component.
+
+            Args:
+                d_name (str): The d name parameter.
+            """
             if d_name in self._pattern_map:
                 return self._pattern_map[d_name]
             for pat, (cat_id, desc) in self._pattern_map.items():
@@ -205,8 +247,6 @@ class ProjectCacheScanner:
                 if pat.endswith("*") and d_name.startswith(pat.rstrip("*")):
                     return (cat_id, desc)
             return None
-            """_match_dir."""
-            """_match_dir."""
 
         # Iterative stack: (path, depth)
         stack: List[tuple[Path, int]] = [(folder, 0)]
@@ -216,7 +256,16 @@ class ProjectCacheScanner:
 
         # We use os.scandir for speed, with explicit skip logic
         def _should_skip_dir(name: str) -> bool:
-            """_should_skip_dir."""
+            """_should_skip_dir.
+
+            Manages should skip dir operations and coordinates related state changes for the component.
+
+            Args:
+                name (str): The name parameter.
+
+            Returns:
+                bool: True if the operation succeeded, False otherwise.
+            """
             low = name.lower()
             if low in _SKIP_NAMES:
                 return True
@@ -230,8 +279,6 @@ class ProjectCacheScanner:
                         if name in (".git", ".hg", ".svn"):
                             return True
             return False
-            """_should_skip_dir."""
-            """_should_skip_dir."""
 
         # For simplicity, use os.walk with pruning when max_depth is None (deep code roots)
         # For drive roots with max_depth, use stack-bounded walk.
@@ -242,7 +289,16 @@ class ProjectCacheScanner:
                         break
                     # Prune skips before descending, but keep any dir that is a cache pattern (e.g. node_modules)
                     def _keep_for_scan(n: str) -> bool:
-                        """_keep_for_scan."""
+                        """_keep_for_scan.
+
+                        Manages keep for scan operations and coordinates related state changes for the component.
+
+                        Args:
+                            n (str): The n parameter.
+
+                        Returns:
+                            bool: True if the operation succeeded, False otherwise.
+                        """
                         if _match_dir(n):
                             return True
                         if n.lower() in _SKIP_NAMES:
@@ -250,8 +306,6 @@ class ProjectCacheScanner:
                         if n.startswith("$"):
                             return False
                         return True
-                        """_keep_for_scan."""
-                        """_keep_for_scan."""
                     dirs[:] = [d for d in dirs if _keep_for_scan(d)]
                     dirs_to_remove = []
                     for d in list(dirs):
@@ -354,7 +408,17 @@ class ProjectCacheScanner:
         return resources
 
     def _get_dir_size(self, path: Path, cutoff_date: Optional[datetime] = None) -> tuple[int, int]:
-        """_get_dir_size."""
+        """_get_dir_size.
+
+        Manages get dir size operations and coordinates related state changes for the component.
+
+        Args:
+            path (Path): Filesystem path to the target file or directory.
+            cutoff_date (Optional[datetime]): The cutoff date parameter.
+
+        Returns:
+            tuple[int, int]: Result of the operation.
+        """
         total = 0
         cnt = 0
         try:
@@ -372,17 +436,22 @@ class ProjectCacheScanner:
         except OSError:
             pass
         return total, cnt
-        """_get_dir_size."""
-        """_get_dir_size."""
 
     @staticmethod
     def _format_bytes(n: int) -> str:
-        """_format_bytes."""
+        """_format_bytes.
+
+        Converts raw numeric values into formatted, localized, and human-readable string representations.
+
+        Args:
+            n (int): The n parameter.
+
+        Returns:
+            str: Formatted string or path.
+        """
         size = float(n)
         for unit in ('B', 'KB', 'MB', 'GB', 'TB'):
             if size < 1024 or unit == 'PB':
                 return f"{size:.1f} {unit}"
             size /= 1024
         return f"{n} B"
-        """_format_bytes."""
-        """_format_bytes."""

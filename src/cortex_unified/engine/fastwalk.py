@@ -41,7 +41,10 @@ _MEASURE_MASK = (
 
 @dataclass(slots=True)
 class WalkOptions:
-    """Tunable traversal parameters."""
+    """Walkoptions.
+
+    Manages WalkOptions operations and coordinates related state changes for the component.
+    """
 
     exclude_dir_names: frozenset[str] = field(
         default_factory=lambda: frozenset(
@@ -82,7 +85,13 @@ class FastWalker:
     """
 
     def __init__(self, options: WalkOptions | None = None) -> None:
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            options (WalkOptions | None): The options parameter.
+        """
         self.options = options or WalkOptions()
         self._compiled = [re.compile(r) for r in self.options.exclude_regexes]
         self._cancel = threading.Event()
@@ -91,34 +100,54 @@ class FastWalker:
         self.cloud_skipped = 0
         self.cloud_skipped_bytes = 0
         self.junctions_skipped = 0
-        """__init__."""
-        """__init__."""
 
     def cancel(self) -> None:
-        """Request cooperative cancellation of an in-progress walk."""
+        """Request cooperative cancellation of an in-progress walk.
+
+        Sets the internal cancellation event to cooperatively stop worker execution at the next safe boundary.
+        """
         self._cancel.set()
 
     def reset(self) -> None:
-        """reset."""
+        """Reset.
+
+        Manages reset operations and coordinates related state changes for the component.
+        """
         self._cancel.clear()
         self.cloud_skipped = 0
         self.cloud_skipped_bytes = 0
         self.junctions_skipped = 0
-        """reset."""
-        """reset."""
 
     # -- exclusion rules ----------------------------------------------------
 
     def _excluded_dir(self, name: str, full: str) -> bool:
-        """_excluded_dir."""
+        """_excluded_dir.
+
+        Manages excluded dir operations and coordinates related state changes for the component.
+
+        Args:
+            name (str): The name parameter.
+            full (str): The full parameter.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         if name in self.options.exclude_dir_names:
             return True
         return self._matches_patterns(name, full)
-        """_excluded_dir."""
-        """_excluded_dir."""
 
     def _matches_patterns(self, name: str, full: str) -> bool:
-        """_matches_patterns."""
+        """_matches_patterns.
+
+        Manages matches patterns operations and coordinates related state changes for the component.
+
+        Args:
+            name (str): The name parameter.
+            full (str): The full parameter.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         for g in self.options.exclude_globs:
             if fnmatch.fnmatch(name, g) or fnmatch.fnmatch(full, g):
                 return True
@@ -126,8 +155,6 @@ class FastWalker:
             if rx.search(full):
                 return True
         return False
-        """_matches_patterns."""
-        """_matches_patterns."""
 
     # -- core traversal -----------------------------------------------------
 
@@ -137,7 +164,18 @@ class FastWalker:
         on_error: Callable[[str], None] | None = None,
         progress: ProgressCallback | None = None,
     ) -> Iterator[FileEntry]:
-        """Yield :class:`FileEntry` for every matching file under *root*."""
+        """Yield :class:`FileEntry` for every matching file under *root*.
+
+        Manages iter files operations and coordinates related state changes for the component.
+
+        Args:
+            root (os.PathLike[str] | str): Filesystem path to the target file or directory.
+            on_error (Callable[[str], None] | None): Error message string or exception instance.
+            progress (ProgressCallback | None): The progress parameter.
+
+        Returns:
+            Iterator[FileEntry]: Result of the operation.
+        """
         opts = self.options
         min_mtime_cutoff = (
             time.time() - opts.min_age_days * 86400.0 if opts.min_age_days > 0 else None
@@ -229,7 +267,17 @@ class FastWalker:
         root: os.PathLike[str] | str,
         progress: ProgressCallback | None = None,
     ) -> ScanResult:
-        """Materialize a full :class:`ScanResult` (files, dirs, totals, errors)."""
+        """Materialize a full :class:`ScanResult` (files, dirs, totals, errors).
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+        Args:
+            root (os.PathLike[str] | str): Filesystem path to the target file or directory.
+            progress (ProgressCallback | None): The progress parameter.
+
+        Returns:
+            ScanResult: Result of the operation.
+        """
         self.reset()
         result = ScanResult()
         start = time.perf_counter()
@@ -266,7 +314,13 @@ class FastWalker:
         dirs_post: list[str] = []  # post-order list of directories
 
         def _visit(dpath: str) -> None:
-            """_visit."""
+            """Visit.
+
+            Manages visit operations and coordinates related state changes for the component.
+
+            Args:
+                dpath (str): Filesystem path to the target file or directory.
+            """
             try:
                 entries = list(os.scandir(dpath))
             except OSError:
@@ -303,8 +357,6 @@ class FastWalker:
                             non_empty_children[dpath] += 1
                 except OSError:
                     non_empty_children[dpath] += 1
-            """_visit."""
-            """_visit."""
 
         _visit(os.fspath(root_path))
         empty_dirs = [Path(d) for d in dirs_post if non_empty_children.get(d, 0) == 0]
@@ -315,9 +367,7 @@ class FastWalker:
         volume_root: os.PathLike[str] | str,
         progress_callback: ProgressCallback | None = None,
     ) -> Iterator[FileEntry]:
-        """High-speed NTFS MFT/USN journal streaming on Windows.
-        Gracefully falls back to scandir traversal if non-NTFS or non-elevated.
-        """
+        """Enumerate files under `volume_root`. Always falls back to os.scandir walk; no MFT/USN streaming implemented."""
         v_str = str(volume_root).rstrip("\\/")
         if platform.system() == "Windows" and len(v_str) >= 2 and v_str[1] == ":":
             try:

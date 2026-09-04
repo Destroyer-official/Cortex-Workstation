@@ -15,7 +15,14 @@ from cortex_unified.engine.secure_delete import SecureDeleter, _HAS_TRASH
 
 
 def _make_files(base, n):
-    """_make_files."""
+    """_make_files.
+
+    Manages make files operations and coordinates related state changes for the component.
+
+    Args:
+        base: The base parameter.
+        n: The n parameter.
+    """
     files = []
     for i in range(n):
         f = base / f"junk_{i}.tmp"
@@ -26,7 +33,13 @@ def _make_files(base, n):
 
 @pytest.mark.skipif(not _HAS_TRASH, reason="send2trash not installed")
 def test_batch_recycle_removes_all_and_reports_progress(tmp_path):
-    """test_batch_recycle_removes_all_and_reports_progress."""
+    """test_batch_recycle_removes_all_and_reports_progress.
+
+    Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
+
+    Args:
+        tmp_path: Filesystem path to the target file or directory.
+    """
     files = _make_files(tmp_path, 12)
     progress = []
     results = SecureDeleter().delete_many(
@@ -41,7 +54,13 @@ def test_batch_recycle_removes_all_and_reports_progress(tmp_path):
 
 @pytest.mark.skipif(not _HAS_TRASH, reason="send2trash not installed")
 def test_batch_recycle_cancel_stops_early(tmp_path):
-    """test_batch_recycle_cancel_stops_early."""
+    """test_batch_recycle_cancel_stops_early.
+
+    Manages test batch recycle cancel stops early operations and coordinates related state changes for the component.
+
+    Args:
+        tmp_path: Filesystem path to the target file or directory.
+    """
     files = _make_files(tmp_path, 20)
     cancel = threading.Event()
     cancel.set()   # cancelled before it starts
@@ -54,7 +73,13 @@ def test_batch_recycle_cancel_stops_early(tmp_path):
 
 @pytest.mark.skipif(not _HAS_TRASH, reason="send2trash not installed")
 def test_batch_recycle_reports_freed_bytes(tmp_path):
-    """test_batch_recycle_reports_freed_bytes."""
+    """test_batch_recycle_reports_freed_bytes.
+
+    Manages test batch recycle reports freed bytes operations and coordinates related state changes for the component.
+
+    Args:
+        tmp_path: Filesystem path to the target file or directory.
+    """
     files = _make_files(tmp_path, 5)
     results = SecureDeleter().delete_many([str(f) for f in files], DeletionMethod.RECYCLE)
     freed = sum(r.size for r in results if r.succeeded)
@@ -80,7 +105,13 @@ def test_fast_delete_batch_uses_known_sizes_and_removes_files(tmp_path):
 
 
 def test_fast_delete_batch_cancel_stops_early(tmp_path):
-    """test_fast_delete_batch_cancel_stops_early."""
+    """test_fast_delete_batch_cancel_stops_early.
+
+    Manages test fast delete batch cancel stops early operations and coordinates related state changes for the component.
+
+    Args:
+        tmp_path: Filesystem path to the target file or directory.
+    """
     files = _make_files(tmp_path, 30)
     cancel = threading.Event()
     cancel.set()
@@ -91,7 +122,13 @@ def test_fast_delete_batch_cancel_stops_early(tmp_path):
 
 
 def test_fast_delete_batch_dry_run_deletes_nothing(tmp_path):
-    """test_fast_delete_batch_dry_run_deletes_nothing."""
+    """test_fast_delete_batch_dry_run_deletes_nothing.
+
+    Manages test fast delete batch dry run deletes nothing operations and coordinates related state changes for the component.
+
+    Args:
+        tmp_path: Filesystem path to the target file or directory.
+    """
     files = _make_files(tmp_path, 8)
     results = SecureDeleter().delete_many(
         [str(f) for f in files], DeletionMethod.DRY_RUN)

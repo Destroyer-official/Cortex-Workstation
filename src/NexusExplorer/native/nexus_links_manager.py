@@ -19,18 +19,23 @@ from typing import Callable, Dict, List, Optional, Set, Tuple
 
 
 class LinkType(Enum):
-    """LinkType."""
+    """Linktype.
+
+    Manages LinkType operations and coordinates related state changes for the component.
+    """
     DIRECTORY_JUNCTION = "Directory Junction"
     DIRECTORY_SYMLINK = "Directory Symlink"
     FILE_SYMLINK = "File Symlink"
     HARDLINK = "Hardlink"
     REGULAR = "Regular Item"
-    """LinkType class."""
 
 
 @dataclass
 class LinkItem:
-    """LinkItem."""
+    """Linkitem.
+
+    Manages LinkItem operations and coordinates related state changes for the component.
+    """
     path: str
     name: str
     link_type: LinkType
@@ -40,25 +45,29 @@ class LinkItem:
     size_bytes: int = 0
     hardlink_count: int = 1
     error: Optional[str] = None
-    """LinkItem class."""
 
 
 @dataclass
 class LinkOperationResult:
-    """LinkOperationResult."""
+    """Linkoperationresult.
+
+    Manages LinkOperationResult operations and coordinates related state changes for the component.
+    """
     success: bool
     message: str
     created_path: Optional[str] = None
     target_path: Optional[str] = None
-    """LinkOperationResult class."""
 
 
 class LinksManager:
-    """Production NTFS Symbolic Links, Directory Junctions, and Hardlinks engine."""
+    """Linksmanager.
+
+    Manages LinksManager operations and coordinates related state changes for the component.
+    """
 
     @staticmethod
     def is_junction(path: str | Path) -> bool:
-        """Check if path is an NTFS directory junction."""
+        """Returns True for both NTFS directory junctions AND symlinks (does not distinguish)."""
         p = Path(path)
         if not p.is_dir():
             return False
@@ -76,7 +85,16 @@ class LinksManager:
 
     @classmethod
     def get_link_info(cls, file_or_dir: str | Path) -> LinkItem:
-        """Inspect a file or directory and extract link metadata."""
+        """Inspect a file or directory and extract link metadata.
+
+        Manages get link info operations and coordinates related state changes for the component.
+
+        Args:
+            file_or_dir (str | Path): The file or dir parameter.
+
+        Returns:
+            LinkItem: Result of the operation.
+        """
         p = Path(file_or_dir).resolve(strict=False)
         p_orig = Path(file_or_dir)
         is_dir = p_orig.is_dir()
@@ -147,7 +165,19 @@ class LinksManager:
         progress_cb: Optional[Callable[[int, str], None]] = None,
         cancel_check: Optional[Callable[[], bool]] = None,
     ) -> List[LinkItem]:
-        """Scan a folder to discover all Junctions, Symlinks, and Hardlinked items."""
+        """Scan a folder to discover all Junctions, Symlinks, and Hardlinked items.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+        Args:
+            root_dir (str | Path): The root dir parameter.
+            recursive (bool): The recursive parameter.
+            progress_cb (Optional[Callable[[int, str], None]]): Callback invoked with progress updates.
+            cancel_check (Optional[Callable[[], bool]]): Threading event or callable to check for cancellation.
+
+        Returns:
+            List[LinkItem]: List of processed items or identifiers.
+        """
         root = Path(root_dir).resolve()
         if not root.is_dir():
             return []
@@ -196,7 +226,17 @@ class LinksManager:
 
     @classmethod
     def create_junction(cls, link_path: str | Path, target_dir: str | Path) -> LinkOperationResult:
-        """Create an NTFS Directory Junction."""
+        """Create an NTFS Directory Junction.
+
+        Manages create junction operations and coordinates related state changes for the component.
+
+        Args:
+            link_path (str | Path): Filesystem path to the target file or directory.
+            target_dir (str | Path): The target dir parameter.
+
+        Returns:
+            LinkOperationResult: Result of the operation.
+        """
         link = Path(link_path).resolve()
         target = Path(target_dir).resolve()
 
@@ -232,7 +272,18 @@ class LinksManager:
         target_path: str | Path,
         target_is_directory: Optional[bool] = None,
     ) -> LinkOperationResult:
-        """Create a Symbolic Link (File or Directory)."""
+        """Create a Symbolic Link (File or Directory).
+
+        Manages create symlink operations and coordinates related state changes for the component.
+
+        Args:
+            link_path (str | Path): Filesystem path to the target file or directory.
+            target_path (str | Path): Filesystem path to the target file or directory.
+            target_is_directory (Optional[bool]): The target is directory parameter.
+
+        Returns:
+            LinkOperationResult: Result of the operation.
+        """
         link = Path(link_path).resolve()
         target = Path(target_path).resolve()
 
@@ -254,7 +305,17 @@ class LinksManager:
 
     @classmethod
     def create_hardlink(cls, link_path: str | Path, target_file: str | Path) -> LinkOperationResult:
-        """Create an NTFS Hardlink to an existing file."""
+        """Create an NTFS Hardlink to an existing file.
+
+        Manages create hardlink operations and coordinates related state changes for the component.
+
+        Args:
+            link_path (str | Path): Filesystem path to the target file or directory.
+            target_file (str | Path): The target file parameter.
+
+        Returns:
+            LinkOperationResult: Result of the operation.
+        """
         link = Path(link_path).resolve()
         target = Path(target_file).resolve()
 
@@ -272,7 +333,16 @@ class LinksManager:
 
     @classmethod
     def remove_link_safely(cls, link_path: str | Path) -> LinkOperationResult:
-        """Safely delete a junction or symlink without removing the contents of the target folder."""
+        """Safely delete a junction or symlink without removing the contents of the target folder.
+
+        Manages remove link safely operations and coordinates related state changes for the component.
+
+        Args:
+            link_path (str | Path): Filesystem path to the target file or directory.
+
+        Returns:
+            LinkOperationResult: Result of the operation.
+        """
         p = Path(link_path)
         if not p.exists() and not os.path.islink(p):
             return LinkOperationResult(False, f"Path does not exist: {p}")

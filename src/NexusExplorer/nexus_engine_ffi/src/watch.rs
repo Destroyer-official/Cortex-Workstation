@@ -9,9 +9,11 @@ use notify_debouncer_full::{
     new_debouncer, DebouncedEvent, Debouncer, RecommendedCache,
 };
 
+/// Thread-safe registry of active debounced directory watchers keyed by lowercase path.
 pub struct WatcherMap(Mutex<HashMap<String, Debouncer<RecommendedWatcher, RecommendedCache>>>);
 
 impl WatcherMap {
+    /// Creates an empty watcher registry with no active watches.
     pub fn new() -> Self {
         Self(Mutex::new(HashMap::new()))
     }
@@ -28,6 +30,7 @@ fn lock_ignore_poison<T>(
 
 const WATCH_DEBOUNCE_MS: u64 = 250;
 
+/// Starts a recursive debounced watch on `path`, invoking `callback` on create/modify/remove events.
 #[no_mangle]
 pub unsafe extern "C" fn nexus_watch_dir(
     ctx: *mut c_void,
@@ -110,6 +113,7 @@ pub unsafe extern "C" fn nexus_watch_dir(
     0
 }
 
+/// Stops and removes the watch for `path`; returns 0 on success, -1 when not watched.
 #[no_mangle]
 pub unsafe extern "C" fn nexus_unwatch_dir(ctx: *mut c_void, path: *const c_char) -> c_int {
     if ctx.is_null() || path.is_null() {

@@ -1,10 +1,4 @@
-"""Nexus Explorer — NTFS USN (Update Sequence Number) Change Journal Scanner.
-
-Interacts with the NTFS Change Journal:
-1. Queries USN Journal status via Win32 FSCTL_QUERY_USN_JOURNAL.
-2. Extracts Journal ID, First Usn, Next Usn, and allocated journal sizes.
-3. Provides sub-millisecond volume change tracking metrics.
-"""
+"""USN Journal status query only; no change enumeration or sub-millisecond tracking."""
 
 from __future__ import annotations
 
@@ -19,7 +13,10 @@ from typing import Dict, List, Optional, Tuple
 
 @dataclass
 class UsnJournalStatus:
-    """UsnJournalStatus."""
+    """Usnjournalstatus.
+
+    Manages UsnJournalStatus operations and coordinates related state changes for the component.
+    """
     drive_letter: str
     is_supported: bool
     is_active: bool
@@ -32,11 +29,13 @@ class UsnJournalStatus:
     allocation_delta_bytes: int = 0
     estimated_records: int = 0
     error: Optional[str] = None
-    """UsnJournalStatus class."""
 
 
 class USN_JOURNAL_DATA_V0(ctypes.Structure):
-    """USN_JOURNAL_DATA_V0."""
+    """USN_JOURNAL_DATA_V0.
+
+    Manages USN JOURNAL DATA V0 operations and coordinates related state changes for the component.
+    """
     _fields_ = [
         ("UsnJournalID", ctypes.c_uint64),
         ("FirstUsn", ctypes.c_int64),
@@ -46,11 +45,13 @@ class USN_JOURNAL_DATA_V0(ctypes.Structure):
         ("MaximumSize", ctypes.c_uint64),
         ("AllocationDelta", ctypes.c_uint64),
     ]
-    """USN_JOURNAL_DATA_V0 class."""
 
 
 class UsnJournalScanner:
-    """Production NTFS USN Change Journal query and diagnostic engine."""
+    """Usnjournalscanner.
+
+    Manages UsnJournalScanner operations and coordinates related state changes for the component.
+    """
 
     FSCTL_QUERY_USN_JOURNAL = 0x000900f4
     GENERIC_READ = 0x80000000
@@ -62,7 +63,16 @@ class UsnJournalScanner:
 
     @classmethod
     def query_volume_journal(cls, drive_letter: str = "C:") -> UsnJournalStatus:
-        """Query NTFS USN Journal status on the specified drive."""
+        """Query NTFS USN Journal status on the specified drive.
+
+        Manages query volume journal operations and coordinates related state changes for the component.
+
+        Args:
+            drive_letter (str): The drive letter parameter.
+
+        Returns:
+            UsnJournalStatus: Result of the operation.
+        """
         clean_drive = drive_letter.strip().rstrip("\\/").upper()
         if not clean_drive.endswith(":"):
             clean_drive += ":"

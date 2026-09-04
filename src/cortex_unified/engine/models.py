@@ -32,12 +32,21 @@ class StorageKind(str, enum.Enum):
 
     @property
     def overwrite_effective(self) -> bool:
-        """True only when physically overwriting bytes reliably destroys data."""
+        """True only when physically overwriting bytes reliably destroys data.
+
+        Manages overwrite effective operations and coordinates related state changes for the component.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         return self is StorageKind.HDD
 
 
 class DeletionMethod(str, enum.Enum):
-    """How an item should be removed."""
+    """Deletionmethod.
+
+    Manages DeletionMethod operations and coordinates related state changes for the component.
+    """
 
     DRY_RUN = "dry_run"      # report only, touch nothing
     RECYCLE = "recycle"      # move to OS trash/recycle bin (reversible)
@@ -46,7 +55,10 @@ class DeletionMethod(str, enum.Enum):
 
 
 class DeletionOutcome(str, enum.Enum):
-    """Result of a single item deletion."""
+    """Deletionoutcome.
+
+    Manages DeletionOutcome operations and coordinates related state changes for the component.
+    """
 
     WOULD_DELETE = "would_delete"     # dry-run success
     RECYCLED = "recycled"
@@ -82,11 +94,15 @@ class FileEntry:
 
     @property
     def age_days(self) -> float:
-        """age_days."""
+        """age_days.
+
+        Manages age days operations and coordinates related state changes for the component.
+
+        Returns:
+            float: Result of the operation.
+        """
         import time
         return max(0.0, (time.time() - self.mtime) / 86400.0)
-        """age_days."""
-        """age_days."""
 
     @property
     def reclaimable_size(self) -> int:
@@ -102,24 +118,48 @@ class FileEntry:
 
     @property
     def is_cloud_placeholder(self) -> bool:
-        """True when the content lives in the cloud, not on this disk."""
+        """True when the content lives in the cloud, not on this disk.
+
+        Manages is cloud placeholder operations and coordinates related state changes for the component.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         from . import winattrs
         return winattrs.is_dehydrated(self.attrs)
 
     @property
     def is_junction(self) -> bool:
-        """True for a junction / volume mount point (not a symlink to Python)."""
+        """True for a junction / volume mount point (not a symlink to Python).
+
+        Manages is junction operations and coordinates related state changes for the component.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         from . import winattrs
         return winattrs.is_junction(self.reparse_tag)
 
     @property
     def special_note(self) -> str:
-        """Short human explanation of any special storage behaviour, or ``""``."""
+        """Short human explanation of any special storage behaviour, or ``""``.
+
+        Manages special note operations and coordinates related state changes for the component.
+
+        Returns:
+            str: Formatted string or path.
+        """
         from . import winattrs
         return winattrs.describe(self.attrs, self.reparse_tag)
 
     def to_dict(self) -> dict[str, Any]:
-        """to_dict."""
+        """to_dict.
+
+        Manages to dict operations and coordinates related state changes for the component.
+
+        Returns:
+            dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         return {
             "path": str(self.path),
             "size": self.size,
@@ -130,13 +170,14 @@ class FileEntry:
             "cloud_placeholder": self.is_cloud_placeholder,
             "note": self.special_note,
         }
-        """to_dict."""
-        """to_dict."""
 
 
 @dataclass(slots=True)
 class ScanResult:
-    """Aggregate result of a traversal."""
+    """Aggregate result of a traversal.
+
+    Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+    """
 
     files: list[FileEntry] = field(default_factory=list)
     dirs: list[FileEntry] = field(default_factory=list)
@@ -154,13 +195,23 @@ class ScanResult:
 
     @property
     def error_count(self) -> int:
-        """error_count."""
+        """error_count.
+
+        Manages error count operations and coordinates related state changes for the component.
+
+        Returns:
+            int: Result of the operation.
+        """
         return len(self.errors)
-        """error_count."""
-        """error_count."""
 
     def to_dict(self) -> dict[str, Any]:
-        """to_dict."""
+        """to_dict.
+
+        Manages to dict operations and coordinates related state changes for the component.
+
+        Returns:
+            dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         return {
             "files": [f.to_dict() for f in self.files],
             "dirs": [d.to_dict() for d in self.dirs],
@@ -173,13 +224,14 @@ class ScanResult:
             "cloud_skipped_bytes": self.cloud_skipped_bytes,
             "junctions_skipped": self.junctions_skipped,
         }
-        """to_dict."""
-        """to_dict."""
 
 
 @dataclass(slots=True)
 class DeletionResult:
-    """Per-item deletion record plus batch aggregation helpers."""
+    """Deletionresult.
+
+    Manages DeletionResult operations and coordinates related state changes for the component.
+    """
 
     path: Path
     outcome: DeletionOutcome
@@ -190,13 +242,23 @@ class DeletionResult:
 
     @property
     def succeeded(self) -> bool:
-        """succeeded."""
+        """Succeeded.
+
+        Manages succeeded operations and coordinates related state changes for the component.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         return self.outcome not in (DeletionOutcome.FAILED, DeletionOutcome.SKIPPED_UNSAFE)
-        """succeeded."""
-        """succeeded."""
 
     def to_dict(self) -> dict[str, Any]:
-        """to_dict."""
+        """to_dict.
+
+        Manages to dict operations and coordinates related state changes for the component.
+
+        Returns:
+            dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         return {
             "path": str(self.path),
             "outcome": self.outcome.value,
@@ -205,5 +267,3 @@ class DeletionResult:
             "reason": self.reason,
             "backup_path": str(self.backup_path) if self.backup_path else None,
         }
-        """to_dict."""
-        """to_dict."""

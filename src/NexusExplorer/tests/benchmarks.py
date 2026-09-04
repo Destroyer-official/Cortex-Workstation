@@ -17,7 +17,16 @@ import pytest
 
 
 def _create_test_tree(root: Path, depth: int = 3, files_per_dir: int = 50, file_size: int = 1024):
-    """Create a test directory tree for benchmarking."""
+    """Create a test directory tree for benchmarking.
+
+    Manages create test tree operations and coordinates related state changes for the component.
+
+    Args:
+        root (Path): Filesystem path to the target file or directory.
+        depth (int): The depth parameter.
+        files_per_dir (int): The files per dir parameter.
+        file_size (int): The file size parameter.
+    """
     for d in range(depth):
         dir_path = root / f"dir_{d}"
         dir_path.mkdir(exist_ok=True)
@@ -28,31 +37,55 @@ def _create_test_tree(root: Path, depth: int = 3, files_per_dir: int = 50, file_
 
 
 def _cleanup_tree(root: Path):
-    """Remove test directory tree."""
+    """Remove test directory tree.
+
+    Permanently purges or removes specified target items, reclaiming storage space and logging actions taken.
+
+    Args:
+        root (Path): Filesystem path to the target file or directory.
+    """
     if root.exists():
         shutil.rmtree(root, ignore_errors=True)
 
 
 class BenchmarkTimer:
-    """Context manager for timing operations."""
+    """Benchmarktimer.
+
+    Manages BenchmarkTimer operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, name: str):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            name (str): The name parameter.
+        """
         self.name = name
         self.elapsed_ms: float = 0
         self._start: float = 0
 
     def __enter__(self):
-        """__enter__."""
+        """Manage context lifecycle and resource acquisition or cleanup.
+
+        Acquires necessary lock or file resources on entry and guarantees safe release and error propagation on exit.
+        """
         self._start = time.perf_counter()
         return self
 
     def __exit__(self, *args):
-        """__exit__."""
+        """Manage context lifecycle and resource acquisition or cleanup.
+
+        Acquires necessary lock or file resources on entry and guarantees safe release and error propagation on exit.
+        """
         self.elapsed_ms = (time.perf_counter() - self._start) * 1000
 
     def __repr__(self):
-        """__repr__."""
+        """Return an informative string representation of the instance.
+
+        Formats key attributes and state flags into a concise string suitable for debugging and diagnostics.
+        """
         return f"{self.name}: {self.elapsed_ms:.1f}ms"
 
 
@@ -61,11 +94,20 @@ class BenchmarkTimer:
 # ---------------------------------------------------------------------------
 
 class TestDirectoryListing:
-    """Benchmark directory listing operations."""
+    """Testdirectorylisting.
+
+    Manages TestDirectoryListing operations and coordinates related state changes for the component.
+    """
 
     @pytest.fixture(autouse=True)
     def setup(self, tmp_path):
-        """setup."""
+        """Setup.
+
+        Manages setup operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         self.root = tmp_path / "bench_tree"
         self.root.mkdir(exist_ok=True)
         _create_test_tree(self.root, depth=3, files_per_dir=100)
@@ -73,7 +115,10 @@ class TestDirectoryListing:
         _cleanup_tree(self.root)
 
     def test_list_small_dir(self):
-        """Benchmark listing a directory with ~100 files."""
+        """Benchmark listing a directory with ~100 files.
+
+        Manages test list small dir operations and coordinates related state changes for the component.
+        """
         target = self.root / "dir_0"
         with BenchmarkTimer("list_100_files") as t:
             entries = list(target.iterdir())
@@ -81,7 +126,10 @@ class TestDirectoryListing:
         print(f"\n  {t}")
 
     def test_list_medium_dir(self):
-        """Benchmark listing a directory with ~500 files."""
+        """Benchmark listing a directory with ~500 files.
+
+        Manages test list medium dir operations and coordinates related state changes for the component.
+        """
         # Create a dir with more files
         big_dir = self.root / "big_dir"
         big_dir.mkdir(exist_ok=True)
@@ -93,7 +141,10 @@ class TestDirectoryListing:
         print(f"\n  {t}")
 
     def test_scandir_small(self):
-        """Benchmark os.scandir on a small directory."""
+        """Benchmark os.scandir on a small directory.
+
+        Manages test scandir small operations and coordinates related state changes for the component.
+        """
         target = self.root / "dir_0"
         with BenchmarkTimer("scandir_100_files") as t:
             with os.scandir(target) as it:
@@ -107,11 +158,20 @@ class TestDirectoryListing:
 # ---------------------------------------------------------------------------
 
 class TestFileOperations:
-    """Benchmark file copy, move, and delete operations."""
+    """Testfileoperations.
+
+    Manages TestFileOperations operations and coordinates related state changes for the component.
+    """
 
     @pytest.fixture(autouse=True)
     def setup(self, tmp_path):
-        """setup."""
+        """Setup.
+
+        Manages setup operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         self.root = tmp_path / "bench_ops"
         self.root.mkdir(exist_ok=True)
         self.src_dir = self.root / "src"
@@ -123,7 +183,10 @@ class TestFileOperations:
         _cleanup_tree(self.root)
 
     def test_copy_files(self):
-        """Benchmark copying 50 small files."""
+        """Benchmark copying 50 small files.
+
+        Manages test copy files operations and coordinates related state changes for the component.
+        """
         dst_dir = self.root / "dst_copy"
         dst_dir.mkdir(exist_ok=True)
         with BenchmarkTimer("copy_50_files") as t:
@@ -133,7 +196,10 @@ class TestFileOperations:
         print(f"\n  {t}")
 
     def test_move_files(self):
-        """Benchmark moving 50 small files."""
+        """Benchmark moving 50 small files.
+
+        Manages test move files operations and coordinates related state changes for the component.
+        """
         dst_dir = self.root / "dst_move"
         dst_dir.mkdir(exist_ok=True)
         # Copy first, then move
@@ -148,7 +214,10 @@ class TestFileOperations:
         print(f"\n  {t}")
 
     def test_delete_files(self):
-        """Benchmark deleting 50 small files."""
+        """Benchmark deleting 50 small files.
+
+        Manages test delete files operations and coordinates related state changes for the component.
+        """
         del_dir = self.root / "to_delete"
         del_dir.mkdir(exist_ok=True)
         for i in range(50):
@@ -164,11 +233,20 @@ class TestFileOperations:
 # ---------------------------------------------------------------------------
 
 class TestSearch:
-    """Benchmark search operations."""
+    """Testsearch.
+
+    Manages TestSearch operations and coordinates related state changes for the component.
+    """
 
     @pytest.fixture(autouse=True)
     def setup(self, tmp_path):
-        """setup."""
+        """Setup.
+
+        Manages setup operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         self.root = tmp_path / "bench_search"
         self.root.mkdir(exist_ok=True)
         _create_test_tree(self.root, depth=4, files_per_dir=50)
@@ -176,14 +254,20 @@ class TestSearch:
         _cleanup_tree(self.root)
 
     def test_glob_search(self):
-        """Benchmark glob pattern matching across tree."""
+        """Benchmark glob pattern matching across tree.
+
+        Manages test glob search operations and coordinates related state changes for the component.
+        """
         with BenchmarkTimer("glob_*.txt") as t:
             results = list(self.root.rglob("*.txt"))
         assert len(results) > 0
         print(f"\n  {t} ({len(results)} results)")
 
     def test_name_contains_search(self):
-        """Benchmark substring search across tree."""
+        """Benchmark substring search across tree.
+
+        Manages test name contains search operations and coordinates related state changes for the component.
+        """
         with BenchmarkTimer("name_contains_file_") as t:
             results = [p for p in self.root.rglob("*") if "file_" in p.name.lower()]
         assert len(results) > 0
@@ -195,18 +279,30 @@ class TestSearch:
 # ---------------------------------------------------------------------------
 
 class TestHashing:
-    """Benchmark file hashing operations."""
+    """Testhashing.
+
+    Manages TestHashing operations and coordinates related state changes for the component.
+    """
 
     @pytest.fixture(autouse=True)
     def setup(self, tmp_path):
-        """setup."""
+        """Setup.
+
+        Manages setup operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         self.test_file = tmp_path / "hash_test.bin"
         self.test_file.write_bytes(os.urandom(1024 * 1024))  # 1MB
         yield
         _cleanup_tree(tmp_path)
 
     def test_xxh3_hash(self):
-        """Benchmark xxh3 hashing of 1MB file."""
+        """Benchmark xxh3 hashing of 1MB file.
+
+        Manages test xxh3 hash operations and coordinates related state changes for the component.
+        """
         try:
             from xxhash import xxh3_64
             with BenchmarkTimer("xxh3_1MB") as t:
@@ -221,7 +317,10 @@ class TestHashing:
             pytest.skip("xxhash not installed")
 
     def test_sha256_hash(self):
-        """Benchmark SHA-256 hashing of 1MB file."""
+        """Benchmark SHA-256 hashing of 1MB file.
+
+        Manages test sha256 hash operations and coordinates related state changes for the component.
+        """
         import hashlib
         with BenchmarkTimer("sha256_1MB") as t:
             h = hashlib.sha256()

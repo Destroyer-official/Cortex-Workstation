@@ -33,11 +33,17 @@ from sqlalchemy.orm import DeclarativeBase, sessionmaker, relationship
 from sqlalchemy.pool import StaticPool
 
 class Base(DeclarativeBase):
-    """Base class for all database models."""
+    """Base.
+
+    Manages Base operations and coordinates related state changes for the component.
+    """
     pass
 
 class ScanRun(Base):
-    """Record of a scan operation."""
+    """Record of a scan operation.
+
+    Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+    """
     
     __tablename__ = "scan_runs"
     
@@ -69,20 +75,36 @@ class ScanRun(Base):
     )
     
     def __repr__(self) -> str:
-        """__repr__."""
+        """Return an informative string representation of the instance.
+
+        Formats key attributes and state flags into a concise string suitable for debugging and diagnostics.
+
+        Returns:
+            str: Formatted string or path.
+        """
         return f"<ScanRun(id={self.id}, type={self.scan_type}, started={self.started_at})>"
-        """__repr__."""
     
     @property
     def duration_seconds(self) -> Optional[float]:
-        """duration_seconds."""
+        """duration_seconds.
+
+        Manages duration seconds operations and coordinates related state changes for the component.
+
+        Returns:
+            Optional[float]: Result of the operation.
+        """
         if self.finished_at and self.started_at:
             return (self.finished_at - self.started_at).total_seconds()
         return None
-        """duration_seconds."""
     
     def to_dict(self) -> Dict[str, Any]:
-        """Convert to dictionary for JSON serialization."""
+        """Convert to dictionary for JSON serialization.
+
+        Manages to dict operations and coordinates related state changes for the component.
+
+        Returns:
+            Dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         return {
             "id": self.id,
             "scan_type": self.scan_type,
@@ -100,7 +122,10 @@ class ScanRun(Base):
         }
 
 class DeletedItem(Base):
-    """Record of a deleted file or directory."""
+    """Deleteditem.
+
+    Manages DeletedItem operations and coordinates related state changes for the component.
+    """
     
     __tablename__ = "deleted_items"
     
@@ -138,12 +163,23 @@ class DeletedItem(Base):
     )
     
     def __repr__(self) -> str:
-        """__repr__."""
+        """Return an informative string representation of the instance.
+
+        Formats key attributes and state flags into a concise string suitable for debugging and diagnostics.
+
+        Returns:
+            str: Formatted string or path.
+        """
         return f"<DeletedItem(id={self.id}, path={self.path}, deleted={self.deleted_at})>"
-        """__repr__."""
     
     def to_dict(self) -> Dict[str, Any]:
-        """Convert to dictionary for JSON serialization."""
+        """Convert to dictionary for JSON serialization.
+
+        Manages to dict operations and coordinates related state changes for the component.
+
+        Returns:
+            Dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         return {
             "id": self.id,
             "run_id": self.run_id,
@@ -160,7 +196,10 @@ class DeletedItem(Base):
         }
 
 class ScheduledJob(Base):
-    """Scheduled cleanup job."""
+    """Scheduledjob.
+
+    Manages ScheduledJob operations and coordinates related state changes for the component.
+    """
     
     __tablename__ = "scheduled_jobs"
     
@@ -189,12 +228,20 @@ class ScheduledJob(Base):
     updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
     
     def __repr__(self) -> str:
-        """__repr__."""
+        """Return an informative string representation of the instance.
+
+        Formats key attributes and state flags into a concise string suitable for debugging and diagnostics.
+
+        Returns:
+            str: Formatted string or path.
+        """
         return f"<ScheduledJob(id={self.id}, name={self.name}, enabled={self.enabled})>"
-        """__repr__."""
 
 class SystemMetric(Base):
-    """System health and performance metrics."""
+    """Systemmetric.
+
+    Manages SystemMetric operations and coordinates related state changes for the component.
+    """
     
     __tablename__ = "system_metrics"
     
@@ -222,7 +269,10 @@ class SystemMetric(Base):
     )
 
 class UserPreference(Base):
-    """User preferences and settings."""
+    """Userpreference.
+
+    Manages UserPreference operations and coordinates related state changes for the component.
+    """
     
     __tablename__ = "user_preferences"
     
@@ -235,9 +285,14 @@ class UserPreference(Base):
     updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
     
     def __repr__(self) -> str:
-        """__repr__."""
+        """Return an informative string representation of the instance.
+
+        Formats key attributes and state flags into a concise string suitable for debugging and diagnostics.
+
+        Returns:
+            str: Formatted string or path.
+        """
         return f"<UserPreference(key={self.key}, value={self.value})>"
-        """__repr__."""
 
 class Database:
     """
@@ -283,7 +338,10 @@ class Database:
     
     @contextmanager
     def session(self):
-        """Context manager for database sessions."""
+        """Session.
+
+        Manages session operations and coordinates related state changes for the component.
+        """
         session = self.SessionLocal()
         try:
             yield session
@@ -302,7 +360,18 @@ class Database:
         root_path: str,
         health_score_before: Optional[int] = None,
     ) -> ScanRun:
-        """Create a new scan run record."""
+        """Create a new scan run record.
+
+        Manages create scan run operations and coordinates related state changes for the component.
+
+        Args:
+            scan_type (str): The scan type parameter.
+            root_path (str): Filesystem path to the target file or directory.
+            health_score_before (Optional[int]): The health score before parameter.
+
+        Returns:
+            ScanRun: Result of the operation.
+        """
         with self.session() as session:
             scan_run = ScanRun(
                 scan_type=scan_type,
@@ -326,7 +395,20 @@ class Database:
         health_score_after: Optional[int] = None,
         error_message: Optional[str] = None,
     ) -> None:
-        """update_scan_run."""
+        """update_scan_run.
+
+        Manages update scan run operations and coordinates related state changes for the component.
+
+        Args:
+            run_id (int): The run id parameter.
+            status (Optional[str]): The status parameter.
+            items_found (Optional[int]): The items found parameter.
+            bytes_found (Optional[int]): The bytes found parameter.
+            items_deleted (Optional[int]): The items deleted parameter.
+            bytes_freed (Optional[int]): The bytes freed parameter.
+            health_score_after (Optional[int]): The health score after parameter.
+            error_message (Optional[str]): Informational or progress status message.
+        """
         with self.session() as session:
             scan_run = session.query(ScanRun).filter(ScanRun.id == run_id).first()
             if scan_run:
@@ -346,7 +428,6 @@ class Database:
                     scan_run.health_score_after = health_score_after
                 if error_message:
                     scan_run.error_message = error_message
-        """update_scan_run."""
     
     def get_scan_history(
         self,
@@ -354,7 +435,18 @@ class Database:
         scan_type: Optional[str] = None,
         since: Optional[datetime] = None,
     ) -> List[ScanRun]:
-        """Get scan history with optional filters."""
+        """Get scan history with optional filters.
+
+        Manages get scan history operations and coordinates related state changes for the component.
+
+        Args:
+            limit (int): The limit parameter.
+            scan_type (Optional[str]): The scan type parameter.
+            since (Optional[datetime]): The since parameter.
+
+        Returns:
+            List[ScanRun]: List of processed items or identifiers.
+        """
         with self.session() as session:
             query = session.query(ScanRun)
             
@@ -369,7 +461,16 @@ class Database:
             return query.all()
     
     def get_scan_stats(self, days: int = 30) -> Dict[str, Any]:
-        """Get aggregate statistics for recent scans."""
+        """Get aggregate statistics for recent scans.
+
+        Manages get scan stats operations and coordinates related state changes for the component.
+
+        Args:
+            days (int): The days parameter.
+
+        Returns:
+            Dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         since = datetime.now(timezone.utc) - timedelta(days=days)
         
         with self.session() as session:
@@ -420,7 +521,22 @@ class Database:
         deletion_method: str = "trash",
         sha256: Optional[str] = None,
     ) -> DeletedItem:
-        """Record a deleted item."""
+        """Record a deleted item.
+
+        Manages add deleted item operations and coordinates related state changes for the component.
+
+        Args:
+            run_id (int): The run id parameter.
+            path (str): Filesystem path to the target file or directory.
+            size_bytes (int): The size bytes parameter.
+            file_type (str): The file type parameter.
+            backup_path (Optional[str]): Filesystem path to the target file or directory.
+            deletion_method (str): The deletion method parameter.
+            sha256 (Optional[str]): The sha256 parameter.
+
+        Returns:
+            DeletedItem: Result of the operation.
+        """
         with self.session() as session:
             item = DeletedItem(
                 run_id=run_id,
@@ -444,7 +560,17 @@ class Database:
         limit: int = 100,
         in_quarantine_only: bool = True,
     ) -> List[DeletedItem]:
-        """Get items that can be restored."""
+        """Get items that can be restored.
+
+        Manages get restorable items operations and coordinates related state changes for the component.
+
+        Args:
+            limit (int): The limit parameter.
+            in_quarantine_only (bool): The in quarantine only parameter.
+
+        Returns:
+            List[DeletedItem]: List of processed items or identifiers.
+        """
         with self.session() as session:
             query = session.query(DeletedItem).filter(
                 DeletedItem.can_restore == True,
@@ -459,7 +585,13 @@ class Database:
             return query.all()
     
     def mark_item_restored(self, item_id: int) -> None:
-        """Mark an item as restored."""
+        """Mark an item as restored.
+
+        Manages mark item restored operations and coordinates related state changes for the component.
+
+        Args:
+            item_id (int): The item id parameter.
+        """
         with self.session() as session:
             item = session.query(DeletedItem).filter(DeletedItem.id == item_id).first()
             if item:
@@ -467,7 +599,16 @@ class Database:
                 item.in_quarantine = False
     
     def cleanup_old_quarantine(self, days: int = 30) -> int:
-        """Remove quarantine records older than specified days."""
+        """Remove quarantine records older than specified days.
+
+        Permanently purges or removes specified target items, reclaiming storage space and logging actions taken.
+
+        Args:
+            days (int): The days parameter.
+
+        Returns:
+            int: Result of the operation.
+        """
         cutoff = datetime.now(timezone.utc) - timedelta(days=days)
         
         with self.session() as session:
@@ -488,7 +629,20 @@ class Database:
         health_score: Optional[int] = None,
         drive_path: Optional[str] = None,
     ) -> SystemMetric:
-        """Record a system metric snapshot."""
+        """Record a system metric snapshot.
+
+        Manages record metric operations and coordinates related state changes for the component.
+
+        Args:
+            disk_total_gb (Optional[float]): The disk total gb parameter.
+            disk_used_gb (Optional[float]): The disk used gb parameter.
+            disk_free_gb (Optional[float]): The disk free gb parameter.
+            health_score (Optional[int]): The health score parameter.
+            drive_path (Optional[str]): Filesystem path to the target file or directory.
+
+        Returns:
+            SystemMetric: Result of the operation.
+        """
         with self.session() as session:
             metric = SystemMetric(
                 disk_total_gb=disk_total_gb,
@@ -511,7 +665,17 @@ class Database:
         days: int = 30,
         drive_path: Optional[str] = None,
     ) -> List[SystemMetric]:
-        """Get historical metrics."""
+        """Get historical metrics.
+
+        Manages get metrics history operations and coordinates related state changes for the component.
+
+        Args:
+            days (int): The days parameter.
+            drive_path (Optional[str]): Filesystem path to the target file or directory.
+
+        Returns:
+            List[SystemMetric]: List of processed items or identifiers.
+        """
         since = datetime.now(timezone.utc) - timedelta(days=days)
         
         with self.session() as session:
@@ -529,7 +693,16 @@ class Database:
     # Cleanup Operations
     
     def cleanup_old_history(self, max_entries: int = 1000) -> int:
-        """Keep only the most recent scan history entries."""
+        """Keep only the most recent scan history entries.
+
+        Permanently purges or removes specified target items, reclaiming storage space and logging actions taken.
+
+        Args:
+            max_entries (int): The max entries parameter.
+
+        Returns:
+            int: Result of the operation.
+        """
         with self.session() as session:
             # Get count of total entries
             total = session.query(ScanRun).count()
@@ -557,7 +730,16 @@ _db_instance: Optional[Database] = None
 _db_lock = threading.Lock()
 
 def get_database(db_path: Optional[Path] = None) -> Database:
-    """get_database."""
+    """get_database.
+
+    Manages get database operations and coordinates related state changes for the component.
+
+    Args:
+        db_path (Optional[Path]): Filesystem path to the target file or directory.
+
+    Returns:
+        Database: Result of the operation.
+    """
     global _db_instance
     if _db_instance is not None:
         return _db_instance
@@ -568,11 +750,13 @@ def get_database(db_path: Optional[Path] = None) -> Database:
             db_path = Path.home() / ".cortex_cleaner" / "history.db"
         _db_instance = Database(db_path)
     return _db_instance
-    """get_database."""
 
 @contextmanager
 def db_session():
-    """Convenience context manager for database sessions."""
+    """Convenience context manager for database sessions.
+
+    Manages db session operations and coordinates related state changes for the component.
+    """
     db = get_database()
     with db.session() as session:
         yield session

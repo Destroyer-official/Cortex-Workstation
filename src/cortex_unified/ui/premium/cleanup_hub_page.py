@@ -56,7 +56,14 @@ class HubScanWorker(QObject):
     failed = Signal(str)
 
     def __init__(self, max_risk: str = "medium", include_disabled: bool = True):
-        """Store max-risk level, disabled-category flag, and a cancel event."""
+        """Store max-risk level, disabled-category flag, and a cancel event.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            max_risk (str): The max risk parameter.
+            include_disabled (bool): The include disabled parameter.
+        """
         super().__init__()
         self._max_risk = max_risk
         self._include_disabled = include_disabled
@@ -64,11 +71,17 @@ class HubScanWorker(QObject):
         self._cancel = threading.Event()
 
     def cancel(self):
-        """Request cooperative cancellation of the running scan."""
+        """Request cooperative cancellation of the running scan.
+
+        Sets the internal cancellation event to cooperatively stop worker execution at the next safe boundary.
+        """
         self._cancel.set()
 
     def run(self):
-        """Run the category scan and emit the report or a failure."""
+        """Run the category scan and emit the report or a failure.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         try:
             report = CleanerService().scan_categories(
                 max_risk=RiskLevel(self._max_risk),
@@ -77,6 +90,53 @@ class HubScanWorker(QObject):
                 cancel_event=self._cancel,
             )
             self.finished.emit(report)
+        except Exception as exc:  # noqa: BLE001
+            self.failed.emit(str(exc))
+
+
+class TempScanWorker(QObject):
+    """Scans stale temp files via TempCleaner (core/temp_cleaner.py).
+
+    Emits ``finished`` with a list of TempFinding, ``progress`` with status
+    text, or ``failed`` with an error message.
+    """
+    finished = Signal(object)  # list[TempFinding]
+    progress = Signal(str)
+    failed = Signal(str)
+
+    def __init__(self, min_age_days: int = 1):
+        """Store the age floor and a cancel event (TempCleaner walks anyway).
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            min_age_days (int): The min age days parameter.
+        """
+        super().__init__()
+        self._min_age_days = min_age_days
+        import threading
+        self._cancel = threading.Event()
+
+    def cancel(self):
+        """Request cooperative cancellation of the running scan.
+
+        Sets the internal cancellation event to cooperatively stop worker execution at the next safe boundary.
+        """
+        self._cancel.set()
+
+    def run(self):
+        """Run the stale-temp scan and emit findings or a failure.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
+        try:
+            from cortex_unified.core.temp_cleaner import TempCleaner
+            self.progress.emit("Scanning stale temp files…")
+            findings = TempCleaner(min_age_days=self._min_age_days).scan()
+            if self._cancel.is_set():
+                self.failed.emit("Temp scan cancelled.")
+                return
+            self.finished.emit(findings)
         except Exception as exc:  # noqa: BLE001
             self.failed.emit(str(exc))
 
@@ -94,20 +154,47 @@ _RISK_STYLE = {
 
 
 def _risk_label(risk: RiskLevel) -> str:
-    """Return the display label ("LOW"/"MEDIUM"/"HIGH") for a risk level."""
+    """Return the display label ("LOW"/"MEDIUM"/"HIGH") for a risk level.
+
+    Manages risk label operations and coordinates related state changes for the component.
+
+    Args:
+        risk (RiskLevel): The risk parameter.
+
+    Returns:
+        str: Formatted string or path.
+    """
     return _RISK_STYLE[risk][0]
 
 
 def _risk_color(risk: RiskLevel) -> str:
-    """Return the badge hex color for a risk level."""
+    """Return the badge hex color for a risk level.
+
+    Manages risk color operations and coordinates related state changes for the component.
+
+    Args:
+        risk (RiskLevel): The risk parameter.
+
+    Returns:
+        str: Formatted string or path.
+    """
     return _RISK_STYLE[risk][1]
 
 
 class CleanupHubPage(_Page):
-    """Storage Sense-style hub: every CleanupCategory as a card with estimates."""
+    """Storage Sense-style hub: every CleanupCategory as a card with estimates.
+
+    Permanently purges or removes specified target items, reclaiming storage space and logging actions taken.
+    """
 
     def __init__(self, win):
-        """Build the Cleanup Hub: scan controls, summary cards, and a card grid."""
+        """Build the Cleanup Hub: scan controls, summary cards, and a card grid.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win: Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(title_block(
             "Cleanup Hub",
@@ -125,6 +212,13 @@ class CleanupHubPage(_Page):
         self.scan_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self.scan_btn.clicked.connect(self._scan)
         ctrl.addWidget(self.scan_btn)
+
+        self.btn_temp = QPushButton("Scan Temp")
+        self.btn_temp.setObjectName("btn_scan_temp")
+        self.btn_temp.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_temp.setToolTip("Scan OS temp locations for stale files (TempCleaner, age > 1 day).")
+        self.btn_temp.clicked.connect(self._scan_temp)
+        ctrl.addWidget(self.btn_temp)
 
         self.btn_select_dir = QPushButton("Select Directory")
         self.btn_select_dir.setObjectName("Ghost")
@@ -244,7 +338,10 @@ class CleanupHubPage(_Page):
     # -- scan ---------------------------------------------------------------
 
     def _scan(self):
-        """Disable buttons and start a HubScanWorker (risk level from opt-in checkbox)."""
+        """Disable buttons and start a HubScanWorker (risk level from opt-in checkbox).
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+        """
         self.scan_btn.setEnabled(False)
         self.clean_btn.setEnabled(False)
         self.state.show_loading("Scanning categories…")
@@ -256,11 +353,23 @@ class CleanupHubPage(_Page):
         self.win.run_worker(w, self._on_scanned, self._fail, on_progress=self._on_progress)
 
     def _on_progress(self, msg: str):
-        """Show worker progress text in the scan status label."""
+        """Show worker progress text in the scan status label.
+
+        Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
+
+        Args:
+            msg (str): Informational or progress status message.
+        """
         self.scan_status.setText(msg)
 
     def _on_scanned(self, report):
-        """Update summary cards and rebuild the category card grid from the scan report."""
+        """Update summary cards and rebuild the category card grid from the scan report.
+
+        Manages on scanned operations and coordinates related state changes for the component.
+
+        Args:
+            report: The generated report data object from the backend.
+        """
         self._worker = None
         self.progress.setVisible(False)
         self.scan_status.setText("")
@@ -313,7 +422,18 @@ class CleanupHubPage(_Page):
         self._update_clean_enabled()
 
     def _make_card(self, cat: CleanupCategory, est_bytes: int, est_files: int) -> Card:
-        """Build one category card: risk/reversible badges, paths, globs, estimate, and select checkbox."""
+        """Build one category card: risk/reversible badges, paths, globs, estimate, and select checkbox.
+
+        Manages make card operations and coordinates related state changes for the component.
+
+        Args:
+            cat (CleanupCategory): The cat parameter.
+            est_bytes (int): The est bytes parameter.
+            est_files (int): The est files parameter.
+
+        Returns:
+            Card: Result of the operation.
+        """
         card = Card(self.p)
         lay = QVBoxLayout(card)
         lay.setContentsMargins(14, 12, 14, 12)
@@ -370,7 +490,14 @@ class CleanupHubPage(_Page):
         self._card_checkboxes[cid] = chk
 
         def _on_toggled(checked, _cid=cid):
-            """Record the card's selection state and refresh the Clean button."""
+            """Record the card's selection state and refresh the Clean button.
+
+            Manages on toggled operations and coordinates related state changes for the component.
+
+            Args:
+                checked: The checked parameter.
+                _cid: The  cid parameter.
+            """
             self._selected[_cid] = checked
             self._update_clean_enabled()
         chk.toggled.connect(_on_toggled)
@@ -380,30 +507,90 @@ class CleanupHubPage(_Page):
         return card
 
     def _select_all_cards(self, state: bool):
-        """Check or uncheck every category card checkbox at once."""
+        """Check or uncheck every category card checkbox at once.
+
+        Manages select all cards operations and coordinates related state changes for the component.
+
+        Args:
+            state (bool): The state parameter.
+        """
         for cid, chk in self._card_checkboxes.items():
             chk.setChecked(state)
             self._selected[cid] = state
         self._update_clean_enabled()
 
     def _update_clean_enabled(self):
-        """Enable the Clean button only when something is selected and a scan has files."""
+        """Enable the Clean button only when something is selected and a scan has files.
+
+        Manages update clean enabled operations and coordinates related state changes for the component.
+        """
         any_sel = any(self._selected.values())
         report_ok = self._report is not None and self._report.total_files > 0
         self.clean_btn.setEnabled(any_sel and report_ok)
 
     def _fail(self, msg: str):
-        """Reset UI state after a failed scan/clean and offer retry."""
+        """Handle an operation failure and notify the user.
+
+        Captures error details, displays an informative failure state in the UI, resets progress indicators, and re-enables interactive controls.
+
+        Args:
+            msg (str): Informational or progress status message.
+        """
         self._worker = None
         self.progress.setVisible(False)
         self.scan_status.setText("")
         self.scan_btn.setEnabled(True)
         self.state.show_error(msg, on_retry=self._scan)
 
+    def _scan_temp(self):
+        """Start a TempScanWorker (stale-temp scan+clean backend) via run_worker.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+        """
+        self.btn_temp.setEnabled(False)
+        self.scan_status.setText("Scanning stale temp files…")
+        w = TempScanWorker(min_age_days=1)
+        self._worker = w
+        self.win.run_worker(w, self._on_temp_scanned, self._on_temp_failed, on_progress=self._on_progress)
+
+    def _on_temp_scanned(self, findings):
+        """Show stale-temp totals (count + bytes) in status + info dialog.
+
+        Manages on temp scanned operations and coordinates related state changes for the component.
+
+        Args:
+            findings: The findings parameter.
+        """
+        self._worker = None
+        self.btn_temp.setEnabled(True)
+        self.scan_status.setText("")
+        total = sum(int(getattr(f, "size_bytes", 0) or 0) for f in (findings or []))
+        count = len(findings or [])
+        msg = f"Stale temp: {count:,} file(s), {fmt_bytes(total)} reclaimable (age > 1 day)"
+        self.win.statusBar().showMessage(msg, 6000)
+        self.scan_status.setText(msg)
+        QMessageBox.information(self, "Stale Temp Scan", msg + "\n\nClean via Deep Cleaner / CLI clean-temp (trash-safe).")
+
+    def _on_temp_failed(self, msg: str):
+        """Re-enable the temp button and surface the scan failure.
+
+        Captures worker error messages, presents diagnostic feedback to the user, and resets interactive controls for retry.
+
+        Args:
+            msg (str): Informational or progress status message.
+        """
+        self._worker = None
+        self.btn_temp.setEnabled(True)
+        self.scan_status.setText("")
+        QMessageBox.warning(self, "Stale Temp Scan", f"Temp scan failed:\n{msg}")
+
     # -- pickers ------------------------------------------------------------
 
     def _pick_custom_folder(self):
-        """Add a chosen directory to the scan roots and rescan."""
+        """Add a chosen directory to the scan roots and rescan.
+
+        Manages pick custom folder operations and coordinates related state changes for the component.
+        """
         folder = QFileDialog.getExistingDirectory(self, "Select Directory to Add to Cleanup Sweep", str(Path.home()))
         if folder:
             p = Path(folder)
@@ -413,7 +600,10 @@ class CleanupHubPage(_Page):
             self._scan()
 
     def _pick_custom_file(self):
-        """Add the parent folder of a chosen file to the scan roots and rescan."""
+        """Add the parent folder of a chosen file to the scan roots and rescan.
+
+        Manages pick custom file operations and coordinates related state changes for the component.
+        """
         file_path, _ = QFileDialog.getOpenFileName(self, "Select File to Add Parent Location", str(Path.home()))
         if file_path:
             p = Path(file_path).parent
@@ -423,13 +613,19 @@ class CleanupHubPage(_Page):
             self._scan()
 
     def _clear_custom_roots(self):
-        """Remove all custom scan roots (back to system defaults) and rescan."""
+        """Remove all custom scan roots (back to system defaults) and rescan.
+
+        Manages clear custom roots operations and coordinates related state changes for the component.
+        """
         self._custom_roots.clear()
         self._update_roots_status()
         self._scan()
 
     def _update_roots_status(self):
-        """Refresh the active-scan-roots label and Reset Roots button visibility."""
+        """Refresh the active-scan-roots label and Reset Roots button visibility.
+
+        Manages update roots status operations and coordinates related state changes for the component.
+        """
         if self._custom_roots:
             roots_str = ", ".join(str(r) for r in self._custom_roots)
             self.target_roots_label.setText(f"Active Scan Roots: System Defaults + {roots_str}")
@@ -441,7 +637,10 @@ class CleanupHubPage(_Page):
     # -- clean --------------------------------------------------------------
 
     def _clean(self):
-        """Confirm selection, then run CleanWorker on the selected categories (Recycle-Bin-safe delete)."""
+        """Confirm selection, then run CleanWorker on the selected categories (Recycle-Bin-safe delete).
+
+        Permanently purges or removes specified target items, reclaiming storage space and logging actions taken.
+        """
         if self._report is None:
             return
         selected_ids = [cid for cid, on in self._selected.items() if on]
@@ -475,7 +674,15 @@ class CleanupHubPage(_Page):
         self.win.run_worker(w, self._on_cleaned, self._fail, on_progress=self._on_progress)
 
     def _on_cleaned(self, freed: int, items: int, skipped: int):
-        """Report freed bytes and item counts after cleanup finishes."""
+        """Report freed bytes and item counts after cleanup finishes.
+
+        Manages on cleaned operations and coordinates related state changes for the component.
+
+        Args:
+            freed (int): The freed parameter.
+            items (int): Collection of items or entries to process.
+            skipped (int): The skipped parameter.
+        """
         self.progress.setVisible(False)
         self.scan_btn.setEnabled(True)
         extra = f" {skipped} blocked/skipped." if skipped else ""

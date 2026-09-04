@@ -33,7 +33,10 @@ _LOG = logging.getLogger("cortex.system_tools.ai_telemetry")
 
 @dataclass
 class AiArtifactInfo:
-    """Detailed metadata for a discovered AI or Copilot local storage artifact."""
+    """Aiartifactinfo.
+
+    Manages AiArtifactInfo operations and coordinates related state changes for the component.
+    """
     name: str
     category: str  # "Recall", "Copilot Cache", "SQLite WAL", "Edge AI"
     path: str
@@ -43,7 +46,13 @@ class AiArtifactInfo:
     description: str = ""
 
     def to_dict(self) -> Dict[str, Any]:
-        """To dict."""
+        """To dict.
+
+        Manages to dict operations and coordinates related state changes for the component.
+
+        Returns:
+            Dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         return {
             "name": self.name,
             "category": self.category,
@@ -57,7 +66,10 @@ class AiArtifactInfo:
 
 @dataclass
 class AiTelemetryReport:
-    """Comprehensive analysis report of Windows AI and generative telemetry artifacts."""
+    """Aitelemetryreport.
+
+    Manages AiTelemetryReport operations and coordinates related state changes for the component.
+    """
     artifacts: List[AiArtifactInfo] = field(default_factory=list)
     total_size_bytes: int = 0
     wal_journal_bytes: int = 0
@@ -66,7 +78,13 @@ class AiTelemetryReport:
     scan_duration_ms: float = 0.0
 
     def to_dict(self) -> Dict[str, Any]:
-        """To dict."""
+        """To dict.
+
+        Manages to dict operations and coordinates related state changes for the component.
+
+        Returns:
+            Dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         return {
             "artifacts": [a.to_dict() for a in self.artifacts],
             "total_size_bytes": self.total_size_bytes,
@@ -79,7 +97,10 @@ class AiTelemetryReport:
 
 @dataclass
 class AiCleanResult:
-    """Results of AI cache cleaning and SQLite WAL checkpoint operations."""
+    """Aicleanresult.
+
+    Manages AiCleanResult operations and coordinates related state changes for the component.
+    """
     cleaned_items: int = 0
     freed_bytes: int = 0
     truncated_wal_count: int = 0
@@ -87,7 +108,13 @@ class AiCleanResult:
     dry_run: bool = False
 
     def to_dict(self) -> Dict[str, Any]:
-        """To dict."""
+        """To dict.
+
+        Manages to dict operations and coordinates related state changes for the component.
+
+        Returns:
+            Dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         return {
             "cleaned_items": self.cleaned_items,
             "freed_bytes": self.freed_bytes,
@@ -98,14 +125,26 @@ class AiCleanResult:
 
 
 class AiTelemetryCleaner:
-    """Forensic inspector and optimizer for Windows 11 AI and Recall caches."""
+    """Aitelemetrycleaner.
+
+    Manages AiTelemetryCleaner operations and coordinates related state changes for the component.
+    """
 
     def __init__(self) -> None:
-        """Initialize Ai Telemetry Cleaner."""
+        """Initialize Ai Telemetry Cleaner.
+
+        Initializes the instance and configures internal state.
+        """
         self.logger = _LOG
 
     def _get_search_roots(self) -> List[tuple[str, str, Path, str]]:
-        """Resolve candidate search locations dynamically from active user and system environments."""
+        """Resolve candidate search locations dynamically from active user and system environments.
+
+        Manages get search roots operations and coordinates related state changes for the component.
+
+        Returns:
+            List[tuple[str, str, Path, str]]: List of processed items or identifiers.
+        """
         lad = os.environ.get("LOCALAPPDATA")
         pdata = os.environ.get("PROGRAMDATA")
 
@@ -155,7 +194,13 @@ class AiTelemetryCleaner:
         return candidates
 
     def scan(self) -> AiTelemetryReport:
-        """Examine local disk for AI artifacts, Recall databases, and inflated WAL files."""
+        """Examine local disk for AI artifacts, Recall databases, and inflated WAL files.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+        Returns:
+            AiTelemetryReport: Result of the operation.
+        """
         t0 = time.perf_counter()
         report = AiTelemetryReport()
 
@@ -189,7 +234,18 @@ class AiTelemetryCleaner:
         description: str,
         is_wal: bool = False,
     ) -> None:
-        """_record_artifact."""
+        """_record_artifact.
+
+        Manages record artifact operations and coordinates related state changes for the component.
+
+        Args:
+            report (AiTelemetryReport): The generated report data object from the backend.
+            name (str): The name parameter.
+            category (str): The category parameter.
+            path (Path): Filesystem path to the target file or directory.
+            description (str): The description parameter.
+            is_wal (bool): The is wal parameter.
+        """
         try:
             stat = path.stat()
             sz = stat.st_size
@@ -210,11 +266,18 @@ class AiTelemetryCleaner:
                 report.cache_bytes += sz
         except (OSError, PermissionError):
             pass
-        """_record_artifact."""
-        """_record_artifact."""
 
     def checkpoint_wal_journal(self, wal_path: Path) -> int:
-        """Safely truncate a SQLite WAL file by connecting to its parent DB and executing PRAGMA wal_checkpoint(TRUNCATE)."""
+        """Safely truncate a SQLite WAL file by connecting to its parent DB and executing PRAGMA wal_checkpoint(TRUNCATE).
+
+        Manages checkpoint wal journal operations and coordinates related state changes for the component.
+
+        Args:
+            wal_path (Path): Filesystem path to the target file or directory.
+
+        Returns:
+            int: Result of the operation.
+        """
         db_path = wal_path.with_name(wal_path.name[:-4])  # Strip -wal
         if not db_path.is_file():
             return 0
@@ -244,7 +307,17 @@ class AiTelemetryCleaner:
             return 0
 
     def clean(self, checkpoint_wal: bool = True, dry_run: bool = False) -> AiCleanResult:
-        """Purge temporary AI caches and truncate uncheckpointed SQLite WAL journals."""
+        """Purge temporary AI caches and truncate uncheckpointed SQLite WAL journals.
+
+        Permanently purges or removes specified target items, reclaiming storage space and logging actions taken.
+
+        Args:
+            checkpoint_wal (bool): The checkpoint wal parameter.
+            dry_run (bool): The dry run parameter.
+
+        Returns:
+            AiCleanResult: Result of the operation.
+        """
         result = AiCleanResult(dry_run=dry_run)
 
         for _, category, root_path, _ in self._get_search_roots():

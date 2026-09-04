@@ -45,7 +45,10 @@ COMMON_PORTS = {
 
 @dataclass(slots=True)
 class PingResult:
-    """Ping Result data container."""
+    """Pingresult.
+
+    Manages PingResult operations and coordinates related state changes for the component.
+    """
     host: str
     reachable: bool
     sent: int = 0
@@ -57,7 +60,13 @@ class PingResult:
     error: str = ""
 
     def to_dict(self) -> dict[str, Any]:
-        """To dict."""
+        """To dict.
+
+        Manages to dict operations and coordinates related state changes for the component.
+
+        Returns:
+            dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         return {
             "host": self.host, "reachable": self.reachable, "sent": self.sent,
             "received": self.received, "loss_percent": self.loss_percent,
@@ -68,20 +77,32 @@ class PingResult:
 
 @dataclass(slots=True)
 class Hop:
-    """Hop data container."""
+    """Hop.
+
+    Manages Hop operations and coordinates related state changes for the component.
+    """
     number: int
     host: str
     times_ms: list[float] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
-        """To dict."""
+        """To dict.
+
+        Manages to dict operations and coordinates related state changes for the component.
+
+        Returns:
+            dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         avg = round(sum(self.times_ms) / len(self.times_ms), 1) if self.times_ms else None
         return {"number": self.number, "host": self.host,
                 "times_ms": self.times_ms, "avg_ms": avg}
 
 
 class NetworkTools:
-    """Stateless collection of network diagnostics."""
+    """Networktools.
+
+    Manages NetworkTools operations and coordinates related state changes for the component.
+    """
 
     # -- ping ---------------------------------------------------------------
 
@@ -92,7 +113,19 @@ class NetworkTools:
         timeout_s: int = 4,
         cancel_event: threading.Event | None = None,
     ) -> PingResult:
-        """Ping."""
+        """Ping.
+
+        Manages ping operations and coordinates related state changes for the component.
+
+        Args:
+            host (str): The host parameter.
+            count (int): The count parameter.
+            timeout_s (int): The timeout s parameter.
+            cancel_event (threading.Event | None): Threading event or callable to check for cancellation.
+
+        Returns:
+            PingResult: Result of the operation.
+        """
         host = (host or "").strip()
         if not host:
             return PingResult(host, False, error="No host given.")
@@ -112,7 +145,17 @@ class NetworkTools:
 
     @staticmethod
     def _parse_ping(host: str, out: str) -> PingResult:
-        """_parse_ping."""
+        """_parse_ping.
+
+        Manages parse ping operations and coordinates related state changes for the component.
+
+        Args:
+            host (str): The host parameter.
+            out (str): The out parameter.
+
+        Returns:
+            PingResult: Result of the operation.
+        """
         res = PingResult(host, False)
         # Packet stats (Windows: "Sent = 4, Received = 4, Lost = 0 (0% loss)";
         # *nix: "4 packets transmitted, 4 received, 0% packet loss").
@@ -139,13 +182,21 @@ class NetworkTools:
                 res.min_ms, res.avg_ms, res.max_ms = float(nm.group(1)), float(nm.group(2)), float(nm.group(3))
         res.reachable = res.received > 0
         return res
-        """_parse_ping."""
-        """_parse_ping."""
 
     # -- traceroute ---------------------------------------------------------
 
     def traceroute(self, host: str, max_hops: int = 30) -> list[Hop]:
-        """Traceroute."""
+        """Traceroute.
+
+        Manages traceroute operations and coordinates related state changes for the component.
+
+        Args:
+            host (str): The host parameter.
+            max_hops (int): The max hops parameter.
+
+        Returns:
+            list[Hop]: List of processed items or identifiers.
+        """
         host = (host or "").strip()
         if not host:
             return []
@@ -159,7 +210,16 @@ class NetworkTools:
 
     @staticmethod
     def _parse_traceroute(out: str) -> list[Hop]:
-        """_parse_traceroute."""
+        """_parse_traceroute.
+
+        Manages parse traceroute operations and coordinates related state changes for the component.
+
+        Args:
+            out (str): The out parameter.
+
+        Returns:
+            list[Hop]: List of processed items or identifiers.
+        """
         hops: list[Hop] = []
         for line in out.splitlines():
             line = line.strip()
@@ -174,14 +234,21 @@ class NetworkTools:
             hostname = hosts[-1] if hosts else ("*" if "*" in rest else "")
             hops.append(Hop(number=num, host=hostname, times_ms=times))
         return hops
-        """_parse_traceroute."""
-        """_parse_traceroute."""
 
     # -- DNS ----------------------------------------------------------------
 
     @staticmethod
     def dns_lookup(host: str) -> list[str]:
-        """Dns lookup."""
+        """Dns lookup.
+
+        Manages dns lookup operations and coordinates related state changes for the component.
+
+        Args:
+            host (str): The host parameter.
+
+        Returns:
+            list[str]: List of processed items or identifiers.
+        """
         host = (host or "").strip()
         if not host:
             return []
@@ -193,7 +260,16 @@ class NetworkTools:
 
     @staticmethod
     def reverse_dns(ip: str) -> str:
-        """Reverse dns."""
+        """Reverse dns.
+
+        Manages reverse dns operations and coordinates related state changes for the component.
+
+        Args:
+            ip (str): The ip parameter.
+
+        Returns:
+            str: Formatted string or path.
+        """
         ip = (ip or "").strip()
         try:
             return socket.gethostbyaddr(ip)[0]
@@ -204,7 +280,18 @@ class NetworkTools:
 
     @staticmethod
     def check_port(host: str, port: int, timeout: float = 1.0) -> bool:
-        """True if a TCP connection to host:port succeeds (reachability)."""
+        """True if a TCP connection to host:port succeeds (reachability).
+
+        Manages check port operations and coordinates related state changes for the component.
+
+        Args:
+            host (str): The host parameter.
+            port (int): The port parameter.
+            timeout (float): The timeout parameter.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         try:
             with socket.create_connection((host, int(port)), timeout=timeout):
                 return True
@@ -212,7 +299,17 @@ class NetworkTools:
             return False
 
     def scan_common_ports(self, host: str, timeout: float = 0.6) -> dict[int, bool]:
-        """Check the COMMON_PORTS on *host* (self-audit when host is this PC)."""
+        """Check the COMMON_PORTS on *host* (self-audit when host is this PC).
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+        Args:
+            host (str): The host parameter.
+            timeout (float): The timeout parameter.
+
+        Returns:
+            dict[int, bool]: Dictionary mapping identifiers to status or values.
+        """
         host = (host or "").strip()
         results: dict[int, bool] = {}
         if not host:
@@ -225,7 +322,16 @@ class NetworkTools:
 
     @staticmethod
     def ip_info(address: str) -> dict[str, Any]:
-        """Classify an IP entirely offline - no external lookups, no guesses."""
+        """Classify an IP entirely offline - no external lookups, no guesses.
+
+        Manages ip info operations and coordinates related state changes for the component.
+
+        Args:
+            address (str): The address parameter.
+
+        Returns:
+            dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         address = (address or "").strip()
         info: dict[str, Any] = {"address": address, "valid": False}
         try:
@@ -247,7 +353,16 @@ class NetworkTools:
 
     @staticmethod
     def _category(ip) -> str:
-        """_category."""
+        """Category.
+
+        Manages category operations and coordinates related state changes for the component.
+
+        Args:
+            ip: The ip parameter.
+
+        Returns:
+            str: Formatted string or path.
+        """
         if ip.is_loopback:
             return "Loopback (this machine)"
         if ip.is_private:
@@ -261,8 +376,6 @@ class NetworkTools:
         if ip.is_global:
             return "Public (internet)"
         return "Unspecified"
-        """_category."""
-        """_category."""
 
     # -- helper -------------------------------------------------------------
 
@@ -272,7 +385,18 @@ class NetworkTools:
         timeout: int = 30,
         cancel_event: threading.Event | None = None,
     ) -> str | None:
-        """_run."""
+        """Run.
+
+        Manages run operations and coordinates related state changes for the component.
+
+        Args:
+            args (list[str]): The args parameter.
+            timeout (int): The timeout parameter.
+            cancel_event (threading.Event | None): Threading event or callable to check for cancellation.
+
+        Returns:
+            str | None: Formatted string or path.
+        """
         try:
             result = _proc.run(
                 args,
@@ -293,5 +417,3 @@ class NetworkTools:
                 exc,
             )
             return None
-        """_run."""
-        """_run."""

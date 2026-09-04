@@ -25,7 +25,10 @@ except FileNotFoundError:
 
 @pytest.fixture(scope="module")
 def ffi():
-    """ffi."""
+    """Ffi.
+
+    Manages ffi operations and coordinates related state changes for the component.
+    """
     f = nexus_ffi.NexusFfi()
     yield f
     f.close()
@@ -33,7 +36,13 @@ def ffi():
 
 @pytest.fixture
 def tree(tmp_path):
-    """tree."""
+    """Tree.
+
+    Manages tree operations and coordinates related state changes for the component.
+
+    Args:
+        tmp_path: Filesystem path to the target file or directory.
+    """
     (tmp_path / "hello.txt").write_text("abcdef", encoding="utf-8")
     (tmp_path / "emoji_📁.dat").write_bytes(b"x")
     d = tmp_path / "subdir"
@@ -43,18 +52,34 @@ def tree(tmp_path):
 
 
 def test_dll_discovery_paths():
-    """test_dll_discovery_paths."""
+    """test_dll_discovery_paths.
+
+    Manages test dll discovery paths operations and coordinates related state changes for the component.
+    """
     assert _DLL.is_file()
 
 
 def test_version_nonempty(ffi):
-    """test_version_nonempty."""
+    """test_version_nonempty.
+
+    Manages test version nonempty operations and coordinates related state changes for the component.
+
+    Args:
+        ffi: The ffi parameter.
+    """
     v = ffi.version()
     assert isinstance(v, str) and v.strip() != ""
 
 
 def test_read_dir_sync_rows(tree, ffi):
-    """test_read_dir_sync_rows."""
+    """test_read_dir_sync_rows.
+
+    Manages test read dir sync rows operations and coordinates related state changes for the component.
+
+    Args:
+        tree: The tree parameter.
+        ffi: The ffi parameter.
+    """
     rows = {r["name"]: r for r in ffi.read_dir_sync(str(tree))}
     assert "hello.txt" in rows and "subdir" in rows
     assert rows["hello.txt"]["isDir"] is False
@@ -66,13 +91,25 @@ def test_read_dir_sync_rows(tree, ffi):
 
 
 def test_read_dir_sync_missing_dir_raises(ffi):
-    """test_read_dir_sync_missing_dir_raises."""
+    """test_read_dir_sync_missing_dir_raises.
+
+    Manages test read dir sync missing dir raises operations and coordinates related state changes for the component.
+
+    Args:
+        ffi: The ffi parameter.
+    """
     with pytest.raises(OSError):
         ffi.read_dir_sync(r"C:\__nexus_definitely_missing_xyz__")
 
 
 def test_get_drives(ffi):
-    """test_get_drives."""
+    """test_get_drives.
+
+    Manages test get drives operations and coordinates related state changes for the component.
+
+    Args:
+        ffi: The ffi parameter.
+    """
     drives = ffi.get_drives()
     assert len(drives) >= 1
     d = drives[0]
@@ -81,13 +118,25 @@ def test_get_drives(ffi):
 
 
 def test_home_dir(ffi):
-    """test_home_dir."""
+    """test_home_dir.
+
+    Manages test home dir operations and coordinates related state changes for the component.
+
+    Args:
+        ffi: The ffi parameter.
+    """
     home = ffi.home_dir()
     assert home and os.path.isdir(home)
 
 
 def test_search_finds_seeded(ffi):
-    """test_search_finds_seeded."""
+    """test_search_finds_seeded.
+
+    Manages test search finds seeded operations and coordinates related state changes for the component.
+
+    Args:
+        ffi: The ffi parameter.
+    """
     base = Path(tempfile.mkdtemp(prefix="nexus_search_"))
     try:
         for i in range(5):
@@ -106,14 +155,28 @@ def test_search_finds_seeded(ffi):
 
 
 def test_cancel_search_after_completion_is_safe(ffi, tmp_path):
-    """test_cancel_search_after_completion_is_safe."""
+    """test_cancel_search_after_completion_is_safe.
+
+    Manages test cancel search after completion is safe operations and coordinates related state changes for the component.
+
+    Args:
+        ffi: The ffi parameter.
+        tmp_path: Filesystem path to the target file or directory.
+    """
     (tmp_path / "z.txt").write_bytes(b"")
     sid, rows = ffi.search(str(tmp_path), "z", max_results=10)
     assert isinstance(ffi.cancel_search(sid), bool)
 
 
 def test_rename_roundtrip(ffi, tmp_path):
-    """test_rename_roundtrip."""
+    """test_rename_roundtrip.
+
+    Manages test rename roundtrip operations and coordinates related state changes for the component.
+
+    Args:
+        ffi: The ffi parameter.
+        tmp_path: Filesystem path to the target file or directory.
+    """
     src = tmp_path / "before.txt"
     src.write_text("", encoding="utf-8")
     assert ffi.rename(str(src), "after.txt") is True
@@ -121,13 +184,27 @@ def test_rename_roundtrip(ffi, tmp_path):
 
 
 def test_create_folder(ffi, tmp_path):
-    """test_create_folder."""
+    """test_create_folder.
+
+    Manages test create folder operations and coordinates related state changes for the component.
+
+    Args:
+        ffi: The ffi parameter.
+        tmp_path: Filesystem path to the target file or directory.
+    """
     assert ffi.create_folder(str(tmp_path), "made_by_ffi") is True
     assert (tmp_path / "made_by_ffi").is_dir()
 
 
 def test_read_text_file_content_and_truncation(ffi, tmp_path):
-    """test_read_text_file_content_and_truncation."""
+    """test_read_text_file_content_and_truncation.
+
+    Manages test read text file content and truncation operations and coordinates related state changes for the component.
+
+    Args:
+        ffi: The ffi parameter.
+        tmp_path: Filesystem path to the target file or directory.
+    """
     p = tmp_path / "doc.txt"
     p.write_text("0123456789" * 10, encoding="utf-8")
     content, truncated, size = ffi.read_text_file(str(p), 4096)
@@ -137,7 +214,10 @@ def test_read_text_file_content_and_truncation(ffi, tmp_path):
 
 
 def test_close_idempotent():
-    """test_close_idempotent."""
+    """test_close_idempotent.
+
+    Manages test close idempotent operations and coordinates related state changes for the component.
+    """
     f = nexus_ffi.NexusFfi()
     f.close()
     f.close()  # must not raise

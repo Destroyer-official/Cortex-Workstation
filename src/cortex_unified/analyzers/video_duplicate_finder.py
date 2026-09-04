@@ -106,16 +106,34 @@ except ImportError:
     _HAS_PIL = False
 
 def _cos_table(n: int) -> List[List[float]]:
-    """_cos_table."""
+    """_cos_table.
+
+    Manages cos table operations and coordinates related state changes for the component.
+
+    Args:
+        n (int): The n parameter.
+
+    Returns:
+        List[List[float]]: List of processed items or identifiers.
+    """
     pi = math.pi
     return [[math.cos((2 * x + 1) * u * pi / (2 * n)) for x in range(n)] for u in range(n)]
-    """_cos_table."""
-    """_cos_table."""
 
 _COS_32 = _cos_table(32) if _HAS_PIL else None
 
 def _dct2d(rows: List[List[float]], cos: List[List[float]], size: int) -> List[List[float]]:
-    """_dct2d."""
+    """Dct2d.
+
+    Manages dct2d operations and coordinates related state changes for the component.
+
+    Args:
+        rows (List[List[float]]): Table row index or list of row indices.
+        cos (List[List[float]]): The cos parameter.
+        size (int): Integer number of bytes to format or process.
+
+    Returns:
+        List[List[float]]: List of processed items or identifiers.
+    """
     out = [[0.0] * size for _ in range(size)]
     for u in range(size):
         cu = cos[u]
@@ -132,11 +150,18 @@ def _dct2d(rows: List[List[float]], cos: List[List[float]], size: int) -> List[L
                 acc += s * cy
             out_u[v] = acc
     return out
-    """_dct2d."""
-    """_dct2d."""
 
 def _phash_image(img) -> int:  # img is PIL.Image.Image
-    """_phash_image."""
+    """_phash_image.
+
+    Manages phash image operations and coordinates related state changes for the component.
+
+    Args:
+        img: The img parameter.
+
+    Returns:
+        int: Result of the operation.
+    """
     gray = img.convert("L").resize((32, 32), Image.Resampling.LANCZOS)
     data = list(gray.tobytes())
     rows = [data[i * 32:(i + 1) * 32] for i in range(32)]
@@ -153,21 +178,37 @@ def _phash_image(img) -> int:  # img is PIL.Image.Image
         if v > mean:
             bits |= 1 << i
     return bits
-    """_phash_image."""
-    """_phash_image."""
 
 def _hamming(a: int, b: int) -> int:
-    """_hamming."""
+    """Hamming.
+
+    Manages hamming operations and coordinates related state changes for the component.
+
+    Args:
+        a (int): The a parameter.
+        b (int): Integer number of bytes to format or process.
+
+    Returns:
+        int: Result of the operation.
+    """
     return bin(a ^ b).count("1")
-    """_hamming."""
-    """_hamming."""
 
 # ---------------------------------------------------------------------------
 # Keyframe extraction
 # ---------------------------------------------------------------------------
 
 def _extract_frames_cv2(path: Path, max_frames: int = _MAX_FRAMES) -> List[int]:
-    """Extract frame pHashes via cv2 (returns list of 64-bit ints)."""
+    """Extract frame pHashes via cv2 (returns list of 64-bit ints).
+
+    Manages extract frames cv2 operations and coordinates related state changes for the component.
+
+    Args:
+        path (Path): Filesystem path to the target file or directory.
+        max_frames (int): The max frames parameter.
+
+    Returns:
+        List[int]: List of processed items or identifiers.
+    """
     try:
         import cv2  # type: ignore
     except ImportError as exc:
@@ -216,7 +257,17 @@ def _extract_frames_cv2(path: Path, max_frames: int = _MAX_FRAMES) -> List[int]:
     return hashes
 
 def _extract_frames_imageio(path: Path, max_frames: int = _MAX_FRAMES) -> List[int]:
-    """Fallback via imageio (ffmpeg)."""
+    """Fallback via imageio (ffmpeg).
+
+    Manages extract frames imageio operations and coordinates related state changes for the component.
+
+    Args:
+        path (Path): Filesystem path to the target file or directory.
+        max_frames (int): The max frames parameter.
+
+    Returns:
+        List[int]: List of processed items or identifiers.
+    """
     try:
         import imageio.v3 as iio  # type: ignore
     except ImportError:
@@ -269,7 +320,16 @@ def _extract_frames_imageio(path: Path, max_frames: int = _MAX_FRAMES) -> List[i
     return hashes
 
 def _fallback_raw_video_fp(path: Path) -> List[int]:
-    """Byte-level surrogate for hosts without cv2/imageio: chunk hashes."""
+    """Byte-level surrogate for hosts without cv2/imageio: chunk hashes.
+
+    Manages fallback raw video fp operations and coordinates related state changes for the component.
+
+    Args:
+        path (Path): Filesystem path to the target file or directory.
+
+    Returns:
+        List[int]: List of processed items or identifiers.
+    """
     try:
         data = path.read_bytes()[: 4 * 1024 * 1024]
     except OSError:
@@ -290,7 +350,17 @@ def _fallback_raw_video_fp(path: Path) -> List[int]:
     return hashes
 
 def compute_video_fingerprint(path: Path | str, max_frames: int = _MAX_FRAMES) -> List[int]:
-    """Sequence fingerprint (list of 64-bit pHashes) for a video file."""
+    """Sequence fingerprint (list of 64-bit pHashes) for a video file.
+
+    Manages compute video fingerprint operations and coordinates related state changes for the component.
+
+    Args:
+        path (Path | str): Filesystem path to the target file or directory.
+        max_frames (int): The max frames parameter.
+
+    Returns:
+        List[int]: List of processed items or identifiers.
+    """
     p = Path(path)
     if not _HAS_PIL:
         # No Pillow → raw fallback (still groups same-container duplicates)
@@ -421,7 +491,16 @@ class VideoDuplicateFinder:
         max_distance: int = 10,
         config: Config | None = None,
     ) -> None:
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            root_path (str | os.PathLike): Filesystem path to the target file or directory.
+            threshold (float): The threshold parameter.
+            max_distance (int): The max distance parameter.
+            config (Config | None): The config parameter.
+        """
         if isinstance(root_path, (list, tuple)):
             roots = [normalize_path(p) for p in root_path]
         else:
@@ -440,11 +519,18 @@ class VideoDuplicateFinder:
         self.file_count = 0
         self.error_count = 0
         self.duplicates: Dict[str, List[Path]] = {}
-        """__init__."""
-        """__init__."""
 
     def _should_exclude(self, path: Path) -> bool:
-        """_should_exclude."""
+        """_should_exclude.
+
+        Manages should exclude operations and coordinates related state changes for the component.
+
+        Args:
+            path (Path): Filesystem path to the target file or directory.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         if path.name in self.exclude_dirs:
             return True
         s = str(path)
@@ -452,14 +538,19 @@ class VideoDuplicateFinder:
             if pat in s or pat in path.name:
                 return True
         return False
-        """_should_exclude."""
-        """_should_exclude."""
 
     def _is_video(self, path: Path) -> bool:
-        """_is_video."""
+        """_is_video.
+
+        Manages is video operations and coordinates related state changes for the component.
+
+        Args:
+            path (Path): Filesystem path to the target file or directory.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         return path.suffix.lower() in _VIDEO_SUFFIXES
-        """_is_video."""
-        """_is_video."""
 
     def find_video_duplicates(
         self,
@@ -467,7 +558,18 @@ class VideoDuplicateFinder:
         progress_callback: Optional[Callable[[str, int], None]] = None,
         cancel_event: Optional[threading.Event] = None,
     ) -> Dict[str, List[Path]]:
-        """find_video_duplicates."""
+        """find_video_duplicates.
+
+        Manages find video duplicates operations and coordinates related state changes for the component.
+
+        Args:
+            threads (int): The threads parameter.
+            progress_callback (Optional[Callable[[str, int], None]]): The progress callback parameter.
+            cancel_event (Optional[threading.Event]): Threading event or callable to check for cancellation.
+
+        Returns:
+            Dict[str, List[Path]]: List of processed items or identifiers.
+        """
         if threads <= 0:
             threads = min(8, (os.cpu_count() or 4) + 2)  # video decode is heavier
 
@@ -501,14 +603,21 @@ class VideoDuplicateFinder:
         fingerprints: Dict[Path, List[int]] = {}
 
         def _fp_one(p: Path) -> Tuple[Path, Optional[List[int]]]:
-            """_fp_one."""
+            """_fp_one.
+
+            Manages fp one operations and coordinates related state changes for the component.
+
+            Args:
+                p (Path): The p parameter.
+
+            Returns:
+                Tuple[Path, Optional[List[int]]]: List of processed items or identifiers.
+            """
             try:
                 fp = compute_video_fingerprint(p)
                 return p, fp if fp else None
             except Exception:
                 return p, None
-            """_fp_one."""
-            """_fp_one."""
 
         with ThreadPoolExecutor(max_workers=threads) as ex:
             futures = {ex.submit(_fp_one, p): p for p in files}
@@ -554,21 +663,33 @@ class VideoDuplicateFinder:
         parent: Dict[Path, Path] = {p: p for p in fingerprints}
 
         def _find(x: Path) -> Path:
-            """_find."""
+            """Search and locate items matching specific criteria.
+
+            Traverses filesystem directories or cached registries to find resources that satisfy the specified filters.
+
+            Args:
+                x (Path): The x parameter.
+
+            Returns:
+                Path: Result of the operation.
+            """
             while parent[x] != x:
                 parent[x] = parent[parent[x]]
                 x = parent[x]
             return x
-            """_find."""
-            """_find."""
 
         def _union(a: Path, b: Path) -> None:
-            """_union."""
+            """Union.
+
+            Manages union operations and coordinates related state changes for the component.
+
+            Args:
+                a (Path): The a parameter.
+                b (Path): Integer number of bytes to format or process.
+            """
             ra, rb = _find(a), _find(b)
             if ra != rb:
                 parent[rb] = ra
-            """_union."""
-            """_union."""
 
         for a, b in pairs:
             if cancel_event and getattr(cancel_event, "is_set", lambda: False)():
@@ -587,11 +708,15 @@ class VideoDuplicateFinder:
                 result[gid] = members
         self.duplicates = result
         return result
-        """find_video_duplicates."""
-        """find_video_duplicates."""
 
     def get_stats(self) -> dict:
-        """get_stats."""
+        """get_stats.
+
+        Manages get stats operations and coordinates related state changes for the component.
+
+        Returns:
+            dict: Dictionary mapping identifiers to status or values.
+        """
         total = sum(len(v) for v in self.duplicates.values())
         return {
             "total_videos_scanned": self.file_count,
@@ -601,8 +726,6 @@ class VideoDuplicateFinder:
             "threshold": self.threshold,
             "max_distance": self.max_distance,
         }
-        """get_stats."""
-        """get_stats."""
 
 
 __all__ = [

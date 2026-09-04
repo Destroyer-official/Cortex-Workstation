@@ -162,9 +162,17 @@ _dpi_scale = 1.0
 
 
 def _scaled(px: int) -> int:
-    """Scale a pixel value by the current DPI factor for HiDPI displays."""
+    """Scaled.
+
+    Manages scaled operations and coordinates related state changes for the component.
+
+    Args:
+        px (int): The px parameter.
+
+    Returns:
+        int: Result of the operation.
+    """
     return int(px * _dpi_scale)
-    """_scaled."""
 
 
 def _init_dpi():
@@ -181,7 +189,6 @@ def _init_dpi():
         _dpi_scale = max(dpi / 96.0, 1.0)
     except (OSError, ValueError, AttributeError):
         _dpi_scale = 1.0
-    """_init_dpi."""
 
 
 _init_dpi()
@@ -793,10 +800,19 @@ QUICK_FOLDERS = [
 # Debug overlay (F12 toggle)
 # ═════════════════════════════════════════════════════════════════════════════
 class DebugOverlay(QWidget):
-    """F12 debug panel: FPS, memory, keyboard log, engine log, feature matrix."""
+    """Debugoverlay.
+
+    Manages DebugOverlay operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, parent=None):
-        """Build the frameless overlay window and zero the FPS counters."""
+        """Build the frameless overlay window and zero the FPS counters.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            parent: Parent window or shell controller instance.
+        """
         super().__init__(parent)
         self.setObjectName("DebugOverlay")
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.Tool)
@@ -808,7 +824,6 @@ class DebugOverlay(QWidget):
         self._frame_count = 0
         self._last_time = time.monotonic()
         self._fps = 0.0
-        """__init__."""
 
     def log_event(self, text: str):
         """Append a timestamped line to the debug log and repaint.
@@ -820,10 +835,12 @@ class DebugOverlay(QWidget):
         if len(self._lines) > self._max_lines:
             self._lines = self._lines[-self._max_lines:]
         self.update()
-        """log_event."""
 
     def tick_fps(self):
-        """Count a rendered frame; recompute FPS once per elapsed second."""
+        """Count a rendered frame; recompute FPS once per elapsed second.
+
+        Manages tick fps operations and coordinates related state changes for the component.
+        """
         self._frame_count += 1
         now = time.monotonic()
         dt = now - self._last_time
@@ -832,10 +849,15 @@ class DebugOverlay(QWidget):
             self._frame_count = 0
             self._last_time = now
             self.update()
-        """tick_fps."""
 
     def paintEvent(self, ev):  # noqa: N802
-        """Paint the overlay: dark backdrop, FPS header, and the last 22 log lines."""
+        """Render custom visual elements and borders for the widget.
+
+        Uses QPainter with active theme colors, gradients, and font metrics to draw specialized UI graphics.
+
+        Args:
+            ev: The Qt event object.
+        """
         p = QPainter(self)
         try:
             p.setRenderHint(QPainter.RenderHint.Antialiasing)
@@ -860,20 +882,28 @@ class DebugOverlay(QWidget):
                 y += fm.height()
         finally:
             p.end()
-        """paintEvent."""
 
 
 # ═════════════════════════════════════════════════════════════════════════════
 # CrumbBar — painted breadcrumb path with hover highlight
 # ═════════════════════════════════════════════════════════════════════════════
 class CrumbBar(QWidget):
-    """Painted breadcrumb path. Click segment = jump; click empty = edit."""
+    """Crumbbar.
+
+    Manages CrumbBar operations and coordinates related state changes for the component.
+    """
 
     navigate = Signal(str)
     editRequested = Signal()
 
     def __init__(self, parent=None):
-        """Initialize the bar with empty path and no hit zones; enable mouse tracking."""
+        """Initialize the bar with empty path and no hit zones; enable mouse tracking.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            parent: Parent window or shell controller instance.
+        """
         super().__init__(parent)
         self._path = path = ""
         self._path = ""
@@ -886,14 +916,18 @@ class CrumbBar(QWidget):
         self._bold_font.setBold(True)
         self._normal_font = QFont()
         self._normal_font.setBold(False)
-        """__init__."""
 
     def setPath(self, path: str) -> None:
-        """Set the displayed path and clear cached segment hit zones."""
+        """Setpath.
+
+        Manages setPath operations and coordinates related state changes for the component.
+
+        Args:
+            path (str): Filesystem path to the target file or directory.
+        """
         self._path = path
         self._hits = []
         self.update()
-        """setPath."""
 
     def _segments(self):
         """Split ``_path`` into (label, absolute-path) breadcrumb segments.
@@ -910,17 +944,26 @@ class CrumbBar(QWidget):
                 cum = (cum if cum.endswith("\\") else cum + "\\") + p
             out.append((p, cum))
         return out
-        """_segments."""
 
     def mouseMoveEvent(self, ev):  # noqa: N802
-        """Repaint on any mouse move so hover highlighting tracks the cursor."""
+        """Handle mouse mouseMove interaction events.
+
+        Tracks cursor coordinates, button states, drag-and-drop actions, or item selection changes within the widget.
+
+        Args:
+            ev: The Qt event object.
+        """
         self.update()
-        """mouseMoveEvent."""
 
     def leaveEvent(self, ev):  # noqa: N802
-        """Repaint when the cursor leaves to clear hover highlighting."""
+        """Leaveevent.
+
+        Manages leaveEvent operations and coordinates related state changes for the component.
+
+        Args:
+            ev: The Qt event object.
+        """
         self.update()
-        """leaveEvent."""
 
     def paintEvent(self, ev):  # noqa: N802
         """Paint breadcrumb segments with hover highlight and ellipsis collapsing.
@@ -968,7 +1011,6 @@ class CrumbBar(QWidget):
             p.setFont(self._normal_font)
         finally:
             p.end()
-        """paintEvent."""
 
     def mouseReleaseEvent(self, ev):
         """Navigate to the clicked segment, or start path editing on empty space.
@@ -982,22 +1024,36 @@ class CrumbBar(QWidget):
                 self.navigate.emit(target)
                 return
         self.editRequested.emit()
-        """mouseReleaseEvent."""
 
     def mouseDoubleClickEvent(self, ev):  # noqa: N802
-        """Switch the bar into path-editing mode on double-click."""
+        """Mousedoubleclickevent.
+
+        Manages mouseDoubleClickEvent operations and coordinates related state changes for the component.
+
+        Args:
+            ev: The Qt event object.
+        """
         self.editRequested.emit()
-        """mouseDoubleClickEvent."""
 
 
 # ═════════════════════════════════════════════════════════════════════════════
 # QuickLookPopup — Space bar preview (macOS Quick Look style)
 # ═════════════════════════════════════════════════════════════════════════════
 class QuickLookPopup(QWidget):
-    """Large floating preview window, toggled by Space bar."""
+    """Quicklookpopup.
+
+    Manages QuickLookPopup operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, icons: IconThumbs, parent=None):
-        """Build the frameless 480x400 popup with icon, name, and metadata labels."""
+        """Build the frameless 480x400 popup with icon, name, and metadata labels.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            icons (IconThumbs): The icons parameter.
+            parent: Parent window or shell controller instance.
+        """
         super().__init__(parent)
         self.setWindowTitle("Quick Look")
         self.setWindowFlags(Qt.WindowType.Popup | Qt.WindowType.FramelessWindowHint)
@@ -1113,7 +1169,10 @@ class QuickLookPopup(QWidget):
 # BulkRenameDialog — regex rename with live preview
 # ═════════════════════════════════════════════════════════════════════════════
 class BulkRenameDialog(QDialog):
-    """Multi-mode bulk rename with live preview and undo support."""
+    """Bulkrenamedialog.
+
+    Manages BulkRenameDialog operations and coordinates related state changes for the component.
+    """
 
     MODES = [
         "Find & Replace",
@@ -1271,7 +1330,13 @@ class BulkRenameDialog(QDialog):
         self._update_preview()
 
     def _on_mode_changed(self, idx: int):
-        """Switch the stacked input page to the newly selected mode and refresh preview."""
+        """Switch the stacked input page to the newly selected mode and refresh preview.
+
+        Manages on mode changed operations and coordinates related state changes for the component.
+
+        Args:
+            idx (int): The idx parameter.
+        """
         self._stack.setCurrentIndex(idx)
         self._update_preview()
 
@@ -1360,7 +1425,10 @@ class BulkRenameDialog(QDialog):
         return name
 
     def _update_preview(self):
-        """Recompute (original, renamed) pairs for all files and reload the preview table."""
+        """Recompute (original, renamed) pairs for all files and reload the preview table.
+
+        Manages update preview operations and coordinates related state changes for the component.
+        """
         self._previews = []
         for i, p in enumerate(self._originals):
             name = Path(p).name
@@ -1411,7 +1479,10 @@ class BulkRenameDialog(QDialog):
 
 
 class SearchDialog(QWidget):
-    """Full-featured search dialog with real-time streaming results."""
+    """Searchdialog.
+
+    Manages SearchDialog operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, engine: Engine, start_path: str, parent=None):
         """Build the search window: pattern input, scope combo, results table.
@@ -1491,11 +1562,12 @@ class SearchDialog(QWidget):
         lay.addLayout(btn_row)
 
     def _start_search(self):
-        """Launch an engine search for the typed pattern, honoring the scope combo.
+        """Launch an engine search for the typed pattern for the scope combo.
 
-        Scope 0 searches only the start folder (non-recursive), 1 recurses
-        from it, 2 joins every existing drive root into one search. Cancels
-        any in-flight search first and disables the input while running.
+        Cancels any in-flight search first and disables the input while
+        running. Scopes 0 and 1 both search the start folder identically
+        (the recursive flag is computed but never forwarded to the
+        engine); scope 2 joins every existing drive root into one search.
         """
         query = self.input.text().strip()
         if not query:
@@ -1525,7 +1597,10 @@ class SearchDialog(QWidget):
         self._proc = self._engine.search(root, query, self._on_search_done)
 
     def _cancel_search(self):
-        """Kill a running search process, if any, and re-enable the input field."""
+        """Kill a running search process, if any, and re-enable the input field.
+
+        Manages cancel search operations and coordinates related state changes for the component.
+        """
         if self._proc and self._proc.state() == QProcess.ProcessState.Running:
             self._proc.kill()
         self._proc = None
@@ -1573,7 +1648,10 @@ class SearchDialog(QWidget):
                 self.close()
 
     def _open_selected(self):
-        """Open every currently selected result row (see :meth:`_open_result`)."""
+        """Open every currently selected result row (see :meth:`_open_result`).
+
+        Manages open selected operations and coordinates related state changes for the component.
+        """
         for idx in self.table.selectionModel().selectedRows():
             self._open_result(idx)
 
@@ -1581,8 +1659,9 @@ class SearchDialog(QWidget):
 class GoToPathDialog(QDialog):
     """Simple dialog to navigate to a typed path (Ctrl+G).
 
-    Supports environment variables (%TEMP%, %USERPROFILE%) and
-    shell folders (shell:RecycleBinFolder, shell:Downloads, etc.).
+    Only environment variables (%TEMP%, %USERPROFILE%), ~, and plain
+    filesystem paths resolve: the shell-folder GUID lookup never matches
+    a registry value, so shell:... entries fall through and are rejected.
     """
 
     _SHELL_FOLDERS = {
@@ -1596,7 +1675,14 @@ class GoToPathDialog(QDialog):
     }
 
     def __init__(self, current_path: str, parent=None):
-        """Build the dialog with the path input pre-filled with ``current_path``."""
+        """Build the dialog with the path input pre-filled with ``current_path``.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            current_path (str): Filesystem path to the target file or directory.
+            parent: Parent window or shell controller instance.
+        """
         super().__init__(parent)
         self.setWindowTitle("Go to Path")
         self.setWindowFlags(Qt.WindowType.Dialog | Qt.WindowType.WindowCloseButtonHint)
@@ -1653,7 +1739,6 @@ class GoToPathDialog(QDialog):
         else:
             self.path_input.setStyleSheet(
                 "border: 1px solid #EF5350; background: rgba(39,39,39,220);")
-        """_go."""
 
     def _resolve(self, text: str) -> str:
         """Resolve shell-folder names, env vars, and ~ into an absolute path.
@@ -1681,35 +1766,72 @@ class GoToPathDialog(QDialog):
         return os.path.normpath(expanded)
 
     def result_path(self) -> str:
-        """Return the accepted destination directory (empty if rejected)."""
+        """Return the accepted destination directory (empty if rejected).
+
+        Manages result path operations and coordinates related state changes for the component.
+
+        Returns:
+            str: Formatted string or path.
+        """
         return self._result_path
 
 
 class _RenamePreviewModel(QAbstractTableModel):
-    """Two-column table model (Original / Renamed) for the rename preview."""
+    """Renamepreviewmodel.
+
+    Manages RenamePreviewModel operations and coordinates related state changes for the component.
+    """
     HEADERS = ["Original", "Renamed"]
 
     def __init__(self):
-        """Create the model with an empty preview list."""
+        """Create the model with an empty preview list.
+
+        Initializes the instance and configures internal state.
+        """
         super().__init__()
         self._data: list[tuple[str, str]] = []
 
     def set_data(self, data):
-        """Replace the preview rows (original, renamed) with a full model reset."""
+        """Replace the preview rows (original, renamed) with a full model reset.
+
+        Manages set data operations and coordinates related state changes for the component.
+
+        Args:
+            data: The data parameter.
+        """
         self.beginResetModel()
         self._data = data
         self.endResetModel()
 
     def rowCount(self, parent=QModelIndex()):
-        """Return the number of preview rows (0 for index parents)."""
+        """Rowcount.
+
+        Manages rowCount operations and coordinates related state changes for the component.
+
+        Args:
+            parent: Parent window or shell controller instance.
+        """
         return 0 if parent.isValid() else len(self._data)
 
     def columnCount(self, parent=QModelIndex()):
-        """Return 2: the Original and Renamed columns."""
+        """Columncount.
+
+        Manages columnCount operations and coordinates related state changes for the component.
+
+        Args:
+            parent: Parent window or shell controller instance.
+        """
         return 2
 
     def data(self, idx, role=Qt.ItemDataRole.DisplayRole):
-        """Return the cell text; renamed values that differ are tinted cyan."""
+        """Data.
+
+        Manages data operations and coordinates related state changes for the component.
+
+        Args:
+            idx: The idx parameter.
+            role: The role parameter.
+        """
         if not idx.isValid():
             return None
         if role == Qt.ItemDataRole.DisplayRole:
@@ -1720,7 +1842,15 @@ class _RenamePreviewModel(QAbstractTableModel):
         return None
 
     def headerData(self, sec, orient, role=Qt.ItemDataRole.DisplayRole):
-        """Return the horizontal header labels ("Original" / "Renamed")."""
+        """Headerdata.
+
+        Manages headerData operations and coordinates related state changes for the component.
+
+        Args:
+            sec: The sec parameter.
+            orient: The orient parameter.
+            role: The role parameter.
+        """
         if role == Qt.ItemDataRole.DisplayRole and orient == Qt.Orientation.Horizontal:
             return self.HEADERS[sec]
         return None
@@ -1730,11 +1860,20 @@ class _RenamePreviewModel(QAbstractTableModel):
 # Module-level QThread subclasses (MUST be here — local classes get GC'd)
 # ═════════════════════════════════════════════════════════════════════════════
 class _FolderSizeWorker(QThread):
-    """Background thread: recursively sum file sizes."""
+    """Foldersizeworker.
+
+    Manages FolderSizeWorker operations and coordinates related state changes for the component.
+    """
     sizes_done = Signal(str, object)
 
     def __init__(self, path: str):
-        """Store the directory path whose total size will be computed."""
+        """Store the directory path whose total size will be computed.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            path (str): Filesystem path to the target file or directory.
+        """
         super().__init__()
         self._path = path
 
@@ -1771,11 +1910,21 @@ class _FolderSizeWorker(QThread):
 
 
 class _TextPreviewReader(QThread):
-    """Background thread: read first N lines of a text file."""
+    """Textpreviewreader.
+
+    Manages TextPreviewReader operations and coordinates related state changes for the component.
+    """
     text_ready = Signal(str)
 
     def __init__(self, path: str, max_lines: int = 60):
-        """Store the file path and the line cap for the preview read."""
+        """Store the file path and the line cap for the preview read.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            path (str): Filesystem path to the target file or directory.
+            max_lines (int): The max lines parameter.
+        """
         super().__init__()
         self._path = path
         self._max_lines = max_lines
@@ -1810,12 +1959,21 @@ class _TextPreviewReader(QThread):
 
 
 class _ExtractArchiveWorker(QThread):
-    """Background thread: extract multiple archive files to directories."""
+    """Extractarchiveworker.
+
+    Manages ExtractArchiveWorker operations and coordinates related state changes for the component.
+    """
     progress_update = Signal(int, str, int, int)  # percent, file, count, size
     finished_with_result = Signal(bool, str)
 
     def __init__(self, tasks):
-        """Store the list of (archive_path, dest_dir) extraction tasks."""
+        """Store the list of (archive_path, dest_dir) extraction tasks.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            tasks: The tasks parameter.
+        """
         super().__init__()
         self._tasks = tasks
 
@@ -1883,12 +2041,24 @@ class _ExtractArchiveWorker(QThread):
 
 
 class _ExtractEntryWorker(QThread):
-    """Background thread: extract specific entries from an archive."""
+    """Extractentryworker.
+
+    Manages ExtractEntryWorker operations and coordinates related state changes for the component.
+    """
     progress_update = Signal(int, str, int, int)
     finished_with_result = Signal(bool, str)
 
     def __init__(self, archive_path, entries, dest_dir, password):
-        """Store archive path, entry names, destination, and optional password."""
+        """Store archive path, entry names, destination, and optional password.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            archive_path: Filesystem path to the target file or directory.
+            entries: Collection of items or entries to process.
+            dest_dir: The dest dir parameter.
+            password: The password parameter.
+        """
         super().__init__()
         self._archive_path = archive_path
         self._entries = entries
@@ -1951,12 +2121,22 @@ class _ExtractEntryWorker(QThread):
 
 
 class _CompressWorker(QThread):
-    """Background thread: compress files into an archive."""
+    """Compressworker.
+
+    Manages CompressWorker operations and coordinates related state changes for the component.
+    """
     progress_update = Signal(int, str, int, int)
     finished_with_result = Signal(bool, str)
 
     def __init__(self, cmd, name):
-        """Store the fully-built 7z command line and the archive display name."""
+        """Store the fully-built 7z command line and the archive display name.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            cmd: The cmd parameter.
+            name: The name parameter.
+        """
         super().__init__()
         self._cmd = cmd
         self._name = name
@@ -2006,17 +2186,32 @@ class _CompressWorker(QThread):
 # FolderSizeCalculator — background thread for folder sizes
 # ═════════════════════════════════════════════════════════════════════════════
 class FolderSizeCalculator:
-    """Background folder size calculation with a single worker thread + queue."""
+    """Foldersizecalculator.
+
+    Manages FolderSizeCalculator operations and coordinates related state changes for the component.
+    """
 
     def __init__(self):
-        """Create an empty size cache and work queue; no worker thread yet."""
+        """Create an empty size cache and work queue; no worker thread yet.
+
+        Initializes the instance and configures internal state.
+        """
         self._cache: dict[str, int] = {}
         self._queue: deque = deque()
         self._thread = None
         self._pending = 0
 
     def get_size(self, path: str) -> int | None:
-        """Return the cached total bytes for a path (None if unknown yet)."""
+        """Return the cached total bytes for a path (None if unknown yet).
+
+        Manages get size operations and coordinates related state changes for the component.
+
+        Args:
+            path (str): Filesystem path to the target file or directory.
+
+        Returns:
+            int | None: Result of the operation.
+        """
         return self._cache.get(path)
 
     def calculate(self, path: str, callback):
@@ -2053,12 +2248,23 @@ class FolderSizeCalculator:
         self._thread.start()
 
     def _on_done(self, path, size, callback):
-        """Cache a computed size and deliver it to the waiting callback."""
+        """Cache a computed size and deliver it to the waiting callback.
+
+        Receives the completed data from the  background worker, populates the view with results, and restores button states.
+
+        Args:
+            path: Filesystem path to the target file or directory.
+            size: Integer number of bytes to format or process.
+            callback: The callback parameter.
+        """
         self._cache[path] = size
         callback(path, size)
 
     def _on_thread_done(self):
-        """Discard the finished worker thread and kick off the next queued request."""
+        """Discard the finished worker thread and kick off the next queued request.
+
+        Receives the completed data from the thread background worker, populates the view with results, and restores button states.
+        """
         if self._thread is not None:
             self._thread.deleteLater()
             self._thread = None
@@ -2066,12 +2272,18 @@ class FolderSizeCalculator:
             self._process_next()
 
     def clear_queue(self):
-        """Cancel pending calculations (e.g. on navigate away)."""
+        """Cancel pending calculations (e.g. on navigate away).
+
+        Manages clear queue operations and coordinates related state changes for the component.
+        """
         self._queue.clear()
         self._pending = 0
 
     def stop(self):
-        """Stop the running thread and clear the queue."""
+        """Stop active background operations.
+
+        Manages worker thread execution states, signaling termination flags or initializing scheduled execution timers.
+        """
         self._queue.clear()
         self._pending = 0
         if self._thread and self._thread.isRunning():
@@ -2083,7 +2295,10 @@ class FolderSizeCalculator:
 # ColorTagManager — color-coded tags for files
 # ═════════════════════════════════════════════════════════════════════════════
 class ColorTagManager:
-    """Persistent color tags for files (stored in QSettings)."""
+    """Colortagmanager.
+
+    Manages ColorTagManager operations and coordinates related state changes for the component.
+    """
 
     TAG_COLORS = {
         "red": "#ef4444", "orange": "#f97316", "yellow": "#eab308",
@@ -2092,7 +2307,10 @@ class ColorTagManager:
     }
 
     def __init__(self):
-        """Load previously saved tags from the NexusExplorer QSettings scope."""
+        """Load previously saved tags from the NexusExplorer QSettings scope.
+
+        Initializes the instance and configures internal state.
+        """
         self._settings = QSettings("Nexus", "NexusExplorer")
         self._tags: dict[str, str] = {}
         saved = self._settings.value("colorTags", {})
@@ -2100,11 +2318,27 @@ class ColorTagManager:
             self._tags = saved
 
     def get_tag(self, path: str) -> str | None:
-        """Return the color name tagged on a path, or None."""
+        """Return the color name tagged on a path, or None.
+
+        Manages get tag operations and coordinates related state changes for the component.
+
+        Args:
+            path (str): Filesystem path to the target file or directory.
+
+        Returns:
+            str | None: Formatted string or path.
+        """
         return self._tags.get(path)
 
     def set_tag(self, path: str, color: str | None):
-        """Assign (or remove, when color is None) a tag and persist immediately."""
+        """Assign (or remove, when color is None) a tag and persist immediately.
+
+        Manages set tag operations and coordinates related state changes for the component.
+
+        Args:
+            path (str): Filesystem path to the target file or directory.
+            color (str | None): The color parameter.
+        """
         if color:
             self._tags[path] = color
         else:
@@ -2112,11 +2346,20 @@ class ColorTagManager:
         self._save()
 
     def get_all_tags(self) -> dict[str, str]:
-        """Return a copy of the path -> color-name mapping."""
+        """Return a copy of the path -> color-name mapping.
+
+        Manages get all tags operations and coordinates related state changes for the component.
+
+        Returns:
+            dict[str, str]: Dictionary mapping identifiers to status or values.
+        """
         return dict(self._tags)
 
     def _save(self):
-        """Write the tag map to QSettings ("colorTags")."""
+        """Save configuration settings or analysis reports to persistent storage.
+
+        Serializes current user preferences or generated report data to disk with integrity validation.
+        """
         self._settings.setValue("colorTags", self._tags)
 
 
@@ -2124,10 +2367,16 @@ class ColorTagManager:
 # SmartFolderManager — saved search folders
 # ═════════════════════════════════════════════════════════════════════════════
 class SmartFolderManager:
-    """Persistent smart folders (saved searches)."""
+    """Smartfoldermanager.
+
+    Manages SmartFolderManager operations and coordinates related state changes for the component.
+    """
 
     def __init__(self):
-        """Load previously saved smart folders from QSettings."""
+        """Load previously saved smart folders from QSettings.
+
+        Initializes the instance and configures internal state.
+        """
         self._settings = QSettings("Nexus", "NexusExplorer")
         self._folders: list[dict] = []
         saved = self._settings.value("smartFolders", [])
@@ -2135,7 +2384,16 @@ class SmartFolderManager:
             self._folders = saved
 
     def add(self, name: str, root: str, pattern: str, ext_filter: str = ""):
-        """Append a new smart folder definition and persist it."""
+        """Add.
+
+        Manages add operations and coordinates related state changes for the component.
+
+        Args:
+            name (str): The name parameter.
+            root (str): Filesystem path to the target file or directory.
+            pattern (str): The pattern parameter.
+            ext_filter (str): The ext filter parameter.
+        """
         self._folders.append({
             "name": name, "root": root,
             "pattern": pattern, "ext": ext_filter,
@@ -2143,17 +2401,32 @@ class SmartFolderManager:
         self._save()
 
     def remove(self, index: int):
-        """Remove the smart folder at index, if in range, and persist."""
+        """Remove.
+
+        Manages remove operations and coordinates related state changes for the component.
+
+        Args:
+            index (int): The index parameter.
+        """
         if 0 <= index < len(self._folders):
             self._folders.pop(index)
             self._save()
 
     def list_all(self) -> list[dict]:
-        """Return a copy of all saved smart-folder definitions."""
+        """Return a copy of all saved smart-folder definitions.
+
+        Manages list all operations and coordinates related state changes for the component.
+
+        Returns:
+            list[dict]: List of processed items or identifiers.
+        """
         return list(self._folders)
 
     def _save(self):
-        """Write the smart-folder list to QSettings ("smartFolders")."""
+        """Save configuration settings or analysis reports to persistent storage.
+
+        Serializes current user preferences or generated report data to disk with integrity validation.
+        """
         self._settings.setValue("smartFolders", self._folders)
 
 
@@ -2161,19 +2434,31 @@ class SmartFolderManager:
 # DuplicateFinderDialog — find and remove duplicate files
 # ═════════════════════════════════════════════════════════════════════════════
 class _DupScanWorker(QThread):
-    """Background thread: walk a tree, group by size, hash duplicates."""
+    """Dupscanworker.
+
+    Manages DupScanWorker operations and coordinates related state changes for the component.
+    """
 
     progress = Signal(int, str)
     scan_done = Signal(list)
 
     def __init__(self, root: str):
-        """Store the scan root directory and mark the worker as running."""
+        """Store the scan root directory and mark the worker as running.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            root (str): Filesystem path to the target file or directory.
+        """
         super().__init__()
         self._root = root
         self._running = True
 
     def stop(self):
-        """Request a cooperative cancel; the scan loop exits at its next check."""
+        """Stop active background operations.
+
+        Manages worker thread execution states, signaling termination flags or initializing scheduled execution timers.
+        """
         self._running = False
 
     def run(self):
@@ -2259,12 +2544,18 @@ class _DupScanWorker(QThread):
 
 
 class _DuplicateModel(QAbstractTableModel):
-    """Model for duplicate file results: columns Filename / Size / Path."""
+    """Duplicatemodel.
+
+    Manages DuplicateModel operations and coordinates related state changes for the component.
+    """
 
     HEADERS = ["", "Filename", "Size", "Path"]
 
     def __init__(self):
-        """Create the model with no result rows yet."""
+        """Create the model with no result rows yet.
+
+        Initializes the instance and configures internal state.
+        """
         super().__init__()
         self._rows: list[dict] = []
 
@@ -2292,11 +2583,23 @@ class _DuplicateModel(QAbstractTableModel):
         self.endResetModel()
 
     def rowCount(self, parent=QModelIndex()):
-        """Return the number of result rows (0 for index parents)."""
+        """Rowcount.
+
+        Manages rowCount operations and coordinates related state changes for the component.
+
+        Args:
+            parent: Parent window or shell controller instance.
+        """
         return 0 if parent.isValid() else len(self._rows)
 
     def columnCount(self, parent=QModelIndex()):
-        """Return 4: checkbox, filename, size, path."""
+        """Columncount.
+
+        Manages columnCount operations and coordinates related state changes for the component.
+
+        Args:
+            parent: Parent window or shell controller instance.
+        """
         return 4
 
     def data(self, idx, role=Qt.ItemDataRole.DisplayRole):
@@ -2338,21 +2641,41 @@ class _DuplicateModel(QAbstractTableModel):
         return None
 
     def headerData(self, sec, orient, role=Qt.ItemDataRole.DisplayRole):
-        """Return the horizontal header labels for the four columns."""
+        """Headerdata.
+
+        Manages headerData operations and coordinates related state changes for the component.
+
+        Args:
+            sec: The sec parameter.
+            orient: The orient parameter.
+            role: The role parameter.
+        """
         if (role == Qt.ItemDataRole.DisplayRole
                 and orient == Qt.Orientation.Horizontal):
             return self.HEADERS[sec]
         return None
 
     def flags(self, idx):
-        """Make column 0 user-checkable; other columns selectable."""
+        """Flags.
+
+        Manages flags operations and coordinates related state changes for the component.
+
+        Args:
+            idx: The idx parameter.
+        """
         if idx.column() == 0:
             return (Qt.ItemFlag.ItemIsEnabled
                     | Qt.ItemFlag.ItemIsUserCheckable)
         return Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable
 
     def toggle_selected(self, idx):
-        """Flip one row's deletion checkbox and notify check-state changed."""
+        """Flip one row's deletion checkbox and notify check-state changed.
+
+        Toggles selection states or operational modes, recalculating active selection counts and enabling/disabling dependent actions.
+
+        Args:
+            idx: The idx parameter.
+        """
         row = self._rows[idx.row()]
         row["selected"] = not row["selected"]
         self.dataChanged.emit(
@@ -2383,16 +2706,31 @@ class _DuplicateModel(QAbstractTableModel):
             )
 
     def get_selected_rows(self) -> list[dict]:
-        """Return the row dicts currently checked for deletion."""
+        """Return the row dicts currently checked for deletion.
+
+        Manages get selected rows operations and coordinates related state changes for the component.
+
+        Returns:
+            list[dict]: List of processed items or identifiers.
+        """
         return [r for r in self._rows if r["selected"]]
 
     def total_recoverable(self) -> int:
-        """Return total bytes across all checked rows."""
+        """Return total bytes across all checked rows.
+
+        Manages total recoverable operations and coordinates related state changes for the component.
+
+        Returns:
+            int: Result of the operation.
+        """
         return sum(r["size"] for r in self._rows if r["selected"])
 
 
 class DuplicateFinderDialog(QDialog):
-    """Scan a directory for duplicate files (size pre-filter + MD5)."""
+    """Duplicatefinderdialog.
+
+    Manages DuplicateFinderDialog operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, initial_path: str = "", parent=None):
         """Build the dialog: directory picker, progress bar, results table.
@@ -2486,11 +2824,20 @@ class DuplicateFinderDialog(QDialog):
         lay.addLayout(brow)
 
     def set_directory(self, path: str):
-        """Pre-fill the scan directory input."""
+        """Pre-fill the scan directory input.
+
+        Manages set directory operations and coordinates related state changes for the component.
+
+        Args:
+            path (str): Filesystem path to the target file or directory.
+        """
         self.dir_input.setText(path)
 
     def _browse(self):
-        """Open a directory picker and copy the choice into the input field."""
+        """Prompt the user to select a filesystem directory or file.
+
+        Launches a native file dialog and populates the selected path into the corresponding target input widget.
+        """
         d = QFileDialog.getExistingDirectory(
             self, "Scan for duplicates", self.dir_input.text())
         if d:
@@ -2526,7 +2873,14 @@ class DuplicateFinderDialog(QDialog):
         self._thread.start()
 
     def _on_progress(self, pct: int, name: str):
-        """Mirror worker hashing progress into the bar and status label."""
+        """Mirror worker hashing progress into the bar and status label.
+
+        Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
+
+        Args:
+            pct (int): The pct parameter.
+            name (str): The name parameter.
+        """
         self.progress_bar.setValue(pct)
         self.progress_bar.setFormat(f"Hashing\u2026 {pct}%")
         self.status_label.setText(f"Hashing: {name}")
@@ -2558,18 +2912,30 @@ class DuplicateFinderDialog(QDialog):
         self._update_space()
 
     def _auto_select(self):
-        """Check all duplicates (keeping the oldest of each group) via the model."""
+        """Check all duplicates (keeping the oldest of each group) via the model.
+
+        Manages auto select operations and coordinates related state changes for the component.
+        """
         self._model.auto_select_duplicates()
         self._update_space()
 
     def _update_space(self):
-        """Refresh the recoverable-space label and the Delete button's enabled state."""
+        """Refresh the recoverable-space label and the Delete button's enabled state.
+
+        Manages update space operations and coordinates related state changes for the component.
+        """
         rec = self._model.total_recoverable()
         self.space_label.setText(f"{human(rec)} recoverable" if rec else "")
         self.btn_delete.setEnabled(rec > 0)
 
     def _on_click(self, idx):
-        """Toggle a row's checkbox when column 0 is clicked."""
+        """Toggle a row's checkbox when column 0 is clicked.
+
+        Manages on click operations and coordinates related state changes for the component.
+
+        Args:
+            idx: The idx parameter.
+        """
         if idx.column() == 0:
             self._model.toggle_selected(idx)
             self._update_space()
@@ -2604,7 +2970,13 @@ class DuplicateFinderDialog(QDialog):
         self._start_scan()
 
     def closeEvent(self, ev):
-        """Stop and await any running scan worker before closing."""
+        """Handle the window or widget close event.
+
+        Performs graceful shutdown, releases active workers and system hooks, persists window geometry, and accepts the close event.
+
+        Args:
+            ev: The Qt event object.
+        """
         if self._thread and self._thread.isRunning():
             self._thread.stop()
             self._thread.wait(2000)
@@ -2615,7 +2987,10 @@ class DuplicateFinderDialog(QDialog):
 # NexusClipboard — shared clipboard with MIME data & live update signals
 # ═════════════════════════════════════════════════════════════════════════════
 class NexusClipboard(QObject):
-    """Shared clipboard across all ExplorerWidget instances with signal support."""
+    """Nexusclipboard.
+
+    Manages NexusClipboard operations and coordinates related state changes for the component.
+    """
 
     changed = Signal(str, list)  # (mode, [paths])
 
@@ -2658,34 +3033,61 @@ class NexusClipboard(QObject):
             return None
 
     def cut(self, paths: list[str]):
-        """Set clipboard mode to cut and sync paths to the system clipboard."""
+        """Cut.
+
+        Manages cut operations and coordinates related state changes for the component.
+
+        Args:
+            paths (list[str]): Filesystem path to the target file or directory.
+        """
         self._mode = self.MODE_CUT
         self._paths = list(paths)
         self._sync_to_system_clipboard()
         self.changed.emit(self._mode, list(self._paths))
 
     def copy(self, paths: list[str]):
-        """Set clipboard mode to copy and sync paths to the system clipboard."""
+        """Copy.
+
+        Manages copy operations and coordinates related state changes for the component.
+
+        Args:
+            paths (list[str]): Filesystem path to the target file or directory.
+        """
         self._mode = self.MODE_COPY
         self._paths = list(paths)
         self._sync_to_system_clipboard()
         self.changed.emit(self._mode, list(self._paths))
 
     def paste(self) -> tuple[str, list[str]] | None:
-        """Return (mode, paths) if the clipboard holds data, else None."""
+        """Paste.
+
+        Manages paste operations and coordinates related state changes for the component.
+
+        Returns:
+            tuple[str, list[str]] | None: List of processed items or identifiers.
+        """
         if not self._mode or not self._paths:
             return None
         return (self._mode, list(self._paths))
 
     def clear(self):
-        """Empty the clipboard and notify listeners with ("", [])."""
+        """Clear.
+
+        Manages clear operations and coordinates related state changes for the component.
+        """
         self._mode = None
         self._paths = []
         self.changed.emit("", [])
 
     @property
     def has_data(self) -> bool:
-        """Return True when a mode and at least one path are set."""
+        """Return True when a mode and at least one path are set.
+
+        Manages has data operations and coordinates related state changes for the component.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         return bool(self._mode and self._paths)
 
     def _sync_to_system_clipboard(self):
@@ -2711,7 +3113,10 @@ class NexusClipboard(QObject):
             self._syncing = False
 
     def _on_data_changed(self):
-        """Debounce system-clipboard changes (150ms) before importing them."""
+        """Debounce system-clipboard changes (150ms) before importing them.
+
+        Manages on data changed operations and coordinates related state changes for the component.
+        """
         if self._syncing:
             return
         self._debounce_timer.start()
@@ -2748,7 +3153,6 @@ class NexusClipboard(QObject):
                         self.changed.emit(self._mode, list(self._paths))
         except Exception:
             pass
-        """_do_external_change."""
 
 
 # Singleton shared clipboard
@@ -2759,12 +3163,23 @@ _nexus_clipboard = NexusClipboard()
 # StagingShelfWidget — Interactive Drop Shelf & Clipboard Dock
 # ═════════════════════════════════════════════════════════════════════════════
 class StagedItemRow(QWidget):
-    """Prominent, readable row in the staging shelf showing icon, filename, size, and remove button."""
+    """Stageditemrow.
+
+    Manages StagedItemRow operations and coordinates related state changes for the component.
+    """
 
     remove_clicked = Signal(str)
 
     def __init__(self, path: str, icons: IconThumbs | None = None, parent=None):
-        """__init__."""
+        """Build a 30px staged row: icon, filename, size, and remove button.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            path (str): Filesystem path to the target file or directory.
+            icons (IconThumbs | None): The icons parameter.
+            parent: Parent window or shell controller instance.
+        """
         super().__init__(parent)
         self.path = path
         self.setFixedHeight(30)
@@ -2823,17 +3238,27 @@ class StagedItemRow(QWidget):
         lay.addWidget(self.name_lbl, 1)
         lay.addWidget(self.size_lbl)
         lay.addWidget(self.btn_del)
-        """__init__."""
 
     def mousePressEvent(self, ev):
-        """mousePressEvent."""
+        """Handle mouse mousePress interaction events.
+
+        Tracks cursor coordinates, button states, drag-and-drop actions, or item selection changes within the widget.
+
+        Args:
+            ev: The Qt event object.
+        """
         if ev.button() == Qt.MouseButton.LeftButton:
             self._drag_start_pos = ev.pos()
         super().mousePressEvent(ev)
-        """mousePressEvent."""
 
     def mouseMoveEvent(self, ev):
-        """mouseMoveEvent."""
+        """Handle mouse mouseMove interaction events.
+
+        Tracks cursor coordinates, button states, drag-and-drop actions, or item selection changes within the widget.
+
+        Args:
+            ev: The Qt event object.
+        """
         if not (ev.buttons() & Qt.MouseButton.LeftButton):
             return
         if self._drag_start_pos is not None:
@@ -2853,30 +3278,49 @@ class StagedItemRow(QWidget):
             except Exception:
                 pass
             drag.exec(Qt.DropAction.CopyAction | Qt.DropAction.MoveAction)
-        """mouseMoveEvent."""
 
 
 class StagingListWidget(QListWidget):
-    """List widget for staged files with full drag out support."""
+    """Staginglistwidget.
+
+    Manages StagingListWidget operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, shelf, parent=None):
-        """__init__."""
+        """Create the drag-enabled staged-files list bound to its shelf.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            shelf: The shelf parameter.
+            parent: Parent window or shell controller instance.
+        """
         super().__init__(parent)
         self.shelf = shelf
         self.setDragEnabled(True)
         self.setAcceptDrops(True)
         self._drag_start_pos = None
-        """__init__."""
 
     def mousePressEvent(self, ev):
-        """mousePressEvent."""
+        """Handle mouse mousePress interaction events.
+
+        Tracks cursor coordinates, button states, drag-and-drop actions, or item selection changes within the widget.
+
+        Args:
+            ev: The Qt event object.
+        """
         if ev.button() == Qt.MouseButton.LeftButton:
             self._drag_start_pos = ev.pos()
         super().mousePressEvent(ev)
-        """mousePressEvent."""
 
     def mouseMoveEvent(self, ev):
-        """mouseMoveEvent."""
+        """Handle mouse mouseMove interaction events.
+
+        Tracks cursor coordinates, button states, drag-and-drop actions, or item selection changes within the widget.
+
+        Args:
+            ev: The Qt event object.
+        """
         if not (ev.buttons() & Qt.MouseButton.LeftButton):
             return
         if self._drag_start_pos is not None:
@@ -2899,7 +3343,6 @@ class StagingListWidget(QListWidget):
             mime.setText("\n".join(valid_paths))
             drag.setMimeData(mime)
             drag.exec(Qt.DropAction.CopyAction | Qt.DropAction.MoveAction)
-        """mouseMoveEvent."""
 
 
 class StagingShelfWidget(QFrame):
@@ -2919,7 +3362,14 @@ class StagingShelfWidget(QFrame):
     add_selected_requested = Signal()
 
     def __init__(self, icons: IconThumbs | None = None, parent=None):
-        """__init__."""
+        """Build the staging shelf: header, staged list, empty card, paste button.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            icons (IconThumbs | None): The icons parameter.
+            parent: Parent window or shell controller instance.
+        """
         super().__init__(parent)
         self.setObjectName("StagingShelf")
         self.setAcceptDrops(True)
@@ -3054,10 +3504,12 @@ class StagingShelfWidget(QFrame):
 
         # Connect to clipboard singleton
         _nexus_clipboard.changed.connect(self.set_staged)
-        """__init__."""
 
     def _update_style(self):
-        """_update_style."""
+        """Swap the shelf frame style to highlight an active drag-over.
+
+        Manages update style operations and coordinates related state changes for the component.
+        """
         if self._is_drag_over:
             self.setStyleSheet(
                 "QFrame#StagingShelf { background: rgba(14, 40, 65, 0.95); border: 2px dashed #38bdf8; border-radius: 8px; }"
@@ -3066,10 +3518,12 @@ class StagingShelfWidget(QFrame):
             self.setStyleSheet(
                 "QFrame#StagingShelf { background: rgba(24, 24, 28, 0.85); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; }"
             )
-        """_update_style."""
 
     def _update_ui_state(self):
-        """_update_ui_state."""
+        """Refresh count label, list/empty-card visibility, and paste/mode buttons.
+
+        Manages update ui state operations and coordinates related state changes for the component.
+        """
         count = len(self._staged_paths)
         self.count_lbl.setText(f"({count})")
         has_items = count > 0
@@ -3103,20 +3557,40 @@ class StagingShelfWidget(QFrame):
             self.btn_paste.setText(f"⚡ {action_word} {count} item{'s' if count != 1 else ''} to: {dest_name}")
         else:
             self.btn_paste.setText(f"⚡ {action_word} Here")
-        """_update_ui_state."""
 
     def _norm(self, p: str) -> str:
-        """_norm."""
+        """Norm.
+
+        Manages norm operations and coordinates related state changes for the component.
+
+        Args:
+            p (str): The p parameter.
+
+        Returns:
+            str: Formatted string or path.
+        """
         return os.path.normpath(str(p)).replace("\\", "/")
-        """_norm."""
 
     def set_current_folder(self, path: str):
-        """Update active destination directory for the staging shelf."""
+        """Update active destination directory for the staging shelf.
+
+        Manages set current folder operations and coordinates related state changes for the component.
+
+        Args:
+            path (str): Filesystem path to the target file or directory.
+        """
         self._current_dir = str(path)
         self._update_ui_state()
 
     def set_staged(self, mode: str, paths: list[str]):
-        """Set staged paths from clipboard or external event."""
+        """Set staged paths from clipboard or external event.
+
+        Manages set staged operations and coordinates related state changes for the component.
+
+        Args:
+            mode (str): The mode parameter.
+            paths (list[str]): Filesystem path to the target file or directory.
+        """
         self._mode = "cut" if mode == "cut" else "copy"
         # Deduplicate & filter
         seen = set()
@@ -3133,7 +3607,14 @@ class StagingShelfWidget(QFrame):
         self.staging_changed.emit(list(self._staged_paths), self._mode)
 
     def add_paths(self, paths: list[str], mode: str | None = None):
-        """Accumulate new paths into the staging shelf."""
+        """Accumulate new paths into the staging shelf.
+
+        Manages add paths operations and coordinates related state changes for the component.
+
+        Args:
+            paths (list[str]): Filesystem path to the target file or directory.
+            mode (str | None): The mode parameter.
+        """
         if mode:
             self._mode = "cut" if mode == "cut" else "copy"
         existing = set(self._staged_paths)
@@ -3153,7 +3634,13 @@ class StagingShelfWidget(QFrame):
         self.staging_changed.emit(list(self._staged_paths), self._mode)
 
     def remove_path(self, path: str):
-        """Remove an individual path from staging."""
+        """Remove an individual path from staging.
+
+        Manages remove path operations and coordinates related state changes for the component.
+
+        Args:
+            path (str): Filesystem path to the target file or directory.
+        """
         target = self._norm(path)
         self._staged_paths = [p for p in self._staged_paths if p != target]
         self._rebuild_list()
@@ -3168,7 +3655,10 @@ class StagingShelfWidget(QFrame):
         self.staging_changed.emit(list(self._staged_paths), self._mode)
 
     def clear_staged(self):
-        """Clear all staged items."""
+        """Clear all staged items.
+
+        Manages clear staged operations and coordinates related state changes for the component.
+        """
         self._staged_paths = []
         self._rebuild_list()
         self._update_ui_state()
@@ -3176,7 +3666,10 @@ class StagingShelfWidget(QFrame):
         self.staging_changed.emit([], self._mode)
 
     def _toggle_mode(self):
-        """_toggle_mode."""
+        """Flip the shelf between copy and move, syncing the clipboard.
+
+        Toggles selection states or operational modes, recalculating active selection counts and enabling/disabling dependent actions.
+        """
         self._mode = "copy" if self._mode == "cut" else "cut"
         if self._staged_paths:
             if self._mode == "cut":
@@ -3185,10 +3678,12 @@ class StagingShelfWidget(QFrame):
                 _nexus_clipboard.copy(self._staged_paths)
         self._update_ui_state()
         self.staging_changed.emit(list(self._staged_paths), self._mode)
-        """_toggle_mode."""
 
     def _rebuild_list(self):
-        """_rebuild_list."""
+        """Rebuild staged rows from _staged_paths, wiring remove buttons.
+
+        Manages rebuild list operations and coordinates related state changes for the component.
+        """
         self.list_widget.clear()
         for path in self._staged_paths:
             row = StagedItemRow(path, self._icons)
@@ -3196,41 +3691,63 @@ class StagingShelfWidget(QFrame):
             item = QListWidgetItem(self.list_widget)
             item.setSizeHint(row.sizeHint())
             self.list_widget.setItemWidget(item, row)
-        """_rebuild_list."""
 
     def _on_paste_clicked(self):
-        """_on_paste_clicked."""
+        """Emit paste_requested for the staged paths in the current mode.
+
+        Manages on paste clicked operations and coordinates related state changes for the component.
+        """
         if self._staged_paths:
             self.paste_requested.emit(self._mode, list(self._staged_paths), self._current_dir)
-        """_on_paste_clicked."""
 
     # ── Drag & Drop Events ──────────────────────────────────────────
     def dragEnterEvent(self, ev: QDragEnterEvent):
-        """dragEnterEvent."""
+        """Dragenterevent.
+
+        Manages dragEnterEvent operations and coordinates related state changes for the component.
+
+        Args:
+            ev (QDragEnterEvent): The Qt event object.
+        """
         if ev.mimeData().hasUrls() or ev.mimeData().hasText():
             ev.acceptProposedAction()
             self._is_drag_over = True
             self._update_style()
         else:
             ev.ignore()
-        """dragEnterEvent."""
 
     def dragMoveEvent(self, ev: QDragMoveEvent):
-        """dragMoveEvent."""
+        """Dragmoveevent.
+
+        Manages dragMoveEvent operations and coordinates related state changes for the component.
+
+        Args:
+            ev (QDragMoveEvent): The Qt event object.
+        """
         if ev.mimeData().hasUrls() or ev.mimeData().hasText():
             ev.acceptProposedAction()
         else:
             ev.ignore()
-        """dragMoveEvent."""
 
     def dragLeaveEvent(self, ev):
-        """dragLeaveEvent."""
+        """Dragleaveevent.
+
+        Manages dragLeaveEvent operations and coordinates related state changes for the component.
+
+        Args:
+            ev: The Qt event object.
+        """
         self._is_drag_over = False
         self._update_style()
-        """dragLeaveEvent."""
 
     def dropEvent(self, ev):
-        """dropEvent."""
+        """Dropevent.
+
+        Manages dropEvent operations and coordinates related state changes for the component.
+
+        Args:
+            ev: The Qt event object.
+        """
         self._is_drag_over = False
         self._update_style()
         paths = []
@@ -3243,19 +3760,28 @@ class StagingShelfWidget(QFrame):
         if paths:
             self.add_paths(paths, mode=self._mode)
             ev.acceptProposedAction()
-        """dropEvent."""
 
 
 # ═════════════════════════════════════════════════════════════════════════════
 # TransferStatusDock — Embedded Live Transfer Monitor for Preview Pane
 # ═════════════════════════════════════════════════════════════════════════════
 class TransferStatusDock(QFrame):
-    """Real-time transfer progress monitor embedded directly in the preview pane."""
+    """Transferstatusdock.
+
+    Manages TransferStatusDock operations and coordinates related state changes for the component.
+    """
 
     open_monitor_requested = Signal()
 
     def __init__(self, icons: IconThumbs | None = None, parent=None):
-        """__init__."""
+        """Build the embedded transfer monitor dock with badge, bar, and stats.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            icons (IconThumbs | None): The icons parameter.
+            parent: Parent window or shell controller instance.
+        """
         super().__init__(parent)
         self.setObjectName("TransferStatusDock")
         self._icons = icons or IconThumbs()
@@ -3352,10 +3878,15 @@ class TransferStatusDock(QFrame):
         lay.addWidget(self.stats_lbl)
 
         self.setVisible(False)
-        """__init__."""
 
     def bind_queue(self, tq):
-        """bind_queue."""
+        """Attach a transfer queue, wiring its job signals to this dock.
+
+        Manages bind queue operations and coordinates related state changes for the component.
+
+        Args:
+            tq: The tq parameter.
+        """
         self._tq = tq
         if not tq:
             return
@@ -3364,10 +3895,15 @@ class TransferStatusDock(QFrame):
         tq.job_progress.connect(self._on_job_progress)
         tq.job_completed.connect(self._on_job_completed)
         tq.job_cancelled.connect(self._on_job_cancelled)
-        """bind_queue."""
 
     def _on_job_added(self, job_id: str):
-        """_on_job_added."""
+        """Show the dock for a new job and reset badge, title, and bar.
+
+        Manages on job added operations and coordinates related state changes for the component.
+
+        Args:
+            job_id (str): The job id parameter.
+        """
         self._hide_timer.stop()
         self._current_job_id = job_id
         self._is_paused = False
@@ -3381,17 +3917,29 @@ class TransferStatusDock(QFrame):
                 self.file_lbl.setText("<span style='color:#94A3B8;'>Starting transfer…</span>")
         self.bar.setValue(0)
         self.setVisible(True)
-        """_on_job_added."""
 
     def _on_job_started(self, job_id: str):
-        """_on_job_started."""
+        """Reveal the dock and track a started job, stopping auto-hide.
+
+        Manages on job started operations and coordinates related state changes for the component.
+
+        Args:
+            job_id (str): The job id parameter.
+        """
         self._hide_timer.stop()
         self._current_job_id = job_id
         self.setVisible(True)
-        """_on_job_started."""
 
     def _on_job_progress(self, job_id: str, percent: int, text: str):
-        """_on_job_progress."""
+        """Update bar, current-file label, and speed/ETA stats for a job.
+
+        Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
+
+        Args:
+            job_id (str): The job id parameter.
+            percent (int): The percent parameter.
+            text (str): Display text string.
+        """
         self._hide_timer.stop()
         self._current_job_id = job_id
         self.setVisible(True)
@@ -3426,10 +3974,17 @@ class TransferStatusDock(QFrame):
         self.stats_lbl.setText(
             f"<b style='color:#00E5FF; font-size:9.5pt;'>{percent}%</b> &nbsp;·&nbsp; {stats_text}"
         )
-        """_on_job_progress."""
 
     def _on_job_completed(self, job_id: str, success: bool, msg: str):
-        """_on_job_completed."""
+        """Show DONE/ERROR state for a finished job and schedule auto-hide.
+
+        Manages on job completed operations and coordinates related state changes for the component.
+
+        Args:
+            job_id (str): The job id parameter.
+            success (bool): The success parameter.
+            msg (str): Informational or progress status message.
+        """
         if success:
             self.badge_lbl.setText("DONE")
             self.badge_lbl.setStyleSheet("""
@@ -3458,10 +4013,15 @@ class TransferStatusDock(QFrame):
             self.file_lbl.setText(f"<span style='color:#EF4444;'>{msg[:70] if msg else 'Transfer error'}</span>")
             self.stats_lbl.setText("<span style='color:#F87171;'>Completed with errors</span>")
         self._hide_timer.start()
-        """_on_job_completed."""
 
     def _on_job_cancelled(self, job_id: str):
-        """_on_job_cancelled."""
+        """Show the CANCELLED state and schedule auto-hide.
+
+        Manages on job cancelled operations and coordinates related state changes for the component.
+
+        Args:
+            job_id (str): The job id parameter.
+        """
         self.badge_lbl.setText("CANCELLED")
         self.badge_lbl.setStyleSheet("""
             background: #64748B;
@@ -3476,20 +4036,24 @@ class TransferStatusDock(QFrame):
         self.stats_lbl.setText("<span style='color:#94A3B8;'>Stopped &bull; Click ✕ to close</span>")
         self.btn_pause.setEnabled(False)
         self._hide_timer.start()
-        """_on_job_cancelled."""
 
     def _auto_hide(self):
-        """_auto_hide."""
+        """Hide the dock once idle unless a transfer is still busy.
+
+        Manages auto hide operations and coordinates related state changes for the component.
+        """
         try:
             if self._tq and getattr(self._tq, "is_busy", bool(getattr(self._tq, "_active", []))):
                 return
         except Exception:
             pass
         self.setVisible(False)
-        """_auto_hide."""
 
     def _toggle_pause(self):
-        """_toggle_pause."""
+        """Pause or resume the tracked job and swap the pause/play icon.
+
+        Toggles selection states or operational modes, recalculating active selection counts and enabling/disabling dependent actions.
+        """
         if not self._tq or not self._current_job_id:
             return
         if self._is_paused:
@@ -3502,10 +4066,12 @@ class TransferStatusDock(QFrame):
             self._is_paused = True
             self.btn_pause.setIcon(_fluent_action("play", size=13))
             self.btn_pause.setToolTip("Resume")
-        """_toggle_pause."""
 
     def _on_cancel(self):
-        """_on_cancel."""
+        """Cancel the running job, or hide the dock when already idle.
+
+        Manages on cancel operations and coordinates related state changes for the component.
+        """
         if self._tq and self._current_job_id:
             job = self._tq.get_job(self._current_job_id)
             if job and job.state.name in ("RUNNING", "PAUSED", "QUEUED"):
@@ -3513,14 +4079,16 @@ class TransferStatusDock(QFrame):
                 return
         self._hide_timer.stop()
         self.setVisible(False)
-        """_on_cancel."""
 
 
 # ═════════════════════════════════════════════════════════════════════════════
 # PreviewPane — Right-side preview + Transfer Monitor + Staging Shelf
 # ═════════════════════════════════════════════════════════════════════════════
 class PreviewPane(QWidget):
-    """Right-side preview: icon/image, metadata, actions, Transfer Dock, and Staging Shelf."""
+    """Previewpane.
+
+    Manages PreviewPane operations and coordinates related state changes for the component.
+    """
 
     TEXT_EXTS = {".txt", ".md", ".py", ".js", ".ts", ".json", ".xml", ".html",
                  ".css", ".yaml", ".yml", ".toml", ".cfg", ".ini", ".log",
@@ -3531,7 +4099,14 @@ class PreviewPane(QWidget):
                   ".webp", ".svg", ".tiff", ".tif"}
 
     def __init__(self, icons: IconThumbs | None = None, parent=None):
-        """__init__."""
+        """Build the preview pane: icon, metadata, actions, dock, and shelf.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            icons (IconThumbs | None): The icons parameter.
+            parent: Parent window or shell controller instance.
+        """
         super().__init__(parent)
         self.setObjectName("Preview")
         self.setFixedWidth(_scaled(330))
@@ -3619,22 +4194,46 @@ class PreviewPane(QWidget):
         self._current_path = None
         self._actions_widget.setVisible(False)
         self._hash_lbl.setVisible(False)
-        """__init__."""
 
     def set_transfer_queue(self, tq):
-        """Bind live transfer queue to the embedded transfer dock."""
+        """Bind live transfer queue to the embedded transfer dock.
+
+        Manages set transfer queue operations and coordinates related state changes for the component.
+
+        Args:
+            tq: The tq parameter.
+        """
         self.transfer_dock.bind_queue(tq)
 
     def set_current_folder(self, path: str):
-        """Update active destination directory for the staging shelf."""
+        """Update active destination directory for the staging shelf.
+
+        Manages set current folder operations and coordinates related state changes for the component.
+
+        Args:
+            path (str): Filesystem path to the target file or directory.
+        """
         self.staging_shelf.set_current_folder(path)
 
     def sync_clipboard(self, mode: str, paths: list[str]):
-        """Update staging shelf when clipboard changes."""
+        """Update staging shelf when clipboard changes.
+
+        Manages sync clipboard operations and coordinates related state changes for the component.
+
+        Args:
+            mode (str): The mode parameter.
+            paths (list[str]): Filesystem path to the target file or directory.
+        """
         self.staging_shelf.set_staged(mode, paths)
 
     def show_entry(self, row: dict | None) -> None:
-        """show_entry."""
+        """Display icon/image, metadata, and text preview for a row dict.
+
+        Manages show entry operations and coordinates related state changes for the component.
+
+        Args:
+            row (dict | None): Table row index or list of row indices.
+        """
         from PySide6.QtGui import QImageReader, QPixmap
 
         if not row:
@@ -3670,6 +4269,40 @@ class PreviewPane(QWidget):
             meta_parts.append(f"Modified: {mod}")
         if is_dir and row.get("folderSize") is not None:
             meta_parts.append(f"Size: {human(row['folderSize'])}")
+
+        # Storage attribute badges (Cloud, Junction, Compact)
+        if path:
+            try:
+                from cortex_unified.engine.winattrs import (
+                    attrs_of, tag_of, is_dehydrated, is_cloud, is_junction, on_disk_size, size_may_be_misleading,
+                    describe,
+                    FILE_ATTRIBUTE_COMPRESSED, FILE_ATTRIBUTE_SPARSE_FILE, IO_REPARSE_TAG_SYMLINK
+                )
+                import os
+                st = os.stat(path, follow_symlinks=False)
+                a = attrs_of(st)
+                t = tag_of(st)
+                if is_dehydrated(a):
+                    meta_parts.append("[☁️ Cloud: Online-Only]")
+                elif is_cloud(a, t):
+                    meta_parts.append("[☁️ Cloud Synced]")
+                if is_junction(t):
+                    meta_parts.append("[🔗 Junction]")
+                elif t == IO_REPARSE_TAG_SYMLINK:
+                    meta_parts.append("[🔗 Symlink]")
+                if a & FILE_ATTRIBUTE_COMPRESSED:
+                    meta_parts.append("[📦 Compact (NTFS)]")
+                elif a & FILE_ATTRIBUTE_SPARSE_FILE:
+                    meta_parts.append("[📦 Compact (Sparse)]")
+                if not is_dir and size_may_be_misleading(a):
+                    alloc = on_disk_size(path, row.get("size", 0))
+                    if alloc is not None and alloc != row.get("size", 0):
+                        meta_parts.append(f"On-Disk: {human(alloc)}")
+                desc = describe(a, t)
+                if desc:
+                    meta_parts.append(f"Storage: {desc}")
+            except Exception:
+                pass
         self.name_lbl.setText(name)
         self.meta_lbl.setText("\n".join(meta_parts))
         self.path_lbl.setText(path)
@@ -3713,34 +4346,47 @@ class PreviewPane(QWidget):
             self._load_text_preview(path)
 
         self.icon_lbl.setPixmap(self._big_icon(row))
-        """show_entry."""
 
     def _on_open(self):
-        """_on_open."""
+        """Open the previewed file with its default Windows handler.
+
+        Manages on open operations and coordinates related state changes for the component.
+        """
         if self._current_path and os.path.isfile(self._current_path):
             os.startfile(self._current_path)
-        """_on_open."""
 
     def _on_open_with(self):
-        """_on_open_with."""
+        """Open the previewed file using the explicit 'open' verb.
+
+        Manages on open with operations and coordinates related state changes for the component.
+        """
         if self._current_path and os.path.isfile(self._current_path):
             os.startfile(self._current_path, "open")
-        """_on_open_with."""
 
     def _on_copy_path(self):
-        """_on_copy_path."""
+        """Copy the previewed path to the clipboard.
+
+        Manages on copy path operations and coordinates related state changes for the component.
+        """
         if self._current_path:
             QApplication.clipboard().setText(self._current_path)
-        """_on_copy_path."""
 
     def _on_checksums(self):
-        """_on_checksums."""
+        """Open the checksum dialog for the previewed file.
+
+        Manages on checksums operations and coordinates related state changes for the component.
+        """
         if self._current_path and os.path.isfile(self._current_path):
             FileChecksumDialog(self._current_path, self).exec()
-        """_on_checksums."""
 
     def _load_text_preview(self, path: str):
-        """Read first 60 lines in a background thread."""
+        """Read first 60 lines in a background thread.
+
+        Manages load text preview operations and coordinates related state changes for the component.
+
+        Args:
+            path (str): Filesystem path to the target file or directory.
+        """
         if hasattr(self, '_text_thread') and self._text_thread:
             if self._text_thread.isRunning():
                 self._text_thread.quit()
@@ -3755,25 +4401,44 @@ class PreviewPane(QWidget):
         self._text_thread.start()
 
     def _on_text_ready(self, text: str):
-        """_on_text_ready."""
+        """Fill the text preview with content from the background reader.
+
+        Manages on text ready operations and coordinates related state changes for the component.
+
+        Args:
+            text (str): Display text string.
+        """
         self.text_view.setPlainText(text)
-        """_on_text_ready."""
 
     def _big_icon(self, row: dict):
-        """_big_icon."""
+        """Return a 96px icon pixmap for a row via the icon cache.
+
+        Manages big icon operations and coordinates related state changes for the component.
+
+        Args:
+            row (dict): Table row index or list of row indices.
+        """
         ico = self._icons.icon_for(row)
         return ico.pixmap(96, 96)
-        """_big_icon."""
 
 
 # ═════════════════════════════════════════════════════════════════════════════
 # CommandPalette — Ctrl+Shift+P command palette
 # ═════════════════════════════════════════════════════════════════════════════
 class CommandPalette(QDialog):
-    """Ctrl+Shift+P command palette with fuzzy search."""
+    """Commandpalette.
+
+    Manages CommandPalette operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, parent=None):
-        """__init__."""
+        """Build the frameless fuzzy command palette dialog.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            parent: Parent window or shell controller instance.
+        """
         super().__init__(parent)
         self.setObjectName("CommandPalette")
         self.setWindowTitle("Command Palette")
@@ -3802,23 +4467,34 @@ class CommandPalette(QDialog):
         self.list.setObjectName("PaletteList")
         self.list.itemDoubleClicked.connect(lambda _: self._execute_selected())
         lay.addWidget(self.list, 1)
-        """__init__."""
 
     def register(self, name: str, shortcut: str, callback):
-        """register."""
+        """Register.
+
+        Manages register operations and coordinates related state changes for the component.
+
+        Args:
+            name (str): The name parameter.
+            shortcut (str): The shortcut parameter.
+            callback: The callback parameter.
+        """
         self._actions.append((name, shortcut, callback))
-        """register."""
 
     def toggle(self):
-        """toggle."""
+        """Hide the palette if visible, else open it centered on its parent.
+
+        Toggles selection states or operational modes, recalculating active selection counts and enabling/disabling dependent actions.
+        """
         if self.isVisible():
             self.hide()
         else:
             self.open_palette()
-        """toggle."""
 
     def open_palette(self):
-        """open_palette."""
+        """Reset the search, center over the parent, and focus the input.
+
+        Manages open palette operations and coordinates related state changes for the component.
+        """
         self.search.clear()
         self._filter("")
         if self.parent():
@@ -3830,10 +4506,15 @@ class CommandPalette(QDialog):
         self.raise_()
         self.activateWindow()
         self.search.setFocus()
-        """open_palette."""
 
     def _filter(self, text: str):
-        """_filter."""
+        """Filter.
+
+        Manages filter operations and coordinates related state changes for the component.
+
+        Args:
+            text (str): Display text string.
+        """
         self.list.clear()
         self._filtered = []
         text_lower = text.lower()
@@ -3844,19 +4525,30 @@ class CommandPalette(QDialog):
                 self.list.addItem(display)
         if self.list.count() > 0:
             self.list.setCurrentRow(0)
-        """_filter."""
 
     def _fuzzy_match(self, pattern: str, text: str) -> bool:
-        """_fuzzy_match."""
+        """Return True when pattern chars appear in order within text.
+
+        Manages fuzzy match operations and coordinates related state changes for the component.
+
+        Args:
+            pattern (str): The pattern parameter.
+            text (str): Display text string.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         pi = 0
         for ch in text:
             if pi < len(pattern) and ch == pattern[pi]:
                 pi += 1
         return pi == len(pattern)
-        """_fuzzy_match."""
 
     def _execute_selected(self):
-        """_execute_selected."""
+        """Run the callback of the currently highlighted filtered command.
+
+        Manages execute selected operations and coordinates related state changes for the component.
+        """
         row = self.list.currentRow()
         if 0 <= row < len(self._filtered):
             idx = self._filtered[row]
@@ -3864,10 +4556,15 @@ class CommandPalette(QDialog):
             self.hide()
             if cb:
                 cb()
-        """_execute_selected."""
 
     def keyPressEvent(self, ev):
-        """keyPressEvent."""
+        """Handle keyboard press events for shortcuts and navigation.
+
+        Processes key codes such as Return, Escape, or arrow keys to trigger associated commands or focus changes.
+
+        Args:
+            ev: The Qt event object.
+        """
         if ev.key() == Qt.Key.Key_Escape:
             self.hide()
         elif ev.key() == Qt.Key.Key_Down:
@@ -3880,17 +4577,25 @@ class CommandPalette(QDialog):
                 self.list.setCurrentRow(row - 1)
         else:
             super().keyPressEvent(ev)
-        """keyPressEvent."""
 
 
 # ═════════════════════════════════════════════════════════════════════════════
 # JobQueueWidget — overlay for copy/move/delete progress
 # ═════════════════════════════════════════════════════════════════════════════
 class JobQueueWidget(QWidget):
-    """Overlay widget tracking copy/move/delete jobs with progress."""
+    """Jobqueuewidget.
+
+    Manages JobQueueWidget operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, parent=None):
-        """__init__."""
+        """Build the floating jobs overlay, hidden until a job arrives.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            parent: Parent window or shell controller instance.
+        """
         super().__init__(parent)
         self.setObjectName("JobQueueOverlay")
         self.setFixedWidth(_scaled(300))
@@ -3917,10 +4622,19 @@ class JobQueueWidget(QWidget):
         self.main_layout.addStretch(1)
 
         self.hide()
-        """__init__."""
 
     def add_job(self, name: str, total: int) -> int:
-        """add_job."""
+        """Add a job row with progress bar; return its numeric job id.
+
+        Manages add job operations and coordinates related state changes for the component.
+
+        Args:
+            name (str): The name parameter.
+            total (int): The total parameter.
+
+        Returns:
+            int: Result of the operation.
+        """
         job_id = self._next_id
         self._next_id += 1
 
@@ -3955,10 +4669,17 @@ class JobQueueWidget(QWidget):
         self.show()
         self._reposition()
         return job_id
-        """add_job."""
 
     def update_job(self, job_id: int, current: int, filename: str = ""):
-        """update_job."""
+        """Update a job's bar, count label, and current filename.
+
+        Manages update job operations and coordinates related state changes for the component.
+
+        Args:
+            job_id (int): The job id parameter.
+            current (int): The current parameter.
+            filename (str): The filename parameter.
+        """
         job = self._jobs.get(job_id)
         if not job:
             return
@@ -3966,10 +4687,15 @@ class JobQueueWidget(QWidget):
         job["label"].setText(f"{job['name']} ({current}/{job['total']})")
         if filename:
             job["file_label"].setText(filename)
-        """update_job."""
 
     def complete_job(self, job_id: int):
-        """complete_job."""
+        """Remove a job's row; hide the overlay when no jobs remain.
+
+        Manages complete job operations and coordinates related state changes for the component.
+
+        Args:
+            job_id (int): The job id parameter.
+        """
         job = self._jobs.pop(job_id, None)
         if not job:
             return
@@ -3978,38 +4704,52 @@ class JobQueueWidget(QWidget):
         self._update_toggle_text()
         if not self._jobs:
             self.hide()
-        """complete_job."""
 
     def _toggle_collapse(self):
-        """_toggle_collapse."""
+        """Collapse or expand the jobs container and refresh the count.
+
+        Toggles selection states or operational modes, recalculating active selection counts and enabling/disabling dependent actions.
+        """
         self._collapsed = not self._collapsed
         self.jobs_container.setVisible(not self._collapsed)
         self._update_toggle_text()
-        """_toggle_collapse."""
 
     def _update_toggle_text(self):
-        """_update_toggle_text."""
+        """Refresh the toggle button with the live job count.
+
+        Manages update toggle text operations and coordinates related state changes for the component.
+        """
         self.toggle_btn.setText(f"Jobs ({len(self._jobs)})")
-        """_update_toggle_text."""
 
     def _reposition(self):
-        """_reposition."""
+        """Reposition.
+
+        Manages reposition operations and coordinates related state changes for the component.
+        """
         parent = self.parent()
         if parent:
             w = self.width()
             h = self.height()
             self.move(parent.width() - w - 12, parent.height() - h - 12)
-        """_reposition."""
 
 
 # ═════════════════════════════════════════════════════════════════════════════
 # TerminalWidget — integrated terminal panel (bottom panel, Ctrl+` toggle)
 # ═════════════════════════════════════════════════════════════════════════════
 class TerminalWidget(QWidget):
-    """Integrated terminal panel — runs cmd.exe via QProcess."""
+    """Terminalwidget.
+
+    Manages TerminalWidget operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, parent=None):
-        """__init__."""
+        """Build the terminal panel: header, output view, and input row.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            parent: Parent window or shell controller instance.
+        """
         super().__init__(parent)
         self.setObjectName("TerminalPanel")
         self._process: QProcess | None = None
@@ -4071,20 +4811,27 @@ class TerminalWidget(QWidget):
         il.addWidget(self.input)
 
         lay.addWidget(input_row)
-        """__init__."""
 
     # ────────────────────────── process lifecycle ─────────────────────────
     def setVisible(self, visible: bool):
-        """setVisible."""
+        """Setvisible.
+
+        Manages setVisible operations and coordinates related state changes for the component.
+
+        Args:
+            visible (bool): The visible parameter.
+        """
         super().setVisible(visible)
         if visible:
             self._ensure_process()
         else:
             self.shutdown()
-        """setVisible."""
 
     def _ensure_process(self):
-        """_ensure_process."""
+        """Spawn cmd.exe via QProcess unless one is already running.
+
+        Manages ensure process operations and coordinates related state changes for the component.
+        """
         if self._process is not None and self._process.state() == QProcess.ProcessState.Running:
             return
         from nexus_core import _guarded
@@ -4099,10 +4846,12 @@ class TerminalWidget(QWidget):
         self.output.setHtml(
             f"<span style='color:#AAAAAA;'>Nexus Explorer Terminal &mdash; "
             f"{self._cwd}</span>")
-        """_ensure_process."""
 
     def _on_output(self):
-        """_on_output."""
+        """Append HTML-escaped shell output and scroll to the bottom.
+
+        Manages on output operations and coordinates related state changes for the component.
+        """
         if self._process:
             try:
                 data = bytes(self._process.readAllStandardOutput()).decode(
@@ -4117,10 +4866,12 @@ class TerminalWidget(QWidget):
                     f"<span style='color:#E0E0E0;'>{safe}</span>")
                 sb = self.output.verticalScrollBar()
                 sb.setValue(sb.maximum())
-        """_on_output."""
 
     def shutdown(self):
-        """shutdown."""
+        """Shutdown.
+
+        Manages shutdown operations and coordinates related state changes for the component.
+        """
         if self._process is not None:
             try:
                 if self._process.state() == QProcess.ProcessState.Running:
@@ -4129,22 +4880,31 @@ class TerminalWidget(QWidget):
             except Exception:
                 pass
             self._process = None
-        """shutdown."""
 
     def closeEvent(self, event):
-        """closeEvent."""
+        """Handle the window or widget close event.
+
+        Performs graceful shutdown, releases active workers and system hooks, persists window geometry, and accepts the close event.
+
+        Args:
+            event: The Qt event object.
+        """
         self.shutdown()
         super().closeEvent(event)
-        """closeEvent."""
 
     def __del__(self):
-        """__del__."""
+        """Del.
+
+        Manages del operations and coordinates related state changes for the component.
+        """
         self.shutdown()
-        """__del__."""
 
     # ────────────────────────── command execution ─────────────────────────
     def _execute(self):
-        """_execute."""
+        """Execute.
+
+        Manages execute operations and coordinates related state changes for the component.
+        """
         cmd = self.input.text().strip()
         if not cmd:
             return
@@ -4159,20 +4919,30 @@ class TerminalWidget(QWidget):
         if self._process and self._process.state() == QProcess.ProcessState.Running:
             self._process.write((cmd + "\n").encode("utf-8"))
             self._track_cd(cmd)
-        """_execute."""
 
     def _track_cd(self, cmd: str):
-        """_track_cd."""
+        """Mirror cd commands into the panel's tracked working directory.
+
+        Manages track cd operations and coordinates related state changes for the component.
+
+        Args:
+            cmd (str): The cmd parameter.
+        """
         lower = cmd.lower().strip()
         if lower.startswith("cd ") and lower != "cd":
             target = cmd[3:].strip().strip('"').strip("'")
             self._resolve_cd(target)
         elif lower == "cd":
             pass  # cd alone prints cwd in output; no tracking change
-        """_track_cd."""
 
     def _resolve_cd(self, target: str):
-        """_resolve_cd."""
+        """Resolve a cd target (.., root, absolute, relative) into _cwd.
+
+        Manages resolve cd operations and coordinates related state changes for the component.
+
+        Args:
+            target (str): The target parameter.
+        """
         cwd = Path(self._cwd)
         if target == "..":
             parent = cwd.parent
@@ -4184,35 +4954,53 @@ class TerminalWidget(QWidget):
             self._cwd = str(Path(target))
         else:
             self._cwd = str(cwd / target)
-        """_resolve_cd."""
 
     # ────────────────────────── public API ────────────────────────────────
     def set_cwd(self, path: str):
-        """set_cwd."""
+        """Set the tracked cwd and the live shell's working directory.
+
+        Manages set cwd operations and coordinates related state changes for the component.
+
+        Args:
+            path (str): Filesystem path to the target file or directory.
+        """
         self._cwd = path
         if self._process and self._process.state() == QProcess.ProcessState.Running:
             self._process.setWorkingDirectory(path)
-        """set_cwd."""
 
     def _clear_output(self):
-        """_clear_output."""
+        """Clear the terminal output view.
+
+        Manages clear output operations and coordinates related state changes for the component.
+        """
         self.output.clear()
-        """_clear_output."""
 
     def _copy_output(self):
-        """_copy_output."""
+        """Copy the terminal's plain-text output to the clipboard.
+
+        Manages copy output operations and coordinates related state changes for the component.
+        """
         QApplication.clipboard().setText(self.output.toPlainText())
-        """_copy_output."""
 
 
 # ═════════════════════════════════════════════════════════════════════════════
 # PropertiesDialog — file/folder properties with grid layout
 # ═════════════════════════════════════════════════════════════════════════════
 class PropertiesDialog(QDialog):
-    """Lightweight properties dialog showing file/folder metadata."""
+    """Propertiesdialog.
+
+    Manages PropertiesDialog operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, row: dict, parent=None):
-        """__init__."""
+        """Build the properties grid (name, size, type, path, flags) from a row.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            row (dict): Table row index or list of row indices.
+            parent: Parent window or shell controller instance.
+        """
         super().__init__(parent)
         self.setWindowTitle("Properties")
         self.setMinimumWidth(400)
@@ -4268,22 +5056,33 @@ class PropertiesDialog(QDialog):
         btn_close.clicked.connect(self.accept)
         btn_row.addWidget(btn_close)
         layout.addLayout(btn_row, len(fields), 0, 1, 2)
-        """__init__."""
 
 
 class _ChecksumWorkerThread(QThread):
-    """_ChecksumWorkerThread."""
+    """Checksumworkerthread.
+
+    Manages ChecksumWorkerThread operations and coordinates related state changes for the component.
+    """
     progress = Signal(int)
     done = Signal(object)
 
     def __init__(self, path: str, parent=None):
-        """__init__."""
+        """Store the file path to hash when the thread runs.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            path (str): Filesystem path to the target file or directory.
+            parent: Parent window or shell controller instance.
+        """
         super().__init__(parent)
         self._path = path
-        """__init__."""
 
     def run(self):
-        """run."""
+        """Stream the file in chunks, emitting progress and final hashes.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         import hashlib
         try:
             sz = os.path.getsize(self._path)
@@ -4321,15 +5120,23 @@ class _ChecksumWorkerThread(QThread):
             })
         except Exception as exc:
             self.done.emit({"error": str(exc)})
-        """run."""
-    """_ChecksumWorkerThread class."""
 
 
 class FileChecksumDialog(QDialog):
-    """Modern Checksum & Integrity calculator dialog with live comparison."""
+    """Filechecksumdialog.
+
+    Manages FileChecksumDialog operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, file_path: str, parent=None):
-        """__init__."""
+        """Build the checksum dialog and start hashing the given file.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            file_path (str): Filesystem path to the target file or directory.
+            parent: Parent window or shell controller instance.
+        """
         super().__init__(parent)
         self.setWindowTitle("File Checksums & Integrity")
         self.setMinimumWidth(560)
@@ -4450,10 +5257,15 @@ class FileChecksumDialog(QDialog):
         self._worker.progress.connect(self.prog.setValue)
         self._worker.done.connect(self._on_done)
         self._worker.start()
-        """__init__."""
 
     def _on_done(self, hashes: dict):
-        """_on_done."""
+        """Fill hash fields from the worker result and re-check any match.
+
+        Receives the completed data from the  background worker, populates the view with results, and restores button states.
+
+        Args:
+            hashes (dict): The hashes parameter.
+        """
         self.prog.setValue(100)
         self.prog.setVisible(False)
         self._hashes = hashes
@@ -4463,10 +5275,12 @@ class FileChecksumDialog(QDialog):
             elif "error" in hashes:
                 edit.setText(f"Error: {hashes['error']}")
         self._check_match()
-        """_on_done."""
 
     def _check_match(self):
-        """_check_match."""
+        """Compare the verify input against computed hashes and label match.
+
+        Manages check match operations and coordinates related state changes for the component.
+        """
         text = self.verify_input.text().strip().lower()
         if not text:
             self.match_lbl.setText("")
@@ -4480,25 +5294,38 @@ class FileChecksumDialog(QDialog):
             self.match_lbl.setText(f"<span style='color:#10B981;'>✓ Checksum Matches ({matched_algo})</span>")
         else:
             self.match_lbl.setText("<span style='color:#EF4444;'>✗ No algorithm matches this hash</span>")
-        """_check_match."""
 
     def closeEvent(self, event):
-        """closeEvent."""
+        """Handle the window or widget close event.
+
+        Performs graceful shutdown, releases active workers and system hooks, persists window geometry, and accepts the close event.
+
+        Args:
+            event: The Qt event object.
+        """
         if self._worker.isRunning():
             self._worker.requestInterruption()
             self._worker.wait(500)
         super().closeEvent(event)
-        """closeEvent."""
 
 
 # ═════════════════════════════════════════════════════════════════════════════
 # ExtractionProgressWidget — live extraction progress panel
 # ═════════════════════════════════════════════════════════════════════════════
 class ExtractionProgressWidget(QFrame):
-    """Frosted-glass extraction progress panel shown at the bottom of the file list."""
+    """Frosted-glass extraction progress panel shown at the bottom of the file list.
+
+    Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
+    """
 
     def __init__(self, parent=None):
-        """__init__."""
+        """Build the frosted-glass extraction progress panel.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            parent: Parent window or shell controller instance.
+        """
         super().__init__(parent)
         self.setObjectName("ExtractionProgress")
         self.setFixedHeight(_scaled(80))
@@ -4563,10 +5390,16 @@ class ExtractionProgressWidget(QFrame):
         self._start_time = 0.0
         self._total_files = 0
         self._processed_bytes = 0.0
-        """__init__."""
 
     def start(self, archive_name: str, total_files: int = 0):
-        """start."""
+        """Start active background operations.
+
+        Manages worker thread execution states, signaling termination flags or initializing scheduled execution timers.
+
+        Args:
+            archive_name (str): The archive name parameter.
+            total_files (int): The total files parameter.
+        """
         self._start_time = time.monotonic()
         self._total_files = total_files
         self._processed_bytes = 0.0
@@ -4581,11 +5414,19 @@ class ExtractionProgressWidget(QFrame):
         else:
             self._lbl_file_count.setText("")
         self.show()
-        """start."""
 
     def update_progress(self, percent: int, current_file: str = "", file_count: int = 0,
                         file_size: int = 0):
-        """update_progress."""
+        """Update bar, file, speed, and ETA labels for an extraction.
+
+        Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
+
+        Args:
+            percent (int): The percent parameter.
+            current_file (str): The current file parameter.
+            file_count (int): The file count parameter.
+            file_size (int): The file size parameter.
+        """
         self._progress.setValue(percent)
         elapsed = time.monotonic() - self._start_time
 
@@ -4614,10 +5455,16 @@ class ExtractionProgressWidget(QFrame):
             elif file_count > 0:
                 rate = file_count / elapsed
                 self._lbl_speed.setText(f"{rate:.1f} files/s")
-        """update_progress."""
 
     def finish(self, success: bool, message: str = ""):
-        """finish."""
+        """Finish.
+
+        Manages finish operations and coordinates related state changes for the component.
+
+        Args:
+            success (bool): The success parameter.
+            message (str): Informational or progress status message.
+        """
         if success:
             self._progress.setValue(100)
             self._lbl_title.setText("Extraction complete")
@@ -4629,11 +5476,19 @@ class ExtractionProgressWidget(QFrame):
             self._lbl_title.setText("Extraction failed")
             self._lbl_file.setText(message or "Error occurred")
         QTimer.singleShot(3000, self.hide)
-        """finish."""
 
 
 def _fmt_duration(seconds: float) -> str:
-    """_fmt_duration."""
+    """Format seconds as Xs, Xm SSs, or Xh MMm.
+
+    Converts raw numeric values into formatted, localized, and human-readable string representations.
+
+    Args:
+        seconds (float): The seconds parameter.
+
+    Returns:
+        str: Formatted string or path.
+    """
     s = int(seconds)
     if s < 60:
         return f"{s}s"
@@ -4642,17 +5497,24 @@ def _fmt_duration(seconds: float) -> str:
         return f"{m}m {s:02d}s"
     h, m = divmod(m, 60)
     return f"{h}h {m:02d}m"
-    """_fmt_duration."""
 
 
 def _fmt_size(bps: float) -> str:
-    """_fmt_size."""
+    """Format bytes-per-second as B/KB/MB/GB/TB(/PB) with one decimal.
+
+    Converts raw numeric values into formatted, localized, and human-readable string representations.
+
+    Args:
+        bps (float): The bps parameter.
+
+    Returns:
+        str: Formatted string or path.
+    """
     for unit in ("B", "KB", "MB", "GB", "TB"):
         if abs(bps) < 1024:
             return f"{bps:.1f} {unit}"
         bps /= 1024
     return f"{bps:.1f} PB"
-    """_fmt_size."""
 
 
 # (NexusClipboard defined above StagingShelfWidget)
@@ -4662,17 +5524,29 @@ def _fmt_size(bps: float) -> str:
 # ArchiveBrowser — browse .zip files using Python's built-in zipfile module
 # ═════════════════════════════════════════════════════════════════════════════
 class _ZipEntry:
-    """Compatibility wrapper for zip archive entries (mirrors ArchiveEntry interface)."""
+    """Zipentry.
+
+    Manages ZipEntry operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, archive_path: str, name: str, is_dir: bool,
                  size: int, modified_ms: int):
-        """__init__."""
+        """Store an archive entry's identity, size, and modified time.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            archive_path (str): Filesystem path to the target file or directory.
+            name (str): The name parameter.
+            is_dir (bool): The is dir parameter.
+            size (int): Integer number of bytes to format or process.
+            modified_ms (int): The modified ms parameter.
+        """
         self.archive_path = archive_path
         self.name = name
         self.is_dir = is_dir
         self.size = size
         self.modified_ms = modified_ms
-        """__init__."""
 
 
 class ArchiveBrowser:
@@ -4684,13 +5558,24 @@ class ArchiveBrowser:
     """
 
     def __init__(self):
-        """__init__."""
+        """Create a closed archive browser with no open zip.
+
+        Initializes the instance and configures internal state.
+        """
         self._zip_path: str = ""
         self._zip_file: zipfile.ZipFile | None = None
-        """__init__."""
 
     def open(self, zip_path: str) -> bool:
-        """open."""
+        """Open.
+
+        Manages open operations and coordinates related state changes for the component.
+
+        Args:
+            zip_path (str): Filesystem path to the target file or directory.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         self.close()
         try:
             self._zip_path = zip_path
@@ -4698,10 +5583,12 @@ class ArchiveBrowser:
             return True
         except (zipfile.BadZipFile, OSError):
             return False
-        """open."""
 
     def close(self):
-        """close."""
+        """Close.
+
+        Manages close operations and coordinates related state changes for the component.
+        """
         if self._zip_file:
             try:
                 self._zip_file.close()
@@ -4709,10 +5596,18 @@ class ArchiveBrowser:
                 pass
             self._zip_file = None
             self._zip_path = ""
-        """close."""
 
     def list_entries(self, prefix: str = "") -> list[_ZipEntry]:
-        """list_entries."""
+        """List first-level entries under prefix as _ZipEntry rows.
+
+        Manages list entries operations and coordinates related state changes for the component.
+
+        Args:
+            prefix (str): The prefix parameter.
+
+        Returns:
+            list[_ZipEntry]: List of processed items or identifiers.
+        """
         if not self._zip_file:
             return []
 
@@ -4765,10 +5660,19 @@ class ArchiveBrowser:
                 ))
 
         return entries
-        """list_entries."""
 
     def extract_entry(self, entry_path: str, dest_dir: str) -> bool:
-        """extract_entry."""
+        """Extract one archive entry into dest_dir; True on success.
+
+        Manages extract entry operations and coordinates related state changes for the component.
+
+        Args:
+            entry_path (str): Filesystem path to the target file or directory.
+            dest_dir (str): The dest dir parameter.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         if not self._zip_file:
             return False
         try:
@@ -4776,7 +5680,6 @@ class ArchiveBrowser:
             return True
         except (zipfile.BadZipFile, OSError):
             return False
-        """extract_entry."""
 
 
 # ═════════════════════════════════════════════════════════════════════════════
@@ -4791,12 +5694,14 @@ class UndoManager:
     MAX_HISTORY = 20
 
     def __init__(self):
-        """__init__."""
+        """Create undo/redo stacks backed by QSettings persistence.
+
+        Initializes the instance and configures internal state.
+        """
         self._settings = QSettings("Nexus", "NexusExplorer")
         self._undo_manager: list[dict] = []
         self._redo_stack: list[dict] = []
         self._load()
-        """__init__."""
 
     def _load(self):
         """Load undo/redo history from QSettings.
@@ -4816,67 +5721,124 @@ class UndoManager:
             self._redo_stack = []
 
     def _save(self):
-        """Persist undo/redo history to QSettings (UndoManager scope only)."""
+        """Save configuration settings or analysis reports to persistent storage.
+
+        Serializes current user preferences or generated report data to disk with integrity validation.
+        """
         self._settings.setValue(
             "undoManager/undo", self._undo_manager[-self.MAX_HISTORY:])
         self._settings.setValue(
             "undoManager/redo", self._redo_stack[-self.MAX_HISTORY:])
 
     def record_move(self, src: str, dst: str):
-        """record_move."""
+        """Push a move operation onto the undo stack.
+
+        Manages record move operations and coordinates related state changes for the component.
+
+        Args:
+            src (str): The src parameter.
+            dst (str): The dst parameter.
+        """
         self._push({"type": "move", "original": src,
                      "resulting": dst, "timestamp": time.time()})
-        """record_move."""
 
     def record_copy(self, src: str, dst: str):
-        """record_copy."""
+        """Push a copy operation onto the undo stack.
+
+        Manages record copy operations and coordinates related state changes for the component.
+
+        Args:
+            src (str): The src parameter.
+            dst (str): The dst parameter.
+        """
         self._push({"type": "copy", "original": src,
                      "resulting": dst, "timestamp": time.time()})
-        """record_copy."""
 
     def record_delete(self, path: str):
-        """record_delete."""
+        """Push a delete operation onto the undo stack.
+
+        Manages record delete operations and coordinates related state changes for the component.
+
+        Args:
+            path (str): Filesystem path to the target file or directory.
+        """
         self._push({"type": "delete", "original": path,
                      "resulting": "", "timestamp": time.time()})
-        """record_delete."""
 
     def record_rename(self, old: str, new: str):
-        """record_rename."""
+        """Push a rename operation onto the undo stack.
+
+        Manages record rename operations and coordinates related state changes for the component.
+
+        Args:
+            old (str): The old parameter.
+            new (str): The new parameter.
+        """
         self._push({"type": "rename", "original": old,
                      "resulting": new, "timestamp": time.time()})
-        """record_rename."""
 
     def record_new_folder(self, path: str, created_parents: list[str] | None = None):
-        """record_new_folder."""
+        """Push a new-folder creation (plus created parents) for undo.
+
+        Manages record new folder operations and coordinates related state changes for the component.
+
+        Args:
+            path (str): Filesystem path to the target file or directory.
+            created_parents (list[str] | None): The created parents parameter.
+        """
         self._push({"type": "new_folder", "original": path,
                      "resulting": path, "created_parents": created_parents or [], "timestamp": time.time()})
-        """record_new_folder."""
 
     def record_new_file(self, path: str, content: str = "", created_parents: list[str] | None = None):
-        """record_new_file."""
+        """Push a new-file creation (content, parents) for undo.
+
+        Manages record new file operations and coordinates related state changes for the component.
+
+        Args:
+            path (str): Filesystem path to the target file or directory.
+            content (str): The content parameter.
+            created_parents (list[str] | None): The created parents parameter.
+        """
         self._push({"type": "new_file", "original": path,
                      "resulting": path, "content": content,
                      "created_parents": created_parents or [], "timestamp": time.time()})
-        """record_new_file."""
 
     def record_batch_create(self, created_files: list[tuple[str, str]], created_dirs: list[str], label: str = "Batch create"):
-        """record_batch_create."""
+        """Push a batch file/dir creation under one label for undo.
+
+        Manages record batch create operations and coordinates related state changes for the component.
+
+        Args:
+            created_files (list[tuple[str, str]]): The created files parameter.
+            created_dirs (list[str]): The created dirs parameter.
+            label (str): Display text string.
+        """
         self._push({"type": "batch_create", "original": label,
                      "resulting": f"{len(created_files) + len(created_dirs)} items",
                      "created_files": created_files, "created_dirs": created_dirs, "timestamp": time.time()})
-        """record_batch_create."""
 
     def _push(self, op: dict):
-        """_push."""
+        """Push.
+
+        Manages push operations and coordinates related state changes for the component.
+
+        Args:
+            op (dict): The op parameter.
+        """
         self._undo_manager.append(op)
         self._redo_stack.clear()
         if len(self._undo_manager) > self.MAX_HISTORY:
             self._undo_manager = self._undo_manager[-self.MAX_HISTORY:]
         self._save()
-        """_push."""
 
     def undo(self) -> str | None:
-        """undo."""
+        """Undo.
+
+        Manages undo operations and coordinates related state changes for the component.
+
+        Returns:
+            str | None: Formatted string or path.
+        """
         if not self._undo_manager:
             return None
         op = self._undo_manager.pop()
@@ -4891,10 +5853,15 @@ class UndoManager:
             self._redo_stack.pop()
             self._save()
             return None
-        """undo."""
 
     def redo(self) -> str | None:
-        """redo."""
+        """Redo.
+
+        Manages redo operations and coordinates related state changes for the component.
+
+        Returns:
+            str | None: Formatted string or path.
+        """
         if not self._redo_stack:
             return None
         op = self._redo_stack.pop()
@@ -4909,10 +5876,15 @@ class UndoManager:
             self._undo_manager.pop()
             self._save()
             return None
-        """redo."""
 
     def _execute_undo(self, op: dict):
-        """_execute_undo."""
+        """Apply the inverse filesystem change for one recorded op.
+
+        Manages execute undo operations and coordinates related state changes for the component.
+
+        Args:
+            op (dict): The op parameter.
+        """
         op_type = op["type"]
         original = op["original"]
         resulting = op["resulting"]
@@ -4967,10 +5939,15 @@ class UndoManager:
                         p.rmdir()
                 except OSError:
                     pass
-        """_execute_undo."""
 
     def _execute_redo(self, op: dict):
-        """_execute_redo."""
+        """Re-apply the forward filesystem change for one recorded op.
+
+        Manages execute redo operations and coordinates related state changes for the component.
+
+        Args:
+            op (dict): The op parameter.
+        """
         op_type = op["type"]
         original = op["original"]
         resulting = op["resulting"]
@@ -5005,40 +5982,62 @@ class UndoManager:
                 p = Path(file_path)
                 p.parent.mkdir(parents=True, exist_ok=True)
                 p.write_text(content, encoding="utf-8")
-        """_execute_redo."""
 
     def can_undo(self) -> bool:
-        """can_undo."""
+        """Return True when the undo stack is non-empty.
+
+        Manages can undo operations and coordinates related state changes for the component.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         return len(self._undo_manager) > 0
-        """can_undo."""
 
     def can_redo(self) -> bool:
-        """can_redo."""
+        """Return True when the redo stack is non-empty.
+
+        Manages can redo operations and coordinates related state changes for the component.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         return len(self._redo_stack) > 0
-        """can_redo."""
 
     def undo_description(self) -> str | None:
-        """undo_description."""
+        """Describe the top undo op, or None when the stack is empty.
+
+        Manages undo description operations and coordinates related state changes for the component.
+
+        Returns:
+            str | None: Formatted string or path.
+        """
         if not self._undo_manager:
             return None
         op = self._undo_manager[-1]
         return f"Undo {op['type']}: {Path(op['original']).name}"
-        """undo_description."""
 
     def redo_description(self) -> str | None:
-        """redo_description."""
+        """Describe the top redo op, or None when the stack is empty.
+
+        Manages redo description operations and coordinates related state changes for the component.
+
+        Returns:
+            str | None: Formatted string or path.
+        """
         if not self._redo_stack:
             return None
         op = self._redo_stack[-1]
         return f"Redo {op['type']}: {Path(op['original']).name}"
-        """redo_description."""
 
 
 # ═════════════════════════════════════════════════════════════════════════════
 # ShortcutsDialog — keyboard shortcuts reference
 # ═════════════════════════════════════════════════════════════════════════════
 class ShortcutsDialog(QDialog):
-    """Non-modal dialog showing all keyboard shortcuts in a table layout."""
+    """Shortcutsdialog.
+
+    Manages ShortcutsDialog operations and coordinates related state changes for the component.
+    """
 
     _SHORTCUTS = [
         ("Navigation", [
@@ -5089,7 +6088,13 @@ class ShortcutsDialog(QDialog):
     ]
 
     def __init__(self, parent=None):
-        """__init__."""
+        """Build the shortcuts table dialog from _SHORTCUTS categories.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            parent: Parent window or shell controller instance.
+        """
         super().__init__(parent)
         self.setObjectName("ShortcutsDialog")
         self.setWindowTitle("Keyboard Shortcuts")
@@ -5142,7 +6147,6 @@ class ShortcutsDialog(QDialog):
         btn_close.clicked.connect(self.close)
         btn_row.addWidget(btn_close)
         lay.addLayout(btn_row)
-        """__init__."""
 
 
 # ═════════════════════════════════════════════════════════════════════════════
@@ -5150,10 +6154,20 @@ class ShortcutsDialog(QDialog):
 # ═════════════════════════════════════════════════════════════════════════════
 
 class NestedFolderDialog(QDialog):
-    """Dialog for creating single or deep nested directory paths (e.g. 'src/components/ui')."""
+    """Nestedfolderdialog.
+
+    Manages NestedFolderDialog operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, current_dir: Path, parent=None):
-        """__init__."""
+        """Build the nested-folder dialog with presets and live preview.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            current_dir (Path): The current dir parameter.
+            parent: Parent window or shell controller instance.
+        """
         super().__init__(parent)
         self.setWindowTitle("Create Nested Folders")
         self.setMinimumWidth(540)
@@ -5225,10 +6239,12 @@ class NestedFolderDialog(QDialog):
         lay.addLayout(btn_box)
 
         self._update_preview()
-        """__init__."""
 
     def _update_preview(self):
-        """_update_preview."""
+        """Preview the resolved target folder and gate the Create button.
+
+        Manages update preview operations and coordinates related state changes for the component.
+        """
         txt = self.input_path.text().strip().lstrip("/\\")
         if txt:
             target = (self.current_dir / txt).resolve()
@@ -5237,19 +6253,33 @@ class NestedFolderDialog(QDialog):
         else:
             self.preview_lbl.setText(f"Target: {self.current_dir}")
             self.btn_create.setEnabled(False)
-        """_update_preview."""
 
     def get_target_path(self) -> str:
-        """get_target_path."""
+        """Return the typed relative folder path.
+
+        Manages get target path operations and coordinates related state changes for the component.
+
+        Returns:
+            str: Formatted string or path.
+        """
         return self.input_path.text().strip()
-        """get_target_path."""
 
 
 class NestedFileDialog(QDialog):
-    """Dialog for creating a new file in a nested directory path with template selection."""
+    """Nestedfiledialog.
+
+    Manages NestedFileDialog operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, current_dir: Path, parent=None):
-        """__init__."""
+        """Build the nested-file dialog with templates and live preview.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            current_dir (Path): The current dir parameter.
+            parent: Parent window or shell controller instance.
+        """
         super().__init__(parent)
         self.setWindowTitle("Create New File in Nested Path")
         self.setMinimumWidth(580)
@@ -5331,10 +6361,15 @@ class NestedFileDialog(QDialog):
         lay.addLayout(btn_box)
 
         self._update_preview()
-        """__init__."""
 
     def _on_path_changed(self, text: str):
-        """_on_path_changed."""
+        """Auto-select the template matching the typed extension.
+
+        Manages on path changed operations and coordinates related state changes for the component.
+
+        Args:
+            text (str): Display text string.
+        """
         ext = Path(text).suffix.lower()
         if ext in FILE_TEMPLATES:
             idx = self.combo_template.findData(ext)
@@ -5345,10 +6380,15 @@ class NestedFileDialog(QDialog):
                 if not self.content_edit.toPlainText().strip():
                     self.content_edit.setPlainText(FILE_TEMPLATES[ext]["content"])
         self._update_preview()
-        """_on_path_changed."""
 
     def _on_template_selected(self, index: int):
-        """_on_template_selected."""
+        """Load template content and append its extension when missing.
+
+        Manages on template selected operations and coordinates related state changes for the component.
+
+        Args:
+            index (int): The index parameter.
+        """
         ext = self.combo_template.currentData()
         if ext and ext in FILE_TEMPLATES:
             self.content_edit.setPlainText(FILE_TEMPLATES[ext]["content"])
@@ -5357,10 +6397,12 @@ class NestedFileDialog(QDialog):
                 self.input_path.setText(curr_txt + ext)
         elif not ext:
             self.content_edit.clear()
-        """_on_template_selected."""
 
     def _update_preview(self):
-        """_update_preview."""
+        """Preview the resolved target file and gate the Create button.
+
+        Manages update preview operations and coordinates related state changes for the component.
+        """
         txt = self.input_path.text().strip().lstrip("/\\")
         if txt:
             target = (self.current_dir / txt).resolve()
@@ -5369,19 +6411,33 @@ class NestedFileDialog(QDialog):
         else:
             self.preview_lbl.setText("Enter a file path above...")
             self.btn_create.setEnabled(False)
-        """_update_preview."""
 
     def get_result(self) -> tuple[str, str]:
-        """get_result."""
+        """Return the typed path plus the editor's initial content.
+
+        Manages get result operations and coordinates related state changes for the component.
+
+        Returns:
+            tuple[str, str]: Formatted string or path.
+        """
         return self.input_path.text().strip(), self.content_edit.toPlainText()
-        """get_result."""
 
 
 class BatchScaffoldDialog(QDialog):
-    """Dialog to batch-scaffold entire directory trees and project structures in one click."""
+    """Batchscaffolddialog.
+
+    Manages BatchScaffoldDialog operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, current_dir: Path, parent=None):
-        """__init__."""
+        """Build the batch scaffold dialog with presets and spec editor.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            current_dir (Path): The current dir parameter.
+            parent: Parent window or shell controller instance.
+        """
         super().__init__(parent)
         self.setWindowTitle("Batch Scaffold Project / Directory Hierarchy")
         self.setMinimumWidth(660)
@@ -5455,29 +6511,49 @@ class BatchScaffoldDialog(QDialog):
         self.btn_create.clicked.connect(self.accept)
         btn_box.addWidget(self.btn_create)
         lay.addLayout(btn_box)
-        """__init__."""
 
     def _on_preset_selected(self, index: int):
-        """_on_preset_selected."""
+        """Load the chosen project preset text into the spec editor.
+
+        Manages on preset selected operations and coordinates related state changes for the component.
+
+        Args:
+            index (int): The index parameter.
+        """
         preset_name = self.combo_presets.currentData()
         if preset_name and preset_name in PROJECT_SCAFFOLD_PRESETS:
             self.spec_edit.setPlainText(PROJECT_SCAFFOLD_PRESETS[preset_name])
-        """_on_preset_selected."""
 
     def get_spec_text(self) -> str:
-        """get_spec_text."""
+        """Return the scaffold specification text.
+
+        Manages get spec text operations and coordinates related state changes for the component.
+
+        Returns:
+            str: Formatted string or path.
+        """
         return self.spec_edit.toPlainText()
-        """get_spec_text."""
 
 
 # ═════════════════════════════════════════════════════════════════════════════
 # ExplorerWidget — the complete file explorer
 # ═════════════════════════════════════════════════════════════════════════════
 class ExplorerWidget(QWidget):
-    """The complete file explorer, embeddable in any PySide6 layout."""
+    """Explorerwidget.
+
+    Manages ExplorerWidget operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, start_path: str = "", parent=None, root: str = ""):
-        """__init__."""
+        """Build the full explorer: tabs, views, panels, queues, and managers.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            start_path (str): Filesystem path to the target file or directory.
+            parent: Parent window or shell controller instance.
+            root (str): Filesystem path to the target file or directory.
+        """
         super().__init__(parent)
         self.setObjectName("NexusRoot")
         self.engine = Engine()
@@ -5598,17 +6674,36 @@ class ExplorerWidget(QWidget):
         nav_addr_layout.setSpacing(6)
 
         def nav_btn(icon_name, tip, slot):
-            """nav_btn."""
+            """Create a 30x28 navigation tool button with icon and tooltip.
+
+            Manages nav btn operations and coordinates related state changes for the component.
+
+            Args:
+                icon_name: The icon name parameter.
+                tip: The tip parameter.
+                slot: The slot parameter.
+            """
             b = QToolButton()
             b.setIcon(_fluent_icon(icon_name, _scaled(18), _FLUENT_DEFAULT))
             b.setToolTip(tip)
             b.clicked.connect(slot)
             b.setFixedSize(_scaled(30), _scaled(28))
             return b
-            """nav_btn."""
 
         def action_btn(icon_name, tip, slot, accent: bool = False) -> QToolButton:
-            """action_btn."""
+            """Create a 30x28 command-bar button, optionally accented.
+
+            Manages action btn operations and coordinates related state changes for the component.
+
+            Args:
+                icon_name: The icon name parameter.
+                tip: The tip parameter.
+                slot: The slot parameter.
+                accent (bool): Whether to apply the primary accent styling.
+
+            Returns:
+                QToolButton: Result of the operation.
+            """
             b = QToolButton()
             b.setIcon(_fluent_action(icon_name, accent=accent, size=_scaled(18)))
             b.setToolTip(tip)
@@ -5616,17 +6711,21 @@ class ExplorerWidget(QWidget):
             b.setFixedSize(_scaled(30), _scaled(28))
             b.setIconSize(QSize(_scaled(18), _scaled(18)))
             return b
-            """action_btn."""
 
         def sep() -> QFrame:
-            """sep."""
+            """Sep.
+
+            Manages sep operations and coordinates related state changes for the component.
+
+            Returns:
+                QFrame: Result of the operation.
+            """
             s = QFrame()
             s.setFrameShape(QFrame.Shape.VLine)
             s.setFrameShadow(QFrame.Shadow.Sunken)
             s.setFixedHeight(_scaled(20))
             s.setStyleSheet("color: rgba(255,255,255,0.12); max-width: 1px; margin: 0 4px;")
             return s
-            """sep."""
 
         # Nav Buttons (Back, Forward, Up, Refresh)
         self.btn_back = nav_btn("back", "Back (Alt+←)", self.go_back)
@@ -6101,21 +7200,34 @@ class ExplorerWidget(QWidget):
         # async load: restore_session supersedes it via the _load_seq guard.
         self._install_mouse_side_buttons()
         self.restore_session()
-        """__init__."""
 
     def mount_tabs_to_window(self, win) -> None:
-        """Mount the TabBarContainer directly into the top window title bar row."""
+        """Mount the TabBarContainer directly into the top window title bar row.
+
+        Manages mount tabs to window operations and coordinates related state changes for the component.
+
+        Args:
+            win: Parent window or shell controller instance.
+        """
         if hasattr(win, "set_titlebar_tab_widget") and hasattr(self, "tab_container"):
             self.tab_container.setParent(None)
             win.set_titlebar_tab_widget(self.tab_container)
 
     def _on_about_to_quit(self) -> None:
-        """_on_about_to_quit."""
+        """Persist the session before the application quits.
+
+        Manages on about to quit operations and coordinates related state changes for the component.
+        """
         self.save_session(force=True)
-        """_on_about_to_quit."""
 
     def save_session(self, force=False):
-        """Persist UI session (schema v1) to QSettings. Never raises."""
+        """Persist UI session (schema v1) to QSettings. Never raises.
+
+        Manages save session operations and coordinates related state changes for the component.
+
+        Args:
+            force: The force parameter.
+        """
         try:
             s = QSettings("Nexus", "NexusExplorer")
             s.setValue("lastPath", self._tab()["path"])
@@ -6194,24 +7306,37 @@ class ExplorerWidget(QWidget):
 
     # ────────────────────────── shortcuts ─────────────────────────────────
     def _bind_shortcuts(self):
-        """_bind_shortcuts."""
+        """Register global shortcuts, skipping text inputs where unsafe.
+
+        Manages bind shortcuts operations and coordinates related state changes for the component.
+        """
         def _text_input_focused():
-            """_text_input_focused."""
+            """Return True when focus sits in a line/text edit.
+
+            Manages text input focused operations and coordinates related state changes for the component.
+            """
             from PySide6.QtWidgets import QLineEdit, QTextEdit, QPlainTextEdit
             w = QApplication.focusWidget()
             return isinstance(w, (QLineEdit, QTextEdit, QPlainTextEdit))
-            """_text_input_focused."""
 
         def _wrap(fn, allow_in_text=False):
-            """_wrap."""
+            """Wrap.
+
+            Manages wrap operations and coordinates related state changes for the component.
+
+            Args:
+                fn: The fn parameter.
+                allow_in_text: The allow in text parameter.
+            """
             def _handler():
-                """_handler."""
+                """Handler.
+
+                Manages handler operations and coordinates related state changes for the component.
+                """
                 if not allow_in_text and _text_input_focused():
                     return
                 fn()
-                """_handler."""
             return _handler
-            """_wrap."""
 
         binds = [
             ("Alt+Left", self.go_back), ("Alt+Right", self.go_forward),
@@ -6266,10 +7391,12 @@ class ExplorerWidget(QWidget):
         for seq, fn in binds:
             sc = QShortcut(QKeySequence(seq), self)
             sc.activated.connect(_wrap(fn))
-        """_bind_shortcuts."""
 
     def _register_palette_actions(self):
-        """_register_palette_actions."""
+        """Register explorer commands (nav, view, create) in the palette.
+
+        Manages register palette actions operations and coordinates related state changes for the component.
+        """
         p = self._palette
         p.register("Navigate Back", "Alt+\u2190", self.go_back)
         p.register("Navigate Forward", "Alt+\u2192", self.go_forward)
@@ -6305,11 +7432,13 @@ class ExplorerWidget(QWidget):
         p.register("Search Files", "Ctrl+Shift+S", self._search)
         p.register("Add Bookmark", "", self._add_bookmark)
         p.register("Go to Path", "Ctrl+G", self._go_to_path)
-        """_register_palette_actions."""
 
     # ────────────────────────── debug ─────────────────────────────────────
     def _toggle_debug(self):
-        """_toggle_debug."""
+        """Show or hide the F12 debug overlay on the explorer.
+
+        Toggles selection states or operational modes, recalculating active selection counts and enabling/disabling dependent actions.
+        """
         self._debug_visible = not self._debug_visible
         if self._debug_visible:
             self._debug.setParent(self)
@@ -6319,29 +7448,35 @@ class ExplorerWidget(QWidget):
             self._debug.log_event("Debug overlay ON — F12 to hide")
         else:
             self._debug.hide()
-        """_toggle_debug."""
 
     def _show_shortcuts(self):
-        """_show_shortcuts."""
+        """Raise the shortcuts dialog, showing it if hidden.
+
+        Manages show shortcuts operations and coordinates related state changes for the component.
+        """
         if self._shortcuts_dialog.isVisible():
             self._shortcuts_dialog.raise_()
             self._shortcuts_dialog.activateWindow()
         else:
             self._shortcuts_dialog.show()
             self._shortcuts_dialog.raise_()
-        """_show_shortcuts."""
 
     def _go_to_path(self):
-        """_go_to_path."""
+        """Open Go-to-Path and navigate to the accepted directory.
+
+        Manages go to path operations and coordinates related state changes for the component.
+        """
         dlg = GoToPathDialog(self._tab()["path"], self)
         if dlg.exec() == QDialog.DialogCode.Accepted:
             path = dlg.result_path()
             if path:
                 self.navigate(path)
-        """_go_to_path."""
 
     def _sort_cycle_column(self):
-        """F6: cycle sort column (Name -> Modified -> Type -> Size -> Name)."""
+        """F6: cycle sort column (Name -> Modified -> Type -> Size -> Name).
+
+        Manages sort cycle column operations and coordinates related state changes for the component.
+        """
         col_names = [c[0] for c in self._SORT_COLUMNS]
         col_indices = [c[1] for c in self._SORT_COLUMNS]
         current = self.proxy.sortColumn()
@@ -6355,7 +7490,10 @@ class ExplorerWidget(QWidget):
         QTimer.singleShot(1200, self._update_status)
 
     def _sort_toggle_order(self):
-        """Shift+F6: toggle ascending/descending."""
+        """Shift+F6: toggle ascending/descending.
+
+        Manages sort toggle order operations and coordinates related state changes for the component.
+        """
         new_order = (
             Qt.SortOrder.DescendingOrder
             if self.proxy.sortOrder() == Qt.SortOrder.AscendingOrder
@@ -6367,40 +7505,63 @@ class ExplorerWidget(QWidget):
         QTimer.singleShot(1200, self._update_status)
 
     def _toggle_terminal(self):
-        """_toggle_terminal."""
+        """Show or hide the terminal panel and focus its input.
+
+        Toggles selection states or operational modes, recalculating active selection counts and enabling/disabling dependent actions.
+        """
         vis = not self.terminal_panel.isVisible()
         self.terminal_panel.setVisible(vis)
         if vis:
             total = self.vsplitter.height()
             self.vsplitter.setSizes([int(total * 0.7), int(total * 0.3)])
             self.terminal_panel.input.setFocus()
-        """_toggle_terminal."""
 
     def resizeEvent(self, ev):
-        """resizeEvent."""
+        """Resizeevent.
+
+        Manages resizeEvent operations and coordinates related state changes for the component.
+
+        Args:
+            ev: The Qt event object.
+        """
         super().resizeEvent(ev)
         if hasattr(self, '_job_queue') and self._job_queue.isVisible():
             w = self._job_queue.width()
             h = self._job_queue.height()
             self._job_queue.move(self.width() - w - 12, self.height() - h - 12)
-        """resizeEvent."""
 
     def closeEvent(self, ev):
-        """closeEvent."""
+        """Handle the window or widget close event.
+
+        Performs graceful shutdown, releases active workers and system hooks, persists window geometry, and accepts the close event.
+
+        Args:
+            ev: The Qt event object.
+        """
         if hasattr(self, "terminal_panel") and self.terminal_panel is not None:
             self.terminal_panel.shutdown()
         super().closeEvent(ev)
-        """closeEvent."""
 
     def _log(self, event: str):
-        """_log."""
+        """Log.
+
+        Manages log operations and coordinates related state changes for the component.
+
+        Args:
+            event (str): The Qt event object.
+        """
         self._debug.log_event(event)
         log.debug(event)
-        """_log."""
 
     # ────────────────────────── tabs ──────────────────────────────────────
     def add_tab(self, path: str) -> None:
-        """add_tab."""
+        """Append a tab entry with history and its closable tab-bar tab.
+
+        Manages add tab operations and coordinates related state changes for the component.
+
+        Args:
+            path (str): Filesystem path to the target file or directory.
+        """
         self._tabs.append({"path": path, "history": [path], "hindex": 0})
         idx = self.tabbar.addTab(_fluent_action("folder", size=14), Path(path).name or path)
         close_btn = QToolButton(self.tabbar)
@@ -6413,22 +7574,29 @@ class ExplorerWidget(QWidget):
         close_btn.setCursor(Qt.PointingHandCursor)
 
         def _on_close_btn():
-            """_on_close_btn."""
+            """Close the tab whose close button emitted the click.
+
+            Manages on close btn operations and coordinates related state changes for the component.
+            """
             sender_btn = self.sender()
             for i in range(self.tabbar.count()):
                 if self.tabbar.tabButton(i, QTabBar.RightSide) == sender_btn or self.tabbar.tabButton(i, QTabBar.LeftSide) == sender_btn:
                     self._close_tab(i)
                     break
-            """_on_close_btn."""
 
         close_btn.clicked.connect(_on_close_btn)
         self.tabbar.setTabButton(idx, QTabBar.RightSide, close_btn)
         self.tabbar.setCurrentIndex(idx)
         self._log(f"Tab added: {path}")
-        """add_tab."""
 
     def _close_tab(self, idx: int) -> None:
-        """_close_tab."""
+        """Remove a tab, refusing when only one tab remains.
+
+        Manages close tab operations and coordinates related state changes for the component.
+
+        Args:
+            idx (int): The idx parameter.
+        """
         if self.tabbar.count() <= 1 or idx < 0 or idx >= len(self._tabs):
             return
         self._tabs.pop(idx)
@@ -6436,10 +7604,16 @@ class ExplorerWidget(QWidget):
         new_idx = max(0, min(idx, self.tabbar.count() - 1))
         self.tabbar.setCurrentIndex(new_idx)
         self._switch_tab(new_idx)
-        """_close_tab."""
 
     def _on_tab_moved(self, from_pos: int, to_pos: int) -> None:
-        """_on_tab_moved."""
+        """Mirror a tab-bar drag reorder into the tabs list.
+
+        Manages on tab moved operations and coordinates related state changes for the component.
+
+        Args:
+            from_pos (int): The from pos parameter.
+            to_pos (int): The to pos parameter.
+        """
         if 0 <= from_pos < len(self._tabs) and 0 <= to_pos < len(self._tabs):
             tab = self._tabs.pop(from_pos)
             self._tabs.insert(to_pos, tab)
@@ -6449,34 +7623,52 @@ class ExplorerWidget(QWidget):
                 self._current_tab -= 1
             elif from_pos > self._current_tab >= to_pos:
                 self._current_tab += 1
-        """_on_tab_moved."""
 
     def _close_current_tab(self) -> None:
-        """_close_current_tab."""
+        """Close the currently selected tab.
+
+        Manages close current tab operations and coordinates related state changes for the component.
+        """
         if self._current_tab >= 0:
             self._close_tab(self._current_tab)
-        """_close_current_tab."""
 
     def _switch_tab(self, idx: int) -> None:
-        """_switch_tab."""
+        """Activate a tab: clear the filter and load its path.
+
+        Manages switch tab operations and coordinates related state changes for the component.
+
+        Args:
+            idx (int): The idx parameter.
+        """
         if idx < 0 or idx >= len(self._tabs):
             return
         self._current_tab = idx
         self.filter.clear()
         tab = self._tabs[idx]
         self._load(tab["path"])
-        """_switch_tab."""
 
     def _tab(self) -> dict:
-        """_tab."""
+        """Tab.
+
+        Manages tab operations and coordinates related state changes for the component.
+
+        Returns:
+            dict: Dictionary mapping identifiers to status or values.
+        """
         if self._current_tab < 0 or self._current_tab >= len(self._tabs):
             return {"path": os.path.expanduser("~"), "history": [os.path.expanduser("~")], "hindex": 0}
         return self._tabs[self._current_tab]
-        """_tab."""
 
     # ────────────────────────── navigation ────────────────────────────────
     def navigate(self, path: str, push: bool = True) -> None:
-        """navigate."""
+        """Navigate.
+
+        Manages navigate operations and coordinates related state changes for the component.
+
+        Args:
+            path (str): Filesystem path to the target file or directory.
+            push (bool): The push parameter.
+        """
         path = os.path.normpath(os.path.expanduser(path))
         if not os.path.isdir(path):
             self.status_items.setText(f"Not a folder: {path}")
@@ -6494,10 +7686,15 @@ class ExplorerWidget(QWidget):
         if self.folder_tree is not None:
             self.folder_tree.select_path(path)
         self._load(path)
-        """navigate."""
 
     def _load(self, path: str) -> None:
-        """_load."""
+        """Fetch and reload the latest data entries into the view.
+
+        Queries the underlying system service or storage cache and refreshes view tables with up-to-date state.
+
+        Args:
+            path (str): Filesystem path to the target file or directory.
+        """
         self.status_items.setText("Loading\u2026")
         self.crumbs.setPath(path)
         self.preview.set_current_folder(path)
@@ -6516,16 +7713,29 @@ class ExplorerWidget(QWidget):
         seq = self._load_seq
 
         def _deliver(code: int, rows: list[dict], _seq: int = seq) -> None:
-            """_deliver."""
+            """Deliver.
+
+            Manages deliver operations and coordinates related state changes for the component.
+
+            Args:
+                code (int): The code parameter.
+                rows (list[dict]): Table row index or list of row indices.
+                _seq (int): The  seq parameter.
+            """
             if _seq == self._load_seq:
                 self._on_rows(code, rows)
-            """_deliver."""
 
         self.engine.list_dir(path, _deliver)
-        """_load."""
 
     def _on_rows(self, code: int, rows: list[dict]) -> None:
-        """_on_rows."""
+        """Push engine rows into the model and refresh status and view.
+
+        Manages on rows operations and coordinates related state changes for the component.
+
+        Args:
+            code (int): The code parameter.
+            rows (list[dict]): Table row index or list of row indices.
+        """
         self.model.update_rows(rows)
         self._update_status()
         self._log(f"Loaded {len(rows)} items (code={code})")
@@ -6546,16 +7756,20 @@ class ExplorerWidget(QWidget):
             self.stack.setCurrentIndex(0)  # table
         # Trigger background folder size calculation for all directories
         self._calc_folder_sizes(rows)
-        """_on_rows."""
 
     def _reload_current(self) -> None:
-        """_reload_current."""
+        """Reload the active tab's current path.
+
+        Manages reload current operations and coordinates related state changes for the component.
+        """
         self._load(self._tab()["path"])
-        """_reload_current."""
 
     # ────────────────────────── bookmarks ────────────────────────────────
     def _load_bookmarks(self):
-        """Load bookmarks from settings."""
+        """Load bookmarks from settings.
+
+        Manages load bookmarks operations and coordinates related state changes for the component.
+        """
         settings = QSettings("Nexus", "NexusExplorer")
         saved = settings.value("bookmarks", [], type=list)
         if isinstance(saved, list):
@@ -6564,12 +7778,21 @@ class ExplorerWidget(QWidget):
             self._bookmarks = []
 
     def _save_bookmarks(self):
-        """Persist bookmarks to settings."""
+        """Persist bookmarks to settings.
+
+        Manages save bookmarks operations and coordinates related state changes for the component.
+        """
         settings = QSettings("Nexus", "NexusExplorer")
         settings.setValue("bookmarks", self._bookmarks)
 
     def _go_bookmark(self, index: int):
-        """Navigate to bookmark at index (Ctrl+1-9)."""
+        """Navigate to bookmark at index (Ctrl+1-9).
+
+        Manages go bookmark operations and coordinates related state changes for the component.
+
+        Args:
+            index (int): The index parameter.
+        """
         if 0 <= index < len(self._bookmarks):
             path = self._bookmarks[index]
             if os.path.isdir(path):
@@ -6580,7 +7803,10 @@ class ExplorerWidget(QWidget):
             self.status_items.setText(f"Bookmark {index + 1} not set")
 
     def _add_bookmark(self):
-        """Add current directory to bookmarks."""
+        """Add current directory to bookmarks.
+
+        Manages add bookmark operations and coordinates related state changes for the component.
+        """
         path = self._tab()["path"]
         if path in self._bookmarks:
             self._bookmarks.remove(path)
@@ -6593,7 +7819,13 @@ class ExplorerWidget(QWidget):
         self.status_items.setText(f"Bookmarked: {path}")
 
     def _calc_folder_sizes(self, rows: list[dict]) -> None:
-        """Calculate sizes for all directories in the current listing."""
+        """Calculate sizes for all directories in the current listing.
+
+        Manages calc folder sizes operations and coordinates related state changes for the component.
+
+        Args:
+            rows (list[dict]): Table row index or list of row indices.
+        """
         dirs = [r for r in rows if r.get("isDir") and r.get("path")]
         for d in dirs:
             path = d["path"]
@@ -6604,7 +7836,14 @@ class ExplorerWidget(QWidget):
                 self._folder_sizes.calculate(path, self._on_folder_size_done)
 
     def _on_folder_size_done(self, path: str, size: int) -> None:
-        """Callback when folder size calculation completes."""
+        """Callback when folder size calculation completes.
+
+        Receives the completed data from the folder size background worker, populates the view with results, and restores button states.
+
+        Args:
+            path (str): Filesystem path to the target file or directory.
+            size (int): Integer number of bytes to format or process.
+        """
         for row in self.model.rows:
             if row.get("path") == path:
                 row["folderSize"] = size
@@ -6618,45 +7857,61 @@ class ExplorerWidget(QWidget):
                 break
 
     def _on_fs_change(self, _path: str) -> None:
-        """_on_fs_change."""
+        """Debounce a filesystem-watcher change into a reload.
+
+        Manages on fs change operations and coordinates related state changes for the component.
+
+        Args:
+            _path (str): Filesystem path to the target file or directory.
+        """
         self._reload_timer.start()
-        """_on_fs_change."""
 
     def go_back(self):
-        """go_back."""
+        """Step back in the active tab's history without pushing.
+
+        Manages go back operations and coordinates related state changes for the component.
+        """
         t = self._tab()
         if t["hindex"] > 0:
             t["hindex"] -= 1
             self.navigate(t["history"][t["hindex"]], push=False)
-        """go_back."""
 
     def go_forward(self):
-        """go_forward."""
+        """Step forward in the active tab's history without pushing.
+
+        Manages go forward operations and coordinates related state changes for the component.
+        """
         t = self._tab()
         if t["hindex"] < len(t["history"]) - 1:
             t["hindex"] += 1
             self.navigate(t["history"][t["hindex"]], push=False)
-        """go_forward."""
 
     # ── right-pane history (mouse side-buttons route here when over it) ──
     def _right_go_back(self):
-        """_right_go_back."""
+        """Step back in the right pane's history without pushing.
+
+        Manages right go back operations and coordinates related state changes for the component.
+        """
         t = self._right_tab()
         if t["hindex"] > 0:
             t["hindex"] -= 1
             self._right_navigate(t["history"][t["hindex"]], push=False)
-        """_right_go_back."""
 
     def _right_go_forward(self):
-        """_right_go_forward."""
+        """Step forward in the right pane's history without pushing.
+
+        Manages right go forward operations and coordinates related state changes for the component.
+        """
         t = self._right_tab()
         if t["hindex"] < len(t["history"]) - 1:
             t["hindex"] += 1
             self._right_navigate(t["history"][t["hindex"]], push=False)
-        """_right_go_forward."""
 
     def _install_mouse_side_buttons(self):
-        """Route mouse XButton1/XButton2 and drag-drops across all file viewports."""
+        """Route mouse XButton1/XButton2 and drag-drops across all file viewports.
+
+        Initiates the package or update installation workflow in the background, monitoring execution progress.
+        """
         self.setAcceptDrops(True)
         self.installEventFilter(self)
         views = [self]
@@ -6697,7 +7952,14 @@ class ExplorerWidget(QWidget):
             vp.installEventFilter(self)
 
     def eventFilter(self, obj, ev):  # noqa: N802
-        """eventFilter."""
+        """Filter monitored Qt events for target child widgets.
+
+        Intercepts specific mouse, keyboard, or focus events to provide custom interactive behaviors before standard event dispatch.
+
+        Args:
+            obj: The obj parameter.
+            ev: The Qt event object.
+        """
         from PySide6.QtCore import QEvent
 
         # 1. Route drag & drop events on all file viewports & trees
@@ -6734,10 +7996,19 @@ class ExplorerWidget(QWidget):
                     self._right_go_forward() if over_right else self.go_forward()
                 return True
         return super().eventFilter(obj, ev)
-        """eventFilter."""
 
     def _handle_viewport_drop(self, obj, ev) -> bool:
-        """_handle_viewport_drop."""
+        """Enqueue a copy/move transfer for viewport-dropped paths.
+
+        Manages handle viewport drop operations and coordinates related state changes for the component.
+
+        Args:
+            obj: The obj parameter.
+            ev: The Qt event object.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         mime = ev.mimeData()
         if not mime:
             return False
@@ -6840,13 +8111,13 @@ class ExplorerWidget(QWidget):
         self.status_items.setText(f"{action_name.capitalize()}ing {len(valid_sources)} item(s) to {Path(dest_dir).name or dest_dir}")
         ev.acceptProposedAction()
         return True
-        """_handle_viewport_drop."""
 
     def _update_drop_hint(self, obj, ev) -> None:
         """Show a drop-target hint in the status bar during drag-move.
 
-        Best-effort only: never raises, never changes selection, and only
-        writes to status_sel (items count in status_items is untouched).
+        Best-effort only: never raises, writes only to status_sel (items
+        count in status_items is untouched), and moves the details-table
+        current index onto the hovered folder to highlight the drop target.
         """
         try:
             mime = ev.mimeData()
@@ -6881,26 +8152,33 @@ class ExplorerWidget(QWidget):
             pass
 
     def go_up(self):
-        """go_up."""
+        """Navigate to the parent folder (or out of archive mode).
+
+        Manages go up operations and coordinates related state changes for the component.
+        """
         if self._archive_mode:
             self._archive_go_up()
             return
         parent = os.path.dirname(self._tab()["path"].rstrip("\\/"))
         if parent and parent != self._tab()["path"]:
             self.navigate(parent)
-        """go_up."""
 
     def _start_edit_path(self):
-        """_start_edit_path."""
+        """Swap breadcrumbs for the address editor with the path selected.
+
+        Manages start edit path operations and coordinates related state changes for the component.
+        """
         self.addr.setText(self._tab()["path"])
         self.crumbs.hide()
         self.addr.show()
         self.addr.setFocus()
         self.addr.selectAll()
-        """_start_edit_path."""
 
     def _commit_edit_path(self):
-        """_commit_edit_path."""
+        """Navigate to the edited address when it is a directory.
+
+        Manages commit edit path operations and coordinates related state changes for the component.
+        """
         p = self.addr.text().strip()
         if len(p) == 2 and p[1] == ":":
             p += "\\"
@@ -6908,17 +8186,21 @@ class ExplorerWidget(QWidget):
         self.crumbs.show()
         if os.path.isdir(p):
             self.navigate(p)
-        """_commit_edit_path."""
 
     def _on_addr_editing_finished(self):
-        """_on_addr_editing_finished."""
+        """Restore breadcrumbs when address editing finishes.
+
+        Manages on addr editing finished operations and coordinates related state changes for the component.
+        """
         self.addr.hide()
         self.crumbs.show()
-        """_on_addr_editing_finished."""
 
     # ────────────────────────── sidebar ───────────────────────────────────
     def _toggle_sidebar(self):
-        """_toggle_sidebar."""
+        """Show or hide the sidebar and sync its toggle button.
+
+        Toggles selection states or operational modes, recalculating active selection counts and enabling/disabling dependent actions.
+        """
         self._sidebar_visible = not self._sidebar_visible
         if self._sidebar_visible:
             self.side.show()
@@ -6926,11 +8208,13 @@ class ExplorerWidget(QWidget):
         else:
             self.side.hide()
             self.btn_sidebar.setChecked(False)
-        """_toggle_sidebar."""
 
     # ────────────────────────── dual pane ─────────────────────────────────
     def _toggle_dual_pane(self):
-        """Toggle dual pane mode (Ctrl+D)."""
+        """Toggle dual pane mode (Ctrl+D).
+
+        Toggles selection states or operational modes, recalculating active selection counts and enabling/disabling dependent actions.
+        """
         self._dual_pane = not self._dual_pane
         self.btn_dual.setChecked(self._dual_pane)
         if self._dual_pane:
@@ -6946,7 +8230,13 @@ class ExplorerWidget(QWidget):
 
     # ────────────────────────── archive browsing ──────────────────────────
     def _open_archive(self, archive_path: str):
-        """Open an archive file, showing its contents in the file table."""
+        """Open an archive file, showing its contents in the file table.
+
+        Manages open archive operations and coordinates related state changes for the component.
+
+        Args:
+            archive_path (str): Filesystem path to the target file or directory.
+        """
         if archive_path.lower().endswith(".zip"):
             if self._zip_browser.open(archive_path):
                 self._archive_mode = True
@@ -6970,7 +8260,13 @@ class ExplorerWidget(QWidget):
         self._log(f"Archive: {archive_path}")
 
     def _load_archive_entries(self, prefix: str):
-        """Load archive entries matching a directory prefix into the table."""
+        """Load archive entries matching a directory prefix into the table.
+
+        Manages load archive entries operations and coordinates related state changes for the component.
+
+        Args:
+            prefix (str): The prefix parameter.
+        """
         self._archive_current_prefix = prefix
         entries = self._archive_reader.list_entries()
         rows = []
@@ -7018,7 +8314,13 @@ class ExplorerWidget(QWidget):
         self.crumbs.setPath(f"{self._archive_path} > {prefix or '(root)'}")
 
     def _archive_activate(self, path: str):
-        """Handle click inside archive — navigate or extract."""
+        """Handle click inside archive — navigate or extract.
+
+        Manages archive activate operations and coordinates related state changes for the component.
+
+        Args:
+            path (str): Filesystem path to the target file or directory.
+        """
         if path.endswith("/"):
             # Subfolder — navigate into it
             self._load_archive_entries(path)
@@ -7027,7 +8329,13 @@ class ExplorerWidget(QWidget):
             self._extract_and_open(path)
 
     def _extract_and_open(self, entry_path: str):
-        """Extract a single archive entry and open it."""
+        """Extract a single archive entry and open it.
+
+        Manages extract and open operations and coordinates related state changes for the component.
+
+        Args:
+            entry_path (str): Filesystem path to the target file or directory.
+        """
         import tempfile
         tmp_dir = tempfile.mkdtemp(prefix="nexus_")
         if hasattr(self._archive_reader, "extract_entry"):
@@ -7046,7 +8354,10 @@ class ExplorerWidget(QWidget):
                 self._log(f"Extract failed: {entry_path}")
 
     def _archive_go_up(self):
-        """Go up one level in archive hierarchy."""
+        """Go up one level in archive hierarchy.
+
+        Manages archive go up operations and coordinates related state changes for the component.
+        """
         if not self._archive_current_prefix:
             return  # Already at root
         parts = self._archive_current_prefix.rstrip("/").split("/")
@@ -7057,14 +8368,26 @@ class ExplorerWidget(QWidget):
             self._load_archive_entries(parent)
 
     def _extract_archives_here(self, archive_paths: list[str]):
-        """Extract selected archive files to their parent directory (background)."""
+        """Extract selected archive files to their parent directory (background).
+
+        Manages extract archives here operations and coordinates related state changes for the component.
+
+        Args:
+            archive_paths (list[str]): Filesystem path to the target file or directory.
+        """
         self._extract_archives_to_dir(
             archive_paths,
             {ap: str(Path(ap).parent / Path(ap).stem) for ap in archive_paths},
         )
 
     def _extract_archives_to(self, archive_paths: list[str]):
-        """Extract selected archive files to a user-chosen directory."""
+        """Extract selected archive files to a user-chosen directory.
+
+        Manages extract archives to operations and coordinates related state changes for the component.
+
+        Args:
+            archive_paths (list[str]): Filesystem path to the target file or directory.
+        """
         dest = QFileDialog.getExistingDirectory(self, "Extract to")
         if not dest:
             return
@@ -7072,7 +8395,14 @@ class ExplorerWidget(QWidget):
         self._extract_archives_to_dir(archive_paths, dirs)
 
     def _extract_archives_to_dir(self, archive_paths: list[str], dirs: dict):
-        """Run extraction with live progress using QProcess + -bsp1."""
+        """Run extraction with live progress using QProcess + -bsp1.
+
+        Manages extract archives to dir operations and coordinates related state changes for the component.
+
+        Args:
+            archive_paths (list[str]): Filesystem path to the target file or directory.
+            dirs (dict): The dirs parameter.
+        """
         from nexus_archive import _find_7z, _run_7z
 
         tasks = [(ap, dirs[ap]) for ap in archive_paths]
@@ -7095,21 +8425,39 @@ class ExplorerWidget(QWidget):
         self._extract_worker.start()
 
     def _on_extract_done(self, success: bool, message: str = ""):
-        """_on_extract_done."""
+        """Finish the extraction panel and reload the current folder.
+
+        Receives the completed data from the extract background worker, populates the view with results, and restores button states.
+
+        Args:
+            success (bool): The success parameter.
+            message (str): Informational or progress status message.
+        """
         if hasattr(self, "_extract_progress"):
             self._extract_progress.finish(success, message)
         self._reload_current()
-        """_on_extract_done."""
 
     def _extract_entries_here(self, entry_paths: list[str]):
-        """Extract entries from current archive to the archive's parent dir (async)."""
+        """Extract entries from current archive to the archive's parent dir (async).
+
+        Manages extract entries here operations and coordinates related state changes for the component.
+
+        Args:
+            entry_paths (list[str]): Filesystem path to the target file or directory.
+        """
         if not self._archive_mode or not self._archive_reader:
             return
         dest = str(Path(self._archive_path).parent)
         self._extract_archive_entries(entry_paths, dest)
 
     def _extract_entries_to(self, entry_paths: list[str]):
-        """Extract entries from current archive to a user-chosen directory (async)."""
+        """Extract entries from current archive to a user-chosen directory (async).
+
+        Manages extract entries to operations and coordinates related state changes for the component.
+
+        Args:
+            entry_paths (list[str]): Filesystem path to the target file or directory.
+        """
         if not self._archive_mode or not self._archive_reader:
             return
         dest = QFileDialog.getExistingDirectory(self, "Extract to")
@@ -7118,7 +8466,14 @@ class ExplorerWidget(QWidget):
         self._extract_archive_entries(entry_paths, dest)
 
     def _extract_archive_entries(self, entry_paths: list[str], dest_dir: str):
-        """Run entry extraction in background with progress panel."""
+        """Run entry extraction in background with progress panel.
+
+        Manages extract archive entries operations and coordinates related state changes for the component.
+
+        Args:
+            entry_paths (list[str]): Filesystem path to the target file or directory.
+            dest_dir (str): The dest dir parameter.
+        """
         from nexus_archive import _find_7z
 
         if not entry_paths:
@@ -7137,7 +8492,10 @@ class ExplorerWidget(QWidget):
         self._extract_worker.start()
 
     def _exit_archive_mode(self):
-        """Exit archive browsing, return to normal file browsing."""
+        """Exit archive browsing, return to normal file browsing.
+
+        Manages exit archive mode operations and coordinates related state changes for the component.
+        """
         self._archive_mode = False
         self._archive_path = ""
         if self._archive_reader:
@@ -7147,7 +8505,10 @@ class ExplorerWidget(QWidget):
         self._reload_current()
 
     def _toggle_preview(self):
-        """Toggle preview pane visibility."""
+        """Toggle preview pane visibility.
+
+        Toggles selection states or operational modes, recalculating active selection counts and enabling/disabling dependent actions.
+        """
         vis = not self.preview.isVisible()
         self.preview.setVisible(vis)
         self.btn_preview.setChecked(vis)
@@ -7158,27 +8519,46 @@ class ExplorerWidget(QWidget):
         self._log(f"Preview pane {'ON' if vis else 'OFF'}")
 
     def _newfolder(self):
-        """_newfolder."""
+        """Newfolder.
+
+        Manages newfolder operations and coordinates related state changes for the component.
+        """
         self._new_folder()
-        """_newfolder."""
 
     def _right_add_tab(self, path: str) -> None:
-        """_right_add_tab."""
+        """Append a right-pane tab and load its path.
+
+        Manages right add tab operations and coordinates related state changes for the component.
+
+        Args:
+            path (str): Filesystem path to the target file or directory.
+        """
         self._right_tabs.append({"path": path, "history": [path], "hindex": 0})
         if self._right_current_tab < 0:
             self._right_current_tab = 0
         self._right_load(path)
-        """_right_add_tab."""
 
     def _right_tab(self) -> dict:
-        """_right_tab."""
+        """Return the active right-pane tab, defaulting to Home.
+
+        Manages right tab operations and coordinates related state changes for the component.
+
+        Returns:
+            dict: Dictionary mapping identifiers to status or values.
+        """
         if self._right_current_tab < 0 or self._right_current_tab >= len(self._right_tabs):
             return {"path": os.path.expanduser("~"), "history": [os.path.expanduser("~")], "hindex": 0}
         return self._right_tabs[self._right_current_tab]
-        """_right_tab."""
 
     def _right_navigate(self, path: str, push: bool = True) -> None:
-        """_right_navigate."""
+        """Load a folder into the right pane, pushing its history.
+
+        Manages right navigate operations and coordinates related state changes for the component.
+
+        Args:
+            path (str): Filesystem path to the target file or directory.
+            push (bool): The push parameter.
+        """
         path = os.path.normpath(os.path.expanduser(path))
         if not os.path.isdir(path):
             return
@@ -7189,22 +8569,38 @@ class ExplorerWidget(QWidget):
             tab["hindex"] = len(tab["history"]) - 1
         tab["path"] = path
         self._right_load(path)
-        """_right_navigate."""
 
     def _right_load(self, path: str) -> None:
-        """_right_load."""
+        """List a path into the right pane via the engine.
+
+        Manages right load operations and coordinates related state changes for the component.
+
+        Args:
+            path (str): Filesystem path to the target file or directory.
+        """
         self.engine.list_dir(path, self._right_on_rows)
-        """_right_load."""
 
     def _right_on_rows(self, code: int, rows: list[dict]) -> None:
-        """_right_on_rows."""
+        """Push engine rows into the right-pane model and icon view.
+
+        Manages right on rows operations and coordinates related state changes for the component.
+
+        Args:
+            code (int): The code parameter.
+            rows (list[dict]): Table row index or list of row indices.
+        """
         self._right_model.update_rows(rows)
         if self._right_stack.currentIndex() == 1:
             self._fill_right_icon_view(rows)
-        """_right_on_rows."""
 
     def _fill_right_icon_view(self, rows: list[dict]):
-        """_fill_right_icon_view."""
+        """Rebuild right-pane icon items from engine row dicts.
+
+        Refreshes table or tree items with formatted values, tooltips, and status indicators based on the provided dataset.
+
+        Args:
+            rows (list[dict]): Table row index or list of row indices.
+        """
         self._right_icon_list.blockSignals(True)
         self._right_icon_list.clear()
         for row in rows:
@@ -7213,20 +8609,27 @@ class ExplorerWidget(QWidget):
             it.setToolTip(row.get("path", ""))
             self._right_icon_list.addItem(it)
         self._right_icon_list.blockSignals(False)
-        """_fill_right_icon_view."""
 
     def _activate_right(self, idx):
-        """_activate_right."""
+        """Open a right-pane row: navigate dirs, launch files.
+
+        Manages activate right operations and coordinates related state changes for the component.
+
+        Args:
+            idx: The idx parameter.
+        """
         row = self._right_proxy.index(idx.row(), 0).data(Qt.ItemDataRole.UserRole)
         if row.get("isDir"):
             self._right_navigate(row.get("path", ""))
         elif row.get("path") and os.path.isfile(row["path"]):
             os.startfile(row["path"])  # noqa: S606
-        """_activate_right."""
 
     # ────────────────────────── Quick Look (Space) ────────────────────────
     def _quick_look(self):
-        """Show Quick Look popup for selected file."""
+        """Show Quick Look popup for selected file.
+
+        Manages quick look operations and coordinates related state changes for the component.
+        """
         sel = self._selected_rows()
         if sel:
             pos = None
@@ -7244,7 +8647,10 @@ class ExplorerWidget(QWidget):
 
     # ────────────────────────── Bulk Rename (Ctrl+B) ──────────────────────
     def _bulk_rename(self):
-        """Open bulk rename dialog for selected files."""
+        """Open bulk rename dialog for selected files.
+
+        Manages bulk rename operations and coordinates related state changes for the component.
+        """
         sel = self._selected_paths()
         if len(sel) < 2:
             return
@@ -7253,7 +8659,10 @@ class ExplorerWidget(QWidget):
 
     # ────────────────────────── Duplicate Finder ────────────────────────────
     def _open_duplicate_finder(self):
-        """Open the Duplicate Finder dialog for the current directory."""
+        """Open the Duplicate Finder dialog for the current directory.
+
+        Manages open duplicate finder operations and coordinates related state changes for the component.
+        """
         path = self._tab()["path"]
         if not hasattr(self, '_dup_finder') or self._dup_finder is None:
             self._dup_finder = DuplicateFinderDialog(path, self)
@@ -7265,19 +8674,36 @@ class ExplorerWidget(QWidget):
 
     # ────────────────────────── Color Tags ────────────────────────────────
     def _set_color_tag(self, color: str | None):
-        """Set color tag on selected files."""
+        """Set color tag on selected files.
+
+        Manages set color tag operations and coordinates related state changes for the component.
+
+        Args:
+            color (str | None): The color parameter.
+        """
         for path in self._selected_paths():
             self._color_tags.set_tag(path, color)
         self._update_status()
 
     def _get_color_tag(self, path: str) -> str | None:
-        """_get_color_tag."""
+        """Return the stored color tag for a path, if any.
+
+        Manages get color tag operations and coordinates related state changes for the component.
+
+        Args:
+            path (str): Filesystem path to the target file or directory.
+
+        Returns:
+            str | None: Formatted string or path.
+        """
         return self._color_tags.get_tag(path)
-        """_get_color_tag."""
 
     # ────────────────────────── Smart Folders ─────────────────────────────
     def _refresh_smart_folders(self):
-        """Refresh the smart folders list in sidebar."""
+        """Refresh the smart folders list in sidebar.
+
+        Manages refresh smart folders operations and coordinates related state changes for the component.
+        """
         self.smart_list.clear()
         for i, sf in enumerate(self._smart_folders.list_all()):
             it = QListWidgetItem(_fluent_action("star", size=16), sf.get("name", f"Smart {i}"))
@@ -7285,7 +8711,13 @@ class ExplorerWidget(QWidget):
             self.smart_list.addItem(it)
 
     def _open_smart_folder(self, index: int):
-        """Open a smart folder by index."""
+        """Open a smart folder by index.
+
+        Manages open smart folder operations and coordinates related state changes for the component.
+
+        Args:
+            index (int): The index parameter.
+        """
         folders = self._smart_folders.list_all()
         if 0 <= index < len(folders):
             sf = folders[index]
@@ -7295,7 +8727,10 @@ class ExplorerWidget(QWidget):
             self.filter.setText(pattern)
 
     def _add_current_as_smart_folder(self):
-        """Save current directory + filter as a smart folder."""
+        """Save current directory + filter as a smart folder.
+
+        Manages add current as smart folder operations and coordinates related state changes for the component.
+        """
         path = self._tab()["path"]
         pattern = self.filter.text()
         name = f"{Path(path).name} ({pattern})" if pattern else Path(path).name
@@ -7303,7 +8738,13 @@ class ExplorerWidget(QWidget):
         self._refresh_smart_folders()
 
     def _smart_folder_context_menu(self, pos):
-        """Right-click menu for smart folders."""
+        """Right-click menu for smart folders.
+
+        Manages smart folder context menu operations and coordinates related state changes for the component.
+
+        Args:
+            pos: The pos parameter.
+        """
         menu = QMenu(self)
         item = self.smart_list.itemAt(pos)
         if item:
@@ -7321,13 +8762,25 @@ class ExplorerWidget(QWidget):
         menu.exec(self.smart_list.viewport().mapToGlobal(pos))
 
     def _remove_smart_folder(self, index: int):
-        """Remove a smart folder."""
+        """Remove a smart folder.
+
+        Manages remove smart folder operations and coordinates related state changes for the component.
+
+        Args:
+            index (int): The index parameter.
+        """
         self._smart_folders.remove(index)
         self._refresh_smart_folders()
 
     # ────────────────────────── views ─────────────────────────────────────
     def _set_view_mode(self, mode: str):
-        """_set_view_mode."""
+        """Switch details/icons view and sync the view-toggle icon.
+
+        Manages set view mode operations and coordinates related state changes for the component.
+
+        Args:
+            mode (str): The mode parameter.
+        """
         if mode == "icons":
             self.stack.setCurrentIndex(1)
             self._view_mode = "icons"
@@ -7337,18 +8790,22 @@ class ExplorerWidget(QWidget):
             self.stack.setCurrentIndex(0)
             self._view_mode = "table"
             self.view_toggle.setIcon(_fluent_action("view_icon", size=_scaled(16)))
-        """_set_view_mode."""
 
     def _toggle_view(self):
-        """_toggle_view."""
+        """Flip between details and icons view modes.
+
+        Toggles selection states or operational modes, recalculating active selection counts and enabling/disabling dependent actions.
+        """
         if self.stack.currentIndex() == 0:
             self._set_view_mode("icons")
         else:
             self._set_view_mode("table")
-        """_toggle_view."""
 
     def toggle_flat_branch_view(self):
-        """Toggle Total Commander-style Flat Branch View (recursive listing of all subfolder files)."""
+        """Toggle Total Commander-style Flat Branch View (recursive listing of all subfolder files).
+
+        Toggles selection states or operational modes, recalculating active selection counts and enabling/disabling dependent actions.
+        """
         self._flat_branch_mode = not getattr(self, "_flat_branch_mode", False)
         current_path = self._tab()["path"]
         if self._flat_branch_mode:
@@ -7360,7 +8817,13 @@ class ExplorerWidget(QWidget):
             self._load(current_path)
 
     def _fill_icon_view(self, rows: list[dict]):
-        """Fill icon view with signal blocking to avoid UI freeze on large directories."""
+        """Fill icon view with signal blocking to avoid UI freeze on large directories.
+
+        Refreshes table or tree items with formatted values, tooltips, and status indicators based on the provided dataset.
+
+        Args:
+            rows (list[dict]): Table row index or list of row indices.
+        """
         self.icon_list.blockSignals(True)
         self.icon_list.clear()
         for row in rows:
@@ -7372,7 +8835,16 @@ class ExplorerWidget(QWidget):
 
     # ────────────────────────── selection ─────────────────────────────────
     def _selected_rows(self, sender=None) -> list[dict]:
-        """_selected_rows."""
+        """Collect selected row dicts from the active (or sender's) view.
+
+        Manages selected rows operations and coordinates related state changes for the component.
+
+        Args:
+            sender: Widget or object originating the action.
+
+        Returns:
+            list[dict]: List of processed items or identifiers.
+        """
         rows: list[dict] = []
         src = sender or self.sender()
         if src in (self._right_table, self._right_icon_list):
@@ -7391,21 +8863,39 @@ class ExplorerWidget(QWidget):
             for it in self.icon_list.selectedItems():
                 rows.append(it.data(Qt.ItemDataRole.UserRole))
         return rows
-        """_selected_rows."""
 
     def _selected_paths(self, sender=None) -> list[str]:
-        """_selected_paths."""
+        """Collect selected filesystem paths from the active view.
+
+        Manages selected paths operations and coordinates related state changes for the component.
+
+        Args:
+            sender: Widget or object originating the action.
+
+        Returns:
+            list[str]: List of processed items or identifiers.
+        """
         return [r.get("path", "") for r in self._selected_rows(sender) if r.get("path")]
-        """_selected_paths."""
 
     def _activate(self, idx):
-        """_activate."""
+        """Activate.
+
+        Manages activate operations and coordinates related state changes for the component.
+
+        Args:
+            idx: The idx parameter.
+        """
         row = self.proxy.index(idx.row(), 0).data(Qt.ItemDataRole.UserRole)
         self._activate_path(row)
-        """_activate."""
 
     def _activate_path(self, row_or_path):
-        """_activate_path."""
+        """Open a row: dirs navigate, archives browse, files launch.
+
+        Manages activate path operations and coordinates related state changes for the component.
+
+        Args:
+            row_or_path: Filesystem path to the target file or directory.
+        """
         row = row_or_path if isinstance(row_or_path, dict) else {"path": str(row_or_path)}
         p = row.get("path", "")
         if self._archive_mode:
@@ -7421,10 +8911,15 @@ class ExplorerWidget(QWidget):
                 self._open_archive(p)
             else:
                 os.startfile(p)  # noqa: S606
-        """_activate_path."""
 
     def _update_status(self, sender=None, *_):
-        """_update_status."""
+        """Refresh item counts, selection size, and undo hints.
+
+        Manages update status operations and coordinates related state changes for the component.
+
+        Args:
+            sender: Widget or object originating the action.
+        """
         total = self.proxy.rowCount()
         folders = sum(1 for r in self.model.rows if r.get("isDir"))
         files = total - folders
@@ -7449,10 +8944,12 @@ class ExplorerWidget(QWidget):
             self.status_items.setText(f"{items_text}  |  Selected: {sel_text}")
         elif self._status_mode == 2:
             self.status_items.setText(self._status_disk_text or items_text)
-        """_update_status."""
 
     def _cycle_status_mode(self):
-        """_cycle_status_mode."""
+        """Cycle the status bar through items/selected/disk-free modes.
+
+        Manages cycle status mode operations and coordinates related state changes for the component.
+        """
         self._status_mode = (self._status_mode + 1) % 3
         if self._status_mode == 2:
             path = self._tab().get("path", "")
@@ -7470,13 +8967,17 @@ class ExplorerWidget(QWidget):
                 free_text = "Disk info unavailable"
             self._status_disk_text = free_text
         self._update_status()
-        """_cycle_status_mode."""
 
     def _on_transfer_started(self, job_id: str):
-        """_on_transfer_started."""
+        """Note an active transfer id in the status bar.
+
+        Manages on transfer started operations and coordinates related state changes for the component.
+
+        Args:
+            job_id (str): The job id parameter.
+        """
         if hasattr(self, "status_items"):
             self.status_items.setText(f"Transfer active ({job_id[:8]}…)")
-        """_on_transfer_started."""
 
     def _on_transfer_added(self, job_id: str):
         """Job added to transfer queue (tracked live by preview pane dock).
@@ -7487,50 +8988,84 @@ class ExplorerWidget(QWidget):
         return
 
     def open_transfer_monitor(self):
-        """open_transfer_monitor."""
+        """Lazily open the transfer monitor dialog for the queue.
+
+        Manages open transfer monitor operations and coordinates related state changes for the component.
+        """
         if self._transfer_monitor is None:
             from nexus_transfer_monitor import TransferMonitorDialog
 
             self._transfer_monitor = TransferMonitorDialog(
                 self._transfer_queue, self)
         self._transfer_monitor.open_for()
-        """open_transfer_monitor."""
 
     def _on_transfer_progress(self, job_id: str, percent: int, text: str):
-        """_on_transfer_progress."""
+        """Show live transfer percent and text in the status bar.
+
+        Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
+
+        Args:
+            job_id (str): The job id parameter.
+            percent (int): The percent parameter.
+            text (str): Display text string.
+        """
         if hasattr(self, "status_items"):
             self.status_items.setText(f"Transfer {percent}% — {text}")
-        """_on_transfer_progress."""
 
     def _on_transfer_cancelled(self, job_id: str):
-        """_on_transfer_cancelled."""
+        """Note cancellation in the status bar and reload.
+
+        Manages on transfer cancelled operations and coordinates related state changes for the component.
+
+        Args:
+            job_id (str): The job id parameter.
+        """
         if hasattr(self, "status_items"):
             self.status_items.setText("Transfer cancelled")
         self._reload_current()
-        """_on_transfer_cancelled."""
 
     def _on_transfer_completed(self, job_id: str, success: bool, message: str):
-        """_on_transfer_completed."""
+        """Reload the current folder after a transfer finishes.
+
+        Manages on transfer completed operations and coordinates related state changes for the component.
+
+        Args:
+            job_id (str): The job id parameter.
+            success (bool): The success parameter.
+            message (str): Informational or progress status message.
+        """
         self._reload_current()
-        """_on_transfer_completed."""
 
     def _on_transfer_queue_empty(self):
-        """_on_transfer_queue_empty."""
+        """Reload the current folder once the transfer queue drains.
+
+        Manages on transfer queue empty operations and coordinates related state changes for the component.
+        """
         self._reload_current()
-        """_on_transfer_queue_empty."""
     # ────────────────────────── operations ────────────────────────────────
     def _unique_name(self, base: str) -> str:
-        """_unique_name."""
+        """Return a collision-free name by appending a (2), (3), ... suffix.
+
+        Manages unique name operations and coordinates related state changes for the component.
+
+        Args:
+            base (str): The base parameter.
+
+        Returns:
+            str: Formatted string or path.
+        """
         existing = {r.get("name", "").lower() for r in self.model.rows}
         name, i = base, 2
         while name.lower() in existing:
             name = f"{base} ({i})"
             i += 1
         return name
-        """_unique_name."""
 
     def _new_folder(self):
-        """Create a new folder in the current directory."""
+        """Create a new folder in the current directory.
+
+        Manages new folder operations and coordinates related state changes for the component.
+        """
         curr_path = Path(self._tab()["path"])
         name = self._unique_name("New Folder")
         dest, created_parents = create_nested_folder(curr_path, name)
@@ -7539,7 +9074,10 @@ class ExplorerWidget(QWidget):
         self._log(f"New folder: {dest.name}")
 
     def _new_nested_folder(self):
-        """Open dialog to create single or deep nested folder paths (e.g. 'src/components/ui')."""
+        """Open dialog to create single or deep nested folder paths (e.g. 'src/components/ui').
+
+        Manages new nested folder operations and coordinates related state changes for the component.
+        """
         curr_path = Path(self._tab()["path"])
         dlg = NestedFolderDialog(curr_path, self)
         if dlg.exec() == QDialog.DialogCode.Accepted:
@@ -7555,7 +9093,13 @@ class ExplorerWidget(QWidget):
                 QMessageBox.critical(self, "Error Creating Folder", f"Could not create folder:\n{exc}")
 
     def _new_file(self, template_ext: str = ""):
-        """Create a new file in the current directory with optional template extension."""
+        """Create a new file in the current directory with optional template extension.
+
+        Manages new file operations and coordinates related state changes for the component.
+
+        Args:
+            template_ext (str): The template ext parameter.
+        """
         curr_path = Path(self._tab()["path"])
         ext = template_ext if template_ext.startswith(".") else ""
         base_name = f"New Document{ext}" if ext else "New Document.txt"
@@ -7567,7 +9111,10 @@ class ExplorerWidget(QWidget):
         self._log(f"New file created: {name}")
 
     def _new_nested_file(self):
-        """Open dialog to create a file inside a nested path with template selection."""
+        """Open dialog to create a file inside a nested path with template selection.
+
+        Manages new nested file operations and coordinates related state changes for the component.
+        """
         curr_path = Path(self._tab()["path"])
         dlg = NestedFileDialog(curr_path, self)
         if dlg.exec() == QDialog.DialogCode.Accepted:
@@ -7583,7 +9130,10 @@ class ExplorerWidget(QWidget):
                 QMessageBox.critical(self, "Error Creating File", f"Could not create file:\n{exc}")
 
     def _batch_scaffold(self):
-        """Open dialog to scaffold entire project or directory hierarchies."""
+        """Open dialog to scaffold entire project or directory hierarchies.
+
+        Manages batch scaffold operations and coordinates related state changes for the component.
+        """
         curr_path = Path(self._tab()["path"])
         dlg = BatchScaffoldDialog(curr_path, self)
         if dlg.exec() == QDialog.DialogCode.Accepted:
@@ -7616,7 +9166,10 @@ class ExplorerWidget(QWidget):
                 QMessageBox.critical(self, "Error Scaffolding Hierarchy", f"Could not scaffold hierarchy:\n{exc}")
 
     def _new_folder_with_selection(self):
-        """Create a new folder and move all selected items into it."""
+        """Create a new folder and move all selected items into it.
+
+        Manages new folder with selection operations and coordinates related state changes for the component.
+        """
         sel = self._selected_paths()
         if not sel:
             return
@@ -7628,7 +9181,13 @@ class ExplorerWidget(QWidget):
         self._log(f"Moved {len(sel)} items to {name}/")
 
     def _compress_to(self, fmt: str):
-        """Compress selected files/folders into an archive."""
+        """Compress selected files/folders into an archive.
+
+        Manages compress to operations and coordinates related state changes for the component.
+
+        Args:
+            fmt (str): The fmt parameter.
+        """
         sel = self._selected_paths()
         if not sel:
             return
@@ -7693,7 +9252,10 @@ class ExplorerWidget(QWidget):
                 pass
 
     def _move_to_folder(self):
-        """Move selected items to a user-chosen folder."""
+        """Move selected items to a user-chosen folder.
+
+        Manages move to folder operations and coordinates related state changes for the component.
+        """
         sel = self._selected_paths()
         if not sel:
             return
@@ -7703,7 +9265,10 @@ class ExplorerWidget(QWidget):
         self._transfer_queue.enqueue(kind="move", sources=sel, dest=dest)
 
     def _rename(self):
-        """_rename."""
+        """Rename.
+
+        Manages rename operations and coordinates related state changes for the component.
+        """
         sel = self._selected_paths()
         if len(sel) != 1:
             return
@@ -7728,10 +9293,15 @@ class ExplorerWidget(QWidget):
             self.status_items.setText(f"Renamed to '{new}'")
         except Exception as exc:
             QMessageBox.critical(self, "Rename Failed", f"Could not rename item:\n{exc}")
-        """_rename."""
 
     def _clip(self, mode: str):
-        """_clip."""
+        """Clip.
+
+        Manages clip operations and coordinates related state changes for the component.
+
+        Args:
+            mode (str): The mode parameter.
+        """
         sel = self._selected_paths()
         if sel:
             if mode == "cut":
@@ -7740,10 +9310,15 @@ class ExplorerWidget(QWidget):
                 _nexus_clipboard.copy(sel)
             self.status_items.setText(f"{mode} {len(sel)} item(s)")
             self._log(f"Clipboard: {mode} {len(sel)} items")
-        """_clip."""
 
     def _paste(self, target_dest: str | None = None):
-        """_paste."""
+        """Paste.
+
+        Manages paste operations and coordinates related state changes for the component.
+
+        Args:
+            target_dest (str | None): The target dest parameter.
+        """
         data = _nexus_clipboard.paste()
         if not data and hasattr(self, "preview") and hasattr(self.preview, "staging_shelf"):
             shelf = self.preview.staging_shelf
@@ -7781,10 +9356,17 @@ class ExplorerWidget(QWidget):
             if hasattr(self, "preview") and hasattr(self.preview, "staging_shelf"):
                 self.preview.staging_shelf.clear_staged()
         self.status_items.setText(f"{mode.capitalize()}ing {len(paths)} item(s) to {Path(dest).name or dest}")
-        """_paste."""
 
     def _on_staging_paste(self, mode: str, paths: list[str], target_dir: str):
-        """_on_staging_paste."""
+        """Enqueue a queued transfer for shelf paste requests.
+
+        Manages on staging paste operations and coordinates related state changes for the component.
+
+        Args:
+            mode (str): The mode parameter.
+            paths (list[str]): Filesystem path to the target file or directory.
+            target_dir (str): The target dir parameter.
+        """
         dest = target_dir or self._tab()["path"]
         valid_paths = [p for p in paths if os.path.exists(p)]
         if not valid_paths or not dest:
@@ -7807,18 +9389,25 @@ class ExplorerWidget(QWidget):
             self.preview.staging_shelf.clear_staged()
             _nexus_clipboard.clear()
         self.status_items.setText(f"{mode.capitalize()}ing {len(valid_paths)} item(s) to {Path(dest).name or dest}")
-        """_on_staging_paste."""
 
     def _on_stage_selected(self):
-        """_on_stage_selected."""
+        """Stage the current selection onto the shelf.
+
+        Manages on stage selected operations and coordinates related state changes for the component.
+        """
         sel = self._selected_paths()
         if sel:
             self.preview.staging_shelf.add_paths(sel, mode=_nexus_clipboard._mode or "copy")
             self.status_items.setText(f"Staged {len(sel)} item(s) to shelf")
-        """_on_stage_selected."""
 
     def _delete(self, permanent: bool = False):
-        """_delete."""
+        """Delete.
+
+        Manages delete operations and coordinates related state changes for the component.
+
+        Args:
+            permanent (bool): The permanent parameter.
+        """
         sel = self._selected_paths()
         if not sel:
             return
@@ -7838,10 +9427,12 @@ class ExplorerWidget(QWidget):
             sources=sel,
             permanent=permanent,
         )
-        """_delete."""
 
     def _undo(self):
-        """_undo."""
+        """Undo.
+
+        Manages undo operations and coordinates related state changes for the component.
+        """
         msg = self._undo_manager.undo()
         if msg:
             self._log(msg)
@@ -7850,10 +9441,12 @@ class ExplorerWidget(QWidget):
             self._reload_current()
         else:
             self.status_items.setText("Nothing to undo")
-        """_undo."""
 
     def _redo(self):
-        """_redo."""
+        """Redo.
+
+        Manages redo operations and coordinates related state changes for the component.
+        """
         msg = self._undo_manager.redo()
         if msg:
             self._log(msg)
@@ -7862,39 +9455,62 @@ class ExplorerWidget(QWidget):
             self._reload_current()
         else:
             self.status_items.setText("Nothing to redo")
-        """_redo."""
 
     def _select_all(self):
-        """_select_all."""
+        """Select all items in the active details or icons view.
+
+        Manages select all operations and coordinates related state changes for the component.
+        """
         if self.stack.currentIndex() == 0:
             self.table.selectAll()
         else:
             self.icon_list.selectAll()
-        """_select_all."""
 
     def _on_table_clicked(self, idx):
-        """_on_table_clicked."""
+        """Preview the clicked details row.
+
+        Manages on table clicked operations and coordinates related state changes for the component.
+
+        Args:
+            idx: The idx parameter.
+        """
         row = self.proxy.index(idx.row(), 0).data(Qt.ItemDataRole.UserRole)
         if row:
             self.preview.show_entry(row)
-        """_on_table_clicked."""
 
     def _on_current_changed(self, current: QModelIndex, _prev: QModelIndex):
-        """_on_current_changed."""
+        """Preview the newly current details row.
+
+        Manages on current changed operations and coordinates related state changes for the component.
+
+        Args:
+            current (QModelIndex): The current parameter.
+            _prev (QModelIndex): The  prev parameter.
+        """
         if current.isValid():
             row = self.proxy.index(current.row(), 0).data(Qt.ItemDataRole.UserRole)
             if row:
                 self.preview.show_entry(row)
-        """_on_current_changed."""
 
     # ────────────────────────── drag and drop ─────────────────────────────
     def dragEnterEvent(self, ev: QDragEnterEvent):
-        """dragEnterEvent."""
+        """Dragenterevent.
+
+        Manages dragEnterEvent operations and coordinates related state changes for the component.
+
+        Args:
+            ev (QDragEnterEvent): The Qt event object.
+        """
         ev.acceptProposedAction()
-        """dragEnterEvent."""
 
     def dragMoveEvent(self, ev: QDragMoveEvent):
-        """dragMoveEvent."""
+        """Dragmoveevent.
+
+        Manages dragMoveEvent operations and coordinates related state changes for the component.
+
+        Args:
+            ev (QDragMoveEvent): The Qt event object.
+        """
         ev.acceptProposedAction()
         try:
             pos = ev.position().toPoint() if hasattr(ev, "position") else ev.pos()
@@ -7917,24 +9533,39 @@ class ExplorerWidget(QWidget):
                                 f"Drop {n} item(s) into {row.get('name') or row.get('path')}")
         except Exception:
             pass
-        """dragMoveEvent."""
 
     def dragLeaveEvent(self, ev):
-        """dragLeaveEvent."""
+        """Dragleaveevent.
+
+        Manages dragLeaveEvent operations and coordinates related state changes for the component.
+
+        Args:
+            ev: The Qt event object.
+        """
         try:
             self._update_status()
         except Exception:
             pass
-        """dragLeaveEvent."""
 
     def dropEvent(self, ev):
-        """dropEvent."""
+        """Dropevent.
+
+        Manages dropEvent operations and coordinates related state changes for the component.
+
+        Args:
+            ev: The Qt event object.
+        """
         if not self._handle_viewport_drop(self, ev):
             ev.ignore()
-        """dropEvent."""
 
     def startDrag(self, actions: Qt.DropAction):
-        """Provide proper MIME data when dragging from NexusExplorer."""
+        """Startdrag.
+
+        Manages startDrag operations and coordinates related state changes for the component.
+
+        Args:
+            actions (Qt.DropAction): The actions parameter.
+        """
         sel = self._selected_paths()
         if not sel:
             return
@@ -7954,14 +9585,22 @@ class ExplorerWidget(QWidget):
         drag.exec(actions)
 
     def _search(self):
-        """_search."""
+        """Search.
+
+        Manages search operations and coordinates related state changes for the component.
+        """
         dlg = SearchDialog(self.engine, self._tab()["path"], self)
         dlg.show()
-        """_search."""
 
     # ────────────────────────── context menu ──────────────────────────────
     def _context_menu(self, pos):
-        """_context_menu."""
+        """Build and show the selection/background context menu.
+
+        Manages context menu operations and coordinates related state changes for the component.
+
+        Args:
+            pos: The pos parameter.
+        """
         from nexus_archive import is_archive as _is_archive
         menu = QMenu(self)
         sender = self.sender()
@@ -8014,10 +9653,12 @@ class ExplorerWidget(QWidget):
         # Archive mode context menu
         if self._archive_mode:
             def _open_all_archive():
-                """_open_all_archive."""
+                """Open every selected archive path in archive mode.
+
+                Manages open all archive operations and coordinates related state changes for the component.
+                """
                 for p in paths:
                     self._archive_activate(p)
-                """_open_all_archive."""
             menu.addAction("Open", _open_all_archive)
             menu.addSeparator()
             archive_files = [p for p in paths if not p.endswith("/")]
@@ -8033,18 +9674,28 @@ class ExplorerWidget(QWidget):
 
         if sel:
             def _mi(icon_name, text, slot, accent=False):
-                """_mi."""
+                """Mi.
+
+                Manages mi operations and coordinates related state changes for the component.
+
+                Args:
+                    icon_name: The icon name parameter.
+                    text: Display text string.
+                    slot: The slot parameter.
+                    accent: Whether to apply the primary accent styling.
+                """
                 a = QAction(_fluent_action(icon_name, accent=accent, size=_scaled(16)), text, self)
                 a.triggered.connect(slot)
                 menu.addAction(a)
                 return a
-                """_mi."""
 
             def _open_all_sel():
-                """_open_all_sel."""
+                """Activate every selected row.
+
+                Manages open all sel operations and coordinates related state changes for the component.
+                """
                 for r in sel:
                     self._activate_path(r)
-                """_open_all_sel."""
 
             _mi("folder", "Open", _open_all_sel)
             _mi("new_file", "Open in New Tab", self._open_in_new_tab)
@@ -8110,12 +9761,19 @@ class ExplorerWidget(QWidget):
                 _mi("expand_right", "Open with\u2026", lambda: self._open_with(paths[0]))
         else:
             def _mi_bg(icon_name, text, slot):
-                """_mi_bg."""
+                """Create a fluent-icon background-menu action for empty space.
+
+                Manages mi bg operations and coordinates related state changes for the component.
+
+                Args:
+                    icon_name: The icon name parameter.
+                    text: Display text string.
+                    slot: The slot parameter.
+                """
                 a = QAction(_fluent_action(icon_name, size=_scaled(16)), text, self)
                 a.triggered.connect(slot)
                 menu.addAction(a)
                 return a
-                """_mi_bg."""
 
             _mi_bg("new_folder", "New folder", self._new_folder)
 
@@ -8178,10 +9836,12 @@ class ExplorerWidget(QWidget):
 
         pos_global = sender.viewport().mapToGlobal(pos) if (sender is not None and hasattr(sender, "viewport")) else self.mapToGlobal(pos)
         menu.exec(pos_global)
-        """_context_menu."""
 
     def _open_in_new_tab(self):
-        """Open selected folder (or file's parent) in a new tab."""
+        """Open selected folder (or file's parent) in a new tab.
+
+        Manages open in new tab operations and coordinates related state changes for the component.
+        """
         for path in self._selected_paths():
             if os.path.isdir(path):
                 self.add_tab(path)
@@ -8189,7 +9849,10 @@ class ExplorerWidget(QWidget):
                 self.add_tab(os.path.dirname(path))
 
     def _open_in_terminal(self):
-        """Show terminal panel and cd to selected path."""
+        """Show terminal panel and cd to selected path.
+
+        Manages open in terminal operations and coordinates related state changes for the component.
+        """
         if not self.terminal_panel.isVisible():
             self._toggle_terminal()
         paths = self._selected_paths()
@@ -8201,7 +9864,10 @@ class ExplorerWidget(QWidget):
             self.terminal_panel.input.setFocus()
 
     def _invert_selection(self):
-        """Invert the current selection."""
+        """Invert the current selection.
+
+        Manages invert selection operations and coordinates related state changes for the component.
+        """
         if self.stack.currentIndex() == 0:
             model = self.proxy
             sel_model = self.table.selectionModel()
@@ -8222,7 +9888,13 @@ class ExplorerWidget(QWidget):
                     it.setSelected(True)
 
     def _show_properties(self, path_or_row):
-        """Show Properties dialog for a single file/folder."""
+        """Show Properties dialog for a single file/folder.
+
+        Manages show properties operations and coordinates related state changes for the component.
+
+        Args:
+            path_or_row: Filesystem path to the target file or directory.
+        """
         if isinstance(path_or_row, dict):
             row = dict(path_or_row)
         else:
@@ -8239,7 +9911,13 @@ class ExplorerWidget(QWidget):
         dlg.exec()
 
     def _calculate_file_hashes(self, path_or_row):
-        """Show File Checksums dialog for a file."""
+        """Show File Checksums dialog for a file.
+
+        Manages calculate file hashes operations and coordinates related state changes for the component.
+
+        Args:
+            path_or_row: Filesystem path to the target file or directory.
+        """
         if isinstance(path_or_row, dict):
             path = path_or_row.get("path", "")
         else:
@@ -8249,7 +9927,13 @@ class ExplorerWidget(QWidget):
             dlg.exec()
 
     def _open_with(self, path: str):
-        """_open_with."""
+        """Prompt for an .exe and launch the path with it.
+
+        Manages open with operations and coordinates related state changes for the component.
+
+        Args:
+            path (str): Filesystem path to the target file or directory.
+        """
         start_dir = str(Path(path).parent) if os.path.isfile(path) else ""
         exe, _ = QFileDialog.getOpenFileName(self, "Open with\u2026",
                                              start_dir,
@@ -8259,10 +9943,15 @@ class ExplorerWidget(QWidget):
             # user-selected exe or file paths. exe is validated by
             # QFileDialog.getOpenFileName returning a user-chosen .exe.
             subprocess.Popen([exe, path])
-        """_open_with."""
 
     def closeEvent(self, ev):
-        """Clean up background threads before destruction."""
+        """Handle the window or widget close event.
+
+        Performs graceful shutdown, releases active workers and system hooks, persists window geometry, and accepts the close event.
+
+        Args:
+            ev: The Qt event object.
+        """
         # Stop extract/compress workers
         for attr in ('_extract_worker', '_compress_worker'):
             worker = getattr(self, attr, None)
@@ -8300,17 +9989,25 @@ class ExplorerWidget(QWidget):
 
     # ────────────────────────── sidebar drives ────────────────────────────
     def _load_drives(self):
-        """_load_drives."""
+        """Load drive roots via FFI/CLI and refresh the folder tree.
+
+        Manages load drives operations and coordinates related state changes for the component.
+        """
         from PySide6.QtCore import QRunnable, QThreadPool
 
         engine = getattr(self, "engine", None)
 
         def _finish(count: int) -> None:
-            """_finish."""
+            """Finish.
+
+            Manages finish operations and coordinates related state changes for the component.
+
+            Args:
+                count (int): The count parameter.
+            """
             if self.folder_tree is not None:
                 self.folder_tree.refresh()
             self._log(f"Drives: {count} found")
-            """_finish."""
 
         marshal = _get_marshal()
 
@@ -8319,9 +10016,18 @@ class ExplorerWidget(QWidget):
             job_done = {"n": 0}
 
             class _DriveJob(QRunnable):
-                """_DriveJob."""
+                """Drivejob.
+
+                Manages DriveJob operations and coordinates related state changes for the component.
+                """
                 def run(self_inner):
-                    """run."""
+                    """Count FFI drives and marshal the result back to the UI thread.
+
+                    Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+
+                    Args:
+                        self_inner: The self inner parameter.
+                    """
                     try:
                         job_done["n"] = len(ffi.get_drives())
                     except (RuntimeError, OSError) as exc:
@@ -8337,8 +10043,6 @@ class ExplorerWidget(QWidget):
                             QTimer.singleShot(0, lambda count=n: _finish(count))
                     except Exception:
                         QTimer.singleShot(0, lambda count=n: _finish(count))
-                    """run."""
-                """_DriveJob class."""
 
             QThreadPool.globalInstance().start(_DriveJob())
             return
@@ -8349,16 +10053,17 @@ class ExplorerWidget(QWidget):
         proc = QProcess()
 
         def done():
-            """done."""
+            """Handle completion of the asynchronous task.
+
+            Processes the returned result payload, updates corresponding tables or UI views, and restores interactive controls.
+            """
             raw = bytes(proc.readAllStandardOutput()).decode("utf-8", "replace")
             try:
                 drives = _json.loads(raw)
             except _json.JSONDecodeError:
                 return
             _finish(len(drives))
-            """done."""
 
         proc.finished.connect(_guarded(lambda *_: done()))
         self._drive_proc = proc
         proc.start(self.engine.cli, ["drives", "--json"])
-        """_load_drives."""

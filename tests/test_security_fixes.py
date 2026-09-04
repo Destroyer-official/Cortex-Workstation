@@ -10,16 +10,25 @@ from cortex_unified.scheduler.auto_clean_rules import AutoCleanRules
 
 
 class TestCustomCommandHardening:
-    """TestCustomCommandHardening."""
+    """Testcustomcommandhardening.
+
+    Manages TestCustomCommandHardening operations and coordinates related state changes for the component.
+    """
     def test_disabled_by_default(self):
-        """test_disabled_by_default."""
+        """test_disabled_by_default.
+
+        Manages test disabled by default operations and coordinates related state changes for the component.
+        """
         rules = AutoCleanRules()
         out = rules._custom_clean_action({"command": "echo hi"})
         assert out is not None
         assert "disabled" in out.get("error", "")
 
     def test_runs_without_shell_when_allowed(self):
-        """test_runs_without_shell_when_allowed."""
+        """test_runs_without_shell_when_allowed.
+
+        Manages test runs without shell when allowed operations and coordinates related state changes for the component.
+        """
         rules = AutoCleanRules()
         # A benign, cross-platform command via the interpreter itself.
         out = rules._custom_clean_action({
@@ -45,9 +54,15 @@ class TestCustomCommandHardening:
 
 
 class TestAppUninstallerImportSafe:
-    """TestAppUninstallerImportSafe."""
+    """Testappuninstallerimportsafe.
+
+    Manages TestAppUninstallerImportSafe operations and coordinates related state changes for the component.
+    """
     def test_import_and_construct(self):
-        """test_import_and_construct."""
+        """test_import_and_construct.
+
+        Manages test import and construct operations and coordinates related state changes for the component.
+        """
         from cortex_unified.system_tools.app_uninstaller import AppUninstaller
         u = AppUninstaller()
         # get_installed_apps is safe/read-only; returns a list (possibly empty
@@ -56,7 +71,10 @@ class TestAppUninstallerImportSafe:
         assert isinstance(apps, list)
 
     def test_uninstall_missing_string_returns_false(self):
-        """test_uninstall_missing_string_returns_false."""
+        """test_uninstall_missing_string_returns_false.
+
+        Manages test uninstall missing string returns false operations and coordinates related state changes for the component.
+        """
         from cortex_unified.system_tools.app_uninstaller import AppUninstaller
         u = AppUninstaller()
         assert u.uninstall_app({"name": "Nope"}) is False

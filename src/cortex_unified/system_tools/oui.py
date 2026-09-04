@@ -60,7 +60,16 @@ _NOISE_SUFFIXES = (
 
 
 def normalize(mac: str) -> str:
-    """Return *mac* lower-cased and colon-separated, or ``""`` if unusable."""
+    """Normalize.
+
+    Manages normalize operations and coordinates related state changes for the component.
+
+    Args:
+        mac (str): The mac parameter.
+
+    Returns:
+        str: Formatted string or path.
+    """
     if not mac:
         return ""
     cleaned = mac.strip().replace("-", ":").replace(".", ":").lower()
@@ -71,7 +80,16 @@ def normalize(mac: str) -> str:
 
 
 def _first_octet(mac: str) -> int | None:
-    """_first_octet."""
+    """_first_octet.
+
+    Manages first octet operations and coordinates related state changes for the component.
+
+    Args:
+        mac (str): The mac parameter.
+
+    Returns:
+        int | None: Result of the operation.
+    """
     norm = normalize(mac)
     if not norm:
         return None
@@ -79,8 +97,6 @@ def _first_octet(mac: str) -> int | None:
         return int(norm[:2], 16)
     except ValueError:
         return None
-    """_first_octet."""
-    """_first_octet."""
 
 
 # -- pure bit-level facts (never stale, never wrong) -----------------------
@@ -99,7 +115,16 @@ def is_randomized(mac: str) -> bool:
 
 
 def is_multicast(mac: str) -> bool:
-    """True for a multicast/broadcast MAC (not a real device address)."""
+    """True for a multicast/broadcast MAC (not a real device address).
+
+    Manages is multicast operations and coordinates related state changes for the component.
+
+    Args:
+        mac (str): The mac parameter.
+
+    Returns:
+        bool: True if the operation succeeded, False otherwise.
+    """
     octet = _first_octet(mac)
     return octet is not None and bool(octet & _MULTICAST_BIT)
 
@@ -161,7 +186,16 @@ def shorten(vendor: str) -> str:
 
 
 def describe_vendor(mac: str) -> str:
-    """Human-facing vendor text that explains an absent vendor honestly."""
+    """Human-facing vendor text that explains an absent vendor honestly.
+
+    Manages describe vendor operations and coordinates related state changes for the component.
+
+    Args:
+        mac (str): The mac parameter.
+
+    Returns:
+        str: Formatted string or path.
+    """
     vendor = lookup(mac)
     if vendor:
         return shorten(vendor)
@@ -177,12 +211,24 @@ def describe_vendor(mac: str) -> str:
 # -- registry loading ------------------------------------------------------
 
 def cache_dir() -> Path:
-    """Directory holding the downloaded IEEE registry."""
+    """Directory holding the downloaded IEEE registry.
+
+    Manages cache dir operations and coordinates related state changes for the component.
+
+    Returns:
+        Path: Result of the operation.
+    """
     return Path.home() / ".cortex_cleaner" / "netdata"
 
 
 def cached_registry_path() -> Path:
-    """Where a downloaded IEEE registry is kept between runs."""
+    """Where a downloaded IEEE registry is kept between runs.
+
+    Manages cached registry path operations and coordinates related state changes for the component.
+
+    Returns:
+        Path: Result of the operation.
+    """
     return cache_dir() / "ieee-oui.csv"
 
 
@@ -227,7 +273,13 @@ _registry_loaded = False
 
 
 def load_cached_registry() -> int:
-    """Load the previously downloaded registry, if present. Never raises."""
+    """Load the previously downloaded registry, if present. Never raises.
+
+    Manages load cached registry operations and coordinates related state changes for the component.
+
+    Returns:
+        int: Result of the operation.
+    """
     path = cached_registry_path()
     if not path.is_file():
         return 0
@@ -249,13 +301,25 @@ def ensure_registry_loaded() -> bool:
 
 
 def has_full_registry() -> bool:
-    """True when a real IEEE registry is loaded (not just the LA conventions)."""
+    """True when a real IEEE registry is loaded (not just the LA conventions).
+
+    Manages has full registry operations and coordinates related state changes for the component.
+
+    Returns:
+        bool: True if the operation succeeded, False otherwise.
+    """
     ensure_registry_loaded()
     return len(_OUI) > 1000
 
 
 def registry_age_days() -> float | None:
-    """Age of the cached registry in days, or ``None`` when absent."""
+    """Age of the cached registry in days, or ``None`` when absent.
+
+    Manages registry age days operations and coordinates related state changes for the component.
+
+    Returns:
+        float | None: Result of the operation.
+    """
     try:
         import time
         return max(0.0, (time.time() - cached_registry_path().stat().st_mtime) / 86400.0)
@@ -264,7 +328,13 @@ def registry_age_days() -> float | None:
 
 
 def registry_status() -> dict[str, object]:
-    """Describe the vendor database for display in the UI."""
+    """Describe the vendor database for display in the UI.
+
+    Manages registry status operations and coordinates related state changes for the component.
+
+    Returns:
+        dict[str, object]: Dictionary mapping identifiers to status or values.
+    """
     ensure_registry_loaded()
     age = registry_age_days()
     return {
@@ -350,5 +420,11 @@ def refresh_from_ieee(timeout: int = 60, cancel_event=None) -> tuple[bool, str]:
 
 
 def prefix_count() -> int:
-    """Number of known assignment prefixes (useful for diagnostics/tests)."""
+    """Number of known assignment prefixes (useful for diagnostics/tests).
+
+    Manages prefix count operations and coordinates related state changes for the component.
+
+    Returns:
+        int: Result of the operation.
+    """
     return len(_OUI) + len(_LONG_ASSIGNMENTS)

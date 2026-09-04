@@ -10,15 +10,24 @@ IS_WINDOWS = platform.system() == "Windows"
 
 
 class TestParse:
-    """TestParse."""
+    """Testparse.
+
+    Manages TestParse operations and coordinates related state changes for the component.
+    """
     def test_empty(self):
-        """test_empty."""
+        """test_empty.
+
+        Manages test empty operations and coordinates related state changes for the component.
+        """
         assert DriverInventory._parse(None) == []
         assert DriverInventory._parse("") == []
         assert DriverInventory._parse("garbage{{") == []
 
     def test_single_object(self):
-        """test_single_object."""
+        """test_single_object.
+
+        Manages test single object operations and coordinates related state changes for the component.
+        """
         payload = (
             '{"DeviceName":"NVIDIA GeForce","DriverProviderName":"NVIDIA",'
             '"DriverVersion":"31.0.15.3623","DriverDate":"/Date(1690000000000)/",'
@@ -35,7 +44,10 @@ class TestParse:
         assert d.date  # date parsed to some YYYY-MM-DD
 
     def test_dedupes_identical_name_version(self):
-        """test_dedupes_identical_name_version."""
+        """test_dedupes_identical_name_version.
+
+        Manages test dedupes identical name version operations and coordinates related state changes for the component.
+        """
         payload = (
             '[{"DeviceName":"USB Hub","DriverVersion":"1.0","DriverProviderName":"MS"},'
             '{"DeviceName":"USB Hub","DriverVersion":"1.0","DriverProviderName":"MS"},'
@@ -45,32 +57,50 @@ class TestParse:
         assert len(drivers) == 2
 
     def test_skips_nameless(self):
-        """test_skips_nameless."""
+        """test_skips_nameless.
+
+        Manages test skips nameless operations and coordinates related state changes for the component.
+        """
         payload = '[{"DriverVersion":"1.0"},{"DeviceName":"","DriverVersion":"2"}]'
         assert DriverInventory._parse(payload) == []
 
     def test_yyyymmdd_date(self):
-        """test_yyyymmdd_date."""
+        """test_yyyymmdd_date.
+
+        Manages test yyyymmdd date operations and coordinates related state changes for the component.
+        """
         payload = '{"DeviceName":"X","DriverDate":"20230115000000.000000-000"}'
         d = DriverInventory._parse(payload)[0]
         assert d.date == "2023-01-15"
 
 
 class TestSupport:
-    """TestSupport."""
+    """Testsupport.
+
+    Manages TestSupport operations and coordinates related state changes for the component.
+    """
     def test_is_supported_matches_platform(self):
-        """test_is_supported_matches_platform."""
+        """test_is_supported_matches_platform.
+
+        Manages test is supported matches platform operations and coordinates related state changes for the component.
+        """
         assert DriverInventory.is_supported() == IS_WINDOWS
 
     def test_list_drivers_returns_list(self):
-        """test_list_drivers_returns_list."""
+        """test_list_drivers_returns_list.
+
+        Manages test list drivers returns list operations and coordinates related state changes for the component.
+        """
         result = DriverInventory().list_drivers()
         assert isinstance(result, list)
         if not IS_WINDOWS:
             assert result == []
 
     def test_to_dict(self):
-        """test_to_dict."""
+        """test_to_dict.
+
+        Manages test to dict operations and coordinates related state changes for the component.
+        """
         d = DriverInfo("Dev", "Prov", "1.0", "2023-01-01", "NET")
         out = d.to_dict()
         assert out["device_name"] == "Dev"

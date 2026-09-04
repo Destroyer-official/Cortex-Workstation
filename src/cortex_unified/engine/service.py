@@ -47,20 +47,27 @@ def _throttle(cb: "Callable[[str], None] | None", interval: float = 0.1):
     last = [0.0]
 
     def wrapped(msg: str) -> None:
-        """wrapped."""
+        """Wrapped.
+
+        Manages wrapped operations and coordinates related state changes for the component.
+
+        Args:
+            msg (str): Informational or progress status message.
+        """
         now = time.monotonic()
         if now - last[0] >= interval:
             last[0] = now
             cb(msg)
-        """wrapped."""
-        """wrapped."""
 
     return wrapped
 
 
 @dataclass(slots=True)
 class CategoryScan:
-    """Scan outcome for one cleanup category."""
+    """Categoryscan.
+
+    Manages CategoryScan operations and coordinates related state changes for the component.
+    """
 
     category: CleanupCategory
     entries: list[FileEntry] = field(default_factory=list)
@@ -73,10 +80,14 @@ class CategoryScan:
 
     @property
     def file_count(self) -> int:
-        """file_count."""
+        """file_count.
+
+        Manages file count operations and coordinates related state changes for the component.
+
+        Returns:
+            int: Result of the operation.
+        """
         return len(self.entries)
-        """file_count."""
-        """file_count."""
 
     def breakdown(self, limit: int = 200) -> list[dict]:
         """Group this category's files into their top folders for preview.
@@ -116,7 +127,13 @@ class CategoryScan:
         return items[:limit]
 
     def to_dict(self) -> dict:
-        """to_dict."""
+        """to_dict.
+
+        Manages to dict operations and coordinates related state changes for the component.
+
+        Returns:
+            dict: Dictionary mapping identifiers to status or values.
+        """
         return {
             "id": self.category.id,
             "label": self.category.label,
@@ -127,39 +144,60 @@ class CategoryScan:
             "cloud_skipped": self.cloud_skipped,
             "cloud_skipped_bytes": self.cloud_skipped_bytes,
         }
-        """to_dict."""
-        """to_dict."""
 
 
 @dataclass(slots=True)
 class CleanupReport:
-    """Aggregate of all scanned categories."""
+    """Aggregate of all scanned categories.
+
+    Permanently purges or removes specified target items, reclaiming storage space and logging actions taken.
+    """
 
     scans: list[CategoryScan] = field(default_factory=list)
     duration_seconds: float = 0.0
 
     @property
     def total_reclaimable_bytes(self) -> int:
-        """total_reclaimable_bytes."""
+        """total_reclaimable_bytes.
+
+        Manages total reclaimable bytes operations and coordinates related state changes for the component.
+
+        Returns:
+            int: Result of the operation.
+        """
         return sum(s.total_bytes for s in self.scans)
-        """total_reclaimable_bytes."""
-        """total_reclaimable_bytes."""
 
     @property
     def total_files(self) -> int:
-        """total_files."""
+        """total_files.
+
+        Manages total files operations and coordinates related state changes for the component.
+
+        Returns:
+            int: Result of the operation.
+        """
         return sum(s.file_count for s in self.scans)
-        """total_files."""
-        """total_files."""
 
     @property
     def cloud_skipped(self) -> int:
-        """Total cloud placeholders excluded across all categories."""
+        """Total cloud placeholders excluded across all categories.
+
+        Manages cloud skipped operations and coordinates related state changes for the component.
+
+        Returns:
+            int: Result of the operation.
+        """
         return sum(s.cloud_skipped for s in self.scans)
 
     @property
     def cloud_skipped_bytes(self) -> int:
-        """Logical size of the excluded placeholders (not local, not reclaimable)."""
+        """Logical size of the excluded placeholders (not local, not reclaimable).
+
+        Manages cloud skipped bytes operations and coordinates related state changes for the component.
+
+        Returns:
+            int: Result of the operation.
+        """
         return sum(s.cloud_skipped_bytes for s in self.scans)
 
     @property
@@ -177,7 +215,13 @@ class CleanupReport:
                 "would delete your cloud copy.")
 
     def to_dict(self) -> dict:
-        """to_dict."""
+        """to_dict.
+
+        Manages to dict operations and coordinates related state changes for the component.
+
+        Returns:
+            dict: Dictionary mapping identifiers to status or values.
+        """
         return {
             "total_reclaimable_bytes": self.total_reclaimable_bytes,
             "total_files": self.total_files,
@@ -186,23 +230,29 @@ class CleanupReport:
             "cloud_skipped_bytes": self.cloud_skipped_bytes,
             "categories": [s.to_dict() for s in self.scans],
         }
-        """to_dict."""
-        """to_dict."""
 
 
 class CleanerService:
-    """Unified, safe orchestration of scanning and reclamation."""
+    """Unified, safe orchestration of scanning and reclamation.
+
+    Permanently purges or removes specified target items, reclaiming storage space and logging actions taken.
+    """
 
     def __init__(
         self,
         guard: PathGuard | None = None,
         probe: StorageProbe | None = None,
     ) -> None:
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            guard (PathGuard | None): The guard parameter.
+            probe (StorageProbe | None): The probe parameter.
+        """
         self.guard = guard or PathGuard()
         self.probe = probe or StorageProbe()
-        """__init__."""
-        """__init__."""
 
     # -- category scan / clean ---------------------------------------------
 
@@ -292,11 +342,16 @@ class CleanerService:
         entries: list[tuple[Path, int]] = []
         for root in roots:
             def _rep(cur_dir, seen):
-                """_rep."""
+                """Rep.
+
+                Manages rep operations and coordinates related state changes for the component.
+
+                Args:
+                    cur_dir: The cur dir parameter.
+                    seen: The seen parameter.
+                """
                 if emit is not None:
                     emit(f"Indexing files: {len(entries) + seen}\u2026")
-                """_rep."""
-                """_rep."""
             for e in walker.iter_files(root, progress=_rep):
                 if extensions is not None and e.path.suffix.lower() not in extensions:
                     continue
@@ -305,11 +360,16 @@ class CleanerService:
             progress(f"Hashing {len(entries)} candidates\u2026")
 
         def _hprog(done, total):
-            """_hprog."""
+            """Hprog.
+
+            Manages hprog operations and coordinates related state changes for the component.
+
+            Args:
+                done: The done parameter.
+                total: The total parameter.
+            """
             if emit is not None:
                 emit(f"Hashing {done}/{total}\u2026")
-            """_hprog."""
-            """_hprog."""
         return DuplicateFinderEngine().find(entries, progress=_hprog)
 
     def find_large_files(
@@ -320,7 +380,20 @@ class CleanerService:
         progress: "Callable[[str], None] | None" = None,
         cancel_event=None,
     ) -> list[FileEntry]:
-        """Return the largest files under *root* above *min_mb*, biggest first."""
+        """Return the largest files under *root* above *min_mb*, biggest first.
+
+        Manages find large files operations and coordinates related state changes for the component.
+
+        Args:
+            root (str | Path): Filesystem path to the target file or directory.
+            min_mb (float): The min mb parameter.
+            limit (int): The limit parameter.
+            progress ('Callable[[str], None] | None'): The progress parameter.
+            cancel_event: Threading event or callable to check for cancellation.
+
+        Returns:
+            list[FileEntry]: List of processed items or identifiers.
+        """
         opts = WalkOptions(min_size=int(min_mb * 1024 * 1024))
         walker = FastWalker(opts)
         if cancel_event is not None:
@@ -329,11 +402,16 @@ class CleanerService:
         entries: list[FileEntry] = []
 
         def _rep(cur_dir, seen):
-            """_rep."""
+            """Rep.
+
+            Manages rep operations and coordinates related state changes for the component.
+
+            Args:
+                cur_dir: The cur dir parameter.
+                seen: The seen parameter.
+            """
             if emit is not None:
                 emit(f"Scanning: {seen} files ({len(entries)} large)\u2026")
-            """_rep."""
-            """_rep."""
         for e in walker.iter_files(root, progress=_rep):
             entries.append(e)
         entries.sort(key=lambda e: e.size, reverse=True)
@@ -344,7 +422,17 @@ class CleanerService:
         root: str | Path,
         cancel_event=None,
     ) -> tuple[list[Path], list[Path]]:
-        """Return (empty_files, empty_dirs) under *root*."""
+        """Return (empty_files, empty_dirs) under *root*.
+
+        Manages find empty operations and coordinates related state changes for the component.
+
+        Args:
+            root (str | Path): Filesystem path to the target file or directory.
+            cancel_event: Threading event or callable to check for cancellation.
+
+        Returns:
+            tuple[list[Path], list[Path]]: List of processed items or identifiers.
+        """
         walker = FastWalker()
         if cancel_event is not None:
             walker._cancel = cancel_event
@@ -355,7 +443,18 @@ class CleanerService:
     def _select_categories(
         self, ids: list[str] | None, max_risk: RiskLevel, include_disabled: bool
     ) -> list[CleanupCategory]:
-        """_select_categories."""
+        """_select_categories.
+
+        Manages select categories operations and coordinates related state changes for the component.
+
+        Args:
+            ids (list[str] | None): The ids parameter.
+            max_risk (RiskLevel): The max risk parameter.
+            include_disabled (bool): The include disabled parameter.
+
+        Returns:
+            list[CleanupCategory]: List of processed items or identifiers.
+        """
         cats = default_categories()
         if ids is not None:
             idset = set(ids)
@@ -363,11 +462,20 @@ class CleanerService:
         else:
             cats = [c for c in cats if include_disabled or c.default_enabled]
         return [c for c in cats if c.risk.rank <= max_risk.rank or (ids and c.id in set(ids or []))]
-        """_select_categories."""
-        """_select_categories."""
 
     def _scan_category(self, cat: CleanupCategory, progress=None, cancel_event=None) -> CategoryScan:
-        """_scan_category."""
+        """_scan_category.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+        Args:
+            cat (CleanupCategory): The cat parameter.
+            progress: The progress parameter.
+            cancel_event: Threading event or callable to check for cancellation.
+
+        Returns:
+            CategoryScan: Result of the operation.
+        """
         scan = CategoryScan(category=cat)
         opts = WalkOptions(
             exclude_globs=(),
@@ -391,11 +499,17 @@ class CleanerService:
                 continue
 
             def _report(cur_dir, seen, _label=cat.label):
-                """_report."""
+                """Report.
+
+                Manages report operations and coordinates related state changes for the component.
+
+                Args:
+                    cur_dir: The cur dir parameter.
+                    seen: The seen parameter.
+                    _label: The  label parameter.
+                """
                 if progress is not None:
                     progress(f"Scanning {_label}: {scan.file_count + seen} files\u2026")
-                """_report."""
-                """_report."""
 
             for entry in walker.iter_files(base, progress=_report):
                 if globset != ("*",) and not _matches_any(entry.path.name, globset):
@@ -408,13 +522,19 @@ class CleanerService:
         scan.cloud_skipped = walker.cloud_skipped
         scan.cloud_skipped_bytes = walker.cloud_skipped_bytes
         return scan
-        """_scan_category."""
-        """_scan_category."""
 
 
 def _matches_any(name: str, globs: tuple[str, ...]) -> bool:
-    """_matches_any."""
+    """_matches_any.
+
+    Manages matches any operations and coordinates related state changes for the component.
+
+    Args:
+        name (str): The name parameter.
+        globs (tuple[str, ...]): The globs parameter.
+
+    Returns:
+        bool: True if the operation succeeded, False otherwise.
+    """
     import fnmatch
     return any(fnmatch.fnmatch(name, g) for g in globs)
-    """_matches_any."""
-    """_matches_any."""

@@ -40,23 +40,35 @@ _LOG = logging.getLogger("cortex.ui.premium.startup_optimizer")
 
 
 class _StartupScanWorker(QObject):
-    """Background worker: enumerate all startup entries."""
+    """Startupscanworker.
+
+    Manages StartupScanWorker operations and coordinates related state changes for the component.
+    """
 
     finished = Signal(list)
     progress = Signal(str)
     failed = Signal(str)
 
     def __init__(self):
-        """Create the scan worker with a fresh cancel event."""
+        """Create the scan worker with a fresh cancel event.
+
+        Initializes the instance and configures internal state.
+        """
         super().__init__()
         self._cancel = threading.Event()
 
     def cancel(self):
-        """Request cooperative cancellation of the running scan."""
+        """Request cooperative cancellation of the running scan.
+
+        Sets the internal cancellation event to cooperatively stop worker execution at the next safe boundary.
+        """
         self._cancel.set()
 
     def run(self):
-        """Enumerate startup entries via StartupOptimizer and emit the list."""
+        """Enumerate startup entries via StartupOptimizer and emit the list.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         try:
             from cortex_unified.system_tools.startup_optimizer import StartupOptimizer
 
@@ -71,24 +83,39 @@ class _StartupScanWorker(QObject):
 
 
 class _DisableWorker(QObject):
-    """Disable selected startup entries by toggling registry values."""
+    """Disableworker.
+
+    Manages DisableWorker operations and coordinates related state changes for the component.
+    """
 
     finished = Signal(list)
     progress = Signal(str)
     failed = Signal(str)
 
     def __init__(self, entries: list):
-        """Store the entries to disable and a cancel event."""
+        """Store the entries to disable and a cancel event.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            entries (list): Collection of items or entries to process.
+        """
         super().__init__()
         self._entries = entries
         self._cancel = threading.Event()
 
     def cancel(self):
-        """Request cooperative cancellation of the disable loop."""
+        """Request cooperative cancellation of the disable loop.
+
+        Sets the internal cancellation event to cooperatively stop worker execution at the next safe boundary.
+        """
         self._cancel.set()
 
     def run(self):
-        """Move each registry Run value into the CortexBackup subkey, emitting disabled entries."""
+        """Move each registry Run value into the CortexBackup subkey, emitting disabled entries.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         try:
             import winreg
 
@@ -133,24 +160,39 @@ class _DisableWorker(QObject):
 
 
 class _EnableWorker(QObject):
-    """Re-enable startup entries from the Cortex backup registry location."""
+    """Enableworker.
+
+    Manages EnableWorker operations and coordinates related state changes for the component.
+    """
 
     finished = Signal(list)
     progress = Signal(str)
     failed = Signal(str)
 
     def __init__(self, entries: list):
-        """Store the entries to re-enable and a cancel event."""
+        """Store the entries to re-enable and a cancel event.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            entries (list): Collection of items or entries to process.
+        """
         super().__init__()
         self._entries = entries
         self._cancel = threading.Event()
 
     def cancel(self):
-        """Request cooperative cancellation of the enable loop."""
+        """Request cooperative cancellation of the enable loop.
+
+        Sets the internal cancellation event to cooperatively stop worker execution at the next safe boundary.
+        """
         self._cancel.set()
 
     def run(self):
-        """Restore each backed-up Run value to its original key, emitting re-enabled entries."""
+        """Restore each backed-up Run value to its original key, emitting re-enabled entries.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         try:
             import winreg
 
@@ -207,7 +249,16 @@ _IMPACT_ORDER = {"high": 0, "medium": 1, "low": 2, "unknown": 3}
 
 
 def _entry_type_label(entry) -> str:
-    """Classify an entry as GUI, Network, Service, or Background from its flags/category."""
+    """Classify an entry as GUI, Network, Service, or Background from its flags/category.
+
+    Manages entry type label operations and coordinates related state changes for the component.
+
+    Args:
+        entry: The entry parameter.
+
+    Returns:
+        str: Formatted string or path.
+    """
     if getattr(entry, "is_gui_heavy", False):
         return "GUI"
     if getattr(entry, "is_network_bound", False):
@@ -221,14 +272,34 @@ def _entry_type_label(entry) -> str:
 
 
 def _entry_matches_filter(entry, type_filter: str) -> bool:
-    """Return True when the entry's type label equals the filter (or filter is "All")."""
+    """Return True when the entry's type label equals the filter (or filter is "All").
+
+    Manages entry matches filter operations and coordinates related state changes for the component.
+
+    Args:
+        entry: The entry parameter.
+        type_filter (str): The type filter parameter.
+
+    Returns:
+        bool: True if the operation succeeded, False otherwise.
+    """
     if type_filter == "All":
         return True
     return _entry_type_label(entry) == type_filter
 
 
 def _sort_entries(entries: list, sort_key: str) -> list:
-    """Sort entries by Name, Type, or Impact (high → low); unknown impact sorts last."""
+    """Sort entries by Name, Type, or Impact (high → low); unknown impact sorts last.
+
+    Manages sort entries operations and coordinates related state changes for the component.
+
+    Args:
+        entries (list): Collection of items or entries to process.
+        sort_key (str): The sort key parameter.
+
+    Returns:
+        list: List of processed items or identifiers.
+    """
     if sort_key == "Name":
         return sorted(entries, key=lambda e: getattr(e, "name", "").lower())
     if sort_key == "Type":
@@ -249,10 +320,19 @@ _COLUMNS = ("Name", "Type", "Path", "Command", "Impact", "Status")
 
 
 class StartupOptimizerPage(_Page):
-    """Manage Windows startup entries — enable, disable, and inspect resource impact."""
+    """Startupoptimizerpage.
+
+    Manages StartupOptimizerPage operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, win):
-        """Build the Startup Optimizer page: filter/sort bar, summary cards, and results table; auto-scans."""
+        """Build the Startup Optimizer page: filter/sort bar, summary cards, and results table; auto-scans.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win: Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(
             title_block(
@@ -410,7 +490,10 @@ class StartupOptimizerPage(_Page):
     # -- scan ---------------------------------------------------------------
 
     def _run_scan(self):
-        """Disable buttons, clear the table, and start a _StartupScanWorker."""
+        """Disable buttons, clear the table, and start a _StartupScanWorker.
+
+        Manages run scan operations and coordinates related state changes for the component.
+        """
         self.refresh_btn.setEnabled(False)
         self.disable_btn.setEnabled(False)
         self.enable_btn.setEnabled(False)
@@ -428,11 +511,23 @@ class StartupOptimizerPage(_Page):
         )
 
     def _on_scan_progress(self, msg: str):
-        """Show worker progress text in the status label."""
+        """Show worker progress text in the status label.
+
+        Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
+
+        Args:
+            msg (str): Informational or progress status message.
+        """
         self.status.setText(msg)
 
     def _on_scan_done(self, entries: list):
-        """Store results, refresh table/filters, and show an empty state when nothing found."""
+        """Store results, refresh table/filters, and show an empty state when nothing found.
+
+        Receives the completed data from the scan background worker, populates the view with results, and restores button states.
+
+        Args:
+            entries (list): Collection of items or entries to process.
+        """
         self._worker = None
         self.progress.setVisible(False)
         self.refresh_btn.setEnabled(True)
@@ -451,7 +546,13 @@ class StartupOptimizerPage(_Page):
         self._update_buttons()
 
     def _on_scan_fail(self, msg: str):
-        """Reset buttons and show the scan error with a retry option."""
+        """Reset buttons and show the scan error with a retry option.
+
+        Captures worker error messages, presents diagnostic feedback to the user, and resets interactive controls for retry.
+
+        Args:
+            msg (str): Informational or progress status message.
+        """
         self._worker = None
         self.progress.setVisible(False)
         self.refresh_btn.setEnabled(True)
@@ -460,7 +561,10 @@ class StartupOptimizerPage(_Page):
     # -- filtering / sorting ------------------------------------------------
 
     def _apply_filters(self, *_args):
-        """Filter entries by type combo, sort by sort combo, and repopulate the table."""
+        """Filter entries by type combo, sort by sort combo, and repopulate the table.
+
+        Manages apply filters operations and coordinates related state changes for the component.
+        """
         type_filter = self.type_combo.currentText()
         sort_key = self.sort_combo.currentText()
         filtered = [
@@ -472,7 +576,13 @@ class StartupOptimizerPage(_Page):
         self._update_buttons()
 
     def _populate_table(self, entries: list):
-        """Fill the table rows with name/type/path/command and color-coded impact status."""
+        """Fill the table rows with name/type/path/command and color-coded impact status.
+
+        Refreshes table or tree items with formatted values, tooltips, and status indicators based on the provided dataset.
+
+        Args:
+            entries (list): Collection of items or entries to process.
+        """
         self.tbl.setRowCount(len(entries))
         for r, entry in enumerate(entries):
             self.tbl.setItem(r, 0, QTableWidgetItem(getattr(entry, "name", "")))
@@ -496,7 +606,10 @@ class StartupOptimizerPage(_Page):
     # -- summary cards ------------------------------------------------------
 
     def _update_summary(self):
-        """Refresh the Total / Enabled / Disabled / High Impact metric cards."""
+        """Refresh the Total / Enabled / Disabled / High Impact metric cards.
+
+        Manages update summary operations and coordinates related state changes for the component.
+        """
         total = len(self._all_entries)
         enabled = sum(1 for e in self._all_entries if getattr(e, "enabled", True))
         disabled = total - enabled
@@ -509,14 +622,23 @@ class StartupOptimizerPage(_Page):
     # -- selection ----------------------------------------------------------
 
     def _selected_entries(self) -> list:
-        """Return the entries behind the currently selected table rows."""
+        """Return the entries behind the currently selected table rows.
+
+        Manages selected entries operations and coordinates related state changes for the component.
+
+        Returns:
+            list: List of processed items or identifiers.
+        """
         rows = sorted({idx.row() for idx in self.tbl.selectedIndexes()})
         return [
             self._visible_entries[r] for r in rows if r < len(self._visible_entries)
         ]
 
     def _update_buttons(self):
-        """Enable Disable/Enable buttons only when rows are selected."""
+        """Enable Disable/Enable buttons only when rows are selected.
+
+        Manages update buttons operations and coordinates related state changes for the component.
+        """
         has_sel = bool(self.tbl.selectedItems())
         self.disable_btn.setEnabled(has_sel)
         self.enable_btn.setEnabled(has_sel)
@@ -524,7 +646,10 @@ class StartupOptimizerPage(_Page):
     # -- disable ------------------------------------------------------------
 
     def _disable_selected(self):
-        """Run _DisableWorker on the selected startup entries."""
+        """Run _DisableWorker on the selected startup entries.
+
+        Manages disable selected operations and coordinates related state changes for the component.
+        """
         sel = self._selected_entries()
         if not sel:
             return
@@ -543,7 +668,13 @@ class StartupOptimizerPage(_Page):
         )
 
     def _on_disable_done(self, disabled: list):
-        """Report disabled count and rescan to refresh the table."""
+        """Report disabled count and rescan to refresh the table.
+
+        Receives the completed data from the disable background worker, populates the view with results, and restores button states.
+
+        Args:
+            disabled (list): The disabled parameter.
+        """
         self._worker = None
         self.progress.setVisible(False)
         self.status.setText(f"Disabled {len(disabled)} entries.")
@@ -553,7 +684,13 @@ class StartupOptimizerPage(_Page):
         self._run_scan()
 
     def _on_disable_fail(self, msg: str):
-        """Show the disable error with a retry option."""
+        """Show the disable error with a retry option.
+
+        Captures worker error messages, presents diagnostic feedback to the user, and resets interactive controls for retry.
+
+        Args:
+            msg (str): Informational or progress status message.
+        """
         self._worker = None
         self.progress.setVisible(False)
         self.state.show_error(msg, on_retry=self._disable_selected)
@@ -561,7 +698,10 @@ class StartupOptimizerPage(_Page):
     # -- enable -------------------------------------------------------------
 
     def _enable_selected(self):
-        """Run _EnableWorker on the selected startup entries."""
+        """Run _EnableWorker on the selected startup entries.
+
+        Manages enable selected operations and coordinates related state changes for the component.
+        """
         sel = self._selected_entries()
         if not sel:
             return
@@ -580,7 +720,13 @@ class StartupOptimizerPage(_Page):
         )
 
     def _on_enable_done(self, enabled: list):
-        """Report re-enabled count and rescan to refresh the table."""
+        """Report re-enabled count and rescan to refresh the table.
+
+        Receives the completed data from the enable background worker, populates the view with results, and restores button states.
+
+        Args:
+            enabled (list): The enabled parameter.
+        """
         self._worker = None
         self.progress.setVisible(False)
         self.status.setText(f"Enabled {len(enabled)} entries.")
@@ -590,7 +736,13 @@ class StartupOptimizerPage(_Page):
         self._run_scan()
 
     def _on_enable_fail(self, msg: str):
-        """Show the enable error with a retry option."""
+        """Show the enable error with a retry option.
+
+        Captures worker error messages, presents diagnostic feedback to the user, and resets interactive controls for retry.
+
+        Args:
+            msg (str): Informational or progress status message.
+        """
         self._worker = None
         self.progress.setVisible(False)
         self.state.show_error(msg, on_retry=self._enable_selected)
@@ -598,5 +750,11 @@ class StartupOptimizerPage(_Page):
     # -- shared action progress ---------------------------------------------
 
     def _on_action_progress(self, msg: str):
-        """Show enable/disable worker progress in the status label."""
+        """Show enable/disable worker progress in the status label.
+
+        Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
+
+        Args:
+            msg (str): Informational or progress status message.
+        """
         self.status.setText(msg)

@@ -25,24 +25,36 @@ from cortex_unified.analyzers.duplicate_finder import DuplicateFinder
 from cortex_unified.core.utils import normalize_path
 
 class DuplicateFinderWorker(QThread):
-    """Runs duplicate-file detection (size grouping + hashing) off the GUI thread."""
+    """Duplicatefinderworker.
+
+    Manages DuplicateFinderWorker operations and coordinates related state changes for the component.
+    """
     finished_scan = Signal(dict)
     error_occurred = Signal(str)
     status_updated = Signal(str)
     progress_updated = Signal(int)
 
     def __init__(self, config: Config, path: str, hash_algorithm: str='md5'):
-        """Store config, path, hash algorithm, and the poller run flag."""
+        """Store config, path, hash algorithm, and the poller run flag.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            config (Config): The config parameter.
+            path (str): Filesystem path to the target file or directory.
+            hash_algorithm (str): The hash algorithm parameter.
+        """
         super().__init__()
         self.config = config
         self.path = path
         self.hash_algorithm = hash_algorithm
         self._is_running = True
-        """__init__."""
-        """__init__."""
 
     def run(self):
-        """Find duplicates and emit finished_scan with {duplicates, stats} (or error_occurred)."""
+        """Find duplicates and emit finished_scan with {duplicates, stats} (or error_occurred).
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         try:
             self.status_updated.emit("Grouping files by size...")
             self.finder = DuplicateFinder(self.config, self.path)
@@ -50,15 +62,16 @@ class DuplicateFinderWorker(QThread):
             
             # Start a background polling thread for live feedback
             def poll_progress():
-                """Emit file-count status every 0.1s while the scan runs."""
+                """Emit file-count status every 0.1s while the scan runs.
+
+                Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
+                """
                 while self._is_running:
                     self.status_updated.emit(f"Scanned {self.finder.file_count} files...")
                     # Indeterminate progress animates naturally if we setRange(0,0) in the main thread
                     # we emit 0 just to satisfy signature requirements
                     self.progress_updated.emit(0)
                     time.sleep(0.1)
-                """poll_progress."""
-                """poll_progress."""
 
             t = threading.Thread(target=poll_progress)
             t.daemon = True
@@ -75,22 +88,31 @@ class DuplicateFinderWorker(QThread):
         except Exception as e:
             self._is_running = False
             self.error_occurred.emit(str(e))
-        """run."""
-    """DuplicateFinderWorker class."""
-    """DuplicateFinderWorker class."""
 
 
 class DuplicatesTab(BaseTab):
-    """Tab for finding and deleting duplicate files."""
+    """Duplicatestab.
+
+    Manages DuplicatesTab operations and coordinates related state changes for the component.
+    """
     def __init__(self, config, logger, safety_manager):
-        """Initialize the tab and empty the current duplicates cache."""
+        """Initialize the tab and empty the current duplicates cache.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            config: The config parameter.
+            logger: The logger parameter.
+            safety_manager: The safety manager parameter.
+        """
         super().__init__(config, logger, safety_manager)
         self.current_duplicates = {}
-        """__init__."""
-        """__init__."""
         
     def setup_ui(self):
-        """Build the tab: path picker, hash/strategy options, and group/details splitter."""
+        """Build the tab: path picker, hash/strategy options, and group/details splitter.
+
+        Manages setup ui operations and coordinates related state changes for the component.
+        """
         layout = QVBoxLayout(self)
         layout.setSpacing(10)
         
@@ -174,12 +196,13 @@ class DuplicatesTab(BaseTab):
         splitter.addWidget(self.duplicates_details)
         splitter.setSizes([400, 400])
         layout.addWidget(splitter)
-        """setup_ui."""
-        """setup_ui."""
         # Note: Do not override layout manually to prevent QLayout errors
 
     def start_find_duplicates(self):
-        """Validate the path and launch the DuplicateFinderWorker."""
+        """Validate the path and launch the DuplicateFinderWorker.
+
+        Manages start find duplicates operations and coordinates related state changes for the component.
+        """
         path = self.duplicates_path_input.text().strip()
         if not path or not Path(path).exists():
             QMessageBox.warning(self, 'Invalid Path', 'Please select a valid directory to scan for duplicates.')
@@ -201,11 +224,15 @@ class DuplicatesTab(BaseTab):
         worker.error_occurred.connect(self.duplicates_error)
         worker.finished.connect(lambda: self.operation_finished(worker))
         worker.start()
-        """start_find_duplicates."""
-        """start_find_duplicates."""
         
     def duplicates_found(self, result):
-        """Populate the groups tree, pre-checking files per the chosen strategy."""
+        """Populate the groups tree, pre-checking files per the chosen strategy.
+
+        Manages duplicates found operations and coordinates related state changes for the component.
+
+        Args:
+            result: Collection or dictionary holding operation results.
+        """
         self.logger.info("Duplicates found")
         duplicates = result.get('duplicates', {})
         self.current_duplicates = duplicates
@@ -255,23 +282,29 @@ class DuplicatesTab(BaseTab):
                     child.setCheckState(0, Qt.CheckState.Unchecked)
                     
         self.delete_duplicates_button.setEnabled(len(duplicates) > 0)
-        """duplicates_found."""
-        """duplicates_found."""
         
     def select_all_duplicates(self):
-        """Check every file row across all duplicate groups."""
+        """Check every file row across all duplicate groups.
+
+        Manages select all duplicates operations and coordinates related state changes for the component.
+        """
         self._set_tree_states(Qt.CheckState.Checked)
-        """select_all_duplicates."""
-        """select_all_duplicates."""
         
     def deselect_all_duplicates(self):
-        """Uncheck every file row across all duplicate groups."""
+        """Uncheck every file row across all duplicate groups.
+
+        Manages deselect all duplicates operations and coordinates related state changes for the component.
+        """
         self._set_tree_states(Qt.CheckState.Unchecked)
-        """deselect_all_duplicates."""
-        """deselect_all_duplicates."""
         
     def _set_tree_states(self, state):
-        """Apply a check state to every child row in the groups tree."""
+        """Apply a check state to every child row in the groups tree.
+
+        Manages set tree states operations and coordinates related state changes for the component.
+
+        Args:
+            state: The state parameter.
+        """
         root = self.duplicates_tree.invisibleRootItem()
         for i in range(root.childCount()):
             group = root.child(i)
@@ -279,19 +312,24 @@ class DuplicatesTab(BaseTab):
             for j in range(group.childCount()):
                 child = group.child(j)
                 child.setCheckState(0, state)
-        """_set_tree_states."""
-        """_set_tree_states."""
 
     def duplicates_error(self, error):
-        """Log and report the duplicate-scan error."""
+        """Log and report the duplicate-scan error.
+
+        Manages duplicates error operations and coordinates related state changes for the component.
+
+        Args:
+            error: Error message string or exception instance.
+        """
         self.logger.error(f"Error finding duplicates: {error}")
         QMessageBox.critical(self, 'Error', f'An error occurred: {error}')
         self.status_label.setText(f"Error: {error}")
-        """duplicates_error."""
-        """duplicates_error."""
         
     def delete_selected_duplicates(self):
-        """Confirm, then recycle the checked duplicates via Deleter and rescan."""
+        """Confirm, then recycle the checked duplicates via Deleter and rescan.
+
+        Manages delete selected duplicates operations and coordinates related state changes for the component.
+        """
         self.logger.info("Deleting selected duplicates")
         selected_files = []
         
@@ -335,23 +373,25 @@ class DuplicatesTab(BaseTab):
             
         # Rescan to update
         self.start_find_duplicates()
-        """delete_selected_duplicates."""
-        """delete_selected_duplicates."""
         
     def progress_bar_start_delete(self):
-        """Show Deleting status and the indeterminate progress bar."""
+        """Show Deleting status and the indeterminate progress bar.
+
+        Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
+        """
         self.status_label.setText("Deleting files...")
         self.duplicates_progress_bar.setVisible(True)
         self.duplicates_progress_bar.setRange(0, 0)
-        """progress_bar_start_delete."""
-        """progress_bar_start_delete."""
         
     def operation_finished(self, worker):
-        """Hide progress, re-enable the find button, and reap the worker."""
+        """Hide progress, re-enable the find button, and reap the worker.
+
+        Manages operation finished operations and coordinates related state changes for the component.
+
+        Args:
+            worker: The worker parameter.
+        """
         self.duplicates_progress_bar.setVisible(False)
         self.find_duplicates_button.setEnabled(True)
         self.remove_worker_thread(worker)
         worker.deleteLater()
-        """operation_finished."""
-    """DuplicatesTab class."""
-    """DuplicatesTab class."""

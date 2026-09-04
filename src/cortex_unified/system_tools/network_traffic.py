@@ -23,7 +23,10 @@ from typing import Any
 
 @dataclass(slots=True)
 class NicSample:
-    """Counters and derived rates (bytes/sec) for one network interface."""
+    """Nicsample.
+
+    Manages NicSample operations and coordinates related state changes for the component.
+    """
 
     name: str
     bytes_sent: int
@@ -32,7 +35,13 @@ class NicSample:
     recv_rate: float = 0.0   # bytes/sec
 
     def to_dict(self) -> dict[str, Any]:
-        """To dict."""
+        """To dict.
+
+        Manages to dict operations and coordinates related state changes for the component.
+
+        Returns:
+            dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         return {
             "name": self.name,
             "bytes_sent": self.bytes_sent,
@@ -44,7 +53,10 @@ class NicSample:
 
 @dataclass(slots=True)
 class TrafficSample:
-    """System-wide rates plus per-NIC breakdown, sorted by total activity."""
+    """Trafficsample.
+
+    Manages TrafficSample operations and coordinates related state changes for the component.
+    """
 
     send_rate: float = 0.0
     recv_rate: float = 0.0
@@ -55,7 +67,13 @@ class TrafficSample:
     per_nic: list[NicSample] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
-        """To dict."""
+        """To dict.
+
+        Manages to dict operations and coordinates related state changes for the component.
+
+        Returns:
+            dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         return {
             "send_rate": self.send_rate,
             "recv_rate": self.recv_rate,
@@ -79,7 +97,13 @@ class TrafficMonitor:
 
     @classmethod
     def instance(cls) -> "TrafficMonitor":
-        """Instance."""
+        """Instance.
+
+        Manages instance operations and coordinates related state changes for the component.
+
+        Returns:
+            'TrafficMonitor': Result of the operation.
+        """
         if cls._instance is None:
             with cls._instance_lock:
                 if cls._instance is None:
@@ -87,7 +111,10 @@ class TrafficMonitor:
         return cls._instance
 
     def __init__(self) -> None:
-        """Initialize Traffic Monitor."""
+        """Initialize Traffic Monitor.
+
+        Initializes the instance and configures internal state.
+        """
         self._last_total: tuple[int, int] | None = None      # (sent, recv)
         self._last_nic: dict[str, tuple[int, int]] = {}
         self._last_t: float | None = None

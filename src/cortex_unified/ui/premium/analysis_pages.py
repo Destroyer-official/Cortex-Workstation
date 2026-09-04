@@ -42,17 +42,29 @@ IS_WINDOWS = sys.platform == "win32"
 # =====================================================================
 
 class DiskAnalyzeWorker(QObject):
-    """DiskAnalyzeWorker class."""
+    """Diskanalyzeworker.
+
+    Manages DiskAnalyzeWorker operations and coordinates related state changes for the component.
+    """
     finished = Signal(dict)
     failed = Signal(str)
 
     def __init__(self, root: str):
-        """__init__."""
+        """Store constructor arguments (root) and initialize worker signals.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            root (str): Filesystem path to the target file or directory.
+        """
         super().__init__()
         self._root = root
 
     def run(self):
-        """run."""
+        """Run the DiskAnalyzer (disk analyzer) backend call off the UI thread; emit finished/failed with results.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         try:
             from cortex_unified.analyzers.disk_analyzer import DiskAnalyzer
             an = DiskAnalyzer(root_path=self._root)
@@ -65,12 +77,18 @@ class DiskAnalyzeWorker(QObject):
 
 
 class DiskHealthWorker(QObject):
-    """DiskHealthWorker class."""
+    """Diskhealthworker.
+
+    Manages DiskHealthWorker operations and coordinates related state changes for the component.
+    """
     finished = Signal(list)
     failed = Signal(str)
 
     def run(self):
-        """run."""
+        """Run the DiskHealthMonitor (disk health) backend call off the UI thread; emit finished/failed with results.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         try:
             from cortex_unified.system_tools.disk_health import DiskHealthMonitor
             self.finished.emit([d.to_dict() for d in DiskHealthMonitor().get_health()])
@@ -79,12 +97,18 @@ class DiskHealthWorker(QObject):
 
 
 class ScheduledTasksWorker(QObject):
-    """ScheduledTasksWorker class."""
+    """Scheduledtasksworker.
+
+    Manages ScheduledTasksWorker operations and coordinates related state changes for the component.
+    """
     finished = Signal(list)
     failed = Signal(str)
 
     def run(self):
-        """run."""
+        """Run the TaskScheduler (scheduler) backend call off the UI thread; emit finished/failed with results.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         try:
             from cortex_unified.scheduler.scheduler import TaskScheduler
             self.finished.emit(TaskScheduler().list_scheduled_tasks())
@@ -93,12 +117,18 @@ class ScheduledTasksWorker(QObject):
 
 
 class BootPerfWorker(QObject):
-    """BootPerfWorker class."""
+    """Bootperfworker.
+
+    Manages BootPerfWorker operations and coordinates related state changes for the component.
+    """
     finished = Signal(dict)
     failed = Signal(str)
 
     def run(self):
-        """run."""
+        """Run the BootPerformanceMonitor (boot performance) backend call off the UI thread; emit finished/failed with results.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         try:
             from cortex_unified.system_tools.boot_performance import BootPerformanceMonitor
             self.finished.emit(BootPerformanceMonitor().analyze())
@@ -107,18 +137,31 @@ class BootPerfWorker(QObject):
 
 
 class SystemRepairWorker(QObject):
-    """SystemRepairWorker class."""
+    """Systemrepairworker.
+
+    Manages SystemRepairWorker operations and coordinates related state changes for the component.
+    """
     finished = Signal(dict)
     failed = Signal(str)
 
     def __init__(self, action: str, drive: str = "C"):
-        """__init__."""
+        """Store constructor arguments (action, drive) and initialize worker signals.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            action (str): The action parameter.
+            drive (str): The drive parameter.
+        """
         super().__init__()
         self._action = action
         self._drive = drive
 
     def run(self):
-        """run."""
+        """Run the SystemRepair (system repair) backend call off the UI thread; emit finished/failed with results.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         try:
             from cortex_unified.system_tools.system_repair import SystemRepair
             sr = SystemRepair()
@@ -138,17 +181,29 @@ class SystemRepairWorker(QObject):
 
 
 class DeleteTaskWorker(QObject):
-    """DeleteTaskWorker class."""
+    """Deletetaskworker.
+
+    Manages DeleteTaskWorker operations and coordinates related state changes for the component.
+    """
     finished = Signal(bool, str)   # (success, task_name)
     failed = Signal(str)
 
     def __init__(self, name: str):
-        """__init__."""
+        """Store constructor arguments (name) and initialize worker signals.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            name (str): The name parameter.
+        """
         super().__init__()
         self._name = name
 
     def run(self):
-        """run."""
+        """Run the TaskScheduler (scheduler) backend call off the UI thread; emit finished/failed with results.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         try:
             from cortex_unified.scheduler.scheduler import TaskScheduler
             ok = TaskScheduler().delete_scheduled_task(self._name)
@@ -162,10 +217,19 @@ class DeleteTaskWorker(QObject):
 # =====================================================================
 
 class DiskAnalyzerPage(_Page):
-    """Break down where space goes: file types + largest directories."""
+    """Diskanalyzerpage.
+
+    Manages DiskAnalyzerPage operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, win):
-        """__init__."""
+        """Build the page layout (buttons, tables, cards, title header) and connect button/worker actions.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win: Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(title_block(
             "Disk Analyzer",
@@ -242,21 +306,33 @@ class DiskAnalyzerPage(_Page):
         self._folder = str(Path.home())
 
     def _pick(self):
-        """_pick."""
+        """Prompt the user to select a filesystem directory or file.
+
+        Launches a native file dialog and populates the selected path into the corresponding target input widget.
+        """
         folder = QFileDialog.getExistingDirectory(self, "Select a folder", self._folder)
         if folder:
             self._folder = folder
             self.path_label.setText(folder)
 
     def _run(self):
-        """_run."""
+        """Run.
+
+        Manages run operations and coordinates related state changes for the component.
+        """
         self.run_btn.setEnabled(False)
         self.state.show_loading("Analyzing disk usage\u2026")
         self.win.statusBar().showMessage("Analyzing disk usage\u2026")
         self.win.run_worker(DiskAnalyzeWorker(self._folder), self._on_done, self._fail)
 
     def _on_done(self, stats: dict):
-        """_on_done."""
+        """Handle worker results: refresh tables/trees, update cards/labels, update the state panel and clear the busy state.
+
+        Receives the completed data from the  background worker, populates the view with results, and restores button states.
+
+        Args:
+            stats (dict): The stats parameter.
+        """
         self.run_btn.setEnabled(True)
         usage = stats.get("disk_usage", {})
         self.card_total.set_value(usage.get("total_human", "\u2014"))
@@ -302,7 +378,13 @@ class DiskAnalyzerPage(_Page):
             f"Analyzed {len(types)} file types, {len(dirs)} directories", 5000)
 
     def _fail(self, msg: str):
-        """_fail."""
+        """Handle an operation failure and notify the user.
+
+        Captures error details, displays an informative failure state in the UI, resets progress indicators, and re-enables interactive controls.
+
+        Args:
+            msg (str): Informational or progress status message.
+        """
         self.run_btn.setEnabled(True)
         self.state.show_error(msg, on_retry=self._run)
 
@@ -312,10 +394,19 @@ class DiskAnalyzerPage(_Page):
 # =====================================================================
 
 class DiskHealthPage(_Page):
-    """Read-only physical-disk health (S.M.A.R.T.) overview."""
+    """Diskhealthpage.
+
+    Manages DiskHealthPage operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, win):
-        """__init__."""
+        """Build the page layout (buttons, tables, title header, state panel) and connect button/worker actions.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win: Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(title_block(
             "Disk Health",
@@ -367,7 +458,10 @@ class DiskHealthPage(_Page):
         self._loaded = False
 
     def _load(self):
-        """_load."""
+        """Fetch and reload the latest data entries into the view.
+
+        Queries the underlying system service or storage cache and refreshes view tables with up-to-date state.
+        """
         self.refresh_btn.setEnabled(False)
         self.state.show_loading("Reading disk health\u2026")
         self.win.statusBar().showMessage("Reading disk health\u2026")
@@ -375,11 +469,23 @@ class DiskHealthPage(_Page):
 
     @staticmethod
     def _dash(v):
-        """_dash."""
+        """Dash.
+
+        Manages dash operations and coordinates related state changes for the component.
+
+        Args:
+            v: The v parameter.
+        """
         return "\u2014" if v is None else str(v)
 
     def _on_done(self, disks: list):
-        """_on_done."""
+        """Handle worker results: refresh tables/trees, update the state panel, note status and clear the busy state.
+
+        Receives the completed data from the  background worker, populates the view with results, and restores button states.
+
+        Args:
+            disks (list): The disks parameter.
+        """
         self.refresh_btn.setEnabled(True)
         if not disks:
             self.state.show_empty("No physical disks reported. This may require Administrator.")
@@ -414,7 +520,13 @@ class DiskHealthPage(_Page):
         self.win.statusBar().showMessage(f"{len(disks)} physical disk(s)", 5000)
 
     def _fail(self, msg: str):
-        """_fail."""
+        """Handle an operation failure and notify the user.
+
+        Captures error details, displays an informative failure state in the UI, resets progress indicators, and re-enables interactive controls.
+
+        Args:
+            msg (str): Informational or progress status message.
+        """
         self.refresh_btn.setEnabled(True)
         self.state.show_error(msg, on_retry=self._load)
 
@@ -424,10 +536,19 @@ class DiskHealthPage(_Page):
 # =====================================================================
 
 class ScheduledTasksPage(_Page):
-    """View OS scheduled tasks; delete Cortex-created cleanup tasks."""
+    """Scheduledtaskspage.
+
+    Manages ScheduledTasksPage operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, win):
-        """__init__."""
+        """Build the page layout (buttons, tables, title header, state panel) and connect button/worker actions.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win: Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(title_block(
             "Scheduled Tasks",
@@ -483,14 +604,23 @@ class ScheduledTasksPage(_Page):
         self._loaded = False
 
     def _load(self):
-        """_load."""
+        """Fetch and reload the latest data entries into the view.
+
+        Queries the underlying system service or storage cache and refreshes view tables with up-to-date state.
+        """
         self.refresh_btn.setEnabled(False)
         self.state.show_loading("Listing scheduled tasks\u2026")
         self.win.statusBar().showMessage("Listing scheduled tasks\u2026")
         self.win.run_worker(ScheduledTasksWorker(), self._on_done, self._fail)
 
     def _on_done(self, tasks: list):
-        """_on_done."""
+        """Handle worker results: refresh tables/trees, update the state panel, note status and clear the busy state.
+
+        Receives the completed data from the  background worker, populates the view with results, and restores button states.
+
+        Args:
+            tasks (list): The tasks parameter.
+        """
         self.refresh_btn.setEnabled(True)
         if not tasks:
             self.state.show_empty("No scheduled tasks found.")
@@ -505,7 +635,10 @@ class ScheduledTasksPage(_Page):
         self.win.statusBar().showMessage(f"{len(tasks)} scheduled task(s)", 5000)
 
     def _delete(self):
-        """_delete."""
+        """Delete.
+
+        Manages delete operations and coordinates related state changes for the component.
+        """
         sel = self.tbl.selectedIndexes()
         if not sel:
             return
@@ -524,7 +657,14 @@ class ScheduledTasksPage(_Page):
         self.win.run_worker(DeleteTaskWorker(name), self._on_deleted, self._fail)
 
     def _on_deleted(self, ok: bool, name: str):
-        """_on_deleted."""
+        """Handle worker results: update widgets and clear the busy state.
+
+        Manages on deleted operations and coordinates related state changes for the component.
+
+        Args:
+            ok (bool): The ok parameter.
+            name (str): The name parameter.
+        """
         self.progress.setVisible(False)
         if ok:
             QMessageBox.information(self, "Task deleted", f"Removed '{name}'.")
@@ -535,7 +675,13 @@ class ScheduledTasksPage(_Page):
         self._load()
 
     def _fail(self, msg: str):
-        """_fail."""
+        """Handle an operation failure and notify the user.
+
+        Captures error details, displays an informative failure state in the UI, resets progress indicators, and re-enables interactive controls.
+
+        Args:
+            msg (str): Informational or progress status message.
+        """
         self.refresh_btn.setEnabled(True)
         self.state.show_error(msg, on_retry=self._load)
 
@@ -545,10 +691,19 @@ class ScheduledTasksPage(_Page):
 # =====================================================================
 
 class BootPerformancePage(_Page):
-    """Why your PC is slow to start - using Windows' own boot measurements."""
+    """Bootperformancepage.
+
+    Manages BootPerformancePage operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, win):
-        """__init__."""
+        """Build the page layout (buttons, tables, cards, title header) and connect button/worker actions.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win: Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(title_block(
             "Boot Performance",
@@ -611,14 +766,23 @@ class BootPerformancePage(_Page):
         self._loaded = False
 
     def _load(self):
-        """_load."""
+        """Fetch and reload the latest data entries into the view.
+
+        Queries the underlying system service or storage cache and refreshes view tables with up-to-date state.
+        """
         self.refresh_btn.setEnabled(False)
         self.state.show_loading("Reading boot diagnostics\u2026")
         self.win.statusBar().showMessage("Reading boot diagnostics\u2026")
         self.win.run_worker(BootPerfWorker(), self._on_done, self._fail)
 
     def _on_done(self, data: dict):
-        """_on_done."""
+        """Handle worker results: refresh tables/trees, update cards/labels, update the state panel and clear the busy state.
+
+        Receives the completed data from the  background worker, populates the view with results, and restores button states.
+
+        Args:
+            data (dict): The data parameter.
+        """
         self.refresh_btn.setEnabled(True)
         latest = data.get("latest_seconds", 0.0)
         avg = data.get("average_seconds", 0.0)
@@ -666,7 +830,13 @@ class BootPerformancePage(_Page):
             f"Boot: last {latest:.0f}s, {len(issues)} slowdown(s) flagged", 5000)
 
     def _fail(self, msg: str):
-        """_fail."""
+        """Handle an operation failure and notify the user.
+
+        Captures error details, displays an informative failure state in the UI, resets progress indicators, and re-enables interactive controls.
+
+        Args:
+            msg (str): Informational or progress status message.
+        """
         self.refresh_btn.setEnabled(True)
         self.state.show_error(msg, on_retry=self._load)
 
@@ -676,10 +846,19 @@ class BootPerformancePage(_Page):
 # =====================================================================
 
 class SystemRepairPage(_Page):
-    """Run Windows' built-in SFC / DISM / CHKDSK repair tools, explained."""
+    """Systemrepairpage.
+
+    Manages SystemRepairPage operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, win):
-        """__init__."""
+        """Build the page layout (cards, title header, progress bar) and connect button/worker actions.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win: Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(title_block(
             "System File Health",
@@ -752,7 +931,19 @@ class SystemRepairPage(_Page):
         self._buttons = [self.check_btn, self.dism_btn, self.sfc_btn, self.chkdsk_btn]
 
     def _tool_row(self, layout, title, desc, handler) -> QPushButton:
-        """_tool_row."""
+        """Tool row via the worker/widgets; results return through worker signals.
+
+        Manages tool row operations and coordinates related state changes for the component.
+
+        Args:
+            layout: The layout parameter.
+            title: Display text string.
+            desc: The desc parameter.
+            handler: The handler parameter.
+
+        Returns:
+            QPushButton: Result of the operation.
+        """
         row = QHBoxLayout()
         col = QVBoxLayout()
         t = QLabel(f"<b>{title}</b>")
@@ -769,7 +960,15 @@ class SystemRepairPage(_Page):
         return btn
 
     def _run(self, action: str, title: str, prompt: str):
-        """_run."""
+        """Run.
+
+        Manages run operations and coordinates related state changes for the component.
+
+        Args:
+            action (str): The action parameter.
+            title (str): Display text string.
+            prompt (str): The prompt parameter.
+        """
         confirm = QMessageBox.question(
             self, title, prompt + "\n\nRequires Administrator. Cortex stays responsive "
             "while it runs, but don't shut down until it finishes.",
@@ -787,7 +986,13 @@ class SystemRepairPage(_Page):
         self.win.run_worker(SystemRepairWorker(action), self._on_done, self._fail)
 
     def _on_done(self, r: dict):
-        """_on_done."""
+        """Handle worker results: note status, re-enable buttons and clear the busy state.
+
+        Receives the completed data from the  background worker, populates the view with results, and restores button states.
+
+        Args:
+            r (dict): The r parameter.
+        """
         self.progress.setVisible(False)
         self.status.setText("")
         for b in self._buttons:
@@ -817,7 +1022,13 @@ class SystemRepairPage(_Page):
         self.win.statusBar().showMessage(f"{r['tool']}: {r['status']}", 6000)
 
     def _fail(self, msg: str):
-        """_fail."""
+        """Handle an operation failure and notify the user.
+
+        Captures error details, displays an informative failure state in the UI, resets progress indicators, and re-enables interactive controls.
+
+        Args:
+            msg (str): Informational or progress status message.
+        """
         self.progress.setVisible(False)
         self.status.setText("")
         for b in self._buttons:
@@ -832,18 +1043,31 @@ class SystemRepairPage(_Page):
 # =====================================================================
 
 class StorageSenseWorker(QObject):
-    """StorageSenseWorker class."""
+    """Storagesenseworker.
+
+    Manages StorageSenseWorker operations and coordinates related state changes for the component.
+    """
     finished = Signal(dict)
     failed = Signal(str)
 
     def __init__(self, action: str = "status", value: int = 0):
-        """__init__."""
+        """Store constructor arguments (action, value) and initialize worker signals.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            action (str): The action parameter.
+            value (int): The value parameter.
+        """
         super().__init__()
         self._action = action
         self._value = value
 
     def run(self):
-        """run."""
+        """Run the StorageSense (storage sense) backend call off the UI thread; emit finished/failed with results.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         try:
             from cortex_unified.system_tools.storage_sense import StorageSense
             ss = StorageSense()
@@ -859,14 +1083,23 @@ class StorageSenseWorker(QObject):
 
 
 class StorageSensePage(_Page):
-    """Turn on and schedule Windows' built-in automatic cleanup."""
+    """Storagesensepage.
+
+    Manages StorageSensePage operations and coordinates related state changes for the component.
+    """
 
     _CADENCE = [(0, "When disk space is low"), (1, "Every day"),
                 (7, "Every week"), (30, "Every month")]
     _DAYS = [(0, "Never"), (1, "1 day"), (14, "14 days"), (30, "30 days"), (60, "60 days")]
 
     def __init__(self, win):
-        """__init__."""
+        """Build the page layout (cards, title header, controls) and connect button/worker actions.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win: Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(title_block(
             "Storage Sense",
@@ -921,11 +1154,20 @@ class StorageSensePage(_Page):
         self._loaded = False
 
     def _load(self):
-        """_load."""
+        """Fetch and reload the latest data entries into the view.
+
+        Queries the underlying system service or storage cache and refreshes view tables with up-to-date state.
+        """
         self.win.run_worker(StorageSenseWorker("status"), self._on_status, self._fail)
 
     def _on_status(self, s: dict):
-        """_on_status."""
+        """Handle worker results: update cards/labels and clear the busy state.
+
+        Manages on status operations and coordinates related state changes for the component.
+
+        Args:
+            s (dict): The s parameter.
+        """
         self._loading = True
         self.enable_chk.setChecked(s.get("enabled", False))
         self.enable_chk.setText("Storage Sense is ON" if s.get("enabled")
@@ -950,28 +1192,52 @@ class StorageSensePage(_Page):
         self._loading = False
 
     def _toggle_enable(self, on: bool):
-        """_toggle_enable."""
+        """Compute and return the value for toggle enable used by the page.
+
+        Toggles selection states or operational modes, recalculating active selection counts and enabling/disabling dependent actions.
+
+        Args:
+            on (bool): The on parameter.
+        """
         if self._loading:
             return
         self.win.run_worker(StorageSenseWorker("enable", 1 if on else 0),
                             self._on_status, self._fail)
 
     def _set_cadence(self, idx: int):
-        """_set_cadence."""
+        """Compute and return the value for set cadence used by the page.
+
+        Manages set cadence operations and coordinates related state changes for the component.
+
+        Args:
+            idx (int): The idx parameter.
+        """
         if self._loading:
             return
         self.win.run_worker(StorageSenseWorker("cadence", self._CADENCE[idx][0]),
                             self._on_status, self._fail)
 
     def _set_recycle(self, idx: int):
-        """_set_recycle."""
+        """Compute and return the value for set recycle used by the page.
+
+        Manages set recycle operations and coordinates related state changes for the component.
+
+        Args:
+            idx (int): The idx parameter.
+        """
         if self._loading:
             return
         self.win.run_worker(StorageSenseWorker("recycle", self._DAYS[idx][0]),
                             self._on_status, self._fail)
 
     def _fail(self, msg: str):
-        """_fail."""
+        """Handle an operation failure and notify the user.
+
+        Captures error details, displays an informative failure state in the UI, resets progress indicators, and re-enables interactive controls.
+
+        Args:
+            msg (str): Informational or progress status message.
+        """
         self.win._default_fail(msg)
 
 
@@ -980,12 +1246,18 @@ class StorageSensePage(_Page):
 # =====================================================================
 
 class DefenderStatusWorker(QObject):
-    """DefenderStatusWorker class."""
+    """Defenderstatusworker.
+
+    Manages DefenderStatusWorker operations and coordinates related state changes for the component.
+    """
     finished = Signal(dict, list)
     failed = Signal(str)
 
     def run(self):
-        """run."""
+        """Run the WindowsDefender (defender) backend call off the UI thread; emit finished/failed with results.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         try:
             from cortex_unified.system_tools.defender import WindowsDefender
             d = WindowsDefender()
@@ -995,12 +1267,18 @@ class DefenderStatusWorker(QObject):
 
 
 class DefenderScanWorker(QObject):
-    """DefenderScanWorker class."""
+    """Defenderscanworker.
+
+    Manages DefenderScanWorker operations and coordinates related state changes for the component.
+    """
     finished = Signal(bool, str)
     failed = Signal(str)
 
     def run(self):
-        """run."""
+        """Run the WindowsDefender (defender) backend call off the UI thread; emit finished/failed with results.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         try:
             from cortex_unified.system_tools.defender import WindowsDefender
             ok, msg = WindowsDefender().start_quick_scan()
@@ -1010,10 +1288,19 @@ class DefenderScanWorker(QObject):
 
 
 class SecurityPage(_Page):
-    """Windows Security (Defender) status + quick scan."""
+    """Securitypage.
+
+    Manages SecurityPage operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, win):
-        """__init__."""
+        """Build the page layout (buttons, tables, cards, title header) and connect button/worker actions.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win: Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(title_block(
             "Security",
@@ -1074,13 +1361,23 @@ class SecurityPage(_Page):
         self._loaded = False
 
     def _load(self):
-        """_load."""
+        """Fetch and reload the latest data entries into the view.
+
+        Queries the underlying system service or storage cache and refreshes view tables with up-to-date state.
+        """
         self.refresh_btn.setEnabled(False)
         self.state.show_loading("Checking Windows Security\u2026")
         self.win.run_worker(DefenderStatusWorker(), self._on_status, self._fail)
 
     def _on_status(self, s: dict, threats: list):
-        """_on_status."""
+        """Handle worker results: refresh tables/trees, re-enable buttons and clear the busy state.
+
+        Manages on status operations and coordinates related state changes for the component.
+
+        Args:
+            s (dict): The s parameter.
+            threats (list): The threats parameter.
+        """
         self.state.clear()
         self.refresh_btn.setEnabled(True)
         if not s.get("available"):
@@ -1124,7 +1421,10 @@ class SecurityPage(_Page):
             self.tbl.setItem(0, 1, QTableWidgetItem("No threats detected \u2014 clean."))
 
     def _scan(self):
-        """_scan."""
+        """Scan via the background worker, confirmation dialog, progress state; results return through worker signals.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+        """
         confirm = QMessageBox.question(
             self, "Run quick scan",
             "Run a Windows Defender quick scan now? This checks the most common "
@@ -1141,7 +1441,14 @@ class SecurityPage(_Page):
         self.win.run_worker(DefenderScanWorker(), self._on_scanned, self._fail)
 
     def _on_scanned(self, ok: bool, msg: str):
-        """_on_scanned."""
+        """Handle worker results: re-enable buttons and clear the busy state.
+
+        Manages on scanned operations and coordinates related state changes for the component.
+
+        Args:
+            ok (bool): The ok parameter.
+            msg (str): Informational or progress status message.
+        """
         self.progress.setVisible(False)
         self.scan_btn.setEnabled(True)
         if ok:
@@ -1151,7 +1458,13 @@ class SecurityPage(_Page):
         self._load()
 
     def _fail(self, msg: str):
-        """_fail."""
+        """Handle an operation failure and notify the user.
+
+        Captures error details, displays an informative failure state in the UI, resets progress indicators, and re-enables interactive controls.
+
+        Args:
+            msg (str): Informational or progress status message.
+        """
         self.refresh_btn.setEnabled(True)
         self.scan_btn.setEnabled(True)
         self.state.show_error(msg, on_retry=self._load)
@@ -1162,13 +1475,19 @@ class SecurityPage(_Page):
 # =====================================================================
 
 class HealthCheckWorker(QObject):
-    """HealthCheckWorker class."""
+    """Healthcheckworker.
+
+    Manages HealthCheckWorker operations and coordinates related state changes for the component.
+    """
     progress = Signal(str)
     finished = Signal(dict)
     failed = Signal(str)
 
     def run(self):
-        """run."""
+        """Run the HealthChecker (health check) backend call off the UI thread; emit finished/failed/progress with results.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         try:
             from cortex_unified.system_tools.health_check import HealthChecker
             report = HealthChecker().run(progress=self.progress.emit)
@@ -1178,7 +1497,10 @@ class HealthCheckWorker(QObject):
 
 
 class HealthCheckPage(_Page):
-    """One click to assess overall PC health across the fast diagnostics."""
+    """Healthcheckpage.
+
+    Manages HealthCheckPage operations and coordinates related state changes for the component.
+    """
 
     #: severity -> (icon asset, colour, human label). The marks used to be
     #: codepoints; U+2705 and U+26D4 have *emoji* presentation on Windows, so
@@ -1192,7 +1514,13 @@ class HealthCheckPage(_Page):
     }
 
     def __init__(self, win):
-        """__init__."""
+        """Build the page layout (buttons, tables, cards, title header) and connect button/worker actions.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win: Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(title_block(
             "Health Check",
@@ -1270,7 +1598,10 @@ class HealthCheckPage(_Page):
         self._loaded = False
 
     def _run(self):
-        """_run."""
+        """Run.
+
+        Manages run operations and coordinates related state changes for the component.
+        """
         self.run_btn.setEnabled(False)
         self.progress.setVisible(True)
         self.scan_status.setText("Starting\u2026")
@@ -1284,11 +1615,23 @@ class HealthCheckPage(_Page):
                             on_progress=self._on_progress)
 
     def _on_progress(self, msg: str):
-        """_on_progress."""
+        """Handle worker results: update widgets and clear the busy state.
+
+        Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
+
+        Args:
+            msg (str): Informational or progress status message.
+        """
         self.scan_status.setText(msg)
 
     def _on_done(self, report: dict):
-        """_on_done."""
+        """Handle worker results: refresh tables/trees, update cards/labels, note status and clear the busy state.
+
+        Receives the completed data from the  background worker, populates the view with results, and restores button states.
+
+        Args:
+            report (dict): The generated report data object from the backend.
+        """
         self.skeleton.stop()
         self.skeleton.setVisible(False)
         self.tbl.setVisible(True)
@@ -1339,7 +1682,13 @@ class HealthCheckPage(_Page):
         self.win.statusBar().showMessage(f"Health score {score}/100 (grade {grade})", 6000)
 
     def _fail(self, msg: str):
-        """_fail."""
+        """Handle an operation failure and notify the user.
+
+        Captures error details, displays an informative failure state in the UI, resets progress indicators, and re-enables interactive controls.
+
+        Args:
+            msg (str): Informational or progress status message.
+        """
         self.skeleton.stop()
         self.skeleton.setVisible(False)
         self.tbl.setVisible(True)
@@ -1354,12 +1703,18 @@ class HealthCheckPage(_Page):
 # =====================================================================
 
 class WUActivityWorker(QObject):
-    """WUActivityWorker class."""
+    """Wuactivityworker.
+
+    Manages WUActivityWorker operations and coordinates related state changes for the component.
+    """
     finished = Signal(dict, list)   # (last_activity, history)
     failed = Signal(str)
 
     def run(self):
-        """run."""
+        """Run the WindowsUpdate (windows update) backend call off the UI thread; emit finished/failed with results.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         try:
             from cortex_unified.system_tools.windows_update import WindowsUpdate
             wu = WindowsUpdate()
@@ -1369,12 +1724,18 @@ class WUActivityWorker(QObject):
 
 
 class WUPendingWorker(QObject):
-    """WUPendingWorker class."""
+    """Wupendingworker.
+
+    Manages WUPendingWorker operations and coordinates related state changes for the component.
+    """
     finished = Signal(list)
     failed = Signal(str)
 
     def run(self):
-        """run."""
+        """Run the WindowsUpdate (windows update) backend call off the UI thread; emit finished/failed with results.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         try:
             from cortex_unified.system_tools.windows_update import WindowsUpdate
             self.finished.emit([u.to_dict() for u in WindowsUpdate().check_pending()])
@@ -1383,10 +1744,19 @@ class WUPendingWorker(QObject):
 
 
 class WindowsUpdatePage(_Page):
-    """See when Windows last updated, what's pending, and recent update history."""
+    """Windowsupdatepage.
+
+    Manages WindowsUpdatePage operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, win):
-        """__init__."""
+        """Build the page layout (buttons, tables, cards, title header) and connect button/worker actions.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win: Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(title_block(
             "Windows Update",
@@ -1462,12 +1832,22 @@ class WindowsUpdatePage(_Page):
         self._loaded = False
 
     def _load(self):
-        """_load."""
+        """Fetch and reload the latest data entries into the view.
+
+        Queries the underlying system service or storage cache and refreshes view tables with up-to-date state.
+        """
         self.state.show_loading("Reading update status\u2026")
         self.win.run_worker(WUActivityWorker(), self._on_activity, self._fail)
 
     def _on_activity(self, activity: dict, history: list):
-        """_on_activity."""
+        """Handle worker results: refresh tables/trees, update cards/labels and clear the busy state.
+
+        Manages on activity operations and coordinates related state changes for the component.
+
+        Args:
+            activity (dict): The activity parameter.
+            history (list): The history parameter.
+        """
         self.state.clear()
         self.card_check.set_value(activity.get("last_check") or "unknown")
         self.card_install.set_value(activity.get("last_install") or "unknown")
@@ -1481,14 +1861,23 @@ class WindowsUpdatePage(_Page):
             self.hist_tbl.setItem(r, 2, res_item)
 
     def _check_pending(self):
-        """_check_pending."""
+        """Handle check pending for the page widgets and worker state.
+
+        Manages check pending operations and coordinates related state changes for the component.
+        """
         self.check_btn.setEnabled(False)
         self.progress.setVisible(True)
         self.win.statusBar().showMessage("Checking Windows Update (online)\u2026")
         self.win.run_worker(WUPendingWorker(), self._on_pending, self._fail)
 
     def _on_pending(self, updates: list):
-        """_on_pending."""
+        """Handle worker results: refresh tables/trees, note status, re-enable buttons and clear the busy state.
+
+        Manages on pending operations and coordinates related state changes for the component.
+
+        Args:
+            updates (list): The updates parameter.
+        """
         self.progress.setVisible(False)
         self.check_btn.setEnabled(True)
         self.pending_tbl.setRowCount(len(updates))
@@ -1502,7 +1891,10 @@ class WindowsUpdatePage(_Page):
             self.win.statusBar().showMessage(f"{len(updates)} update(s) available", 5000)
 
     def _open_settings(self):
-        """_open_settings."""
+        """Handle open settings for the page widgets and worker state.
+
+        Manages open settings operations and coordinates related state changes for the component.
+        """
         try:
             import os
             os.startfile("ms-settings:windowsupdate")  # type: ignore[attr-defined]
@@ -1510,7 +1902,13 @@ class WindowsUpdatePage(_Page):
             QMessageBox.warning(self, "Open failed", str(exc))
 
     def _fail(self, msg: str):
-        """_fail."""
+        """Handle an operation failure and notify the user.
+
+        Captures error details, displays an informative failure state in the UI, resets progress indicators, and re-enables interactive controls.
+
+        Args:
+            msg (str): Informational or progress status message.
+        """
         self.check_btn.setEnabled(True)
         self.state.show_error(msg, on_retry=self._load)
 
@@ -1530,7 +1928,13 @@ class ComponentStorePage(_Page):
     """
 
     def __init__(self, win):
-        """__init__."""
+        """Build the page layout (buttons, tables, cards, title header) and connect button/worker actions.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win: Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(title_block(
             "Windows Component Store",
@@ -1570,6 +1974,10 @@ class ComponentStorePage(_Page):
         self.task_btn = QPushButton("Let Windows Clean It")
         self.task_btn.clicked.connect(self._run_task)
         row.addWidget(self.task_btn)
+        self.fix_24h2_btn = QPushButton("Fix 24H2 Staged Packages")
+        self.fix_24h2_btn.setToolTip("Removes stuck Windows 11 24H2 checkpoint cumulative update packages (Package_for_RollupFix)")
+        self.fix_24h2_btn.clicked.connect(self._fix_24h2)
+        row.addWidget(self.fix_24h2_btn)
         row.addStretch(1)
         self.clean_btn = QPushButton("Clean Now")
         self.clean_btn.setObjectName("Primary")
@@ -1648,12 +2056,21 @@ class ComponentStorePage(_Page):
     # -- selection -----------------------------------------------------------
 
     def _selected_leftovers(self) -> list:
-        """_selected_leftovers."""
+        """Compute and return the value for selected leftovers used by the page.
+
+        Manages selected leftovers operations and coordinates related state changes for the component.
+
+        Returns:
+            list: List of processed items or identifiers.
+        """
         rows = sorted({i.row() for i in self.tbl.selectedIndexes()})
         return [self._leftovers[r] for r in rows if 0 <= r < len(self._leftovers)]
 
     def _on_select(self):
-        """_on_select."""
+        """Handle worker results: re-enable buttons and clear the busy state.
+
+        Manages on select operations and coordinates related state changes for the component.
+        """
         chosen = self._selected_leftovers()
         # Managed items can never be removed here, so don't offer it.
         self.del_btn.setEnabled(bool(chosen) and all(item.removable_here for item in chosen))
@@ -1661,7 +2078,10 @@ class ComponentStorePage(_Page):
     # -- analyze -------------------------------------------------------------
 
     def _analyze(self):
-        """_analyze."""
+        """Analyze.
+
+        Manages analyze operations and coordinates related state changes for the component.
+        """
         from .workers import ComponentStoreAnalyzeWorker
         self.analyze_btn.setEnabled(False)
         self.clean_btn.setEnabled(False)
@@ -1670,7 +2090,14 @@ class ComponentStorePage(_Page):
                             self._fail, on_progress=self.status.setText)
 
     def _on_analyzed(self, analysis, leftovers: list):
-        """_on_analyzed."""
+        """Handle worker results: refresh tables/trees, update cards/labels, update the state panel and clear the busy state.
+
+        Manages on analyzed operations and coordinates related state changes for the component.
+
+        Args:
+            analysis: The analysis parameter.
+            leftovers (list): The leftovers parameter.
+        """
         self.analyze_btn.setEnabled(True)
         self._analysis = analysis
         self._leftovers = leftovers
@@ -1725,7 +2152,10 @@ class ComponentStorePage(_Page):
     # -- actions -------------------------------------------------------------
 
     def _clean(self):
-        """_clean."""
+        """Clean via the background worker, confirmation dialog, progress state; results return through worker signals.
+
+        Permanently purges or removes specified target items, reclaiming storage space and logging actions taken.
+        """
         from .workers import ComponentStoreCleanWorker
         reset = self.reset_chk.isChecked()
         estimate = (fmt_bytes(self._analysis.reclaimable_estimate)
@@ -1751,7 +2181,13 @@ class ComponentStorePage(_Page):
                             self._fail, on_progress=self.status.setText)
 
     def _on_cleaned(self, outcome):
-        """_on_cleaned."""
+        """Handle worker results: note status, re-enable buttons and clear the busy state.
+
+        Manages on cleaned operations and coordinates related state changes for the component.
+
+        Args:
+            outcome: The outcome parameter.
+        """
         self.progress.setVisible(False)
         self.analyze_btn.setEnabled(True)
         self.clean_btn.setEnabled(True)
@@ -1775,7 +2211,10 @@ class ComponentStorePage(_Page):
             self._analyze()
 
     def _run_task(self):
-        """_run_task."""
+        """Handle run task for the page widgets and worker state.
+
+        Manages run task operations and coordinates related state changes for the component.
+        """
         from .workers import ServicingTaskWorker
         confirm = QMessageBox.question(
             self, "Let Windows clean it",
@@ -1792,7 +2231,14 @@ class ComponentStorePage(_Page):
         self.win.run_worker(ServicingTaskWorker(), self._on_task, self._fail)
 
     def _on_task(self, ok: bool, message: str):
-        """_on_task."""
+        """Handle worker results: note status, re-enable buttons and clear the busy state.
+
+        Manages on task operations and coordinates related state changes for the component.
+
+        Args:
+            ok (bool): The ok parameter.
+            message (str): Informational or progress status message.
+        """
         self.progress.setVisible(False)
         self.task_btn.setEnabled(True)
         self.status.setText(message)
@@ -1802,8 +2248,40 @@ class ComponentStorePage(_Page):
         else:
             QMessageBox.warning(self, "Windows cleanup task", message)
 
+    def _fix_24h2(self):
+        """Fix Windows 11 24H2 stuck staged packages using ComponentStoreCleaner.
+
+        Manages fix 24h2 operations and coordinates related state changes for the component.
+        """
+        confirm = QMessageBox.question(
+            self, "Fix 24H2 Staged Packages",
+            "This targets stuck 'Staged' checkpoint cumulative update packages in Windows 11 24H2 "
+            "(known Microsoft bug) and unblocks DISM component store reclamation.\n\n"
+            "Proceed with fix?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.Yes,
+        )
+        if confirm != QMessageBox.StandardButton.Yes:
+            return
+        self.status.setText("Fixing stuck 24H2 packages via DISM...")
+        self.progress.setVisible(True)
+        try:
+            from cortex_unified.system_tools.component_store_cleaner import ComponentStoreCleaner
+            cleaner = ComponentStoreCleaner()
+            result = cleaner.fix_staged_packages()
+            self.progress.setVisible(False)
+            self.status.setText(f"24H2 package fix complete: {result.command}")
+            QMessageBox.information(self, "24H2 Staged Packages", f"Operation completed: {result.command}")
+            self._analyze()
+        except Exception as exc:
+            self.progress.setVisible(False)
+            self._fail(f"Fix failed: {exc}")
+
     def _delete_leftovers(self):
-        """_delete_leftovers."""
+        """Handle delete leftovers for the page widgets and worker state.
+
+        Manages delete leftovers operations and coordinates related state changes for the component.
+        """
         from .workers import LeftoverDeleteWorker
         chosen = [item for item in self._selected_leftovers() if item.removable_here]
         if not chosen:
@@ -1835,7 +2313,15 @@ class ComponentStorePage(_Page):
             self._on_deleted, self._fail, on_progress=self.status.setText)
 
     def _on_deleted(self, freed: int, removed: int, blocked: int):
-        """_on_deleted."""
+        """Handle worker results: note status and clear the busy state.
+
+        Manages on deleted operations and coordinates related state changes for the component.
+
+        Args:
+            freed (int): The freed parameter.
+            removed (int): The removed parameter.
+            blocked (int): The blocked parameter.
+        """
         self.progress.setVisible(False)
         msg = f"Removed {removed} item(s), freeing {fmt_bytes(freed)}."
         if blocked:
@@ -1847,7 +2333,13 @@ class ComponentStorePage(_Page):
         self._analyze()
 
     def _fail(self, msg: str):
-        """_fail."""
+        """Handle an operation failure and notify the user.
+
+        Captures error details, displays an informative failure state in the UI, resets progress indicators, and re-enables interactive controls.
+
+        Args:
+            msg (str): Informational or progress status message.
+        """
         self.progress.setVisible(False)
         self.analyze_btn.setEnabled(True)
         self.task_btn.setEnabled(True)

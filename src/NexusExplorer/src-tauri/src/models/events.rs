@@ -2,6 +2,7 @@ use serde::Serialize;
 
 use super::file_entry::FileEntry;
 
+/// Channel events for an async directory scan: entry batches, completion, or error.
 #[derive(Serialize, Clone, Debug)]
 #[serde(tag = "event", content = "data", rename_all = "camelCase", rename_all_fields = "camelCase")]
 pub enum ScanEvent {
@@ -10,6 +11,7 @@ pub enum ScanEvent {
     Error { message: String },
 }
 
+/// Channel events for a filename search: entry batches, completion, or error/cancellation.
 #[derive(Serialize, Clone, Debug)]
 #[serde(tag = "event", content = "data", rename_all = "camelCase", rename_all_fields = "camelCase")]
 pub enum SearchEvent {
@@ -18,6 +20,7 @@ pub enum SearchEvent {
     Error { message: String },
 }
 
+/// Channel events for a copy/move/delete job: lifecycle, progress, conflicts, and errors.
 #[derive(Serialize, Clone, Debug)]
 #[serde(tag = "event", content = "data", rename_all = "camelCase", rename_all_fields = "camelCase")]
 pub enum JobEvent {

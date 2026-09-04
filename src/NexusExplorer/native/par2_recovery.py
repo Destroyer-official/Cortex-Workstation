@@ -18,28 +18,35 @@ from typing import Dict, List, Optional, Tuple
 
 @dataclass
 class Par2FileInfo:
-    """Par2FileInfo."""
+    """Par2fileinfo.
+
+    Manages Par2FileInfo operations and coordinates related state changes for the component.
+    """
     file_id: str
     file_name: str
     file_size_bytes: int
     md5_hash_16k: str
     md5_hash_full: str
-    """Par2FileInfo class."""
 
 
 @dataclass
 class Par2PacketInfo:
-    """Par2PacketInfo."""
+    """Par2packetinfo.
+
+    Manages Par2PacketInfo operations and coordinates related state changes for the component.
+    """
     packet_type: str
     packet_length: int
     recovery_set_id: str
     is_valid: bool
-    """Par2PacketInfo class."""
 
 
 @dataclass
 class Par2ValidationReport:
-    """Par2ValidationReport."""
+    """Par2validationreport.
+
+    Manages Par2ValidationReport operations and coordinates related state changes for the component.
+    """
     par2_file_path: str
     is_valid_par2: bool
     recovery_set_id: str
@@ -50,17 +57,28 @@ class Par2ValidationReport:
     protected_files: List[Par2FileInfo]
     packets: List[Par2PacketInfo]
     error: Optional[str] = None
-    """Par2ValidationReport class."""
 
 
 class Par2RecoveryEngine:
-    """Production PAR2 Parchive packet parsing and integrity inspection engine."""
+    """Par2recoveryengine.
+
+    Manages Par2RecoveryEngine operations and coordinates related state changes for the component.
+    """
 
     PAR2_MAGIC = b"PAR2\x00PKT"
 
     @classmethod
     def inspect_par2_file(cls, par2_path: str | Path) -> Par2ValidationReport:
-        """Parse PAR2 file and extract parity slice and recovery information."""
+        """Parse PAR2 file and extract parity slice and recovery information.
+
+        Manages inspect par2 file operations and coordinates related state changes for the component.
+
+        Args:
+            par2_path (str | Path): Filesystem path to the target file or directory.
+
+        Returns:
+            Par2ValidationReport: Result of the operation.
+        """
         p = Path(par2_path).resolve()
         if not p.is_file():
             return Par2ValidationReport(str(p), False, "", 0, 0, 0, 0, [], [], "File not found")

@@ -13,7 +13,10 @@ os.environ["QT_QPA_PLATFORM"] = "offscreen"
 
 @pytest.fixture(scope="session")
 def qapp():
-    """qapp."""
+    """Qapp.
+
+    Manages qapp operations and coordinates related state changes for the component.
+    """
     app = QApplication.instance()
     if app is None:
         app = QApplication([])
@@ -21,7 +24,13 @@ def qapp():
 
 
 def test_nexus_clipboard_cut_copy_clear(qapp):
-    """test_nexus_clipboard_cut_copy_clear."""
+    """test_nexus_clipboard_cut_copy_clear.
+
+    Manages test nexus clipboard cut copy clear operations and coordinates related state changes for the component.
+
+    Args:
+        qapp: The qapp parameter.
+    """
     from cortex_unified.explorer.widget import NexusClipboard
 
     clip = NexusClipboard()
@@ -48,7 +57,13 @@ def test_nexus_clipboard_cut_copy_clear(qapp):
 
 
 def test_staging_shelf_widget_basic(qapp):
-    """test_staging_shelf_widget_basic."""
+    """test_staging_shelf_widget_basic.
+
+    Manages test staging shelf widget basic operations and coordinates related state changes for the component.
+
+    Args:
+        qapp: The qapp parameter.
+    """
     from cortex_unified.explorer.widget import StagingShelfWidget
 
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -99,7 +114,13 @@ def test_staging_shelf_widget_basic(qapp):
 
 
 def test_staging_shelf_paste_requested_signal(qapp):
-    """test_staging_shelf_paste_requested_signal."""
+    """test_staging_shelf_paste_requested_signal.
+
+    Manages test staging shelf paste requested signal operations and coordinates related state changes for the component.
+
+    Args:
+        qapp: The qapp parameter.
+    """
     from cortex_unified.explorer.widget import StagingShelfWidget
 
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -123,7 +144,13 @@ def test_staging_shelf_paste_requested_signal(qapp):
 
 
 def test_preview_pane_with_staging_shelf(qapp):
-    """test_preview_pane_with_staging_shelf."""
+    """test_preview_pane_with_staging_shelf.
+
+    Manages test preview pane with staging shelf operations and coordinates related state changes for the component.
+
+    Args:
+        qapp: The qapp parameter.
+    """
     from cortex_unified.explorer.widget import PreviewPane
 
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -144,7 +171,13 @@ def test_preview_pane_with_staging_shelf(qapp):
 
 
 def test_file_table_model_drag_mime_data(qapp):
-    """test_file_table_model_drag_mime_data."""
+    """test_file_table_model_drag_mime_data.
+
+    Manages test file table model drag mime data operations and coordinates related state changes for the component.
+
+    Args:
+        qapp: The qapp parameter.
+    """
     from cortex_unified.explorer.core import FileTableModel, IconThumbs
 
     model = FileTableModel(IconThumbs())
@@ -165,7 +198,13 @@ def test_file_table_model_drag_mime_data(qapp):
 
 
 def test_staged_item_row_attributes_and_drag(qapp):
-    """test_staged_item_row_attributes_and_drag."""
+    """test_staged_item_row_attributes_and_drag.
+
+    Manages test staged item row attributes and drag operations and coordinates related state changes for the component.
+
+    Args:
+        qapp: The qapp parameter.
+    """
     from cortex_unified.explorer.widget import StagedItemRow, StagingShelfWidget
 
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -183,7 +222,13 @@ def test_staged_item_row_attributes_and_drag(qapp):
 
 
 def test_python_transfer_fallback_copy_and_move(qapp):
-    """test_python_transfer_fallback_copy_and_move."""
+    """test_python_transfer_fallback_copy_and_move.
+
+    Manages test python transfer fallback copy and move operations and coordinates related state changes for the component.
+
+    Args:
+        qapp: The qapp parameter.
+    """
     from cortex_unified.explorer.transfers import TransferQueue
     import time
 
@@ -193,7 +238,10 @@ def test_python_transfer_fallback_copy_and_move(qapp):
 
         # Fake engine without FFI and without CLI
         class _DummyEngine:
-            """_DummyEngine."""
+            """Dummyengine.
+
+            Manages DummyEngine operations and coordinates related state changes for the component.
+            """
             ffi = None
             cli = ""
 
@@ -218,7 +266,13 @@ def test_python_transfer_fallback_copy_and_move(qapp):
 
 
 def test_context_menu_paste_option(qapp):
-    """test_context_menu_paste_option."""
+    """test_context_menu_paste_option.
+
+    Manages test context menu paste option operations and coordinates related state changes for the component.
+
+    Args:
+        qapp: The qapp parameter.
+    """
     import time
     from cortex_unified.explorer.widget import ExplorerWidget
     from NexusExplorer.native.nexus_explorer import _nexus_clipboard
@@ -245,7 +299,13 @@ def test_context_menu_paste_option(qapp):
 
 
 def test_python_transfer_locked_file_handling(qapp):
-    """test_python_transfer_locked_file_handling."""
+    """test_python_transfer_locked_file_handling.
+
+    Manages test python transfer locked file handling operations and coordinates related state changes for the component.
+
+    Args:
+        qapp: The qapp parameter.
+    """
     from cortex_unified.explorer.transfers import TransferQueue
     import time
     import unittest.mock as mock
@@ -257,7 +317,10 @@ def test_python_transfer_locked_file_handling(qapp):
         f_locked.write_text("locked content", encoding="utf-8")
 
         class _DummyEngine:
-            """_DummyEngine."""
+            """Dummyengine.
+
+            Manages DummyEngine operations and coordinates related state changes for the component.
+            """
             ffi = None
             cli = ""
 
@@ -271,7 +334,13 @@ def test_python_transfer_locked_file_handling(qapp):
         orig_open = open
 
         def _mock_open(file, *args, **kwargs):
-            """_mock_open."""
+            """_mock_open.
+
+            Manages mock open operations and coordinates related state changes for the component.
+
+            Args:
+                file: Filesystem path to the target file or directory.
+            """
             if "pagefile.sys" in str(file):
                 raise PermissionError(13, "Permission denied: 'pagefile.sys'")
             return orig_open(file, *args, **kwargs)
@@ -292,14 +361,23 @@ def test_python_transfer_locked_file_handling(qapp):
 
 
 def test_preview_pane_transfer_dock_integration(qapp):
-    """test_preview_pane_transfer_dock_integration."""
+    """test_preview_pane_transfer_dock_integration.
+
+    Manages test preview pane transfer dock integration operations and coordinates related state changes for the component.
+
+    Args:
+        qapp: The qapp parameter.
+    """
     from cortex_unified.explorer.widget import PreviewPane
     from cortex_unified.explorer.transfers import TransferQueue
 
     preview = PreviewPane()
     preview.show()
     class _DummyEngine:
-        """_DummyEngine."""
+        """Dummyengine.
+
+        Manages DummyEngine operations and coordinates related state changes for the component.
+        """
         ffi = None
         cli = ""
 
@@ -330,7 +408,13 @@ def test_preview_pane_transfer_dock_integration(qapp):
 
 
 def test_read_only_delete_retry(qapp):
-    """test_read_only_delete_retry."""
+    """test_read_only_delete_retry.
+
+    Manages test read only delete retry operations and coordinates related state changes for the component.
+
+    Args:
+        qapp: The qapp parameter.
+    """
     import stat
     import time
     from cortex_unified.explorer.transfers import TransferQueue
@@ -342,7 +426,10 @@ def test_read_only_delete_retry(qapp):
         os.chmod(str(ro_file), stat.S_IREAD)
 
         class _DummyEngine:
-            """_DummyEngine."""
+            """Dummyengine.
+
+            Manages DummyEngine operations and coordinates related state changes for the component.
+            """
             ffi = None
             cli = ""
 
@@ -364,10 +451,19 @@ def test_read_only_delete_retry(qapp):
 
 
 def test_transfer_queue_is_busy_property(qapp):
-    """test_transfer_queue_is_busy_property."""
+    """test_transfer_queue_is_busy_property.
+
+    Manages test transfer queue is busy property operations and coordinates related state changes for the component.
+
+    Args:
+        qapp: The qapp parameter.
+    """
     from cortex_unified.explorer.transfers import TransferQueue
     class _DummyEngine:
-        """_DummyEngine."""
+        """Dummyengine.
+
+        Manages DummyEngine operations and coordinates related state changes for the component.
+        """
         ffi = None
         cli = ""
 
@@ -378,7 +474,13 @@ def test_transfer_queue_is_busy_property(qapp):
 
 
 def test_staging_shelf_drag_and_drop_onto_empty_state(qapp):
-    """test_staging_shelf_drag_and_drop_onto_empty_state."""
+    """test_staging_shelf_drag_and_drop_onto_empty_state.
+
+    Manages test staging shelf drag and drop onto empty state operations and coordinates related state changes for the component.
+
+    Args:
+        qapp: The qapp parameter.
+    """
     from PySide6.QtCore import QMimeData, QUrl, QPointF
     from PySide6.QtGui import QDropEvent
     from cortex_unified.explorer.widget import ExplorerWidget
@@ -414,7 +516,13 @@ def test_staging_shelf_drag_and_drop_onto_empty_state(qapp):
 
 
 def test_file_checksum_dialog(qapp):
-    """test_file_checksum_dialog."""
+    """test_file_checksum_dialog.
+
+    Manages test file checksum dialog operations and coordinates related state changes for the component.
+
+    Args:
+        qapp: The qapp parameter.
+    """
     import time
     from NexusExplorer.native.nexus_explorer import FileChecksumDialog
 

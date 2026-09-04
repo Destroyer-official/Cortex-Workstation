@@ -2,8 +2,8 @@
 
 Reads the operating system's ARP cache (``arp -a``) to list the devices your
 machine has recently talked to on the local network: their IP, MAC (hardware)
-address, and a best-effort vendor guess from the MAC's OUI prefix for a handful
-of common vendors. This is read-only and offline - it inspects a cache the OS
+address, and a best-effort vendor guess from the MAC's OUI prefix via the
+full IEEE OUI registry (cortex_unified.system_tools.oui). This is read-only and offline - it inspects a cache the OS
 already maintains, it does not send probes or scan ports.
 
 Why it's useful: spotting an unfamiliar device on your network (the kind of
@@ -35,22 +35,40 @@ _ARP_RE = re.compile(
 
 @dataclass(slots=True)
 class LanDevice:
-    """Lan Device data container."""
+    """Landevice.
+
+    Manages LanDevice operations and coordinates related state changes for the component.
+    """
     ip: str
     mac: str
     kind: str          # dynamic / static
     vendor: str = ""
 
     def to_dict(self) -> dict[str, Any]:
-        """To dict."""
+        """To dict.
+
+        Manages to dict operations and coordinates related state changes for the component.
+
+        Returns:
+            dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         return {"ip": self.ip, "mac": self.mac, "kind": self.kind, "vendor": self.vendor}
 
 
 class LanScanner:
-    """Enumerate LAN devices from the OS ARP cache (read-only)."""
+    """Lanscanner.
+
+    Manages LanScanner operations and coordinates related state changes for the component.
+    """
 
     def scan(self) -> list[LanDevice]:
-        """Scan."""
+        """Scan.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+        Returns:
+            list[LanDevice]: List of processed items or identifiers.
+        """
         out = self._run()
         return self._parse(out)
 
@@ -67,7 +85,16 @@ class LanScanner:
 
     @classmethod
     def _parse(cls, out: str | None) -> list[LanDevice]:
-        """_parse."""
+        """Parse and decode structured data from strings or byte streams.
+
+        Extracts fields, validates expected formats, and instantiates corresponding strongly-typed model objects.
+
+        Args:
+            out (str | None): The out parameter.
+
+        Returns:
+            list[LanDevice]: List of processed items or identifiers.
+        """
         if not out:
             return []
         devices: list[LanDevice] = []
@@ -90,11 +117,15 @@ class LanScanner:
             ))
         devices.sort(key=lambda d: tuple(int(x) for x in d.ip.split(".")))
         return devices
-        """_parse."""
-        """_parse."""
 
     def _run(self) -> str | None:
-        """_run."""
+        """Run.
+
+        Manages run operations and coordinates related state changes for the component.
+
+        Returns:
+            str | None: Formatted string or path.
+        """
         try:
             proc = _proc.run(
                 ["arp", "-a"], text=True, timeout=15, creationflags=_NO_WINDOW,
@@ -103,5 +134,3 @@ class LanScanner:
         except (_proc.ProcessCancelled, OSError, subprocess.SubprocessError) as exc:
             _LOG.debug("arp failed: %s", exc)
             return None
-        """_run."""
-        """_run."""

@@ -38,17 +38,34 @@ _L2 = 1e-4                  # tiny L2 regularization to keep weights bounded
 
 
 def _sigmoid(z: float) -> float:
-    """_sigmoid."""
+    """Sigmoid.
+
+    Manages sigmoid operations and coordinates related state changes for the component.
+
+    Args:
+        z (float): The z parameter.
+
+    Returns:
+        float: Result of the operation.
+    """
     if z >= 0:
         ez = math.exp(-z)
         return 1.0 / (1.0 + ez)
     ez = math.exp(z)
     return ez / (1.0 + ez)
-    """_sigmoid."""
 
 
 def _size_bucket(size_bytes: int) -> str:
-    """_size_bucket."""
+    """_size_bucket.
+
+    Manages size bucket operations and coordinates related state changes for the component.
+
+    Args:
+        size_bytes (int): The size bytes parameter.
+
+    Returns:
+        str: Formatted string or path.
+    """
     if size_bytes <= 0:
         return "sz:0"
     mb = size_bytes / (1024 * 1024)
@@ -61,11 +78,19 @@ def _size_bucket(size_bytes: int) -> str:
     if mb < 1024:
         return "sz:100mb-1gb"
     return "sz:>1gb"
-    """_size_bucket."""
 
 
 def _age_bucket(age_days: float) -> str:
-    """_age_bucket."""
+    """_age_bucket.
+
+    Manages age bucket operations and coordinates related state changes for the component.
+
+    Args:
+        age_days (float): The age days parameter.
+
+    Returns:
+        str: Formatted string or path.
+    """
     if age_days < 1:
         return "age:<1d"
     if age_days < 7:
@@ -75,7 +100,6 @@ def _age_bucket(age_days: float) -> str:
     if age_days < 180:
         return "age:30-180d"
     return "age:>180d"
-    """_age_bucket."""
 
 
 def featurize(context: dict[str, Any]) -> list[str]:
@@ -105,35 +129,72 @@ def featurize(context: dict[str, Any]) -> list[str]:
 
 
 class SmartSuggester:
-    """Online logistic-regression recommender with local JSON persistence."""
+    """Smartsuggester.
+
+    Manages SmartSuggester operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, model_path: Path | None = None, learning_rate: float = _DEFAULT_LR):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            model_path (Path | None): Filesystem path to the target file or directory.
+            learning_rate (float): The learning rate parameter.
+        """
         self._lock = threading.Lock()
         self._weights: dict[str, float] = {}
         self._lr = learning_rate
         self._updates = 0
         self._model_path = model_path or (Path.home() / ".cortex_cleaner" / "smart_model.json")
         self._load()
-        """__init__."""
 
     # -- inference ----------------------------------------------------------
 
     def score(self, context: dict[str, Any]) -> float:
-        """Return P(user would clean this item), in [0, 1]."""
+        """Score.
+
+        Manages score operations and coordinates related state changes for the component.
+
+        Args:
+            context (dict[str, Any]): The context parameter.
+
+        Returns:
+            float: Result of the operation.
+        """
         feats = featurize(context)
         with self._lock:
             z = sum(self._weights.get(f, 0.0) for f in feats)
         return _sigmoid(z)
 
     def recommend(self, context: dict[str, Any], threshold: float = 0.5) -> bool:
-        """Whether to recommend cleaning this item (until trained, defaults to True)."""
+        """Recommend.
+
+        Manages recommend operations and coordinates related state changes for the component.
+
+        Args:
+            context (dict[str, Any]): The context parameter.
+            threshold (float): The threshold parameter.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         if self._updates < 10:      # not enough signal yet -> don't second-guess
             return True
         return self.score(context) >= threshold
 
     def rank(self, items: list[dict[str, Any]]) -> list[tuple[dict[str, Any], float]]:
-        """Return items paired with scores, highest-confidence-to-clean first."""
+        """Rank.
+
+        Manages rank operations and coordinates related state changes for the component.
+
+        Args:
+            items (list[dict[str, Any]]): Collection of items or entries to process.
+
+        Returns:
+            list[tuple[dict[str, Any], float]]: List of processed items or identifiers.
+        """
         scored = [(it, self.score(it)) for it in items]
         scored.sort(key=lambda t: t[1], reverse=True)
         return scored
@@ -141,7 +202,14 @@ class SmartSuggester:
     # -- learning -----------------------------------------------------------
 
     def observe(self, context: dict[str, Any], cleaned: bool) -> None:
-        """Update the model from one user decision (cleaned=True kept/removed it)."""
+        """Observe.
+
+        Manages observe operations and coordinates related state changes for the component.
+
+        Args:
+            context (dict[str, Any]): The context parameter.
+            cleaned (bool): The cleaned parameter.
+        """
         feats = featurize(context)
         label = 1.0 if cleaned else 0.0
         with self._lock:
@@ -156,13 +224,22 @@ class SmartSuggester:
             self._enforce_cap_locked()
 
     def observe_batch(self, items: list[dict[str, Any]], cleaned: bool) -> None:
-        """observe_batch."""
+        """observe_batch.
+
+        Manages observe batch operations and coordinates related state changes for the component.
+
+        Args:
+            items (list[dict[str, Any]]): Collection of items or entries to process.
+            cleaned (bool): The cleaned parameter.
+        """
         for it in items:
             self.observe(it, cleaned)
-        """observe_batch."""
 
     def _enforce_cap_locked(self) -> None:
-        """Keep the model tiny: if over cap, drop the smallest-magnitude weights."""
+        """Keep the model tiny: if over cap, drop the smallest-magnitude weights.
+
+        Manages enforce cap locked operations and coordinates related state changes for the component.
+        """
         if len(self._weights) <= _MAX_FEATURES:
             return
         keep = sorted(self._weights.items(), key=lambda kv: abs(kv[1]), reverse=True)[:_MAX_FEATURES]
@@ -171,7 +248,10 @@ class SmartSuggester:
     # -- persistence --------------------------------------------------------
 
     def _load(self) -> None:
-        """_load."""
+        """Fetch and reload the latest data entries into the view.
+
+        Queries the underlying system service or storage cache and refreshes view tables with up-to-date state.
+        """
         try:
             if self._model_path.exists():
                 data = json.loads(self._model_path.read_text(encoding="utf-8"))
@@ -182,10 +262,15 @@ class SmartSuggester:
             _LOG.debug("could not load smart model: %s", exc)
             self._weights = {}
             self._updates = 0
-        """_load."""
 
     def save(self) -> bool:
-        """Persist the model atomically. Returns True on success."""
+        """Save configuration settings or analysis reports to persistent storage.
+
+        Serializes current user preferences or generated report data to disk with integrity validation.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         try:
             self._model_path.parent.mkdir(parents=True, exist_ok=True)
             with self._lock:
@@ -203,7 +288,13 @@ class SmartSuggester:
             return False
 
     def stats(self) -> dict[str, Any]:
-        """stats."""
+        """Stats.
+
+        Manages stats operations and coordinates related state changes for the component.
+
+        Returns:
+            dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         with self._lock:
             return {
                 "updates": self._updates,
@@ -211,11 +302,12 @@ class SmartSuggester:
                 "trained": self._updates >= 10,
                 "model_path": str(self._model_path),
             }
-        """stats."""
 
     def reset(self) -> None:
-        """reset."""
+        """Reset.
+
+        Manages reset operations and coordinates related state changes for the component.
+        """
         with self._lock:
             self._weights.clear()
             self._updates = 0
-        """reset."""

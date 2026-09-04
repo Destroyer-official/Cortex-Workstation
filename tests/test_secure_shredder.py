@@ -32,14 +32,34 @@ from cortex_unified.system_tools.secure_shredder import (
 
 
 def _make_file(base, name: str, content: bytes = b"secret data 12345") -> str:
-    """_make_file."""
+    """_make_file.
+
+    Manages make file operations and coordinates related state changes for the component.
+
+    Args:
+        base: The base parameter.
+        name (str): The name parameter.
+        content (bytes): The content parameter.
+
+    Returns:
+        str: Formatted string or path.
+    """
     p = base / name
     p.write_bytes(content)
     return str(p)
 
 
 def _read_all(path: str) -> bytes:
-    """_read_all."""
+    """_read_all.
+
+    Manages read all operations and coordinates related state changes for the component.
+
+    Args:
+        path (str): Filesystem path to the target file or directory.
+
+    Returns:
+        bytes: Result of the operation.
+    """
     with open(path, "rb") as f:
         return f.read()
 
@@ -47,7 +67,13 @@ def _read_all(path: str) -> bytes:
 # Patch detect_storage_type to avoid subprocess calls
 @pytest.fixture(autouse=True)
 def _patch_storage(monkeypatch):
-    """Always report HDD so auto-detect chooses DoD 3-pass."""
+    """Always report HDD so auto-detect chooses DoD 3-pass.
+
+    Manages patch storage operations and coordinates related state changes for the component.
+
+    Args:
+        monkeypatch: The monkeypatch parameter.
+    """
     monkeypatch.setattr(
         "cortex_unified.system_tools.secure_shredder.detect_storage_type",
         lambda _: StorageType.HDD,
@@ -60,9 +86,15 @@ def _patch_storage(monkeypatch):
 
 
 class TestShredStandard:
-    """TestShredStandard."""
+    """Testshredstandard.
+
+    Manages TestShredStandard operations and coordinates related state changes for the component.
+    """
     def test_all_expected_standards_exist(self):
-        """test_all_expected_standards_exist."""
+        """test_all_expected_standards_exist.
+
+        Manages test all expected standards exist operations and coordinates related state changes for the component.
+        """
         expected = {
             "nist_clear",
             "nist_purge_crypto",
@@ -86,11 +118,17 @@ class TestShredStandard:
         assert expected == actual
 
     def test_member_count_at_least_17(self):
-        """test_member_count_at_least_17."""
+        """test_member_count_at_least_17.
+
+        Manages test member count at least 17 operations and coordinates related state changes for the component.
+        """
         assert len(ShredStandard) >= 17
 
     def test_pass_count_varies(self):
-        """test_pass_count_varies."""
+        """test_pass_count_varies.
+
+        Manages test pass count varies operations and coordinates related state changes for the component.
+        """
         counts = {s: s.pass_count for s in ShredStandard}
         assert counts[ShredStandard.GUTMANN] == 35
         assert counts[ShredStandard.NIST_CLEAR] == 1
@@ -109,44 +147,65 @@ class TestShredStandard:
         assert counts[ShredStandard.RANDOM_3PASS] == 3
 
     def test_gutmann_has_exactly_35_passes(self):
-        """test_gutmann_has_exactly_35_passes."""
+        """test_gutmann_has_exactly_35_passes.
+
+        Manages test gutmann has exactly 35 passes operations and coordinates related state changes for the component.
+        """
         passes = ShredStandard.GUTMANN.passes
         assert len(passes) == 35
         assert passes[-1]["verify"] is True
         assert passes[-2]["verify"] is False
 
     def test_name_property_returns_human_readable(self):
-        """test_name_property_returns_human_readable."""
+        """test_name_property_returns_human_readable.
+
+        Manages test name property returns human readable operations and coordinates related state changes for the component.
+        """
         assert ShredStandard.NIST_CLEAR.name == "Nist Clear"
         assert ShredStandard.DOD_5220_22_M.name == "Dod 5220 22 M"
         assert ShredStandard.GUTMANN.name == "Gutmann"
 
     def test_recommended_for_ssd(self):
-        """test_recommended_for_ssd."""
+        """test_recommended_for_ssd.
+
+        Manages test recommended for ssd operations and coordinates related state changes for the component.
+        """
         assert ShredStandard.NIST_CLEAR.recommended_for(StorageType.SSD_NVME)
         assert ShredStandard.RANDOM_1PASS.recommended_for(StorageType.SSD_SATA)
         assert not ShredStandard.GUTMANN.recommended_for(StorageType.SSD_NVME)
 
     def test_recommended_for_hdd(self):
-        """test_recommended_for_hdd."""
+        """test_recommended_for_hdd.
+
+        Manages test recommended for hdd operations and coordinates related state changes for the component.
+        """
         assert ShredStandard.DOD_5220_22_M.recommended_for(StorageType.HDD)
         assert ShredStandard.NIST_CLEAR.recommended_for(StorageType.HDD)
         assert not ShredStandard.GUTMANN.recommended_for(StorageType.HDD)
 
     def test_recommended_for_unknown_always_true(self):
-        """test_recommended_for_unknown_always_true."""
+        """test_recommended_for_unknown_always_true.
+
+        Manages test recommended for unknown always true operations and coordinates related state changes for the component.
+        """
         for std in ShredStandard:
             assert std.recommended_for(StorageType.UNKNOWN)
 
     def test_all_passes_have_pattern_and_verify_keys(self):
-        """test_all_passes_have_pattern_and_verify_keys."""
+        """test_all_passes_have_pattern_and_verify_keys.
+
+        Manages test all passes have pattern and verify keys operations and coordinates related state changes for the component.
+        """
         for std in ShredStandard:
             for p in std.passes:
                 assert "pattern" in p
                 assert "verify" in p
 
     def test_last_pass_always_verifies(self):
-        """Every standard's final pass should verify so failures are detected."""
+        """Every standard's final pass should verify so failures are detected.
+
+        Manages test last pass always verifies operations and coordinates related state changes for the component.
+        """
         for std in ShredStandard:
             assert (
                 std.passes[-1]["verify"] is True
@@ -159,14 +218,23 @@ class TestShredStandard:
 
 
 class TestStorageType:
-    """TestStorageType."""
+    """Teststoragetype.
+
+    Manages TestStorageType operations and coordinates related state changes for the component.
+    """
     def test_all_values(self):
-        """test_all_values."""
+        """test_all_values.
+
+        Manages test all values operations and coordinates related state changes for the component.
+        """
         expected = {"hdd", "ssd_nvme", "ssd_sata", "usb_flash", "unknown"}
         assert {st.value for st in StorageType} == expected
 
     def test_member_count(self):
-        """test_member_count."""
+        """test_member_count.
+
+        Manages test member count operations and coordinates related state changes for the component.
+        """
         assert len(StorageType) == 5
 
 
@@ -176,9 +244,15 @@ class TestStorageType:
 
 
 class TestShredResult:
-    """TestShredResult."""
+    """Testshredresult.
+
+    Manages TestShredResult operations and coordinates related state changes for the component.
+    """
     def test_success_result_fields(self):
-        """test_success_result_fields."""
+        """test_success_result_fields.
+
+        Manages test success result fields operations and coordinates related state changes for the component.
+        """
         r = ShredResult(
             success=True,
             file_path="x.txt",
@@ -193,7 +267,10 @@ class TestShredResult:
         assert r.error is None
 
     def test_failure_result_with_error(self):
-        """test_failure_result_with_error."""
+        """test_failure_result_with_error.
+
+        Manages test failure result with error operations and coordinates related state changes for the component.
+        """
         r = ShredResult(
             success=False,
             file_path="x.txt",
@@ -207,7 +284,10 @@ class TestShredResult:
         assert r.error == "File not found"
 
     def test_to_dict_serializes_standard(self):
-        """test_to_dict_serializes_standard."""
+        """test_to_dict_serializes_standard.
+
+        Manages test to dict serializes standard operations and coordinates related state changes for the component.
+        """
         r = ShredResult(
             success=True,
             file_path="x.txt",
@@ -223,7 +303,10 @@ class TestShredResult:
         assert d["passes_completed"] == 35
 
     def test_to_dict_all_expected_keys(self):
-        """test_to_dict_all_expected_keys."""
+        """test_to_dict_all_expected_keys.
+
+        Manages test to dict all expected keys operations and coordinates related state changes for the component.
+        """
         r = ShredResult(
             success=True,
             file_path="x.txt",
@@ -246,7 +329,10 @@ class TestShredResult:
         }
 
     def test_frozen_dataclass(self):
-        """test_frozen_dataclass."""
+        """test_frozen_dataclass.
+
+        Manages test frozen dataclass operations and coordinates related state changes for the component.
+        """
         r = ShredResult(
             success=True,
             file_path="x.txt",
@@ -266,9 +352,15 @@ class TestShredResult:
 
 
 class TestSecureShredderInit:
-    """TestSecureShredderInit."""
+    """Testsecureshredderinit.
+
+    Manages TestSecureShredderInit operations and coordinates related state changes for the component.
+    """
     def test_default_init(self):
-        """test_default_init."""
+        """test_default_init.
+
+        Manages test default init operations and coordinates related state changes for the component.
+        """
         s = SecureShredder()
         assert s.verify_passes is True
         assert s.dry_run is False
@@ -276,7 +368,10 @@ class TestSecureShredderInit:
         assert s.cancel_event is not None
 
     def test_custom_init(self):
-        """test_custom_init."""
+        """test_custom_init.
+
+        Manages test custom init operations and coordinates related state changes for the component.
+        """
         evt = threading.Event()
         s = SecureShredder(
             progress_callback=lambda *a: None,
@@ -297,16 +392,28 @@ class TestSecureShredderInit:
 
 
 class TestShredFileBasic:
-    """TestShredFileBasic."""
+    """Testshredfilebasic.
+
+    Manages TestShredFileBasic operations and coordinates related state changes for the component.
+    """
     def test_shred_nonexistent_file_returns_failure(self):
-        """test_shred_nonexistent_file_returns_failure."""
+        """test_shred_nonexistent_file_returns_failure.
+
+        Manages test shred nonexistent file returns failure operations and coordinates related state changes for the component.
+        """
         s = SecureShredder()
         r = s.shred_file("/nonexistent/file.txt")
         assert r.success is False
         assert "not found" in r.error.lower()
 
     def test_shred_zero_byte_file(self, tmp_path):
-        """test_shred_zero_byte_file."""
+        """test_shred_zero_byte_file.
+
+        Manages test shred zero byte file operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         p = _make_file(tmp_path, "empty.bin", b"")
         s = SecureShredder()
         r = s.shred_file(p)
@@ -316,34 +423,64 @@ class TestShredFileBasic:
         assert not os.path.exists(p)
 
     def test_shred_reports_correct_byte_count(self, tmp_path):
-        """test_shred_reports_correct_byte_count."""
+        """test_shred_reports_correct_byte_count.
+
+        Manages test shred reports correct byte count operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         content = b"X" * 512
         p = _make_file(tmp_path, "data.bin", content)
         r = SecureShredder().shred_file(p, ShredStandard.RANDOM_1PASS)
         assert r.bytes_shredded == 512
 
     def test_shred_duration_non_negative(self, tmp_path):
-        """test_shred_duration_non_negative."""
+        """test_shred_duration_non_negative.
+
+        Manages test shred duration non negative operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         p = _make_file(tmp_path, "t.bin")
         r = SecureShredder().shred_file(p, ShredStandard.RANDOM_1PASS)
         assert r.duration_seconds >= 0
 
     def test_shred_random_1pass_removes_file(self, tmp_path):
-        """test_shred_random_1pass_removes_file."""
+        """test_shred_random_1pass_removes_file.
+
+        Manages test shred random 1pass removes file operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         p = _make_file(tmp_path, "secret.bin")
         r = SecureShredder().shred_file(p, ShredStandard.RANDOM_1PASS)
         assert r.success is True
         assert not os.path.exists(p)
 
     def test_shred_nist_clear_removes_file(self, tmp_path):
-        """test_shred_nist_clear_removes_file."""
+        """test_shred_nist_clear_removes_file.
+
+        Manages test shred nist clear removes file operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         p = _make_file(tmp_path, "nist.bin")
         r = SecureShredder().shred_file(p, ShredStandard.NIST_CLEAR)
         assert r.success is True
         assert not os.path.exists(p)
 
     def test_shred_random_3pass_removes_file(self, tmp_path):
-        """test_shred_random_3pass_removes_file."""
+        """test_shred_random_3pass_removes_file.
+
+        Manages test shred random 3pass removes file operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         p = _make_file(tmp_path, "r3.bin")
         r = SecureShredder().shred_file(p, ShredStandard.RANDOM_3PASS)
         assert r.success is True
@@ -356,17 +493,32 @@ class TestShredFileBasic:
 
 
 class TestShredRandomOnlyStandards:
-    """Standards with only random patterns work; byte-pattern standards crash."""
+    """Testshredrandomonlystandards.
+
+    Manages TestShredRandomOnlyStandards operations and coordinates related state changes for the component.
+    """
 
     def test_nist_clear_1_pass(self, tmp_path):
-        """test_nist_clear_1_pass."""
+        """test_nist_clear_1_pass.
+
+        Manages test nist clear 1 pass operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         p = _make_file(tmp_path, "nist.bin")
         r = SecureShredder(verify_passes=False).shred_file(p, ShredStandard.NIST_CLEAR)
         assert r.passes_completed == 1
         assert r.success is True
 
     def test_random_1pass(self, tmp_path):
-        """test_random_1pass."""
+        """test_random_1pass.
+
+        Manages test random 1pass operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         p = _make_file(tmp_path, "r1.bin")
         r = SecureShredder(verify_passes=False).shred_file(
             p, ShredStandard.RANDOM_1PASS
@@ -375,7 +527,13 @@ class TestShredRandomOnlyStandards:
         assert r.success is True
 
     def test_random_3pass(self, tmp_path):
-        """test_random_3pass."""
+        """test_random_3pass.
+
+        Manages test random 3pass operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         p = _make_file(tmp_path, "r3.bin")
         r = SecureShredder(verify_passes=False).shred_file(
             p, ShredStandard.RANDOM_3PASS
@@ -405,10 +563,20 @@ _BYTE_PATTERN_STANDARDS = [
 
 @pytest.mark.parametrize("standard", _BYTE_PATTERN_STANDARDS, ids=lambda s: s.value)
 class TestBytePatternStandards:
-    """These standards crash due to _pattern_bytes operator-precedence bug."""
+    """Testbytepatternstandards.
+
+    Manages TestBytePatternStandards operations and coordinates related state changes for the component.
+    """
 
     def test_shred_fails_with_type_error(self, tmp_path, standard):
-        """test_shred_fails_with_type_error."""
+        """test_shred_fails_with_type_error.
+
+        Manages test shred fails with type error operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+            standard: The standard parameter.
+        """
         p = _make_file(tmp_path, f"{standard.value}.bin")
         r = SecureShredder().shred_file(p, standard)
         assert r.success is False
@@ -421,9 +589,18 @@ class TestBytePatternStandards:
 
 
 class TestGutmannPartialProgress:
-    """TestGutmannPartialProgress."""
+    """TestGutmannPartialProgress.
+
+    Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
+    """
     def test_gutmann_fails_after_4_random_passes(self, tmp_path):
-        """Gutmann has 4 random passes before first byte pattern."""
+        """Gutmann has 4 random passes before first byte pattern.
+
+        Manages test gutmann fails after 4 random passes operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         p = _make_file(tmp_path, "gut.bin", b"G" * 1024)
         r = SecureShredder().shred_file(p, ShredStandard.GUTMANN)
         assert r.success is False
@@ -437,9 +614,18 @@ class TestGutmannPartialProgress:
 
 
 class TestVerifyOption:
-    """TestVerifyOption."""
+    """Testverifyoption.
+
+    Manages TestVerifyOption operations and coordinates related state changes for the component.
+    """
     def test_verify_disabled_random_1pass_succeeds(self, tmp_path):
-        """test_verify_disabled_random_1pass_succeeds."""
+        """test_verify_disabled_random_1pass_succeeds.
+
+        Manages test verify disabled random 1pass succeeds operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         p = _make_file(tmp_path, "nv.bin")
         r = SecureShredder(verify_passes=False).shred_file(
             p, ShredStandard.RANDOM_1PASS
@@ -447,14 +633,26 @@ class TestVerifyOption:
         assert r.success is True
 
     def test_verify_enabled_random_1pass_fails_verification(self, tmp_path):
-        """Random verification regenerates different bytes, so always fails on small files."""
+        """Random verification regenerates different bytes, so always fails on small files.
+
+        Manages test verify enabled random 1pass fails verification operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         p = _make_file(tmp_path, "vok.bin", b"X" * 256)
         r = SecureShredder(verify_passes=True).shred_file(p, ShredStandard.RANDOM_1PASS)
         assert r.success is True
         assert r.verification_passed is False
 
     def test_verify_disabled_prevents_crash_on_byte_patterns(self, tmp_path):
-        """With verify off, byte-pattern standards still crash in _write_pass."""
+        """With verify off, byte-pattern standards still crash in _write_pass.
+
+        Manages test verify disabled prevents crash on byte patterns operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         p = _make_file(tmp_path, "nvz.bin")
         r = SecureShredder(verify_passes=False).shred_file(p, ShredStandard.ZERO_FILL)
         assert r.success is False
@@ -466,9 +664,18 @@ class TestVerifyOption:
 
 
 class TestProgressCallback:
-    """TestProgressCallback."""
+    """TestProgressCallback.
+
+    Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
+    """
     def test_progress_called_for_random_1pass(self, tmp_path):
-        """test_progress_called_for_random_1pass."""
+        """test_progress_called_for_random_1pass.
+
+        Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         p = _make_file(tmp_path, "prog.bin", b"P" * 1024)
         calls = []
         shredder = SecureShredder(
@@ -480,7 +687,13 @@ class TestProgressCallback:
         assert calls[0] == ("Pass 1/1: Random 1Pass", 1, 1)
 
     def test_progress_called_for_random_3pass(self, tmp_path):
-        """test_progress_called_for_random_3pass."""
+        """test_progress_called_for_random_3pass.
+
+        Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         p = _make_file(tmp_path, "prog3.bin", b"P" * 1024)
         calls = []
         shredder = SecureShredder(
@@ -494,7 +707,13 @@ class TestProgressCallback:
         assert calls[2][1] == 3
 
     def test_progress_totals_match_standard(self, tmp_path):
-        """test_progress_totals_match_standard."""
+        """test_progress_totals_match_standard.
+
+        Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         p = _make_file(tmp_path, "pt.bin")
         calls = []
         shredder = SecureShredder(
@@ -505,7 +724,13 @@ class TestProgressCallback:
         assert all(t == 3 for t in calls)
 
     def test_progress_called_once_for_byte_standard_before_crash(self, tmp_path):
-        """Byte-pattern standard calls progress once then crashes in _write_pass."""
+        """Byte-pattern standard calls progress once then crashes in _write_pass.
+
+        Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         p = _make_file(tmp_path, "prog_crash.bin")
         calls = []
         shredder = SecureShredder(
@@ -521,9 +746,18 @@ class TestProgressCallback:
 
 
 class TestCancellation:
-    """TestCancellation."""
+    """Testcancellation.
+
+    Manages TestCancellation operations and coordinates related state changes for the component.
+    """
     def test_cancel_before_start_prevents_shred(self, tmp_path):
-        """test_cancel_before_start_prevents_shred."""
+        """test_cancel_before_start_prevents_shred.
+
+        Manages test cancel before start prevents shred operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         p = _make_file(tmp_path, "cancel.bin", b"C" * 256)
         cancel = threading.Event()
         cancel.set()
@@ -534,13 +768,27 @@ class TestCancellation:
         assert "cancel" in r.error.lower()
 
     def test_cancel_during_shred_stops_early(self, tmp_path):
-        """test_cancel_during_shred_stops_early."""
+        """test_cancel_during_shred_stops_early.
+
+        Manages test cancel during shred stops early operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         p = _make_file(tmp_path, "cancel_mid.bin", b"M" * 1024)
         cancel = threading.Event()
         call_count = [0]
 
         def progress_fn(msg, cur, total):
-            """progress_fn."""
+            """progress_fn.
+
+            Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
+
+            Args:
+                msg: Informational or progress status message.
+                cur: The cur parameter.
+                total: The total parameter.
+            """
             call_count[0] += 1
             if call_count[0] == 2:
                 cancel.set()
@@ -556,7 +804,13 @@ class TestCancellation:
         assert r.passes_completed < 3
 
     def test_cancel_in_shred_files_stops_batch(self, tmp_path):
-        """test_cancel_in_shred_files_stops_batch."""
+        """test_cancel_in_shred_files_stops_batch.
+
+        Manages test cancel in shred files stops batch operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         files = [_make_file(tmp_path, f"batch_{i}.bin") for i in range(5)]
         cancel = threading.Event()
         cancel.set()
@@ -572,9 +826,18 @@ class TestCancellation:
 
 
 class TestShredFilesBatch:
-    """TestShredFilesBatch."""
+    """Testshredfilesbatch.
+
+    Manages TestShredFilesBatch operations and coordinates related state changes for the component.
+    """
     def test_batch_shreds_all_random_1pass(self, tmp_path):
-        """test_batch_shreds_all_random_1pass."""
+        """test_batch_shreds_all_random_1pass.
+
+        Manages test batch shreds all random 1pass operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         files = [_make_file(tmp_path, f"b{i}.bin") for i in range(5)]
         results = SecureShredder(verify_passes=False).shred_files(
             files, ShredStandard.RANDOM_1PASS
@@ -584,12 +847,21 @@ class TestShredFilesBatch:
         assert all(not os.path.exists(f) for f in files)
 
     def test_batch_empty_list(self):
-        """test_batch_empty_list."""
+        """test_batch_empty_list.
+
+        Manages test batch empty list operations and coordinates related state changes for the component.
+        """
         results = SecureShredder().shred_files([], ShredStandard.RANDOM_1PASS)
         assert results == []
 
     def test_batch_cancelled_event_returns_empty(self, tmp_path):
-        """test_batch_cancelled_event_returns_empty."""
+        """test_batch_cancelled_event_returns_empty.
+
+        Manages test batch cancelled event returns empty operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         files = [_make_file(tmp_path, f"c{i}.bin") for i in range(3)]
         cancel = threading.Event()
         cancel.set()
@@ -606,9 +878,18 @@ class TestShredFilesBatch:
 
 
 class TestDryRun:
-    """TestDryRun."""
+    """Testdryrun.
+
+    Manages TestDryRun operations and coordinates related state changes for the component.
+    """
     def test_dry_run_does_not_remove_random_standard(self, tmp_path):
-        """test_dry_run_does_not_remove_random_standard."""
+        """test_dry_run_does_not_remove_random_standard.
+
+        Manages test dry run does not remove random standard operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         p = _make_file(tmp_path, "dry.bin", b"KEEP")
         r = SecureShredder(dry_run=True, verify_passes=False).shred_file(
             p, ShredStandard.RANDOM_1PASS
@@ -618,14 +899,26 @@ class TestDryRun:
         assert _read_all(p) == b"KEEP"
 
     def test_dry_run_zero_byte_file_not_removed(self, tmp_path):
-        """Zero-byte files are only unlinked when dry_run is False."""
+        """Zero-byte files are only unlinked when dry_run is False.
+
+        Manages test dry run zero byte file not removed operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         p = _make_file(tmp_path, "dry_empty.bin", b"")
         r = SecureShredder(dry_run=True).shred_file(p, ShredStandard.RANDOM_1PASS)
         assert r.success is True
         assert os.path.exists(p)
 
     def test_dry_run_nonzero_byte_file_size_unchanged(self, tmp_path):
-        """test_dry_run_nonzero_byte_file_size_unchanged."""
+        """test_dry_run_nonzero_byte_file_size_unchanged.
+
+        Manages test dry run nonzero byte file size unchanged operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         content = b"X" * 1024
         p = _make_file(tmp_path, "dry_size.bin", content)
         SecureShredder(dry_run=True, verify_passes=False).shred_file(
@@ -640,16 +933,31 @@ class TestDryRun:
 
 
 class TestAutoDetect:
-    """TestAutoDetect."""
+    """Testautodetect.
+
+    Manages TestAutoDetect operations and coordinates related state changes for the component.
+    """
     def test_auto_detect_uses_hdd_standard(self, tmp_path):
-        """With HDD monkeypatched, auto-detect should pick DoD 3-pass."""
+        """With HDD monkeypatched, auto-detect should pick DoD 3-pass.
+
+        Manages test auto detect uses hdd standard operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         p = _make_file(tmp_path, "auto.bin")
         r = SecureShredder(verify_passes=False).shred_file(p, auto_detect=True)
         # Auto-detect with HDD mock → DoD, but DoD fails due to byte-pattern bug
         assert r.standard == ShredStandard.DOD_5220_22_M
 
     def test_auto_detect_disabled_defaults_to_nist_clear(self, tmp_path):
-        """test_auto_detect_disabled_defaults_to_nist_clear."""
+        """test_auto_detect_disabled_defaults_to_nist_clear.
+
+        Manages test auto detect disabled defaults to nist clear operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         p = _make_file(tmp_path, "autod_off.bin")
         r = SecureShredder(verify_passes=False).shred_file(
             p, standard=None, auto_detect=False
@@ -664,53 +972,86 @@ class TestAutoDetect:
 
 
 class TestPatternBytes:
-    """TestPatternBytes."""
+    """Testpatternbytes.
+
+    Manages TestPatternBytes operations and coordinates related state changes for the component.
+    """
     def test_random_returns_correct_length(self):
-        """test_random_returns_correct_length."""
+        """test_random_returns_correct_length.
+
+        Manages test random returns correct length operations and coordinates related state changes for the component.
+        """
         data = _pattern_bytes("random", 512)
         assert len(data) == 512
 
     def test_random_returns_different_bytes(self):
-        """test_random_returns_different_bytes."""
+        """test_random_returns_different_bytes.
+
+        Manages test random returns different bytes operations and coordinates related state changes for the component.
+        """
         a = _pattern_bytes("random", 64)
         b = _pattern_bytes("random", 64)
         assert a != b
 
     def test_int_pattern(self):
-        """test_int_pattern."""
+        """test_int_pattern.
+
+        Manages test int pattern operations and coordinates related state changes for the component.
+        """
         data = _pattern_bytes(0x00, 100)
         assert data == b"\x00" * 100
 
     def test_int_pattern_0xff(self):
-        """test_int_pattern_0xff."""
+        """test_int_pattern_0xff.
+
+        Manages test int pattern 0xff operations and coordinates related state changes for the component.
+        """
         data = _pattern_bytes(0xFF, 50)
         assert data == b"\xff" * 50
 
     def test_crypto_erase_returns_empty(self):
-        """test_crypto_erase_returns_empty."""
+        """test_crypto_erase_returns_empty.
+
+        Manages test crypto erase returns empty operations and coordinates related state changes for the component.
+        """
         assert _pattern_bytes("crypto_erase", 1024) == b""
 
     def test_block_erase_returns_empty(self):
-        """test_block_erase_returns_empty."""
+        """test_block_erase_returns_empty.
+
+        Manages test block erase returns empty operations and coordinates related state changes for the component.
+        """
         assert _pattern_bytes("block_erase", 1024) == b""
 
     def test_random_prefix_pattern(self):
-        """test_random_prefix_pattern."""
+        """test_random_prefix_pattern.
+
+        Manages test random prefix pattern operations and coordinates related state changes for the component.
+        """
         data = _pattern_bytes("random_foo", 256)
         assert len(data) == 256
 
     def test_bytes_pattern_raises_type_error(self):
-        """Known bug: operator precedence on line 288 slices the int, not bytes."""
+        """Known bug: operator precedence on line 288 slices the int, not bytes.
+
+        Manages test bytes pattern raises type error operations and coordinates related state changes for the component.
+        """
         with pytest.raises(TypeError, match="'int' object is not subscriptable"):
             _pattern_bytes(b"\xaa", 10)
 
     def test_bytes_multibyte_pattern_raises_type_error(self):
-        """test_bytes_multibyte_pattern_raises_type_error."""
+        """test_bytes_multibyte_pattern_raises_type_error.
+
+        Manages test bytes multibyte pattern raises type error operations and coordinates related state changes for the component.
+        """
         with pytest.raises(TypeError, match="'int' object is not subscriptable"):
             _pattern_bytes(b"\x92\x49\x24", 9)
 
     def test_bytes_pattern_single_byte_also_raises(self):
-        """test_bytes_pattern_single_byte_also_raises."""
+        """test_bytes_pattern_single_byte_also_raises.
+
+        Manages test bytes pattern single byte also raises operations and coordinates related state changes for the component.
+        """
         with pytest.raises(TypeError):
             _pattern_bytes(b"\x00", 100)
 
@@ -721,27 +1062,57 @@ class TestPatternBytes:
 
 
 class TestVerifyPattern:
-    """TestVerifyPattern."""
+    """Testverifypattern.
+
+    Manages TestVerifyPattern operations and coordinates related state changes for the component.
+    """
     def test_crypto_erase_always_true(self, tmp_path):
-        """test_crypto_erase_always_true."""
+        """test_crypto_erase_always_true.
+
+        Manages test crypto erase always true operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         assert _verify_pattern("dummy", "crypto_erase", 100) is True
 
     def test_block_erase_always_true(self, tmp_path):
-        """test_block_erase_always_true."""
+        """test_block_erase_always_true.
+
+        Manages test block erase always true operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         assert _verify_pattern("dummy", "block_erase", 100) is True
 
     def test_random_on_small_file_returns_false(self, tmp_path):
-        """Random verify regenerates different bytes → always False for small files."""
+        """Random verify regenerates different bytes → always False for small files.
+
+        Manages test random on small file returns false operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         data = os.urandom(4096)
         p = _make_file(tmp_path, "vr.bin", data)
         assert _verify_pattern(str(p), "random", 4096, sample_pct=1.0) is False
 
     def test_nonexistent_file_returns_false(self):
-        """test_nonexistent_file_returns_false."""
+        """test_nonexistent_file_returns_false.
+
+        Manages test nonexistent file returns false operations and coordinates related state changes for the component.
+        """
         assert _verify_pattern("/nonexistent/file", b"\x00", 100) is False
 
     def test_byte_pattern_verify_returns_false(self, tmp_path):
-        """Byte patterns hit _pattern_bytes bug; verify catches it and returns False."""
+        """Byte patterns hit _pattern_bytes bug; verify catches it and returns False.
+
+        Manages test byte pattern verify returns false operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         p = _make_file(tmp_path, "vb.bin", b"\x00" * 100)
         assert _verify_pattern(str(p), b"\x00", 100, sample_pct=1.0) is False
 
@@ -752,9 +1123,18 @@ class TestVerifyPattern:
 
 
 class TestFileSizeEdgeCases:
-    """TestFileSizeEdgeCases."""
+    """Testfilesizeedgecases.
+
+    Manages TestFileSizeEdgeCases operations and coordinates related state changes for the component.
+    """
     def test_single_byte_file_random(self, tmp_path):
-        """test_single_byte_file_random."""
+        """test_single_byte_file_random.
+
+        Manages test single byte file random operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         p = _make_file(tmp_path, "one.bin", b"Z")
         r = SecureShredder(verify_passes=False).shred_file(
             p, ShredStandard.RANDOM_1PASS
@@ -763,7 +1143,13 @@ class TestFileSizeEdgeCases:
         assert r.bytes_shredded == 1
 
     def test_64k_file_random_3pass(self, tmp_path):
-        """test_64k_file_random_3pass."""
+        """test_64k_file_random_3pass.
+
+        Manages test 64k file random 3pass operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         p = _make_file(tmp_path, "64k.bin", b"L" * 65536)
         r = SecureShredder(verify_passes=False).shred_file(
             p, ShredStandard.RANDOM_3PASS
@@ -773,7 +1159,13 @@ class TestFileSizeEdgeCases:
         assert r.passes_completed == 3
 
     def test_1mb_file_nist_clear(self, tmp_path):
-        """test_1mb_file_nist_clear."""
+        """test_1mb_file_nist_clear.
+
+        Manages test 1mb file nist clear operations and coordinates related state changes for the component.
+
+        Args:
+            tmp_path: Filesystem path to the target file or directory.
+        """
         p = _make_file(tmp_path, "1mb.bin", b"M" * (1024 * 1024))
         r = SecureShredder(verify_passes=False).shred_file(p, ShredStandard.NIST_CLEAR)
         assert r.success is True
@@ -786,25 +1178,40 @@ class TestFileSizeEdgeCases:
 
 
 class TestGutmannStructure:
-    """TestGutmannStructure."""
+    """Testgutmannstructure.
+
+    Manages TestGutmannStructure operations and coordinates related state changes for the component.
+    """
     def test_first_four_passes_are_random(self):
-        """test_first_four_passes_are_random."""
+        """test_first_four_passes_are_random.
+
+        Manages test first four passes are random operations and coordinates related state changes for the component.
+        """
         for i in range(4):
             assert ShredStandard.GUTMANN.passes[i]["pattern"] == "random"
 
     def test_passes_5_to_31_are_deterministic_bytes(self):
-        """test_passes_5_to_31_are_deterministic_bytes."""
+        """test_passes_5_to_31_are_deterministic_bytes.
+
+        Manages test passes 5 to 31 are deterministic bytes operations and coordinates related state changes for the component.
+        """
         for i in range(4, 31):
             p = ShredStandard.GUTMANN.passes[i]["pattern"]
             assert isinstance(p, bytes)
 
     def test_last_four_passes_are_random(self):
-        """test_last_four_passes_are_random."""
+        """test_last_four_passes_are_random.
+
+        Manages test last four passes are random operations and coordinates related state changes for the component.
+        """
         for i in range(31, 35):
             assert ShredStandard.GUTMANN.passes[i]["pattern"] == "random"
 
     def test_only_final_pass_verifies(self):
-        """test_only_final_pass_verifies."""
+        """test_only_final_pass_verifies.
+
+        Manages test only final pass verifies operations and coordinates related state changes for the component.
+        """
         verifies = [p["verify"] for p in ShredStandard.GUTMANN.passes]
         assert verifies[-1] is True
         assert all(v is False for v in verifies[:-1])

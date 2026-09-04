@@ -21,7 +21,10 @@ from cortex_unified.core.security import check_deletion_safety
 
 
 class ShredMethod(str, enum.Enum):
-    """Sanitization standards for secure data erasure."""
+    """Shredmethod.
+
+    Manages ShredMethod operations and coordinates related state changes for the component.
+    """
 
     ZERO = "Zero Fill (1 pass)"
     RANDOM = "Random (1 pass)"
@@ -34,7 +37,10 @@ class ShredMethod(str, enum.Enum):
 
 
 class AdvancedShredder:
-    """Overwrites files with certified pass patterns before deletion."""
+    """Advancedshredder.
+
+    Manages AdvancedShredder operations and coordinates related state changes for the component.
+    """
 
     # Gutmann 35-pass magnetic transition patterns
     _GUTMANN_PATTERNS = [
@@ -52,13 +58,24 @@ class AdvancedShredder:
     ]
 
     def __init__(self):
-        """__init__."""
+        """Initialize the instance and configure internal state.
+
+        Sets up sub-widgets, event signal connections, and default options.
+        """
         self.logger = logging.getLogger("advanced_shredder")
-        """__init__."""
-        """__init__."""
 
     def _generate_pass_data(self, pattern: bytes | None, size: int) -> bytes:
-        """Generate byte pattern for a single chunk."""
+        """Generate byte pattern for a single chunk.
+
+        Manages generate pass data operations and coordinates related state changes for the component.
+
+        Args:
+            pattern (bytes | None): The pattern parameter.
+            size (int): Integer number of bytes to format or process.
+
+        Returns:
+            bytes: Result of the operation.
+        """
         if pattern is None:
             return os.urandom(size)
         repeat_count = (size // len(pattern)) + 1
@@ -151,7 +168,18 @@ class AdvancedShredder:
         passes: int | None = None,
         method: Union[ShredMethod, str] = ShredMethod.DOD_5220_22_M,
     ) -> bool:
-        """Recursively shreds a directory and its contents."""
+        """Recursively shreds a directory and its contents.
+
+        Manages shred directory operations and coordinates related state changes for the component.
+
+        Args:
+            dir_path (str): Filesystem path to the target file or directory.
+            passes (int | None): The passes parameter.
+            method (Union[ShredMethod, str]): The method parameter.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         success = True
         for root, dirs, files in os.walk(dir_path, topdown=False):
             for file in files:

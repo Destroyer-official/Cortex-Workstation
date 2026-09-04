@@ -45,10 +45,19 @@ _LOG = logging.getLogger("cortex.ui.premium")
 
 
 class LicensePage(_Page):
-    """Show this machine's license state and manage its lifecycle."""
+    """Licensepage.
+
+    Manages LicensePage operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, win):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win: Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(title_block(
             "License & Tiers",
@@ -196,7 +205,10 @@ class LicensePage(_Page):
     # -- actions ----------------------------------------------------------
 
     def _activate(self) -> None:
-        """Install the entered key. Bad input warns instead of crashing."""
+        """Activate.
+
+        Manages activate operations and coordinates related state changes for the component.
+        """
         try:
             state = get_license_manager().activate(
                 self.key_edit.text(),
@@ -217,7 +229,10 @@ class LicensePage(_Page):
         self._refresh()
 
     def _start_trial(self) -> None:
-        """Start the once-per-machine PRO trial."""
+        """Start the once-per-machine PRO trial.
+
+        Manages start trial operations and coordinates related state changes for the component.
+        """
         try:
             state = get_license_manager().start_trial()
         except RuntimeError as exc:
@@ -232,7 +247,10 @@ class LicensePage(_Page):
         self._refresh()
 
     def _deactivate(self) -> None:
-        """Remove the local license after an explicit confirmation."""
+        """Deactivate.
+
+        Manages deactivate operations and coordinates related state changes for the component.
+        """
         confirm = QMessageBox.question(
             self, "Deactivate license",
             "Remove the license from this machine?\n\n"

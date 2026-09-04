@@ -63,7 +63,16 @@ class Scanner:
             self._resource_throttler.start_monitoring()
     
     def _should_exclude_path(self, path: Path) -> bool:
-        """True when *path* hits a system directory or a configured pattern."""
+        """True when *path* hits a system directory or a configured pattern.
+
+        Manages should exclude path operations and coordinates related state changes for the component.
+
+        Args:
+            path (Path): Filesystem path to the target file or directory.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         if is_system_directory(path):
             return True
         return self.config.matches_exclude_patterns(str(path))
@@ -80,7 +89,16 @@ class Scanner:
             return False
     
     def _is_file_old_enough(self, filepath: Path) -> bool:
-        """Apply the ``min_age_days`` rule; files younger are skipped."""
+        """Apply the ``min_age_days`` rule; files younger are skipped.
+
+        Manages is file old enough operations and coordinates related state changes for the component.
+
+        Args:
+            filepath (Path): Filesystem path to the target file or directory.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         if self.min_age_days <= 0:
             return True
         
@@ -93,7 +111,16 @@ class Scanner:
             return True
     
     def _scan_file(self, filepath: Path) -> bool:
-        """True when *filepath* passes every eligibility filter."""
+        """True when *filepath* passes every eligibility filter.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+
+        Args:
+            filepath (Path): Filesystem path to the target file or directory.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         if self._should_exclude_path(filepath):
             return False
         
@@ -220,12 +247,20 @@ class Scanner:
     
     def scan(self, threads: int = 0, checkpoint_id: Optional[str] = None, max_depth: int = 1000) -> Tuple[List[Path], List[Path]]:
         """Scan for empty files and directories with optional checkpoint support.
-        
+
+        Currently always single-threaded: traversal runs in the calling
+        thread via _scan_directory_enhanced; `threads` creates no worker
+        threads and only adjusts the resource-throttler hint (0 = auto).
+
+        Known limitation: `max_depth` is accepted for compatibility but
+        has no effect — it is not forwarded, so the effective maximum
+        depth is the callee default (20 in _scan_directory_enhanced).
+
         Args:
-            threads: Number of threads to use (0 = auto)
+            threads: number of worker threads (unused; single-threaded)
             checkpoint_id: Optional checkpoint ID to resume from
-            max_depth: Maximum directory depth to prevent stack overflow (default: 1000)
-        
+            max_depth: ignored (effective max depth is 20, hardcoded in _scan_directory_enhanced)
+
         Returns:
             Tuple of (empty_files, empty_dirs)
         """
@@ -292,7 +327,13 @@ class Scanner:
                 self._resource_throttler.stop_monitoring()
     
     def _estimate_total_items(self) -> int:
-        """Rough item count for progress bars; exactness is not required."""
+        """Rough item count for progress bars; exactness is not required.
+
+        Manages estimate total items operations and coordinates related state changes for the component.
+
+        Returns:
+            int: Result of the operation.
+        """
         try:
             count = 0
             for root, dirs, files in os.walk(self.root_path):
@@ -365,24 +406,41 @@ class Scanner:
         return not has_non_excluded_content, empty_files, empty_subdirs
     
     def pause_scan(self) -> None:
-        """Pause the current scan operation."""
+        """Pause the current scan operation.
+
+        Manages pause scan operations and coordinates related state changes for the component.
+        """
         if self._scan_manager:
             self._scan_manager.pause_scan()
     
     def resume_scan(self, checkpoint_id: Optional[str] = None) -> None:
-        """resume_scan."""
+        """resume_scan.
+
+        Manages resume scan operations and coordinates related state changes for the component.
+
+        Args:
+            checkpoint_id (Optional[str]): The checkpoint id parameter.
+        """
         if self._scan_manager:
             self._scan_manager.resume_scan(checkpoint_id)
-        """resume_scan."""
     
     def get_scan_progress(self):
-        """Get current scan progress."""
+        """Get current scan progress.
+
+        Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
+        """
         if self._scan_manager:
             return self._scan_manager.get_scan_progress()
         return None
     
     def create_checkpoint(self) -> Optional[str]:
-        """Create a checkpoint of current scan state."""
+        """Create a checkpoint of current scan state.
+
+        Manages create checkpoint operations and coordinates related state changes for the component.
+
+        Returns:
+            Optional[str]: Formatted string or path.
+        """
         if self._scan_manager:
             scan_state = {
                 'empty_files': [str(f) for f in self.empty_files],
@@ -393,13 +451,22 @@ class Scanner:
         return None
     
     def list_checkpoints(self):
-        """List available checkpoints."""
+        """List available checkpoints.
+
+        Manages list checkpoints operations and coordinates related state changes for the component.
+        """
         if self._scan_manager:
             return self._scan_manager.list_checkpoints()
         return []
     
     def get_stats(self) -> dict:
-        """Get statistics about the scan."""
+        """Get statistics about the scan.
+
+        Manages get stats operations and coordinates related state changes for the component.
+
+        Returns:
+            dict: Dictionary mapping identifiers to status or values.
+        """
         return {
             "empty_files_count": len(self.empty_files),
             "empty_dirs_count": len(self.empty_dirs),

@@ -139,6 +139,13 @@ _DIRECTSTORAGE = "cortex_unified.ui.premium.directstorage_page"
 _STANDBY_MEM = "cortex_unified.ui.premium.memory_standby_page"
 _MFT_SLACK = "cortex_unified.ui.premium.mft_slack_page"
 _SEARCH_OPT = "cortex_unified.ui.premium.search_optimizer_page"
+_GAME_MODE = "cortex_unified.ui.premium.game_mode_page"
+_DELIVERY = "cortex_unified.ui.premium.delivery_optimization_page"
+_WAN_AUDIT = "cortex_unified.ui.premium.wan_audit_page"
+_OLD_FILES = "cortex_unified.ui.premium.old_files_page"
+_RESIDUAL = "cortex_unified.ui.premium.residual_cleaner_page"
+_BAD_FILES = "cortex_unified.ui.premium.bad_files_studio_page"
+_PROC_STUDIO = "cortex_unified.ui.premium.process_studio_page"
 
 #: Every page, declared once. Order within a group is display order.
 PAGES: tuple[PageSpec, ...] = (
@@ -905,6 +912,55 @@ PAGES: tuple[PageSpec, ...] = (
         "searchopt",
         "system",
         f"{_SEARCH_OPT}:SearchIndexOptimizerPage",
+    ),
+    PageSpec(
+        "gamemode",
+        "Gaming Session & FPS Booster",
+        "controller",
+        "system",
+        f"{_GAME_MODE}:GameModePage",
+    ),
+    PageSpec(
+        "delivery",
+        "Delivery Optimization (WUDO) Cache",
+        "download",
+        "cleanup",
+        f"{_DELIVERY}:DeliveryOptimizationPage",
+    ),
+    PageSpec(
+        "wanaudit",
+        "WAN & UPnP Gateway Auditor",
+        "http",
+        "network",
+        f"{_WAN_AUDIT}:WanAuditPage",
+    ),
+    PageSpec(
+        "oldfiles",
+        "Old & Inactive Files Finder",
+        "folder-temp",
+        "cleanup",
+        f"{_OLD_FILES}:OldFilesPage",
+    ),
+    PageSpec(
+        "residuals",
+        "Uninstalled App Residual Hunter",
+        "crashdumps",
+        "apps",
+        f"{_RESIDUAL}:ResidualCleanerPage",
+    ),
+    PageSpec(
+        "badfiles",
+        "Bad Extensions & EXIF Studio",
+        "warning",
+        "files",
+        f"{_BAD_FILES}:BadFilesStudioPage",
+    ),
+    PageSpec(
+        "procstudio",
+        "Advanced Process & Threat Studio",
+        "processing",
+        "system",
+        f"{_PROC_STUDIO}:ProcessStudioPage",
     ),
 )
 

@@ -11,14 +11,23 @@ from typing import Dict, Any, Optional
 from .icon_helper import IconHelper
 
 class NavigationController(QWidget):
-    """Modern side-panel navigation controller that replaces QTabWidget."""
+    """Navigationcontroller.
+
+    Manages NavigationController operations and coordinates related state changes for the component.
+    """
     
     # Signals
     tab_changed = Signal(int)  # Emitted when tab changes
     tab_requested = Signal(str)  # Emitted when a specific tab is requested
     
     def __init__(self, parent=None):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            parent: Parent window or shell controller instance.
+        """
         super().__init__(parent)
         
         # Internal state
@@ -28,11 +37,12 @@ class NavigationController(QWidget):
         # Setup UI
         self.setup_ui()
         self.setup_styling()
-        """__init__."""
-        """__init__."""
         
     def setup_ui(self):
-        """Set up the navigation UI components."""
+        """Set up the navigation UI components.
+
+        Manages setup ui operations and coordinates related state changes for the component.
+        """
         # Main horizontal layout
         main_layout = QHBoxLayout(self)
         main_layout.setContentsMargins(0, 0, 0, 0)
@@ -50,7 +60,13 @@ class NavigationController(QWidget):
         main_layout.setStretch(1, 1)  # Content area - expandable
         
     def create_navigation_panel(self) -> QWidget:
-        """Create the left navigation panel."""
+        """Create the left navigation panel.
+
+        Manages create navigation panel operations and coordinates related state changes for the component.
+
+        Returns:
+            QWidget: Result of the operation.
+        """
         panel = QWidget()
         panel.setFixedWidth(180)  # Fixed width as per requirements
         panel.setObjectName("navigationPanel")
@@ -81,7 +97,10 @@ class NavigationController(QWidget):
         return panel
         
     def setup_styling(self):
-        """Apply professional styling to the navigation components."""
+        """Apply professional styling to the navigation components.
+
+        Manages setup styling operations and coordinates related state changes for the component.
+        """
         self.setStyleSheet("""
             QWidget#navigationPanel {
                 background-color: #f8f9fa;
@@ -227,7 +246,13 @@ class NavigationController(QWidget):
         return False
         
     def get_current_tab_name(self) -> Optional[str]:
-        """Get the name of the currently selected tab."""
+        """Get the name of the currently selected tab.
+
+        Manages get current tab name operations and coordinates related state changes for the component.
+
+        Returns:
+            Optional[str]: Formatted string or path.
+        """
         if self._current_index >= 0:
             for name, tab_info in self._tabs.items():
                 if tab_info['index'] == self._current_index:
@@ -235,19 +260,43 @@ class NavigationController(QWidget):
         return None
         
     def get_current_widget(self) -> Optional[QWidget]:
-        """Get the currently displayed widget."""
+        """Get the currently displayed widget.
+
+        Manages get current widget operations and coordinates related state changes for the component.
+
+        Returns:
+            Optional[QWidget]: Result of the operation.
+        """
         return self.content_stack.currentWidget()
         
     def get_tab_count(self) -> int:
-        """Get the total number of tabs."""
+        """Get the total number of tabs.
+
+        Manages get tab count operations and coordinates related state changes for the component.
+
+        Returns:
+            int: Result of the operation.
+        """
         return len(self._tabs)
         
     def get_tab_names(self) -> list:
-        """Get a list of all tab names."""
+        """Get a list of all tab names.
+
+        Manages get tab names operations and coordinates related state changes for the component.
+
+        Returns:
+            list: List of processed items or identifiers.
+        """
         return list(self._tabs.keys())
         
     def on_navigation_changed(self, current_row: int):
-        """Handle navigation selection changes."""
+        """Handle navigation selection changes.
+
+        Manages on navigation changed operations and coordinates related state changes for the component.
+
+        Args:
+            current_row (int): The current row parameter.
+        """
         if current_row >= 0 and current_row != self._current_index:
             self._current_index = current_row
             self.content_stack.setCurrentIndex(current_row)
@@ -259,7 +308,10 @@ class NavigationController(QWidget):
                 self.tab_requested.emit(tab_name)
                 
     def clear_tabs(self):
-        """Remove all tabs from the navigation system."""
+        """Remove all tabs from the navigation system.
+
+        Manages clear tabs operations and coordinates related state changes for the component.
+        """
         while self.content_stack.count() > 0:
             widget = self.content_stack.widget(0)
             self.content_stack.removeWidget(widget)
@@ -309,7 +361,10 @@ class NavigationController(QWidget):
         return False
         
     def setup_default_icons(self):
-        """Set up default icons for all tabs using the IconHelper."""
+        """Set up default icons for all tabs using the IconHelper.
+
+        Manages setup default icons operations and coordinates related state changes for the component.
+        """
         default_icons = IconHelper.get_navigation_icons()
         
         for name, tab_info in self._tabs.items():

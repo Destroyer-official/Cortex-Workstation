@@ -24,7 +24,7 @@ from PySide6.QtWidgets import QApplication  # noqa: E402
 
 @pytest.fixture(scope="module")
 def qapp():
-    """qapp."""
+    """Provide a shared QApplication for offscreen widget tests."""
     app = QApplication.instance() or QApplication([])
     yield app
 
@@ -35,19 +35,19 @@ class _FakeMenu:
     instances: list = []
 
     def __init__(self, parent=None):
-        """__init__."""
+        """Record parent, init action list, and track the instance."""
         self.actions_list: list = []
         self.parent = parent
         _FakeMenu.instances.append(self)
 
     @classmethod
     def last_root_for(cls, widget):
-        """last_root_for."""
+        """Return the most recent root fake menu parented to the widget."""
         roots = [i for i in cls.instances if i.parent is widget]
         return roots[-1] if roots else None
 
     def addAction(self, text_or_action, slot=None):
-        """addAction."""
+        """Append an action's text and slot, unwrapping QAction if needed."""
         from PySide6.QtGui import QAction
         if isinstance(text_or_action, QAction):
             self.actions_list.append((text_or_action.text(), slot))
@@ -55,23 +55,23 @@ class _FakeMenu:
             self.actions_list.append((text_or_action, slot))
 
     def addSeparator(self):
-        """addSeparator."""
+        """Append a separator marker to the recorded actions."""
         self.actions_list.append(("---", None))
 
     def addMenu(self, title):
-        """addMenu."""
+        """Create a child fake submenu and record it under the title."""
         sub = _FakeMenu(self)
         self.actions_list.append((title + " >", sub))
         return sub
 
     def exec(self, *_a, **_k):
-        """exec."""
+        """No-op exec stub that returns None headless."""
         return None
 
 
 @pytest.fixture(scope="module")
 def widget(qapp, tmp_path_factory):
-    """widget."""
+    """Provide an ExplorerWidget rooted at a temp dir with isolated QSettings."""
     import time
 
     from nexus_explorer import ExplorerWidget
@@ -97,7 +97,7 @@ def widget(qapp, tmp_path_factory):
 
 
 def _select_first_data_row(w):
-    """_select_first_data_row."""
+    """Select the first model row, skipping the test when the model is empty."""
     if w.proxy.rowCount() == 0:
         pytest.skip("no rows in model")
     w.table.selectRow(0)
@@ -105,7 +105,7 @@ def _select_first_data_row(w):
 
 
 def test_selected_paths_are_strings(widget):
-    """test_selected_paths_are_strings."""
+    """Verify selected paths are strings while selected rows stay dicts."""
     _select_first_data_row(widget)
     paths = widget._selected_paths(widget.table)
     assert paths and all(isinstance(p, str) and p for p in paths)
@@ -114,7 +114,7 @@ def test_selected_paths_are_strings(widget):
 
 
 def test_context_menu_handles_dict_selection(qapp, widget, monkeypatch):
-    """test_context_menu_handles_dict_selection."""
+    """Verify the context menu builds Open/Copy/Properties actions without raising on dict selection."""
     import nexus_explorer
 
     monkeypatch.setattr(nexus_explorer, "QMenu", _FakeMenu)
@@ -128,7 +128,7 @@ def test_context_menu_handles_dict_selection(qapp, widget, monkeypatch):
 
 
 def test_context_menu_empty_selection(qapp, widget, monkeypatch):
-    """test_context_menu_empty_selection."""
+    """Verify the context menu offers New folder when nothing is selected."""
     import nexus_explorer
 
     monkeypatch.setattr(nexus_explorer, "QMenu", _FakeMenu)
@@ -140,25 +140,25 @@ def test_context_menu_empty_selection(qapp, widget, monkeypatch):
 
 
 class _FakeMousePress:
-    """_FakeMousePress."""
+    """Fake mouse press event exposing press type and button for history routing."""
     def __init__(self, button):
-        """__init__."""
+        """Store a MouseButtonPress type and the pressed button."""
         from PySide6.QtCore import QEvent
 
         self._type = QEvent.Type.MouseButtonPress
         self._button = button
 
     def type(self):
-        """type."""
+        """Return the stored MouseButtonPress event type."""
         return self._type
 
     def button(self):
-        """button."""
+        """Return the stored mouse button."""
         return self._button
 
 
 def test_mouse_side_buttons_route_history(widget, qapp, tmp_path_factory):
-    """test_mouse_side_buttons_route_history."""
+    """Verify XButton Back/Forward on the viewport navigate pane history back and forward."""
     import time
 
     w = widget
@@ -195,18 +195,18 @@ def test_mouse_side_buttons_route_history(widget, qapp, tmp_path_factory):
 
 
 def test_show_properties_accepts_dict_and_str(widget, monkeypatch):
-    """test_show_properties_accepts_dict_and_str."""
+    """Verify _show_properties accepts both a row dict and a path string."""
     calls = {}
     from nexus_explorer import PropertiesDialog
 
     class _FakeDlg:
-        """_FakeDlg."""
+        """Fake PropertiesDialog that captures the row it was opened with."""
         def __init__(self, row, parent):
-            """__init__."""
+            """Store the row the dialog was opened with."""
             calls["row"] = row
 
         def exec(self):
-            """exec."""
+            """No-op exec stub that returns 0."""
             return 0
 
     monkeypatch.setattr("nexus_explorer.PropertiesDialog", _FakeDlg)

@@ -26,14 +26,25 @@ except FileNotFoundError:
 
 @pytest.fixture(scope="module")
 def qapp():
-    """qapp."""
+    """Qapp.
+
+    Manages qapp operations and coordinates related state changes for the component.
+    """
     app = QApplication.instance() or QApplication([])
     yield app
 
 
 @pytest.fixture
 def env(qapp, tmp_path, monkeypatch):
-    """env."""
+    """Env.
+
+    Manages env operations and coordinates related state changes for the component.
+
+    Args:
+        qapp: The qapp parameter.
+        tmp_path: Filesystem path to the target file or directory.
+        monkeypatch: The monkeypatch parameter.
+    """
     from nexus_explorer import ExplorerWidget
     from nexus_transfer_monitor import TransferMonitorDialog
 
@@ -79,7 +90,14 @@ def env(qapp, tmp_path, monkeypatch):
 
 
 def _pump(qapp, secs):
-    """_pump."""
+    """Pump.
+
+    Manages pump operations and coordinates related state changes for the component.
+
+    Args:
+        qapp: The qapp parameter.
+        secs: The secs parameter.
+    """
     end = time.time() + secs
     while time.time() < end:
         qapp.processEvents()
@@ -87,7 +105,14 @@ def _pump(qapp, secs):
 
 
 def test_monitor_opens_and_completes_copy(env, qapp):
-    """test_monitor_opens_and_completes_copy."""
+    """test_monitor_opens_and_completes_copy.
+
+    Manages test monitor opens and completes copy operations and coordinates related state changes for the component.
+
+    Args:
+        env: The env parameter.
+        qapp: The qapp parameter.
+    """
     w = env.w
     from nexus_explorer import _nexus_clipboard
     _nexus_clipboard.copy([str(env.big)])
@@ -117,7 +142,14 @@ def test_monitor_opens_and_completes_copy(env, qapp):
 
 
 def test_pause_resume_cancel_through_monitor(env, qapp):
-    """test_pause_resume_cancel_through_monitor."""
+    """test_pause_resume_cancel_through_monitor.
+
+    Manages test pause resume cancel through monitor operations and coordinates related state changes for the component.
+
+    Args:
+        env: The env parameter.
+        qapp: The qapp parameter.
+    """
     w = env.w
     q = w._transfer_queue
     jid = q.enqueue("copy", [str(env.big)], str(env.dst))
@@ -156,7 +188,14 @@ def test_pause_resume_cancel_through_monitor(env, qapp):
 
 
 def test_cancel_mid_copy(env, qapp):
-    """test_cancel_mid_copy."""
+    """test_cancel_mid_copy.
+
+    Manages test cancel mid copy operations and coordinates related state changes for the component.
+
+    Args:
+        env: The env parameter.
+        qapp: The qapp parameter.
+    """
     w = env.w
     q = w._transfer_queue
     jid = q.enqueue("copy", [str(env.big)], str(env.dst))

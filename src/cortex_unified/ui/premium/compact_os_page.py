@@ -33,13 +33,23 @@ IS_WINDOWS = sys.platform == "win32"
 
 
 class _ScanWorker(QObject):
-    """_ScanWorker class."""
+    """_ScanWorker class.
+
+    Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+    """
     finished = Signal(list)
     progress = Signal(str)
     failed = Signal(str)
 
     def __init__(self, root: str, min_mb: float):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            root (str): Filesystem path to the target file or directory.
+            min_mb (float): The min mb parameter.
+        """
         super().__init__()
         self._root = root
         self._min = min_mb
@@ -48,11 +58,17 @@ class _ScanWorker(QObject):
         self._cancel = threading.Event()
 
     def cancel(self):
-        """cancel."""
+        """cancel.
+
+        Sets the internal cancellation event to cooperatively stop worker execution at the next safe boundary.
+        """
         self._cancel.set()
 
     def run(self):
-        """run."""
+        """run.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         try:
             from cortex_unified.system_tools.compact_os import CompactOSManager
 
@@ -65,17 +81,29 @@ class _ScanWorker(QObject):
 
 
 class _CompactWorker(QObject):
-    """_CompactWorker class."""
+    """Compactworker.
+
+    Manages CompactWorker operations and coordinates related state changes for the component.
+    """
     finished = Signal(bool, str)
     failed = Signal(str)
 
     def __init__(self, path: str):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            path (str): Filesystem path to the target file or directory.
+        """
         super().__init__()
         self._path = path
 
     def run(self):
-        """run."""
+        """run.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         try:
             from cortex_unified.system_tools.compact_os import CompactOSManager
 
@@ -86,12 +114,18 @@ class _CompactWorker(QObject):
 
 
 class _QueryWorker(QObject):
-    """_QueryWorker class."""
+    """Queryworker.
+
+    Manages QueryWorker operations and coordinates related state changes for the component.
+    """
     finished = Signal(dict)
     failed = Signal(str)
 
     def run(self):
-        """run."""
+        """run.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         try:
             from cortex_unified.system_tools.compact_os import CompactOSManager
 
@@ -104,10 +138,19 @@ class _QueryWorker(QObject):
 
 
 class CompactOsPage(_Page):
-    """Estimate and apply NTFS compression to reclaim storage."""
+    """Compactospage.
+
+    Manages CompactOsPage operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, win):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win: Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(title_block(
             "CompactOS / NTFS Compression",
@@ -188,7 +231,10 @@ class CompactOsPage(_Page):
         self._worker = None
 
     def _pick(self):
-        """_pick."""
+        """Prompt the user to select a filesystem directory or file.
+
+        Launches a native file dialog and populates the selected path into the corresponding target input widget.
+        """
         from PySide6.QtWidgets import QFileDialog
 
         folder = QFileDialog.getExistingDirectory(self, "Select folder", self._folder)
@@ -197,13 +243,22 @@ class CompactOsPage(_Page):
             self._path_lbl.setText(folder)
 
     def _query(self):
-        """_query."""
+        """Query.
+
+        Manages query operations and coordinates related state changes for the component.
+        """
         self._query_btn.setEnabled(False)
         self._status_lbl.setText("Querying…")
         self.win.run_worker(_QueryWorker(), self._on_query, self._fail)
 
     def _on_query(self, info: dict):
-        """_on_query."""
+        """_on_query.
+
+        Manages on query operations and coordinates related state changes for the component.
+
+        Args:
+            info (dict): The info parameter.
+        """
         self._query_btn.setEnabled(True)
         text = (f"CompactOS: {info.get('compactos', 'Unknown')}  |  "
                 f"C: drive: {info.get('drive_state', 'Unknown')}  |  "
@@ -211,7 +266,10 @@ class CompactOsPage(_Page):
         self._status_lbl.setText(text)
 
     def _scan(self):
-        """_scan."""
+        """_scan.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+        """
         self._scan_btn.setEnabled(False)
         self.progress.setVisible(True)
         self.state.show_loading("Estimating compressible folders…")
@@ -221,11 +279,23 @@ class CompactOsPage(_Page):
         self.win.run_worker(w, self._on_done, self._fail, on_progress=self._on_progress)
 
     def _on_progress(self, msg: str):
-        """_on_progress."""
+        """_on_progress.
+
+        Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
+
+        Args:
+            msg (str): Informational or progress status message.
+        """
         self._status_lbl.setText(msg)
 
     def _on_done(self, ests: list):
-        """_on_done."""
+        """_on_done.
+
+        Receives the completed data from the  background worker, populates the view with results, and restores button states.
+
+        Args:
+            ests (list): The ests parameter.
+        """
         self._worker = None
         self.progress.setVisible(False)
         self._scan_btn.setEnabled(True)
@@ -249,7 +319,10 @@ class CompactOsPage(_Page):
             f"{len(ests)} compressible folders, ~{fmt_bytes(total)} potential savings", 6000)
 
     def _compress(self):
-        """_compress."""
+        """Compress.
+
+        Manages compress operations and coordinates related state changes for the component.
+        """
         sel = self.tbl.selectedIndexes()
         if not sel:
             return
@@ -271,7 +344,14 @@ class CompactOsPage(_Page):
         self.win.run_worker(_CompactWorker(rec["path"]), self._compact_done, self._fail)
 
     def _compact_done(self, success: bool, message: str):
-        """_compact_done."""
+        """Handle completion of the compact asynchronous task.
+
+        Processes the returned result payload, updates corresponding tables or UI views, and restores interactive controls.
+
+        Args:
+            success (bool): The success parameter.
+            message (str): Informational or progress status message.
+        """
         self.progress.setVisible(False)
         self._compress_btn.setEnabled(True)
         if success:
@@ -281,7 +361,13 @@ class CompactOsPage(_Page):
         self.win.statusBar().showMessage(message, 6000)
 
     def _fail(self, msg: str):
-        """_fail."""
+        """Handle an operation failure and notify the user.
+
+        Captures error details, displays an informative failure state in the UI, resets progress indicators, and re-enables interactive controls.
+
+        Args:
+            msg (str): Informational or progress status message.
+        """
         self._worker = None
         self.progress.setVisible(False)
         self._scan_btn.setEnabled(True)

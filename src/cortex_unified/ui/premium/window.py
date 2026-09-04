@@ -7,7 +7,19 @@ import time
 from collections.abc import Mapping
 from pathlib import Path
 
-from PySide6.QtCore import QEvent, QObject, Qt, QThread, QPropertyAnimation, QEasingCurve, QSize, QTimer
+from PySide6.QtCore import (
+    QEasingCurve,
+    QEvent,
+    QObject,
+    QPropertyAnimation,
+    QRunnable,
+    QSize,
+    QThreadPool,
+    QTimer,
+    Qt,
+    QThread,
+    Signal,
+)
 from PySide6.QtWidgets import (
     QApplication,
     QButtonGroup,
@@ -52,7 +64,16 @@ _LOG = logging.getLogger("cortex.ui.premium")
 
 
 def fmt_bytes(n: int) -> str:
-    """Format a byte count with the largest fitting binary unit."""
+    """Format a byte count with the largest fitting binary unit.
+
+    Converts raw numeric values into formatted, localized, and human-readable string representations.
+
+    Args:
+        n (int): The n parameter.
+
+    Returns:
+        str: Formatted string or path.
+    """
     size = float(n)
     for unit in ("B", "KB", "MB", "GB", "TB", "PB"):
         if size < 1024 or unit == "PB":
@@ -107,7 +128,16 @@ class _TitleBarChrome:
     __slots__ = ("_brand", "_min", "_max", "_close")
 
     def __init__(self, brand, min_btn, max_btn, close_btn):
-        """Store the brand mark and the three window-control buttons."""
+        """Store the brand mark and the three window-control buttons.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            brand: The brand parameter.
+            min_btn: The min btn parameter.
+            max_btn: The max btn parameter.
+            close_btn: The close btn parameter.
+        """
         self._brand = brand
         self._min = min_btn
         self._max = max_btn
@@ -128,14 +158,29 @@ class _LazyPageRegistry(Mapping):
     """
 
     def __init__(self, win: "PremiumMainWindow") -> None:
-        """Keep the owning window and the cache of already-built pages."""
+        """Keep the owning window and the cache of already-built pages.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win ('PremiumMainWindow'): Parent window or shell controller instance.
+        """
         self._win = win
         self._built: dict[str, QWidget] = {}
 
     # -- Mapping protocol ---------------------------------------------------
 
     def __getitem__(self, page_id: str) -> QWidget:
-        """Build (or return cached) the page widget and add it to the stack."""
+        """Getitem.
+
+        Manages getitem operations and coordinates related state changes for the component.
+
+        Args:
+            page_id (str): The page id parameter.
+
+        Returns:
+            QWidget: Result of the operation.
+        """
         page = self._built.get(page_id)
         if page is not None:
             return page
@@ -150,38 +195,157 @@ class _LazyPageRegistry(Mapping):
         return page
 
     def __iter__(self):
-        """Iterate page ids in sidebar/navigation order."""
+        """Iter.
+
+        Manages iter operations and coordinates related state changes for the component.
+        """
         # Navigation order, so iteration matches what the user sees.
         return iter(registry.ordered_ids())
 
     def __len__(self) -> int:
-        """Total number of registered pages."""
+        """Len.
+
+        Manages len operations and coordinates related state changes for the component.
+
+        Returns:
+            int: Result of the operation.
+        """
         return len(registry.PAGES)
 
     def __contains__(self, page_id: object) -> bool:
-        """Whether a page id exists in the registry."""
+        """Contains.
+
+        Manages contains operations and coordinates related state changes for the component.
+
+        Args:
+            page_id (object): The page id parameter.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         return page_id in registry.BY_ID
 
     # -- introspection ------------------------------------------------------
 
     def is_built(self, page_id: str) -> bool:
-        """True when *page_id* has actually been constructed."""
+        """True when *page_id* has actually been constructed.
+
+        Manages is built operations and coordinates related state changes for the component.
+
+        Args:
+            page_id (str): The page id parameter.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         return page_id in self._built
 
     @property
     def built_ids(self) -> frozenset[str]:
-        """The pages constructed so far - useful for tests and diagnostics."""
+        """The pages constructed so far - useful for tests and diagnostics.
+
+        Manages built ids operations and coordinates related state changes for the component.
+
+        Returns:
+            frozenset[str]: Formatted string or path.
+        """
         return frozenset(self._built)
 
 
 
 
+class _WorkerTaskSignals(QObject):
+    """Workertasksignals.
+
+    Manages WorkerTaskSignals operations and coordinates related state changes for the component.
+    """
+    finished = Signal(object)
+    failed = Signal(object)
+
+
+class _WorkerTaskRunnable(QRunnable):
+    """Workertaskrunnable.
+
+    Manages WorkerTaskRunnable operations and coordinates related state changes for the component.
+    """
+    def __init__(self, work_fn, signals: _WorkerTaskSignals):
+        """Init.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            work_fn: The work fn parameter.
+            signals (_WorkerTaskSignals): The signals parameter.
+        """
+        super().__init__()
+        self.work_fn = work_fn
+        self.signals = signals
+
+    def run(self):
+        """Run.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
+        try:
+            res = self.work_fn()
+            self.signals.finished.emit(res)
+        except Exception as exc:
+            self.signals.failed.emit(exc)
+
+
+class WorkerRuntime(QObject):
+    """Workerruntime.
+
+    Manages WorkerRuntime operations and coordinates related state changes for the component.
+    """
+
+    def __init__(self, parent=None):
+        """Init.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            parent: Parent window or shell controller instance.
+        """
+        super().__init__(parent)
+        self._pool = QThreadPool.globalInstance()
+
+    def run(self, work_fn, on_result=None, on_error=None):
+        """Execute work_fn off the UI thread and dispatch results/errors via Qt signals.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+
+        Args:
+            work_fn: The work fn parameter.
+            on_result: The on result parameter.
+            on_error: Error message string or exception instance.
+        """
+        signals = _WorkerTaskSignals(self)
+        if on_result:
+            signals.finished.connect(on_result)
+        if on_error:
+            signals.failed.connect(on_error)
+        runnable = _WorkerTaskRunnable(work_fn, signals)
+        self._pool.start(runnable)
+
+
 class PremiumMainWindow(QMainWindow):
-    """Shell hosting all engine-backed pages."""
+    """Premiummainwindow.
+
+    Manages PremiumMainWindow operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, theme: str = "dark", settings=None):
-        """Build the frameless shell: sidebar, title bar, page stack, tray, and lazy page registry."""
+        """Build the frameless shell: sidebar, title bar, page stack, tray, and lazy page registry.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            theme (str): The theme parameter.
+            settings: The settings parameter.
+        """
         super().__init__()
+        self.worker_runtime = WorkerRuntime(self)
         # Durable user preferences (theme, close-to-tray). The store is shared
         # with the entry point when provided so both read/write one file; a
         # standalone construction (tests) gets its own default-backed store.
@@ -333,7 +497,13 @@ class PremiumMainWindow(QMainWindow):
     # -- sidebar ------------------------------------------------------------
 
     def _build_sidebar(self) -> QWidget:
-        """Build the sidebar: brand, search box, grouped nav buttons, and status labels."""
+        """Build the sidebar: brand, search box, grouped nav buttons, and status labels.
+
+        Manages build sidebar operations and coordinates related state changes for the component.
+
+        Returns:
+            QWidget: Result of the operation.
+        """
         bar = QWidget()
         bar.setObjectName("Sidebar")
         bar.setMinimumWidth(60)
@@ -516,7 +686,14 @@ class PremiumMainWindow(QMainWindow):
         return bar
 
     def eventFilter(self, obj, event):
-        """Detect mouse enter/leave on sidebar for hover-expand."""
+        """Filter monitored Qt events for target child widgets.
+
+        Intercepts specific mouse, keyboard, or focus events to provide custom interactive behaviors before standard event dispatch.
+
+        Args:
+            obj: The obj parameter.
+            event: The Qt event object.
+        """
         if obj is self._sidebar and not self._sidebar_pinned and not self._sidebar_expanded:
             if event.type() == QEvent.Type.Enter:
                 self._sidebar_leave_timer.stop()
@@ -527,7 +704,10 @@ class PremiumMainWindow(QMainWindow):
         return super().eventFilter(obj, event)
 
     def _sidebar_hover_expand(self) -> None:
-        """Temporarily expand sidebar on hover (when collapsed & not pinned)."""
+        """Temporarily expand sidebar on hover (when collapsed & not pinned).
+
+        Manages sidebar hover expand operations and coordinates related state changes for the component.
+        """
         self._sidebar_hover_expanded = True
         bar = self._sidebar
 
@@ -563,7 +743,10 @@ class PremiumMainWindow(QMainWindow):
         self._sidebar_anim2.start()
 
     def _sidebar_hover_collapse(self) -> None:
-        """Collapse sidebar after mouse leaves (when not pinned)."""
+        """Collapse sidebar after mouse leaves (when not pinned).
+
+        Manages sidebar hover collapse operations and coordinates related state changes for the component.
+        """
         if self._sidebar_pinned or self._sidebar_expanded:
             self._sidebar_hover_expanded = False
             return
@@ -588,14 +771,20 @@ class PremiumMainWindow(QMainWindow):
         self._sidebar_anim2.start()
 
     def _stop_sidebar_anim(self) -> None:
-        """Stop any running sidebar animations."""
+        """Stop any running sidebar animations.
+
+        Manages stop sidebar anim operations and coordinates related state changes for the component.
+        """
         for attr in ('_sidebar_anim', '_sidebar_anim2'):
             anim = getattr(self, attr, None)
             if anim is not None:
                 anim.stop()
 
     def _toggle_max(self):
-        """Switch between maximized and normal, updating the title-bar icon."""
+        """Switch between maximized and normal, updating the title-bar icon.
+
+        Toggles selection states or operational modes, recalculating active selection counts and enabling/disabling dependent actions.
+        """
         muted = self.palette_tokens.text_muted
         if self.isMaximized():
             self.showNormal()
@@ -607,7 +796,10 @@ class PremiumMainWindow(QMainWindow):
             self._max_btn.setAccessibleName("Restore")
 
     def _toggle_sidebar(self) -> None:
-        """Toggle sidebar pin: pinned = always expanded, unpinned = collapsed + hover-expand."""
+        """Toggle sidebar pin: pinned = always expanded, unpinned = collapsed + hover-expand.
+
+        Toggles selection states or operational modes, recalculating active selection counts and enabling/disabling dependent actions.
+        """
         if self._sidebar_expanded and self._sidebar_pinned:
             # Unpin and collapse
             self._sidebar_pinned = False
@@ -673,7 +865,10 @@ class PremiumMainWindow(QMainWindow):
             self._menu_btn.setToolTip("Collapse sidebar (Ctrl+H)")
 
     def _collapse_sidebar_content(self) -> None:
-        """Hide sidebar text content after collapse animation."""
+        """Hide sidebar text content after collapse animation.
+
+        Manages collapse sidebar content operations and coordinates related state changes for the component.
+        """
         if self._sidebar_expanded:
             return  # User expanded during animation
         self._sidebar_brand_label.hide()
@@ -735,7 +930,14 @@ class PremiumMainWindow(QMainWindow):
             self._update_nav_header(gid, sec["header"].isChecked())
 
     def _update_nav_header(self, group_id: str, expanded: bool) -> None:
-        """Set a nav group header's chevron, escaped title, and expanded style."""
+        """Set a nav group header's chevron, escaped title, and expanded style.
+
+        Manages update nav header operations and coordinates related state changes for the component.
+
+        Args:
+            group_id (str): The group id parameter.
+            expanded (bool): The expanded parameter.
+        """
         section = self._nav_sections[group_id]
         header = section["header"]
         icon_name = "chevron-down" if expanded else "chevron-right"
@@ -750,7 +952,14 @@ class PremiumMainWindow(QMainWindow):
         header.style().polish(header)
 
     def _set_nav_section(self, group_id: str, expanded: bool) -> None:
-        """Open one nav group exclusively (accordion) and show/hide its page buttons."""
+        """Open one nav group exclusively (accordion) and show/hide its page buttons.
+
+        Manages set nav section operations and coordinates related state changes for the component.
+
+        Args:
+            group_id (str): The group id parameter.
+            expanded (bool): The expanded parameter.
+        """
         section = self._nav_sections[group_id]
         searching = bool(self._nav_search.text().strip())
         if expanded and not searching:
@@ -768,7 +977,13 @@ class PremiumMainWindow(QMainWindow):
             self._filter_navigation(self._nav_search.text())
 
     def _filter_navigation(self, text: str) -> None:
-        """Show only nav buttons matching the search text, revealing their groups."""
+        """Show only nav buttons matching the search text, revealing their groups.
+
+        Manages filter navigation operations and coordinates related state changes for the component.
+
+        Args:
+            text (str): Display text string.
+        """
         query = text.strip().casefold()
         found_any = False
         for group_id, section in self._nav_sections.items():
@@ -787,7 +1002,13 @@ class PremiumMainWindow(QMainWindow):
         self._nav_empty.setVisible(bool(query) and not found_any)
 
     def set_titlebar_tab_widget(self, widget: QWidget | None) -> None:
-        """Mount or unmount an external tab bar (e.g. NexusExplorer) in the top window title bar row."""
+        """Mount or unmount an external tab bar (e.g. NexusExplorer) in the top window title bar row.
+
+        Manages set titlebar tab widget operations and coordinates related state changes for the component.
+
+        Args:
+            widget (QWidget | None): The widget parameter.
+        """
         while self._titlebar_tab_layout.count():
             item = self._titlebar_tab_layout.takeAt(0)
             if item.widget():
@@ -799,7 +1020,13 @@ class PremiumMainWindow(QMainWindow):
             self._titlebar_tab_area.hide()
 
     def _select(self, page_id: str) -> None:
-        """Select a page: expand its nav group, switch the stack, fade in, and run first-visit autoload."""
+        """Select.
+
+        Manages select operations and coordinates related state changes for the component.
+
+        Args:
+            page_id (str): The page id parameter.
+        """
         if page_id not in self._nav_buttons_by_page:
             return
         self._current_page_id = page_id
@@ -912,19 +1139,34 @@ class PremiumMainWindow(QMainWindow):
         thread.start()
 
     def _reap_threads(self) -> None:
-        """Remove and delete any finished worker threads (runs on GUI thread)."""
+        """Remove and delete any finished worker threads (runs on GUI thread).
+
+        Manages reap threads operations and coordinates related state changes for the component.
+        """
         for t in list(self._threads):
             if t.isFinished():
                 self._threads.remove(t)
                 t.deleteLater()
 
     def _default_fail(self, msg: str) -> None:
-        """Report a worker failure via the status bar and a warning dialog."""
+        """Handle an operation failure and notify the user.
+
+        Captures error details, displays an informative failure state in the UI, resets progress indicators, and re-enables interactive controls.
+
+        Args:
+            msg (str): Informational or progress status message.
+        """
         self.statusBar().showMessage(f"Error: {msg}", 6000)
         QMessageBox.warning(self, "Operation failed", msg)
 
     def set_theme(self, theme: str) -> None:
-        """Apply a theme app-wide, retint icons, persist the choice, and refresh the tray."""
+        """Apply a theme app-wide, retint icons, persist the choice, and refresh the tray.
+
+        Manages set theme operations and coordinates related state changes for the component.
+
+        Args:
+            theme (str): The theme parameter.
+        """
         from PySide6.QtWidgets import QApplication
         self.theme_name = theme
         self.palette_tokens = THEMES[theme]
@@ -975,7 +1217,13 @@ class PremiumMainWindow(QMainWindow):
             return False
 
     def _edge_at(self, gpos):
-        """Return the window edges within the resize margin of a global position."""
+        """Return the window edges within the resize margin of a global position.
+
+        Manages edge at operations and coordinates related state changes for the component.
+
+        Args:
+            gpos: The gpos parameter.
+        """
         r = self.frameGeometry()
         m = self._resize_margin
         left = abs(gpos.x() - r.left()) <= m
@@ -998,7 +1246,13 @@ class PremiumMainWindow(QMainWindow):
         return edges
 
     def _update_edge_cursor(self, edges):
-        """Set the resize cursor matching the hovered window edges."""
+        """Set the resize cursor matching the hovered window edges.
+
+        Manages update edge cursor operations and coordinates related state changes for the component.
+
+        Args:
+            edges: The edges parameter.
+        """
         cursors = {
             Qt.Edge.LeftEdge: Qt.CursorShape.SizeHorCursor,
             Qt.Edge.RightEdge: Qt.CursorShape.SizeHorCursor,
@@ -1037,7 +1291,13 @@ class PremiumMainWindow(QMainWindow):
         layout.setContentsMargins(side, top, side, bot)
 
     def mousePressEvent(self, event):  # noqa: N802
-        """Start a native window drag from the title-bar area."""
+        """Handle mouse mousePress interaction events.
+
+        Tracks cursor coordinates, button states, drag-and-drop actions, or item selection changes within the widget.
+
+        Args:
+            event: The Qt event object.
+        """
         if event.button() == Qt.MouseButton.LeftButton and self._frameless and not self.isMaximized():
             if event.position().y() <= 40:
                 handle = self.windowHandle()
@@ -1047,7 +1307,13 @@ class PremiumMainWindow(QMainWindow):
         super().mousePressEvent(event)
 
     def mouseDoubleClickEvent(self, event):  # noqa: N802
-        """Toggle maximize/restore on a title-bar double click."""
+        """Mousedoubleclickevent.
+
+        Manages mouseDoubleClickEvent operations and coordinates related state changes for the component.
+
+        Args:
+            event: The Qt event object.
+        """
         if event.button() == Qt.MouseButton.LeftButton and event.position().y() <= 40:
             self._toggle_max()
             return
@@ -1060,7 +1326,13 @@ class PremiumMainWindow(QMainWindow):
     _CLOSE_GRACE_S = 8.0
 
     def closeEvent(self, event):  # noqa: N802
-        """Close to tray if enabled, else stop the tray and shut down all workers."""
+        """Handle the window or widget close event.
+
+        Performs graceful shutdown, releases active workers and system hooks, persists window geometry, and accepts the close event.
+
+        Args:
+            event: The Qt event object.
+        """
         # Close-to-tray: when enabled and a tray is available, a window close
         # (the X button) hides to the tray instead of quitting - unless a real
         # quit was requested via the tray's Exit action (_force_quit). Workers
@@ -1126,7 +1398,16 @@ class PremiumMainWindow(QMainWindow):
         threads = list(self._threads)
 
         def _running(t: QThread) -> bool:
-            """Whether a thread still runs; reaped/dangling wrappers count as stopped."""
+            """Running.
+
+            Manages running operations and coordinates related state changes for the component.
+
+            Args:
+                t (QThread): The t parameter.
+
+            Returns:
+                bool: True if the operation succeeded, False otherwise.
+            """
             # While we pump events below, finished threads are reaped
             # (deleteLater) and their wrappers become dangling; a deleted
             # QThread is finished by definition, so treat it as not running.
@@ -1197,13 +1478,28 @@ class SingleScrollFilter(QObject):
 
     def __init__(self, inner: QWidget, outer: QScrollArea | None = None,
                  parent: QObject | None = None):
-        """Store the inner scrollable view and the outer page scroll area."""
+        """Store the inner scrollable view and the outer page scroll area.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            inner (QWidget): The inner parameter.
+            outer (QScrollArea | None): The outer parameter.
+            parent (QObject | None): Parent window or shell controller instance.
+        """
         super().__init__(parent)
         self._inner = inner
         self._outer = outer
 
     def eventFilter(self, obj, event):  # noqa: N802
-        """Route wheel events to the inner view until it hits a boundary, then to the outer area."""
+        """Filter monitored Qt events for target child widgets.
+
+        Intercepts specific mouse, keyboard, or focus events to provide custom interactive behaviors before standard event dispatch.
+
+        Args:
+            obj: The obj parameter.
+            event: The Qt event object.
+        """
         if event.type() != QEvent.Type.Wheel:
             return super().eventFilter(obj, event)
         try:
@@ -1342,7 +1638,13 @@ class _Page(QWidget):
     LIST_MIN_HEIGHT = 140
 
     def __init__(self, win: PremiumMainWindow):
-        """Set up the page: window/palette refs and an outer momentum-scrolling vertical layout."""
+        """Set up the page: window/palette refs and an outer momentum-scrolling vertical layout.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win (PremiumMainWindow): Parent window or shell controller instance.
+        """
         super().__init__()
         self.win = win
         self.p = win.palette_tokens
@@ -1423,10 +1725,19 @@ class _Page(QWidget):
 
 
 class DashboardPage(_Page):
-    """1-click hero scan + reclaimable overview + category table."""
+    """Dashboardpage.
+
+    Manages DashboardPage operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, win: PremiumMainWindow):
-        """Build the hero gauge, metric tiles, category tree, and pinned Clean action."""
+        """Build the hero gauge, metric tiles, category tree, and pinned Clean action.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win (PremiumMainWindow): Parent window or shell controller instance.
+        """
         super().__init__(win)
         self._report = None
         self._preview_targets: dict = {}
@@ -1575,14 +1886,20 @@ class DashboardPage(_Page):
 
     # -- actions --
     def _toggle_scan(self):
-        """Start or cancel the scan depending on current state."""
+        """Start or cancel the scan depending on current state.
+
+        Toggles selection states or operational modes, recalculating active selection counts and enabling/disabling dependent actions.
+        """
         if self._scanning:
             self._cancel_scan()
         else:
             self._scan()
 
     def _scan(self):
-        """Launch the ScanWorker and flip the hero into scanning UI."""
+        """Launch the ScanWorker and flip the hero into scanning UI.
+
+        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
+        """
         from .workers import ScanWorker
         self._scanning = True
         self.scan_btn.setText("Cancel")
@@ -1596,18 +1913,33 @@ class DashboardPage(_Page):
         )
 
     def _cancel_scan(self):
-        """Cancel the running scan worker and show Cancelling state."""
+        """Cancel the running scan worker and show Cancelling state.
+
+        Manages cancel scan operations and coordinates related state changes for the component.
+        """
         if self._scan_worker is not None:
             self._scan_worker.cancel()
             self.scan_status.setText("Cancelling\u2026")
             self.scan_btn.setEnabled(False)
 
     def _on_progress(self, text: str):
-        """Show live scan progress text in the status label."""
+        """Show live scan progress text in the status label.
+
+        Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
+
+        Args:
+            text (str): Display text string.
+        """
         self.scan_status.setText(text)
 
     def _on_scanned(self, report):
-        """Render the CleanupReport: metrics, auto-checked category tree, risk badges, gauge."""
+        """Render the CleanupReport: metrics, auto-checked category tree, risk badges, gauge.
+
+        Manages on scanned operations and coordinates related state changes for the component.
+
+        Args:
+            report: The generated report data object from the backend.
+        """
         self._report = report
         self._scanning = False
         self._scan_worker = None
@@ -1671,7 +2003,13 @@ class DashboardPage(_Page):
     # -- live "selected to clean" total ------------------------------------
 
     def _selected_bytes(self) -> int:
-        """Sum of what's currently checked, respecting per-app/folder exclusions."""
+        """Sum of what's currently checked, respecting per-app/folder exclusions.
+
+        Manages selected bytes operations and coordinates related state changes for the component.
+
+        Returns:
+            int: Result of the operation.
+        """
         if self._report is None:
             return 0
         total = 0
@@ -1689,7 +2027,10 @@ class DashboardPage(_Page):
         return total
 
     def _update_selection(self):
-        """Refresh the gauge + Clean button to show the live selected size."""
+        """Refresh the gauge + Clean button to show the live selected size.
+
+        Manages update selection operations and coordinates related state changes for the component.
+        """
         if self._report is None:
             return
         sel = self._selected_bytes()
@@ -1757,7 +2098,14 @@ class DashboardPage(_Page):
         self.win.run_worker(worker, self._apply_preview, self._preview_fail)
 
     def _apply_preview(self, nid: int, children: list):
-        """Replace a node's placeholder with worker-computed children as checkable rows."""
+        """Replace a node's placeholder with worker-computed children as checkable rows.
+
+        Manages apply preview operations and coordinates related state changes for the component.
+
+        Args:
+            nid (int): The nid parameter.
+            children (list): The children parameter.
+        """
         item = self._preview_targets.pop(nid, None)
         if item is None:
             return
@@ -1795,12 +2143,25 @@ class DashboardPage(_Page):
         self._updating = False
 
     def _preview_fail(self, msg: str):
-        """Report a preview failure briefly in the status bar."""
+        """Handle an operation failure and notify the user.
+
+        Captures error details, displays an informative failure state in the UI, resets progress indicators, and re-enables interactive controls.
+
+        Args:
+            msg (str): Informational or progress status message.
+        """
         # Preview is non-critical; just log to the status bar.
         self.win.statusBar().showMessage(f"Preview failed: {msg}", 4000)
 
     def _on_item_changed(self, item: QTreeWidgetItem, column: int):
-        """Track per-app / per-folder selection so cleaning respects it."""
+        """Track per-app / per-folder selection so cleaning respects it.
+
+        Manages on item changed operations and coordinates related state changes for the component.
+
+        Args:
+            item (QTreeWidgetItem): The item parameter.
+            column (int): The column parameter.
+        """
         if self._updating or column != 0:
             return
         scan_idx = item.data(0, self._ROLE_SCANIDX)
@@ -1824,7 +2185,14 @@ class DashboardPage(_Page):
         self._update_selection()
 
     def _set_subtree_check(self, item: QTreeWidgetItem, state) -> None:
-        """Recursively apply a check state to a node's loaded checkable descendants."""
+        """Recursively apply a check state to a node's loaded checkable descendants.
+
+        Manages set subtree check operations and coordinates related state changes for the component.
+
+        Args:
+            item (QTreeWidgetItem): The item parameter.
+            state: The state parameter.
+        """
         for i in range(item.childCount()):
             child = item.child(i)
             if child.text(0) == "Loading\u2026":
@@ -1834,7 +2202,14 @@ class DashboardPage(_Page):
             self._set_subtree_check(child, state)
 
     def _filtered_entries(self, scan, scan_idx: int):
-        """Entries for *scan* minus any the user deselected in the preview."""
+        """Entries for *scan* minus any the user deselected in the preview.
+
+        Manages filtered entries operations and coordinates related state changes for the component.
+
+        Args:
+            scan: The scan parameter.
+            scan_idx (int): The scan idx parameter.
+        """
         excl = self._excluded.get(scan_idx)
         if not excl:
             return scan.entries
@@ -1847,7 +2222,13 @@ class DashboardPage(_Page):
         return out
 
     def _clean(self, method: str):
-        """Clean the checked (and not excluded) categories after a confirm dialog, via CleanWorker."""
+        """Clean the checked (and not excluded) categories after a confirm dialog, via CleanWorker.
+
+        Permanently purges or removes specified target items, reclaiming storage space and logging actions taken.
+
+        Args:
+            method (str): The method parameter.
+        """
         if not self._report or not self._report.scans:
             return
         from cortex_unified.engine.service import CleanupReport
@@ -1905,11 +2286,25 @@ class DashboardPage(_Page):
                             on_progress=self._on_clean_progress)
 
     def _on_clean_progress(self, text: str):
-        """Show live cleaning progress text."""
+        """Show live cleaning progress text.
+
+        Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
+
+        Args:
+            text (str): Display text string.
+        """
         self.scan_status.setText(text)
 
     def _on_cleaned(self, freed: int, items: int, skipped: int):
-        """Report freed space and skipped files, then rescan to refresh the report."""
+        """Report freed space and skipped files, then rescan to refresh the report.
+
+        Manages on cleaned operations and coordinates related state changes for the component.
+
+        Args:
+            freed (int): The freed parameter.
+            items (int): Collection of items or entries to process.
+            skipped (int): The skipped parameter.
+        """
         self.progress.setVisible(False)
         self.scan_status.setText("")
         self._clean_worker = None
@@ -1922,7 +2317,13 @@ class DashboardPage(_Page):
         self._scan()  # refresh
 
     def _on_fail(self, msg: str):
-        """Reset the scan UI and surface the error via the window's default handler."""
+        """Reset the scan UI and surface the error via the window's default handler.
+
+        Captures worker error messages, presents diagnostic feedback to the user, and resets interactive controls for retry.
+
+        Args:
+            msg (str): Informational or progress status message.
+        """
         self._scanning = False
         self._scan_worker = None
         self.progress.setVisible(False)
@@ -1945,7 +2346,13 @@ class _FolderScanPage(_Page):
     action_label = "Scan folder"
 
     def __init__(self, win: PremiumMainWindow):
-        """Build the shared scaffold: picker card, metric strip, results table, and delete action row."""
+        """Build the shared scaffold: picker card, metric strip, results table, and delete action row.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win (PremiumMainWindow): Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(title_block(self.title, self.subtitle))
 
@@ -2053,13 +2460,22 @@ class _FolderScanPage(_Page):
         self._folder: str | None = None
 
     def _build_results(self) -> QWidget:
-        """Subclasses construct and return their specific results widget."""
+        """Subclasses construct and return their specific results widget.
+
+        Manages build results operations and coordinates related state changes for the component.
+
+        Returns:
+            QWidget: Result of the operation.
+        """
         table = QTableWidget(0, 3)
         table.setHorizontalHeaderLabels(["Path", "Size", "Details"])
         return table
 
     def _pick(self):
-        """Open a folder dialog and enable the run button on selection."""
+        """Prompt the user to select a filesystem directory or file.
+
+        Launches a native file dialog and populates the selected path into the corresponding target input widget.
+        """
         folder = QFileDialog.getExistingDirectory(
             self, "Select a folder", str(Path.home()))
         if folder:
@@ -2070,7 +2486,10 @@ class _FolderScanPage(_Page):
             self.run_btn.setEnabled(True)
 
     def _run(self):
-        """Subclasses launch their specific scan worker."""
+        """Run.
+
+        Manages run operations and coordinates related state changes for the component.
+        """
         if not self._folder:
             return
         self._finish()
@@ -2091,7 +2510,10 @@ class _FolderScanPage(_Page):
         self.win.run_worker(worker, on_done, on_fail, on_progress=self._on_progress)
 
     def _toggle_run(self):
-        """Cancel the running worker, or start the subclass's scan."""
+        """Cancel the running worker, or start the subclass's scan.
+
+        Toggles selection states or operational modes, recalculating active selection counts and enabling/disabling dependent actions.
+        """
         if self._running and self._worker is not None:
             if hasattr(self._worker, "cancel"):
                 self._worker.cancel()
@@ -2101,11 +2523,20 @@ class _FolderScanPage(_Page):
             self._run()
 
     def _on_progress(self, text: str):
-        """Show live scan progress text."""
+        """Show live scan progress text.
+
+        Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
+
+        Args:
+            text (str): Display text string.
+        """
         self.scan_status.setText(text)
 
     def _finish(self):
-        """Reset the run button and hide progress after a worker ends."""
+        """Finish.
+
+        Manages finish operations and coordinates related state changes for the component.
+        """
         self._running = False
         self._worker = None
         self.progress.setVisible(False)
@@ -2114,19 +2545,37 @@ class _FolderScanPage(_Page):
         self.run_btn.setEnabled(True)
 
     def _busy(self, on: bool):
-        """Toggle the progress indicator and run-button enablement."""
+        """Update the busy state indicators across the interface.
+
+        Shows or hides loading indicators, adjusts cursor feedback, and toggles action button availability.
+
+        Args:
+            on (bool): The on parameter.
+        """
         self.progress.setVisible(on)
         self.run_btn.setEnabled(not on)
 
     def _enable_actions(self, has_rows: bool):
-        """Enable or disable the delete action based on whether rows exist."""
+        """Enable or disable the delete action based on whether rows exist.
+
+        Manages enable actions operations and coordinates related state changes for the component.
+
+        Args:
+            has_rows (bool): The has rows parameter.
+        """
         if self.results_table is not None:
             self.results_table.setSelectionBehavior(
                 QTableWidget.SelectionBehavior.SelectRows)
         self.del_btn.setEnabled(has_rows)
 
     def _selected_paths(self) -> list[str]:
-        """Return the paths in column 0 of the currently selected table rows."""
+        """Return the paths in column 0 of the currently selected table rows.
+
+        Manages selected paths operations and coordinates related state changes for the component.
+
+        Returns:
+            list[str]: List of processed items or identifiers.
+        """
         if self.results_table is None:
             return []
         rows = {idx.row() for idx in self.results_table.selectedIndexes()}
@@ -2138,7 +2587,10 @@ class _FolderScanPage(_Page):
         return out
 
     def _delete_selected(self):
-        """Confirm and recycle the selected rows via DeleteSelectedWorker."""
+        """Confirm and recycle the selected rows via DeleteSelectedWorker.
+
+        Manages delete selected operations and coordinates related state changes for the component.
+        """
         paths = self._selected_paths()
         if not paths:
             QMessageBox.information(
@@ -2160,7 +2612,15 @@ class _FolderScanPage(_Page):
         self.win.run_worker(worker, self._on_deleted, self._del_fail)
 
     def _on_deleted(self, freed: int, ok: int, blocked: int):
-        """Report the recycle result and rescan the folder."""
+        """Report the recycle result and rescan the folder.
+
+        Manages on deleted operations and coordinates related state changes for the component.
+
+        Args:
+            freed (int): The freed parameter.
+            ok (int): The ok parameter.
+            blocked (int): The blocked parameter.
+        """
         self._busy(False)
         msg = f"Recycled {ok} item(s), freeing {fmt_bytes(freed)}."
         if blocked:
@@ -2172,20 +2632,35 @@ class _FolderScanPage(_Page):
             self._run()  # refresh listing
 
     def _del_fail(self, msg: str):
-        """Reset busy state and surface the deletion error."""
+        """Handle an operation failure and notify the user.
+
+        Captures error details, displays an informative failure state in the UI, resets progress indicators, and re-enables interactive controls.
+
+        Args:
+            msg (str): Informational or progress status message.
+        """
         self._busy(False)
         self.del_btn.setEnabled(True)
         self.win._default_fail(msg)
 
 
 class DuplicatesPage(_FolderScanPage):
-    """Finds byte-identical duplicate files under a chosen folder."""
+    """Duplicatespage.
+
+    Manages DuplicatesPage operations and coordinates related state changes for the component.
+    """
     title = "Duplicate Files Finder"
     subtitle = "Find and safely reclaim space from identical files using byte-for-byte checksum verification."
     action_label = "Find Duplicates"
 
     def _build_results(self) -> QWidget:
-        """Build the two-column duplicate file / group table."""
+        """Build the two-column duplicate file / group table.
+
+        Manages build results operations and coordinates related state changes for the component.
+
+        Returns:
+            QWidget: Result of the operation.
+        """
         self.tree = QTableWidget(0, 2)
         self.tree.setHorizontalHeaderLabels(["Duplicate file", "Group"])
         self.tree.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
@@ -2195,12 +2670,21 @@ class DuplicatesPage(_FolderScanPage):
         return self.tree
 
     def _run(self):
-        """Launch the DuplicateWorker for the chosen folder."""
+        """Run.
+
+        Manages run operations and coordinates related state changes for the component.
+        """
         from .workers import DuplicateWorker
         self._start(DuplicateWorker([self._folder]), self._done, self._fail)
 
     def _done(self, groups: dict):
-        """Fill the table with grouped duplicates and update the metric cards."""
+        """Handle completion of the asynchronous task.
+
+        Processes the returned result payload, updates corresponding tables or UI views, and restores interactive controls.
+
+        Args:
+            groups (dict): The groups parameter.
+        """
         self._finish()
         rows = [(p, i) for i, (_, members) in enumerate(groups.items(), 1) for p in members]
         self.tree.setRowCount(len(rows))
@@ -2221,20 +2705,35 @@ class DuplicatesPage(_FolderScanPage):
             f"{len(groups)} duplicate groups found", 5000)
 
     def _fail(self, msg):
-        """Reset the run state and surface the error."""
+        """Handle an operation failure and notify the user.
+
+        Captures error details, displays an informative failure state in the UI, resets progress indicators, and re-enables interactive controls.
+
+        Args:
+            msg: Informational or progress status message.
+        """
         self._finish()
         self.win._default_fail(msg)
 
 
 class DuplicatePhotosPage(_FolderScanPage):
-    """Finds duplicate image files under a chosen folder."""
+    """Duplicatephotospage.
+
+    Manages DuplicatePhotosPage operations and coordinates related state changes for the component.
+    """
     title = "Similar & Duplicate Photos"
     subtitle = ("Find duplicate and visually identical images (JPG, PNG, HEIC, RAW). "
                 "Review copies and free up storage.")
     action_label = "Find Duplicate Photos"
 
     def _build_results(self) -> QWidget:
-        """Build the two-column duplicate photo / group table."""
+        """Build the two-column duplicate photo / group table.
+
+        Manages build results operations and coordinates related state changes for the component.
+
+        Returns:
+            QWidget: Result of the operation.
+        """
         self.tree = QTableWidget(0, 2)
         self.tree.setHorizontalHeaderLabels(["Duplicate photo", "Group"])
         self.tree.horizontalHeader().setSectionResizeMode(
@@ -2243,13 +2742,22 @@ class DuplicatePhotosPage(_FolderScanPage):
         return self.tree
 
     def _run(self):
-        """Launch the DuplicatePhotosWorker for the chosen folder."""
+        """Run.
+
+        Manages run operations and coordinates related state changes for the component.
+        """
         from .workers import DuplicatePhotosWorker
         self._start(
             DuplicatePhotosWorker([self._folder]), self._done, self._fail)
 
     def _done(self, groups: dict):
-        """Fill the table with grouped duplicate photos and update the metric cards."""
+        """Handle completion of the asynchronous task.
+
+        Processes the returned result payload, updates corresponding tables or UI views, and restores interactive controls.
+
+        Args:
+            groups (dict): The groups parameter.
+        """
         self._finish()
         rows = [
             (p, i)
@@ -2275,19 +2783,34 @@ class DuplicatePhotosPage(_FolderScanPage):
             f"{len(groups)} duplicate photo groups found", 5000)
 
     def _fail(self, msg):
-        """Reset the run state and surface the error."""
+        """Handle an operation failure and notify the user.
+
+        Captures error details, displays an informative failure state in the UI, resets progress indicators, and re-enables interactive controls.
+
+        Args:
+            msg: Informational or progress status message.
+        """
         self._finish()
         self.win._default_fail(msg)
 
 
 class LargeFilesPage(_FolderScanPage):
-    """Finds large files (50 MB+) under a chosen folder, flagging AI models."""
+    """Largefilespage.
+
+    Manages LargeFilesPage operations and coordinates related state changes for the component.
+    """
     title = "Large Files Finder"
     subtitle = "Locate space-consuming files across your drives. Large AI models and installer archives are safely highlighted."
     action_label = "Find Large Files"
 
     def _build_results(self) -> QWidget:
-        """Build the file / size / tag results table."""
+        """Build the file / size / tag results table.
+
+        Manages build results operations and coordinates related state changes for the component.
+
+        Returns:
+            QWidget: Result of the operation.
+        """
         self.tbl = QTableWidget(0, 3)
         self.tbl.setHorizontalHeaderLabels(["File", "Size", "Tag"])
         self.tbl.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
@@ -2299,12 +2822,21 @@ class LargeFilesPage(_FolderScanPage):
         return self.tbl
 
     def _run(self):
-        """Launch the LargeFilesWorker for the chosen folder."""
+        """Run.
+
+        Manages run operations and coordinates related state changes for the component.
+        """
         from .workers import LargeFilesWorker
         self._start(LargeFilesWorker(self._folder, 50.0), self._done, self._fail)
 
     def _done(self, entries: list):
-        """Fill the table, tag AI-model files as high-risk, and update metric cards."""
+        """Handle completion of the asynchronous task.
+
+        Processes the returned result payload, updates corresponding tables or UI views, and restores interactive controls.
+
+        Args:
+            entries (list): Collection of items or entries to process.
+        """
         self._finish()
         try:
             from cortex_unified.analyzers.large_file_finder import AI_MODEL_EXTENSIONS
@@ -2341,19 +2873,34 @@ class LargeFilesPage(_FolderScanPage):
             f"{len(entries)} large files ({ai_count} AI models)", 5000)
 
     def _fail(self, msg):
-        """Reset the run state and surface the error."""
+        """Handle an operation failure and notify the user.
+
+        Captures error details, displays an informative failure state in the UI, resets progress indicators, and re-enables interactive controls.
+
+        Args:
+            msg: Informational or progress status message.
+        """
         self._finish()
         self.win._default_fail(msg)
 
 
 class EmptyPage(_FolderScanPage):
-    """Finds empty files and empty directories under a chosen folder."""
+    """Emptypage.
+
+    Manages EmptyPage operations and coordinates related state changes for the component.
+    """
     title = "Empty Files & Folders"
     subtitle = "Locate and safely clean empty directories and 0-byte orphan files left behind by uninstalled software."
     action_label = "Find Empty Items"
 
     def _build_results(self) -> QWidget:
-        """Build the two-column path / type results table."""
+        """Build the two-column path / type results table.
+
+        Manages build results operations and coordinates related state changes for the component.
+
+        Returns:
+            QWidget: Result of the operation.
+        """
         self.tbl = QTableWidget(0, 2)
         self.tbl.setHorizontalHeaderLabels(["Path", "Type"])
         self.tbl.horizontalHeader().setSectionResizeMode(
@@ -2362,12 +2909,22 @@ class EmptyPage(_FolderScanPage):
         return self.tbl
 
     def _run(self):
-        """Launch the EmptyWorker for the chosen folder."""
+        """Run.
+
+        Manages run operations and coordinates related state changes for the component.
+        """
         from .workers import EmptyWorker
         self._start(EmptyWorker(self._folder), self._done, self._fail)
 
     def _done(self, files: list, dirs: list):
-        """Fill the table with empty files and directories and update metric cards."""
+        """Handle completion of the asynchronous task.
+
+        Processes the returned result payload, updates corresponding tables or UI views, and restores interactive controls.
+
+        Args:
+            files (list): The files parameter.
+            dirs (list): The dirs parameter.
+        """
         self._finish()
         rows = [(p, "File") for p in files] + [
             (p, "Directory") for p in dirs]
@@ -2384,16 +2941,31 @@ class EmptyPage(_FolderScanPage):
             f"{len(files)} empty files, {len(dirs)} empty dirs", 5000)
 
     def _fail(self, msg):
-        """Reset the run state and surface the error."""
+        """Handle an operation failure and notify the user.
+
+        Captures error details, displays an informative failure state in the UI, resets progress indicators, and re-enables interactive controls.
+
+        Args:
+            msg: Informational or progress status message.
+        """
         self._finish()
         self.win._default_fail(msg)
 
 
 class ShredPage(_Page):
-    """Storage-aware secure deletion, honest about SSD limitations."""
+    """Shredpage.
+
+    Manages ShredPage operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, win: PremiumMainWindow):
-        """Build the shredder card (target picker, passes, privacy level) and the free-space wipe card."""
+        """Build the shredder card (target picker, passes, privacy level) and the free-space wipe card.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win (PremiumMainWindow): Parent window or shell controller instance.
+        """
         super().__init__(win)
         self._target: str | None = None
 
@@ -2509,7 +3081,10 @@ class ShredPage(_Page):
         self.v.addStretch(1)
 
     def _populate_drives(self):
-        """Fill the wipe drive combo with all existing drive letters."""
+        """Fill the wipe drive combo with all existing drive letters.
+
+        Refreshes table or tree items with formatted values, tooltips, and status indicators based on the provided dataset.
+        """
         import string
         from pathlib import Path as _P
         for letter in string.ascii_uppercase:
@@ -2517,7 +3092,10 @@ class ShredPage(_Page):
                 self.wipe_drive.addItem(f"{letter}:", letter)
 
     def _wipe_free_space(self):
-        """License-gate, confirm, and start a FreeSpaceWipeWorker on the chosen drive."""
+        """License-gate, confirm, and start a FreeSpaceWipeWorker on the chosen drive.
+
+        Manages wipe free space operations and coordinates related state changes for the component.
+        """
         if not require_feature(self, Feature.FREE_SPACE_WIPE):
             return
         letter = self.wipe_drive.currentData()
@@ -2540,7 +3118,14 @@ class ShredPage(_Page):
         self.win.run_worker(FreeSpaceWipeWorker(letter), self._on_wiped, self._on_wipe_fail)
 
     def _on_wiped(self, success: bool, message: str):
-        """Report the free-space wipe result and reset the button."""
+        """Report the free-space wipe result and reset the button.
+
+        Manages on wiped operations and coordinates related state changes for the component.
+
+        Args:
+            success (bool): The success parameter.
+            message (str): Informational or progress status message.
+        """
         self.wipe_progress.setVisible(False)
         self.wipe_btn.setEnabled(True)
         if success:
@@ -2550,13 +3135,22 @@ class ShredPage(_Page):
         self.win.statusBar().showMessage(message, 6000)
 
     def _on_wipe_fail(self, msg: str):
-        """Reset the wipe UI and surface the error."""
+        """Reset the wipe UI and surface the error.
+
+        Captures worker error messages, presents diagnostic feedback to the user, and resets interactive controls for retry.
+
+        Args:
+            msg (str): Informational or progress status message.
+        """
         self.wipe_progress.setVisible(False)
         self.wipe_btn.setEnabled(True)
         self.win._default_fail(msg)
 
     def _pick(self):
-        """Choose a file, then detect its storage medium via StorageWorker."""
+        """Prompt the user to select a filesystem directory or file.
+
+        Launches a native file dialog and populates the selected path into the corresponding target input widget.
+        """
         path, _ = QFileDialog.getOpenFileName(self, "Select a file to shred", str(Path.home()))
         if not path:
             return
@@ -2568,7 +3162,14 @@ class ShredPage(_Page):
         self.win.run_worker(StorageWorker(path), self._on_medium, self._fail)
 
     def _on_medium(self, kind: str, overwrite_effective: bool):
-        """Show the detected medium and whether overwriting is reliable on it."""
+        """Show the detected medium and whether overwriting is reliable on it.
+
+        Manages on medium operations and coordinates related state changes for the component.
+
+        Args:
+            kind (str): The kind parameter.
+            overwrite_effective (bool): The overwrite effective parameter.
+        """
         self._last_kind = kind
         self._last_overwrite = overwrite_effective
         note = "" if overwrite_effective else "  \u2014 overwrite NOT reliable here (PL2/PL3 recommended)"
@@ -2577,7 +3178,10 @@ class ShredPage(_Page):
         self.medium_label.setStyleSheet(f"color: {color}; font-weight: 600;")
 
     def _shred(self):
-        """Confirm, then shred via AdaptiveShredWorker (explicit PL / flash) or ShredWorker."""
+        """Shred.
+
+        Manages shred operations and coordinates related state changes for the component.
+        """
         if not self._target:
             return
         # Single-pass delete stays Free; only multi-pass overwrite is premium.
@@ -2626,7 +3230,15 @@ class ShredPage(_Page):
         self.win.run_worker(worker, self._on_done, self._fail)
 
     def _on_adaptive_done(self, outcome: str, message: str, detail: str):
-        """Report the adaptive shred outcome and reset the picker."""
+        """Report the adaptive shred outcome and reset the picker.
+
+        Receives the completed data from the adaptive background worker, populates the view with results, and restores button states.
+
+        Args:
+            outcome (str): The outcome parameter.
+            message (str): Informational or progress status message.
+            detail (str): The detail parameter.
+        """
         self.progress.setVisible(False)
         self.shred_btn.setEnabled(True)
         msg = f"{outcome}: {message}\n{detail}"
@@ -2637,7 +3249,14 @@ class ShredPage(_Page):
         self.shred_btn.setEnabled(False)
 
     def _on_done(self, outcome: str, reason: str):
-        """Report the shred outcome and reset the picker."""
+        """Report the shred outcome and reset the picker.
+
+        Receives the completed data from the  background worker, populates the view with results, and restores button states.
+
+        Args:
+            outcome (str): The outcome parameter.
+            reason (str): The reason parameter.
+        """
         self.progress.setVisible(False)
         self.shred_btn.setEnabled(True)
         msg = f"{outcome}" + (f"  ({reason})" if reason else "")
@@ -2648,7 +3267,14 @@ class ShredPage(_Page):
         self.shred_btn.setEnabled(False)
 
     def _on_refused(self, kind: str, guidance: str):
-        """Explain why overwriting was refused for this medium and offer guidance."""
+        """Explain why overwriting was refused for this medium and offer guidance.
+
+        Manages on refused operations and coordinates related state changes for the component.
+
+        Args:
+            kind (str): The kind parameter.
+            guidance (str): The guidance parameter.
+        """
         self.progress.setVisible(False)
         self.shred_btn.setEnabled(True)
         QMessageBox.information(
@@ -2659,16 +3285,31 @@ class ShredPage(_Page):
         )
 
     def _fail(self, msg: str):
-        """Reset the shred UI and surface the error."""
+        """Handle an operation failure and notify the user.
+
+        Captures error details, displays an informative failure state in the UI, resets progress indicators, and re-enables interactive controls.
+
+        Args:
+            msg (str): Informational or progress status message.
+        """
         self.progress.setVisible(False)
         self.shred_btn.setEnabled(True)
         self.win._default_fail(msg)
 
 
 class SettingsPage(_Page):
-    """Settings page: theme, tray, motion, update-check, smart suggestions, restore points."""
+    """Settingspage.
+
+    Manages SettingsPage operations and coordinates related state changes for the component.
+    """
     def __init__(self, win: PremiumMainWindow):
-        """Build the appearance/preference card plus the smart-suggestion and safety cards."""
+        """Build the appearance/preference card plus the smart-suggestion and safety cards.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win (PremiumMainWindow): Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(title_block("Settings", "Appearance and engine information."))
 
@@ -2746,7 +3387,13 @@ class SettingsPage(_Page):
         self.v.addStretch(1)
 
     def _choose_theme(self, theme: str) -> None:
-        """Apply the chosen theme and refresh the button highlight."""
+        """Apply the chosen theme and refresh the button highlight.
+
+        Manages choose theme operations and coordinates related state changes for the component.
+
+        Args:
+            theme (str): The theme parameter.
+        """
         self.win.set_theme(theme)
         self._sync_theme_buttons()
 
@@ -2766,21 +3413,42 @@ class SettingsPage(_Page):
                 style.polish(btn)
 
     def _on_close_to_tray_toggled(self, checked: bool) -> None:
-        """Persist the close-to-tray preference."""
+        """Persist the close-to-tray preference.
+
+        Manages on close to tray toggled operations and coordinates related state changes for the component.
+
+        Args:
+            checked (bool): The checked parameter.
+        """
         self.win.settings.close_to_tray = bool(checked)
 
     def _on_reduced_motion_toggled(self, checked: bool) -> None:
-        """Apply and persist the reduce-motion preference."""
+        """Apply and persist the reduce-motion preference.
+
+        Manages on reduced motion toggled operations and coordinates related state changes for the component.
+
+        Args:
+            checked (bool): The checked parameter.
+        """
         from . import motion
         motion.set_reduced_motion(bool(checked))
         self.win.settings.reduced_motion = bool(checked)
 
     def _on_update_check_toggled(self, checked: bool) -> None:
-        """Persist the opt-in startup release-check preference."""
+        """Persist the opt-in startup release-check preference.
+
+        Manages on update check toggled operations and coordinates related state changes for the component.
+
+        Args:
+            checked (bool): The checked parameter.
+        """
         self.win.settings.update_check = bool(checked)
 
     def _build_smart_card(self):
-        """Build the Smart Suggestions card showing learning stats and a reset button."""
+        """Build the Smart Suggestions card showing learning stats and a reset button.
+
+        Manages build smart card operations and coordinates related state changes for the component.
+        """
         card = Card(self.p)
         cl = QVBoxLayout(card)
         cl.setContentsMargins(22, 20, 22, 20)
@@ -2806,7 +3474,10 @@ class SettingsPage(_Page):
         self.v.addWidget(card)
 
     def _reset_smart(self):
-        """Confirm, then wipe and reload the offline learning model."""
+        """Confirm, then wipe and reload the offline learning model.
+
+        Manages reset smart operations and coordinates related state changes for the component.
+        """
         confirm = QMessageBox.question(
             self, "Reset learning",
             "Forget everything Smart Suggestions has learned? This cannot be undone.",
@@ -2825,7 +3496,10 @@ class SettingsPage(_Page):
         )
 
     def _build_safety_card(self):
-        """Build the restore-point card (Windows-only) with create/refresh actions and list."""
+        """Build the restore-point card (Windows-only) with create/refresh actions and list.
+
+        Manages build safety card operations and coordinates related state changes for the component.
+        """
         from cortex_unified.system_tools.restore_point import RestorePointManager
 
         card = Card(self.p)
@@ -2892,7 +3566,10 @@ class SettingsPage(_Page):
         self._loaded = False
 
     def _create_restore_point(self):
-        """Start a RestorePointWorker to create a restore point."""
+        """Start a RestorePointWorker to create a restore point.
+
+        Manages create restore point operations and coordinates related state changes for the component.
+        """
         from .workers import RestorePointWorker
         self.rp_create_btn.setEnabled(False)
         self.rp_progress.setVisible(True)
@@ -2901,7 +3578,14 @@ class SettingsPage(_Page):
                             self._on_rp_created, self._on_rp_fail)
 
     def _on_rp_created(self, status: str, message: str):
-        """Report the create outcome per status and refresh the list."""
+        """Report the create outcome per status and refresh the list.
+
+        Manages on rp created operations and coordinates related state changes for the component.
+
+        Args:
+            status (str): The status parameter.
+            message (str): Informational or progress status message.
+        """
         self.rp_progress.setVisible(False)
         self.rp_create_btn.setEnabled(True)
         if status == "created":
@@ -2918,18 +3602,33 @@ class SettingsPage(_Page):
         self._refresh_restore_points()
 
     def _on_rp_fail(self, msg: str):
-        """Reset the restore-point UI and surface the error."""
+        """Reset the restore-point UI and surface the error.
+
+        Captures worker error messages, presents diagnostic feedback to the user, and resets interactive controls for retry.
+
+        Args:
+            msg (str): Informational or progress status message.
+        """
         self.rp_progress.setVisible(False)
         self.rp_create_btn.setEnabled(True)
         self.win._default_fail(msg)
 
     def _refresh_restore_points(self):
-        """Load existing restore points via RestorePointListWorker."""
+        """Load existing restore points via RestorePointListWorker.
+
+        Manages refresh restore points operations and coordinates related state changes for the component.
+        """
         from .workers import RestorePointListWorker
         self.win.run_worker(RestorePointListWorker(), self._on_rp_listed, self._on_rp_fail)
 
     def _on_rp_listed(self, points: list):
-        """Fill the restore-point table from the listed points."""
+        """Fill the restore-point table from the listed points.
+
+        Manages on rp listed operations and coordinates related state changes for the component.
+
+        Args:
+            points (list): The points parameter.
+        """
         self.rp_table.setRowCount(len(points))
         for r, p in enumerate(points):
             self.rp_table.setItem(r, 0, QTableWidgetItem(str(p.get("description", ""))))

@@ -26,7 +26,17 @@ EXCLUDE_FILES = {
 
 
 def build_tree(dir_path: Path, prefix: str = "") -> list[str]:
-    """build_tree."""
+    """build_tree.
+
+    Manages build tree operations and coordinates related state changes for the component.
+
+    Args:
+        dir_path (Path): Filesystem path to the target file or directory.
+        prefix (str): The prefix parameter.
+
+    Returns:
+        list[str]: List of processed items or identifiers.
+    """
     lines = []
     try:
         entries = sorted(list(dir_path.iterdir()), key=lambda e: (not e.is_dir(), e.name.lower()))
@@ -56,7 +66,10 @@ def build_tree(dir_path: Path, prefix: str = "") -> list[str]:
 
 
 def main():
-    """main."""
+    """Main.
+
+    Manages main operations and coordinates related state changes for the component.
+    """
     header = [
         "CORTEX CLEANER SUITE — PROJECT DIRECTORY STRUCTURE",
         "==================================================",

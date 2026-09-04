@@ -33,7 +33,10 @@ _PREFIX = "Cortex Cleaner:"
 
 @dataclass(slots=True)
 class FirewallRule:
-    """Firewall Rule data container."""
+    """Firewallrule.
+
+    Manages FirewallRule operations and coordinates related state changes for the component.
+    """
     name: str
     display_name: str
     direction: str        # Inbound / Outbound
@@ -45,7 +48,13 @@ class FirewallRule:
     managed_by_cortex: bool = False
 
     def to_dict(self) -> dict[str, Any]:
-        """To dict."""
+        """To dict.
+
+        Manages to dict operations and coordinates related state changes for the component.
+
+        Returns:
+            dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         return {
             "name": self.name,
             "display_name": self.display_name,
@@ -60,30 +69,72 @@ class FirewallRule:
 
 
 class FirewallManager:
-    """Create, list, toggle and remove Windows Firewall rules (Cortex-scoped)."""
+    """Firewallmanager.
+
+    Manages FirewallManager operations and coordinates related state changes for the component.
+    """
 
     @staticmethod
     def is_supported() -> bool:
-        """Is supported."""
+        """Is supported.
+
+        Manages is supported operations and coordinates related state changes for the component.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         return _IS_WINDOWS
 
     # -- creation -----------------------------------------------------------
 
     def block_program(self, program_path: str, direction: str = "Outbound",
                       label: str = "") -> tuple[bool, str]:
-        """Block a program's traffic. Reversible via remove_rule/toggle."""
+        """Block a program's traffic. Reversible via remove_rule/toggle.
+
+        Manages block program operations and coordinates related state changes for the component.
+
+        Args:
+            program_path (str): Filesystem path to the target file or directory.
+            direction (str): The direction parameter.
+            label (str): Display text string.
+
+        Returns:
+            tuple[bool, str]: True if the operation succeeded, False otherwise.
+        """
         return self._new_rule(action="Block", program=program_path,
                               direction=direction, label=label or program_path)
 
     def allow_program(self, program_path: str, direction: str = "Outbound",
                       label: str = "") -> tuple[bool, str]:
-        """Allow program."""
+        """Allow program.
+
+        Manages allow program operations and coordinates related state changes for the component.
+
+        Args:
+            program_path (str): Filesystem path to the target file or directory.
+            direction (str): The direction parameter.
+            label (str): Display text string.
+
+        Returns:
+            tuple[bool, str]: True if the operation succeeded, False otherwise.
+        """
         return self._new_rule(action="Allow", program=program_path,
                               direction=direction, label=label or program_path)
 
     def block_remote_address(self, address: str, direction: str = "Outbound",
                             label: str = "") -> tuple[bool, str]:
-        """Block traffic to/from a remote IP or range."""
+        """Block traffic to/from a remote IP or range.
+
+        Manages block remote address operations and coordinates related state changes for the component.
+
+        Args:
+            address (str): The address parameter.
+            direction (str): The direction parameter.
+            label (str): Display text string.
+
+        Returns:
+            tuple[bool, str]: True if the operation succeeded, False otherwise.
+        """
         if not self._valid_address(address):
             return False, "Invalid IP address or range."
         return self._new_rule(action="Block", remote_address=address,
@@ -91,7 +142,20 @@ class FirewallManager:
 
     def _new_rule(self, action: str, direction: str, label: str,
                   program: str = "", remote_address: str = "") -> tuple[bool, str]:
-        """_new_rule."""
+        """_new_rule.
+
+        Manages new rule operations and coordinates related state changes for the component.
+
+        Args:
+            action (str): The action parameter.
+            direction (str): The direction parameter.
+            label (str): Display text string.
+            program (str): The program parameter.
+            remote_address (str): The remote address parameter.
+
+        Returns:
+            tuple[bool, str]: True if the operation succeeded, False otherwise.
+        """
         if not _IS_WINDOWS:
             return False, "Firewall control is only available on Windows."
         if direction not in ("Inbound", "Outbound"):
@@ -112,13 +176,20 @@ class FirewallManager:
         if ok:
             return True, f"{action} rule created for {label}."
         return False, "Could not create the rule (Administrator is required)."
-        """_new_rule."""
-        """_new_rule."""
 
     # -- listing / management ----------------------------------------------
 
     def list_rules(self, cortex_only: bool = True) -> list[FirewallRule]:
-        """List rules."""
+        """List rules.
+
+        Manages list rules operations and coordinates related state changes for the component.
+
+        Args:
+            cortex_only (bool): The cortex only parameter.
+
+        Returns:
+            list[FirewallRule]: List of processed items or identifiers.
+        """
         if not _IS_WINDOWS:
             return []
         # Pull rules plus their program/address filters in one JSON blob.
@@ -140,7 +211,17 @@ class FirewallManager:
         return self._parse_rules(self._run(script, want_output=True))
 
     def set_enabled(self, name: str, enabled: bool) -> tuple[bool, str]:
-        """Set enabled."""
+        """Set enabled.
+
+        Manages set enabled operations and coordinates related state changes for the component.
+
+        Args:
+            name (str): The name parameter.
+            enabled (bool): The enabled parameter.
+
+        Returns:
+            tuple[bool, str]: True if the operation succeeded, False otherwise.
+        """
         if not _IS_WINDOWS:
             return False, "Firewall control is only available on Windows."
         state = "True" if enabled else "False"
@@ -148,7 +229,16 @@ class FirewallManager:
         return (ok, "Rule updated." if ok else "Could not update rule (Administrator required).")
 
     def remove_rule(self, name: str) -> tuple[bool, str]:
-        """Remove rule."""
+        """Remove rule.
+
+        Manages remove rule operations and coordinates related state changes for the component.
+
+        Args:
+            name (str): The name parameter.
+
+        Returns:
+            tuple[bool, str]: True if the operation succeeded, False otherwise.
+        """
         if not _IS_WINDOWS:
             return False, "Firewall control is only available on Windows."
         ok = self._run(f"Remove-NetFirewallRule -Name {self._ps_quote(name)}")
@@ -158,7 +248,16 @@ class FirewallManager:
 
     @staticmethod
     def _parse_rules(out: str | None) -> list[FirewallRule]:
-        """_parse_rules."""
+        """_parse_rules.
+
+        Manages parse rules operations and coordinates related state changes for the component.
+
+        Args:
+            out (str | None): The out parameter.
+
+        Returns:
+            list[FirewallRule]: List of processed items or identifiers.
+        """
         if not out:
             return []
         import json
@@ -185,12 +284,19 @@ class FirewallManager:
                 managed_by_cortex=disp.startswith(_PREFIX),
             ))
         return rules
-        """_parse_rules."""
-        """_parse_rules."""
 
     @staticmethod
     def _valid_address(addr: str) -> bool:
-        """_valid_address."""
+        """_valid_address.
+
+        Manages valid address operations and coordinates related state changes for the component.
+
+        Args:
+            addr (str): The addr parameter.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         import ipaddress
         addr = (addr or "").strip()
         if not addr:
@@ -207,16 +313,30 @@ class FirewallManager:
             return True
         except ValueError:
             return False
-        """_valid_address."""
-        """_valid_address."""
 
     @staticmethod
     def _ps_quote(value: str) -> str:
-        """Single-quote a value for PowerShell, escaping embedded quotes."""
+        """Single-quote a value for PowerShell, escaping embedded quotes.
+
+        Manages ps quote operations and coordinates related state changes for the component.
+
+        Args:
+            value (str): The value parameter.
+
+        Returns:
+            str: Formatted string or path.
+        """
         return "'" + str(value).replace("'", "''") + "'"
 
     def _run(self, script: str, want_output: bool = False):
-        """_run."""
+        """Run.
+
+        Manages run operations and coordinates related state changes for the component.
+
+        Args:
+            script (str): The script parameter.
+            want_output (bool): The want output parameter.
+        """
         try:
             proc = _proc.run(
                 ["powershell", "-NoProfile", "-NonInteractive", "-Command", script],
@@ -228,5 +348,3 @@ class FirewallManager:
         except (_proc.ProcessCancelled, OSError, subprocess.SubprocessError) as exc:
             _LOG.debug("firewall command failed: %s", exc)
             return None if want_output else False
-        """_run."""
-        """_run."""

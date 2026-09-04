@@ -90,7 +90,10 @@ from cortex_unified.system_tools.restore_point import RestorePointManager
 
 @dataclass(frozen=True, slots=True)
 class TweakDef:
-    """Single privacy tweak definition."""
+    """Tweakdef.
+
+    Manages TweakDef operations and coordinates related state changes for the component.
+    """
     id: str
     name: str
     description: str = ""
@@ -127,7 +130,13 @@ class TweakDef:
     conflicts_with: List[str] = field(default_factory=list)
 
     def applies_to_current_os(self) -> bool:
-        """Applies to current os."""
+        """Applies to current os.
+
+        Manages applies to current os operations and coordinates related state changes for the component.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         import platform
         build = int(platform.version().split(".")[-1]) if platform.version() else 0
         return self.min_build <= build <= self.max_build
@@ -457,7 +466,10 @@ TELEMETRY_TWEAKS: List[TweakDef] = [
 # ---------------------------------------------------------------------------
 
 class PrivacyBlocker:
-    """Declarative privacy tweak engine with profiles and persistence."""
+    """Privacyblocker.
+
+    Manages PrivacyBlocker operations and coordinates related state changes for the component.
+    """
 
     def __init__(
         self,
@@ -467,7 +479,17 @@ class PrivacyBlocker:
         cancel_event: Optional[threading.Event] = None,
         dry_run: bool = False,
     ):
-        """Initialize Privacy Blocker."""
+        """Initialize Privacy Blocker.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            tweaks (Optional[List[TweakDef]]): The tweaks parameter.
+            create_restore_point (bool): The create restore point parameter.
+            progress_callback (Optional[Callable[[str], None]]): The progress callback parameter.
+            cancel_event (Optional[threading.Event]): Threading event or callable to check for cancellation.
+            dry_run (bool): The dry run parameter.
+        """
         self.tweaks = {t.id: t for t in (tweaks or TELEMETRY_TWEAKS)}
         self.create_restore_point = create_restore_point
         self.progress = progress_callback or (lambda _: None)
@@ -480,7 +502,19 @@ class PrivacyBlocker:
     # -- registry helpers
 
     def _reg_set(self, path: str, value: str, data: Any, dtype: int) -> bool:
-        """_reg_set."""
+        """_reg_set.
+
+        Manages reg set operations and coordinates related state changes for the component.
+
+        Args:
+            path (str): Filesystem path to the target file or directory.
+            value (str): The value parameter.
+            data (Any): The data parameter.
+            dtype (int): The dtype parameter.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         if self.dry_run:
             self.progress(f"[DRY-RUN] Set {path}\\{value} = {data} ({dtype})")
             return True
@@ -493,11 +527,19 @@ class PrivacyBlocker:
         except Exception as exc:
             self.progress(f"Registry set failed {path}\\{value}: {exc}")
             return False
-        """_reg_set."""
-        """_reg_set."""
 
     def _reg_get(self, path: str, value: str) -> Any:
-        """_reg_get."""
+        """_reg_get.
+
+        Manages reg get operations and coordinates related state changes for the component.
+
+        Args:
+            path (str): Filesystem path to the target file or directory.
+            value (str): The value parameter.
+
+        Returns:
+            Any: Result of the operation.
+        """
         try:
             hive_str, subkey = path.split("\\", 1)
             hive = getattr(winreg, hive_str)
@@ -506,11 +548,18 @@ class PrivacyBlocker:
                 return data
         except Exception:
             return None
-        """_reg_get."""
-        """_reg_get."""
 
     def _reg_backup(self, path: str) -> Optional[str]:
-        """Export registry key to .reg file."""
+        """Export registry key to .reg file.
+
+        Manages reg backup operations and coordinates related state changes for the component.
+
+        Args:
+            path (str): Filesystem path to the target file or directory.
+
+        Returns:
+            Optional[str]: Formatted string or path.
+        """
         try:
             hive_str, subkey = path.split("\\", 1)
             hive = getattr(winreg, hive_str)
@@ -524,7 +573,17 @@ class PrivacyBlocker:
     # -- service helpers
 
     def _svc_set_start(self, name: str, start_type: int) -> bool:
-        """_svc_set_start."""
+        """_svc_set_start.
+
+        Manages svc set start operations and coordinates related state changes for the component.
+
+        Args:
+            name (str): The name parameter.
+            start_type (int): The start type parameter.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         if self.dry_run:
             self.progress(f"[DRY-RUN] Set service {name} start type = {start_type}")
             return True
@@ -536,11 +595,18 @@ class PrivacyBlocker:
                 subprocess.run(["net", "stop", name], capture_output=True)
             return True
         return False
-        """_svc_set_start."""
-        """_svc_set_start."""
 
     def _svc_get_start(self, name: str) -> Optional[int]:
-        """_svc_get_start."""
+        """_svc_get_start.
+
+        Manages svc get start operations and coordinates related state changes for the component.
+
+        Args:
+            name (str): The name parameter.
+
+        Returns:
+            Optional[int]: Result of the operation.
+        """
         try:
             out = subprocess.run(["sc", "qc", name], capture_output=True, text=True).stdout
             for line in out.splitlines():
@@ -549,13 +615,21 @@ class PrivacyBlocker:
         except Exception:
             pass
         return None
-        """_svc_get_start."""
-        """_svc_get_start."""
 
     # -- scheduled task helpers
 
     def _task_set_enabled(self, path: str, enabled: bool) -> bool:
-        """_task_set_enabled."""
+        """_task_set_enabled.
+
+        Manages task set enabled operations and coordinates related state changes for the component.
+
+        Args:
+            path (str): Filesystem path to the target file or directory.
+            enabled (bool): The enabled parameter.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         if self.dry_run:
             self.progress(f"[DRY-RUN] Set task {path} enabled = {enabled}")
             return True
@@ -563,13 +637,22 @@ class PrivacyBlocker:
         rc = subprocess.run(["schtasks", "/change", "/tn", path, "/" + state],
                             capture_output=True).returncode
         return rc == 0
-        """_task_set_enabled."""
-        """_task_set_enabled."""
 
     # -- firewall helpers
 
     def _fw_add_block(self, name: str, direction: str, program: str) -> bool:
-        """_fw_add_block."""
+        """_fw_add_block.
+
+        Manages fw add block operations and coordinates related state changes for the component.
+
+        Args:
+            name (str): The name parameter.
+            direction (str): The direction parameter.
+            program (str): The program parameter.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         if self.dry_run:
             self.progress(f"[DRY-RUN] Add firewall block rule {name}")
             return True
@@ -577,23 +660,38 @@ class PrivacyBlocker:
                "name=" + name, "dir=" + direction, "action=block",
                "program=" + program, "enable=yes", "profile=any"]
         return subprocess.run(cmd, capture_output=True).returncode == 0
-        """_fw_add_block."""
-        """_fw_add_block."""
 
     # -- IFEO helpers
 
     def _ifeo_set(self, target: str, debugger: str) -> bool:
-        """_ifeo_set."""
+        """_ifeo_set.
+
+        Manages ifeo set operations and coordinates related state changes for the component.
+
+        Args:
+            target (str): The target parameter.
+            debugger (str): The debugger parameter.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         if self.dry_run:
             self.progress(f"[DRY-RUN] Set IFEO {target} = {debugger}")
             return True
         path = rf"HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\{target}"
         return self._reg_set(path, "Debugger", debugger, winreg.REG_SZ)
-        """_ifeo_set."""
-        """_ifeo_set."""
 
     def _ifeo_remove(self, target: str) -> bool:
-        """_ifeo_remove."""
+        """_ifeo_remove.
+
+        Manages ifeo remove operations and coordinates related state changes for the component.
+
+        Args:
+            target (str): The target parameter.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         if self.dry_run:
             return True
         path = rf"HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\{target}"
@@ -603,13 +701,20 @@ class PrivacyBlocker:
             return True
         except Exception:
             return False
-        """_ifeo_remove."""
-        """_ifeo_remove."""
 
     # -- core operations
 
     def apply(self, tweak_ids: List[str]) -> Dict[str, bool]:
-        """Apply tweaks by ID list."""
+        """Apply.
+
+        Manages apply operations and coordinates related state changes for the component.
+
+        Args:
+            tweak_ids (List[str]): The tweak ids parameter.
+
+        Returns:
+            Dict[str, bool]: Dictionary mapping identifiers to status or values.
+        """
         results = {}
         if self.create_restore_point:
             self._restore_mgr.create("Cortex Privacy: Apply Tweaks")
@@ -649,7 +754,16 @@ class PrivacyBlocker:
         return results
 
     def remove(self, tweak_ids: List[str]) -> Dict[str, bool]:
-        """Remove/revert tweaks by ID list."""
+        """Remove.
+
+        Manages remove operations and coordinates related state changes for the component.
+
+        Args:
+            tweak_ids (List[str]): The tweak ids parameter.
+
+        Returns:
+            Dict[str, bool]: Dictionary mapping identifiers to status or values.
+        """
         results = {}
         for tid in tweak_ids:
             if self.cancel_event.is_set():
@@ -692,7 +806,16 @@ class PrivacyBlocker:
         return results
 
     def status(self, tweak_ids: List[str]) -> Dict[str, Dict]:
-        """Check current status of tweaks."""
+        """Status.
+
+        Manages status operations and coordinates related state changes for the component.
+
+        Args:
+            tweak_ids (List[str]): The tweak ids parameter.
+
+        Returns:
+            Dict[str, Dict]: Dictionary mapping identifiers to status or values.
+        """
         results = {}
         for tid in tweak_ids:
             if tid not in self.tweaks:
@@ -720,13 +843,28 @@ class PrivacyBlocker:
         return results
 
     def apply_profile(self, profile_name: str) -> Dict[str, bool]:
-        """Apply all tweaks tagged with a profile."""
+        """Apply all tweaks tagged with a profile.
+
+        Manages apply profile operations and coordinates related state changes for the component.
+
+        Args:
+            profile_name (str): The profile name parameter.
+
+        Returns:
+            Dict[str, bool]: Dictionary mapping identifiers to status or values.
+        """
         ids = [t.id for t in self.tweaks.values() if profile_name in t.profiles]
         self.progress(f"Applying profile '{profile_name}' ({len(ids)} tweaks)...")
         return self.apply(ids)
 
     def audit(self) -> Dict:
-        """Full privacy audit — returns JSON-serializable report."""
+        """Audit.
+
+        Manages audit operations and coordinates related state changes for the component.
+
+        Returns:
+            Dict: Dictionary mapping identifiers to status or values.
+        """
         all_ids = list(self.tweaks.keys())
         status = self.status(all_ids)
         applied = sum(1 for v in status.values() if v["applied"])
@@ -753,7 +891,13 @@ class PrivacyBlocker:
         }
 
     def list_profiles(self) -> Dict[str, List[str]]:
-        """Return profile -> tweak IDs mapping."""
+        """Return profile -> tweak IDs mapping.
+
+        Manages list profiles operations and coordinates related state changes for the component.
+
+        Returns:
+            Dict[str, List[str]]: List of processed items or identifiers.
+        """
         profiles: Dict[str, List[str]] = {}
         for tweak in self.tweaks.values():
             for p in tweak.profiles:
@@ -761,7 +905,13 @@ class PrivacyBlocker:
         return profiles
 
     def export_config(self, path: str) -> None:
-        """Export current applied tweaks as JSON config."""
+        """Export current applied tweaks as JSON config.
+
+        Manages export config operations and coordinates related state changes for the component.
+
+        Args:
+            path (str): Filesystem path to the target file or directory.
+        """
         status = self.status(list(self.tweaks.keys()))
         applied_ids = [tid for tid, v in status.items() if v["applied"]]
         config = {
@@ -773,12 +923,30 @@ class PrivacyBlocker:
         self.progress(f"Exported config to {path}")
 
     def import_config(self, path: str) -> Dict[str, bool]:
-        """Import and apply tweaks from JSON config."""
+        """Import and apply tweaks from JSON config.
+
+        Manages import config operations and coordinates related state changes for the component.
+
+        Args:
+            path (str): Filesystem path to the target file or directory.
+
+        Returns:
+            Dict[str, bool]: Dictionary mapping identifiers to status or values.
+        """
         data = json.loads(Path(path).read_text(encoding="utf-8"))
         return self.apply(data.get("applied_tweaks", []))
 
     def enable_auto_enforcement(self, interval_minutes: int = 60) -> bool:
-        """Register scheduled task for periodic re-application (Premium feature)."""
+        """Register scheduled task for periodic re-application (Premium feature).
+
+        Manages enable auto enforcement operations and coordinates related state changes for the component.
+
+        Args:
+            interval_minutes (int): The interval minutes parameter.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         if self.dry_run:
             return True
         try:

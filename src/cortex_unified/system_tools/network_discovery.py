@@ -175,7 +175,10 @@ _VENDOR_KIND_HINTS: tuple[tuple[tuple[str, ...], str], ...] = (
 
 @dataclass
 class Device:
-    """One discovered device, with the evidence that found it."""
+    """Device.
+
+    Manages Device operations and coordinates related state changes for the component.
+    """
 
     ip: str
     mac: str = ""
@@ -198,7 +201,13 @@ class Device:
 
     @property
     def randomized_mac(self) -> bool:
-        """True when the device is using a privacy/randomized MAC."""
+        """True when the device is using a privacy/randomized MAC.
+
+        Manages randomized mac operations and coordinates related state changes for the component.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         return oui.is_randomized(self.mac)
 
     @property
@@ -230,7 +239,16 @@ class Device:
 
     @staticmethod
     def _looks_like_uuid(text: str) -> bool:
-        """True for machine-generated identifiers not worth showing as a name."""
+        """True for machine-generated identifiers not worth showing as a name.
+
+        Manages looks like uuid operations and coordinates related state changes for the component.
+
+        Args:
+            text (str): Display text string.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         stripped = text.replace("-", "")
         return len(stripped) >= 24 and all(
             c in "0123456789abcdefABCDEF" for c in stripped)
@@ -290,7 +308,13 @@ class Device:
 
     @property
     def evidence(self) -> str:
-        """Plain description of how we know this device is there."""
+        """Evidence.
+
+        Manages evidence operations and coordinates related state changes for the component.
+
+        Returns:
+            str: Formatted string or path.
+        """
         names = {
             "neighbor": "answered ARP",
             "arp-sweep": "answered ARP when probed",
@@ -305,7 +329,13 @@ class Device:
         return ", ".join(seen) if seen else "seen on the network"
 
     def merge(self, other: "Device") -> None:
-        """Fold another observation of the same device into this one."""
+        """Merge.
+
+        Manages merge operations and coordinates related state changes for the component.
+
+        Args:
+            other ('Device'): The other parameter.
+        """
         self.mac = self.mac or other.mac
         self.hostname = self.hostname or other.hostname
         self.vendor = self.vendor or other.vendor
@@ -334,7 +364,13 @@ class Device:
             self.rtt_ms = other.rtt_ms
 
     def to_dict(self) -> dict[str, Any]:
-        """To dict."""
+        """To dict.
+
+        Manages to dict operations and coordinates related state changes for the component.
+
+        Returns:
+            dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         return {
             "ip": self.ip,
             "mac": self.mac,
@@ -370,7 +406,10 @@ class Device:
 
 @dataclass(slots=True)
 class Interface:
-    """A local IPv4 interface worth scanning."""
+    """Interface.
+
+    Manages Interface operations and coordinates related state changes for the component.
+    """
 
     name: str
     ip: str
@@ -378,7 +417,13 @@ class Interface:
 
     @property
     def network(self) -> ipaddress.IPv4Network | None:
-        """Network."""
+        """Network.
+
+        Manages network operations and coordinates related state changes for the component.
+
+        Returns:
+            ipaddress.IPv4Network | None: Result of the operation.
+        """
         try:
             return ipaddress.IPv4Network(f"{self.ip}/{self.netmask}", strict=False)
         except (ipaddress.AddressValueError, ipaddress.NetmaskValueError, ValueError):
@@ -387,7 +432,10 @@ class Interface:
 
 @dataclass
 class DiscoveryResult:
-    """Everything a scan found, plus evidence-backed audit results."""
+    """Discoveryresult.
+
+    Manages DiscoveryResult operations and coordinates related state changes for the component.
+    """
 
     devices: list[Device] = field(default_factory=list)
     networks: list[str] = field(default_factory=list)
@@ -401,7 +449,13 @@ class DiscoveryResult:
     audit_profile: str = "targeted"
 
     def to_dict(self) -> dict[str, Any]:
-        """To dict."""
+        """To dict.
+
+        Manages to dict operations and coordinates related state changes for the component.
+
+        Returns:
+            dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         return {
             "devices": [d.to_dict() for d in self.devices],
             "networks": self.networks,
@@ -429,10 +483,20 @@ class DiscoveryResult:
 
 
 class NetworkDiscovery:
-    """Multi-protocol LAN discovery. Probes only this PC's own subnets."""
+    """Networkdiscovery.
+
+    Manages NetworkDiscovery operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, timeout_s: float = 4.0, workers: int = 128) -> None:
-        """Initialize Network Discovery."""
+        """Initialize Network Discovery.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            timeout_s (float): The timeout s parameter.
+            workers (int): The workers parameter.
+        """
         self.timeout_s = timeout_s
         self.workers = max(8, workers)
         self.logger = _LOG
@@ -480,17 +544,25 @@ class NetworkDiscovery:
         oui.ensure_registry_loaded()
 
         def _say(msg: str) -> None:
-            """_say."""
+            """Say.
+
+            Manages say operations and coordinates related state changes for the component.
+
+            Args:
+                msg (str): Informational or progress status message.
+            """
             if progress is not None:
                 progress(msg)
-            """_say."""
-            """_say."""
 
         def _cancelled() -> bool:
-            """_cancelled."""
+            """Cancelled.
+
+            Manages cancelled operations and coordinates related state changes for the component.
+
+            Returns:
+                bool: True if the operation succeeded, False otherwise.
+            """
             return cancel_event is not None and cancel_event.is_set()
-            """_cancelled."""
-            """_cancelled."""
 
         interfaces = self.local_interfaces()
         if not interfaces:
@@ -661,7 +733,13 @@ class NetworkDiscovery:
 
     @staticmethod
     def local_interfaces() -> list[Interface]:
-        """Return this PC's up, private IPv4 interfaces."""
+        """Return this PC's up, private IPv4 interfaces.
+
+        Manages local interfaces operations and coordinates related state changes for the component.
+
+        Returns:
+            list[Interface]: List of processed items or identifiers.
+        """
         out: list[Interface] = []
         try:
             import psutil
@@ -691,7 +769,16 @@ class NetworkDiscovery:
 
     @staticmethod
     def _local_devices(interfaces: list[Interface]) -> list[Device]:
-        """Represent this PC itself, one entry per active interface."""
+        """Represent this PC itself, one entry per active interface.
+
+        Manages local devices operations and coordinates related state changes for the component.
+
+        Args:
+            interfaces (list[Interface]): The interfaces parameter.
+
+        Returns:
+            list[Device]: List of processed items or identifiers.
+        """
         hostname = ""
         try:
             hostname = socket.gethostname().split(".")[0]
@@ -724,7 +811,13 @@ class NetworkDiscovery:
         ]
 
     def default_gateways(self) -> set[str]:
-        """Return default-gateway IPs (used to label the router)."""
+        """Return default-gateway IPs (used to label the router).
+
+        Manages default gateways operations and coordinates related state changes for the component.
+
+        Returns:
+            set[str]: Formatted string or path.
+        """
         gateways: set[str] = set()
         if _IS_WINDOWS:
             out = self._run_ps(
@@ -751,7 +844,13 @@ class NetworkDiscovery:
     # -- layer 2: neighbour cache + ARP sweep ------------------------------
 
     def _read_neighbors(self) -> list[Device]:
-        """Read the OS neighbour cache (ARP for IPv4, NDP for IPv6)."""
+        """Read the OS neighbour cache (ARP for IPv4, NDP for IPv6).
+
+        Manages read neighbors operations and coordinates related state changes for the component.
+
+        Returns:
+            list[Device]: List of processed items or identifiers.
+        """
         if _IS_WINDOWS:
             devices = self._read_neighbors_windows()
             if devices:
@@ -759,7 +858,13 @@ class NetworkDiscovery:
         return self._read_arp_command()
 
     def _read_neighbors_windows(self) -> list[Device]:
-        """Use ``Get-NetNeighbor``, which exposes reachability state too."""
+        """Use ``Get-NetNeighbor``, which exposes reachability state too.
+
+        Manages read neighbors windows operations and coordinates related state changes for the component.
+
+        Returns:
+            list[Device]: List of processed items or identifiers.
+        """
         # Only states that imply a real answered ARP exchange. Incomplete and
         # Unreachable entries exist for every address we probed without reply,
         # and carry a 00-00-00-00-00-00 address - including them would invent a
@@ -784,7 +889,13 @@ class NetworkDiscovery:
         return devices
 
     def _read_arp_command(self) -> list[Device]:
-        """Fallback: parse ``arp -a`` (works on every platform)."""
+        """Fallback: parse ``arp -a`` (works on every platform).
+
+        Manages read arp command operations and coordinates related state changes for the component.
+
+        Returns:
+            list[Device]: List of processed items or identifiers.
+        """
         try:
             res = _proc.run(["arp", "-a"], text=True, timeout=20,
                             creationflags=_NO_WINDOW)
@@ -844,7 +955,13 @@ class NetworkDiscovery:
         payload = b"\x00"
 
         def _poke(ip: str) -> None:
-            """_poke."""
+            """Poke.
+
+            Manages poke operations and coordinates related state changes for the component.
+
+            Args:
+                ip (str): The ip parameter.
+            """
             if cancel_event is not None and cancel_event.is_set():
                 return
             try:
@@ -853,8 +970,6 @@ class NetworkDiscovery:
                     sock.sendto(payload, (ip, _ARP_POKE_PORT))
             except OSError:
                 pass  # unreachable/blocked is fine - the ARP attempt happened
-            """_poke."""
-            """_poke."""
 
         with ThreadPoolExecutor(max_workers=min(self.workers, 48)) as pool:
             list(pool.map(_poke, hosts))
@@ -870,14 +985,21 @@ class NetworkDiscovery:
 
     @staticmethod
     def _is_ipv4(value: str) -> bool:
-        """_is_ipv4."""
+        """_is_ipv4.
+
+        Manages is ipv4 operations and coordinates related state changes for the component.
+
+        Args:
+            value (str): The value parameter.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         try:
             ipaddress.IPv4Address(value)
             return True
         except (ipaddress.AddressValueError, ValueError):
             return False
-        """_is_ipv4."""
-        """_is_ipv4."""
 
     @classmethod
     def _usable_host(cls, ip: str, mac: str) -> bool:
@@ -904,28 +1026,50 @@ class NetworkDiscovery:
 
     @staticmethod
     def _ip_sort_key(ip: str) -> tuple:
-        """_ip_sort_key."""
+        """_ip_sort_key.
+
+        Manages ip sort key operations and coordinates related state changes for the component.
+
+        Args:
+            ip (str): The ip parameter.
+
+        Returns:
+            tuple: Result of the operation.
+        """
         try:
             return (0,) + tuple(int(p) for p in ip.split("."))
         except (ValueError, AttributeError):
             return (1, ip)
-        """_ip_sort_key."""
-        """_ip_sort_key."""
 
     @staticmethod
     def _merge(into: dict[str, Device], found: Iterable[Device]) -> None:
-        """_merge."""
+        """Merge.
+
+        Manages merge operations and coordinates related state changes for the component.
+
+        Args:
+            into (dict[str, Device]): The into parameter.
+            found (Iterable[Device]): The found parameter.
+        """
         for device in found:
             existing = into.get(device.ip)
             if existing is None:
                 into[device.ip] = device
             else:
                 existing.merge(device)
-        """_merge."""
-        """_merge."""
 
     def _run_ps(self, script: str, timeout: int = 45) -> str | None:
-        """_run_ps."""
+        """_run_ps.
+
+        Manages run ps operations and coordinates related state changes for the component.
+
+        Args:
+            script (str): The script parameter.
+            timeout (int): The timeout parameter.
+
+        Returns:
+            str | None: Formatted string or path.
+        """
         try:
             res = _proc.run(
                 ["powershell", "-NoProfile", "-NonInteractive", "-Command", script],
@@ -935,8 +1079,6 @@ class NetworkDiscovery:
         except (_proc.ProcessCancelled, OSError, subprocess.SubprocessError) as exc:
             _LOG.debug("powershell failed: %s", exc)
             return None
-        """_run_ps."""
-        """_run_ps."""
 
     # -- mDNS / DNS-SD -----------------------------------------------------
 
@@ -996,7 +1138,15 @@ class NetworkDiscovery:
         return list(found.values())
 
     def _absorb_mdns(self, found: dict[str, Device], data: bytes, src_ip: str) -> None:
-        """Parse an mDNS response and record names/services for the sender."""
+        """Parse an mDNS response and record names/services for the sender.
+
+        Manages absorb mdns operations and coordinates related state changes for the component.
+
+        Args:
+            found (dict[str, Device]): The found parameter.
+            data (bytes): The data parameter.
+            src_ip (str): The src ip parameter.
+        """
         try:
             records = self._parse_dns_records(data)
         except Exception as exc:  # noqa: BLE001 - malformed packets are expected
@@ -1044,7 +1194,16 @@ class NetworkDiscovery:
 
     @staticmethod
     def _split_service_instance(value: str) -> tuple[str, str]:
-        """Split ``Living Room._googlecast._tcp.local`` into (type, instance)."""
+        """Split ``Living Room._googlecast._tcp.local`` into (type, instance).
+
+        Manages split service instance operations and coordinates related state changes for the component.
+
+        Args:
+            value (str): The value parameter.
+
+        Returns:
+            tuple[str, str]: Formatted string or path.
+        """
         if not value:
             return "", ""
         text = value[: -len(".local")] if value.endswith(".local") else value
@@ -1057,7 +1216,17 @@ class NetworkDiscovery:
 
     @staticmethod
     def _build_dns_query(name: str, qtype: int = 12) -> bytes:
-        """Build a minimal DNS query packet (PTR by default) for *name*."""
+        """Build a minimal DNS query packet (PTR by default) for *name*.
+
+        Manages build dns query operations and coordinates related state changes for the component.
+
+        Args:
+            name (str): The name parameter.
+            qtype (int): The qtype parameter.
+
+        Returns:
+            bytes: Result of the operation.
+        """
         header = struct.pack(">HHHHHH", 0, 0, 1, 0, 0, 0)
         parts = b"".join(
             bytes([len(label)]) + label.encode("ascii", "ignore")
@@ -1112,7 +1281,17 @@ class NetworkDiscovery:
 
     @staticmethod
     def _read_name(data: bytes, offset: int) -> tuple[str, int]:
-        """Read a (possibly compressed) DNS name; returns (name, next_offset)."""
+        """Read a (possibly compressed) DNS name; returns (name, next_offset).
+
+        Manages read name operations and coordinates related state changes for the component.
+
+        Args:
+            data (bytes): The data parameter.
+            offset (int): The offset parameter.
+
+        Returns:
+            tuple[str, int]: Formatted string or path.
+        """
         labels: list[str] = []
         jumped = False
         original = offset
@@ -1204,7 +1383,16 @@ class NetworkDiscovery:
     # -- WS-Discovery ------------------------------------------------------
 
     def _discover_wsd(self, cancel_event: threading.Event | None) -> list[Device]:
-        """Send a WS-Discovery Probe - the way Windows itself finds PCs/printers."""
+        """Send a WS-Discovery Probe - the way Windows itself finds PCs/printers.
+
+        Manages discover wsd operations and coordinates related state changes for the component.
+
+        Args:
+            cancel_event (threading.Event | None): Threading event or callable to check for cancellation.
+
+        Returns:
+            list[Device]: List of processed items or identifiers.
+        """
         found: dict[str, Device] = {}
         probe = (
             '<?xml version="1.0" encoding="utf-8"?>'
@@ -1268,15 +1456,28 @@ class NetworkDiscovery:
 
     @staticmethod
     def _pseudo_uuid() -> str:
-        """_pseudo_uuid."""
+        """_pseudo_uuid.
+
+        Manages pseudo uuid operations and coordinates related state changes for the component.
+
+        Returns:
+            str: Formatted string or path.
+        """
         import uuid
         return str(uuid.uuid4())
-        """_pseudo_uuid."""
-        """_pseudo_uuid."""
 
     @staticmethod
     def _parse_http_headers(data: bytes) -> dict[str, str]:
-        """Parse SSDP's HTTP-style headers into a lower-cased dict."""
+        """Parse SSDP's HTTP-style headers into a lower-cased dict.
+
+        Manages parse http headers operations and coordinates related state changes for the component.
+
+        Args:
+            data (bytes): The data parameter.
+
+        Returns:
+            dict[str, str]: Dictionary mapping identifiers to status or values.
+        """
         headers: dict[str, str] = {}
         for line in data.decode("utf-8", "replace").splitlines()[1:]:
             if ":" in line:
@@ -1288,13 +1489,26 @@ class NetworkDiscovery:
 
     def _resolve_names(self, devices: dict[str, Device],
                        cancel_event: threading.Event | None) -> None:
-        """Fill in hostnames via reverse DNS and NetBIOS, in parallel."""
+        """Fill in hostnames via reverse DNS and NetBIOS, in parallel.
+
+        Manages resolve names operations and coordinates related state changes for the component.
+
+        Args:
+            devices (dict[str, Device]): The devices parameter.
+            cancel_event (threading.Event | None): Threading event or callable to check for cancellation.
+        """
         pending = [d for d in devices.values() if not d.hostname]
         if not pending:
             return
 
         def _resolve(device: Device) -> None:
-            """_resolve."""
+            """Resolve.
+
+            Manages resolve operations and coordinates related state changes for the component.
+
+            Args:
+                device (Device): The device parameter.
+            """
             if cancel_event is not None and cancel_event.is_set():
                 return
             # Reverse DNS: names the router's resolver knows about.
@@ -1310,14 +1524,22 @@ class NetworkDiscovery:
             if name:
                 device.hostname = name
                 device.sources.add("nbns")
-            """_resolve."""
-            """_resolve."""
 
         with ThreadPoolExecutor(max_workers=min(self.workers, 64)) as pool:
             list(pool.map(_resolve, pending))
 
     def _netbios_name(self, ip: str, timeout: float = 0.6) -> str:
-        """Send a NetBIOS node-status query (UDP 137) and read the name."""
+        """Send a NetBIOS node-status query (UDP 137) and read the name.
+
+        Manages netbios name operations and coordinates related state changes for the component.
+
+        Args:
+            ip (str): The ip parameter.
+            timeout (float): The timeout parameter.
+
+        Returns:
+            str: Formatted string or path.
+        """
         # Node status request for the wildcard name "*".
         query = (
             struct.pack(">HHHHHH", 0x4E42, 0x0000, 1, 0, 0, 0)
@@ -1428,7 +1650,18 @@ class NetworkDiscovery:
     def _build_notes(devices: list[Device],
                      targets: list[ipaddress.IPv4Network],
                      gateways: set[str]) -> list[str]:
-        """Explain the scan's limits, so gaps read as facts not failures."""
+        """Explain the scan's limits, so gaps read as facts not failures.
+
+        Manages build notes operations and coordinates related state changes for the component.
+
+        Args:
+            devices (list[Device]): The devices parameter.
+            targets (list[ipaddress.IPv4Network]): The targets parameter.
+            gateways (set[str]): The gateways parameter.
+
+        Returns:
+            list[str]: List of processed items or identifiers.
+        """
         notes: list[str] = []
 
         # A missing vendor database is deliberately NOT noted here: until the

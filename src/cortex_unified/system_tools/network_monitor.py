@@ -48,7 +48,10 @@ _SERVICES = {
 
 @dataclass(slots=True)
 class Connection:
-    """Connection data container."""
+    """Connection.
+
+    Manages Connection operations and coordinates related state changes for the component.
+    """
     protocol: str
     local_addr: str
     local_port: int
@@ -63,19 +66,37 @@ class Connection:
 
     @property
     def listening_public(self) -> bool:
-        """Listening public."""
+        """Listening public.
+
+        Manages listening public operations and coordinates related state changes for the component.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         return (self.status == "LISTEN"
                 and self.local_addr in ("0.0.0.0", "::"))
 
     @property
     def remote_external(self) -> bool:
-        """Remote external."""
+        """Remote external.
+
+        Manages remote external operations and coordinates related state changes for the component.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         if self.status != "ESTABLISHED" or not self.remote_addr:
             return False
         return not _is_private(self.remote_addr)
 
     def to_dict(self) -> dict[str, Any]:
-        """To dict."""
+        """To dict.
+
+        Manages to dict operations and coordinates related state changes for the component.
+
+        Returns:
+            dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         return {
             "protocol": self.protocol,
             "local": f"{self.local_addr}:{self.local_port}" if self.local_port else self.local_addr,
@@ -93,21 +114,37 @@ class Connection:
 
 
 def _is_private(addr: str) -> bool:
-    """_is_private."""
+    """_is_private.
+
+    Manages is private operations and coordinates related state changes for the component.
+
+    Args:
+        addr (str): The addr parameter.
+
+    Returns:
+        bool: True if the operation succeeded, False otherwise.
+    """
     try:
         ip = ipaddress.ip_address(addr)
     except ValueError:
         return True  # can't classify -> don't flag as external
     return ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_multicast
-    """_is_private."""
-    """_is_private."""
 
 
 class NetworkMonitor:
-    """Read-only listing of active network connections and their owners."""
+    """Networkmonitor.
+
+    Manages NetworkMonitor operations and coordinates related state changes for the component.
+    """
 
     def connections(self) -> list[Connection]:
-        """Connections."""
+        """Connections.
+
+        Manages connections operations and coordinates related state changes for the component.
+
+        Returns:
+            list[Connection]: List of processed items or identifiers.
+        """
         try:
             import psutil
         except ImportError:
@@ -154,7 +191,17 @@ class NetworkMonitor:
 
     @staticmethod
     def _meta_for(psutil, pid: int) -> tuple[str, str, str]:
-        """Return (name, exe_path, friendly_description) for a PID."""
+        """Return (name, exe_path, friendly_description) for a PID.
+
+        Manages meta for operations and coordinates related state changes for the component.
+
+        Args:
+            psutil: The psutil parameter.
+            pid (int): The pid parameter.
+
+        Returns:
+            tuple[str, str, str]: Formatted string or path.
+        """
         try:
             proc = psutil.Process(pid)
             with proc.oneshot():
@@ -174,7 +221,16 @@ class NetworkMonitor:
 
     @staticmethod
     def summarize(conns: list[Connection]) -> dict[str, int]:
-        """Summarize."""
+        """Summarize.
+
+        Manages summarize operations and coordinates related state changes for the component.
+
+        Args:
+            conns (list[Connection]): The conns parameter.
+
+        Returns:
+            dict[str, int]: Dictionary mapping identifiers to status or values.
+        """
         return {
             "total": len(conns),
             "established": sum(1 for c in conns if c.status == "ESTABLISHED"),

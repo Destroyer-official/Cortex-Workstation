@@ -183,30 +183,21 @@ class _PrefixIndex:
         self._entries: list[tuple[str, str]] = []
         self._dirty = True
         self._sorted: list[tuple[str, str]] = []
-        """Initialize the entry list, dirty flag, and sorted mirror used
-        for bisect-based prefix search."""
 
     def add(self, name: str, path: str) -> None:
         """Append a (lowercased name, path) tuple and mark the index dirty."""
         self._entries.append((name.lower(), path))
         self._dirty = True
-        """Append a (lowercased name, path) tuple and mark the index dirty."""
 
     def remove(self, name: str, path: str) -> None:
-        """O(n) pop from list; acceptable for infrequent removals."""
+        """Remove one entry by linear scan for the exact tuple; the list is
+        insertion-ordered so binary search would miss — marks dirty."""
         key = name.lower()
         target = (key, path)
-        lo, hi = 0, len(self._entries)
-        while lo < hi:
-            mid = (lo + hi) // 2
-            if self._entries[mid] < target:
-                lo = mid + 1
-            elif self._entries[mid] > target:
-                hi = mid
-            else:
-                self._entries.pop(mid)
-                self._dirty = True
-                return
+        for i, entry in enumerate(self._entries):
+            if entry == target:
+                self._entries.pop(i)
+                break
         self._dirty = True
 
     def _ensure_sorted(self) -> None:
@@ -214,7 +205,6 @@ class _PrefixIndex:
         if self._dirty:
             self._sorted = sorted(self._entries, key=lambda x: x[0])
             self._dirty = False
-        """Re-sort the entries by name (lazy rebuild, only when dirty)."""
 
     def prefix_search(self, prefix: str, max_results: int = 1000) -> list[str]:
         """Return up to max_results paths whose names start with the prefix
@@ -227,8 +217,6 @@ class _PrefixIndex:
         lo = bisect_left(self._sorted, (lo_prefix,))
         hi = bisect_left(self._sorted, (hi_prefix,))
         return [path for _, path in self._sorted[lo:hi]][:max_results]
-        """Return up to max_results paths whose names start with the prefix
-        (case-insensitive), via a bisect range over the sorted mirror."""
 
     def rebuild(self, entries: dict[str, IndexedEntry]) -> None:
         """Rebuild from an entry map (name lowercased), then re-sort
@@ -236,13 +224,10 @@ class _PrefixIndex:
         self._entries = [(e.name.lower(), e.path) for e in entries.values()]
         self._dirty = True
         self._ensure_sorted()
-        """Rebuild from an entry map (name lowercased), then re-sort
-        immediately."""
 
     def __len__(self) -> int:
         """Return the number of indexed names."""
         return len(self._entries)
-        """Return the number of indexed names."""
 
 
 # ---------------------------------------------------------------------------
@@ -254,23 +239,22 @@ class FileIndex:
 
     def __init__(self) -> None:
         """Create the master path map plus name/ext/parent lookup sets and
-        the prefix index, guarded by a reentrant lock."""
+        the prefix index, guarded by a reentrant lock, plus a dedicated
+        lock serializing SQLite persistence."""
         self._lock = threading.RLock()
+        self._db_lock = threading.Lock()
         self._entries: dict[str, IndexedEntry] = {}
         self._name_index: dict[str, set[str]] = {}
         self._ext_index: dict[str, set[str]] = {}
         self._parent_index: dict[str, set[str]] = {}
         self._prefix = _PrefixIndex()
         self._stats = IndexStats()
-        """Create the master path map plus name/ext/parent lookup sets and
-        the prefix index, guarded by a reentrant lock."""
 
     @property
     def stats(self) -> IndexStats:
         """Return a snapshot of current index statistics."""
         with self._lock:
             return self._stats
-        """Return a snapshot of current index statistics."""
 
     def add(self, entry: IndexedEntry) -> None:
         """Insert an entry into every secondary index (name, ext, parent,
@@ -288,8 +272,6 @@ class FileIndex:
             else:
                 self._stats.total_files += 1
                 self._stats.total_bytes += entry.size
-        """Insert an entry into every secondary index (name, ext, parent,
-        prefix) and update file/dir/byte counters."""
 
     def remove(self, path: str) -> bool:
         """Remove an entry by path, pruning its secondary-index sets and
@@ -322,8 +304,6 @@ class FileIndex:
                 self._stats.total_files -= 1
                 self._stats.total_bytes -= entry.size
             return True
-        """Remove an entry by path, pruning its secondary-index sets and
-        counters; returns False when the path is not indexed."""
 
     def search_prefix(self, query: str, max_results: int = 1000) -> list[IndexedEntry]:
         """O(log n) prefix search via sorted array."""
@@ -379,20 +359,16 @@ class FileIndex:
             self._parent_index.clear()
             self._prefix = _PrefixIndex()
             self._stats = IndexStats()
-        """Drop all entries, secondary indices, the prefix index, and
-        statistics."""
 
     def entry_count(self) -> int:
         """Return the total number of indexed entries."""
         with self._lock:
             return len(self._entries)
-        """Return the total number of indexed entries."""
 
     def rebuild_prefix_index(self) -> None:
         """Rebuild the sorted prefix array from the current entries."""
         with self._lock:
             self._prefix.rebuild(self._entries)
-        """Rebuild the sorted prefix array from the current entries."""
 
     def snapshot(self) -> list[IndexedEntry]:
         """Return a snapshot of all entries under lock."""
@@ -540,9 +516,6 @@ class _IndexWorker(QThread):
         self._index = index
         self._db_conn = db_conn
         self._count = 0
-        """Store the traversal roots, the shared index, the optional
-        SQLite connection used to persist after a full walk, and the
-        per-worker entry counter."""
 
     def run(self) -> None:
         """Walk every root, update index timing stats, persist to SQLite
@@ -564,8 +537,6 @@ class _IndexWorker(QThread):
         except Exception as e:
             log.exception("Indexer worker failed")
             self.error.emit(str(e))
-        """Walk every root, update index timing stats, persist to SQLite
-        (unless interrupted), and emit finished_signal or error."""
 
     def _walk(self, root: str) -> None:
         """Iterative DFS traversal using FindFirstFileExW (or scandir fallback)."""
@@ -617,7 +588,6 @@ class _IndexWorker(QThread):
         """Insert a batch of entries into the shared index."""
         for ie in batch:
             self._index.add(ie)
-        """Insert a batch of entries into the shared index."""
 
 
 # ---------------------------------------------------------------------------
@@ -635,7 +605,6 @@ class _IncrementalWorker(QThread):
         super().__init__()
         self._root = root
         self._index = index
-        """Store the single root to re-scan and the shared index."""
 
     def run(self) -> None:
         """Iteratively walk the root, refresh entries whose size/mtime
@@ -677,9 +646,6 @@ class _IncrementalWorker(QThread):
             self._index.remove(p)
             count += 1
         self.finished_signal.emit(count)
-        """Iteratively walk the root, refresh entries whose size/mtime
-        changed, then purge stale indexed paths (under the root but no
-        longer seen); emits finished_signal with the change count."""
 
 
 # ---------------------------------------------------------------------------
@@ -713,8 +679,6 @@ class FileIndexer(QObject):
 
         if db_path:
             self._open_persistent_db()
-        """Create the in-memory index, an optional SQLite persistence
-        connection, worker slots, and the 30 s incremental-update QTimer."""
 
     def _open_persistent_db(self) -> None:
         """Open the SQLite index database (WAL + pragmas); on failure log
@@ -724,8 +688,6 @@ class FileIndexer(QObject):
         except Exception:
             log.exception("Failed to open index DB at %s", self._db_path)
             self._db_conn = None
-        """Open the SQLite index database (WAL + pragmas); on failure log
-        and continue without persistence."""
 
     # -- Indexing lifecycle -------------------------------------------------
 
@@ -759,8 +721,6 @@ class FileIndexer(QObject):
         running."""
         return (self._worker is not None and self._worker.isRunning()) or \
                (self._incr_worker is not None and self._incr_worker.isRunning())
-        """Return True while a full or incremental worker thread is
-        running."""
 
     def _on_worker_finished(self, total: int):
         """Rebuild the prefix index and emit indexing_finished +
@@ -768,8 +728,6 @@ class FileIndexer(QObject):
         self._index.rebuild_prefix_index()
         self.indexing_finished.emit(total)
         self.index_updated.emit()
-        """Rebuild the prefix index and emit indexing_finished +
-        index_updated after a full walk."""
 
     def _on_incr_finished(self, count: int):
         """After an incremental scan: rebuild the prefix index and emit
@@ -777,8 +735,6 @@ class FileIndexer(QObject):
         if count > 0:
             self._index.rebuild_prefix_index()
             self.index_updated.emit()
-        """After an incremental scan: rebuild the prefix index and emit
-        index_updated only when something actually changed."""
 
     # -- Search API ---------------------------------------------------------
 
@@ -800,17 +756,14 @@ class FileIndexer(QObject):
     def search_extension(self, ext: str, max_results: int = 1000) -> list[IndexedEntry]:
         """Search indexed entries by file extension."""
         return self._index.search_extension(ext, max_results)
-        """Search indexed entries by file extension."""
 
     def list_directory(self, path: str) -> list[IndexedEntry]:
         """List the indexed children of a directory path."""
         return self._index.list_directory(path)
-        """List the indexed children of a directory path."""
 
     def get_stats(self) -> IndexStats:
         """Return the current index statistics."""
         return self._index.stats
-        """Return the current index statistics."""
 
     # -- Persistence --------------------------------------------------------
 
@@ -870,4 +823,3 @@ class FileIndexer(QObject):
             )
         except Exception:
             pass
-        """Warn when garbage collected without an explicit shutdown()."""

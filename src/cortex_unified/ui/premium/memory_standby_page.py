@@ -32,10 +32,19 @@ from .window import _Page, fmt_bytes
 
 
 class MemoryStandbyPurgerPage(_Page):
-    """UI studio for Standby List and working set kernel optimization."""
+    """Memorystandbypurgerpage.
+
+    Manages MemoryStandbyPurgerPage operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, win) -> None:
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win: Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.purger = MemoryStandbyPurger()
 
@@ -111,7 +120,10 @@ class MemoryStandbyPurgerPage(_Page):
         self._refresh_stats()
 
     def _refresh_stats(self) -> None:
-        """_refresh_stats."""
+        """_refresh_stats.
+
+        Manages refresh stats operations and coordinates related state changes for the component.
+        """
         snap = self.purger.get_memory_snapshot()
         self.stat_phys_total.set_value(fmt_bytes(snap.total_phys_bytes))
         self.stat_phys_used.set_value(fmt_bytes(snap.used_phys_bytes))
@@ -119,22 +131,34 @@ class MemoryStandbyPurgerPage(_Page):
         self.stat_load.set_value(f"{snap.memory_load_percent}%")
 
     def _on_purge_standby(self) -> None:
-        """_on_purge_standby."""
+        """_on_purge_standby.
+
+        Manages on purge standby operations and coordinates related state changes for the component.
+        """
         res = self.purger.purge_standby_list()
         self._handle_result(res)
 
     def _on_empty_working_sets(self) -> None:
-        """_on_empty_working_sets."""
+        """_on_empty_working_sets.
+
+        Manages on empty working sets operations and coordinates related state changes for the component.
+        """
         res = self.purger.purge_working_sets()
         self._handle_result(res)
 
     def _on_purge_modified(self) -> None:
-        """_on_purge_modified."""
+        """_on_purge_modified.
+
+        Manages on purge modified operations and coordinates related state changes for the component.
+        """
         res = self.purger.purge_modified_page_list()
         self._handle_result(res)
 
     def _on_purge_all(self) -> None:
-        """_on_purge_all."""
+        """_on_purge_all.
+
+        Manages on purge all operations and coordinates related state changes for the component.
+        """
         r1 = self.purger.purge_working_sets()
         r2 = self.purger.purge_modified_page_list()
         r3 = self.purger.purge_standby_list()
@@ -150,7 +174,13 @@ class MemoryStandbyPurgerPage(_Page):
             QMessageBox.warning(self, "Memory Action Notice", r3.message)
 
     def _handle_result(self, res: PurgeResult) -> None:
-        """_handle_result."""
+        """_handle_result.
+
+        Manages handle result operations and coordinates related state changes for the component.
+
+        Args:
+            res (PurgeResult): The res parameter.
+        """
         self._refresh_stats()
         if res.success:
             msg = f"{res.message}\nReclaimed: {fmt_bytes(res.reclaimed_bytes_approx)}." if res.reclaimed_bytes_approx > 0 else res.message

@@ -14,7 +14,10 @@ from PySide6.QtCore import QObject, Signal
 
 
 class BackgroundAgent(QObject):
-    """Silently monitors system resources in a background thread."""
+    """Backgroundagent.
+
+    Manages BackgroundAgent operations and coordinates related state changes for the component.
+    """
 
     alert_high_ram = Signal(float)
     alert_high_cpu = Signal(float)
@@ -22,7 +25,13 @@ class BackgroundAgent(QObject):
     status_update = Signal(dict)
 
     def __init__(self, check_interval: int = 10):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            check_interval (int): The check interval parameter.
+        """
         super().__init__()
         self.logger = logging.getLogger("background_agent")
         self.check_interval = check_interval
@@ -38,10 +47,12 @@ class BackgroundAgent(QObject):
         self._last_cpu_alert = 0.0
         self._last_disk_alert = 0.0
         self._alert_cooldown = 300  # 5 minutes between repeated alerts
-        """__init__."""
 
     def start_monitoring(self):
-        """Main loop — called when the owning QThread starts."""
+        """Main loop — called when the owning QThread starts.
+
+        Manages start monitoring operations and coordinates related state changes for the component.
+        """
         try:
             import psutil
         except ImportError:
@@ -94,5 +105,8 @@ class BackgroundAgent(QObject):
             time.sleep(self.check_interval)
 
     def stop(self):
-        """Request loop exit; takes effect within one check interval."""
+        """Stop active background operations.
+
+        Manages worker thread execution states, signaling termination flags or initializing scheduled execution timers.
+        """
         self._is_running.clear()

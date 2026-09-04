@@ -31,7 +31,10 @@ _NO_WINDOW = 0x08000000 if _IS_WINDOWS else 0
 
 
 class OptimizeOp(str, enum.Enum):
-    """Optimize Op enumeration."""
+    """Optimizeop.
+
+    Manages OptimizeOp operations and coordinates related state changes for the component.
+    """
     TRIM = "retrim"          # correct for SSD/NVMe
     DEFRAG = "defrag"        # correct for HDD
     NONE = "none"            # nothing appropriate / unsupported
@@ -39,14 +42,23 @@ class OptimizeOp(str, enum.Enum):
 
 @dataclass(slots=True)
 class DriveInfo:
-    """Drive Info data container."""
+    """Driveinfo.
+
+    Manages DriveInfo operations and coordinates related state changes for the component.
+    """
     letter: str
     kind: StorageKind
     recommended_op: OptimizeOp
     note: str = ""
 
     def to_dict(self) -> dict[str, Any]:
-        """To dict."""
+        """To dict.
+
+        Manages to dict operations and coordinates related state changes for the component.
+
+        Returns:
+            dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         return {
             "letter": self.letter,
             "kind": self.kind.value,
@@ -57,7 +69,10 @@ class DriveInfo:
 
 @dataclass(slots=True)
 class OptimizeResult:
-    """Optimize Result data container."""
+    """Optimizeresult.
+
+    Manages OptimizeResult operations and coordinates related state changes for the component.
+    """
     letter: str
     op: OptimizeOp
     success: bool
@@ -65,19 +80,37 @@ class OptimizeResult:
 
 
 class DriveOptimizer:
-    """List fixed drives, recommend the correct op per medium, and run it safely."""
+    """Driveoptimizer.
+
+    Manages DriveOptimizer operations and coordinates related state changes for the component.
+    """
 
     def __init__(self) -> None:
-        """Initialize Drive Optimizer."""
+        """Initialize Drive Optimizer.
+
+        Initializes the instance and configures internal state.
+        """
         self.logger = _LOG
 
     @staticmethod
     def is_supported() -> bool:
-        """Is supported."""
+        """Is supported.
+
+        Manages is supported operations and coordinates related state changes for the component.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         return _IS_WINDOWS
 
     def list_drives(self) -> list[DriveInfo]:
-        """Return fixed drives with the medium-correct recommended operation."""
+        """Return fixed drives with the medium-correct recommended operation.
+
+        Manages list drives operations and coordinates related state changes for the component.
+
+        Returns:
+            list[DriveInfo]: List of processed items or identifiers.
+        """
         if not _IS_WINDOWS:
             return []
         drives: list[DriveInfo] = []
@@ -89,7 +122,16 @@ class DriveOptimizer:
 
     @staticmethod
     def _recommend(kind: StorageKind) -> tuple[OptimizeOp, str]:
-        """_recommend."""
+        """Recommend.
+
+        Manages recommend operations and coordinates related state changes for the component.
+
+        Args:
+            kind (StorageKind): The kind parameter.
+
+        Returns:
+            tuple[OptimizeOp, str]: Formatted string or path.
+        """
         if kind is StorageKind.HDD:
             return OptimizeOp.DEFRAG, "Rotational drive: defragmentation is appropriate."
         if kind in (StorageKind.SSD, StorageKind.NVME):
@@ -97,8 +139,6 @@ class DriveOptimizer:
         if kind is StorageKind.REMOVABLE:
             return OptimizeOp.TRIM, "Removable/flash media: TRIM if supported."
         return OptimizeOp.NONE, "Unknown medium: no optimization recommended."
-        """_recommend."""
-        """_recommend."""
 
     def optimize(self, letter: str, op: OptimizeOp | None = None,
                 cancel_event: "threading.Event | None" = None) -> OptimizeResult:
@@ -144,7 +184,13 @@ class DriveOptimizer:
     # -- helpers ------------------------------------------------------------
 
     def _fixed_drive_letters(self) -> list[str]:
-        """Return fixed (non-removable, non-network) drive letters."""
+        """Return fixed (non-removable, non-network) drive letters.
+
+        Manages fixed drive letters operations and coordinates related state changes for the component.
+
+        Returns:
+            list[str]: List of processed items or identifiers.
+        """
         script = (
             "Get-CimInstance -ClassName Win32_LogicalDisk -Filter 'DriveType=3' "
             "| Select-Object -ExpandProperty DeviceID"
@@ -160,7 +206,18 @@ class DriveOptimizer:
 
     def _run_ps(self, script: str, timeout: int,
                cancel_event: "threading.Event | None" = None) -> str | None:
-        """_run_ps."""
+        """_run_ps.
+
+        Manages run ps operations and coordinates related state changes for the component.
+
+        Args:
+            script (str): The script parameter.
+            timeout (int): The timeout parameter.
+            cancel_event ('threading.Event | None'): Threading event or callable to check for cancellation.
+
+        Returns:
+            str | None: Formatted string or path.
+        """
         try:
             proc = _proc.run(
                 ["powershell", "-NoProfile", "-NonInteractive", "-Command", script],
@@ -171,5 +228,3 @@ class DriveOptimizer:
         except (_proc.ProcessCancelled, OSError, subprocess.SubprocessError) as exc:
             self.logger.debug("powershell failed: %s", exc)
             return None
-        """_run_ps."""
-        """_run_ps."""

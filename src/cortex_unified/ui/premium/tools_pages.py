@@ -31,7 +31,17 @@ IS_WINDOWS = sys.platform == "win32"
 
 
 def _windows_only(page: _Page, feature: str) -> bool:
-    """_windows_only."""
+    """_windows_only.
+
+    Manages windows only operations and coordinates related state changes for the component.
+
+    Args:
+        page (_Page): The page parameter.
+        feature (str): The feature parameter.
+
+    Returns:
+        bool: True if the operation succeeded, False otherwise.
+    """
     if IS_WINDOWS:
         return False
     note = status_note(
@@ -46,12 +56,18 @@ def _windows_only(page: _Page, feature: str) -> bool:
 # =====================================================================
 
 class PowerPlanListWorker(QObject):
-    """PowerPlanListWorker class."""
+    """Powerplanlistworker.
+
+    Manages PowerPlanListWorker operations and coordinates related state changes for the component.
+    """
     finished = Signal(list)
     failed = Signal(str)
 
     def run(self):
-        """run."""
+        """run.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         try:
             from cortex_unified.system_tools.performance_tuner import PerformanceTuner
             self.finished.emit([p.to_dict() for p in PerformanceTuner().list_plans()])
@@ -60,17 +76,29 @@ class PowerPlanListWorker(QObject):
 
 
 class PowerPlanSetWorker(QObject):
-    """PowerPlanSetWorker class."""
+    """Powerplansetworker.
+
+    Manages PowerPlanSetWorker operations and coordinates related state changes for the component.
+    """
     finished = Signal(bool, str)
     failed = Signal(str)
 
     def __init__(self, guid: str):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            guid (str): The guid parameter.
+        """
         super().__init__()
         self._guid = guid
 
     def run(self):
-        """run."""
+        """run.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         try:
             from cortex_unified.system_tools.performance_tuner import PerformanceTuner
             ok, msg = PerformanceTuner().set_active(self._guid)
@@ -80,12 +108,18 @@ class PowerPlanSetWorker(QObject):
 
 
 class ExtensionAuditWorker(QObject):
-    """ExtensionAuditWorker class."""
+    """Extensionauditworker.
+
+    Manages ExtensionAuditWorker operations and coordinates related state changes for the component.
+    """
     finished = Signal(list)
     failed = Signal(str)
 
     def run(self):
-        """run."""
+        """run.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         try:
             from cortex_unified.system_tools.browser_extensions import BrowserExtensionAuditor
             self.finished.emit([e.to_dict() for e in BrowserExtensionAuditor().audit()])
@@ -136,12 +170,18 @@ def _date_sort_key(driver: dict) -> str:
 
 
 class DriverListWorker(QObject):
-    """DriverListWorker class."""
+    """Driverlistworker.
+
+    Manages DriverListWorker operations and coordinates related state changes for the component.
+    """
     finished = Signal(list)
     failed = Signal(str)
 
     def run(self):
-        """run."""
+        """run.
+
+        Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
+        """
         try:
             from cortex_unified.system_tools.driver_inventory import DriverInventory
             self.finished.emit([d.to_dict() for d in DriverInventory().list_drivers()])
@@ -154,10 +194,19 @@ class DriverListWorker(QObject):
 # =====================================================================
 
 class PerformancePage(_Page):
-    """Switch Windows power plans - reversible, low-risk performance control."""
+    """Performancepage.
+
+    Manages PerformancePage operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, win):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win: Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(title_block(
             "Performance",
@@ -234,13 +283,22 @@ class PerformancePage(_Page):
         self._loaded = False
 
     def _load(self):
-        """_load."""
+        """Fetch and reload the latest data entries into the view.
+
+        Queries the underlying system service or storage cache and refreshes view tables with up-to-date state.
+        """
         self.refresh_btn.setEnabled(False)
         self.state.show_loading("Detecting power plans\u2026")
         self.win.run_worker(PowerPlanListWorker(), self._on_listed, self._fail)
 
     def _on_listed(self, plans: list):
-        """_on_listed."""
+        """_on_listed.
+
+        Manages on listed operations and coordinates related state changes for the component.
+
+        Args:
+            plans (list): The plans parameter.
+        """
         if not plans:
             self.state.show_empty("No power plans found.")
         else:
@@ -254,7 +312,10 @@ class PerformancePage(_Page):
         self.win.statusBar().showMessage(f"{len(plans)} power plan(s)", 5000)
 
     def _apply(self):
-        """_apply."""
+        """Apply.
+
+        Manages apply operations and coordinates related state changes for the component.
+        """
         # Resolved through the binding, not by indexing a list with the view's
         # row number - that pattern quietly activates the wrong plan as soon as
         # the table is sorted.
@@ -277,7 +338,14 @@ class PerformancePage(_Page):
         self.win.run_worker(PowerPlanSetWorker(guid), self._on_applied, self._fail)
 
     def _on_applied(self, ok: bool, msg: str):
-        """_on_applied."""
+        """_on_applied.
+
+        Manages on applied operations and coordinates related state changes for the component.
+
+        Args:
+            ok (bool): The ok parameter.
+            msg (str): Informational or progress status message.
+        """
         self.progress.setVisible(False)
         if ok:
             self.win.statusBar().showMessage(msg, 5000)
@@ -286,7 +354,13 @@ class PerformancePage(_Page):
         self._load()
 
     def _fail(self, msg: str):
-        """_fail."""
+        """Handle an operation failure and notify the user.
+
+        Captures error details, displays an informative failure state in the UI, resets progress indicators, and re-enables interactive controls.
+
+        Args:
+            msg (str): Informational or progress status message.
+        """
         self.refresh_btn.setEnabled(True)
         self.state.show_error(msg, on_retry=self._load)
 
@@ -296,10 +370,19 @@ class PerformancePage(_Page):
 # =====================================================================
 
 class BrowserExtensionsPage(_Page):
-    """Read-only inventory of installed browser extensions and permissions."""
+    """Browserextensionspage.
+
+    Manages BrowserExtensionsPage operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, win):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win: Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(title_block(
             "Browser Extensions",
@@ -370,13 +453,22 @@ class BrowserExtensionsPage(_Page):
         self._loaded = False
 
     def _load(self):
-        """_load."""
+        """Fetch and reload the latest data entries into the view.
+
+        Queries the underlying system service or storage cache and refreshes view tables with up-to-date state.
+        """
         self.refresh_btn.setEnabled(False)
         self.state.show_loading("Scanning extensions\u2026")
         self.win.run_worker(ExtensionAuditWorker(), self._on_done, self._fail)
 
     def _on_done(self, exts: list):
-        """_on_done."""
+        """_on_done.
+
+        Receives the completed data from the  background worker, populates the view with results, and restores button states.
+
+        Args:
+            exts (list): The exts parameter.
+        """
         if not exts:
             self.state.show_empty("No extensions found (no supported browser profiles detected).")
         else:
@@ -397,7 +489,13 @@ class BrowserExtensionsPage(_Page):
         self.win.statusBar().showMessage(f"{len(exts)} extension(s)", 5000)
 
     def _fail(self, msg: str):
-        """_fail."""
+        """Handle an operation failure and notify the user.
+
+        Captures error details, displays an informative failure state in the UI, resets progress indicators, and re-enables interactive controls.
+
+        Args:
+            msg (str): Informational or progress status message.
+        """
         self.refresh_btn.setEnabled(True)
         self.state.show_error(msg, on_retry=self._load)
 
@@ -407,10 +505,19 @@ class BrowserExtensionsPage(_Page):
 # =====================================================================
 
 class DriverInventoryPage(_Page):
-    """Read-only device-driver inventory (Cortex never auto-installs drivers)."""
+    """Driverinventorypage.
+
+    Manages DriverInventoryPage operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, win):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            win: Parent window or shell controller instance.
+        """
         super().__init__(win)
         self.v.addWidget(title_block(
             "Driver Inventory",
@@ -474,14 +581,23 @@ class DriverInventoryPage(_Page):
         self._loaded = False
 
     def _load(self):
-        """_load."""
+        """Fetch and reload the latest data entries into the view.
+
+        Queries the underlying system service or storage cache and refreshes view tables with up-to-date state.
+        """
         self.refresh_btn.setEnabled(False)
         self.state.show_loading("Enumerating drivers\u2026")
         self.win.statusBar().showMessage("Enumerating drivers\u2026")
         self.win.run_worker(DriverListWorker(), self._on_done, self._fail)
 
     def _on_done(self, drivers: list):
-        """_on_done."""
+        """_on_done.
+
+        Receives the completed data from the  background worker, populates the view with results, and restores button states.
+
+        Args:
+            drivers (list): List of detected driver records or driver instance.
+        """
         if not drivers:
             self.state.show_empty("No drivers found.")
         else:
@@ -493,6 +609,12 @@ class DriverInventoryPage(_Page):
         self.win.statusBar().showMessage(f"{len(drivers)} driver(s)", 5000)
 
     def _fail(self, msg: str):
-        """_fail."""
+        """Handle an operation failure and notify the user.
+
+        Captures error details, displays an informative failure state in the UI, resets progress indicators, and re-enables interactive controls.
+
+        Args:
+            msg (str): Informational or progress status message.
+        """
         self.refresh_btn.setEnabled(True)
         self.state.show_error(msg, on_retry=self._load)

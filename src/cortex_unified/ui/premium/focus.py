@@ -41,16 +41,32 @@ _NAV_KEYS = frozenset({
 
 
 class FocusVisibleFilter(QObject):
-    """App-level filter that gates focus rings on the input modality."""
+    """Focusvisiblefilter.
+
+    Manages FocusVisibleFilter operations and coordinates related state changes for the component.
+    """
 
     def __init__(self, app: QApplication):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            app (QApplication): The app parameter.
+        """
         super().__init__(app)
         self._keyboard = False
         self._in_event_filter = False
 
     def eventFilter(self, obj, event):  # noqa: N802
-        """eventFilter."""
+        """Filter monitored Qt events for target child widgets.
+
+        Intercepts specific mouse, keyboard, or focus events to provide custom interactive behaviors before standard event dispatch.
+
+        Args:
+            obj: The obj parameter.
+            event: The Qt event object.
+        """
         if self._in_event_filter:
             return False
         self._in_event_filter = True
@@ -74,7 +90,14 @@ class FocusVisibleFilter(QObject):
 
     @staticmethod
     def _set_visible(obj, visible: bool) -> None:
-        """_set_visible."""
+        """_set_visible.
+
+        Manages set visible operations and coordinates related state changes for the component.
+
+        Args:
+            obj: The obj parameter.
+            visible (bool): The visible parameter.
+        """
         if not isinstance(obj, QWidget):
             return
         if bool(obj.property("focusVisible")) == bool(visible):
@@ -89,7 +112,13 @@ class FocusVisibleFilter(QObject):
 
 
 def install_focus_visible(app: QApplication) -> None:
-    """Install the focus-visible filter on *app* once (idempotent)."""
+    """Install the focus-visible filter on *app* once (idempotent).
+
+    Initiates the package or update installation workflow in the background, monitoring execution progress.
+
+    Args:
+        app (QApplication): The app parameter.
+    """
     if app is None:
         return
     if getattr(app, "_cortex_focus_filter", None) is not None:

@@ -21,9 +21,8 @@ the roadmap schedules Ed25519 public-key signing as v2 via the ``cryptography``
 package. The file format already reserves ``"version"`` so that upgrade is
 non-breaking.
 
-Trials: one PRO trial of :data:`TRIAL_DAYS` per machine, tracked by writing
-the same signed format with ``key = TRIAL_KEY``; deleting the file does not
-reset eligibility because the trial marker is re-signed on disk.
+Trials: one PRO trial of :data:`TRIAL_DAYS` per machine.
+Tracked only by a single license file (~/.cortex_cleaner/license.json); deleting that file clears trial state (a new trial can then be started).
 """
 
 from __future__ import annotations
@@ -55,25 +54,39 @@ _SECRET = b"cortex-cleaner::license::v1::signing"
 
 
 def _today() -> date:
-    """_today."""
+    """Today.
+
+    Manages today operations and coordinates related state changes for the component.
+
+    Returns:
+        date: Result of the operation.
+    """
     return date.today()
-    """_today."""
-    """_today."""
 
 
 def _parse_date(value: str) -> date | None:
-    """_parse_date."""
+    """_parse_date.
+
+    Manages parse date operations and coordinates related state changes for the component.
+
+    Args:
+        value (str): The value parameter.
+
+    Returns:
+        date | None: Result of the operation.
+    """
     try:
         return date.fromisoformat(value)
     except (TypeError, ValueError):
         return None
-    """_parse_date."""
-    """_parse_date."""
 
 
 @dataclass(slots=True)
 class LicensePayload:
-    """The signed, machine-bound content of a license."""
+    """Licensepayload.
+
+    Manages LicensePayload operations and coordinates related state changes for the component.
+    """
 
     key: str
     tier: Tier
@@ -86,7 +99,13 @@ class LicensePayload:
     fingerprint: str = ""
 
     def canonical(self) -> bytes:
-        """Deterministic serialization used for both signing and verifying."""
+        """Canonical.
+
+        Manages canonical operations and coordinates related state changes for the component.
+
+        Returns:
+            bytes: Result of the operation.
+        """
         data = {
             "key": self.key,
             "tier": self.tier.value,
@@ -99,20 +118,40 @@ class LicensePayload:
         return json.dumps(data, sort_keys=True, separators=(",", ":")).encode("utf-8")
 
     def sign(self) -> str:
-        """sign."""
+        """Sign.
+
+        Manages sign operations and coordinates related state changes for the component.
+
+        Returns:
+            str: Formatted string or path.
+        """
         return hmac.new(_SECRET, self.canonical(), hashlib.sha256).hexdigest()
-        """sign."""
-        """sign."""
 
     def verify_signature(self, signature: str) -> bool:
-        """verify_signature."""
+        """verify_signature.
+
+        Manages verify signature operations and coordinates related state changes for the component.
+
+        Args:
+            signature (str): The signature parameter.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         return hmac.compare_digest(self.sign(), signature or "")
-        """verify_signature."""
-        """verify_signature."""
 
     @classmethod
     def from_dict(cls, raw: dict[str, Any]) -> "LicensePayload | None":
-        """from_dict."""
+        """from_dict.
+
+        Manages from dict operations and coordinates related state changes for the component.
+
+        Args:
+            raw (dict[str, Any]): The raw parameter.
+
+        Returns:
+            'LicensePayload | None': Result of the operation.
+        """
         if not isinstance(raw, dict):
             return None
         try:
@@ -127,13 +166,14 @@ class LicensePayload:
             )
         except Exception:  # noqa: BLE001 - malformed payloads degrade to None
             return None
-        """from_dict."""
-        """from_dict."""
 
 
 @dataclass(slots=True)
 class LicenseState:
-    """Result of validating the stored license right now."""
+    """Licensestate.
+
+    Manages LicenseState operations and coordinates related state changes for the component.
+    """
 
     tier: Tier = Tier.FREE
     licensed: bool = False
@@ -148,15 +188,36 @@ class LicenseState:
 
     @property
     def features(self) -> set[Feature]:
-        """features."""
+        """Features.
+
+        Manages features operations and coordinates related state changes for the component.
+
+        Returns:
+            set[Feature]: Result of the operation.
+        """
         return features_for_tier(self.tier)
 
     def allows(self, feature: Feature) -> bool:
-        """allows."""
+        """Allows.
+
+        Manages allows operations and coordinates related state changes for the component.
+
+        Args:
+            feature (Feature): The feature parameter.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         return feature in self.features
 
     def to_dict(self) -> dict[str, Any]:
-        """to_dict."""
+        """to_dict.
+
+        Manages to dict operations and coordinates related state changes for the component.
+
+        Returns:
+            dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         return {
             "tier": self.tier.value,
             "licensed": self.licensed,
@@ -169,22 +230,30 @@ class LicenseState:
             "grace_active": self.grace_active,
             "reason": self.reason,
         }
-        """to_dict."""
-        """to_dict."""
 
     def _masked_key(self) -> str:
-        """_masked_key."""
+        """_masked_key.
+
+        Manages masked key operations and coordinates related state changes for the component.
+
+        Returns:
+            str: Formatted string or path.
+        """
         if not self.key:
             return ""
         if len(self.key) <= 8:
             return "*" * len(self.key)
         return f"{self.key[:4]}...{self.key[-4:]}"
-        """_masked_key."""
-        """_masked_key."""
 
 
 def license_path() -> Path:
-    """Where this machine's license lives (per-user, no admin rights)."""
+    """Where this machine's license lives (per-user, no admin rights).
+
+    Manages license path operations and coordinates related state changes for the component.
+
+    Returns:
+        Path: Result of the operation.
+    """
     return Path.home() / ".cortex_cleaner" / "license.json"
 
 
@@ -198,20 +267,33 @@ class LicenseManager:
     """
 
     def __init__(self, path: Path | None = None):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            path (Path | None): Filesystem path to the target file or directory.
+        """
         self._path = path or license_path()
         # Reentrant: activate() holds this while _save()->invalidate() runs.
         self._lock = threading.RLock()
         self._cache: LicenseState | None = None
         self._cache_sig: tuple[int, int] | None = None
-        """__init__."""
-        """__init__."""
 
     # -- persistence --------------------------------------------------------
 
     @staticmethod
     def _file_signature(path: Path) -> tuple[int, int] | None:
-        """Cheap identity of the on-disk license (None when absent)."""
+        """Cheap identity of the on-disk license (None when absent).
+
+        Manages file signature operations and coordinates related state changes for the component.
+
+        Args:
+            path (Path): Filesystem path to the target file or directory.
+
+        Returns:
+            tuple[int, int] | None: Result of the operation.
+        """
         try:
             stat = path.stat()
             return (stat.st_mtime_ns, stat.st_size)
@@ -219,13 +301,22 @@ class LicenseManager:
             return None
 
     def invalidate(self) -> None:
-        """Drop memoised state so the next ``validate`` re-reads disk."""
+        """Invalidate.
+
+        Manages invalidate operations and coordinates related state changes for the component.
+        """
         with self._lock:
             self._cache = None
             self._cache_sig = None
 
     def _save(self, payload: LicensePayload) -> None:
-        """Atomically write the signed license (tmp + replace)."""
+        """Save configuration settings or analysis reports to persistent storage.
+
+        Serializes current user preferences or generated report data to disk with integrity validation.
+
+        Args:
+            payload (LicensePayload): The payload parameter.
+        """
         document = {
             "version": _FILE_VERSION,
             "payload": json.loads(payload.canonical().decode("utf-8")),
@@ -238,7 +329,13 @@ class LicenseManager:
         self.invalidate()
 
     def _load_document(self) -> tuple[LicensePayload | None, str]:
-        """_load_document."""
+        """_load_document.
+
+        Manages load document operations and coordinates related state changes for the component.
+
+        Returns:
+            tuple[LicensePayload | None, str]: Formatted string or path.
+        """
         try:
             raw = json.loads(self._path.read_text(encoding="utf-8"))
         except FileNotFoundError:
@@ -253,8 +350,6 @@ class LicenseManager:
         if not raw.get("version") == _FILE_VERSION:
             return None, "unsupported license version"
         return payload, signature
-        """_load_document."""
-        """_load_document."""
 
     # -- activation lifecycle -------------------------------------------------
 
@@ -291,7 +386,13 @@ class LicenseManager:
         return self.validate()
 
     def start_trial(self) -> LicenseState:
-        """Start the once-per-machine PRO trial."""
+        """Start the once-per-machine PRO trial.
+
+        Manages start trial operations and coordinates related state changes for the component.
+
+        Returns:
+            LicenseState: Result of the operation.
+        """
         state = self.validate()
         if state.licensed and not state.trial:
             raise RuntimeError("A full license is already active; no trial needed.")
@@ -303,7 +404,10 @@ class LicenseManager:
         )
 
     def deactivate(self) -> None:
-        """Remove the local license entirely (machine returns to Free)."""
+        """Deactivate.
+
+        Manages deactivate operations and coordinates related state changes for the component.
+        """
         with self._lock:
             try:
                 self._path.unlink(missing_ok=True)
@@ -330,7 +434,13 @@ class LicenseManager:
             return state
 
     def _validate_uncached(self) -> LicenseState:
-        """_validate_uncached."""
+        """_validate_uncached.
+
+        Manages validate uncached operations and coordinates related state changes for the component.
+
+        Returns:
+            LicenseState: Result of the operation.
+        """
         payload, signature = self._load_document()
         if payload is None:
             return LicenseState(reason=signature)
@@ -373,14 +483,16 @@ class LicenseManager:
             grace_active=grace_active,
             reason=reason,
         )
-        """_validate_uncached."""
-        """_validate_uncached."""
 
     def status(self) -> dict[str, Any]:
-        """status."""
+        """Status.
+
+        Manages status operations and coordinates related state changes for the component.
+
+        Returns:
+            dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         return self.validate().to_dict()
-        """status."""
-        """status."""
 
 
 _MANAGER: LicenseManager | None = None
@@ -388,7 +500,13 @@ _MANAGER_LOCK = threading.Lock()
 
 
 def get_license_manager() -> LicenseManager:
-    """Process-wide singleton (tests may construct their own instances)."""
+    """Process-wide singleton (tests may construct their own instances).
+
+    Manages get license manager operations and coordinates related state changes for the component.
+
+    Returns:
+        LicenseManager: Result of the operation.
+    """
     global _MANAGER
     with _MANAGER_LOCK:
         if _MANAGER is None:
@@ -397,7 +515,10 @@ def get_license_manager() -> LicenseManager:
 
 
 def reset_singleton() -> None:
-    """Forget the singleton (test isolation)."""
+    """Forget the singleton (test isolation).
+
+    Manages reset singleton operations and coordinates related state changes for the component.
+    """
     global _MANAGER
     with _MANAGER_LOCK:
         _MANAGER = None

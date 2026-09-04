@@ -2,7 +2,7 @@
 
 Compresses and transcodes image assets:
 1. Supports PNG, JPEG, BMP, TIFF, WebP formats.
-2. Strips private EXIF/GPS metadata headers for privacy.
+2. Re-encodes via QImage/QImageWriter; no explicit EXIF/GPS handling is performed.
 3. Provides configurable quality presets (1-100) and WebP conversion.
 4. Calculates real disk space savings.
 """
@@ -19,7 +19,10 @@ from PySide6.QtGui import QImage, QImageReader, QImageWriter
 
 @dataclass
 class ImageOptimizeResult:
-    """ImageOptimizeResult."""
+    """Imageoptimizeresult.
+
+    Manages ImageOptimizeResult operations and coordinates related state changes for the component.
+    """
     source_path: str
     output_path: str
     original_size_bytes: int
@@ -28,23 +31,27 @@ class ImageOptimizeResult:
     compression_ratio_pct: float
     success: bool
     error: Optional[str] = None
-    """ImageOptimizeResult class."""
 
 
 @dataclass
 class BatchOptimizeSummary:
-    """BatchOptimizeSummary."""
+    """Batchoptimizesummary.
+
+    Manages BatchOptimizeSummary operations and coordinates related state changes for the component.
+    """
     total_images: int
     successful_count: int
     total_original_bytes: int
     total_compressed_bytes: int
     total_freed_bytes: int
     results: List[ImageOptimizeResult]
-    """BatchOptimizeSummary class."""
 
 
 class ImageOptimizer:
-    """Production image compression and privacy optimization engine."""
+    """Imageoptimizer.
+
+    Manages ImageOptimizer operations and coordinates related state changes for the component.
+    """
 
     SUPPORTED_EXTENSIONS = {".png", ".jpg", ".jpeg", ".bmp", ".tiff", ".tif", ".webp"}
 
@@ -57,7 +64,8 @@ class ImageOptimizer:
         quality: int = 80,  # 1 - 100
         strip_metadata: bool = True,
     ) -> ImageOptimizeResult:
-        """Compress a single image and save to output path."""
+        """Compress a single image and save to output path.
+        strip_metadata: currently unused (no explicit stripping implemented); QImage re-encode drops metadata."""
         src_p = Path(source_path).resolve()
         if not src_p.is_file():
             return ImageOptimizeResult(str(src_p), "", 0, 0, 0, 0.0, False, "Source image not found")
@@ -119,7 +127,21 @@ class ImageOptimizer:
         progress_cb: Optional[Callable[[int, int, str], None]] = None,
         cancel_check: Optional[Callable[[], bool]] = None,
     ) -> BatchOptimizeSummary:
-        """Batch optimize multiple images."""
+        """Batch optimize multiple images.
+
+        Manages optimize batch operations and coordinates related state changes for the component.
+
+        Args:
+            image_paths (List[str | Path]): Filesystem path to the target file or directory.
+            output_directory (Optional[str | Path]): The output directory parameter.
+            target_format (str): The target format parameter.
+            quality (int): The quality parameter.
+            progress_cb (Optional[Callable[[int, int, str], None]]): Callback invoked with progress updates.
+            cancel_check (Optional[Callable[[], bool]]): Threading event or callable to check for cancellation.
+
+        Returns:
+            BatchOptimizeSummary: Result of the operation.
+        """
         results: List[ImageOptimizeResult] = []
         total_orig = 0
         total_comp = 0

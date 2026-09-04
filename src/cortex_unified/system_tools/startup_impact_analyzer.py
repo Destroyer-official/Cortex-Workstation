@@ -25,7 +25,10 @@ else:
 
 @dataclass
 class StartupAppItem:
-    """Startup App Item data container."""
+    """Startupappitem.
+
+    Manages StartupAppItem operations and coordinates related state changes for the component.
+    """
     name: str
     command: str
     executable_path: str
@@ -39,7 +42,10 @@ class StartupAppItem:
 
 @dataclass
 class StartupImpactReport:
-    """Startup Impact Report data container."""
+    """Startupimpactreport.
+
+    Manages StartupImpactReport operations and coordinates related state changes for the component.
+    """
     total_startup_items: int
     enabled_count: int
     disabled_count: int
@@ -49,7 +55,10 @@ class StartupImpactReport:
 
 
 class StartupImpactAnalyzer:
-    """Production Windows Startup Impact analyzer and optimizer."""
+    """Startupimpactanalyzer.
+
+    Manages StartupImpactAnalyzer operations and coordinates related state changes for the component.
+    """
 
     STARTUP_APPROVED_USER = r"Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run"
     STARTUP_APPROVED_SYSTEM = r"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run"
@@ -61,7 +70,16 @@ class StartupImpactAnalyzer:
 
     @classmethod
     def _extract_exe_path(cls, command: str) -> str:
-        """_extract_exe_path."""
+        """_extract_exe_path.
+
+        Manages extract exe path operations and coordinates related state changes for the component.
+
+        Args:
+            command (str): The command parameter.
+
+        Returns:
+            str: Formatted string or path.
+        """
         cmd = command.strip()
         if not cmd:
             return ""
@@ -71,12 +89,21 @@ class StartupImpactAnalyzer:
                 return os.path.expandvars(cmd[1:end])
             return os.path.expandvars(cmd.strip('"'))
         return os.path.expandvars(cmd.split()[0])
-        """_extract_exe_path."""
-        """_extract_exe_path."""
 
     @classmethod
     def _read_startup_approved_state(cls, hive, approved_key: str, item_name: str) -> bool:
-        """Decode Windows StartupApproved 12-byte binary blob. Byte 0: 0x02=Enabled, 0x03=Disabled."""
+        """Decode Windows StartupApproved 12-byte binary blob. Byte 0: 0x02=Enabled, 0x03=Disabled.
+
+        Manages read startup approved state operations and coordinates related state changes for the component.
+
+        Args:
+            hive: The hive parameter.
+            approved_key (str): The approved key parameter.
+            item_name (str): The item name parameter.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         if winreg is None or hive is None:
             return True
         try:
@@ -91,7 +118,17 @@ class StartupImpactAnalyzer:
 
     @classmethod
     def _calculate_impact(cls, file_size: int, exe_name: str) -> str:
-        """Calculate startup impact based on binary size and application profile."""
+        """Calculate startup impact based on binary size and application profile.
+
+        Manages calculate impact operations and coordinates related state changes for the component.
+
+        Args:
+            file_size (int): The file size parameter.
+            exe_name (str): The exe name parameter.
+
+        Returns:
+            str: Formatted string or path.
+        """
         lower = exe_name.lower()
         # Known heavy apps (Electron, cloud clients, heavy gaming launchers)
         heavy_names = {"discord.exe", "slack.exe", "teams.exe", "spotify.exe", "steam.exe",
@@ -110,7 +147,13 @@ class StartupImpactAnalyzer:
 
     @classmethod
     def analyze_startup(cls) -> StartupImpactReport:
-        """Enumerate and assess startup impact of all registered startup items."""
+        """Enumerate and assess startup impact of all registered startup items.
+
+        Manages analyze startup operations and coordinates related state changes for the component.
+
+        Returns:
+            StartupImpactReport: Result of the operation.
+        """
         items: List[StartupAppItem] = []
 
         if winreg is not None:
@@ -168,7 +211,18 @@ class StartupImpactAnalyzer:
 
     @classmethod
     def toggle_item_state(cls, item_name: str, enable: bool, is_user: bool = True) -> Tuple[bool, str]:
-        """Toggle startup item enabled/disabled state via StartupApproved registry binary key."""
+        """Toggle startup item enabled/disabled state via StartupApproved registry binary key.
+
+        Toggles selection states or operational modes, recalculating active selection counts and enabling/disabling dependent actions.
+
+        Args:
+            item_name (str): The item name parameter.
+            enable (bool): The enable parameter.
+            is_user (bool): The is user parameter.
+
+        Returns:
+            Tuple[bool, str]: True if the operation succeeded, False otherwise.
+        """
         if winreg is None:
             return False, "Windows only"
 

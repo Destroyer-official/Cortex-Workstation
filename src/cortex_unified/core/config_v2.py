@@ -63,7 +63,16 @@ from cortex_unified.core.config import DEFAULT_CONFIG as _DEFAULTS
 
 
 def _read_yaml_file(path: Path) -> dict:
-    """Load a YAML config file into a dict, warning (not raising) on failure."""
+    """Load a YAML config file into a dict, warning (not raising) on failure.
+
+    Manages read yaml file operations and coordinates related state changes for the component.
+
+    Args:
+        path (Path): Filesystem path to the target file or directory.
+
+    Returns:
+        dict: Dictionary mapping identifiers to status or values.
+    """
     try:
         with open(path, "r", encoding="utf-8") as f:
             data = yaml.safe_load(f) or {}
@@ -83,20 +92,37 @@ class _YamlConfigSource(PydanticBaseSettingsSource):
     """
 
     def __init__(self, settings_cls, config_file):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            settings_cls: The settings cls parameter.
+            config_file: The config file parameter.
+        """
         super().__init__(settings_cls)
         self._data = _read_yaml_file(Path(config_file)) if config_file else {}
-        """__init__."""
 
     def get_field_value(self, field, field_name):  # pragma: no cover - trivial
-        """get_field_value."""
+        """get_field_value.
+
+        Manages get field value operations and coordinates related state changes for the component.
+
+        Args:
+            field: The field parameter.
+            field_name: The field name parameter.
+        """
         return self._data.get(field_name), field_name, False
-        """get_field_value."""
 
     def __call__(self) -> dict:
-        """__call__."""
+        """Call.
+
+        Manages call operations and coordinates related state changes for the component.
+
+        Returns:
+            dict: Dictionary mapping identifiers to status or values.
+        """
         return dict(self._data)
-        """__call__."""
 
 
 class ScanConfig(BaseModel):
@@ -147,7 +173,10 @@ class ScanConfig(BaseModel):
 
 
 class PerformanceConfig(BaseModel):
-    """Configuration for performance settings."""
+    """Performanceconfig.
+
+    Manages PerformanceConfig operations and coordinates related state changes for the component.
+    """
 
     # Needed so the `clamp_threads` validator actually runs for the *default*
     # value (threads=0) and not only for explicitly-passed values - otherwise
@@ -181,14 +210,26 @@ class PerformanceConfig(BaseModel):
     @field_validator("threads")
     @classmethod
     def clamp_threads(cls, v: int) -> int:
-        """Clamp thread count to reasonable limits."""
+        """Clamp thread count to reasonable limits.
+
+        Manages clamp threads operations and coordinates related state changes for the component.
+
+        Args:
+            v (int): The v parameter.
+
+        Returns:
+            int: Result of the operation.
+        """
         if v == 0:
             return min(os.cpu_count() or 4, 64)
         return min(v, 64)
 
 
 class SecurityConfig(BaseModel):
-    """Configuration for security and safety settings."""
+    """Securityconfig.
+
+    Manages SecurityConfig operations and coordinates related state changes for the component.
+    """
     
     default_action: Literal["dry_run", "trash", "delete", "shred"] = Field(
         default="dry_run",
@@ -226,7 +267,10 @@ class SecurityConfig(BaseModel):
 
 
 class LoggingConfig(BaseModel):
-    """Configuration for logging."""
+    """Loggingconfig.
+
+    Manages LoggingConfig operations and coordinates related state changes for the component.
+    """
     
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = Field(
         default="INFO",
@@ -250,7 +294,10 @@ class LoggingConfig(BaseModel):
 
 
 class DatabaseConfig(BaseModel):
-    """Configuration for database persistence."""
+    """Databaseconfig.
+
+    Manages DatabaseConfig operations and coordinates related state changes for the component.
+    """
     
     db_path: Path = Field(
         default_factory=lambda: Path.home() / ".cortex_cleaner" / "history.db",
@@ -276,7 +323,10 @@ class DatabaseConfig(BaseModel):
 
 
 class UIConfig(BaseModel):
-    """Configuration for UI settings."""
+    """Uiconfig.
+
+    Manages UIConfig operations and coordinates related state changes for the component.
+    """
     
     theme: Literal["auto", "light", "dark"] = Field(
         default="auto",
@@ -391,7 +441,13 @@ class Config(BaseSettings):
         return _read_yaml_file(path)
     
     def save_to_yaml(self, path: Optional[Path] = None) -> None:
-        """Save current configuration to YAML file."""
+        """Save current configuration to YAML file.
+
+        Manages save to yaml operations and coordinates related state changes for the component.
+
+        Args:
+            path (Optional[Path]): Filesystem path to the target file or directory.
+        """
         if path is None:
             path = self.config_file or (Path.home() / ".cortex_cleaner.yaml")
         
@@ -442,47 +498,101 @@ class Config(BaseSettings):
     # Backward compatibility properties
     @property
     def exclude_patterns(self) -> List[str]:
-        """Backward compatibility: get exclude patterns."""
+        """Backward compatibility: get exclude patterns.
+
+        Manages exclude patterns operations and coordinates related state changes for the component.
+
+        Returns:
+            List[str]: List of processed items or identifiers.
+        """
         return self.scan.exclude_patterns
     
     @property
     def exclude_dirs(self) -> List[str]:
-        """Backward compatibility: get exclude directories."""
+        """Backward compatibility: get exclude directories.
+
+        Manages exclude dirs operations and coordinates related state changes for the component.
+
+        Returns:
+            List[str]: List of processed items or identifiers.
+        """
         return self.scan.exclude_dirs
     
     @property
     def exclude_regex_patterns(self) -> List[str]:
-        """Backward compatibility: get exclude regex patterns."""
+        """Backward compatibility: get exclude regex patterns.
+
+        Manages exclude regex patterns operations and coordinates related state changes for the component.
+
+        Returns:
+            List[str]: List of processed items or identifiers.
+        """
         return self.scan.exclude_regex_patterns
     
     @property
     def min_age_days(self) -> int:
-        """Backward compatibility: get minimum age in days."""
+        """Backward compatibility: get minimum age in days.
+
+        Manages min age days operations and coordinates related state changes for the component.
+
+        Returns:
+            int: Result of the operation.
+        """
         return self.scan.min_age_days
     
     @property
     def default_action(self) -> str:
-        """Backward compatibility: get default action."""
+        """Backward compatibility: get default action.
+
+        Manages default action operations and coordinates related state changes for the component.
+
+        Returns:
+            str: Formatted string or path.
+        """
         return self.security.default_action
     
     @property
     def log_file(self) -> Optional[str]:
-        """Backward compatibility: get log file path."""
+        """Backward compatibility: get log file path.
+
+        Manages log file operations and coordinates related state changes for the component.
+
+        Returns:
+            Optional[str]: Formatted string or path.
+        """
         return str(self.logging.log_file) if self.logging.log_file else None
     
     @property
     def json_logging(self) -> bool:
-        """Backward compatibility: get JSON logging flag."""
+        """Backward compatibility: get JSON logging flag.
+
+        Manages json logging operations and coordinates related state changes for the component.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         return self.logging.json_logging
     
     @property
     def threads(self) -> int:
-        """Backward compatibility: get number of threads."""
+        """Threads.
+
+        Manages threads operations and coordinates related state changes for the component.
+
+        Returns:
+            int: Result of the operation.
+        """
         return self.performance.threads
     
     @property
     def follow_symlinks(self) -> bool:
-        """Backward compatibility: get follow symlinks flag."""
+        """Backward compatibility: get follow symlinks flag.
+
+        Manages follow symlinks operations and coordinates related state changes for the component.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         return self.scan.follow_symlinks
 
 
@@ -554,7 +664,16 @@ ui:
 
 
 def create_default_config(path: Optional[Path] = None) -> Config:
-    """Create and save a default configuration file."""
+    """Create and save a default configuration file.
+
+    Manages create default config operations and coordinates related state changes for the component.
+
+    Args:
+        path (Optional[Path]): Filesystem path to the target file or directory.
+
+    Returns:
+        Config: Result of the operation.
+    """
     if path is None:
         path = Path.home() / ".cortex_cleaner.yaml"
     

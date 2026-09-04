@@ -4,7 +4,7 @@ Inspects and manages right-click context menu bloat:
 1. Enumerates all shell extensions registered in HKCR\\*\\shell, Directory\\shell, etc.
 2. Detects orphaned context menu entries (pointing to uninstalled programs).
 3. Provides non-destructive disable/enable toggle for individual menu items.
-4. Identifies slow shell extensions that degrade Explorer performance.
+4. Flags orphaned entries and LegacyDisable state for review (no timing measurement).
 """
 
 from __future__ import annotations

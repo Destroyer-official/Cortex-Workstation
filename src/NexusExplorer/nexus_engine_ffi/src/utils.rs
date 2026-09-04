@@ -3,6 +3,7 @@ use libc::{c_char, c_int, c_void};
 use std::ffi::{CStr, CString};
 use std::ptr;
 
+/// Renames `path` to `new_name` within the same parent directory.
 #[no_mangle]
 pub unsafe extern "C" fn nexus_rename(
     ctx: *mut c_void,
@@ -32,6 +33,7 @@ pub unsafe extern "C" fn nexus_rename(
     }
 }
 
+/// Creates a single folder `name` inside existing `parent`.
 #[no_mangle]
 pub unsafe extern "C" fn nexus_create_folder(
     ctx: *mut c_void,
@@ -58,6 +60,7 @@ pub unsafe extern "C" fn nexus_create_folder(
     }
 }
 
+/// Reads up to `max_bytes` of a text file, reporting truncation and total size via out-params.
 #[no_mangle]
 pub unsafe extern "C" fn nexus_read_text_file(
     ctx: *mut c_void,
@@ -117,6 +120,7 @@ pub unsafe extern "C" fn nexus_read_text_file(
     0
 }
 
+/// Opens `path` with the OS default handler (Explorer on Windows, xdg-open elsewhere).
 #[no_mangle]
 pub unsafe extern "C" fn nexus_open_path(ctx: *mut c_void, path: *const c_char) -> c_int {
     let _ctx = borrow_ctx(ctx);
@@ -146,6 +150,7 @@ pub unsafe extern "C" fn nexus_open_path(ctx: *mut c_void, path: *const c_char) 
     }
 }
 
+/// Reveals `path` selected in the OS shell (Explorer `/select` on Windows; unsupported elsewhere).
 #[no_mangle]
 pub unsafe extern "C" fn nexus_reveal_in_shell(ctx: *mut c_void, path: *const c_char) -> c_int {
     let _ctx = borrow_ctx(ctx);
@@ -170,6 +175,7 @@ pub unsafe extern "C" fn nexus_reveal_in_shell(ctx: *mut c_void, path: *const c_
         -1
     }
 }
+/// Serializes interrupted-transfer `.nexuspart` orphans from the job journal as a JSON array.
 #[no_mangle]
 pub unsafe extern "C" fn nexus_orphans_json(out_json: *mut *mut c_char) -> c_int {
     if out_json.is_null() {

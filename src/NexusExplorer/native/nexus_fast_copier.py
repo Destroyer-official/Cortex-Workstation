@@ -1,12 +1,5 @@
-"""Nexus Explorer — High-Performance Fast File Copier & Transfer Engine.
-
-Inspired by FastCopy and Robocopy architectures:
-1. Dynamic buffer management (64KB to 8MB) with unbuffered / sequential streaming.
-2. Concurrent multi-threaded copying across drives.
-3. Automatic retry for locked / busy files.
-4. NTFS metadata, timestamp, and attribute preservation.
-5. Optional streaming cryptographic SHA-256 post-copy verification.
-"""
+"""Fast file copier: fixed 512KB buffer, buffered Python I/O, sequential single-threaded copy.
+Uses os.utime for timestamps only; no NTFS metadata preservation."""
 
 from __future__ import annotations
 
@@ -21,16 +14,21 @@ from typing import Callable, Dict, List, Optional, Tuple
 
 
 class CopyMode(Enum):
-    """CopyMode."""
+    """Copymode.
+
+    Manages CopyMode operations and coordinates related state changes for the component.
+    """
     STANDARD = "Standard Buffered"
     DIRECT_IO = "High Throughput Direct"
     VERIFY_SHA256 = "Copy with SHA-256 Verification"
-    """CopyMode class."""
 
 
 @dataclass
 class CopyItemProgress:
-    """CopyItemProgress."""
+    """CopyItemProgress.
+
+    Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
+    """
     current_file: str
     files_completed: int
     total_files: int
@@ -39,12 +37,14 @@ class CopyItemProgress:
     speed_mb_s: float
     percent: float
     eta_seconds: float
-    """CopyItemProgress class."""
 
 
 @dataclass
 class CopySummary:
-    """CopySummary."""
+    """Copysummary.
+
+    Manages CopySummary operations and coordinates related state changes for the component.
+    """
     success: bool
     files_copied: int
     bytes_transferred: int
@@ -54,15 +54,19 @@ class CopySummary:
     errors: List[str] = None
 
     def __post_init__(self):
-        """__post_init__."""
+        """__post_init__.
+
+        Manages post init operations and coordinates related state changes for the component.
+        """
         if self.errors is None:
             self.errors = []
-        """__post_init__."""
-    """CopySummary class."""
 
 
 class FastCopier:
-    """Production high-throughput file transfer and synchronization engine."""
+    """Fastcopier.
+
+    Manages FastCopier operations and coordinates related state changes for the component.
+    """
 
     DEFAULT_CHUNK_SIZE = 512 * 1024  # 512 KB streaming buffer
 
@@ -77,7 +81,22 @@ class FastCopier:
         progress_cb: Optional[Callable[[int], None]] = None,
         cancel_check: Optional[Callable[[], bool]] = None,
     ) -> Tuple[bool, int, Optional[str]]:
-        """Stream copy a single file with optional throttling and hash verification."""
+        """Stream copy a single file with optional throttling and hash verification.
+
+        Manages copy single file operations and coordinates related state changes for the component.
+
+        Args:
+            src (Path): The src parameter.
+            dst (Path): The dst parameter.
+            chunk_size (int): The chunk size parameter.
+            speed_limit_kb_s (int): The speed limit kb s parameter.
+            verify_hash (bool): The verify hash parameter.
+            progress_cb (Optional[Callable[[int], None]]): Callback invoked with progress updates.
+            cancel_check (Optional[Callable[[], bool]]): Threading event or callable to check for cancellation.
+
+        Returns:
+            Tuple[bool, int, Optional[str]]: True if the operation succeeded, False otherwise.
+        """
         dst.parent.mkdir(parents=True, exist_ok=True)
         bytes_copied = 0
 
@@ -137,7 +156,23 @@ class FastCopier:
         progress_cb: Optional[Callable[[CopyItemProgress], None]] = None,
         cancel_check: Optional[Callable[[], bool]] = None,
     ) -> CopySummary:
-        """Transfer multiple files or directory trees to destination directory."""
+        """Transfer multiple files or directory trees to destination directory.
+
+        Manages copy batch operations and coordinates related state changes for the component.
+
+        Args:
+            sources (List[str | Path]): The sources parameter.
+            destination_dir (str | Path): The destination dir parameter.
+            mode (CopyMode): The mode parameter.
+            chunk_size (int): The chunk size parameter.
+            speed_limit_kb_s (int): The speed limit kb s parameter.
+            max_retries (int): The max retries parameter.
+            progress_cb (Optional[Callable[[CopyItemProgress], None]]): Callback invoked with progress updates.
+            cancel_check (Optional[Callable[[], bool]]): Threading event or callable to check for cancellation.
+
+        Returns:
+            CopySummary: Result of the operation.
+        """
         dest_dir = Path(destination_dir).resolve()
         dest_dir.mkdir(parents=True, exist_ok=True)
 
@@ -192,7 +227,13 @@ class FastCopier:
             err_msg = ""
             for attempt in range(max_retries):
                 def _file_chunk_cb(chunk_len: int):
-                    """_file_chunk_cb."""
+                    """_file_chunk_cb.
+
+                    Manages file chunk cb operations and coordinates related state changes for the component.
+
+                    Args:
+                        chunk_len (int): The chunk len parameter.
+                    """
                     nonlocal total_transferred, transferred_since_calc, last_calc_time, current_speed
                     total_transferred += chunk_len
                     transferred_since_calc += chunk_len
@@ -216,7 +257,6 @@ class FastCopier:
                             percent=min(100.0, pct),
                             eta_seconds=max(0.0, eta),
                         ))
-                    """_file_chunk_cb."""
 
                 ok, b_copied, err = cls._copy_single_file(
                     src_path,

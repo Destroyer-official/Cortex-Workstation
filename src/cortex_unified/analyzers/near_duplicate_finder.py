@@ -77,7 +77,15 @@ class BloomFilter:
     """
 
     def __init__(self, n: int, p: float = 0.01, k: int = 7) -> None:
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            n (int): The n parameter.
+            p (float): The p parameter.
+            k (int): The k parameter.
+        """
         self.k = k
         if n <= 0:
             n = 1024
@@ -85,12 +93,16 @@ class BloomFilter:
         self.m = max(1024, m)
         self.bits = bytearray((self.m + 7) // 8)
         self._n = 0
-        """__init__."""
-        """__init__."""
 
     def _hashes(self, data: bytes):
         # Double-hashing: h1 + i*h2 (Kirsch & Mitzenmacher)
-        """_hashes."""
+        """Hashes.
+
+        Manages hashes operations and coordinates related state changes for the component.
+
+        Args:
+            data (bytes): The data parameter.
+        """
         if HAS_XXHASH:
             h1 = xxhash.xxh64(data, seed=0).intdigest()
             h2 = xxhash.xxh64(data, seed=1).intdigest()
@@ -101,28 +113,43 @@ class BloomFilter:
             h2 = 1
         for i in range(self.k):
             yield (h1 + i * h2) % self.m
-        """_hashes."""
-        """_hashes."""
 
     def add(self, data: bytes) -> None:
-        """add."""
+        """Add.
+
+        Manages add operations and coordinates related state changes for the component.
+
+        Args:
+            data (bytes): The data parameter.
+        """
         for pos in self._hashes(data):
             self.bits[pos // 8] |= 1 << (pos % 8)
         self._n += 1
-        """add."""
-        """add."""
 
     def __contains__(self, data: bytes) -> bool:  # noqa: D105
-        """__contains__."""
+        """Contains.
+
+        Manages contains operations and coordinates related state changes for the component.
+
+        Args:
+            data (bytes): The data parameter.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         for pos in self._hashes(data):
             if not (self.bits[pos // 8] >> (pos % 8)) & 1:
                 return False
         return True
-        """__contains__."""
-        """__contains__."""
 
     def fpr(self) -> float:
-        """Theoretical false-positive rate after n insertions."""
+        """Fpr.
+
+        Manages fpr operations and coordinates related state changes for the component.
+
+        Returns:
+            float: Result of the operation.
+        """
         return (1 - math.exp(-self.k * self._n / self.m)) ** self.k if self.m else 1.0
 
 
@@ -144,20 +171,38 @@ def _shingle_text(text: str, k: int = 5) -> Set[bytes]:
 
 
 def _shingle_bytes(data: bytes, k: int = 5) -> Set[bytes]:
-    """Byte-level shingles for binary / mixed files."""
+    """Byte-level shingles for binary / mixed files.
+
+    Manages shingle bytes operations and coordinates related state changes for the component.
+
+    Args:
+        data (bytes): The data parameter.
+        k (int): The k parameter.
+
+    Returns:
+        Set[bytes]: Result of the operation.
+    """
     if len(data) < k:
         return {data} if data else set()
     return {data[i : i + k] for i in range(len(data) - k + 1)}
 
 
 def _hash_shingle(shingle: bytes, seed: int) -> int:
-    """_hash_shingle."""
+    """_hash_shingle.
+
+    Manages hash shingle operations and coordinates related state changes for the component.
+
+    Args:
+        shingle (bytes): The shingle parameter.
+        seed (int): The seed parameter.
+
+    Returns:
+        int: Result of the operation.
+    """
     if HAS_XXHASH:
         return xxhash.xxh64(shingle, seed=seed).intdigest()
     # blake2b digest as int (first 8 bytes)
     return int.from_bytes(hashlib.blake2b(shingle, digest_size=8, person=str(seed).encode()).digest(), "little")
-    """_hash_shingle."""
-    """_hash_shingle."""
 
 
 class NearDuplicateFinder:
@@ -183,7 +228,19 @@ class NearDuplicateFinder:
         use_bloom: bool = True,
         config: Config | None = None,
     ) -> None:
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            root_path (str): Filesystem path to the target file or directory.
+            threshold (float): The threshold parameter.
+            shingle_k (int): The shingle k parameter.
+            hash_perm (int): The hash perm parameter.
+            bands (int): The bands parameter.
+            use_bloom (bool): The use bloom parameter.
+            config (Config | None): The config parameter.
+        """
         self.root_path = normalize_path(root_path)
         self.threshold = threshold
         self.shingle_k = shingle_k
@@ -201,13 +258,20 @@ class NearDuplicateFinder:
         # LSH params: H = b * r, rows per band
         assert hash_perm % bands == 0, "hash_perm must be divisible by bands"
         self.rows = hash_perm // bands  # r
-        """__init__."""
-        """__init__."""
 
     # ---------------------------------------------------------------- helpers
 
     def _should_exclude(self, path: Path) -> bool:
-        """_should_exclude."""
+        """_should_exclude.
+
+        Manages should exclude operations and coordinates related state changes for the component.
+
+        Args:
+            path (Path): Filesystem path to the target file or directory.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         if path.name in self.exclude_dirs:
             return True
         s = str(path)
@@ -215,22 +279,36 @@ class NearDuplicateFinder:
             if pat in s or pat in path.name:
                 return True
         return False
-        """_should_exclude."""
-        """_should_exclude."""
 
     def _is_text(self, path: Path) -> bool:
         # Treat .py/.js/.java/.txt/.md as text, else bytes
-        """_is_text."""
+        """_is_text.
+
+        Manages is text operations and coordinates related state changes for the component.
+
+        Args:
+            path (Path): Filesystem path to the target file or directory.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         return path.suffix.lower() in {
             ".py", ".js", ".ts", ".java", ".c", ".cpp", ".h", ".cs",
             ".txt", ".md", ".rst", ".json", ".xml", ".html", ".css",
             ".go", ".rs", ".rb", ".php", ".sql",
         }
-        """_is_text."""
-        """_is_text."""
 
     def _minhash(self, shingles: Set[bytes]) -> List[int]:
-        """MinHash signature length H: min_{shingle} h_perm(shingle)."""
+        """Minhash.
+
+        Manages minhash operations and coordinates related state changes for the component.
+
+        Args:
+            shingles (Set[bytes]): The shingles parameter.
+
+        Returns:
+            List[int]: List of processed items or identifiers.
+        """
         sig = []
         for seed in range(self.hash_perm):
             minh = None
@@ -270,14 +348,22 @@ class NearDuplicateFinder:
         return candidates
 
     def _jaccard(self, a: Set[bytes], b: Set[bytes]) -> float:
-        """_jaccard."""
+        """Jaccard.
+
+        Manages jaccard operations and coordinates related state changes for the component.
+
+        Args:
+            a (Set[bytes]): The a parameter.
+            b (Set[bytes]): Integer number of bytes to format or process.
+
+        Returns:
+            float: Result of the operation.
+        """
         if not a or not b:
             return 0.0
         inter = len(a & b)
         union = len(a | b)
         return inter / union if union else 0.0
-        """_jaccard."""
-        """_jaccard."""
 
     def _weighted_jaccard(self, a: Set[bytes], b: Set[bytes], df: Dict[bytes, int], n_docs: int) -> float:
         """Attention-weighted Jaccard (SemHash AW-MinHash): down-weight boilerplate.
@@ -368,7 +454,16 @@ class NearDuplicateFinder:
         df: Dict[bytes, int] = defaultdict(int)
 
         def _shingle_one(p: Path) -> Tuple[Path, Set[bytes]]:
-            """_shingle_one."""
+            """_shingle_one.
+
+            Manages shingle one operations and coordinates related state changes for the component.
+
+            Args:
+                p (Path): The p parameter.
+
+            Returns:
+                Tuple[Path, Set[bytes]]: Result of the operation.
+            """
             try:
                 if self._is_text(p):
                     try:
@@ -382,8 +477,6 @@ class NearDuplicateFinder:
                 return p, sh
             except Exception:
                 return p, set()
-            """_shingle_one."""
-            """_shingle_one."""
 
         with ThreadPoolExecutor(max_workers=threads) as ex:
             futures = {ex.submit(_shingle_one, p): p for p in files}
@@ -409,11 +502,18 @@ class NearDuplicateFinder:
         signatures: Dict[Path, List[int]] = {}
 
         def _minhash_one(item: Tuple[Path, Set[bytes]]) -> Tuple[Path, List[int]]:
-            """_minhash_one."""
+            """_minhash_one.
+
+            Manages minhash one operations and coordinates related state changes for the component.
+
+            Args:
+                item (Tuple[Path, Set[bytes]]): The item parameter.
+
+            Returns:
+                Tuple[Path, List[int]]: List of processed items or identifiers.
+            """
             p, sh = item
             return p, self._minhash(sh)
-            """_minhash_one."""
-            """_minhash_one."""
 
         with ThreadPoolExecutor(max_workers=threads) as ex:
             futures = {ex.submit(_minhash_one, kv): kv[0] for kv in shingles_map.items()}
@@ -430,21 +530,33 @@ class NearDuplicateFinder:
         parent: Dict[Path, Path] = {p: p for p in signatures}
 
         def _find(x: Path) -> Path:
-            """_find."""
+            """Search and locate items matching specific criteria.
+
+            Traverses filesystem directories or cached registries to find resources that satisfy the specified filters.
+
+            Args:
+                x (Path): The x parameter.
+
+            Returns:
+                Path: Result of the operation.
+            """
             while parent[x] != x:
                 parent[x] = parent[parent[x]]
                 x = parent[x]
             return x
-            """_find."""
-            """_find."""
 
         def _union(a: Path, b: Path) -> None:
-            """_union."""
+            """Union.
+
+            Manages union operations and coordinates related state changes for the component.
+
+            Args:
+                a (Path): The a parameter.
+                b (Path): Integer number of bytes to format or process.
+            """
             ra, rb = _find(a), _find(b)
             if ra != rb:
                 parent[rb] = ra
-            """_union."""
-            """_union."""
 
         n_docs = len(shingles_map)
         verified = 0
@@ -475,7 +587,13 @@ class NearDuplicateFinder:
         return result
 
     def get_stats(self) -> dict:
-        """Stats akin to DuplicateFinder."""
+        """Stats akin to DuplicateFinder.
+
+        Manages get stats operations and coordinates related state changes for the component.
+
+        Returns:
+            dict: Dictionary mapping identifiers to status or values.
+        """
         total_dups = sum(len(v) for v in self.duplicates.values())
         groups = len(self.duplicates)
         return {

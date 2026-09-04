@@ -110,7 +110,10 @@ assert len(_GUTMANN_TABLE) == 35, "Gutmann's paper prescribes exactly 35 passes"
 
 
 class StorageType(Enum):
-    """Storage Type enumeration."""
+    """Storagetype.
+
+    Manages StorageType operations and coordinates related state changes for the component.
+    """
     HDD = "hdd"
     SSD_NVME = "ssd_nvme"
     SSD_SATA = "ssd_sata"
@@ -156,7 +159,13 @@ class ShredStandard(Enum):
 
     @property
     def passes(self) -> List[Dict]:
-        """Passes."""
+        """Passes.
+
+        Manages passes operations and coordinates related state changes for the component.
+
+        Returns:
+            List[Dict]: List of processed items or identifiers.
+        """
         patterns = {
             self.NIST_CLEAR: [{"pattern": "random", "verify": True}],
             self.NIST_PURGE_CRYPTO: [{"pattern": "crypto_erase", "verify": True}],
@@ -237,16 +246,37 @@ class ShredStandard(Enum):
 
     @property
     def name(self) -> str:
-        """Name."""
+        """Name.
+
+        Manages name operations and coordinates related state changes for the component.
+
+        Returns:
+            str: Formatted string or path.
+        """
         return self.value.replace("_", " ").title()
 
     @property
     def pass_count(self) -> int:
-        """Pass count."""
+        """Pass count.
+
+        Manages pass count operations and coordinates related state changes for the component.
+
+        Returns:
+            int: Result of the operation.
+        """
         return len(self.passes)
 
     def recommended_for(self, storage: StorageType) -> bool:
-        """Recommended for."""
+        """Recommended for.
+
+        Manages recommended for operations and coordinates related state changes for the component.
+
+        Args:
+            storage (StorageType): The storage parameter.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         if storage in (StorageType.SSD_NVME, StorageType.SSD_SATA):
             return self in (ShredStandard.NIST_CLEAR, ShredStandard.NIST_PURGE_CRYPTO,
                             ShredStandard.NIST_PURGE_BLOCK, ShredStandard.RANDOM_1PASS)
@@ -258,7 +288,10 @@ class ShredStandard(Enum):
 
 @dataclass(frozen=True, slots=True)
 class ShredResult:
-    """Shred Result data container."""
+    """Shredresult.
+
+    Manages ShredResult operations and coordinates related state changes for the component.
+    """
     success: bool
     file_path: str
     standard: ShredStandard
@@ -269,7 +302,13 @@ class ShredResult:
     error: Optional[str] = None
 
     def to_dict(self) -> dict:
-        """To dict."""
+        """To dict.
+
+        Manages to dict operations and coordinates related state changes for the component.
+
+        Returns:
+            dict: Dictionary mapping identifiers to status or values.
+        """
         import dataclasses
         d = dataclasses.asdict(self)
         d["standard"] = self.standard.value
@@ -281,7 +320,17 @@ class ShredResult:
 # ---------------------------------------------------------------------------
 
 def _pattern_bytes(pattern: Any, size: int) -> bytes:
-    """Generate bytes for a pass pattern."""
+    """Generate bytes for a pass pattern.
+
+    Manages pattern bytes operations and coordinates related state changes for the component.
+
+    Args:
+        pattern (Any): The pattern parameter.
+        size (int): Integer number of bytes to format or process.
+
+    Returns:
+        bytes: Result of the operation.
+    """
     if pattern == "random":
         return os.urandom(size)
     if pattern == "crypto_erase" or pattern == "block_erase":
@@ -297,7 +346,19 @@ def _pattern_bytes(pattern: Any, size: int) -> bytes:
 
 
 def _verify_pattern(file_path: str, pattern: Any, size: int, sample_pct: float = 0.1) -> bool:
-    """Verify written pattern by reading back (full or sampled)."""
+    """Verify written pattern by reading back (full or sampled).
+
+    Manages verify pattern operations and coordinates related state changes for the component.
+
+    Args:
+        file_path (str): Filesystem path to the target file or directory.
+        pattern (Any): The pattern parameter.
+        size (int): Integer number of bytes to format or process.
+        sample_pct (float): The sample pct parameter.
+
+    Returns:
+        bool: True if the operation succeeded, False otherwise.
+    """
     if pattern in ("crypto_erase", "block_erase"):
         return True  # SSD firmware handles verification
     try:
@@ -345,7 +406,16 @@ def _verify_pattern(file_path: str, pattern: Any, size: int, sample_pct: float =
 # ---------------------------------------------------------------------------
 
 def detect_storage_type(path: str) -> StorageType:
-    """Detect storage type for a given path."""
+    """Detect storage type for a given path.
+
+    Manages detect storage type operations and coordinates related state changes for the component.
+
+    Args:
+        path (str): Filesystem path to the target file or directory.
+
+    Returns:
+        StorageType: Result of the operation.
+    """
     try:
         drive = Path(path).anchor or "C:"
         if sys.platform == "win32":
@@ -390,7 +460,10 @@ def detect_storage_type(path: str) -> StorageType:
 # ---------------------------------------------------------------------------
 
 class SecureShredder:
-    """Multi-standard secure file shredder with verification."""
+    """Secureshredder.
+
+    Manages SecureShredder operations and coordinates related state changes for the component.
+    """
 
     def __init__(
         self,
@@ -400,7 +473,17 @@ class SecureShredder:
         sample_verification_pct: float = 0.1,
         dry_run: bool = False,
     ):
-        """Initialize Secure Shredder."""
+        """Initialize Secure Shredder.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            progress_callback (Optional[Callable[[str, int, int], None]]): The progress callback parameter.
+            cancel_event (Optional[threading.Event]): Threading event or callable to check for cancellation.
+            verify_passes (bool): The verify passes parameter.
+            sample_verification_pct (float): The sample verification pct parameter.
+            dry_run (bool): The dry run parameter.
+        """
         self.progress = progress_callback or (lambda *_: None)
         self.cancel_event = cancel_event or threading.Event()
         self.verify_passes = verify_passes
@@ -409,7 +492,16 @@ class SecureShredder:
         self._rng = random.SystemRandom()
 
     def _write_pass(self, f: BinaryIO, offset: int, size: int, pattern: Any) -> None:
-        """Write a single pass pattern at offset."""
+        """Write a single pass pattern at offset.
+
+        Manages write pass operations and coordinates related state changes for the component.
+
+        Args:
+            f (BinaryIO): The f parameter.
+            offset (int): The offset parameter.
+            size (int): Integer number of bytes to format or process.
+            pattern (Any): The pattern parameter.
+        """
         if self.dry_run:
             return
         f.seek(offset)
@@ -431,7 +523,18 @@ class SecureShredder:
         standard: Optional[ShredStandard] = None,
         auto_detect: bool = True,
     ) -> ShredResult:
-        """Shred a single file according to standard."""
+        """Shred a single file according to standard.
+
+        Manages shred file operations and coordinates related state changes for the component.
+
+        Args:
+            file_path (str): Filesystem path to the target file or directory.
+            standard (Optional[ShredStandard]): The standard parameter.
+            auto_detect (bool): The auto detect parameter.
+
+        Returns:
+            ShredResult: Result of the operation.
+        """
         path = Path(file_path)
         if not path.exists():
             return ShredResult(False, file_path, standard or ShredStandard.NIST_CLEAR,
@@ -503,7 +606,17 @@ class SecureShredder:
                                time.time() - t0, verified, str(exc))
 
     def _shred_ssd_firmware(self, path: Path, standard: ShredStandard) -> ShredResult:
-        """Use firmware Secure Erase for SSD (requires admin)."""
+        """Use firmware Secure Erase for SSD (requires admin).
+
+        Manages shred ssd firmware operations and coordinates related state changes for the component.
+
+        Args:
+            path (Path): Filesystem path to the target file or directory.
+            standard (ShredStandard): The standard parameter.
+
+        Returns:
+            ShredResult: Result of the operation.
+        """
         t0 = time.time()
         if sys.platform == "win32":
             # Use cipher /w for free space, or invoke ATA SECURITY ERASE via hdparm equivalent
@@ -539,7 +652,18 @@ class SecureShredder:
         standard: Optional[ShredStandard] = None,
         auto_detect: bool = True,
     ) -> List[ShredResult]:
-        """Shred multiple files."""
+        """Shred multiple files.
+
+        Manages shred files operations and coordinates related state changes for the component.
+
+        Args:
+            file_paths (List[str]): Filesystem path to the target file or directory.
+            standard (Optional[ShredStandard]): The standard parameter.
+            auto_detect (bool): The auto detect parameter.
+
+        Returns:
+            List[ShredResult]: List of processed items or identifiers.
+        """
         results = []
         for fp in file_paths:
             if self.cancel_event.is_set():
@@ -552,7 +676,17 @@ class SecureShredder:
         drive: str,
         standard: Optional[ShredStandard] = None,
     ) -> ShredResult:
-        """Wipe free space on a drive."""
+        """Wipe free space on a drive.
+
+        Manages wipe free space operations and coordinates related state changes for the component.
+
+        Args:
+            drive (str): The drive parameter.
+            standard (Optional[ShredStandard]): The standard parameter.
+
+        Returns:
+            ShredResult: Result of the operation.
+        """
         t0 = time.time()
         drive_path = Path(drive).anchor or drive
         if standard is None:
@@ -580,7 +714,16 @@ class SecureShredder:
                                    time.time() - t0, False, str(exc))
 
     def get_smart_default(self, path: str) -> ShredStandard:
-        """Get recommended standard for a path."""
+        """Get recommended standard for a path.
+
+        Manages get smart default operations and coordinates related state changes for the component.
+
+        Args:
+            path (str): Filesystem path to the target file or directory.
+
+        Returns:
+            ShredStandard: Result of the operation.
+        """
         storage = detect_storage_type(path)
         if storage in (StorageType.SSD_NVME, StorageType.SSD_SATA):
             return ShredStandard.NIST_CLEAR

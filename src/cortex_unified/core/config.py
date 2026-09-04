@@ -27,13 +27,24 @@ class Config:
     """
 
     def __init__(self, config_path: str = None):
-        """__init__."""
+        """__init__.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            config_path (str): Filesystem path to the target file or directory.
+        """
         self.config_path = config_path or self._get_default_config_path()
         self.config_data = self._load_config()
-        """__init__."""
 
     def _get_default_config_path(self) -> str:
-        """Get the default configuration file path."""
+        """Get the default configuration file path.
+
+        Manages get default config path operations and coordinates related state changes for the component.
+
+        Returns:
+            str: Formatted string or path.
+        """
         home = Path.home()
         return str(home / ".deepcleaner.yaml")
     
@@ -96,56 +107,114 @@ class Config:
     
     @property
     def exclude_patterns(self) -> List[str]:
-        """Get exclude patterns from config."""
+        """Get exclude patterns from config.
+
+        Manages exclude patterns operations and coordinates related state changes for the component.
+
+        Returns:
+            List[str]: List of processed items or identifiers.
+        """
         return self.config_data.get("exclude_patterns", [])
     
     @property
     def exclude_dirs(self) -> List[str]:
-        """Get exclude directories from config."""
+        """Get exclude directories from config.
+
+        Manages exclude dirs operations and coordinates related state changes for the component.
+
+        Returns:
+            List[str]: List of processed items or identifiers.
+        """
         return self.config_data.get("exclude_dirs", [])
     
     @property
     def exclude_regex_patterns(self) -> List[str]:
-        """Get exclude regex patterns from config."""
+        """Get exclude regex patterns from config.
+
+        Manages exclude regex patterns operations and coordinates related state changes for the component.
+
+        Returns:
+            List[str]: List of processed items or identifiers.
+        """
         return self.config_data.get("exclude_regex_patterns", [])
     
     @property
     def min_age_days(self) -> int:
-        """Get minimum age in days."""
+        """Get minimum age in days.
+
+        Manages min age days operations and coordinates related state changes for the component.
+
+        Returns:
+            int: Result of the operation.
+        """
         return self.config_data.get("min_age_days", 0)
     
     @property
     def default_action(self) -> str:
-        """default_action."""
+        """default_action.
+
+        Manages default action operations and coordinates related state changes for the component.
+
+        Returns:
+            str: Formatted string or path.
+        """
         return self.config_data.get("default_action", "dry_run")
-        """default_action."""
     
     @property
     def log_file(self) -> str:
-        """log_file."""
+        """log_file.
+
+        Manages log file operations and coordinates related state changes for the component.
+
+        Returns:
+            str: Formatted string or path.
+        """
         return self.config_data.get("log_file", "")
-        """log_file."""
     
     @property
     def json_logging(self) -> bool:
-        """json_logging."""
+        """json_logging.
+
+        Manages json logging operations and coordinates related state changes for the component.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         return self.config_data.get("json_logging", False)
-        """json_logging."""
     
     @property
     def threads(self) -> int:
-        """threads."""
+        """Threads.
+
+        Manages threads operations and coordinates related state changes for the component.
+
+        Returns:
+            int: Result of the operation.
+        """
         return self.config_data.get("threads", 0)  # 0 means use CPU count
-        """threads."""
     
     @property
     def follow_symlinks(self) -> bool:
-        """follow_symlinks."""
+        """follow_symlinks.
+
+        Manages follow symlinks operations and coordinates related state changes for the component.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         return self.config_data.get("follow_symlinks", False)
-        """follow_symlinks."""
     
     def matches_exclude_patterns(self, path: str) -> bool:
-        """Check if a path matches any exclude patterns (glob or regex)."""
+        """Check if a path matches any exclude patterns (glob or regex).
+
+        Manages matches exclude patterns operations and coordinates related state changes for the component.
+
+        Args:
+            path (str): Filesystem path to the target file or directory.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         from fnmatch import fnmatch
         
         path_obj = Path(path)

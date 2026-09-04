@@ -18,51 +18,64 @@ except ImportError:
     HAS_PLOTLY = False
     # No-op stand-ins keep method bodies runnable without Plotly
     class go:
-        """go."""
+        """Go.
+
+        Manages go operations and coordinates related state changes for the component.
+        """
         class Figure:
-            """Figure."""
+            """Figure.
+
+            Manages Figure operations and coordinates related state changes for the component.
+            """
             def __init__(self, *args, **kwargs):
-                """__init__."""
+                """Initialize the instance and configure internal state.
+
+                Sets up sub-widgets, event signal connections, and default options.
+                """
                 pass
-                """__init__."""
-                """__init__."""
             def add_trace(self, *args, **kwargs):
-                """add_trace."""
+                """add_trace.
+
+                Manages add trace operations and coordinates related state changes for the component.
+                """
                 pass
-                """add_trace."""
-                """add_trace."""
             def update_layout(self, *args, **kwargs):
-                """update_layout."""
+                """update_layout.
+
+                Manages update layout operations and coordinates related state changes for the component.
+                """
                 pass
-                """update_layout."""
-            """Figure class."""
-        """go class."""
-        """go class."""
     class px:
-        """px."""
+        """Px.
+
+        Manages px operations and coordinates related state changes for the component.
+        """
         @staticmethod
         def bar(*args, **kwargs):
-            """bar."""
+            """Bar.
+
+            Manages bar operations and coordinates related state changes for the component.
+            """
             return go.Figure()
-            """bar."""
-            """bar."""
         @staticmethod
         def pie(*args, **kwargs):
-            """pie."""
+            """Pie.
+
+            Manages pie operations and coordinates related state changes for the component.
+            """
             return go.Figure()
-            """pie."""
-        """px class."""
-        """px class."""
     def make_subplots(*args, **kwargs):
-        """make_subplots."""
+        """make_subplots.
+
+        Manages make subplots operations and coordinates related state changes for the component.
+        """
         return go.Figure()
-        """make_subplots."""
-        """make_subplots."""
     def plot(*args, **kwargs):
-        """plot."""
+        """Plot.
+
+        Manages plot operations and coordinates related state changes for the component.
+        """
         pass
-        """plot."""
-        """plot."""
 
 from cortex_unified.visualization.treemap_generator import TreeMapGenerator
 from cortex_unified.visualization.sunburst_generator import SunburstGenerator
@@ -76,7 +89,13 @@ class InteractiveDashboard:
     """
     
     def __init__(self, analyzer: Any = None):
-        """Store the analyzer; generators defer until first render."""
+        """Store the analyzer; generators defer until first render.
+
+        Initializes the instance and configures internal state.
+
+        Args:
+            analyzer (Any): The analyzer parameter.
+        """
         self.analyzer = analyzer
         self.has_plotly = HAS_PLOTLY
         if not self.has_plotly:
@@ -88,7 +107,10 @@ class InteractiveDashboard:
         self.drill_down_history = []
         
     def _initialize_generators(self):
-        """(Re)build tree generators from the current analyzer."""
+        """(Re)build tree generators from the current analyzer.
+
+        Manages initialize generators operations and coordinates related state changes for the component.
+        """
         if self.analyzer:
             self.treemap_generator = TreeMapGenerator(self.analyzer)
             self.sunburst_generator = SunburstGenerator(self.analyzer)
@@ -118,7 +140,13 @@ class InteractiveDashboard:
             return self._create_combined_dashboard()
     
     def _create_empty_dashboard(self) -> go.Figure:
-        """Empty state figure prompting the user to run an analysis."""
+        """Empty state figure prompting the user to run an analysis.
+
+        Manages create empty dashboard operations and coordinates related state changes for the component.
+
+        Returns:
+            go.Figure: Result of the operation.
+        """
         fig = go.Figure()
         fig.add_annotation(
             text="No data available. Please run disk analysis first.",
@@ -136,7 +164,13 @@ class InteractiveDashboard:
         return fig
     
     def _create_treemap_dashboard(self) -> go.Figure:
-        """Full-height treemap alone."""
+        """Full-height treemap alone.
+
+        Manages create treemap dashboard operations and coordinates related state changes for the component.
+
+        Returns:
+            go.Figure: Result of the operation.
+        """
         if not self.treemap_generator:
             return self._create_empty_dashboard()
         
@@ -148,7 +182,13 @@ class InteractiveDashboard:
         return fig
     
     def _create_sunburst_dashboard(self) -> go.Figure:
-        """Full-height sunburst alone."""
+        """Full-height sunburst alone.
+
+        Manages create sunburst dashboard operations and coordinates related state changes for the component.
+
+        Returns:
+            go.Figure: Result of the operation.
+        """
         if not self.sunburst_generator:
             return self._create_empty_dashboard()
         
@@ -160,7 +200,13 @@ class InteractiveDashboard:
         return fig
     
     def _create_side_by_side_dashboard(self) -> go.Figure:
-        """Treemap and sunburst sharing one row."""
+        """Treemap and sunburst sharing one row.
+
+        Manages create side by side dashboard operations and coordinates related state changes for the component.
+
+        Returns:
+            go.Figure: Result of the operation.
+        """
         if not self.treemap_generator or not self.sunburst_generator:
             return self._create_empty_dashboard()
         
@@ -190,7 +236,13 @@ class InteractiveDashboard:
         return fig
     
     def _create_combined_dashboard(self) -> go.Figure:
-        """Pie + bar overview on row 1, full-width treemap on row 2."""
+        """Pie + bar overview on row 1, full-width treemap on row 2.
+
+        Manages create combined dashboard operations and coordinates related state changes for the component.
+
+        Returns:
+            go.Figure: Result of the operation.
+        """
         if not self.analyzer:
             return self._create_empty_dashboard()
         
@@ -227,7 +279,15 @@ class InteractiveDashboard:
         return fig
     
     def _add_disk_usage_pie(self, fig: go.Figure, row: int, col: int):
-        """Pie of used vs free bytes; silently skipped when data absent."""
+        """Pie of used vs free bytes; silently skipped when data absent.
+
+        Manages add disk usage pie operations and coordinates related state changes for the component.
+
+        Args:
+            fig (go.Figure): The fig parameter.
+            row (int): Table row index or list of row indices.
+            col (int): The col parameter.
+        """
         if hasattr(self.analyzer, 'disk_usage') and self.analyzer.disk_usage:
             disk_data = self.analyzer.disk_usage
             
@@ -250,7 +310,15 @@ class InteractiveDashboard:
             )
     
     def _add_file_type_bar(self, fig: go.Figure, row: int, col: int):
-        """Bar chart of the ten largest extensions by total bytes."""
+        """Bar chart of the ten largest extensions by total bytes.
+
+        Manages add file type bar operations and coordinates related state changes for the component.
+
+        Args:
+            fig (go.Figure): The fig parameter.
+            row (int): Table row index or list of row indices.
+            col (int): The col parameter.
+        """
         if hasattr(self.analyzer, 'file_type_breakdown') and self.analyzer.file_type_breakdown:
             file_types = self.analyzer.file_type_breakdown
             
@@ -306,7 +374,13 @@ class InteractiveDashboard:
         return self._create_empty_dashboard()
     
     def handle_drill_up(self) -> go.Figure:
-        """Pop the last drilled path; walk to the filesystem parent if empty."""
+        """Pop the last drilled path; walk to the filesystem parent if empty.
+
+        Manages handle drill up operations and coordinates related state changes for the component.
+
+        Returns:
+            go.Figure: Result of the operation.
+        """
         if self.drill_down_history:
             previous_path = self.drill_down_history.pop()
             return self.handle_drill_down(previous_path)
@@ -319,7 +393,16 @@ class InteractiveDashboard:
         return self.create_dashboard()
     
     def handle_context_menu(self, path: str) -> Dict[str, Any]:
-        """Action descriptors offered for a right-clicked path."""
+        """Action descriptors offered for a right-clicked path.
+
+        Manages handle context menu operations and coordinates related state changes for the component.
+
+        Args:
+            path (str): Filesystem path to the target file or directory.
+
+        Returns:
+            Dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         context_actions = {
             'open_in_explorer': {
                 'label': 'Open in File Explorer',
@@ -403,7 +486,17 @@ class InteractiveDashboard:
             return False
     
     def export_batch(self, base_path: str, formats: List[str]) -> Dict[str, bool]:
-        """Export the dashboard once per format; per-format success map."""
+        """Export the dashboard once per format; per-format success map.
+
+        Manages export batch operations and coordinates related state changes for the component.
+
+        Args:
+            base_path (str): Filesystem path to the target file or directory.
+            formats (List[str]): The formats parameter.
+
+        Returns:
+            Dict[str, bool]: Dictionary mapping identifiers to status or values.
+        """
         results = {}
         
         for format_type in formats:
@@ -418,7 +511,13 @@ class InteractiveDashboard:
         return results
     
     def refresh_data(self) -> go.Figure:
-        """Re-run all analyses and rebuild; empty figure without analyzer."""
+        """Re-run all analyses and rebuild; empty figure without analyzer.
+
+        Manages refresh data operations and coordinates related state changes for the component.
+
+        Returns:
+            go.Figure: Result of the operation.
+        """
         if self.analyzer and hasattr(self.analyzer, 'analyze_disk_usage'):
             self.analyzer.analyze_disk_usage()
             self.analyzer.analyze_directory_tree()
@@ -431,7 +530,13 @@ class InteractiveDashboard:
         return self._create_empty_dashboard()
     
     def get_dashboard_stats(self) -> Dict[str, Any]:
-        """Snapshot of current path, drill depth, size, and counts."""
+        """Snapshot of current path, drill depth, size, and counts.
+
+        Manages get dashboard stats operations and coordinates related state changes for the component.
+
+        Returns:
+            Dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         if not self.analyzer:
             return {}
         

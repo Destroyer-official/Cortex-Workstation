@@ -17,6 +17,7 @@ impl Drop for ErrorModeGuard {
     }
 }
 
+/// Enumerates logical drives into a caller-owned `DriveInfo` array (free with `nexus_free_drives`).
 #[no_mangle]
 pub unsafe extern "C" fn nexus_get_drives(
     ctx: *mut c_void,
@@ -113,6 +114,7 @@ pub unsafe extern "C" fn nexus_get_drives(
     0
 }
 
+/// Frees a `DriveInfo` array and its owned strings previously returned by `nexus_get_drives`.
 #[no_mangle]
 pub unsafe extern "C" fn nexus_free_drives(drives: *mut DriveInfo, count: size_t) {
     if drives.is_null() || count == 0 {
@@ -138,6 +140,7 @@ fn wide_to_string(buf: &[u16]) -> *mut c_char {
     CString::new(s).unwrap_or_default().into_raw()
 }
 
+/// Returns the user home directory path in `out_path` (caller frees with `nexus_free_string`).
 #[no_mangle]
 pub unsafe extern "C" fn nexus_home_dir(
     ctx: *mut c_void,
@@ -152,6 +155,7 @@ pub unsafe extern "C" fn nexus_home_dir(
     0
 }
 
+/// Frees a null-terminated string previously returned by the engine.
 #[no_mangle]
 pub unsafe extern "C" fn nexus_free_string(ptr: *mut c_char) {
     if !ptr.is_null() {

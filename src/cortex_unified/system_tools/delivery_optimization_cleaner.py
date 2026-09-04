@@ -16,7 +16,10 @@ from typing import List, Tuple
 
 @dataclass
 class DeliveryOptimizationStatus:
-    """Delivery Optimization Status data container."""
+    """Deliveryoptimizationstatus.
+
+    Manages DeliveryOptimizationStatus operations and coordinates related state changes for the component.
+    """
     cache_path: str
     file_count: int
     size_bytes: int
@@ -25,25 +28,38 @@ class DeliveryOptimizationStatus:
 
 @dataclass
 class DeliveryOptimizationCleanReport:
-    """Delivery Optimization Clean Report data container."""
+    """Deliveryoptimizationcleanreport.
+
+    Manages DeliveryOptimizationCleanReport operations and coordinates related state changes for the component.
+    """
     files_deleted: int = 0
     bytes_freed: int = 0
     errors: List[str] = None
 
     def __post_init__(self):
-        """__post_init__."""
+        """__post_init__.
+
+        Manages post init operations and coordinates related state changes for the component.
+        """
         if self.errors is None:
             self.errors = []
-        """__post_init__."""
-        """__post_init__."""
 
 
 class DeliveryOptimizationCleaner:
-    """Production Delivery Optimization cache sanitizer."""
+    """Deliveryoptimizationcleaner.
+
+    Manages DeliveryOptimizationCleaner operations and coordinates related state changes for the component.
+    """
 
     @classmethod
     def get_status(cls) -> DeliveryOptimizationStatus:
-        """Query total cache size and file count in Delivery Optimization stores."""
+        """Query total cache size and file count in Delivery Optimization stores.
+
+        Manages get status operations and coordinates related state changes for the component.
+
+        Returns:
+            DeliveryOptimizationStatus: Result of the operation.
+        """
         if platform.system() != "Windows":
             return DeliveryOptimizationStatus("", 0, 0, False)
 
@@ -79,7 +95,13 @@ class DeliveryOptimizationCleaner:
 
     @classmethod
     def clean_cache(cls) -> DeliveryOptimizationCleanReport:
-        """Purge all Delivery Optimization cache files."""
+        """Purge all Delivery Optimization cache files.
+
+        Permanently purges or removes specified target items, reclaiming storage space and logging actions taken.
+
+        Returns:
+            DeliveryOptimizationCleanReport: Result of the operation.
+        """
         report = DeliveryOptimizationCleanReport()
         if platform.system() != "Windows":
             return report

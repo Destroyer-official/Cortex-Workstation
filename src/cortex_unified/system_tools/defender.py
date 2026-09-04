@@ -25,7 +25,10 @@ _NO_WINDOW = 0x08000000 if _IS_WINDOWS else 0
 
 @dataclass(slots=True)
 class DefenderStatus:
-    """Defender Status data container."""
+    """Defenderstatus.
+
+    Manages DefenderStatus operations and coordinates related state changes for the component.
+    """
     available: bool
     realtime_protection: bool = False
     antivirus_enabled: bool = False
@@ -38,12 +41,24 @@ class DefenderStatus:
 
     @property
     def healthy(self) -> bool:
-        """Healthy."""
+        """Healthy.
+
+        Manages healthy operations and coordinates related state changes for the component.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         return (self.available and self.realtime_protection and self.antivirus_enabled
                 and (self.signature_age_days is None or self.signature_age_days <= 7))
 
     def to_dict(self) -> dict[str, Any]:
-        """To dict."""
+        """To dict.
+
+        Manages to dict operations and coordinates related state changes for the component.
+
+        Returns:
+            dict[str, Any]: Dictionary mapping identifiers to status or values.
+        """
         return {
             "available": self.available,
             "realtime_protection": self.realtime_protection,
@@ -59,15 +74,30 @@ class DefenderStatus:
 
 
 class WindowsDefender:
-    """Read Defender status, list recent detections, start a quick scan."""
+    """Windowsdefender.
+
+    Manages WindowsDefender operations and coordinates related state changes for the component.
+    """
 
     @staticmethod
     def is_supported() -> bool:
-        """Is supported."""
+        """Is supported.
+
+        Manages is supported operations and coordinates related state changes for the component.
+
+        Returns:
+            bool: True if the operation succeeded, False otherwise.
+        """
         return _IS_WINDOWS
 
     def status(self) -> DefenderStatus:
-        """Status."""
+        """Status.
+
+        Manages status operations and coordinates related state changes for the component.
+
+        Returns:
+            DefenderStatus: Result of the operation.
+        """
         if not _IS_WINDOWS:
             return DefenderStatus(available=False)
         script = (
@@ -81,7 +111,16 @@ class WindowsDefender:
 
     @staticmethod
     def _parse_status(out: str | None) -> DefenderStatus:
-        """_parse_status."""
+        """_parse_status.
+
+        Manages parse status operations and coordinates related state changes for the component.
+
+        Args:
+            out (str | None): The out parameter.
+
+        Returns:
+            DefenderStatus: Result of the operation.
+        """
         if not out:
             return DefenderStatus(available=False)
         try:
@@ -92,13 +131,17 @@ class WindowsDefender:
             d = d[0] if d else {}
 
         def _int(v):
-            """_int."""
+            """Int.
+
+            Manages int operations and coordinates related state changes for the component.
+
+            Args:
+                v: The v parameter.
+            """
             try:
                 return int(v) if v is not None else None
             except (ValueError, TypeError):
                 return None
-            """_int."""
-            """_int."""
 
         return DefenderStatus(
             available=True,
@@ -111,11 +154,18 @@ class WindowsDefender:
             last_full_scan=WindowsDefender._clean_date(d.get("FullScanEndTime")),
             engine_version=str(d.get("AMEngineVersion") or ""),
         )
-        """_parse_status."""
-        """_parse_status."""
 
     def recent_threats(self, limit: int = 20) -> list[dict[str, Any]]:
-        """Recent threats."""
+        """Recent threats.
+
+        Manages recent threats operations and coordinates related state changes for the component.
+
+        Args:
+            limit (int): The limit parameter.
+
+        Returns:
+            list[dict[str, Any]]: List of processed items or identifiers.
+        """
         if not _IS_WINDOWS:
             return []
         script = (
@@ -130,7 +180,16 @@ class WindowsDefender:
 
     @staticmethod
     def _parse_threats(out: str | None) -> list[dict[str, Any]]:
-        """_parse_threats."""
+        """_parse_threats.
+
+        Manages parse threats operations and coordinates related state changes for the component.
+
+        Args:
+            out (str | None): The out parameter.
+
+        Returns:
+            list[dict[str, Any]]: List of processed items or identifiers.
+        """
         if not out:
             return []
         try:
@@ -148,11 +207,15 @@ class WindowsDefender:
                     "id": t.get("ThreatID"),
                 })
         return threats
-        """_parse_threats."""
-        """_parse_threats."""
 
     def start_quick_scan(self) -> tuple[bool, str]:
-        """Kick off a Defender quick scan (harmless; scans, doesn't delete data)."""
+        """Kick off a Defender quick scan (harmless; scans, doesn't delete data).
+
+        Manages start quick scan operations and coordinates related state changes for the component.
+
+        Returns:
+            tuple[bool, str]: True if the operation succeeded, False otherwise.
+        """
         if not _IS_WINDOWS:
             return False, "Windows only."
         out = self._run("Start-MpScan -ScanType QuickScan", timeout=60 * 20,
@@ -163,7 +226,16 @@ class WindowsDefender:
 
     @staticmethod
     def _clean_date(raw: Any) -> str:
-        """_clean_date."""
+        """_clean_date.
+
+        Permanently purges or removes specified target items, reclaiming storage space and logging actions taken.
+
+        Args:
+            raw (Any): The raw parameter.
+
+        Returns:
+            str: Formatted string or path.
+        """
         if not raw:
             return ""
         s = str(raw)
@@ -175,11 +247,17 @@ class WindowsDefender:
             except (ValueError, OverflowError, OSError):
                 return ""
         return s.replace("T", " ")[:16]
-        """_clean_date."""
-        """_clean_date."""
 
     def _run(self, script: str, timeout: int, want_returncode: bool = False):
-        """_run."""
+        """Run.
+
+        Manages run operations and coordinates related state changes for the component.
+
+        Args:
+            script (str): The script parameter.
+            timeout (int): The timeout parameter.
+            want_returncode (bool): The want returncode parameter.
+        """
         try:
             # A quick scan can run for many minutes; poll the timeout instead of
             # blocking uninterruptibly, and kill the whole tree if it fires
@@ -194,5 +272,3 @@ class WindowsDefender:
         except (_proc.ProcessCancelled, OSError, subprocess.SubprocessError) as exc:
             _LOG.debug("defender query failed: %s", exc)
             return False if want_returncode else None
-        """_run."""
-        """_run."""

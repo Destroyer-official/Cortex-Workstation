@@ -7,6 +7,7 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::{Instant, UNIX_EPOCH};
 
+/// Starts an async filename search under `root`, streaming `FileEntry` batches to `callback` on a worker thread.
 #[no_mangle]
 pub unsafe extern "C" fn nexus_search_files(
     ctx: *mut c_void,
@@ -159,6 +160,7 @@ thread_local! {
         const { std::cell::RefCell::new(None) };
 }
 
+/// Cancels a running search by id (or the thread's most recent search when `search_id` is null).
 #[no_mangle]
 pub unsafe extern "C" fn nexus_cancel_search(ctx: *mut c_void, search_id: *const c_char) -> c_int {
     if ctx.is_null() {
@@ -178,6 +180,7 @@ pub unsafe extern "C" fn nexus_cancel_search(ctx: *mut c_void, search_id: *const
     if ctx.search_registry.cancel(id) { 0 } else { -1 }
 }
 
+/// Copies the thread-local most-recent search id into `out_id` (caller frees with `nexus_free_string`).
 #[no_mangle]
 pub unsafe extern "C" fn nexus_last_search_id(ctx: *mut c_void, out_id: *mut *mut c_char) -> c_int {
     if ctx.is_null() || out_id.is_null() {

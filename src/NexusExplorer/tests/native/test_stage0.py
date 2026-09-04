@@ -25,9 +25,15 @@ from nexus_core import CLI_CANDIDATES, find_cli, fmt_ms, human  # noqa: E402
 
 
 class TestFormatters:
-    """TestFormatters."""
+    """TestFormatters.
+
+    Converts raw numeric values into formatted, localized, and human-readable string representations.
+    """
     def test_human_bytes_scale(self):
-        """test_human_bytes_scale."""
+        """test_human_bytes_scale.
+
+        Manages test human bytes scale operations and coordinates related state changes for the component.
+        """
         assert human(0) == "0 B"
         assert human(-1) == ""
         assert human(512).endswith("B")
@@ -36,22 +42,37 @@ class TestFormatters:
         assert "GB" in human(3 * 1024**3)
 
     def test_fmt_ms_empty(self):
-        """test_fmt_ms_empty."""
+        """test_fmt_ms_empty.
+
+        Manages test fmt ms empty operations and coordinates related state changes for the component.
+        """
         assert fmt_ms(0) == ""
 
 
 @pytest.mark.skipif(not any(p.is_file() for p in CLI_CANDIDATES), reason="nexus-cli.exe not built")
 def test_find_cli_locates_built_binary():
-    """test_find_cli_locates_built_binary."""
+    """test_find_cli_locates_built_binary.
+
+    Manages test find cli locates built binary operations and coordinates related state changes for the component.
+    """
     cli = find_cli()
     assert cli.is_file(), f"nexus-cli.exe not found at {cli}"
 
 
 class TestOpenWithQuotingRegression:
-    """Regression for audit finding B8: os.startfile with embedded quotes."""
+    """Testopenwithquotingregression.
+
+    Manages TestOpenWithQuotingRegression operations and coordinates related state changes for the component.
+    """
 
     def test_open_with_uses_argument_list(self, monkeypatch):
-        """test_open_with_uses_argument_list."""
+        """test_open_with_uses_argument_list.
+
+        Manages test open with uses argument list operations and coordinates related state changes for the component.
+
+        Args:
+            monkeypatch: The monkeypatch parameter.
+        """
         import nexus_explorer  # noqa: PLC0415
 
         captured = {}
@@ -59,7 +80,13 @@ class TestOpenWithQuotingRegression:
         fake_path = str(Path.home() / "doc with space.txt")
 
         def fake_popen(args, **kwargs):
-            """fake_popen."""
+            """fake_popen.
+
+            Manages fake popen operations and coordinates related state changes for the component.
+
+            Args:
+                args: The args parameter.
+            """
             captured["args"] = args
             return SimpleNamespace(pid=0)
 
@@ -85,11 +112,17 @@ class TestOpenWithQuotingRegression:
     reason="Windows-only engine binary required"
 )
 class TestCliJsonContract:
-    """Mirror of the Rust-side entries_to_json tests, end-to-end via CLI."""
+    """Testclijsoncontract.
+
+    Manages TestCliJsonContract operations and coordinates related state changes for the component.
+    """
 
     @pytest.fixture
     def hostile_dir(self):
-        """hostile_dir."""
+        """hostile_dir.
+
+        Manages hostile dir operations and coordinates related state changes for the component.
+        """
         with tempfile.TemporaryDirectory(prefix="nexus_test_") as tmp:
             names = ["emoji_📁.txt", "unicode_é中文.txt", "plain.md", "spaced  name.txt"]
             for n in names:
@@ -97,7 +130,13 @@ class TestCliJsonContract:
             yield tmp, names
 
     def test_list_json_round_trip(self, hostile_dir):
-        """test_list_json_round_trip."""
+        """test_list_json_round_trip.
+
+        Manages test list json round trip operations and coordinates related state changes for the component.
+
+        Args:
+            hostile_dir: The hostile dir parameter.
+        """
         tmp, names = hostile_dir
         out = subprocess.run(
             [str(find_cli()), "list", tmp, "--json"],
@@ -113,7 +152,13 @@ class TestCliJsonContract:
         assert not missing, f"files vanished from JSON output: {missing}"
 
     def test_list_json_consumer_keys(self, hostile_dir):
-        """test_list_json_consumer_keys."""
+        """test_list_json_consumer_keys.
+
+        Manages test list json consumer keys operations and coordinates related state changes for the component.
+
+        Args:
+            hostile_dir: The hostile dir parameter.
+        """
         tmp, _ = hostile_dir
         out = subprocess.run(
             [str(find_cli()), "list", tmp, "--json"],
