@@ -40,13 +40,13 @@ Combining the **Cortex Unified Optimization Engine** with the high-performance *
 ## ⚡ Key Capabilities & Feature Highlights
 
 ### 🛡️ Enterprise Security & Forensics
-- **Process Security Token Forensics**: Decodes Win32 process tokens, TokenIntegrityLevels (Untrusted, Low, Medium, High, System), TokenElevationTypes, and detects dangerous elevated privileges (`SeDebugPrivilege`, `SeImpersonatePrivilege`).
+- **Process Security Token Forensics**: Decodes Win32 process tokens, TokenIntegrityLevels (Untrusted, Low, Medium, High, System), TokenElevationTypes, and detects dangerous elevated privileges including `SeDebugPrivilege` and `SeImpersonatePrivilege`.
 - **Windows BAM/DAM & SRUM Execution Forensics**: Audits kernel Background Activity Moderator (BAM) timestamps, Desktop Activity Moderator (DAM) traces, and inspects `SRUDB.dat` metrics with selective sanitization.
 - **NTFS MFT Record Slack & Directory Index Sanitizer**: Audits 1024-byte file record segments and `$INDEX_ALLOCATION` buffers for orphaned resident file fragments, sanitizing slack space safely.
 - **BitLocker & Drive Encryption Auditor**: Audits volume encryption status, cipher strength (XTS-AES 128 vs 256), and active TPM/PIN Key Protectors via `manage-bde` and WMI.
 - **SMB Share & Network Exposure Auditor**: Audits active Windows shares, flags exposed administrative shares (`C$`, `ADMIN$`, `IPC$`), checks SMB signing, and alerts on deprecated SMBv1 protocols (EternalBlue vector).
 - **Silent BitRot & Integrity Scrubber**: Maintains a persistent SQLite cryptographic baseline (SHA-256) to detect silent bit flips, physical storage degradation, and unauthorized file tampering.
-- **Forensic Checksum Matrix**: Parallel multithreaded calculation of CRC32, MD5, SHA-1, SHA-256, and SHA-512 with batch manifest generation and directory verification (.sha256, .sfv, .md5).
+- **Forensic Checksum Matrix**: Parallel multithreaded calculation of CRC32, MD5, SHA-1, SHA-256, and SHA-512 with batch manifest generation and directory verification across `.sha256`, `.sfv`, and `.md5` formats.
 - **Windows Restart Manager File Unlocker**: Uses native Win32 `rstrtmgr.dll` APIs to identify and release processes holding exclusive locks without crashing system services.
 
 ### 🚀 Hardware & System Performance Tuning
@@ -64,7 +64,7 @@ Combining the **Cortex Unified Optimization Engine** with the high-performance *
 - **GPU & DirectX Shader Cache Cleaner**: Deep cleans orphaned compiled shader binaries across DirectX D3DSCache, NVIDIA DXCache/GLCache, AMD DxCache, and Intel GPU caches.
 - **Windows 11 AI & Recall Telemetry Cleaner**: Scans Copilot offline caches, Recall semantic stores, and checkpoints/truncates inflated SQLite WAL databases.
 - **Developer Package Stores Cleaner**: Reclaims gigabytes of cached installer packages and build artifacts across Windows `winget`, Rust `cargo`, C++ `vcpkg`, and .NET `nuget`.
-- **Volume Shadow Copy (VSS) Manager & Health Analyzer**: Audits shadow copy snapshots, flags stalled VSS writers (`[5] Waiting for completion`, `[8] Failed`), and provides 1-click state reset.
+- **Volume Shadow Copy (VSS) Manager & Health Analyzer**: Audits shadow copy snapshots, flags stalled VSS writers, and provides 1-click state reset.
 - **Virtual Environment & Sandbox Purger**: Reclaims storage locked in Windows Sandbox containers, Hyper-V saved states (`.vsv`, `.bin`), checkpoint differencing disks (`.avhdx`), and WSL2 scratch containers.
 
 ### 📁 Nexus Explorer Dual-Pane VFS File Manager
@@ -79,33 +79,33 @@ Combining the **Cortex Unified Optimization Engine** with the high-performance *
 
 ```mermaid
 flowchart TB
-    subgraph UI_Layer ["Presentation & Shell Layer (PySide6)"]
-        A[PremiumMainWindow] --> B["Sidebar Navigation & Search (Ctrl+K)"]
-        A --> C[PageRegistry & Lazy Page Loader]
-        C --> D[132 Theme-Aware GUI Pages]
-        D --> E[WorkerRuntime / QThreadPool]
+    subgraph UI_Layer["Presentation and Shell Layer - PySide6"]
+        A["PremiumMainWindow"] --> B["Sidebar Navigation and Search: Ctrl+K"]
+        A --> C["PageRegistry and Lazy Page Loader"]
+        C --> D["132 Theme-Aware GUI Pages"]
+        D --> E["WorkerRuntime / QThreadPool"]
     end
 
-    subgraph Core_Engine ["Cortex Unified Orchestration Engine"]
-        E --> F[SmartScanner & Engine Service]
-        E --> G["System Tools Suite (62 Specialized Modules)"]
-        E --> H["Analyzers & Cleaners (Residual Hunter, Shredder, S3-FIFO)"]
-        E --> I[Background Agent & Resource Tray Monitor]
+    subgraph Core_Engine["Cortex Unified Orchestration Engine"]
+        E --> F["SmartScanner and Engine Service"]
+        E --> G["System Tools Suite: 62 Modules"]
+        E --> H["Analyzers and Cleaners: Residual Hunter, Shredder, S3-FIFO"]
+        E --> I["Background Agent and Resource Tray Monitor"]
     end
 
-    subgraph Nexus_VFS ["Nexus Explorer VFS Engine"]
-        E --> J[NexusCore Transport Protocol]
-        J --> K[Native C/Rust FFI Bridge]
-        J --> L[Pure Python Fallback Engine]
-        J --> M[USN Journal Scanner & MFT Traverser]
-        J --> N[PAR2 Error Correction & Reed-Solomon Codec]
+    subgraph Nexus_VFS["Nexus Explorer VFS Engine"]
+        E --> J["NexusCore Transport Protocol"]
+        J --> K["Native C/Rust FFI Bridge"]
+        J --> L["Pure Python Fallback Engine"]
+        J --> M["USN Journal Scanner and MFT Traverser"]
+        J --> N["PAR2 Error Correction and Reed-Solomon Codec"]
     end
 
-    subgraph OS_Kernel ["Windows NT Subsystem & Hardware"]
-        G --> O[Win32 Kernel32 / Advapi32 / Rstrtmgr APIs]
-        G --> P[NTFS & ReFS File Systems]
-        G --> Q[WMI / CIM Subsystem]
-        G --> R[Windows PowerShell Engine]
+    subgraph OS_Kernel["Windows NT Subsystem and Hardware"]
+        G --> O["Win32 Kernel32 / Advapi32 / Rstrtmgr APIs"]
+        G --> P["NTFS and ReFS File Systems"]
+        G --> Q["WMI / CIM Subsystem"]
+        G --> R["Windows PowerShell Engine"]
     end
 ```
 

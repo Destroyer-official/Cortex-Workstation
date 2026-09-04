@@ -20,33 +20,33 @@ Cortex Workstation is an enterprise-grade Windows operating system workstation, 
 
 ```mermaid
 flowchart TB
-    subgraph UI_Layer ["Presentation & Shell Layer (PySide6)"]
-        A[PremiumMainWindow] --> B[Sidebar Navigation & Search]
-        A --> C[PageRegistry & Lazy Page Loader]
-        C --> D[132 Theme-Aware GUI Pages]
-        D --> E[WorkerRuntime / QThreadPool]
+    subgraph UI_Layer["Presentation and Shell Layer - PySide6"]
+        A["PremiumMainWindow"] --> B["Sidebar Navigation and Search: Ctrl+K"]
+        A --> C["PageRegistry and Lazy Page Loader"]
+        C --> D["132 Theme-Aware GUI Pages"]
+        D --> E["WorkerRuntime / QThreadPool"]
     end
 
-    subgraph Core_Engine ["Cortex Unified Orchestration Engine"]
-        E --> F[SmartScanner & Engine Service]
-        E --> G["System Tools Suite (62 Specialized Modules)"]
-        E --> H["Analyzers & Cleaners (Residual Hunter, Shredder, S3-FIFO)"]
-        E --> I[Background Agent & Resource Tray Monitor]
+    subgraph Core_Engine["Cortex Unified Orchestration Engine"]
+        E --> F["SmartScanner and Engine Service"]
+        E --> G["System Tools Suite: 62 Modules"]
+        E --> H["Analyzers and Cleaners: Residual Hunter, Shredder, S3-FIFO"]
+        E --> I["Background Agent and Resource Tray Monitor"]
     end
 
-    subgraph Nexus_VFS ["Nexus Explorer VFS Engine"]
-        E --> J[NexusCore Transport Protocol]
-        J --> K[Native C/Rust FFI Bridge]
-        J --> L[Pure Python Fallback Engine]
-        K --> M[USN Journal Scanner & MFT Traverser]
-        K --> N[PAR2 Error Correction & Reed-Solomon Codec]
+    subgraph Nexus_VFS["Nexus Explorer VFS Engine"]
+        E --> J["NexusCore Transport Protocol"]
+        J --> K["Native C/Rust FFI Bridge"]
+        J --> L["Pure Python Fallback Engine"]
+        J --> M["USN Journal Scanner and MFT Traverser"]
+        J --> N["PAR2 Error Correction and Reed-Solomon Codec"]
     end
 
-    subgraph OS_Kernel ["Windows NT Subsystem & Hardware"]
-        G --> O[Win32 Kernel32 / Advapi32 APIs]
-        G --> P[NTFS & ReFS File Systems]
-        G --> Q[WMI / CIM Subsystem]
-        G --> R[Windows PowerShell Engine]
+    subgraph OS_Kernel["Windows NT Subsystem and Hardware"]
+        G --> O["Win32 Kernel32 / Advapi32 APIs"]
+        G --> P["NTFS and ReFS File Systems"]
+        G --> Q["WMI / CIM Subsystem"]
+        G --> R["Windows PowerShell Engine"]
     end
 ```
 
@@ -54,7 +54,7 @@ flowchart TB
 
 ## 3. Presentation Layer & Page Registry Contract
 
-The user interface is built upon a dynamic, decoupled page registration architecture managed by [`src/cortex_unified/ui/premium/registry.py`](../src/cortex_unified/ui/premium/registry.py).
+The user interface is built upon a dynamic, decoupled page registration architecture managed by [`src/cortex_unified/ui/premium/registry.py`](https://github.com/Destroyer-official/Cortex-Workstation/blob/main/src/cortex_unified/ui/premium/registry.py).
 
 ### The `PageSpec` Contract
 Pages are registered declaratively using `PageSpec` namedtuples:
@@ -100,7 +100,7 @@ def _run_task(win: PremiumMainWindow, work_fn, done_fn, err_fn=None):
 
 ## 4. Nexus Explorer VFS Engine Architecture
 
-[`NexusExplorer`](../src/NexusExplorer/) provides a dual-pane file management transport subsystem capable of high-throughput local and virtual storage operations.
+[`NexusExplorer`](https://github.com/Destroyer-official/Cortex-Workstation/tree/main/src/NexusExplorer) provides a dual-pane file management transport subsystem capable of high-throughput local and virtual storage operations.
 
 ```text
 NexusExplorer/
@@ -154,7 +154,7 @@ User preferences and historical tracking baselines are stored persistently in th
 
 ## 7. Design System & HiDPI Icon Architecture
 
-The presentation layer utilizes a modern, cohesive design system defined in [`tokens.py`](../src/cortex_unified/ui/premium/tokens.py):
+The presentation layer utilizes a modern, cohesive design system defined in [`tokens.py`](https://github.com/Destroyer-official/Cortex-Workstation/blob/main/src/cortex_unified/ui/premium/tokens.py):
 - **Dynamic Palette**: Tailored dark mode (`#0B0E14` background, `#121722` card surface, `#00D2FF` electric cyan accents).
-- **100% Vector SVG Icons**: All 118 UI pages use pure SVG vector assets located in `src/cortex_unified/resources/icons/`. No unicode glyphs or rasterized low-DPI PNGs are used in navigation.
+- **100% Vector SVG Icons**: All 132 UI pages use pure SVG vector assets located in `src/cortex_unified/resources/icons/`. No unicode glyphs or rasterized low-DPI PNGs are used in navigation.
 - **Dynamic Tinting**: Icons are dynamically recolored at runtime (`src/cortex_unified/ui/premium/icons.py`) based on theme active/inactive states and HiDPI device pixel ratios (100%, 125%, 150%, 200%).

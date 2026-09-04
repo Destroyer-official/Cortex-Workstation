@@ -32,16 +32,16 @@ To guarantee a stutter-free 60 FPS user interface, CPU-intensive algorithms and 
 
 ```mermaid
 sequenceDiagram
-    participant UI as PremiumMainWindow (Main Thread)
-    participant Page as ToolPage (e.g. DuplicatesPage)
-    participant Worker as ScanWorker (Worker Thread)
-    participant OS as Win32 / Disk I/O
+    participant UI as MainWindow
+    participant Page as ToolPage
+    participant Worker as ScanWorker
+    participant OS as Win32 Subsystem
 
-    UI->>Page: User clicks "Scan Now"
-    Page->>Page: Disable buttons, show indeterminate progress
+    UI->>Page: User clicks Scan Now
+    Page->>Page: Disable buttons, show progress
     Page->>Worker: Instantiate Worker(target_dir)
     Page->>Worker: Connect signals (progress, finished, error)
-    Worker->>OS: Execute streaming hash / walk
+    Worker->>OS: Execute streaming hash or walk
     Worker-->>Page: emit progress(current_file, percentage)
     OS-->>Worker: Scan complete
     Worker-->>Page: emit finished(scan_results)

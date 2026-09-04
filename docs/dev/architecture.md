@@ -20,33 +20,33 @@ Cortex Workstation combines a modern **PySide6 (Qt for Python)** user interface 
 
 ```mermaid
 flowchart TB
-    subgraph UI_Layer ["Presentation & Shell Layer (PySide6)"]
-        A[PremiumMainWindow] --> B[Sidebar Navigation & Search]
-        A --> C[PageRegistry & Lazy Page Loader]
-        C --> D[132 Theme-Aware GUI Pages]
-        D --> E[WorkerRuntime / QThreadPool]
+    subgraph UI_Layer["Presentation and Shell Layer - PySide6"]
+        A["PremiumMainWindow"] --> B["Sidebar Navigation and Search: Ctrl+K"]
+        A --> C["PageRegistry and Lazy Page Loader"]
+        C --> D["132 Theme-Aware GUI Pages"]
+        D --> E["WorkerRuntime / QThreadPool"]
     end
 
-    subgraph Core_Engine ["Cortex Unified Orchestration Engine"]
-        E --> F[SmartScanner & Engine Service]
-        E --> G["System Tools Suite (62 Specialized Modules)"]
-        E --> H["Analyzers & Cleaners (Residual Hunter, Shredder, S3-FIFO)"]
-        E --> I[Background Agent & Resource Tray Monitor]
+    subgraph Core_Engine["Cortex Unified Orchestration Engine"]
+        E --> F["SmartScanner and Engine Service"]
+        E --> G["System Tools Suite: 62 Modules"]
+        E --> H["Analyzers and Cleaners: Residual Hunter, Shredder, S3-FIFO"]
+        E --> I["Background Agent and Resource Tray Monitor"]
     end
 
-    subgraph Nexus_VFS ["Nexus Explorer VFS Engine"]
-        E --> J[NexusCore Transport Protocol]
-        J --> K[Native C/Rust FFI Bridge]
-        J --> L[Pure Python Fallback Engine]
-        K --> M[USN Journal Scanner & MFT Traverser]
-        K --> N[PAR2 Error Correction & Reed-Solomon Codec]
+    subgraph Nexus_VFS["Nexus Explorer VFS Engine"]
+        E --> J["NexusCore Transport Protocol"]
+        J --> K["Native C/Rust FFI Bridge"]
+        J --> L["Pure Python Fallback Engine"]
+        J --> M["USN Journal Scanner and MFT Traverser"]
+        J --> N["PAR2 Error Correction and Reed-Solomon Codec"]
     end
 
-    subgraph OS_Kernel ["Windows NT Subsystem & Hardware"]
-        G --> O[Win32 Kernel32 / Advapi32 APIs]
-        G --> P[NTFS & ReFS File Systems]
-        G --> Q[WMI / CIM Subsystem]
-        G --> R[Windows PowerShell Engine]
+    subgraph OS_Kernel["Windows NT Subsystem and Hardware"]
+        G --> O["Win32 Kernel32 / Advapi32 APIs"]
+        G --> P["NTFS and ReFS File Systems"]
+        G --> Q["WMI / CIM Subsystem"]
+        G --> R["Windows PowerShell Engine"]
     end
 ```
 

@@ -8,7 +8,7 @@ This document provides a comprehensive API reference for the core backend module
 1. [Enterprise System Tools (`cortex_unified.system_tools`)](#1-enterprise-system-tools)
 2. [Core Engines (`cortex_unified.core`)](#2-core-engines)
 3. [Nexus Explorer Native VFS (`NexusExplorer.native`)](#3-nexus-explorer-native-vfs)
-4. [UI Registry & Presentation Contracts (`cortex_unified.ui.premium`)](#4-ui-registry--presentation-contracts)
+4. [UI Registry & Presentation Contracts (`cortex_unified.ui.premium`)](#4-ui-registry-presentation-contracts)
 
 ---
 
