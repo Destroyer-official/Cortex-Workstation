@@ -72,11 +72,18 @@ nav:
   - "📦 User Space":
       - "Getting Started": user/getting-started.md
       - "How-To Guides": user/how-to-guides.md
+      - "UI Visual Tour & Design Tokens": ui_visual_guide.md
+      - "CLI & Shell Usage Guide": usage.md
       - "Configuration Reference": user/configuration.md
-      - "Nexus File Manager": user/nexus-explorer.md
-      - "Troubleshooting": user/troubleshooting.md
+      - "Advanced Forensic & Performance Tuning": advanced-features.md
+      - "Package Manager Cleaner Guide": package_manager_guide.md
+      - "Nexus File Manager (VFS)": user/nexus-explorer.md
+      - "Accessibility & Keybindings": i18n_accessibility.md
+      - "Troubleshooting & Diagnostics": user/troubleshooting.md
   - "🏗️ Developer Platform":
+      - "Windows NT Kernel & Architecture Spec": ARCHITECTURE.md
       - "Repository Architecture Map": dev/architecture.md
+      - "Developer Onboarding & Contribution": DEVELOPER_GUIDE.md
       - "State Management & Safety": dev/threading-safety.md
       - "Testing & CI/CD": dev/testing.md
       - "Release & Review Process": dev/release-process.md
@@ -85,3 +92,5 @@ nav:
       - "System Tools Reference": api/system-tools.md
       - "Analyzers Reference": api/analyzers.md
       - "Core Engine & Algorithmic Caches": api/core-engine.md
+      - "Complete API Reference": API_REFERENCE.md
+      - "Function & Symbol Inventory": FUNCTION_INVENTORY.md

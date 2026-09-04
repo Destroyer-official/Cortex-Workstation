@@ -26,7 +26,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-__version__ = "1.0.0"
+__version__ = "1.2.0"
 __author__ = "Cortex Cleaner Team"
 __email__ = "team@deepcleaner.com"
 __license__ = "MIT"

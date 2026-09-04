@@ -11,7 +11,7 @@ from .keyboard_handler import KeyboardHandler
 from .screen_reader import ScreenReaderSupport
 from .themes import AccessibilityThemes, get_theme_manager, apply_accessibility_theme
 
-__version__ = "1.0.0"
+__version__ = "1.2.0"
 __all__ = [
     "KeyboardHandler",
     "ScreenReaderSupport", 

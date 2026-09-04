@@ -10,7 +10,7 @@ This module provides internationalization and localization support including:
 from .translator import Translator, get_translator, set_global_locale, translate, _
 from .settings_integration import I18nManager, I18nSettingsWidget, get_i18n_manager
 
-__version__ = "1.0.0"
+__version__ = "1.2.0"
 __all__ = [
     "Translator",
     "get_translator", 
