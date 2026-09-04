@@ -7,8 +7,8 @@ The Ultimate Windows NT Systems, Forensics, File Management & Optimization Platf
 ## 🌟 Highlights & What's New in v1.2.0
 
 ### 1. 📦 Standalone Windows Installer (.exe) & Portable Zip
-- **1-Click Windows Setup**: Download [**`Cortex-Workstation-v1.2.0-Setup.exe`**](https://github.com/Destroyer-official/Cortex-Workstation/releases/download/v1.2.0/Cortex-Workstation-v1.2.0-Setup.exe) (370 MB) for an automated setup wizard with Desktop and Start Menu shortcut integration.
-- **Portable Distribution**: Download [**`Cortex-Workstation-v1.2.0-Windows-x64.zip`**](https://github.com/Destroyer-official/Cortex-Workstation/releases/download/v1.2.0/Cortex-Workstation-v1.2.0-Windows-x64.zip) (362 MB) to extract and run anywhere without installation.
+- **1-Click Windows Setup**: Download [**`Cortex-Workstation-v1.2.0-Setup.exe`**](https://github.com/Destroyer-official/Cortex-Workstation/releases/download/v1.2.0/Cortex-Workstation-v1.2.0-Setup.exe) (331 MB) for an automated setup wizard with Desktop and Start Menu shortcut integration.
+- **Portable Distribution**: Download [**`Cortex-Workstation-v1.2.0-Windows-x64.zip`**](https://github.com/Destroyer-official/Cortex-Workstation/releases/download/v1.2.0/Cortex-Workstation-v1.2.0-Windows-x64.zip) (320 MB) to extract and run anywhere without installation.
 - No Python, Rust, compilers, or developer tools required.
 - Native UAC integration prompts for elevation automatically when interacting with kernel and driver-level components.
 
