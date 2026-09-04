@@ -1,0 +1,157 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <!-- Background Vignette Filter -->
+    <radialGradient id="spaceVignette" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#14223d" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#02050b" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Outer Armored Bevel Gradient (Top-Left Specular Light) -->
+    <linearGradient id="chassisBevel" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00f2fe"/>
+      <stop offset="25%" stop-color="#104273"/>
+      <stop offset="50%" stop-color="#081426"/>
+      <stop offset="75%" stop-color="#0077b6"/>
+      <stop offset="100%" stop-color="#00f2fe"/>
+    </linearGradient>
+
+    <!-- Obsidian Carbon Armor Plate -->
+    <linearGradient id="armorPlate" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#0e1726"/>
+      <stop offset="40%" stop-color="#080d17"/>
+      <stop offset="100%" stop-color="#03060a"/>
+    </linearGradient>
+
+    <!-- Neon Cyber Cyan Accents -->
+    <linearGradient id="neonCyan" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38ef7d"/>
+      <stop offset="20%" stop-color="#11998e"/>
+      <stop offset="40%" stop-color="#00f2fe"/>
+      <stop offset="100%" stop-color="#4facfe"/>
+    </linearGradient>
+
+    <linearGradient id="hyperCyan" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="30%" stop-color="#00f2fe"/>
+      <stop offset="100%" stop-color="#0052d4"/>
+    </linearGradient>
+
+    <!-- Core Plasma Glow -->
+    <radialGradient id="plasmaGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="25%" stop-color="#00f2fe"/>
+      <stop offset="60%" stop-color="#0066ff" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#001133" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Glow Bloom Filter -->
+    <filter id="bloom" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background Environment Field -->
+  <rect width="512" height="512" fill="none"/>
+  <circle cx="256" cy="240" r="230" fill="url(#spaceVignette)"/>
+
+  <!-- ================= 1. CHASSIS (ARMORED AEGIS) ================= -->
+  <!-- Outer Cast Shadow -->
+  <polygon points="256,22 452,90 452,306 256,494 60,306 60,90" fill="#010307" opacity="0.8" filter="url(#bloom)"/>
+
+  <!-- Chamfered Outer Bevel -->
+  <polygon points="256,20 450,88 450,304 256,492 62,304 62,88" fill="url(#chassisBevel)"/>
+
+  <!-- Recessed Gap / Heat Sink Groove -->
+  <polygon points="256,32 438,96 438,298 256,476 74,298 74,96" fill="#03060c"/>
+
+  <!-- Inner Armored Obsidian Plate -->
+  <polygon points="256,38 430,100 430,292 256,466 82,292 82,100" fill="url(#armorPlate)"/>
+
+  <!-- Top Glass Highlight Specular Arc -->
+  <polygon points="256,42 422,102 422,160 256,90 90,160 90,102" fill="#ffffff" opacity="0.06"/>
+
+  <!-- ================= 2. SUB-CHASSIS CIR-GRID & BUS LINES ================= -->
+  <g stroke="#00f2fe" stroke-width="1.5" opacity="0.22" stroke-linecap="round">
+    <!-- Horizontal Bus Tracks -->
+    <line x1="82" y1="180" x2="160" y2="180"/>
+    <line x1="82" y1="220" x2="130" y2="220"/>
+    <line x1="352" y1="180" x2="430" y2="180"/>
+    <line x1="382" y1="220" x2="430" y2="220"/>
+    <!-- 45-degree Angled Traces -->
+    <line x1="160" y1="180" x2="190" y2="150"/>
+    <line x1="352" y1="180" x2="322" y2="150"/>
+    <line x1="130" y1="220" x2="150" y2="240"/>
+    <line x1="382" y1="220" x2="362" y2="240"/>
+    <!-- Diagnostic Alignment Reticles -->
+    <circle cx="256" cy="70" r="3" fill="#00f2fe"/>
+    <circle cx="256" cy="430" r="3" fill="#00f2fe"/>
+    <circle cx="106" cy="120" r="2.5" fill="#00f2fe"/>
+    <circle cx="406" cy="120" r="2.5" fill="#00f2fe"/>
+  </g>
+
+  <!-- Circular Accelerator Ring -->
+  <circle cx="256" cy="246" r="142" fill="none" stroke="#00f2fe" stroke-width="2" stroke-dasharray="8 16" opacity="0.35"/>
+  <circle cx="256" cy="246" r="118" fill="none" stroke="#0099ff" stroke-width="1.5" stroke-dasharray="40 10 5 10" opacity="0.4"/>
+
+  <!-- ================= 3. ISOMETRIC TESSERACT (CORTEX CORE) ================= -->
+  <!-- Back Projected Struts -->
+  <g stroke="#0055ff" stroke-width="4" opacity="0.6" stroke-linecap="round">
+    <line x1="256" y1="130" x2="256" y2="246"/>
+    <line x1="356" y1="188" x2="256" y2="246"/>
+    <line x1="356" y1="304" x2="256" y2="246"/>
+    <line x1="256" y1="362" x2="256" y2="246"/>
+    <line x1="156" y1="304" x2="256" y2="246"/>
+    <line x1="156" y1="188" x2="256" y2="246"/>
+  </g>
+
+  <!-- Front Primary Struts (Energy Conduits) -->
+  <g stroke="url(#hyperCyan)" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round" filter="url(#bloom)">
+    <!-- Outer Hex Prism Boundaries -->
+    <polygon points="256,130 356,188 356,304 256,362 156,304 156,188" fill="#050d1a" fill-opacity="0.75" stroke="url(#neonCyan)" stroke-width="6"/>
+    <!-- Radiating Spoke Conduits to Central Node -->
+    <line x1="256" y1="130" x2="256" y2="246"/>
+    <line x1="356" y1="188" x2="256" y2="246"/>
+    <line x1="356" y1="304" x2="256" y2="246"/>
+    <line x1="256" y1="362" x2="256" y2="246"/>
+    <line x1="156" y1="304" x2="256" y2="246"/>
+    <line x1="156" y1="188" x2="256" y2="246"/>
+  </g>
+
+  <!-- Vertex Node Terminals -->
+  <g fill="#060c17" stroke="#00f2fe" stroke-width="5" filter="url(#bloom)">
+    <circle cx="256" cy="130" r="14"/>
+    <circle cx="356" cy="188" r="14"/>
+    <circle cx="356" cy="304" r="14"/>
+    <circle cx="256" cy="362" r="14"/>
+    <circle cx="156" cy="304" r="14"/>
+    <circle cx="156" cy="188" r="14"/>
+  </g>
+
+  <!-- Internal Node Glow Points -->
+  <g fill="#ffffff">
+    <circle cx="256" cy="130" r="5"/>
+    <circle cx="356" cy="188" r="5"/>
+    <circle cx="356" cy="304" r="5"/>
+    <circle cx="256" cy="362" r="5"/>
+    <circle cx="156" cy="304" r="5"/>
+    <circle cx="156" cy="188" r="5"/>
+  </g>
+
+  <!-- ================= 4. QUANTUM PROCESSOR CORE ================= -->
+  <!-- Plasma Bloom -->
+  <circle cx="256" cy="246" r="56" fill="url(#plasmaGlow)"/>
+
+  <!-- Mechanical Outer Housing Ring -->
+  <circle cx="256" cy="246" r="32" fill="#040913" stroke="#00f2fe" stroke-width="7"/>
+
+  <!-- Inner Reactive Core Ring -->
+  <circle cx="256" cy="246" r="18" fill="#003366" stroke="#ffffff" stroke-width="3.5" filter="url(#bloom)"/>
+
+  <!-- High-Density Singularity Nucleus -->
+  <circle cx="256" cy="246" r="8" fill="#ffffff"/>
+</svg>

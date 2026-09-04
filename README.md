@@ -1,4 +1,5 @@
 <div align="center">
+  <img src="assets/icons/cortex_logo.png" alt="Cortex Workstation Logo" width="160">
   <h1>🛡️ Cortex Workstation</h1>
   <p><strong>The Ultimate Windows NT Systems, Forensics & File Management Platform</strong></p>
   <p>

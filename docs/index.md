@@ -1,3 +1,7 @@
+<div align="center">
+  <img src="assets/icons/cortex_logo.png" alt="Cortex Workstation Logo" width="140">
+</div>
+
 # 🌌 Cortex Workstation Documentation Hub
 
 Welcome to the central documentation command for **Cortex Workstation** — the ultimate, high-performance Windows NT systems optimization, digital forensics, and native file management platform.

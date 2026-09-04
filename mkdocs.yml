@@ -9,6 +9,8 @@ edit_uri: edit/main/docs/
 theme:
   name: material
   language: en
+  logo: assets/icons/cortex.png
+  favicon: assets/icons/cortex.ico
   palette:
     # Palette toggle for dark mode (Cortex Midnight)
     - scheme: slate

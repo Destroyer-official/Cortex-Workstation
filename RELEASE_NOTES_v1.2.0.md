@@ -7,8 +7,8 @@ The Ultimate Windows NT Systems, Forensics, File Management & Optimization Platf
 ## 🌟 Highlights & What's New in v1.2.0
 
 ### 1. 📦 Standalone Windows Installer (.exe) & Portable Zip
-- **1-Click Windows Setup**: Download [**`Cortex-Workstation-v1.2.0-Setup.exe`**](https://github.com/Destroyer-official/Cortex-Workstation/releases/download/v1.2.0/Cortex-Workstation-v1.2.0-Setup.exe) (331 MB) for an automated setup wizard with Desktop and Start Menu shortcut integration.
-- **Portable Distribution**: Download [**`Cortex-Workstation-v1.2.0-Windows-x64.zip`**](https://github.com/Destroyer-official/Cortex-Workstation/releases/download/v1.2.0/Cortex-Workstation-v1.2.0-Windows-x64.zip) (320 MB) to extract and run anywhere without installation.
+- **1-Click Windows Setup**: Download [**`Cortex-Workstation-v1.2.0-Setup.exe`**](https://github.com/Destroyer-official/Cortex-Workstation/releases/download/v1.2.0/Cortex-Workstation-v1.2.0-Setup.exe) (328 MB) for an automated setup wizard with Desktop and Start Menu shortcut integration.
+- **Portable Distribution**: Download [**`Cortex-Workstation-v1.2.0-Windows-x64.zip`**](https://github.com/Destroyer-official/Cortex-Workstation/releases/download/v1.2.0/Cortex-Workstation-v1.2.0-Windows-x64.zip) (317 MB) to extract and run anywhere without installation.
 - No Python, Rust, compilers, or developer tools required.
 - Native UAC integration prompts for elevation automatically when interacting with kernel and driver-level components.
 
@@ -65,6 +65,6 @@ The Ultimate Windows NT Systems, Forensics, File Management & Optimization Platf
 
 | Package | Format | Target Platform | SHA-256 Checksum |
 | :--- | :--- | :--- | :--- |
-| 🛡️ [**`Cortex-Workstation-v1.2.0-Setup.exe`**](https://github.com/Destroyer-official/Cortex-Workstation/releases/download/v1.2.0/Cortex-Workstation-v1.2.0-Setup.exe) | **Setup Installer (.exe)** | Windows 10/11 (64-bit) | `6D96C403F406A0BEE63ED572573DF47E0F342F5652732804887C1DF327786674` |
-| 📦 [**`Cortex-Workstation-v1.2.0-Windows-x64.zip`**](https://github.com/Destroyer-official/Cortex-Workstation/releases/download/v1.2.0/Cortex-Workstation-v1.2.0-Windows-x64.zip) | **Portable Archive (.zip)** | Windows 10/11 (64-bit) | `C01C58F6D7654198C72CAF4EB4DBD31DC153E3835EC19CD904E0D877E9458140` |
+| 🛡️ [**`Cortex-Workstation-v1.2.0-Setup.exe`**](https://github.com/Destroyer-official/Cortex-Workstation/releases/download/v1.2.0/Cortex-Workstation-v1.2.0-Setup.exe) | **Setup Installer (.exe)** | Windows 10/11 (64-bit) | `9CE05052BC38EBC287337D6A9540A3ACACEC87A0B0C9BD5BE29B06190899D396` |
+| 📦 [**`Cortex-Workstation-v1.2.0-Windows-x64.zip`**](https://github.com/Destroyer-official/Cortex-Workstation/releases/download/v1.2.0/Cortex-Workstation-v1.2.0-Windows-x64.zip) | **Portable Archive (.zip)** | Windows 10/11 (64-bit) | `9E4BFFE9E8E65FE860DDC786DB0D384792C49F898C2F5D69D31A10D7EDE4E232` |
 | 📦 **Source Code (.zip / .tar.gz)** | **Source Archive** | Cross-Platform | Official Git Tag `v1.2.0` Archive |
