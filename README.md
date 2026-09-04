@@ -40,21 +40,21 @@ Combining the **Cortex Unified Optimization Engine** with the high-performance *
 ## ⚡ Key Capabilities & Feature Highlights
 
 ### 🛡️ Enterprise Security & Forensics
-- **Process Security Token Forensics**: Decodes Win32 process tokens, TokenIntegrityLevels (Untrusted, Low, Medium, High, System), TokenElevationTypes, and detects dangerous elevated privileges including `SeDebugPrivilege` and `SeImpersonatePrivilege`.
-- **Windows BAM/DAM & SRUM Execution Forensics**: Audits kernel Background Activity Moderator (BAM) timestamps, Desktop Activity Moderator (DAM) traces, and inspects `SRUDB.dat` metrics with selective sanitization.
-- **NTFS MFT Record Slack & Directory Index Sanitizer**: Audits 1024-byte file record segments and `$INDEX_ALLOCATION` buffers for orphaned resident file fragments, sanitizing slack space safely.
-- **BitLocker & Drive Encryption Auditor**: Audits volume encryption status, cipher strength (XTS-AES 128 vs 256), and active TPM/PIN Key Protectors via `manage-bde` and WMI.
-- **SMB Share & Network Exposure Auditor**: Audits active Windows shares, flags exposed administrative shares (`C$`, `ADMIN$`, `IPC$`), checks SMB signing, and alerts on deprecated SMBv1 protocols (EternalBlue vector).
+- **Process Security Token Forensics**: Decodes Win32 process tokens, TokenIntegrityLevels (Untrusted, Low, Medium, High, System), TokenElevationTypes, and detects dangerous elevated privileges including SeDebugPrivilege and SeImpersonatePrivilege.
+- **Windows BAM/DAM & SRUM Execution Forensics**: Audits kernel Background Activity Moderator (BAM) timestamps, Desktop Activity Moderator (DAM) traces, and inspects SRUDB.dat execution metrics with selective sanitization.
+- **NTFS MFT Record Slack & Directory Index Sanitizer**: Audits 1024-byte file record segments and $INDEX_ALLOCATION buffers for orphaned resident file fragments, sanitizing slack space safely.
+- **BitLocker & Drive Encryption Auditor**: Audits volume encryption status, cipher strength (XTS-AES 128/256), and active TPM/PIN Key Protectors via manage-bde and WMI.
+- **SMB Share & Network Exposure Auditor**: Audits active Windows shares, flags exposed administrative shares (C$, ADMIN$, IPC$), checks SMB signing, and alerts on deprecated SMBv1 protocols (EternalBlue vector).
 - **Silent BitRot & Integrity Scrubber**: Maintains a persistent SQLite cryptographic baseline (SHA-256) to detect silent bit flips, physical storage degradation, and unauthorized file tampering.
-- **Forensic Checksum Matrix**: Parallel multithreaded calculation of CRC32, MD5, SHA-1, SHA-256, and SHA-512 with batch manifest generation and directory verification across `.sha256`, `.sfv`, and `.md5` formats.
-- **Windows Restart Manager File Unlocker**: Uses native Win32 `rstrtmgr.dll` APIs to identify and release processes holding exclusive locks without crashing system services.
+- **Forensic Checksum Matrix**: Multithreaded parallel calculation of CRC32, MD5, SHA-1, SHA-256, and SHA-512 with batch manifest generation and directory verification across .sha256, .sfv, and .md5 formats.
+- **Windows Restart Manager File Unlocker**: Uses native Win32 rstrtmgr.dll APIs to identify and release processes holding exclusive locks without crashing system services.
 
 ### 🚀 Hardware & System Performance Tuning
 - **DirectStorage & BypassIO Hardware Acceleration Auditor**: Queries Windows 11 BypassIO state, validates NVMe-to-GPU DirectStorage paths, and flags blocking storage minifilters (antivirus, legacy filters).
-- **RAM Standby List & Working Set Kernel Purger**: Invokes native `NtSetSystemInformation` (Class 80) to purge standby memory pages, empty process working sets, and flush modified pages directly to disk.
-- **Windows Search Index (Windows.edb) Optimizer**: Stops WSearch and performs offline ESENT B-tree defragmentation (`esentutl.exe /d`) or clean background catalog resets.
-- **SSD NVMe TRIM & Wear-Leveling Optimizer**: Queries physical flash media types, inspects NTFS/ReFS `DisableDeleteNotify`, and triggers live volume block deallocation (`Optimize-Volume -ReTrim`).
-- **ReFS Dev Drive & CoW Optimizer**: Detects Windows 11 Resilient File System (ReFS) Dev Drives, verifies instant Copy-on-Write (CoW) block cloning (`FSCTL_DUPLICATE_EXTENTS_TO_FILE`), and inspects Defender Performance Mode.
+- **RAM Standby List & Working Set Kernel Purger**: Invokes native NtSetSystemInformation (Class 80) to purge standby memory pages, empty process working sets, and flush modified pages directly to disk.
+- **Windows Search Index (Windows.edb) Optimizer**: Stops WSearch and performs offline ESENT B-tree defragmentation (esentutl.exe /d) or clean background catalog resets.
+- **SSD NVMe TRIM & Wear-Leveling Optimizer**: Queries physical flash media types, inspects NTFS/ReFS DisableDeleteNotify, and triggers live volume block deallocation (Optimize-Volume -ReTrim).
+- **ReFS Dev Drive & CoW Optimizer**: Detects Windows 11 Resilient File System (ReFS) Dev Drives, verifies instant Copy-on-Write (CoW) block cloning (FSCTL_DUPLICATE_EXTENTS_TO_FILE), and inspects Defender Performance Mode.
 - **Windows Memory Compression (MMAgent)**: Measures real-time RAM compressed store size, working sets, and page combining savings. Allows toggling memory compression for low-latency competitive gaming or audio workstations.
 - **Virtual Memory & Pagefile Hardware Tuner**: Audits physical RAM commit limits, peak paging loads, and multi-disk pagefile placement across high-speed NVMe drives.
 - **Windows Service Manager**: Analyzes background services and provides 1-click scenario-based tuning profiles (Minimal, Workstation, Gamer, Enterprise Safe).
@@ -63,14 +63,14 @@ Combining the **Cortex Unified Optimization Engine** with the high-performance *
 - **Winapp2.ini Community Application Cleaner**: Declarative deep cleaning engine supporting over 500+ desktop applications, browsers, game launchers, and IDEs with dynamic path variable resolution.
 - **GPU & DirectX Shader Cache Cleaner**: Deep cleans orphaned compiled shader binaries across DirectX D3DSCache, NVIDIA DXCache/GLCache, AMD DxCache, and Intel GPU caches.
 - **Windows 11 AI & Recall Telemetry Cleaner**: Scans Copilot offline caches, Recall semantic stores, and checkpoints/truncates inflated SQLite WAL databases.
-- **Developer Package Stores Cleaner**: Reclaims gigabytes of cached installer packages and build artifacts across Windows `winget`, Rust `cargo`, C++ `vcpkg`, and .NET `nuget`.
+- **Developer Package Stores Cleaner**: Reclaims gigabytes of cached installer packages and build artifacts across Windows winget, Rust cargo, C++ vcpkg, and .NET nuget.
 - **Volume Shadow Copy (VSS) Manager & Health Analyzer**: Audits shadow copy snapshots, flags stalled VSS writers, and provides 1-click state reset.
-- **Virtual Environment & Sandbox Purger**: Reclaims storage locked in Windows Sandbox containers, Hyper-V saved states (`.vsv`, `.bin`), checkpoint differencing disks (`.avhdx`), and WSL2 scratch containers.
+- **Virtual Environment & Sandbox Purger**: Reclaims storage locked in Windows Sandbox containers, Hyper-V saved states (.vsv, .bin), checkpoint differencing disks (.avhdx), and WSL2 scratch containers.
 
 ### 📁 Nexus Explorer Dual-Pane VFS File Manager
 - **High-Throughput VFS Transport**: Dual-pane file management interface supporting tabs, split views, and asynchronous thread-pool transfer queues.
 - **Native C/Rust FFI Bridge**: Hardware-accelerated transport bridge with seamless pure Python fallbacks.
-- **NTFS USN Change Journal Indexer**: Queries `FSCTL_READ_USN_JOURNAL` for sub-second file indexing across millions of files without recursive directory walking.
+- **NTFS USN Change Journal Indexer**: Queries FSCTL_READ_USN_JOURNAL for sub-second file indexing across millions of files without recursive directory walking.
 - **PAR2 Reed-Solomon Error Correction**: Creates packet-based parity volumes for mission-critical archives, verifying cryptographic blocks and repairing corrupted sectors.
 
 ---
