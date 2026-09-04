@@ -43,7 +43,7 @@ def get_bundle_zip() -> str:
 
 
 def create_shortcut(target_exe: str, shortcut_path: str, description: str = APP_NAME) -> bool:
-    """Create a Windows .lnk shortcut via PowerShell WScript.Shell."""
+    """Create a Windows .lnk shortcut via PowerShell WScript.Shell with embedded icon."""
     try:
         os.makedirs(os.path.dirname(shortcut_path), exist_ok=True)
         ps_cmd = (
@@ -51,6 +51,7 @@ def create_shortcut(target_exe: str, shortcut_path: str, description: str = APP_
             f"$Shortcut = $WshShell.CreateShortcut('{shortcut_path}'); "
             f"$Shortcut.TargetPath = '{target_exe}'; "
             f"$Shortcut.WorkingDirectory = '{os.path.dirname(target_exe)}'; "
+            f"$Shortcut.IconLocation = '{target_exe},0'; "
             f"$Shortcut.Description = '{description}'; "
             f"$Shortcut.Save();"
         )
@@ -61,14 +62,14 @@ def create_shortcut(target_exe: str, shortcut_path: str, description: str = APP_
 
 
 def register_uninstaller(install_dir: str, exe_path: str) -> None:
-    """Register the application in Windows Installed Apps registry."""
+    """Register the application in Windows Installed Apps registry with custom icon."""
     key_path = r"Software\Microsoft\Windows\CurrentVersion\Uninstall\CortexWorkstation"
     try:
         with winreg.CreateKey(winreg.HKEY_CURRENT_USER, key_path) as key:
             winreg.SetValueEx(key, "DisplayName", 0, winreg.REG_SZ, f"{APP_NAME} v{APP_VERSION}")
             winreg.SetValueEx(key, "DisplayVersion", 0, winreg.REG_SZ, APP_VERSION)
             winreg.SetValueEx(key, "Publisher", 0, winreg.REG_SZ, "Destroyer-official")
-            winreg.SetValueEx(key, "DisplayIcon", 0, winreg.REG_SZ, exe_path)
+            winreg.SetValueEx(key, "DisplayIcon", 0, winreg.REG_SZ, f'"{exe_path}",0')
             winreg.SetValueEx(key, "InstallLocation", 0, winreg.REG_SZ, install_dir)
             uninst_cmd = f'cmd.exe /c rd /s /q "{install_dir}" & reg delete "HKCU\\{key_path}" /f'
             winreg.SetValueEx(key, "UninstallString", 0, winreg.REG_SZ, uninst_cmd)
@@ -82,11 +83,20 @@ class InstallerApp(tk.Tk):
     """Modern dark-themed Windows Setup Wizard."""
 
     def __init__(self):
+        try:
+            import ctypes
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("Destroyer.CortexWorkstation.Installer.1.2.0")
+        except Exception:
+            pass
+
         super().__init__()
         self.title(f"{APP_NAME} Setup v{APP_VERSION}")
         self.geometry("580x420")
         self.resizable(False, False)
         self.configure(bg="#0B0E14")
+
+        # Set custom brand icon on the installer window and all child dialogs
+        self._set_app_icon()
 
         self.install_dir_var = tk.StringVar(value=DEFAULT_INSTALL_DIR)
         self.desktop_shortcut_var = tk.BooleanVar(value=True)
@@ -96,6 +106,23 @@ class InstallerApp(tk.Tk):
 
         self._build_ui()
         self._center_window()
+
+    def _set_app_icon(self):
+        """Locate and set the custom application icon."""
+        base_dir = getattr(sys, "_MEIPASS", None) or os.path.dirname(os.path.abspath(__file__))
+        candidates = [
+            os.path.join(base_dir, "assets", "icons", "cortex.ico"),
+            os.path.join(base_dir, "cortex.ico"),
+            os.path.join(os.path.dirname(base_dir), "assets", "icons", "cortex.ico"),
+            os.path.join(os.getcwd(), "assets", "icons", "cortex.ico"),
+        ]
+        for c in candidates:
+            if os.path.exists(c):
+                try:
+                    self.iconbitmap(default=c)
+                    break
+                except Exception:
+                    pass
 
     def _center_window(self):
         self.update_idletasks()
@@ -242,10 +269,10 @@ class InstallerApp(tk.Tk):
             self.is_installing = False
             self.install_btn.config(state=tk.NORMAL, bg="#00D2FF")
             self.status_lbl.config(text=f"Error: {err}", fg="#EF4444")
-            messagebox.showerror("Installation Failed", f"An error occurred during installation:\n\n{err}")
+            messagebox.showerror("Installation Failed", f"An error occurred during installation:\n\n{err}", parent=self)
 
     def _install_success(self):
-        messagebox.showinfo("Installation Complete", f"{APP_NAME} v{APP_VERSION} has been installed successfully!")
+        messagebox.showinfo("Installation Complete", f"{APP_NAME} v{APP_VERSION} has been installed successfully!", parent=self)
         self.destroy()
 
 

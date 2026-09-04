@@ -55,10 +55,11 @@ def setup_logging(debug: bool = False) -> Path:
         datefmt="%H:%M:%S",
     )
 
-    console = logging.StreamHandler(sys.stderr)
-    console.setLevel(level)
-    console.setFormatter(fmt)
-    root.addHandler(console)
+    if sys.stderr is not None:
+        console = logging.StreamHandler(sys.stderr)
+        console.setLevel(level)
+        console.setFormatter(fmt)
+        root.addHandler(console)
 
     fileh = logging.handlers.RotatingFileHandler(
         log_file, maxBytes=2_000_000, backupCount=3, encoding="utf-8"
@@ -343,10 +344,36 @@ def main() -> int:
     # QApplication (only applied when we're creating a fresh instance).
     _configure_high_dpi()
 
+    # Set AppUserModelID so Windows taskbar uses Cortex Workstation identity and icon
+    try:
+        import ctypes
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("Destroyer.CortexWorkstation.App.1.2.0")
+    except Exception:
+        pass
+
     app = QApplication.instance() or QApplication(sys.argv)
-    app.setApplicationName("Cortex Cleaner")
+    app.setApplicationName("Cortex Workstation")
+    app.setApplicationDisplayName("Cortex Workstation")
     app.setOrganizationName("Cortex")
     _install_qt_message_handler()
+
+    # Apply application icon
+    from PySide6.QtGui import QIcon
+    icon_candidates = [
+        Path(__file__).resolve().parents[2] / "resources" / "icons" / "cortex.ico",
+        Path(__file__).resolve().parents[2] / "resources" / "icons" / "cortex.png",
+        Path(__file__).resolve().parents[4] / "assets" / "icons" / "cortex.ico",
+        Path(__file__).resolve().parents[4] / "assets" / "icons" / "cortex.png",
+        Path(getattr(sys, "_MEIPASS", "")) / "assets" / "icons" / "cortex.ico",
+        Path(getattr(sys, "_MEIPASS", "")) / "src" / "cortex_unified" / "resources" / "icons" / "cortex.ico",
+    ]
+    app_icon = None
+    for icp in icon_candidates:
+        if icp.is_file():
+            app_icon = QIcon(str(icp))
+            break
+    if app_icon and not app_icon.isNull():
+        app.setWindowIcon(app_icon)
 
     # Restore the user's saved theme (defaults to dark). The store is shared
     # with the window so a theme change made in Settings persists to one file.
@@ -358,6 +385,8 @@ def main() -> int:
     apply_theme(app, theme)
 
     window = PremiumMainWindow(theme=theme, settings=settings, simulation=simulation)
+    if app_icon and not app_icon.isNull():
+        window.setWindowIcon(app_icon)
     window.show()
     _LOG.info("main window shown; entering event loop")
     _schedule_update_check(window, settings)

@@ -9,41 +9,32 @@ import sys
 import shutil
 
 def build_app():
-    """build_app.
-
-    Manages build app operations and coordinates related state changes for the component.
-    """
+    """Compile CortexCleaner standalone package using CortexCleaner.spec."""
     print("=" * 60)
-    print("Cortex Cleaner Suite - Release Compiler")
+    print("Cortex Workstation - Release Compiler")
     print("=" * 60)
     
+    # Ensure brand icon exists
+    if not os.path.exists("assets/icons/cortex.ico"):
+        print("[*] Generating brand icon assets...")
+        subprocess.run([sys.executable, "scripts/generate_app_icon.py"], check=True)
+
     # Wipe leftovers from prior runs so dist/ reflects only this build
     if os.path.exists("build"):
         print("[*] Cleaning old build directory...")
         shutil.rmtree("build", ignore_errors=True)
-    if os.path.exists("dist"):
-        print("[*] Cleaning old dist directory...")
-        shutil.rmtree("dist", ignore_errors=True)
+    if os.path.exists("dist/CortexCleaner"):
+        print("[*] Cleaning old dist/CortexCleaner directory...")
+        shutil.rmtree("dist/CortexCleaner", ignore_errors=True)
         
-    print("[*] Invoking PyInstaller...")
+    print("[*] Invoking PyInstaller with CortexCleaner.spec...")
     
     cmd = [
         sys.executable, "-m", "PyInstaller",
-        "--name", "CortexCleaner",
-        "--windowed",           # GUI product: end users must never see a console
-        "--noconfirm",          # never stall an unattended build on the overwrite prompt
-        "--clean",              # stale cache can resurrect modules deleted from src/
-        "--uac-admin",          # registry/system cleanup needs elevation; prompt once at launch
-        "--add-data", f"src{os.pathsep}src",  # Safely include entire module tree to catch dynamic refs
+        "--noconfirm",
+        "--clean",
         "--log-level", "WARN",
-        # Explicit module exclusions to drastically reduce final file size (Exclude data science packages)
-        "--exclude-module", "matplotlib",
-        "--exclude-module", "numpy",
-        "--exclude-module", "scipy",
-        "--exclude-module", "pandas",
-        "--exclude-module", "PyQt5",
-        "--exclude-module", "PyQt6",
-        "run_gui.py"            # entry script PyInstaller crawls for dependencies
+        "CortexCleaner.spec"
     ]
     
     try:
@@ -53,10 +44,12 @@ def build_app():
         print("=" * 60)
         out_dir = os.path.abspath("dist/CortexCleaner")
         print(f"Location: {out_dir}")
-        print("Note: The executable 'CortexCleaner.exe' inside will automatically prompt UAC for Admin Rights.")
+        print("Note: The executable 'CortexCleaner.exe' inside embeds the custom brand icon and UAC manifest.")
         
         # Package into distributable zip archive
         zip_base = os.path.join("dist", "Cortex-Workstation-v1.2.0-Windows-x64")
+        if os.path.exists(zip_base + ".zip"):
+            os.remove(zip_base + ".zip")
         print(f"[*] Packaging standalone distribution zip: {zip_base}.zip ...")
         shutil.make_archive(zip_base, "zip", "dist", "CortexCleaner")
         print(f"[✓] Distribution package created: {os.path.abspath(zip_base + '.zip')}")

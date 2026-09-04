@@ -42,9 +42,14 @@ The Ultimate Windows NT Systems, Forensics, File Management & Optimization Platf
 ### 4. 🛡️ Hardened System Process Protection
 - Enhanced `kill_process_tree` with `is_protected_process` safeguarding critical Windows NT system processes including explorer.exe, dwm.exe, csrss.exe, smss.exe, services.exe, lsass.exe, and cortex.exe.
 
-### 5. 📚 Comprehensive Multi-Tiered Documentation Hub
-- Three-column layout documentation hub deployed to GitHub Pages: [https://destroyer-official.github.io/Cortex-Workstation/](https://destroyer-official.github.io/Cortex-Workstation/)
-- Complete AST-verified function inventory across 494 program files documented in [docs/FUNCTION_INVENTORY.md](https://github.com/Destroyer-official/Cortex-Workstation/blob/main/docs/FUNCTION_INVENTORY.md).
+### 5. 🎨 Custom High-Resolution Brand Icon & Windows Taskbar Integration
+- **Multi-Layer Windows Brand Icon**: Built multi-resolution icon (`cortex.ico` in 256x256, 128x128, 64x64, 48x48, 32x32, 16x16) embedded directly into `CortexCleaner.exe` and `Cortex-Workstation-v1.2.0-Setup.exe`.
+- **Windows Taskbar Identity**: Registered `SetCurrentProcessExplicitAppUserModelID("Destroyer.CortexWorkstation.App.1.2.0")` ensuring Windows groups the app under its own custom shield icon instead of generic Python/Tkinter icons.
+- **Shortcuts & Registry**: Desktop and Start Menu shortcuts explicitly link to `IconLocation,0`, and uninstaller in Windows Settings registers the custom brand icon.
+
+### 6. 🛠️ Robust Packaging & Logging Resilience
+- Full crawling of all 323 submodules across `cortex_unified` ensuring standard library logging handlers, crypto, and VFS modules are bundled directly in the PYZ.
+- Safe stream fallback (`_SafeStream`) ensuring windowed GUI execution on Windows never crashes with `NoneType object has no attribute 'write'`.
 
 ---
 
@@ -56,9 +61,10 @@ The Ultimate Windows NT Systems, Forensics, File Management & Optimization Platf
 
 ---
 
-## 📥 Downloads
-| Package | Format | Target Platform | Description |
+## 📥 Downloads & Cryptographic Checksums
+
+| Package | Format | Target Platform | SHA-256 Checksum |
 | :--- | :--- | :--- | :--- |
-| 🛡️ [**`Cortex-Workstation-v1.2.0-Setup.exe`**](https://github.com/Destroyer-official/Cortex-Workstation/releases/download/v1.2.0/Cortex-Workstation-v1.2.0-Setup.exe) | **Setup Installer (.exe)** | Windows 10/11 (64-bit) | Automated setup wizard with Desktop & Start Menu shortcut creation |
-| 📦 [**`Cortex-Workstation-v1.2.0-Windows-x64.zip`**](https://github.com/Destroyer-official/Cortex-Workstation/releases/download/v1.2.0/Cortex-Workstation-v1.2.0-Windows-x64.zip) | **Portable Archive (.zip)** | Windows 10/11 (64-bit) | Pre-compiled standalone portable package (Extract & Run) |
-| 📦 **Source Code (.zip / .tar.gz)** | **Source Archive** | Cross-Platform | Full open-source repository checkout |
+| 🛡️ [**`Cortex-Workstation-v1.2.0-Setup.exe`**](https://github.com/Destroyer-official/Cortex-Workstation/releases/download/v1.2.0/Cortex-Workstation-v1.2.0-Setup.exe) | **Setup Installer (.exe)** | Windows 10/11 (64-bit) | `6D96C403F406A0BEE63ED572573DF47E0F342F5652732804887C1DF327786674` |
+| 📦 [**`Cortex-Workstation-v1.2.0-Windows-x64.zip`**](https://github.com/Destroyer-official/Cortex-Workstation/releases/download/v1.2.0/Cortex-Workstation-v1.2.0-Windows-x64.zip) | **Portable Archive (.zip)** | Windows 10/11 (64-bit) | `C01C58F6D7654198C72CAF4EB4DBD31DC153E3835EC19CD904E0D877E9458140` |
+| 📦 **Source Code (.zip / .tar.gz)** | **Source Archive** | Cross-Platform | Official Git Tag `v1.2.0` Archive |

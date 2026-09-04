@@ -5,7 +5,11 @@ a = Analysis(
     ['scripts/installer.py'],
     pathex=[],
     binaries=[],
-    datas=[('dist/Cortex-Workstation-v1.2.0-Windows-x64.zip', '.')],
+    datas=[
+        ('dist/Cortex-Workstation-v1.2.0-Windows-x64.zip', '.'),
+        ('assets/icons/cortex.ico', 'assets/icons'),
+        ('assets/icons/cortex.png', 'assets/icons'),
+    ],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -36,4 +40,5 @@ exe = EXE(
     codesign_identity=None,
     entitlements_file=None,
     uac_admin=True,
+    icon='assets/icons/cortex.ico',
 )
