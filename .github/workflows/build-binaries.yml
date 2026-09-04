@@ -1,0 +1,48 @@
+name: Build Windows Release Binaries
+
+on:
+  workflow_dispatch:
+  release:
+    types: [published]
+
+jobs:
+  build-windows:
+    name: Build Windows x64 Standalone Executable & Setup Installer
+    runs-on: windows-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[all]"
+          pip install pyinstaller
+
+      - name: Compile Standalone Windows Executable
+        run: |
+          python scripts/build_exe.py
+
+      - name: Compile Inno Setup Installer
+        run: |
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer\cortex_cleaner.iss
+          Get-ChildItem installer\installer_output\
+
+      - name: Upload Binaries to GitHub Release
+        if: github.event_name == 'release' || github.ref_type == 'tag'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/*.zip
+            installer/installer_output/*.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
