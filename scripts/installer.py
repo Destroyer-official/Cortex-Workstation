@@ -138,7 +138,7 @@ class InstallerApp(tk.Tk):
         header.pack(fill=tk.X)
         header.pack_propagate(False)
 
-        title_lbl = tk.Label(header, text=f"🛡️ {APP_NAME} Setup", font=("Segoe UI", 16, "bold"), fg="#00D2FF", bg="#121722")
+        title_lbl = tk.Label(header, text=f"{APP_NAME} Setup", font=("Segoe UI", 16, "bold"), fg="#00D2FF", bg="#121722")
         title_lbl.pack(anchor="w", padx=20, pady=(14, 2))
 
         sub_lbl = tk.Label(header, text=f"The Ultimate Windows NT Systems, Forensics & Optimization Platform (v{APP_VERSION})",

@@ -664,7 +664,13 @@ def _material_icon(material_name: str, size: int = 32, default_color: str = "#FF
         return cached
     svg_file = _MATERIAL_DIR / f"{material_name}.svg"
     if not svg_file.exists():
-        return QIcon()
+        for sub in ("filetypes", "ui"):
+            cand = _MATERIAL_DIR / sub / f"{material_name}.svg"
+            if cand.exists():
+                svg_file = cand
+                break
+        else:
+            return QIcon()
     try:
         content = svg_file.read_text(encoding="utf-8")
         pixmap = _render_svg_file(content, size, default_color=default_color)

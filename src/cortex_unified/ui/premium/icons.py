@@ -52,15 +52,21 @@ ICON_DIR = next((p for p in _CANDIDATE_ICON_DIRS if p.is_dir()), _CANDIDATE_ICON
 DESIGN_SIZE = 24
 
 
-@lru_cache(maxsize=256)
+@lru_cache(maxsize=512)
 def _svg_source(name: str) -> bytes | None:
     """Read an icon's SVG markup, or ``None`` when it is not shipped."""
-    path = ICON_DIR / f"{name}.svg"
-    try:
-        return path.read_bytes()
-    except OSError:
-        _LOG.warning("icon %r not found at %s", name, path)
-        return None
+    for candidate in (
+        ICON_DIR / f"{name}.svg",
+        ICON_DIR / "ui" / f"{name}.svg",
+        ICON_DIR / "filetypes" / f"{name}.svg",
+    ):
+        try:
+            if candidate.is_file():
+                return candidate.read_bytes()
+        except OSError:
+            pass
+    _LOG.warning("icon %r not found at %s", name, ICON_DIR)
+    return None
 
 
 @lru_cache(maxsize=1024)
@@ -160,14 +166,17 @@ def icon(name: str, size: int = DESIGN_SIZE, color: str = "#FFFFFF") -> QIcon:
 def available() -> frozenset[str]:
     """Every icon name shipped with the application."""
     try:
-        return frozenset(p.stem for p in ICON_DIR.glob("*.svg"))
+        return frozenset(p.stem for p in ICON_DIR.rglob("*.svg"))
     except OSError:  # pragma: no cover - unreadable install
         return frozenset()
 
 
 def has_icon(name: str) -> bool:
     """True when *name* is shipped, without rendering it."""
-    return (ICON_DIR / f"{name}.svg").is_file()
+    return any(
+        (p / f"{name}.svg").is_file()
+        for p in (ICON_DIR, ICON_DIR / "ui", ICON_DIR / "filetypes")
+    )
 
 
 def icon_size(size: int) -> QSize:

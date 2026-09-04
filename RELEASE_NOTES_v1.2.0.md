@@ -39,7 +39,7 @@ The Ultimate Windows NT Systems, Forensics, File Management & Optimization Platf
   - Registry AI analyzer with safe backup checkpoints
   - Outdated driver store cleaner & package cache manager
 
-### 4. 🛡️ Hardened System Process Protection
+### 4. 🔒 Hardened System Process Protection
 - Enhanced `kill_process_tree` with `is_protected_process` safeguarding critical Windows NT system processes including explorer.exe, dwm.exe, csrss.exe, smss.exe, services.exe, lsass.exe, and cortex.exe.
 
 ### 5. 🎨 Custom High-Resolution Brand Icon & Windows Taskbar Integration
@@ -65,6 +65,6 @@ The Ultimate Windows NT Systems, Forensics, File Management & Optimization Platf
 
 | Package | Format | Target Platform | SHA-256 Checksum |
 | :--- | :--- | :--- | :--- |
-| 🛡️ [**`Cortex-Workstation-v1.2.0-Setup.exe`**](https://github.com/Destroyer-official/Cortex-Workstation/releases/download/v1.2.0/Cortex-Workstation-v1.2.0-Setup.exe) | **Setup Installer (.exe)** | Windows 10/11 (64-bit) | `9CE05052BC38EBC287337D6A9540A3ACACEC87A0B0C9BD5BE29B06190899D396` |
-| 📦 [**`Cortex-Workstation-v1.2.0-Windows-x64.zip`**](https://github.com/Destroyer-official/Cortex-Workstation/releases/download/v1.2.0/Cortex-Workstation-v1.2.0-Windows-x64.zip) | **Portable Archive (.zip)** | Windows 10/11 (64-bit) | `9E4BFFE9E8E65FE860DDC786DB0D384792C49F898C2F5D69D31A10D7EDE4E232` |
+| ⚡ [**`Cortex-Workstation-v1.2.0-Setup.exe`**](https://github.com/Destroyer-official/Cortex-Workstation/releases/download/v1.2.0/Cortex-Workstation-v1.2.0-Setup.exe) | **Setup Installer (.exe)** | Windows 10/11 (64-bit) | `EF00112B61F262C494ED9BC16958DBF88FE89492356E6F1ECABBA04DC81E0C44` |
+| 📦 [**`Cortex-Workstation-v1.2.0-Windows-x64.zip`**](https://github.com/Destroyer-official/Cortex-Workstation/releases/download/v1.2.0/Cortex-Workstation-v1.2.0-Windows-x64.zip) | **Portable Archive (.zip)** | Windows 10/11 (64-bit) | `D05EEBB27F383E61EF0F688010B6F9FE8A612A8682402311FA55260FC075DEF7` |
 | 📦 **Source Code (.zip / .tar.gz)** | **Source Archive** | Cross-Platform | Official Git Tag `v1.2.0` Archive |

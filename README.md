@@ -1,6 +1,6 @@
 <div align="center">
   <img src="assets/icons/cortex_logo.png" alt="Cortex Workstation Logo" width="160">
-  <h1>🛡️ Cortex Workstation</h1>
+  <h1>Cortex Workstation</h1>
   <p><strong>The Ultimate Windows NT Systems, Forensics & File Management Platform</strong></p>
   <p>
     <a href="https://github.com/Destroyer-official/Cortex-Workstation"><img src="https://img.shields.io/badge/Version-1.2.0-blue.svg?style=for-the-badge" alt="Version"></a>
@@ -41,7 +41,7 @@ Combining the **Cortex Unified Optimization Engine** with the high-performance *
 
 ## ⚡ Key Capabilities & Feature Highlights
 
-### 🛡️ Enterprise Security & Forensics
+### 🔐 Enterprise Security & Forensics
 - **Process Security Token Forensics**: Decodes Win32 process tokens, TokenIntegrityLevels (Untrusted, Low, Medium, High, System), TokenElevationTypes, and detects dangerous elevated privileges including SeDebugPrivilege and SeImpersonatePrivilege.
 - **Windows BAM/DAM & SRUM Execution Forensics**: Audits kernel Background Activity Moderator (BAM) timestamps, Desktop Activity Moderator (DAM) traces, and inspects SRUDB.dat execution metrics with selective sanitization.
 - **NTFS MFT Record Slack & Directory Index Sanitizer**: Audits 1024-byte file record segments and $INDEX_ALLOCATION buffers for orphaned resident file fragments, sanitizing slack space safely.
@@ -110,7 +110,7 @@ Experience the production user interface of Cortex Workstation:
       </td>
       <td width="50%" align="center">
         <img src="assets/screenshots/vssmanager_demo.png" alt="VSS Shadow Copy Manager" width="100%"><br>
-        <strong>🛡️ VSS Shadow Copy & Snapshot Manager</strong><br>
+        <strong>💾 VSS Shadow Copy & Snapshot Manager</strong><br>
         <em>Volume shadow auditing, snapshot creation, and writer health resets</em>
       </td>
     </tr>
@@ -301,7 +301,7 @@ Cortex Workstation features a multi-tiered, three-column documentation hub desig
 - 🎛️ **[Configuration Reference](docs/user/configuration.md)**: YAML/JSON schema, CLI flags, and environment variables.
 - 🗂️ **[Nexus File Manager Guide](docs/user/nexus-explorer.md)**: USN Journal, PAR2 recovery, and undo/redo workflows.
 - 🗺️ **[Repository Architecture Map](docs/dev/architecture.md)**: Technical breakdown of modules and subsystems.
-- 🛡️ **[State Management & Thread Safety](docs/dev/threading-safety.md)**: PathGuard security boundaries and worker models.
+- ⚡ **[State Management & Thread Safety](docs/dev/threading-safety.md)**: PathGuard security boundaries and worker models.
 - 🧪 **[Testing & CI/CD Pipelines](docs/dev/testing.md)**: Local test validation and production diagnostics.
 - 🔌 **[Core API & Subsystem Specifications](docs/api/overview.md)**: In-depth lifecycle functions and interfaces.
 
