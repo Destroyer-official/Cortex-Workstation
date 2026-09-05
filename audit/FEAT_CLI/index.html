@@ -1,0 +1,1624 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="The Ultimate Windows NT Systems Optimization, Forensics & File Management Platform">
+      
+      
+        <meta name="author" content="Destroyer-official">
+      
+      
+        <link rel="canonical" href="https://destroyer-official.github.io/Cortex-Workstation/audit/FEAT_CLI/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/icons/cortex.ico">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>CLI Audit — Cortex_Cleaner - Cortex Workstation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="deep-purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#cli-audit-cortex_cleaner" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Cortex Workstation" class="md-header__button md-logo" aria-label="Cortex Workstation" data-md-component="logo">
+      
+  <img src="../../assets/icons/cortex.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Cortex Workstation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              CLI Audit — Cortex_Cleaner
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="deep-purple"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="deep-purple"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/Destroyer-official/Cortex-Workstation" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Destroyer-official/Cortex-Workstation
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../.." class="md-tabs__link">
+          
+  
+  
+  🌎 Welcome Hub
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../user/getting-started/" class="md-tabs__link">
+          
+  
+  
+  📦 User Space
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../ARCHITECTURE/" class="md-tabs__link">
+          
+  
+  
+  🏗️ Developer Platform
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../api/overview/" class="md-tabs__link">
+          
+  
+  
+  🔌 API & Subsystems
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Cortex Workstation" class="md-nav__button md-logo" aria-label="Cortex Workstation" data-md-component="logo">
+      
+  <img src="../../assets/icons/cortex.png" alt="logo">
+
+    </a>
+    Cortex Workstation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/Destroyer-official/Cortex-Workstation" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Destroyer-official/Cortex-Workstation
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_1" id="__nav_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    🌎 Welcome Hub
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    🌎 Welcome Hub
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Command Center
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../FEATURE_DIRECTORY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Feature Directory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../quick_reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quick Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    📦 User Space
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    📦 User Space
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/how-to-guides/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How-To Guides
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ui_visual_guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UI Visual Tour & Design Tokens
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI & Shell Usage Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../advanced-features/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Advanced Forensic & Performance Tuning
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../package_manager_guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Package Manager Cleaner Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/nexus-explorer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Nexus File Manager (VFS)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../i18n_accessibility/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Accessibility & Keybindings
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting & Diagnostics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    🏗️ Developer Platform
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    🏗️ Developer Platform
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ARCHITECTURE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Windows NT Kernel & Architecture Spec
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dev/architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Repository Architecture Map
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../DEVELOPER_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer Onboarding & Contribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dev/threading-safety/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    State Management & Safety
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dev/testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing & CI/CD
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dev/release-process/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Release & Review Process
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    🔌 API & Subsystems
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    🔌 API & Subsystems
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Subsystem Core Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/system-tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System Tools Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/analyzers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Analyzers Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/core-engine/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Engine & Algorithmic Caches
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../API_REFERENCE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Complete API Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../FUNCTION_INVENTORY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Function & Symbol Inventory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#legacy-cortex-cleaner-cortex-workstation-srccortex_unifiedcliclipy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        legacy cortex-cleaner / cortex-workstation (src/cortex_unified/cli/cli.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#modern-cortex-engine-srccortex_unifiedengineclipy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        modern cortex engine (src/cortex_unified/engine/cli.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#run_guipy-switches" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        run_gui.py switches
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#system_tools-argparse-clis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        system_tools argparse CLIs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scriptspy-purposes-no-argparse-clis-__main__-runners-only" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        scripts/*.py purposes (no argparse CLIs — __main__ runners only)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="cli-audit-cortex_cleaner">CLI Audit — Cortex_Cleaner<a class="headerlink" href="#cli-audit-cortex_cleaner" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p>Read-only audit of real argparse/click definitions. No code changes.</p>
+</blockquote>
+<p>Entry points (<code>pyproject.toml</code> <code>[project.scripts]</code>): <code>cortex</code> → <code>engine/cli.py:main</code>, <code>cortex-cleaner</code>/<code>cortex-workstation</code> → <code>cli/cli.py:main</code>, <code>cortex-gui</code> → <code>ui/premium/app.py:main</code>, <code>cortex-workstation-gui</code>/<code>cortex-cleaner-gui</code> → <code>ui/launcher.py:main</code>, <code>cortex-debug</code> → <code>debug/runner.py:main</code>.</p>
+<h2 id="legacy-cortex-cleaner-cortex-workstation-srccortex_unifiedcliclipy">legacy <code>cortex-cleaner</code> / <code>cortex-workstation</code> (<code>src/cortex_unified/cli/cli.py</code>)<a class="headerlink" href="#legacy-cortex-cleaner-cortex-workstation-srccortex_unifiedcliclipy" title="Permanent link">&para;</a></h2>
+<p>Group: <code>main</code> — tagline only, plus <code>--version</code> (<code>cli.py:66</code>).</p>
+<ul>
+<li><code>clean-empty [PATH] --dry-run</code> : preview only, default when no action given (<code>cli.py:73</code>)</li>
+<li><code>clean-empty --delete</code> : permanently delete empty files/dirs (<code>cli.py:74</code>)</li>
+<li><code>clean-empty --trash</code> : move empties to recycle bin (<code>cli.py:75</code>)</li>
+<li><code>clean-empty --pattern</code> (multiple) : only globs matching pattern (<code>cli.py:76</code>)</li>
+<li><code>clean-empty --older-than N</code> : only files older than N days (<code>cli.py:77</code>)</li>
+<li><code>clean-empty --exclude-pattern</code> (multiple) : skip matching paths (<code>cli.py:78</code>)</li>
+<li><code>clean-empty --config PATH</code> : load config file (<code>cli.py:79</code>)</li>
+<li><code>clean-empty --no-config</code> : ignore all config files (<code>cli.py:80</code>)</li>
+<li><code>clean-empty --yes</code> : skip confirmation (<code>cli.py:81</code>)</li>
+<li><code>clean-empty --verbose / --quiet / --log-file / --json-log</code> : logging control (<code>cli.py:82-85</code>)</li>
+<li><code>clean-empty --threads N</code> : scan thread count, 0=CPU count (<code>cli.py:86</code>)</li>
+<li><code>clean-empty --cpu-priority low|normal|high / --io-priority low|normal|high</code> : throttle scan (<code>cli.py:87-88</code>)</li>
+<li><code>clean-empty --checkpoint-interval N / --resume-from FILE</code> : resumable scan (<code>cli.py:89-90</code>)</li>
+<li><code>find-large-files [PATH] --min-size MB</code> (def 100) : list files ≥ size, biggest first (<code>cli.py:264</code>)</li>
+<li><code>find-large-files --pattern / --exclude-pattern</code> (multiple) : include/exclude globs (<code>cli.py:265-266</code>)</li>
+<li><code>find-large-files --config / --no-config / --verbose / --log-file / --json-log / --threads / --export FILE</code> : config, log, threads, JSON export (<code>cli.py:267-273</code>)</li>
+<li><code>find-duplicates [PATH] --strategy keep_newest|keep_oldest|keep_largest|keep_smallest</code> : auto-select victim per group (<code>cli.py:354</code>)</li>
+<li><code>find-duplicates --hash-algorithm md5|sha1|sha256</code> (def md5) : content hash (<code>cli.py:356</code>)</li>
+<li><code>find-duplicates --preview</code> : list only; <code>--delete</code> : recycle victims after confirm (<code>cli.py:358-359</code>)</li>
+<li><code>find-duplicates --pattern / --exclude-pattern / --config / --no-config / --yes / --verbose / --log-file / --json-log / --threads / --export</code> : filters + JSON export (<code>cli.py:360-369</code>)</li>
+<li><code>clean-temp --dry-run</code> (def True) / <code>--delete</code> / <code>--trash</code> : preview vs act (<code>cli.py:489-491</code>)</li>
+<li><code>clean-temp --min-age N</code> (def 1) : only temp files older than N days (<code>cli.py:492</code>)</li>
+<li><code>clean-temp --exclude-pattern / --config / --no-config / --yes / --verbose / --log-file / --json-log</code> : filters + logging (<code>cli.py:493-499</code>)</li>
+<li><code>analyze-disk [PATH] --analyze</code> : run disk-usage analysis (<code>cli.py:607</code>)</li>
+<li><code>analyze-disk --export-json / --export-treemap / --export-sunburst / --export-dashboard FILE</code> : JSON + HTML/PNG/SVG visualizations (<code>cli.py:608-611</code>)</li>
+<li><code>analyze-disk --max-depth N</code> (def 3) : tree depth for visualizations (<code>cli.py:612</code>)</li>
+<li><code>analyze-disk --threads / --cpu-priority / --io-priority / --memory-limit MB / --checkpoint-interval / --resume-from</code> : perf + resume (<code>cli.py:613-618</code>)</li>
+<li><code>analyze-disk --config / --no-config / --verbose / --log-file / --json-log</code> : config + logging (<code>cli.py:619-623</code>)</li>
+<li><code>list-startup-items</code> (no flags) : list startup items + enabled status (<code>cli.py:823</code>)</li>
+<li><code>analyze-processes --export FILE</code> : JSON dump of process+service listing (<code>cli.py:852</code>)</li>
+<li><code>docker-cleanup --dry-run</code> (def True) / <code>--clean</code> : preview vs act (<code>cli.py:894,895</code>)</li>
+<li><code>docker-cleanup --images / --containers / --volumes / --networks / --all</code> : resource scope (default all) (<code>cli.py:896-900</code>)</li>
+<li><code>docker-cleanup --config / --no-config / --yes / --verbose / --log-file / --json-log / --export</code> : config + JSON export (<code>cli.py:901-907</code>)</li>
+<li><code>package-cleanup --pip / --npm / --yarn / --conda / --system / --all</code> : manager scope (<code>cli.py:1050-1055</code>)</li>
+<li><code>package-cleanup --orphaned</code> : find unneeded packages (<code>cli.py:1056</code>)</li>
+<li><code>package-cleanup --keep-recent-days N</code> (def 7) : preserve recent cache (<code>cli.py:1057</code>)</li>
+<li><code>package-cleanup --dry-run</code> (def True) / <code>--clean</code> : preview vs act (<code>cli.py:1058-1059</code>)</li>
+<li><code>package-cleanup --config / --no-config / --yes / --verbose / --log-file / --json-log / --export</code> : config + export (<code>cli.py:1060-1066</code>)</li>
+<li><code>heuristics-scan [PATH] --confidence-threshold F</code> (def 0.7) : leftover certainty cutoff (<code>cli.py:1202</code>)</li>
+<li><code>heuristics-scan --scan-registry</code> : include registry orphans (Windows) (<code>cli.py:1203</code>)</li>
+<li><code>heuristics-scan --ml-patterns</code> (def on) : ML pattern pass (<code>cli.py:1204</code>)</li>
+<li><code>heuristics-scan --dry-run</code> (def True) / <code>--clean</code> : preview vs act (<code>cli.py:1205-1206</code>)</li>
+<li><code>heuristics-scan --config / --no-config / --yes / --verbose / --log-file / --json-log / --export</code> : config + export (<code>cli.py:1207-1213</code>)</li>
+<li><code>secure-delete FILES... --shred</code> : without it only previews; with it overwrites (<code>cli.py:1362</code>)</li>
+<li><code>secure-delete --passes N</code> (def 3) : overwrite passes (<code>cli.py:1363</code>)</li>
+<li><code>secure-delete --verify</code> (def on) : verify after shred (<code>cli.py:1364</code>)</li>
+<li><code>secure-delete --yes / --verbose / --log-file / --json-log</code> : confirm + logging (<code>cli.py:1365-1368</code>)</li>
+<li><code>restore --restore MANIFEST</code> : replay manifest; bare = list backups (<code>cli.py:1426</code>)</li>
+<li><code>restore --dry-run</code> (def True) : preview restore (<code>cli.py:1427</code>)</li>
+<li><code>restore --yes / --verbose / --log-file / --json-log</code> : confirm + logging (<code>cli.py:1428-1431</code>)</li>
+<li><code>generate-report --type text|html|json|csv</code> (def text) : report format (<code>cli.py:1493</code>)</li>
+<li><code>generate-report --export FILE / --name NAME</code> : copy report / set name (<code>cli.py:1494-1495</code>)</li>
+<li><code>generate-report --verbose / --log-file / --json-log</code> : logging (<code>cli.py:1496-1498</code>)</li>
+<li><code>checkpoint list --config / --verbose</code> : list saved checkpoints (<code>cli.py:1571-1572</code>)</li>
+<li><code>checkpoint delete CHECKPOINT_ID --verbose</code> : delete checkpoint by id (<code>cli.py:1601-1602</code>)</li>
+<li><code>checkpoint cleanup --max-age N</code> (def 7) : purge checkpoints older than N days (<code>cli.py:1623</code>)</li>
+<li><code>scan-enhanced [PATH] --checkpoint-id ID / --enable-checkpoints</code> : resume / enable checkpoints (<code>cli.py:1645-1646</code>)</li>
+<li><code>scan-enhanced --enable-throttling / --cpu-limit F</code> (0.8) / <code>--memory-limit F</code> (0.85) : resource caps (<code>cli.py:1647-1649</code>)</li>
+<li><code>scan-enhanced --dry-run / --delete / --trash / --pattern / --older-than / --exclude-pattern / --config / --no-config / --yes / --verbose / --quiet / --log-file / --json-log / --threads</code> : same semantics as clean-empty (<code>cli.py:1650-1663</code>)</li>
+<li><code>scan-broken-links [PATH] --scan-symlinks</code> (on) / <code>--scan-shortcuts</code> (on) / <code>--scan-registry</code> (off) : link classes to scan (<code>cli.py:1851-1853</code>)</li>
+<li><code>scan-broken-links --repair</code> : attempt repair of confident links (<code>cli.py:1854</code>)</li>
+<li><code>scan-broken-links --backup</code> (on) : backup before repair (<code>cli.py:1855</code>)</li>
+<li><code>scan-broken-links --confidence-threshold F</code> (0.7) : repair cutoff (<code>cli.py:1856</code>)</li>
+<li><code>scan-broken-links --export FILE / --verbose|-v</code> : JSON export + verbose (<code>cli.py:1857-1858</code>)</li>
+<li><code>clean-shaders --min-age-days N</code> (def 0) : stale DirectX/vendor shader cutoff (<code>cli.py:2004</code>)</li>
+<li><code>clean-shaders --dry-run</code> : audit only, no delete (<code>cli.py:2005</code>)</li>
+<li><code>clean-ai --dry-run</code> : list Copilot/Recall/WAL artifacts only (<code>cli.py:2022</code>)</li>
+<li><code>trim-ssd [DRIVE]</code> (def C) : ReTrim/Optimize-Volume on drive (<code>cli.py:2037</code>)</li>
+<li><code>vss-health</code> (no flags) : list VSS writers + healthy/failed counts (<code>cli.py:2049</code>)</li>
+<li><code>verify-checksums MANIFEST_FILE</code> : verify .sha256/.md5/.sfv manifest (<code>cli.py:2062</code>)</li>
+</ul>
+<h2 id="modern-cortex-engine-srccortex_unifiedengineclipy">modern <code>cortex</code> engine (<code>src/cortex_unified/engine/cli.py</code>)<a class="headerlink" href="#modern-cortex-engine-srccortex_unifiedengineclipy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>cortex scan --json</code> : machine-readable reclaim report (<code>engine/cli.py:145</code>)</li>
+<li><code>cortex scan --all</code> : include opt-in categories (<code>engine/cli.py:146</code>)</li>
+<li><code>cortex scan --max-risk low|medium|high</code> (def medium) : risk ceiling (<code>engine/cli.py:147</code>)</li>
+<li><code>cortex clean --apply</code> : actually delete (default dry-run) (<code>engine/cli.py:176</code>)</li>
+<li><code>cortex clean --method recycle|delete</code> (def recycle) : deletion method (<code>engine/cli.py:177</code>)</li>
+<li><code>cortex clean --all / --max-risk</code> : same scope as scan (<code>engine/cli.py:178-179</code>)</li>
+<li><code>cortex duplicates PATH... --json</code> : hash dedup across paths (<code>engine/cli.py:211-212</code>)</li>
+<li><code>cortex large PATH --min-mb F</code> (100.0) <code>--limit N</code> (50) : top-N large files (<code>engine/cli.py:229-230</code>)</li>
+<li><code>cortex empty PATH</code> (no flags) : list empty files+dirs (<code>engine/cli.py:238</code>)</li>
+<li><code>cortex shred TARGET --apply</code> : actually shred (default preview) (<code>engine/cli.py:247</code>)</li>
+<li><code>cortex shred --passes N</code> (3) / <code>--force-flash</code> : passes; allow SSD overwrite (<code>engine/cli.py:248-249</code>)</li>
+<li><code>cortex leftovers scan APP_NAME --json</code> : read-only residual scan (<code>engine/cli.py:277-278</code>)</li>
+<li><code>cortex leftovers orphans --json</code> : unclaimed Program Files folders (<code>engine/cli.py:289</code>)</li>
+<li><code>cortex leftovers clean APP_NAME --apply</code> : recycle (default dry-run) (<code>engine/cli.py:300</code>)</li>
+<li><code>cortex leftovers clean --min-level questionable|good|verygood</code> (good) : confidence floor (<code>engine/cli.py:302</code>)</li>
+<li><code>cortex leftovers clean --restore-point</code> : system-restore checkpoint first (<code>engine/cli.py:306</code>)</li>
+<li><code>cortex leftovers clean --json</code> : JSON outcome payload (<code>engine/cli.py:308</code>)</li>
+<li><code>cortex license status --json</code> : tier/features/expiry (<code>engine/cli.py:371</code>)</li>
+<li><code>cortex license activate --key KEY</code> (req) <code>--tier TIER</code> (pro) <code>--name/--email/--days/--json</code> : offline activate (<code>engine/cli.py:394-402</code>)</li>
+<li><code>cortex license trial --json</code> : start once-per-machine Pro trial (<code>engine/cli.py:420</code>)</li>
+<li><code>cortex license deactivate</code> (no flags) : drop to Free tier (<code>engine/cli.py:436</code>)</li>
+<li><code>cortex boost status --json</code> : preview power-plan/suspend changes (<code>engine/cli.py:448</code>)</li>
+<li><code>cortex boost start --dry-run / --extra-suspend NAME</code> (repeat) <code>/ --json</code> : apply gaming boost (<code>engine/cli.py:464-467</code>)</li>
+<li><code>cortex boost stop --json</code> : restore plan + resume apps (<code>engine/cli.py:483</code>)</li>
+<li><code>cortex debug --json / -v|--verbose</code> : production diagnostics, JSON or itemized (<code>engine/cli.py:493-494</code>)</li>
+<li><code>cortex memory --min-rss-mb N</code> (50) : skip smaller processes (<code>engine/cli.py:506</code>)</li>
+<li><code>cortex memory --apply</code> : actually trim (default dry-run) (<code>engine/cli.py:508</code>)</li>
+<li><code>cortex memory --stats-only / --json</code> : stats view, optional JSON (<code>engine/cli.py:510-511</code>)</li>
+</ul>
+<h2 id="run_guipy-switches"><code>run_gui.py</code> switches<a class="headerlink" href="#run_guipy-switches" title="Permanent link">&para;</a></h2>
+<ul>
+<li>No switches: <code>run_gui.py</code> takes no argv (no argparse/click); <code>main()</code> launches <code>cortex_unified.ui.premium.app:main</code> and returns exit code (<code>run_gui.py:26-55</code>).</li>
+</ul>
+<h2 id="system_tools-argparse-clis"><code>system_tools</code> argparse CLIs<a class="headerlink" href="#system_tools-argparse-clis" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>network_scan_cli.py --profile targeted|advanced</code> (targeted=2 rounds, advanced=3) (<code>network_scan_cli.py:21-22</code>)</li>
+<li><code>network_scan_cli.py --scope NET</code> (repeatable) : bound scan to networks (<code>network_scan_cli.py:23</code>)</li>
+<li><code>network_scan_cli.py --ports SPEC</code> : custom ports via <code>parse_custom_port_spec</code> (<code>network_scan_cli.py:24</code>)</li>
+<li><code>network_scan_cli.py --output FILE</code> : atomic JSON write; exit 2 if cancelled, 1 on error (<code>network_scan_cli.py:25,64-70</code>)</li>
+<li><code>sentinel_pro (secrets_scanner.py) --version</code> : print version (<code>secrets_scanner.py:2415</code>)</li>
+<li><code>sentinel_pro scan [DIR] --verify</code> : live-verify creds vs APIs (<code>secrets_scanner.py:2420-2421</code>)</li>
+<li><code>sentinel_pro scan --archives</code> : scan inside .zip/.tar (<code>secrets_scanner.py:2422</code>)</li>
+<li><code>sentinel_pro scan --git-history</code> : scan commit history (<code>secrets_scanner.py:2423</code>)</li>
+<li><code>sentinel_pro scan --diff</code> : only new findings vs baseline (<code>secrets_scanner.py:2424</code>)</li>
+<li><code>sentinel_pro scan --report F.html / --json F.json / --csv F.csv / --sarif F.sarif</code> : exports (<code>secrets_scanner.py:2425-2428</code>)</li>
+<li><code>sentinel_pro scan --severity LEVELS / --compliance FW</code> : filter CRITICAL..LOW / GDPR,HIPAA,PCI_DSS,SOC2 (<code>secrets_scanner.py:2429-2430</code>)</li>
+<li><code>sentinel_pro scan --ignore|-i PAT</code> (repeat) : skip paths (<code>secrets_scanner.py:2431</code>)</li>
+<li><code>sentinel_pro scan --workers N</code> (def min(cpu,16)) : parallelism (<code>secrets_scanner.py:2432</code>)</li>
+<li><code>sentinel_pro scan --slack-webhook URL / --jira-url URL / --jira-project KEY / --github-repo OWNER/REPO</code> : notifications/issues (<code>secrets_scanner.py:2433-2436</code>)</li>
+<li><code>sentinel_pro scan --ci / --fail-on SEV</code> (HIGH) : CI exit-2 gate (<code>secrets_scanner.py:2437-2438</code>)</li>
+<li><code>sentinel_pro scan --quiet|-q / --no-terminal</code> : output control (<code>secrets_scanner.py:2439-2440</code>)</li>
+<li><code>sentinel_pro baseline save|diff|clear [DIR]</code> : manage baselines (<code>secrets_scanner.py:2445-2447</code>)</li>
+<li><code>sentinel_pro fp add FPRINT [--reason] / fp list / fp remove FPRINT</code> : false-positive suppressions (<code>secrets_scanner.py:2452-2454</code>)</li>
+<li><code>sentinel_pro verify FILE</code> : live-verify creds from JSON export (<code>secrets_scanner.py:2458</code>)</li>
+<li><code>sentinel_pro serve --port N</code> (8080) : web dashboard (<code>secrets_scanner.py:2462</code>)</li>
+<li><code>sentinel_pro patterns</code> (no flags) : list detection patterns (<code>secrets_scanner.py:2465</code>)</li>
+<li><code>cortex-debug --json / -v|--verbose</code> : JSON report / itemized logs; exit 1 if not production-ready (<code>debug/runner.py:805-819</code>)</li>
+</ul>
+<h2 id="scriptspy-purposes-no-argparse-clis-__main__-runners-only"><code>scripts/*.py</code> purposes (no argparse CLIs — <code>__main__</code> runners only)<a class="headerlink" href="#scriptspy-purposes-no-argparse-clis-__main__-runners-only" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>audit_all_page_functions.py</code> : deep functional+UI inspection of all 59 pages.</li>
+<li><code>audit_imports.py</code> : static import health audit of <code>cortex_unified</code>.</li>
+<li><code>audit_pages.py</code> : verify all registered pages load factory classes.</li>
+<li><code>audit_system_tools.py</code> : inspect classes/functions across system tools.</li>
+<li><code>build_exe.py</code> : PyInstaller build of <code>run_gui.py</code> into Windows exe.</li>
+<li><code>check_all_structure_files.py</code> : file-by-file verification vs <code>structure.txt</code>.</li>
+<li><code>check_hardcoded_paths.py</code> : detect hardcoded Windows paths.</li>
+<li><code>check_lint_issues.py</code> : undefined-name/lint anomaly check.</li>
+<li><code>deep_codebase_inspection.py</code> : exhaustive per-file codebase scan.</li>
+<li><code>deep_inspect_placeholders.py</code> : placeholder/TODO/stub/mock sweep of <code>src/</code>.</li>
+<li><code>generate_complete_features.py</code> : build master <code>COMPLETE_FEATURES_CHECKLIST.md</code>.</li>
+<li><code>generate_feature_directory.py</code> : build <code>docs/FEATURE_DIRECTORY.md</code> (118 pages).</li>
+<li><code>generate_program_checklist.py</code> : per-program-file verification checklist.</li>
+<li><code>run_all_tests.py</code> : pytest runner with failure collection.</li>
+<li><code>scan_codebase.py</code> : placeholder/TODO/mock detector.</li>
+<li><code>stress_test_gui_all_actions.py</code> : interactive GUI action stress test.</li>
+<li><code>test_all_pages.py</code> : offscreen instantiation check of all UI pages.</li>
+<li><code>test_navigation.py</code> : UI navigation + theme test.</li>
+<li><code>update_structure_txt.py</code> : regenerate repository <code>structure.txt</code>.</li>
+<li><code>verify_modules.py</code> : quick functional check of core system modules.</li>
+<li><code>verify_production_readiness.py</code> : production-readiness verification suite.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.expand", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight", "search.share", "content.code.copy", "content.tabs.link"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,1581 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="The Ultimate Windows NT Systems Optimization, Forensics & File Management Platform">
+      
+      
+        <meta name="author" content="Destroyer-official">
+      
+      
+        <link rel="canonical" href="https://destroyer-official.github.io/Cortex-Workstation/audit/FEAT_GUI_EXPLORER/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/icons/cortex.ico">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>NexusExplorer Widget — User-Facing Feature Audit - Cortex Workstation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="deep-purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#nexusexplorer-widget-user-facing-feature-audit" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Cortex Workstation" class="md-header__button md-logo" aria-label="Cortex Workstation" data-md-component="logo">
+      
+  <img src="../../assets/icons/cortex.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Cortex Workstation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              NexusExplorer Widget — User-Facing Feature Audit
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="deep-purple"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="deep-purple"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/Destroyer-official/Cortex-Workstation" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Destroyer-official/Cortex-Workstation
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../.." class="md-tabs__link">
+          
+  
+  
+  🌎 Welcome Hub
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../user/getting-started/" class="md-tabs__link">
+          
+  
+  
+  📦 User Space
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../ARCHITECTURE/" class="md-tabs__link">
+          
+  
+  
+  🏗️ Developer Platform
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../api/overview/" class="md-tabs__link">
+          
+  
+  
+  🔌 API & Subsystems
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Cortex Workstation" class="md-nav__button md-logo" aria-label="Cortex Workstation" data-md-component="logo">
+      
+  <img src="../../assets/icons/cortex.png" alt="logo">
+
+    </a>
+    Cortex Workstation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/Destroyer-official/Cortex-Workstation" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Destroyer-official/Cortex-Workstation
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_1" id="__nav_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    🌎 Welcome Hub
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    🌎 Welcome Hub
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Command Center
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../FEATURE_DIRECTORY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Feature Directory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../quick_reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quick Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    📦 User Space
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    📦 User Space
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/how-to-guides/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How-To Guides
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ui_visual_guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UI Visual Tour & Design Tokens
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI & Shell Usage Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../advanced-features/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Advanced Forensic & Performance Tuning
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../package_manager_guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Package Manager Cleaner Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/nexus-explorer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Nexus File Manager (VFS)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../i18n_accessibility/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Accessibility & Keybindings
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting & Diagnostics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    🏗️ Developer Platform
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    🏗️ Developer Platform
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ARCHITECTURE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Windows NT Kernel & Architecture Spec
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dev/architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Repository Architecture Map
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../DEVELOPER_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer Onboarding & Contribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dev/threading-safety/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    State Management & Safety
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dev/testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing & CI/CD
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dev/release-process/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Release & Review Process
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    🔌 API & Subsystems
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    🔌 API & Subsystems
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Subsystem Core Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/system-tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System Tools Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/analyzers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Analyzers Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/core-engine/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Engine & Algorithmic Caches
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../API_REFERENCE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Complete API Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../FUNCTION_INVENTORY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Function & Symbol Inventory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#palette-actions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Palette actions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#shortcuts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Shortcuts
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#context-menu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Context menu
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#toolbar" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Toolbar
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dialogs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dialogs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#views" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Views
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="nexusexplorer-widget-user-facing-feature-audit">NexusExplorer Widget — User-Facing Feature Audit<a class="headerlink" href="#nexusexplorer-widget-user-facing-feature-audit" title="Permanent link">&para;</a></h1>
+<p>Source: <code>src/NexusExplorer/native/nexus_explorer.py</code> (~8364 lines, widget <code>ExplorerWidget</code> + helper classes).
+Code refs: <code>_register_palette_actions()</code> (~6271), <code>_bind_shortcuts()</code> (~6196), <code>_context_menu()</code> (~7963), <code>_smart_folder_context_menu()</code> (~7305), toolbar setup Tier 1–3 (~5580–5839), <code>ShortcutsDialog._SHORTCUTS</code> (~5043).</p>
+<h2 id="palette-actions">Palette actions<a class="headerlink" href="#palette-actions" title="Permanent link">&para;</a></h2>
+<p><code>CommandPalette</code> (<code>Ctrl+Shift+P</code> toggle, fuzzy filter, Enter/double-click executes, Esc hides). All registered via <code>p.register(name, hint, slot)</code> in <code>_register_palette_actions</code> (34 actions):
+- <code>Navigate Back</code> | hint <code>Alt+←</code> | trigger: palette search "Navigate Back" + Enter | effect: <code>go_back()</code> — history back.
+- <code>Navigate Forward</code> | hint <code>Alt+→</code> | palette | effect: <code>go_forward()</code>.
+- <code>Go Up</code> | hint <code>Backspace</code> | palette | effect: <code>go_up()</code> — parent dir.
+- <code>Go Home</code> | hint <code>(none) | palette | effect: `navigate(~)` — home dir.
+- `Toggle View` | hint</code> | palette | effect: <code>_toggle_view()</code> — Details ↔ Large icons.
+- <code>Toggle Flat Branch View</code> | hint <code>Ctrl+Shift+F</code> | palette | effect: <code>toggle_flat_branch_view()</code> — recursive Total-Commander flat listing ON/OFF (note: same seq also bound to Find Duplicates).
+- <code>Toggle Dual Pane</code> | hint <code>Ctrl+D</code> | palette | effect: <code>_toggle_dual_pane()</code> — show/hide right pane.
+- <code>Quick Look</code> | hint <code>Space</code> | palette | effect: <code>_quick_look()</code> — floating <code>QuickLookPopup</code>.
+- <code>Bulk Rename</code> | hint <code>Ctrl+B</code> | palette | effect: <code>_bulk_rename()</code> — opens <code>BulkRenameDialog</code> (needs ≥2 selection).
+- <code>New Folder</code> | hint <code>F7 / Ctrl+Shift+N</code> | palette | effect: <code>_new_folder()</code> — inline/InputDialog create.
+- <code>New Nested Folders</code> | hint <code>Ctrl+Alt+N</code> | palette | effect: <code>_new_nested_folder()</code> — <code>NestedFolderDialog</code>.
+- <code>New File</code> | hint <code>Ctrl+N</code> | palette | effect: <code>_new_file()</code> — new file w/ optional template ext.
+- <code>New File in Nested Path</code> | hint <code>Ctrl+Alt+F</code> | palette | effect: <code>_new_nested_file()</code> — <code>NestedFileDialog</code>.
+- <code>Batch Scaffold Project / Tree</code> | hint <code>Ctrl+Shift+B</code> | palette | effect: <code>_batch_scaffold()</code> — <code>BatchScaffoldDialog</code>.
+- <code>Delete</code> | hint <code>F8/Delete</code> | palette | effect: <code>_delete()</code> — recycle-bin delete selection.
+- <code>Rename</code> | hint <code>F2</code> | palette | effect: <code>_rename()</code> — inline rename.
+- <code>Copy Here</code> | hint <code>F5</code> | palette | effect: <code>_clip("copy")+_paste()</code> — copy staged clipboard in place (duplicate).
+- <code>Move Here</code> | hint <code>F6</code> | palette | effect: <code>_clip("cut")+_paste()</code> — NOTE: conflicts with <code>F6</code> sort-cycle binding.
+- <code>Copy</code> | hint <code>Ctrl+C</code> | palette | effect: <code>_clip("copy")</code> — stage to shelf/clipboard.
+- <code>Cut</code> | hint <code>Ctrl+X</code> | palette | effect: <code>_clip("cut")</code>.
+- <code>Paste</code> | hint <code>Ctrl+V</code> | palette | effect: <code>_paste()</code> — paste into current dir (or <code>_paste(target)</code>).
+- <code>Undo</code> | hint <code>Ctrl+Z</code> | palette | effect: <code>_undo()</code> via <code>UndoManager</code>.
+- <code>Redo</code> | hint <code>Ctrl+Y</code> | palette | effect: <code>_redo()</code>.
+- <code>Select All</code> | hint <code>Ctrl+A</code> | palette | effect: <code>_select_all()</code>.
+- <code>Toggle Sidebar</code> | hint <code>Ctrl+H</code> | palette | effect: <code>_toggle_sidebar()</code>.
+- <code>Toggle Debug Overlay</code> | hint <code>F12</code> | palette | effect: <code>_toggle_debug()</code> — <code>DebugOverlay</code>.
+- <code>Refresh</code> | hint <code>Shift+F5</code> | palette | effect: <code>_reload_current()</code>.
+- <code>New Tab</code> | hint <code>Ctrl+T</code> | palette | effect: <code>add_tab(~)</code> — new Home tab.
+- <code>Close Tab</code> | hint <code>Ctrl+W</code> | palette | effect: <code>_close_current_tab()</code>.
+- <code>Toggle Terminal</code> | hint <code>Ctrl+`</code> | palette | effect: <code>_toggle_terminal()</code> — embedded <code>TerminalWidget</code>.
+- <code>Find Duplicates</code> | hint <code>Ctrl+Shift+F</code> | palette | effect: <code>_open_duplicate_finder()</code> — <code>DuplicateFinderDialog</code>.
+- <code>Search Files</code> | hint <code>Ctrl+Shift+S</code> | palette | effect: <code>_search()</code> — <code>SearchDialog</code> (Enter in filter box also triggers).
+- <code>Add Bookmark</code> | hint <code>` | palette | effect:</code>_add_bookmark()<code>— pin current path to Ctrl+1..0 slots.
+-</code>Go to Path<code>| hint</code>Ctrl+G<code>| palette | effect:</code>_go_to_path()<code>—</code>GoToPathDialog`.</p>
+<h2 id="shortcuts">Shortcuts<a class="headerlink" href="#shortcuts" title="Permanent link">&para;</a></h2>
+<p>All <code>QShortcut(QKeySequence(seq))</code> in <code>_bind_shortcuts</code> (51 bindings; suppressed when a <code>QLineEdit/QTextEdit/QPlainTextEdit</code> has focus unless <code>allow_in_text</code>). Trigger → effect:
+- <code>Alt+Left</code> → <code>go_back()</code> (history back). <code>Alt+Right</code> → <code>go_forward()</code>.
+- <code>Backspace</code> → <code>go_up()</code>.
+- <code>F5</code> → copy+paste in place (Copy Here). <code>Shift+F5</code> → <code>_reload_current()</code> (refresh).
+- <code>F7</code>, <code>Ctrl+Shift+N</code> → <code>_new_folder()</code>. <code>Ctrl+Alt+N</code> → nested folders dialog. <code>Ctrl+N</code> → new file. <code>Ctrl+Alt+F</code> → nested file dialog. <code>Ctrl+Shift+B</code> → batch scaffold dialog.
+- <code>F8</code>, <code>Delete</code> → <code>_delete()</code> (recycle bin). <code>Shift+Delete</code> → <code>_delete(permanent=True)</code>.
+- <code>F2</code> → <code>_rename()</code>.
+- <code>Ctrl+C</code> / <code>Ctrl+X</code> → stage copy/cut. <code>Ctrl+V</code> → paste. <code>Ctrl+A</code> → select all.
+- <code>Ctrl+Z</code> → undo. <code>Ctrl+Y</code>, <code>Ctrl+Shift+Z</code> → redo.
+- <code>Ctrl+T</code> → new Home tab. <code>Ctrl+W</code> → close current tab.
+- <code>Ctrl+F</code> → focus inline filter box (<code>proxy.setFilterFixedString</code> live filter).
+- <code>Ctrl+D</code> → dual pane toggle. <code>Ctrl+H</code> → sidebar toggle. <code>Ctrl+`</code> → terminal toggle. <code>F12</code> → debug overlay toggle.
+- <code>Ctrl+L</code> → <code>_start_edit_path()</code> (breadcrumbs → editable <code>AddrBar</code>; Enter commits, <code>editingFinished</code> cancels).
+- <code>Space</code> → <code>_quick_look()</code> (Quick Look popup).
+- <code>Ctrl+B</code> → bulk rename dialog.
+- <code>Ctrl+Shift+P</code> → palette toggle.
+- <code>Ctrl+Shift+F</code> → registered TWICE: <code>_open_duplicate_finder</code> then <code>toggle_flat_branch_view</code> (second connection wins in practice / both fire; palette hint shows it for both).
+- <code>Ctrl+1</code>…<code>Ctrl+0</code> (10) → <code>_go_bookmark(0..9)</code>.
+- <code>Shift+/</code> (<code>?</code>), <code>F1</code>, <code>Ctrl+?</code> → <code>_show_shortcuts()</code> (Shortcuts dialog).
+- <code>Ctrl+G</code> → Go-to-Path dialog.
+- <code>F6</code> → <code>_sort_cycle_column()</code> (Name→Modified→Type→Size). <code>Shift+F6</code> → <code>_sort_toggle_order()</code> (Asc↔Desc).
+- Discrepancies vs <code>ShortcutsDialog</code> table text: dialog labels <code>Alt+↑</code> (code binds only <code>Backspace</code> for Up), <code>Ctrl+Shift+R</code> for Bulk Rename (code: <code>Ctrl+B</code>), <code>Ctrl+F / F3</code> (code: only <code>Ctrl+F</code>), <code>F5 / Shift+F5</code> refresh (code: <code>F5</code>=Copy Here, <code>Shift+F5</code>=refresh), <code>F6</code> Move Here in palette vs <code>F6</code> sort-cycle in bindings.</p>
+<h2 id="context-menu">Context menu<a class="headerlink" href="#context-menu" title="Permanent link">&para;</a></h2>
+<p>Right-click (<code>customContextMenuRequested → _context_menu</code> on table, icon_list, right_table, right_icon_list; click first re-selects/clears under cursor). Four variants:
+Archive-mode open (when <code>_archive_mode</code>): trigger right-click inside archive listing → <code>Open</code> (activate entries) | <code>Extract Here</code> (to archive's dir) | <code>Extract to…</code> (chooser) | separator | <code>Exit Archive</code> | <code>Select All</code>.
+With selection (file/folder rows selected):
+- <code>Open</code> → activate all selected (folder=navigate, archive=open in-place, file=<code>os.startfile</code>). <code>Open in New Tab</code> → folder (or file's parent) in new tab.
+- <code>Cut</code> (<code>Ctrl+X</code>), <code>Copy</code> (<code>Ctrl+C</code>) → stage. <code>Paste</code>/<code>Move Here</code> (label follows clipboard mode; disabled if shelf/clipboard empty). <code>Paste into '&lt;folder&gt;'</code> (only when exactly 1 dir selected; disabled if empty).
+- <code>Copy Path</code> → newline-joined paths to system clipboard. <code>Copy Filename</code> → basenames to clipboard.
+- <code>Rename…</code> (only single selection) → inline rename. <code>Delete</code> → recycle. <code>Delete permanently</code> (accent) → permanent.
+- <code>Bulk rename… (Ctrl+B)</code> + <code>New folder with selection</code> + <code>Move to folder…</code> (only when ≥2 selected).
+- <code>Compress</code> submenu → <code>ZIP (.zip)</code> / <code>7z (.7z)</code> / <code>TAR.GZ (.tar.gz)</code> via <code>_compress_to</code>.
+- Archive-only (if any selected path <code>is_archive</code>) → <code>Open Archive</code> | <code>Extract Here</code> | <code>Extract to…</code>.
+- <code>Color tag</code> submenu → one action per <code>ColorTagManager.TAG_COLORS</code> + <code>Remove tag</code> → <code>_set_color_tag</code>.
+- <code>Select All</code> | <code>Invert Selection</code>. Single-file only: <code>Properties</code> → <code>PropertiesDialog</code>; <code>Calculate Checksums…</code> → <code>FileChecksumDialog</code>; <code>Open with…</code> → system handler chooser.
+On empty background (no selection):
+- <code>New folder</code> (direct) + <code>New</code> submenu → <code>Folder (Ctrl+Shift+N)</code> | <code>Nested Folders… (Ctrl+Alt+N)</code> | sep | <code>File… (Ctrl+N)</code> | <code>File in Nested Path… (Ctrl+Alt+F)</code> | sep | <code>Batch Scaffold Project / Tree… (Ctrl+Shift+B)</code> | sep | <code>Templates</code> submenu (one per <code>FILE_TEMPLATES</code> ext → <code>_new_file(ext)</code>).
+- <code>Paste</code>/<code>Move Here</code> (disabled if empty). <code>Refresh</code> | <code>Save as smart folder</code> | sep | <code>Select All</code> | sep | <code>Find Duplicates (Ctrl+Shift+F)</code> | <code>Sort By</code> submenu → per <code>_SORT_COLUMNS</code> (Name/Modified/Type/Size) each with <code>↑ Ascending</code> / <code>↓ Descending</code> actions.
+Smart-folder sidebar (<code>_smart_folder_context_menu</code> on <code>smart_list</code>): on item → <code>Open</code> (load saved path) | <code>Remove</code> (delete saved entry); on empty → <code>Add current folder</code> (save current dir as smart folder).</p>
+<h2 id="toolbar">Toolbar<a class="headerlink" href="#toolbar" title="Permanent link">&para;</a></h2>
+<p>Tier 1 — Tab row (<code>#TabBarContainer</code>): <code>QTabBar</code> (closable tabs, <code>add_tab</code>/<code>_close_current_tab</code>) + <code>+</code> NewTabBtn (<code>New tab (Ctrl+T)</code> → Home tab).
+Tier 2 — Nav + Address + Search (<code>#NavAddressContainer</code>): <code>Back (Alt+←)</code> | <code>Forward (Alt+→)</code> | <code>Up (Backspace)</code> | <code>Refresh (Shift+F5)</code> (all <code>nav_btn</code> 30×28); full-width <code>CrumbBar</code> (click segment=navigate, click empty/double-click=edit path; collapses &gt;6 segs to <code>drive + … + last3</code>) + hidden editable <code>AddrBar</code> (<code>Ctrl+L</code> to edit, Enter commits); <code>SearchInput</code> filter box (<code>Search current folder…</code>, live <code>setFilterFixedString</code>, Enter opens full <code>SearchDialog</code>).
+Tier 3 — Command bar (<code>#CommandBarContainer</code>): <code>+ New</code> split-button (click=<code>_new_folder</code>; menu: <code>New Folder</code>, <code>New Nested Folders…</code>, <code>New File…</code>, <code>New File in Nested Path…</code>, <code>Batch Scaffold…</code>) | sep | <code>Cut</code> | <code>Copy</code> | <code>Paste</code> | <code>Rename (F2)</code> | <code>Delete (Del)</code> | sep | <code>Sort</code> dropdown (Name/Date modified/Type/Size × Asc/Desc) | <code>View</code> dropdown (<code>Details view</code>→table, <code>Large icons view</code>→icons, <code>Toggle Dual Pane</code>) | sep | <code>Dual pane (Ctrl+D)</code> (checkable) | <code>Quick Look (Space)</code> | <code>Transfers</code> (opens <code>TransferMonitorDialog</code>) | <code>···</code> More menu (<code>Find Duplicates</code>, <code>Bulk Rename…</code>, <code>Save as Smart Folder</code>, <code>Open Terminal</code>, <code>Keyboard Shortcuts</code>) | stretch | <code>Toggle Navigation Pane (Ctrl+H)</code> (checkable, default on) | <code>Details</code> preview toggle (checkable, default on → <code>_toggle_preview</code>).</p>
+<h2 id="dialogs">Dialogs<a class="headerlink" href="#dialogs" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>QuickLookPopup</code> (<code>Space</code>, <code>btn_quicklook</code>): frameless 480×400 popup; icon/name/meta(kind+size+mtime+path); raster preview (<code>png/jpg/jpeg/gif/bmp/webp/ico</code> ≤50 MB via <code>QImageReader</code> 440×220) else 128px type icon; auto-flips to stay on-screen.</li>
+<li><code>BulkRenameDialog</code> (<code>Ctrl+B</code>, ≥2 files): 5 modes via combo+stacked pages — <code>Find &amp; Replace</code> (regex find+replace), <code>Sequential Numbering</code> (prefix+start+padding), <code>Date Prefix</code> (mtime/ctime + separator), <code>Case Transform</code> (UPPER/lower/Title/Sentence), <code>Add/Remove Suffix &amp; Prefix</code>; live 2-col preview (<code>Original/Renamed</code>); <code>Apply Rename</code> records undo, skips existing targets with warning summary.</li>
+<li><code>DuplicateFinderDialog</code> (<code>Ctrl+Shift+F</code>, More menu): dir input + Browse, progress bar + status, results table (checkbox+path+size+hash), <code>Scan</code> (size-prefilter + MD5 worker thread), <code>Select Duplicates</code> (auto-check keep-one-per-group), <code>Delete Selected</code>, reclaimable-space label.</li>
+<li><code>PropertiesDialog</code> (ctx menu single selection, <code>Checksums…</code> button): grid Name/Size/Type/Path/Modified/Hidden/Read-only; file-only <code>Checksums…</code> opens checksum dialog; Close.</li>
+<li><code>FileChecksumDialog</code> (ctx menu + Properties): threaded MD5/SHA-1/SHA-256/SHA-512 with progress; click-to-copy hash fields + compare-box with match indicator.</li>
+<li><code>GoToPathDialog</code> (<code>Ctrl+G</code>): path input prefilled with current dir; resolves <code>%ENV%</code>, <code>~</code>, <code>shell:</code> folders (RecycleBin/Downloads/Desktop/Documents/Pictures/Music/Video via registry); file path → navigates to parent; red border on invalid; Go/Cancel.</li>
+<li><code>SearchDialog</code> (<code>Ctrl+Shift+S</code>, filter Enter): pattern input + scope combo (<code>Current folder</code> flat / <code>Current folder (recursive)</code> / <code>All drives</code>), Cancel button, sortable results table (Name/Path/Size/Modified, double-click or Open navigates/opens), status count.</li>
+<li><code>ShortcutsDialog</code> (<code>F1</code>/<code>Shift+?</code>/<code>Ctrl+?</code>, More menu): non-modal 6-category table (Navigation / View &amp; Panels / File Creation &amp; Scaffolding / File Operations / Search &amp; Power Tools / Tabs &amp; History), Close.</li>
+<li>Creation trio: <code>NestedFolderDialog</code> (<code>Ctrl+Alt+N</code>: path input + 4 quick presets + live target preview + Create Folders); <code>NestedFileDialog</code> (<code>Ctrl+Alt+F</code>: relative path + template combo auto-detected by ext + content editor + preview + Create File); <code>BatchScaffoldDialog</code> (<code>Ctrl+Shift+B</code>: preset combo from <code>PROJECT_SCAFFOLD_PRESETS</code> + indented-tree/path-list spec editor + Target root label + Scaffold).</li>
+<li>Plus: <code>CommandPalette</code> dialog (fuzzy, frameless top-pinned) and <code>DebugOverlay</code> (<code>F12</code>: FPS + last-22 event log) and <code>TransferMonitorDialog</code> (via Transfers button; pause/resume/cancel) and <code>ExtractionProgressWidget</code> (embedded progress bar panel).</li>
+</ul>
+<h2 id="views">Views<a class="headerlink" href="#views" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>Details/table view</code> (<code>View→Details view</code>, palette Toggle View): <code>QTableView</code> + <code>SortProxy</code> (sortable headers, stretch Name col, 150/90/90 others, alternating rows, multi-extended select, drag-drop both ways, double-click activates, selection drives preview+status).</li>
+<li><code>Large icons view</code> (<code>View→Large icons view</code>): <code>QListWidget</code> IconMode 96px icons, word-wrap, Adjust resize, same context menu/selection wiring.</li>
+<li><code>Empty state</code> (auto when 0 rows): centered folder glyph + "This folder is empty" + "Drop files here or create a new folder" (drop target).</li>
+<li><code>Dual pane</code> (<code>Ctrl+D</code>): right <code>QStackedWidget</code> (right table + right icons) with own model/proxy/tabs; same menus/shortcuts operate on focused pane (<code>sender</code>-aware <code>_selected_rows</code>).</li>
+<li><code>Flat Branch View</code> (palette / <code>Ctrl+Shift+F</code> clash): <code>engine.list_flat_branch</code> recursive file dump with "Loading…" status; toggle off reloads normal dir.</li>
+<li><code>Archive browsing</code> (double-click/<code>Open Archive</code> on zip/rar/7z): table replaced by archive entries; dedicated ctx menu; breadcrumb shows archive path; <code>Exit Archive</code> restores FS.</li>
+<li><code>Preview / Details pane</code> (<code>Details</code> toggle): <code>PreviewPane</code> — name/meta/icon + <code>staging shelf</code> (staged cut/copy list with paste/add-selected) + <code>TransferStatusDock</code>; follows last-selected row, clears on empty selection.</li>
+<li><code>Sidebar</code> sections: <code>QUICK ACCESS</code> (Home/Desktop/Downloads/Documents/Pictures/Videos/Music → navigate); <code>FOLDERS</code> (<code>FolderTreeWidget</code> drive tree → navigate, hidden if import fails); <code>SMART FOLDERS</code> (saved paths → open on click, right-click Open/Remove/Add-current).</li>
+<li><code>Tabs + Breadcrumbs + Terminal</code>: multi-tab (<code>add_tab</code>, per-tab path/history), <code>CrumbBar</code> segments, collapsible <code>TerminalWidget</code> bottom splitter (70/30 split on show).</li>
+<li><code>Status bar</code> (<code>#Status</code>, 28px; click <code>status_items</code> cycles 3 modes): mode 0 <code>"{total} items ({folders} folders, {files} files)"</code>; mode 1 appends <code>" | Selected: {n} selected ({size})"</code> when selection exists; mode 2 shows <code>"{drive}\ Free: {free} Total: {total}"</code> via <code>shutil.disk_usage</code> (cached <code>_status_disk_text</code>); right labels: <code>status_sel</code> (selection summary, drop-hint override), <code>status_transfer</code> (active job <code>Transfer {pct}% — {text}</code> / <code>Transfer active (id…)</code> / <code>Transfer cancelled</code>), <code>status_undo</code> (pending undo/redo description); transient overrides (<code>Sort by:</code>, <code>Bookmarked:</code>, <code>Renamed to</code>, <code>Staged…</code>, <code>Nothing to undo/redo</code>) auto-restore after ~1.2 s.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.expand", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight", "search.share", "content.code.copy", "content.tabs.link"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

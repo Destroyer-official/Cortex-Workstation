@@ -1,0 +1,2124 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="The Ultimate Windows NT Systems Optimization, Forensics & File Management Platform">
+      
+      
+        <meta name="author" content="Destroyer-official">
+      
+      
+        <link rel="canonical" href="https://destroyer-official.github.io/Cortex-Workstation/usage/">
+      
+      
+        <link rel="prev" href="../ui_visual_guide/">
+      
+      
+        <link rel="next" href="../user/configuration/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/icons/cortex.ico">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>CLI & Shell Usage Guide - Cortex Workstation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="deep-purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#cortex-workstation-usage-guide" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Cortex Workstation" class="md-header__button md-logo" aria-label="Cortex Workstation" data-md-component="logo">
+      
+  <img src="../assets/icons/cortex.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Cortex Workstation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              CLI & Shell Usage Guide
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="deep-purple"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="deep-purple"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/Destroyer-official/Cortex-Workstation" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Destroyer-official/Cortex-Workstation
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href=".." class="md-tabs__link">
+          
+  
+  
+  🌎 Welcome Hub
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../user/getting-started/" class="md-tabs__link">
+          
+  
+  
+  📦 User Space
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../ARCHITECTURE/" class="md-tabs__link">
+          
+  
+  
+  🏗️ Developer Platform
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../api/overview/" class="md-tabs__link">
+          
+  
+  
+  🔌 API & Subsystems
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Cortex Workstation" class="md-nav__button md-logo" aria-label="Cortex Workstation" data-md-component="logo">
+      
+  <img src="../assets/icons/cortex.png" alt="logo">
+
+    </a>
+    Cortex Workstation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/Destroyer-official/Cortex-Workstation" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Destroyer-official/Cortex-Workstation
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_1" id="__nav_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    🌎 Welcome Hub
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    🌎 Welcome Hub
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Command Center
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../FEATURE_DIRECTORY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Feature Directory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../quick_reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quick Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    📦 User Space
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    📦 User Space
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user/getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user/how-to-guides/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How-To Guides
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ui_visual_guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UI Visual Tour & Design Tokens
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI & Shell Usage Guide
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI & Shell Usage Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#launching-cortex-workstation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🚀 Launching Cortex Workstation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🚀 Launching Cortex Workstation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-graphical-user-interface-gui" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Graphical User Interface (GUI)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-command-line-interface-cli" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Command Line Interface (CLI)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#main-interface-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🧭 Main Interface Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#specialized-studios-feature-integrations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🛠️ Specialized Studios &amp; Feature Integrations
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🛠️ Specialized Studios &amp; Feature Integrations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-gaming-session-fps-booster-gamemode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Gaming Session &amp; FPS Booster (gamemode)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-delivery-optimization-wudo-cleaner-delivery" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Delivery Optimization (WUDO) Cleaner (delivery)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-wan-upnp-gateway-auditor-wanaudit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. WAN &amp; UPnP Gateway Auditor (wanaudit)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-old-inactive-files-finder-oldfiles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Old &amp; Inactive Files Finder (oldfiles)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-uninstalled-app-residual-hunter-residuals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Uninstalled App Residual Hunter (residuals)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-bad-extensions-exif-studio-badfiles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Bad Extensions &amp; EXIF Studio (badfiles)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#7-advanced-process-threat-studio-procstudio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Advanced Process &amp; Threat Studio (procstudio)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#8-interactive-sunburst-treemap-visualizations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Interactive Sunburst &amp; TreeMap Visualizations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#9-project-cache-auto-discovery" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Project Cache Auto-Discovery
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#available-cli-commands" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📦 Available CLI Commands
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cli-flags-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ⚙️ CLI Flags &amp; Options
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="⚙️ CLI Flags &amp; Options">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#action-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Action Mode
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#filtering" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Filtering
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#performance-safety" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Performance &amp; Safety
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user/configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../advanced-features/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Advanced Forensic & Performance Tuning
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../package_manager_guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Package Manager Cleaner Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user/nexus-explorer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Nexus File Manager (VFS)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../i18n_accessibility/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Accessibility & Keybindings
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user/troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting & Diagnostics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    🏗️ Developer Platform
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    🏗️ Developer Platform
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ARCHITECTURE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Windows NT Kernel & Architecture Spec
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dev/architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Repository Architecture Map
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../DEVELOPER_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer Onboarding & Contribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dev/threading-safety/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    State Management & Safety
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dev/testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing & CI/CD
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dev/release-process/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Release & Review Process
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    🔌 API & Subsystems
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    🔌 API & Subsystems
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Subsystem Core Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/system-tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System Tools Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/analyzers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Analyzers Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/core-engine/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Engine & Algorithmic Caches
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API_REFERENCE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Complete API Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../FUNCTION_INVENTORY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Function & Symbol Inventory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#launching-cortex-workstation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🚀 Launching Cortex Workstation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🚀 Launching Cortex Workstation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-graphical-user-interface-gui" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Graphical User Interface (GUI)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-command-line-interface-cli" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Command Line Interface (CLI)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#main-interface-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🧭 Main Interface Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#specialized-studios-feature-integrations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🛠️ Specialized Studios &amp; Feature Integrations
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🛠️ Specialized Studios &amp; Feature Integrations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-gaming-session-fps-booster-gamemode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Gaming Session &amp; FPS Booster (gamemode)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-delivery-optimization-wudo-cleaner-delivery" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Delivery Optimization (WUDO) Cleaner (delivery)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-wan-upnp-gateway-auditor-wanaudit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. WAN &amp; UPnP Gateway Auditor (wanaudit)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-old-inactive-files-finder-oldfiles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Old &amp; Inactive Files Finder (oldfiles)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-uninstalled-app-residual-hunter-residuals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Uninstalled App Residual Hunter (residuals)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-bad-extensions-exif-studio-badfiles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Bad Extensions &amp; EXIF Studio (badfiles)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#7-advanced-process-threat-studio-procstudio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Advanced Process &amp; Threat Studio (procstudio)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#8-interactive-sunburst-treemap-visualizations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Interactive Sunburst &amp; TreeMap Visualizations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#9-project-cache-auto-discovery" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Project Cache Auto-Discovery
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#available-cli-commands" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📦 Available CLI Commands
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cli-flags-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ⚙️ CLI Flags &amp; Options
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="⚙️ CLI Flags &amp; Options">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#action-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Action Mode
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#filtering" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Filtering
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#performance-safety" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Performance &amp; Safety
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="cortex-workstation-usage-guide">Cortex Workstation Usage Guide<a class="headerlink" href="#cortex-workstation-usage-guide" title="Permanent link">&para;</a></h1>
+<p><strong>Cortex Workstation</strong> is a comprehensive, production-grade system maintenance suite and advanced file manager built with Python, PySide6 (Qt6), and high-performance native engines.</p>
+<hr />
+<h2 id="launching-cortex-workstation">🚀 Launching Cortex Workstation<a class="headerlink" href="#launching-cortex-workstation" title="Permanent link">&para;</a></h2>
+<h3 id="1-graphical-user-interface-gui">1. Graphical User Interface (GUI)<a class="headerlink" href="#1-graphical-user-interface-gui" title="Permanent link">&para;</a></h3>
+<p>Launch the full premium interface with sidebar navigation, <strong>139 system maintenance and power tool pages</strong>, and the embedded <strong>Nexus File Manager</strong>:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># Recommended launcher</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>python<span class="w"> </span>run_gui.py
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="c1"># Or via the package module</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>python<span class="w"> </span>-m<span class="w"> </span>cortex_unified.ui.premium.app
+</span></code></pre></div>
+<h3 id="2-command-line-interface-cli">2. Command Line Interface (CLI)<a class="headerlink" href="#2-command-line-interface-cli" title="Permanent link">&para;</a></h3>
+<p>Cortex Workstation provides safe, high-speed CLI commands for automated scripts, CI/CD pipelines, and headless environments:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># Forensic and System Tools CLI (cortex-workstation)</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>cortex-workstation<span class="w"> </span>--help
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="c1"># or via module:</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>python<span class="w"> </span>-m<span class="w"> </span>cortex_unified.cli<span class="w"> </span>--help
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="c1"># Safe dry-run scan of empty files and directories</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>cortex-workstation<span class="w"> </span>clean-empty
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="c1"># Perform actual cleanup</span>
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>cortex-workstation<span class="w"> </span>clean-empty<span class="w"> </span>--delete
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="c1"># Move items to system trash</span>
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>cortex-workstation<span class="w"> </span>clean-empty<span class="w"> </span>--trash
+</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>
+</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="c1"># Optimization Engine CLI (cortex)</span>
+</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>cortex<span class="w"> </span>--help
+</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="c1"># or via module:</span>
+</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>python<span class="w"> </span>-m<span class="w"> </span>cortex_unified.engine<span class="w"> </span>--help
+</span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>
+</span><span id="__span-1-20"><a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a><span class="c1"># Category disk scan</span>
+</span><span id="__span-1-21"><a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>cortex<span class="w"> </span>scan
+</span></code></pre></div>
+<hr />
+<h2 id="main-interface-overview">🧭 Main Interface Overview<a class="headerlink" href="#main-interface-overview" title="Permanent link">&para;</a></h2>
+<p>The GUI consists of four main functional tiers:
+1. <strong>Title Bar Row</strong>: Windows 11 frameless title bar with integrated folder tabs (<code>+</code> new tab, close, middle-click), window drag space, and native window controls (<code>-</code>, <code>□</code>, <code>✕</code>).
+2. <strong>Sidebar Navigation</strong>: Collapsible (<code>Ctrl+H</code>) categorized navigation housing <strong>139 system care and diagnostics tools</strong>:
+   - <strong>Command Center</strong>: Dashboard, PC Health Check, Quick Scan, System Overview.
+   - <strong>Cleanup &amp; Storage</strong>: Cleanup Hub, Junk Files, Large Files, Empty Files, Temp Files, Browser Deep Cleaner, WinSxS Store (24H2 Staged Packages), WUDO Delivery Optimization, Developer Package Caches, App Residual Hunter, Old &amp; Inactive Files Finder.
+   - <strong>Performance &amp; Gaming</strong>: Game Mode &amp; FPS Booster, RAM Optimizer, Standby Memory Purger, DirectStorage Acceleration, CPU Power Plans, Startup Optimizer, Process Studio, Disk Benchmark.
+   - <strong>Privacy &amp; Security</strong>: Windows Privacy Blocker, Telemetry Sanitizer, AI &amp; Recall Sanitizer, Bad Extensions &amp; EXIF Studio, Secure File Shredder, Secret/API Key Scanner, Restart Manager File Unlocker.
+   - <strong>System Maintenance &amp; OS</strong>: Windows Update Repair, VSS Snapshot Manager, VSS Subsystem Health, Device Driver Manager, Context Menu Cleaner, Registry Deep Scan, Environment Variables.
+   - <strong>Network &amp; Diagnostics</strong>: Network Security Audit, LAN Device Discovery, WAN &amp; UPnP Gateway Auditor, Active Connections, TCP/IP Tuning, Hosts File Shield, DNS Speed Benchmark.
+   - <strong>Files &amp; Nexus Explorer</strong>: <strong>Nexus File Manager</strong>, Batch File Renamer, File Hash &amp; Checksum Matrix, Directory Diff, File Splitter/Joiner, ADS Manager, Binary Differ, PAR2 Parity Recovery.
+3. <strong>Content Workspace</strong>: High-performance lazy-loaded tool pages with smooth scrolling and animations.
+4. <strong>Status Bar &amp; Notifications</strong>: Real-time engine health, local offline suggester notifications, and resource telemetry.</p>
+<hr />
+<h2 id="specialized-studios-feature-integrations">🛠️ Specialized Studios &amp; Feature Integrations<a class="headerlink" href="#specialized-studios-feature-integrations" title="Permanent link">&para;</a></h2>
+<h3 id="1-gaming-session-fps-booster-gamemode">1. Gaming Session &amp; FPS Booster (<code>gamemode</code>)<a class="headerlink" href="#1-gaming-session-fps-booster-gamemode" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Switches Windows power plan to Ultimate / High Performance.</li>
+<li>Suspends or lowers CPU priority of background services.</li>
+<li>Trims working set memory of non-essential processes before launching games.</li>
+</ul>
+<h3 id="2-delivery-optimization-wudo-cleaner-delivery">2. Delivery Optimization (WUDO) Cleaner (<code>delivery</code>)<a class="headerlink" href="#2-delivery-optimization-wudo-cleaner-delivery" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Scans and safely purges Windows Update Delivery Optimization peer caches (<code>C:\Windows\SoftwareDistribution\DeliveryOptimization</code>).</li>
+<li>Safely coordinates <code>DoSvc</code> service state during cache purges.</li>
+</ul>
+<h3 id="3-wan-upnp-gateway-auditor-wanaudit">3. WAN &amp; UPnP Gateway Auditor (<code>wanaudit</code>)<a class="headerlink" href="#3-wan-upnp-gateway-auditor-wanaudit" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Discovers local UPnP/IGD router gateways.</li>
+<li>Audits open external WAN ports and active NAT port forward mappings.</li>
+<li>Evaluates exposure risks on administrative services (SSH, Telnet, RDP, Web GUI).</li>
+</ul>
+<h3 id="4-old-inactive-files-finder-oldfiles">4. Old &amp; Inactive Files Finder (<code>oldfiles</code>)<a class="headerlink" href="#4-old-inactive-files-finder-oldfiles" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Discovers files untouched for 30, 60, 90, 180, or 365+ days.</li>
+<li>Smart system exclusions prevent touching essential OS dependencies.</li>
+</ul>
+<h3 id="5-uninstalled-app-residual-hunter-residuals">5. Uninstalled App Residual Hunter (<code>residuals</code>)<a class="headerlink" href="#5-uninstalled-app-residual-hunter-residuals" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Cross-references installed application registries with <code>AppData</code> and <code>ProgramData</code> directories.</li>
+<li>Identifies orphaned cache and configuration folders from uninstalled applications.</li>
+</ul>
+<h3 id="6-bad-extensions-exif-studio-badfiles">6. Bad Extensions &amp; EXIF Studio (<code>badfiles</code>)<a class="headerlink" href="#6-bad-extensions-exif-studio-badfiles" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Detects magic-byte spoofing (e.g. executables masked with <code>.jpg</code> extensions).</li>
+<li>Finds invalid or illegal file names.</li>
+<li>Scrubs sensitive camera and GPS location EXIF metadata from photos.</li>
+</ul>
+<h3 id="7-advanced-process-threat-studio-procstudio">7. Advanced Process &amp; Threat Studio (<code>procstudio</code>)<a class="headerlink" href="#7-advanced-process-threat-studio-procstudio" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Live process monitoring with CPU, memory (MB), and path details.</li>
+<li>Filter search and safe process termination actions.</li>
+</ul>
+<h3 id="8-interactive-sunburst-treemap-visualizations">8. Interactive Sunburst &amp; TreeMap Visualizations<a class="headerlink" href="#8-interactive-sunburst-treemap-visualizations" title="Permanent link">&para;</a></h3>
+<ul>
+<li>In <strong>Disk Space Scanner</strong> (<code>diskanalyzer</code>), export full interactive Plotly Sunburst and TreeMap HTML diagrams directly to disk.</li>
+</ul>
+<h3 id="9-project-cache-auto-discovery">9. Project Cache Auto-Discovery<a class="headerlink" href="#9-project-cache-auto-discovery" title="Permanent link">&para;</a></h3>
+<ul>
+<li>In <strong>Package Managers</strong> (<code>packages</code>), auto-discover project build directories (<code>node_modules</code>, <code>target</code>, <code>.venv</code>, etc.) across all mounted fixed drives with a single click.</li>
+</ul>
+<hr />
+<h2 id="available-cli-commands">📦 Available CLI Commands<a class="headerlink" href="#available-cli-commands" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Command</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>clean-empty</code></td>
+<td style="text-align: left;">Find and remove empty files and folders (default dry-run)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>find-large-files</code></td>
+<td style="text-align: left;">Locate large files consuming significant disk space</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>find-duplicates</code></td>
+<td style="text-align: left;">Multi-phase duplicate detection (size -&gt; partial hash -&gt; full BLAKE3)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>clean-temp</code></td>
+<td style="text-align: left;">Clean temporary system, user, and application caches</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>clean-shaders</code></td>
+<td style="text-align: left;">Audit and purge DirectX and GPU vendor shader caches</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>clean-ai</code></td>
+<td style="text-align: left;">Audit and clean Windows 11 Copilot and Recall telemetry caches</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>trim-ssd</code></td>
+<td style="text-align: left;">Trigger NVMe SSD wear-leveling deallocation</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>vss-health</code></td>
+<td style="text-align: left;">Inspect Volume Shadow Copy (VSS) writers and shadow states</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>analyze-disk</code></td>
+<td style="text-align: left;">Generate disk usage breakdowns and interactive TreeMaps</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>docker-cleanup</code></td>
+<td style="text-align: left;">Remove dangling images, stopped containers, and unused volumes</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>package-cleanup</code></td>
+<td style="text-align: left;">Clean pip, npm, yarn, cargo, and build caches</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>heuristics-scan</code></td>
+<td style="text-align: left;">Detect leftover registry keys and orphan application folders</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>list-startup-items</code></td>
+<td style="text-align: left;">Inspect and manage Windows startup entries</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>analyze-processes</code></td>
+<td style="text-align: left;">Monitor memory, CPU, and handle usage per process</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>secure-delete</code></td>
+<td style="text-align: left;">Multi-pass secure file eraser with verification</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>restore</code></td>
+<td style="text-align: left;">Restore files from safe backup manifests</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>scan-broken-links</code></td>
+<td style="text-align: left;">Identify and repair invalid shortcuts and symlinks</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>verify-checksums</code></td>
+<td style="text-align: left;">Verify integrity manifests (.sha256, .md5, .sfv)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>generate-report</code></td>
+<td style="text-align: left;">Generate comprehensive system diagnostics report</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="cli-flags-options">⚙️ CLI Flags &amp; Options<a class="headerlink" href="#cli-flags-options" title="Permanent link">&para;</a></h2>
+<h3 id="action-mode">Action Mode<a class="headerlink" href="#action-mode" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>--dry-run</code> <em>(default)</em>: Preview changes without touching files.</li>
+<li><code>--delete</code>: Permanently delete detected files.</li>
+<li><code>--trash</code>: Move items to the Recycle Bin / Trash.</li>
+<li><code>--yes</code>: Bypass confirmation prompts for headless automation.</li>
+</ul>
+<h3 id="filtering">Filtering<a class="headerlink" href="#filtering" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>--pattern GLOB</code>: Filter matching filenames (e.g. <code>*.tmp</code>, <code>*.cache</code>).</li>
+<li><code>--older-than DAYS</code>: Only match files older than <code>N</code> days.</li>
+<li><code>--exclude-pattern PATTERN</code>: Exclude specific directories or extensions.</li>
+</ul>
+<h3 id="performance-safety">Performance &amp; Safety<a class="headerlink" href="#performance-safety" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>--threads N</code>: Parallel scanning threads (defaults to logical CPU count).</li>
+<li><code>--config PATH</code>: Custom YAML configuration file path.</li>
+<li><code>--verbose</code>: Detailed debug logging output.</li>
+<li><code>--log-file PATH</code>: Log output destination.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.expand", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight", "search.share", "content.code.copy", "content.tabs.link"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

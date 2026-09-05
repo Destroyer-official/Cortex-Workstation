@@ -1,0 +1,2665 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="The Ultimate Windows NT Systems Optimization, Forensics & File Management Platform">
+      
+      
+        <meta name="author" content="Destroyer-official">
+      
+      
+        <link rel="canonical" href="https://destroyer-official.github.io/Cortex-Workstation/audit/FEAT_GUI_PAGES/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/icons/cortex.ico">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>GUI Features Audit — Premium Pages, Tabs, Main Window, Safety, Tray - Cortex Workstation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="deep-purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#gui-features-audit-premium-pages-tabs-main-window-safety-tray" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Cortex Workstation" class="md-header__button md-logo" aria-label="Cortex Workstation" data-md-component="logo">
+      
+  <img src="../../assets/icons/cortex.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Cortex Workstation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              GUI Features Audit — Premium Pages, Tabs, Main Window, Safety, Tray
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="deep-purple"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="deep-purple"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/Destroyer-official/Cortex-Workstation" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Destroyer-official/Cortex-Workstation
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../.." class="md-tabs__link">
+          
+  
+  
+  🌎 Welcome Hub
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../user/getting-started/" class="md-tabs__link">
+          
+  
+  
+  📦 User Space
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../ARCHITECTURE/" class="md-tabs__link">
+          
+  
+  
+  🏗️ Developer Platform
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../api/overview/" class="md-tabs__link">
+          
+  
+  
+  🔌 API & Subsystems
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Cortex Workstation" class="md-nav__button md-logo" aria-label="Cortex Workstation" data-md-component="logo">
+      
+  <img src="../../assets/icons/cortex.png" alt="logo">
+
+    </a>
+    Cortex Workstation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/Destroyer-official/Cortex-Workstation" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Destroyer-official/Cortex-Workstation
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_1" id="__nav_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    🌎 Welcome Hub
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    🌎 Welcome Hub
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Command Center
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../FEATURE_DIRECTORY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Feature Directory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../quick_reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quick Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    📦 User Space
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    📦 User Space
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/how-to-guides/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How-To Guides
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ui_visual_guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UI Visual Tour & Design Tokens
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI & Shell Usage Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../advanced-features/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Advanced Forensic & Performance Tuning
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../package_manager_guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Package Manager Cleaner Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/nexus-explorer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Nexus File Manager (VFS)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../i18n_accessibility/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Accessibility & Keybindings
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting & Diagnostics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    🏗️ Developer Platform
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    🏗️ Developer Platform
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ARCHITECTURE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Windows NT Kernel & Architecture Spec
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dev/architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Repository Architecture Map
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../DEVELOPER_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer Onboarding & Contribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dev/threading-safety/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    State Management & Safety
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dev/testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing & CI/CD
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dev/release-process/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Release & Review Process
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    🔌 API & Subsystems
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    🔌 API & Subsystems
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Subsystem Core Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/system-tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System Tools Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/analyzers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Analyzers Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/core-engine/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Engine & Algorithmic Caches
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../API_REFERENCE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Complete API Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../FUNCTION_INVENTORY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Function & Symbol Inventory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#-" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ---
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#advanceduninstallerpage-premiumadvanced_uninstaller_pagepy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AdvancedUninstallerPage (premium/advanced_uninstaller_page.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#diskanalyzerpage-diskhealthpage-scheduledtaskspage-bootperformancepage-systemrepairpage-storagesensepage-securitypage-healthcheckpage-windowsupdatepage-componentstorepage-premiumanalysis_pagespy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DiskAnalyzerPage / DiskHealthPage / ScheduledTasksPage / BootPerformancePage / SystemRepairPage / StorageSensePage / SecurityPage / HealthCheckPage / WindowsUpdatePage / ComponentStorePage (premium/analysis_pages.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#driverstorecleanerpage-shellbagscleanerpage-powerplanoptimizerpage-hostsfilemanagerpage-notificationcleanerpage-filesignaturesnifferpage-binarydifferpage-usnjournalpage-par2recoverypage-imageoptimizerpage-premiumapex_tools_pagespy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DriverStoreCleanerPage / ShellbagsCleanerPage / PowerPlanOptimizerPage / HostsFileManagerPage / NotificationCleanerPage / FileSignatureSnifferPage / BinaryDifferPage / UsnJournalPage / Par2RecoveryPage / ImageOptimizerPage (premium/apex_tools_pages.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#audioduplicatespage-premiumaudio_duplicates_pagepy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AudioDuplicatesPage (premium/audio_duplicates_page.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cdcpage-premiumcdc_pagepy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CdcPage (premium/cdc_page.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cleanuphubpage-premiumcleanup_hub_pagepy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CleanupHubPage (premium/cleanup_hub_page.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cloudstoragepage-premiumcloud_storage_pagepy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CloudStoragePage (premium/cloud_storage_page.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#compactospage-premiumcompact_os_pagepy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CompactOsPage (premium/compact_os_page.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#directstorageoptimizerpage-premiumdirectstorage_pagepy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DirectStorageOptimizerPage (premium/directstorage_page.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#diskanalyzerpage-premiumdisk_analyzer_pagepy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DiskAnalyzerPage (premium/disk_analyzer_page.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#drivermanagerpage-premiumdriver_manager_pagepy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DriverManagerPage (premium/driver_manager_page.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#vssmanagerpage-devdriveoptimizerpage-bitlockerauditorpage-junctionauditorpage-bitrotscrubberpage-memorycompressionpage-sandboxcleanerpage-smbshareauditorpage-processtokenpage-storagegrowthtrackerpage-premiumenterprise_suite_pagespy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        VssManagerPage / DevDriveOptimizerPage / BitLockerAuditorPage / JunctionAuditorPage / BitRotScrubberPage / MemoryCompressionPage / SandboxCleanerPage / SmbShareAuditorPage / ProcessTokenPage / StorageGrowthTrackerPage (premium/enterprise_suite_pages.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#linksmanagerpage-fastcopierpage-timestamptouchpage-archivemanagerpage-prefetchanalyzerpage-searchindexoptimizerpage-dnsbenchmarkpage-diskbenchmarkpage-memoryoptimizerpage-devcleanerpage-browserdeepcleanerpage-premiumexpanded_tools_pagespy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LinksManagerPage / FastCopierPage / TimestampTouchPage / ArchiveManagerPage / PrefetchAnalyzerPage / SearchIndexOptimizerPage / DnsBenchmarkPage / DiskBenchmarkPage / MemoryOptimizerPage / DevCleanerPage / BrowserDeepCleanerPage (premium/expanded_tools_pages.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fuzzyhashpage-premiumfuzzy_hash_pagepy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FuzzyHashPage (premium/fuzzy_hash_page.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#licensepage-premiumlicense_pagepy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LicensePage (premium/license_page.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#logsweeperpage-premiumlog_sweeper_pagepy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LogSweeperPage (premium/log_sweeper_page.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#memorystandbypurgerpage-premiummemory_standby_pagepy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MemoryStandbyPurgerPage (premium/memory_standby_page.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mftslackscrubberpage-premiummft_slack_pagepy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MftSlackScrubberPage (premium/mft_slack_page.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#modelcachepage-premiummodel_cache_pagepy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ModelCachePage (premium/model_cache_page.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#softwareupdaterpage-driveoptimizerpage-systeminfopage-brokenlinkspage-duplicatefolderspage-packagecachepage-projectcachespage-secretsscannerpage-virtualdiskspage-premiummore_pagespy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SoftwareUpdaterPage / DriveOptimizerPage / SystemInfoPage / BrokenLinksPage / DuplicateFoldersPage / PackageCachePage / ProjectCachesPage / SecretsScannerPage / VirtualDisksPage (premium/more_pages.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nearduplicatespage-premiumnear_duplicates_pagepy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NearDuplicatesPage (premium/near_duplicates_page.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#trafficmonitorpage-firewallpage-networkmappage-landevicespage-networktoolspage-loadtesterpage-premiumnetwork_pagespy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TrafficMonitorPage / FirewallPage / NetworkMapPage / LanDevicesPage / NetworkToolsPage / LoadTesterPage (premium/network_pages.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#shadercachepage-aitelemetrycleanerpage-ssdtrimoptimizerpage-restartmanagerunlockerpage-vsshealthanalyzerpage-devpackagecachepage-checksummatrixpage-premiumnextgen_suite_pagespy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ShaderCachePage / AiTelemetryCleanerPage / SsdTrimOptimizerPage / RestartManagerUnlockerPage / VssHealthAnalyzerPage / DevPackageCachePage / ChecksumMatrixPage (premium/nextgen_suite_pages.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nexusexplorerpage-premiumnexus_pagepy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NexusExplorerPage (premium/nexus_page.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#perceptualduplicatespage-premiumperceptual_duplicates_pagepy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PerceptualDuplicatesPage (premium/perceptual_duplicates_page.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#portablemanagerpage-premiumportable_manager_pagepy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PortableManagerPage (premium/portable_manager_page.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#envvariablemanagerpage-windowsservicemanagerpage-fontcachemanagerpage-tempfoldercleanerpage-contextmenumanagerpage-pagefileoptimizerpage-diagnosticdatamanagerpage-startupimpactpage-slackspaceanalyzerpage-eventlogmonitorpage-premiumpower_suite_pagespy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        EnvVariableManagerPage / WindowsServiceManagerPage / FontCacheManagerPage / TempFolderCleanerPage / ContextMenuManagerPage / PagefileOptimizerPage / DiagnosticDataManagerPage / StartupImpactPage / SlackSpaceAnalyzerPage / EventLogMonitorPage (premium/power_suite_pages.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hashverifierpage-batchrenamerpage-foldersyncpage-filesplitterpage-fileunlockerpage-adsmanagerpage-eventlogcleanerpage-systemcacherebuilderpage-networkoptimizerpage-crashdumpcleanerpage-premiumpower_tools_pagespy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        HashVerifierPage / BatchRenamerPage / FolderSyncPage / FileSplitterPage / FileUnlockerPage / AdsManagerPage / EventLogCleanerPage / SystemCacheRebuilderPage / NetworkOptimizerPage / CrashDumpCleanerPage (premium/power_tools_pages.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#privacyblockerpage-premiumprivacy_blocker_pagepy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PrivacyBlockerPage (premium/privacy_blocker_page.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#registryaicleanerpage-premiumregistry_ai_pagepy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RegistryAICleanerPage (premium/registry_ai_page.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#healthreportpage-backupspage-premiumreport_pagespy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        HealthReportPage / BackupsPage (premium/report_pages.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#s3fifopage-premiums3_fifo_pagepy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        S3FifoPage (premium/s3_fifo_page.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#searchindexoptimizerpage-premiumsearch_optimizer_pagepy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SearchIndexOptimizerPage (premium/search_optimizer_page.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#secureshredderpage-premiumsecure_shredder_pagepy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SecureShredderPage (premium/secure_shredder_page.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srumbamcleanerpage-premiumsrum_bam_pagepy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SrumBamCleanerPage (premium/srum_bam_page.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#startupoptimizerpage-premiumstartup_optimizer_pagepy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        StartupOptimizerPage (premium/startup_optimizer_page.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#privacypage-startuppage-processespage-networkpage-uninstallerpage-leftoverscannerpage-telemetryblocker-registrycleaner-premiumsystem_pagespy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PrivacyPage / StartupPage / ProcessesPage / NetworkPage / UninstallerPage / LeftoverScannerPage / TelemetryBlocker / RegistryCleaner (premium/system_pages.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#performancepage-browserextensionspage-driverinventorypage-premiumtools_pagespy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PerformancePage / BrowserExtensionsPage / DriverInventoryPage (premium/tools_pages.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#videoduplicatespage-premiumvideo_duplicates_pagepy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        VideoDuplicatesPage (premium/video_duplicates_page.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#winupdaterepairpage-premiumwin_update_repair_pagepy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        WinUpdateRepairPage (premium/win_update_repair_page.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#winapp2cleanerpage-premiumwinapp2_pagepy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Winapp2CleanerPage (premium/winapp2_page.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#wslpage-premiumwsl_pagepy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        WslPage (premium/wsl_page.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dashboardtab-tabsdashboard_tabpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DashboardTab (tabs/dashboard_tab.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#emptyfilestab-tabsempty_files_tabpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        EmptyFilesTab (tabs/empty_files_tab.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#deepcleanertab-tabsdeep_cleaner_tabpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DeepCleanerTab (tabs/deep_cleaner_tab.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#duplicatestab-tabsduplicates_tabpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DuplicatesTab (tabs/duplicates_tab.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#largefilestab-tabslarge_files_tabpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LargeFilesTab (tabs/large_files_tab.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#diskanalyzertab-tabsdisk_analyzer_tabpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DiskAnalyzerTab (tabs/disk_analyzer_tab.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dockertab-tabsdocker_tabpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DockerTab (tabs/docker_tab.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#brokenlinkstab-tabsbroken_links_tabpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        BrokenLinksTab (tabs/broken_links_tab.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#restoretab-tabsrestore_tabpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RestoreTab (tabs/restore_tab.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#settingstab-tabssettings_tabpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SettingsTab (tabs/settings_tab.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#uninstallertab-tabsuninstaller_tabpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        UninstallerTab (tabs/uninstaller_tab.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#privacytab-tabsprivacy_tabpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PrivacyTab (tabs/privacy_tab.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#packagemanagertab-tabspackage_manager_tabpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PackageManagerTab (tabs/package_manager_tab.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fileshreddertab-tabsfile_shredder_tabpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FileShredderTab (tabs/file_shredder_tab.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#schedulertab-tabsscheduler_tabpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SchedulerTab (tabs/scheduler_tab.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reportstab-tabsreports_tabpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ReportsTab (tabs/reports_tab.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#resourcemonitortab-tabsresource_monitor_tabpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ResourceMonitorTab (tabs/resource_monitor_tab.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#startupmanagertab-tabsstartup_manager_tabpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        StartupManagerTab (tabs/startup_manager_tab.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#systemtoolstab-tabssystem_tools_tabpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SystemToolsTab (tabs/system_tools_tab.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#processanalyzertab-tabsprocess_analyzer_tabpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ProcessAnalyzerTab (tabs/process_analyzer_tab.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#registrycleanertab-tabsregistry_cleaner_tabpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RegistryCleanerTab (tabs/registry_cleaner_tab.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#securityscannertab-tabssecurity_scanner_tabpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SecurityScannerTab (tabs/security_scanner_tab.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#heuristicstab-tabsheuristics_tabpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        HeuristicsTab (tabs/heuristics_tab.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#basetab-tabsbase_tabpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        BaseTab (tabs/base_tab.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#deepcleanergui-shell-uimain_windowpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DeepCleanerGUI shell (ui/main_window.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#safety-layer-uisafetysafety_managerpy-path_validatorpy-process_managerpy-manifest_systempy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Safety layer (ui/safety/safety_manager.py, path_validator.py, process_manager.py, manifest_system.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#systemtraymanager-uitray_iconpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SystemTrayManager (ui/tray_icon.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#counts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Counts
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="gui-features-audit-premium-pages-tabs-main-window-safety-tray">GUI Features Audit — Premium Pages, Tabs, Main Window, Safety, Tray<a class="headerlink" href="#gui-features-audit-premium-pages-tabs-main-window-safety-tray" title="Permanent link">&para;</a></h1>
+<p>Base: <code>D:\code\Main_projects\Cortex_Cleaner</code> — read-only audit, no code changes.
+Scope: <code>src/cortex_unified/ui/premium/*_pages.py</code> + <code>*_page.py</code>, <code>src/cortex_unified/ui/tabs/*.py</code>, <code>src/cortex_unified/ui/main_window.py</code>, <code>src/cortex_unified/ui/safety/</code>, <code>src/cortex_unified/ui/tray_icon.py</code>.
+Method: code-read. Buttons/tables/combos/dialogs below are literal widget strings and handlers from source (<code>_PrimaryButton</code>/<code>_SecondaryButton</code>/<code>QPushButton</code>, <code>setHorizontalHeaderLabels</code>, <code>QFileDialog</code>/<code>QMessageBox</code>, <code>_on_*</code> slots). Backend = direct <code>from cortex_unified...</code> / <code>NexusExplorer...</code> imports in each file.
+Date (UTC): 2026-09-04.</p>
+<p>Conventions per file: <code>## PageName (file)</code> / user-action bullets / <code>backend:</code> module line.</p>
+<h2 id="-">---<a class="headerlink" href="#-" title="Permanent link">&para;</a></h2>
+<h2 id="advanceduninstallerpage-premiumadvanced_uninstaller_pagepy">AdvancedUninstallerPage (premium/advanced_uninstaller_page.py)<a class="headerlink" href="#advanceduninstallerpage-premiumadvanced_uninstaller_pagepy" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Click <code>Choose Root…</code> (QFileDialog.getExistingDirectory) to set scan root; <code>Enumerate Apps</code> runs background <code>_UninstallWorker</code>; progress bar + status text.</li>
+<li>Browse results table <code>["App Name","Version","Source","Status","Leftovers (MB)"]</code> (QTableWidget, row-select, checkbox column); QSpinBox for options.</li>
+<li>Select rows → <code>Uninstall Selected</code> (confirm QMessageBox.question; QInputDialog.getText for custom uninstall string); <code>Force uninstall if uninstaller missing</code> (QCheckBox).</li>
+<li>Info/warning dialogs for no-apps-found, start/finish states.</li>
+<li>backend: <code>cortex_unified.analyzers.advanced_uninstaller</code></li>
+</ul>
+<h2 id="diskanalyzerpage-diskhealthpage-scheduledtaskspage-bootperformancepage-systemrepairpage-storagesensepage-securitypage-healthcheckpage-windowsupdatepage-componentstorepage-premiumanalysis_pagespy">DiskAnalyzerPage / DiskHealthPage / ScheduledTasksPage / BootPerformancePage / SystemRepairPage / StorageSensePage / SecurityPage / HealthCheckPage / WindowsUpdatePage / ComponentStorePage (premium/analysis_pages.py)<a class="headerlink" href="#diskanalyzerpage-diskhealthpage-scheduledtaskspage-bootperformancepage-systemrepairpage-storagesensepage-securitypage-healthcheckpage-windowsupdatepage-componentstorepage-premiumanalysis_pagespy" title="Permanent link">&para;</a></h2>
+<ul>
+<li>DiskAnalyzerPage: <code>Choose Folder…</code> + <code>Analyze</code>; folder-size table; AI-model-extension hints.</li>
+<li>DiskHealthPage: <code>Check Disk Health</code>; physical-disk table (admin-gated SMART read).</li>
+<li>ScheduledTasksPage: task table + <code>Refresh</code>, <code>Delete Selected Task</code> (DeleteTaskWorker).</li>
+<li>BootPerformancePage: <code>Analyze Boot</code>, <code>Manage Startup Apps →</code>; boot-phase table.</li>
+<li>SystemRepairPage: <code>Run</code> (SFC/DISM-style repair worker), <code>Refresh</code>; result table.</li>
+<li>StorageSensePage: toggle/status card (<code>Storage Sense is ON</code>), <code>Run</code>, storage table.</li>
+<li>SecurityPage (Defender): <code>Run Quick Scan</code>, Defender status table.</li>
+<li>HealthCheckPage: <code>Run Health Check</code>, <code>Fix →</code>; healthy/issues table.</li>
+<li>WindowsUpdatePage: <code>Check for Updates Online</code>, <code>Open Windows Update</code>, pending-update + activity tables (WUActivityWorker/WUPendingWorker).</li>
+<li>ComponentStorePage: <code>Analyze Component Store</code>, <code>Let Windows Clean It</code>, <code>Clean Now</code>, <code>Remove Selected Leftovers</code>; WinSxS/leftover tables; all with QTableWidget + QProgressBar + QMessageBox confirms.</li>
+<li>backend: <code>cortex_unified.analyzers.disk_analyzer</code>, <code>cortex_unified.analyzers.large_file_finder</code>, <code>cortex_unified.scheduler.scheduler</code>, <code>cortex_unified.system_tools.boot_performance</code>, <code>cortex_unified.system_tools.defender</code>, <code>cortex_unified.system_tools.disk_health</code>, <code>cortex_unified.system_tools.health_check</code>, <code>cortex_unified.system_tools.storage_sense</code>, <code>cortex_unified.system_tools.system_repair</code>, <code>cortex_unified.system_tools.windows_update</code></li>
+</ul>
+<h2 id="driverstorecleanerpage-shellbagscleanerpage-powerplanoptimizerpage-hostsfilemanagerpage-notificationcleanerpage-filesignaturesnifferpage-binarydifferpage-usnjournalpage-par2recoverypage-imageoptimizerpage-premiumapex_tools_pagespy">DriverStoreCleanerPage / ShellbagsCleanerPage / PowerPlanOptimizerPage / HostsFileManagerPage / NotificationCleanerPage / FileSignatureSnifferPage / BinaryDifferPage / UsnJournalPage / Par2RecoveryPage / ImageOptimizerPage (premium/apex_tools_pages.py)<a class="headerlink" href="#driverstorecleanerpage-shellbagscleanerpage-powerplanoptimizerpage-hostsfilemanagerpage-notificationcleanerpage-filesignaturesnifferpage-binarydifferpage-usnjournalpage-par2recoverypage-imageoptimizerpage-premiumapex_tools_pagespy" title="Permanent link">&para;</a></h2>
+<ul>
+<li>DriverStoreCleanerPage: <code>Enumerate Drivers</code> (primary), <code>Export All Drivers…</code> (folder dialog), <code>Delete Superseded Drivers</code>; table <code>INF Name/Provider/Class/Version/Date/Status</code>.</li>
+<li>ShellbagsCleanerPage: <code>Scan Activity Traces</code>, <code>Purge Selected Traces</code>; shellbags/recent/jumplists table + folder picker <code>Choose Folder to Scan…</code>.</li>
+<li>PowerPlanOptimizerPage: <code>Unlock Ultimate Performance Plan</code>, <code>Refresh Schemes</code>, <code>Reduce Hibernation Footprint (40% RAM)</code>; scheme table + status card.</li>
+<li>HostsFileManagerPage: <code>Apply Anti-Telemetry Shield</code>, <code>Reload Hosts</code>, <code>Refresh Status</code>; hosts-entry table (QTableWidget), text editor area.</li>
+<li>NotificationCleanerPage: <code>Purge Notification Database</code>; app-notification table.</li>
+<li>FileSignatureSnifferPage: <code>Scan for Spoofed Files</code>, <code>Choose Folder to Scan…</code>; magic-bytes/MIME table.</li>
+<li>BinaryDifferPage: <code>Select File A…</code>, <code>Select File B…</code>, <code>Compare Binary Files</code>; hex-diff text view.</li>
+<li>UsnJournalPage: <code>Query USN Journal</code>; USN change-journal table.</li>
+<li>Par2RecoveryPage: <code>Open .par2 File…</code> (file dialog); parity/packet validation table.</li>
+<li>ImageOptimizerPage: <code>Select Images…</code>, <code>Compress Images</code>; quality QSlider, format QComboBox, batch-result table.</li>
+<li>backend: <code>cortex_unified.system_tools.driver_store_cleaner</code>, <code>shellbags_privacy_cleaner</code>, <code>power_plan_optimizer</code>, <code>hosts_file_manager</code>, <code>notification_cleaner</code>, <code>NexusExplorer.native.file_signature_sniffer</code>, <code>NexusExplorer.native.binary_differ</code>, <code>NexusExplorer.native.usn_journal_scanner</code>, <code>NexusExplorer.native.par2_recovery</code>, <code>NexusExplorer.native.image_optimizer</code></li>
+</ul>
+<h2 id="audioduplicatespage-premiumaudio_duplicates_pagepy">AudioDuplicatesPage (premium/audio_duplicates_page.py)<a class="headerlink" href="#audioduplicatespage-premiumaudio_duplicates_pagepy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>Choose Folder…</code> (dir dialog) + <code>Find Audio Duplicates</code>; QProgressBar worker <code>_AudioWorker</code>.</li>
+<li>Results table <code>["Audio File","Group","Hint"]</code>; empty-state <code>No audio duplicates found</code>.</li>
+<li>backend: <code>cortex_unified.analyzers.audio_duplicate_finder.AudioDuplicateFinder</code></li>
+</ul>
+<h2 id="cdcpage-premiumcdc_pagepy">CdcPage (premium/cdc_page.py)<a class="headerlink" href="#cdcpage-premiumcdc_pagepy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>Choose Folder…</code> + <code>Find CDC Duplicates</code> (FastCDC/VectorCDC chunking via <code>_CdcWorker</code>).</li>
+<li>Results table <code>["File","Group","Hint"]</code>; progress bar.</li>
+<li>backend: <code>cortex_unified.analyzers.content_defined_chunker.ContentDefinedChunker</code></li>
+</ul>
+<h2 id="cleanuphubpage-premiumcleanup_hub_pagepy">CleanupHubPage (premium/cleanup_hub_page.py)<a class="headerlink" href="#cleanuphubpage-premiumcleanup_hub_pagepy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>Scan All Caches</code> (HubScanWorker over CleanerService categories); <code>Select Directory</code> / <code>Select File Location</code> to add custom roots; <code>Select All</code> / <code>Deselect All</code> / <code>Reset Roots</code>; active-roots label.</li>
+<li>Category checklist with QCheckBox list incl. <code>Include opt-in (HIGH)</code>; QProgressBar scan/clean; <code>Clean Selected</code> (QMessageBox.question confirm → DeletionMethod recycle/permanent).</li>
+<li>backend: <code>cortex_unified.engine.CleanerService</code>, <code>cortex_unified.engine.RiskLevel/DeletionMethod</code>, <code>cortex_unified.engine.categories</code>, <code>cortex_unified.engine.service.CleanupReport</code></li>
+</ul>
+<h2 id="cloudstoragepage-premiumcloud_storage_pagepy">CloudStoragePage (premium/cloud_storage_page.py)<a class="headerlink" href="#cloudstoragepage-premiumcloud_storage_pagepy" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Target QComboBox presets (<code>s3://bucket/prefix</code>, <code>azure://container/prefix</code>, <code>gdrive://root/folder</code>, <code>onedrive://…</code>); <code>Pick Target…</code> + <code>Analyze</code> (<code>_CloudWorker</code>).</li>
+<li>QCheckBox <code>Include versions (S3)</code>, <code>Include delete markers (S3)</code>; QSpinBox thresholds; QProgressBar.</li>
+<li>Tables: objects/size, cost/mo by provider, storage-class pricing (live vendor APIs), dedup table <code>Hash/Object Size/Cloud Copies/Local Copies/Wasted Space</code>.</li>
+<li>backend: <code>cortex_unified.analyzers.cloud_storage_analyzer</code> (+ <code>_PRICING</code>)</li>
+</ul>
+<h2 id="compactospage-premiumcompact_os_pagepy">CompactOsPage (premium/compact_os_page.py)<a class="headerlink" href="#compactospage-premiumcompact_os_pagepy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>Check CompactOS Status</code>, <code>Scan Folder…</code> (dir dialog), <code>Estimate Compressible Folders</code>, <code>Compress Selected Folder</code> (confirm question dialog).</li>
+<li>Results table <code>["Folder","Size","Estimated savings","Ratio","State"]</code>; QSpinBox level; QProgressBar (<code>_ScanWorker</code>/<code>_CompactWorker</code>/<code>_QueryWorker</code>).</li>
+<li>backend: <code>cortex_unified.system_tools.compact_os.CompactOSManager</code></li>
+</ul>
+<h2 id="directstorageoptimizerpage-premiumdirectstorage_pagepy">DirectStorageOptimizerPage (premium/directstorage_page.py)<a class="headerlink" href="#directstorageoptimizerpage-premiumdirectstorage_pagepy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>Run BypassIO Diagnostics</code> (<code>_DirectStorageWorker</code> over fsutil BypassIO states); status text <code>Querying volume BypassIO states…</code>.</li>
+<li>Results table <code>["Drive","BypassIO State","Media Type","Storage Driver","Blocking Minifilters"]</code>; QProgressBar.</li>
+<li>backend: <code>cortex_unified.system_tools.directstorage_optimizer</code></li>
+</ul>
+<h2 id="diskanalyzerpage-premiumdisk_analyzer_pagepy">DiskAnalyzerPage (premium/disk_analyzer_page.py)<a class="headerlink" href="#diskanalyzerpage-premiumdisk_analyzer_pagepy" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Path QLineEdit + <code>Browse…</code> + <code>Scan</code> (<code>_ScanWorker</code>); sort QComboBox; depth QSpinBox; QProgressBar.</li>
+<li>Folder table <code>["Folder","Size","% of Total","Files","Folders","Depth"]</code>; validation + <code>Scan complete — no folders found</code> states.</li>
+<li>backend: <code>cortex_unified.analyzers.advanced_disk_analyzer</code></li>
+</ul>
+<h2 id="drivermanagerpage-premiumdriver_manager_pagepy">DriverManagerPage (premium/driver_manager_page.py)<a class="headerlink" href="#drivermanagerpage-premiumdriver_manager_pagepy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>Scan for Updates</code> (<code>_ScanWorker</code> PnP enumeration), device table <code>Device Name/Class/Version/Provider/Status/Update</code>; filter QComboBox; QCheckBox options.</li>
+<li><code>Install Selected</code> (restore-point + install via <code>_InstallWorker</code>, question confirm), <code>Backup All</code> (folder dialog via <code>_BackupWorker</code>); QProgressBar.</li>
+<li>backend: <code>cortex_unified.system_tools.driver_manager.DriverManager</code></li>
+</ul>
+<h2 id="vssmanagerpage-devdriveoptimizerpage-bitlockerauditorpage-junctionauditorpage-bitrotscrubberpage-memorycompressionpage-sandboxcleanerpage-smbshareauditorpage-processtokenpage-storagegrowthtrackerpage-premiumenterprise_suite_pagespy">VssManagerPage / DevDriveOptimizerPage / BitLockerAuditorPage / JunctionAuditorPage / BitRotScrubberPage / MemoryCompressionPage / SandboxCleanerPage / SmbShareAuditorPage / ProcessTokenPage / StorageGrowthTrackerPage (premium/enterprise_suite_pages.py)<a class="headerlink" href="#vssmanagerpage-devdriveoptimizerpage-bitlockerauditorpage-junctionauditorpage-bitrotscrubberpage-memorycompressionpage-sandboxcleanerpage-smbshareauditorpage-processtokenpage-storagegrowthtrackerpage-premiumenterprise_suite_pagespy" title="Permanent link">&para;</a></h2>
+<ul>
+<li>VssManagerPage: <code>Audit VSS Shadows</code>, <code>Create Snapshot on C:</code>, <code>Purge Oldest Shadow</code>; shadow-copy table.</li>
+<li>DevDriveOptimizerPage: <code>Audit Storage Drives</code>; volume-geometry + <code>fsutil devdrv</code> table.</li>
+<li>BitLockerAuditorPage: <code>Audit BitLocker Status</code> (manage-bde/WMI); encryption table.</li>
+<li>JunctionAuditorPage: <code>Scan User Profile Links</code>, <code>Scan Custom Folder…</code> (Browse…), <code>Unlink Selected Dead Junction</code>; reparse-point table.</li>
+<li>BitRotScrubberPage: <code>Run Integrity Scrub</code>; checksum-integrity table.</li>
+<li>MemoryCompressionPage: <code>Audit Memory Compression</code>, <code>Toggle Memory Compression</code> (Get-MMAgent); memory table.</li>
+<li>SandboxCleanerPage: <code>Scan Virtual Artifacts</code>, <code>Purge Safe Virtual Artifacts</code>; Sandbox/Hyper-V/WSL artifact table.</li>
+<li>SmbShareAuditorPage: <code>Audit Network Shares</code>, <code>Browse…</code>; share + SMB-security table.</li>
+<li>ProcessTokenPage: <code>Audit Process Tokens</code>; token/integrity-level forensics table.</li>
+<li>StorageGrowthTrackerPage: <code>Take Snapshot</code>, <code>Compare Last 2 Snapshots</code>; snapshot-diff table. All QTableWidget + worker run on window runtime.</li>
+<li>backend: <code>cortex_unified.system_tools.vss_manager</code>, <code>dev_drive_optimizer</code>, <code>bitlocker_auditor</code>, <code>junction_auditor</code>, <code>bitrot_scrubber</code>, <code>memory_compression_tuner</code>, <code>sandbox_cleaner</code>, <code>smb_share_auditor</code>, <code>process_token_auditor</code>, <code>storage_growth_tracker</code></li>
+</ul>
+<h2 id="linksmanagerpage-fastcopierpage-timestamptouchpage-archivemanagerpage-prefetchanalyzerpage-searchindexoptimizerpage-dnsbenchmarkpage-diskbenchmarkpage-memoryoptimizerpage-devcleanerpage-browserdeepcleanerpage-premiumexpanded_tools_pagespy">LinksManagerPage / FastCopierPage / TimestampTouchPage / ArchiveManagerPage / PrefetchAnalyzerPage / SearchIndexOptimizerPage / DnsBenchmarkPage / DiskBenchmarkPage / MemoryOptimizerPage / DevCleanerPage / BrowserDeepCleanerPage (premium/expanded_tools_pages.py)<a class="headerlink" href="#linksmanagerpage-fastcopierpage-timestamptouchpage-archivemanagerpage-prefetchanalyzerpage-searchindexoptimizerpage-dnsbenchmarkpage-diskbenchmarkpage-memoryoptimizerpage-devcleanerpage-browserdeepcleanerpage-premiumexpanded_tools_pagespy" title="Permanent link">&para;</a></h2>
+<ul>
+<li>LinksManagerPage: <code>Choose Folder…</code>, <code>Scan for Links</code>, <code>Safely Remove Selected Link</code>; NTFS link table.</li>
+<li>FastCopierPage: <code>Add Source Files / Folders…</code>, <code>Choose Destination Folder…</code>, <code>Start Fast Copy</code>; progress (<code>Transferring files...</code>).</li>
+<li>TimestampTouchPage: <code>Select Files…</code>, <code>Apply Timestamp &amp; Attribute Updates</code>; datetime/attribute editors.</li>
+<li>ArchiveManagerPage: <code>Open Archive…</code>, <code>Test Integrity</code>, <code>Extract All…</code>, <code>+ Create New Archive…</code>; archive-entry table.</li>
+<li>PrefetchAnalyzerPage: <code>Scan Prefetch Traces</code>, <code>Flush All Prefetch Traces</code>; prefetch-entry table.</li>
+<li>SearchIndexOptimizerPage: <code>Refresh Metrics</code>, <code>Compact Database (esentutl /d)</code>, <code>Rebuild Search Index</code>; catalog-size card.</li>
+<li>DnsBenchmarkPage: <code>Run DNS Benchmark</code>, <code>Apply Selected DNS to Adapter</code>; provider table (KNOWN_DNS_PROVIDERS) + latency results.</li>
+<li>DiskBenchmarkPage: <code>Select Drive / Folder…</code>, <code>Start Benchmark</code> (<code>Running storage benchmark (64MB sample)...</code>); IOPS/throughput table.</li>
+<li>MemoryOptimizerPage: <code>Refresh Processes</code>, <code>Optimize Working Sets</code>; process-memory table + QCheckBox filters.</li>
+<li>DevCleanerPage: <code>Scan Dev Caches</code>, <code>Clean Selected Caches</code>; dev-cache table (DevCacheItem).</li>
+<li>BrowserDeepCleanerPage: <code>Scan Browser Caches</code>, <code>Clean Browser Caches</code>; per-browser target table (BrowserTarget) + QCheckBox profile picks.</li>
+<li>backend: <code>cortex_unified.system_tools.browser_deep_cleaner</code>, <code>dev_cleaner</code>, <code>disk_benchmark</code>, <code>dns_benchmark</code>, <code>memory_optimizer</code>, <code>prefetch_analyzer</code>, <code>search_index_optimizer</code> (+ NTFS-links/fast-copy/archive/touch engines)</li>
+</ul>
+<h2 id="fuzzyhashpage-premiumfuzzy_hash_pagepy">FuzzyHashPage (premium/fuzzy_hash_page.py)<a class="headerlink" href="#fuzzyhashpage-premiumfuzzy_hash_pagepy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>Choose Folder…</code> + <code>Find Fuzzy Duplicates</code> (ssdeep/TLSH via <code>_FuzzyWorker</code>); similarity QSpinBox threshold.</li>
+<li>Results table <code>["File","Group","Hint"]</code>; <code>No fuzzy duplicates found</code> state.</li>
+<li>backend: <code>cortex_unified.analyzers.fuzzy_finder.FuzzyDuplicateFinder</code></li>
+</ul>
+<h2 id="licensepage-premiumlicense_pagepy">LicensePage (premium/license_page.py)<a class="headerlink" href="#licensepage-premiumlicense_pagepy" title="Permanent link">&para;</a></h2>
+<ul>
+<li>License-key QLineEdit + tier QComboBox; <code>Activate</code>, <code>Start Free Trial</code>, <code>Deactivate</code> (QMessageBox confirms/warnings).</li>
+<li>Feature matrix table <code>["Feature","Minimum tier","Included"]</code> (FEATURE_MIN_TIER); status card.</li>
+<li>backend: <code>cortex_unified.licensing</code>, <code>cortex_unified.licensing.license_manager</code>, <code>cortex_unified.licensing.tiers</code></li>
+</ul>
+<h2 id="logsweeperpage-premiumlog_sweeper_pagepy">LogSweeperPage (premium/log_sweeper_page.py)<a class="headerlink" href="#logsweeperpage-premiumlog_sweeper_pagepy" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Watched-roots QListWidget: <code>Add Folder…</code>, <code>Select Code Root</code>, <code>Remove Selected</code>; <code>Find Large Logs (&gt;100MB)</code> (<code>_LogWorker</code>).</li>
+<li>Hits table <code>["Log file","Size","Path"]</code>; <code>Move Selected to Recycle Bin</code> (question confirm); QProgressBar.</li>
+<li>backend: <code>cortex_unified.analyzers.cache_cleaner.CacheCleaner</code></li>
+</ul>
+<h2 id="memorystandbypurgerpage-premiummemory_standby_pagepy">MemoryStandbyPurgerPage (premium/memory_standby_page.py)<a class="headerlink" href="#memorystandbypurgerpage-premiummemory_standby_pagepy" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Four purge buttons: <code>Purge Standby List (Command 4)</code>, <code>Empty Working Sets (Command 2)</code>, <code>Flush Modified Page List (Command 3)</code>, <code>1-Click Complete Kernel Purge</code>; QProgressBar + info/warning result dialogs.</li>
+<li>backend: <code>cortex_unified.system_tools.memory_standby_purger</code></li>
+</ul>
+<h2 id="mftslackscrubberpage-premiummft_slack_pagepy">MftSlackScrubberPage (premium/mft_slack_page.py)<a class="headerlink" href="#mftslackscrubberpage-premiummft_slack_pagepy" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Drive QComboBox (<code>C:/D:/E:/F:</code>); <code>Analyze MFT Geometry</code>, <code>Sanitize MFT Record Slack</code> (question confirm → <code>_MftScrubWorker</code>); QProgressBar + geometry readout.</li>
+<li>backend: <code>cortex_unified.system_tools.mft_slack_scrubber</code></li>
+</ul>
+<h2 id="modelcachepage-premiummodel_cache_pagepy">ModelCachePage (premium/model_cache_page.py)<a class="headerlink" href="#modelcachepage-premiummodel_cache_pagepy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>Scan Model Caches</code> (<code>_ScanWorker</code>: HuggingFace <code>~/.cache/huggingface/hub</code>, Ollama <code>~/.ollama/models</code>); cache table <code>Store/Path/Exists/Actual size/Explorer sum/Orphans/Hardlink saved</code>.</li>
+<li><code>Preview Orphan Cleanup</code>, <code>Clean Orphans</code> (<code>_CleanOrphansWorker</code>, question confirm); empty-state + QProgressBar.</li>
+<li>backend: <code>cortex_unified.system_tools.model_cache_manager.ModelCacheManager</code></li>
+</ul>
+<h2 id="softwareupdaterpage-driveoptimizerpage-systeminfopage-brokenlinkspage-duplicatefolderspage-packagecachepage-projectcachespage-secretsscannerpage-virtualdiskspage-premiummore_pagespy">SoftwareUpdaterPage / DriveOptimizerPage / SystemInfoPage / BrokenLinksPage / DuplicateFoldersPage / PackageCachePage / ProjectCachesPage / SecretsScannerPage / VirtualDisksPage (premium/more_pages.py)<a class="headerlink" href="#softwareupdaterpage-driveoptimizerpage-systeminfopage-brokenlinkspage-duplicatefolderspage-packagecachepage-projectcachespage-secretsscannerpage-virtualdiskspage-premiummore_pagespy" title="Permanent link">&para;</a></h2>
+<ul>
+<li>SoftwareUpdaterPage: <code>Check for Updates</code> (UpdaterListWorker), table + <code>Update Selected</code> / <code>Update All</code> (UpgradeWorker).</li>
+<li>DriveOptimizerPage: <code>Detect Drives</code> (DriveListWorker), <code>Optimize Selected</code> (DriveOptimizeWorker: TRIM/defrag), <code>Refresh</code>.</li>
+<li>SystemInfoPage: <code>Refresh</code>; hardware/OS spec cards + table (SystemInfoWorker).</li>
+<li>BrokenLinksPage (<code>Broken Links</code>): <code>Choose Folder…</code> + scan (BrokenLinksWorker); link table; <code>Move Selected to Recycle Bin</code>.</li>
+<li>DuplicateFoldersPage (<code>Duplicate Folders</code>): <code>Choose Folder…</code> + scan (DuplicateFoldersWorker); folder-group table + recycle action.</li>
+<li>PackageCachePage (<code>System Package Manager Caches</code>): <code>Detect Managers</code>, <code>Scan for Caches</code> (PackageCacheWorker), <code>Clean Selected</code> (PackageCleanWorker); manager QComboBox.</li>
+<li>ProjectCachesPage (<code>Project Folder Caches</code>): <code>Workspace</code> / <code>Auto-Detect</code> / <code>+ Add Location</code> / <code>Remove Selected</code> / <code>Clear All</code> roots; <code>Scan for Caches</code> / <code>Scan Fixed Drives (auto)</code> (AutoProjectCacheWorker), <code>Clean Selected</code> (ProjectCacheCleanWorker), <code>Expand All</code> / <code>Collapse All</code>, <code>Select All</code> / <code>Deselect All</code>, <code>Export</code>, QTreeWidget with checkboxes + sort combo.</li>
+<li>SecretsScannerPage: <code>Choose Folder…</code>, <code>Scan for Secrets</code> (SecretsScanWorker over <code>run_scan</code>); finding table + <code>Export</code>.</li>
+<li>VirtualDisksPage: <code>Find Virtual Disks</code>, <code>Stop WSL</code>, <code>Keep Sparse</code>, <code>Compact Selected</code> (compact/shutdown workers); VHD/WSL table + progress/cancel (<code>Cancel</code>, <code>Cancelling…</code>).</li>
+<li>backend: <code>cortex_unified.system_tools.app_updater</code>, <code>drive_optimizer</code>, <code>system_info</code>, <code>cortex_unified.analyzers.broken_link_detector</code>, <code>duplicate_folder_finder</code>, <code>package_manager_cleaner</code>, <code>project_cache_scanner</code>, <code>cortex_unified.system_tools.secrets_scanner</code>, <code>cortex_unified.ui.premium.workers</code>, <code>cortex_unified.core.config</code></li>
+</ul>
+<h2 id="nearduplicatespage-premiumnear_duplicates_pagepy">NearDuplicatesPage (premium/near_duplicates_page.py)<a class="headerlink" href="#nearduplicatespage-premiumnear_duplicates_pagepy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>Choose Folder…</code> + <code>Find Near-Duplicates</code> (MinHash/shingle <code>_NearDupWorker</code>); QProgressBar.</li>
+<li>Results table <code>["File","Group","Hint"]</code>; <code>No near-duplicates – corpus is diverse</code> state.</li>
+<li>backend: <code>cortex_unified.analyzers.near_duplicate_finder.NearDuplicateFinder</code></li>
+</ul>
+<h2 id="trafficmonitorpage-firewallpage-networkmappage-landevicespage-networktoolspage-loadtesterpage-premiumnetwork_pagespy">TrafficMonitorPage / FirewallPage / NetworkMapPage / LanDevicesPage / NetworkToolsPage / LoadTesterPage (premium/network_pages.py)<a class="headerlink" href="#trafficmonitorpage-firewallpage-networkmappage-landevicespage-networktoolspage-loadtesterpage-premiumnetwork_pagespy" title="Permanent link">&para;</a></h2>
+<ul>
+<li>TrafficMonitorPage: live traffic table + <code>Browse…</code>/filter; per-process bandwidth view (TrafficMonitor).</li>
+<li>FirewallPage: rule table + <code>Block</code> / <code>Allow</code> / <code>Block Address</code> / <code>Refresh</code> / <code>Enable/Disable</code> / <code>Remove</code> (FirewallListWorker/FirewallActionWorker over FirewallManager).</li>
+<li>NetworkMapPage (<code>Network Map</code>): <code>_MapCanvas</code> topology + <code>Refresh Map</code>, <code>Basic Scan</code> / <code>Advanced Audit</code> / <code>All TCP Ports</code> / <code>Passive Discovery</code> / <code>Cancel</code>.</li>
+<li>LanDevicesPage (<code>Network Security Audit</code>): <code>Scan Device</code>, <code>Ping Device</code>, <code>Wake</code> (WoL), <code>Open Service</code>, <code>More Controls ›</code>, <code>Run Expert Scan</code>, <code>Save Metadata</code>, <code>Browse</code>, <code>Export Inventory CSV</code> / <code>Import Metadata CSV</code>, <code>Lookup Exposure</code>, <code>Create / Update Schedule</code> / <code>Remove Schedule</code> / <code>Refresh Status</code>, <code>Update Vendors</code> (IEEE DB), <code>Export Report</code>, <code>This PC</code> (LanScanWorker/VendorDatabaseWorker/NetworkScheduleWorker/ExposureLookupWorker/DeviceActionWorker); vendor QComboBox, host QLineEdit, device QTableWidget.</li>
+<li>NetworkToolsPage: target QLineEdit + port QSpinBox/QComboBox (COMMON_PORTS); ping/traceroute/DNS/port-scan output (QTextEdit) via <code>_ToolWorker</code> (NetworkTools).</li>
+<li>LoadTesterPage: <code>Check Authorization</code> (TargetAuthorizer: <code>Checking authorization…</code> + HTML authorize instructions), <code>Start Test</code>/<code>Stop</code> (LoadTestWorker/esc <code>Stopping…</code>); target/rate/duration QSpinBox group + results table.</li>
+<li>backend: <code>cortex_unified.system_tools.network_traffic</code>, <code>firewall_manager</code>, <code>network_discovery</code>, <code>network_inventory</code>, <code>network_service_scanner</code>, <code>network_tools</code>, <code>network_automation</code>, <code>external_exposure</code>, <code>load_tester</code>, <code>cortex_unified.system_tools.oui</code></li>
+</ul>
+<h2 id="shadercachepage-aitelemetrycleanerpage-ssdtrimoptimizerpage-restartmanagerunlockerpage-vsshealthanalyzerpage-devpackagecachepage-checksummatrixpage-premiumnextgen_suite_pagespy">ShaderCachePage / AiTelemetryCleanerPage / SsdTrimOptimizerPage / RestartManagerUnlockerPage / VssHealthAnalyzerPage / DevPackageCachePage / ChecksumMatrixPage (premium/nextgen_suite_pages.py)<a class="headerlink" href="#shadercachepage-aitelemetrycleanerpage-ssdtrimoptimizerpage-restartmanagerunlockerpage-vsshealthanalyzerpage-devpackagecachepage-checksummatrixpage-premiumnextgen_suite_pagespy" title="Permanent link">&para;</a></h2>
+<ul>
+<li>ShaderCachePage: <code>Scan Shader Caches</code>, <code>Clean Stale Shaders</code>; GPU/DirectX store table (QCheckBox picks).</li>
+<li>AiTelemetryCleanerPage: <code>Scan AI Telemetry</code>, <code>Clean Caches &amp; Truncate WAL</code>; Recall/AI store table.</li>
+<li>SsdTrimOptimizerPage: <code>Audit Volumes &amp; TRIM</code>, <code>Execute ReTrim on Selected Drive</code>; TRIM/wear table.</li>
+<li>RestartManagerUnlockerPage: <code>Inspect Locks</code>, <code>Browse…</code>, <code>Unlock File (Kill Locking Procs)</code>; lock-report table + file picker (<code>Browse File…</code>).</li>
+<li>VssHealthAnalyzerPage: <code>Inspect VSS Subsystem</code>, <code>Reset Stalled VSS Writers</code>; writer/shadow-storage table.</li>
+<li>DevPackageCachePage: <code>Scan Developer Stores</code>, <code>Purge Selected Store Caches</code>; toolchain-dir table.</li>
+<li>ChecksumMatrixPage: <code>Calculate Hashes</code>, <code>Browse File…</code> / <code>Browse Folder…</code>, <code>Generate .sha256 Manifest</code>; hash QComboBox (algo), QSpinBox threads, file-hash + manifest-verification tables.</li>
+<li>backend: <code>cortex_unified.system_tools.shader_cache_cleaner</code>, <code>ai_telemetry_cleaner</code>, <code>ssd_trim_optimizer</code>, <code>restart_manager_unlocker</code>, <code>vss_health_analyzer</code>, <code>dev_package_cache_cleaner</code>, <code>checksum_matrix</code></li>
+</ul>
+<h2 id="nexusexplorerpage-premiumnexus_pagepy">NexusExplorerPage (premium/nexus_page.py)<a class="headerlink" href="#nexusexplorerpage-premiumnexus_pagepy" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Embeds full native Qt6 file explorer in-page (same process/window): folder tree, file views, search; lazy construction on first visit.</li>
+<li>Degrades to in-page <code>_ErrorCard</code> (<code>Nexus File Manager</code> + selectable error text) — never crashes host window; outer scroll stays quiet, only inner explorer scrolls.</li>
+<li>backend: <code>cortex_unified.explorer.widget.ExplorerWidget</code> (+ <code>DARK_QSS</code>; <code>NexusExplorer/native</code> fallback path)</li>
+</ul>
+<h2 id="perceptualduplicatespage-premiumperceptual_duplicates_pagepy">PerceptualDuplicatesPage (premium/perceptual_duplicates_page.py)<a class="headerlink" href="#perceptualduplicatespage-premiumperceptual_duplicates_pagepy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>Choose Folder…</code> + <code>Find Visual Duplicates</code> (pHash <code>_PerceptualWorker</code>); similarity QSpinBox.</li>
+<li>Results table <code>["Photo","Group","Hint"]</code>; <code>No visual duplicates found</code>.</li>
+<li>backend: <code>cortex_unified.analyzers.perceptual_duplicate_finder.PerceptualDuplicateFinder</code></li>
+</ul>
+<h2 id="portablemanagerpage-premiumportable_manager_pagepy">PortableManagerPage (premium/portable_manager_page.py)<a class="headerlink" href="#portablemanagerpage-premiumportable_manager_pagepy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>Add Root</code> (dir dialog) + <code>Scan</code> (<code>_PortableWorker</code>); app table <code>App Name/Version/Installed/Latest/Update Available</code>; QComboBox source filter; <code>Auto-update on scan</code> QCheckBox; QProgressBar; update via <code>_UpdateWorker</code> (question confirm).</li>
+<li>backend: <code>cortex_unified.analyzers.portable_manager.PortableManager</code></li>
+</ul>
+<h2 id="envvariablemanagerpage-windowsservicemanagerpage-fontcachemanagerpage-tempfoldercleanerpage-contextmenumanagerpage-pagefileoptimizerpage-diagnosticdatamanagerpage-startupimpactpage-slackspaceanalyzerpage-eventlogmonitorpage-premiumpower_suite_pagespy">EnvVariableManagerPage / WindowsServiceManagerPage / FontCacheManagerPage / TempFolderCleanerPage / ContextMenuManagerPage / PagefileOptimizerPage / DiagnosticDataManagerPage / StartupImpactPage / SlackSpaceAnalyzerPage / EventLogMonitorPage (premium/power_suite_pages.py)<a class="headerlink" href="#envvariablemanagerpage-windowsservicemanagerpage-fontcachemanagerpage-tempfoldercleanerpage-contextmenumanagerpage-pagefileoptimizerpage-diagnosticdatamanagerpage-startupimpactpage-slackspaceanalyzerpage-eventlogmonitorpage-premiumpower_suite_pagespy" title="Permanent link">&para;</a></h2>
+<ul>
+<li>EnvVariableManagerPage: <code>Analyze PATH</code>, <code>Clean User PATH (Remove Dead &amp; Duplicates)</code>, <code>Export to .env…</code>; PATH-entry table.</li>
+<li>WindowsServiceManagerPage: <code>Scan Services</code>, <code>Apply Profile</code>; service table (ServiceInfo) + profile QComboBox.</li>
+<li>FontCacheManagerPage: <code>Scan Installed Fonts</code>, <code>Remove Orphaned Font Entries</code>; font/registry table.</li>
+<li>TempFolderCleanerPage: <code>Scan All Temp Locations</code>, <code>Purge Stale Temp Files</code>; multi-location table (TempLocation).</li>
+<li>ContextMenuManagerPage: <code>Scan Context Menu</code>, <code>Disable Selected Entry</code>, <code>Enable Selected Entry</code>; shell-extension table.</li>
+<li>PagefileOptimizerPage: <code>Apply Fixed Allocation</code>, <code>Reset to System-Managed</code>; virtual-memory status card (VirtualMemoryStatus).</li>
+<li>DiagnosticDataManagerPage: <code>Audit Telemetry State</code>, <code>Enforce Maximum Privacy Preset</code>; telemetry-policy table.</li>
+<li>StartupImpactPage: <code>Scan Startup Impact</code>; StartupApproved/impact table.</li>
+<li>SlackSpaceAnalyzerPage: <code>Choose Folder to Analyze…</code>, <code>Analyze Slack Waste</code>; cluster/slack forensics table.</li>
+<li>EventLogMonitorPage: <code>Scan Event Log for Faults</code>, <code>Toggle Selected Item State</code>/<code>Export</code>; kernel-crash/fault table. All QTableWidget + QMessageBox confirms.</li>
+<li>backend: <code>cortex_unified.system_tools.env_variable_manager</code>, <code>service_manager</code>, <code>font_cache_manager</code>, <code>temp_folder_cleaner</code>, <code>context_menu_manager</code>, <code>pagefile_optimizer</code>, <code>diagnostic_data_manager</code>, <code>startup_impact_analyzer</code>, <code>slack_space_analyzer</code>, <code>event_log_monitor</code></li>
+</ul>
+<h2 id="hashverifierpage-batchrenamerpage-foldersyncpage-filesplitterpage-fileunlockerpage-adsmanagerpage-eventlogcleanerpage-systemcacherebuilderpage-networkoptimizerpage-crashdumpcleanerpage-premiumpower_tools_pagespy">HashVerifierPage / BatchRenamerPage / FolderSyncPage / FileSplitterPage / FileUnlockerPage / AdsManagerPage / EventLogCleanerPage / SystemCacheRebuilderPage / NetworkOptimizerPage / CrashDumpCleanerPage (premium/power_tools_pages.py)<a class="headerlink" href="#hashverifierpage-batchrenamerpage-foldersyncpage-filesplitterpage-fileunlockerpage-adsmanagerpage-eventlogcleanerpage-systemcacherebuilderpage-networkoptimizerpage-crashdumpcleanerpage-premiumpower_tools_pagespy" title="Permanent link">&para;</a></h2>
+<ul>
+<li>HashVerifierPage: <code>Select File…</code>, <code>Compute Hashes</code> (algo QComboBox), <code>Verify Manifest (.sfv / .sha256)…</code>, <code>Copy</code> hash; hash-result table.</li>
+<li>BatchRenamerPage: <code>Select Files…</code>, preview table, <code>Apply Rename</code>, <code>Undo Last Rename</code>; pattern QLineEdit + QComboBox rules.</li>
+<li>FolderSyncPage: <code>Left Folder…</code> / <code>Right Folder…</code> pickers, <code>Compare Folders</code> (diff table), <code>Synchronize Now</code> (direction QComboBox).</li>
+<li>FileSplitterPage: <code>Select File…</code>, chunk-size QSpinBox, <code>Split File Now</code>, <code>Select Part (.001 / .split.json)…</code>, <code>Join Files Now</code>.</li>
+<li>FileUnlockerPage: <code>Select Locked File…</code>, <code>Inspect Locks</code> (handle table), <code>Kill Process</code> (confirm).</li>
+<li>AdsManagerPage: <code>Select File…</code>, stream table, <code>Unblock File (Remove Zone.Id)</code>, <code>Delete Stream</code>.</li>
+<li>EventLogCleanerPage: log QComboBox + <code>Refresh Logs</code>, <code>Clear All Event Logs</code> (confirm).</li>
+<li>SystemCacheRebuilderPage: <code>Rebuild Font &amp; Icon Caches Now</code>; status readout.</li>
+<li>NetworkOptimizerPage: <code>Set TCP Normal (Default)</code>, <code>Set TCP Experimental (Gaming/High Throughput)</code>, <code>Flush DNS Cache</code>, <code>Clear ARP Cache</code>, <code>Reset Winsock</code>, <code>Complete 1-Click Repair</code>.</li>
+<li>CrashDumpCleanerPage: <code>Scan Crash Dumps</code>, <code>Clean All Crash Dumps</code>; dump table (CrashDumpCleaner).</li>
+<li>backend: <code>cortex_unified.system_tools.crash_dump_cleaner</code>, <code>event_log_cleaner</code>, <code>network_stack_optimizer</code>, <code>system_cache_rebuilder</code> (+ hash/rename/sync/split/unlock/ADS engines)</li>
+</ul>
+<h2 id="privacyblockerpage-premiumprivacy_blocker_pagepy">PrivacyBlockerPage (premium/privacy_blocker_page.py)<a class="headerlink" href="#privacyblockerpage-premiumprivacy_blocker_pagepy" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Telemetry-tweak table <code>["Tweak Name","Category","Status","Description"]</code> (TELEMETRY_TWEAKS) with QCheckBox picks + category QComboBox; QProgressBar (<code>_PrivacyWorker</code>).</li>
+<li><code>Apply Selected</code>, <code>Revert All</code> (question confirm; <code>Reverting all applied tweaks…</code>).</li>
+<li>backend: <code>cortex_unified.system_tools.privacy_blocker</code> (+ <code>TELEMETRY_TWEAKS</code>)</li>
+</ul>
+<h2 id="registryaicleanerpage-premiumregistry_ai_pagepy">RegistryAICleanerPage (premium/registry_ai_page.py)<a class="headerlink" href="#registryaicleanerpage-premiumregistry_ai_pagepy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>Choose Registry Root…</code> + category QComboBox (<code>All Categories/App Paths Only/Uninstall Only/SharedDLLs Only/Fonts…</code>) + risk-threshold QSpinBox + <code>Scan</code> (<code>_RegistryWorker</code> over AIRegistryCleaner).</li>
+<li>Issue table <code>["Key Path","Value Name","Category","Risk Score","Recommendation"]</code>; clean action; <code>No issues found above threshold</code> state.</li>
+<li>backend: <code>cortex_unified.analyzers.registry_cleaner_ai.AIRegistryCleaner</code> (+ <code>_CATEGORY_DEFS</code>)</li>
+</ul>
+<h2 id="healthreportpage-backupspage-premiumreport_pagespy">HealthReportPage / BackupsPage (premium/report_pages.py)<a class="headerlink" href="#healthreportpage-backupspage-premiumreport_pagespy" title="Permanent link">&para;</a></h2>
+<ul>
+<li>HealthReportPage: <code>Export HTML</code> / <code>Export JSON</code> / <code>Export Text</code>, <code>Open Last Report</code> (file dialog), <code>Refresh</code> (HealthReportWorker over ReportsGenerator + DiskHealthMonitor/SystemInfo); summary cards + table.</li>
+<li>BackupsPage: manifest table + <code>Refresh</code>, row-select → <code>Preview Restore</code> (dialog), <code>Restore Selected</code> (RestoreWorker over RestoreManager, question confirm); <code>No backups found yet…</code> state; QProgressBar.</li>
+<li>backend: <code>cortex_unified.reports.reports.ReportsGenerator</code>, <code>cortex_unified.reports.restore_manager.RestoreManager</code>, <code>cortex_unified.system_tools.disk_health</code>, <code>cortex_unified.system_tools.system_info</code></li>
+</ul>
+<h2 id="s3fifopage-premiums3_fifo_pagepy">S3FifoPage (premium/s3_fifo_page.py)<a class="headerlink" href="#s3fifopage-premiums3_fifo_pagepy" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Cache-trace options (QSpinBox sizes); <code>Run Benchmark</code> (<code>_BenchWorker</code> over S3FIFO vs LRU); QProgressBar.</li>
+<li>Result table <code>["Metric","Value"]</code> + verdict label (<code>S3-FIFO beats LRU on this trace</code>).</li>
+<li>backend: <code>cortex_unified.system_tools.s3_fifo.S3FIFO</code></li>
+</ul>
+<h2 id="searchindexoptimizerpage-premiumsearch_optimizer_pagepy">SearchIndexOptimizerPage (premium/search_optimizer_page.py)<a class="headerlink" href="#searchindexoptimizerpage-premiumsearch_optimizer_pagepy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>Inspect Search Database</code> (catalog/EDB size card: <code>Querying Windows Search catalog...</code>, <code>Warning: Inflated (&gt; 1 GB)</code>); QProgressBar (<code>_SearchWorker</code>).</li>
+<li><code>Compact Database (esentutl /d)</code> and <code>Rebuild Index Catalog</code> (each question confirm); elevation state (<code>Elevated (Full Control)</code>).</li>
+<li>backend: <code>cortex_unified.system_tools.search_index_optimizer</code></li>
+</ul>
+<h2 id="secureshredderpage-premiumsecure_shredder_pagepy">SecureShredderPage (premium/secure_shredder_page.py)<a class="headerlink" href="#secureshredderpage-premiumsecure_shredder_pagepy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>Add Files…</code> (getOpenFileNames) / <code>Add Folder…</code> (dir dialog) into queue table <code>["File Path","Size","Standard","Status"]</code>; <code>Clear List</code>.</li>
+<li>Standard QComboBox (NIST Clear/Purge, DoD 3/7-pass, Gutmann 35, HMG IS5, VSITR, GOST, Schneier, RCMP, NSA EPL, Zero/One/Random fills); storage-type label; <code>Verify after wipe</code> QCheckBox; QProgressBar (<code>_ShredWorker</code>); <code>Shred Selected</code> (warning confirm).</li>
+<li>backend: <code>cortex_unified.system_tools.secure_shredder.SecureShredder/ShredStandard/StorageType</code></li>
+</ul>
+<h2 id="srumbamcleanerpage-premiumsrum_bam_pagepy">SrumBamCleanerPage (premium/srum_bam_page.py)<a class="headerlink" href="#srumbamcleanerpage-premiumsrum_bam_pagepy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>Inspect Execution Traces</code> (reads BAM/DAM hives + SRUDB via <code>_SrumBamWorker</code>); trace table <code>["Executable Path","Last Execution Time (UTC)","User SID","Subsystem"]</code>.</li>
+<li><code>Sanitize BAM Execution History</code> (question confirm → sanitizing state); QProgressBar.</li>
+<li>backend: <code>cortex_unified.system_tools.srum_bam_cleaner</code></li>
+</ul>
+<h2 id="startupoptimizerpage-premiumstartup_optimizer_pagepy">StartupOptimizerPage (premium/startup_optimizer_page.py)<a class="headerlink" href="#startupoptimizerpage-premiumstartup_optimizer_pagepy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>Refresh</code> scan (<code>_StartupScanWorker</code> over registry/folders/tasks); entry table (name/location/profile) with filter QComboBox + StatePanel + QProgressBar.</li>
+<li><code>Disable Selected</code> (<code>_DisableWorker</code> → CortexBackup registry stash), <code>Enable Selected</code> (<code>_EnableWorker</code> restore); info dialogs; <code>Scanning registry, folders, and scheduled tasks…</code> / <code>No entries found</code>.</li>
+<li>backend: <code>cortex_unified.system_tools.startup_optimizer.StartupOptimizer</code></li>
+</ul>
+<h2 id="privacypage-startuppage-processespage-networkpage-uninstallerpage-leftoverscannerpage-telemetryblocker-registrycleaner-premiumsystem_pagespy">PrivacyPage / StartupPage / ProcessesPage / NetworkPage / UninstallerPage / LeftoverScannerPage / TelemetryBlocker / RegistryCleaner (premium/system_pages.py)<a class="headerlink" href="#privacypage-startuppage-processespage-networkpage-uninstallerpage-leftoverscannerpage-telemetryblocker-registrycleaner-premiumsystem_pagespy" title="Permanent link">&para;</a></h2>
+<ul>
+<li>PrivacyPage: <code>Scan Browsers &amp; Traces</code> (PrivacyScanWorker), trace table + <code>Sweep Selected</code> (PrivacyCleanWorker over PrivacyCleaner).</li>
+<li>StartupPage: table + <code>Refresh</code>, <code>Disable Selected</code> (StartupListWorker over StartupManager).</li>
+<li>ProcessesPage: <code>Refresh</code>, <code>End Task</code> (TaskSnapshotWorker/NetworkWorker? TaskManager); memory-explain card (<code>Why don't these numbers add up?</code> toggle).</li>
+<li>NetworkPage: connection table + <code>Refresh</code>, <code>End Owning Task</code> (NetworkMonitor; orange rows = listen-on-all-interfaces).</li>
+<li>UninstallerPage (<code>Deep Uninstaller</code>): <code>Refresh</code>, <code>Uninstall Selected</code> (UninstallerListWorker over AppUninstaller), <code>Scan for Leftovers</code>, <code>Find Orphan Folders</code>, leftover/orphan tables + <code>Clean Selected</code> / <code>Keep Selected</code> (LeftoverScanWorker/OrphanScanWorker/LeftoverCleanWorker + ExclusionsStore <code>_LeftoverSection</code>).</li>
+<li>TelemetryBlocker: <code>Block All Telemetry</code>, <code>Restore Defaults</code> (TelemetryStatusWorker/TelemetryApplyWorker over TelemetryBlocker).</li>
+<li>RegistryCleaner: <code>Scan Registry</code>, <code>Clean All Found</code> (RegistryScanWorker/RegistryCleanWorker over RegistryCleaner). All QTableWidget/QTreeWidget + QProgressBar + QMessageBox.</li>
+<li>backend: <code>cortex_unified.analyzers.privacy_cleaner</code>, <code>cortex_unified.system_tools.startup_manager</code>, <code>task_manager</code>, <code>network_monitor</code>, <code>app_uninstaller</code>, <code>leftover_cleaner</code>, <code>telemetry_blocker</code>, <code>registry_cleaner</code>, <code>cortex_unified.licensing.Feature</code></li>
+</ul>
+<h2 id="performancepage-browserextensionspage-driverinventorypage-premiumtools_pagespy">PerformancePage / BrowserExtensionsPage / DriverInventoryPage (premium/tools_pages.py)<a class="headerlink" href="#performancepage-browserextensionspage-driverinventorypage-premiumtools_pagespy" title="Permanent link">&para;</a></h2>
+<ul>
+<li>PerformancePage: <code>Detect Plans</code> (PowerPlanListWorker), plan table, <code>Activate Selected</code> (PowerPlanSetWorker over PerformanceTuner).</li>
+<li>BrowserExtensionsPage: <code>Scan Extensions</code> (ExtensionAuditWorker over BrowserExtensionAuditor); extension table; <code>No extensions found…</code> state.</li>
+<li>DriverInventoryPage: <code>List Drivers</code> (DriverListWorker over DriverInventory); driver table (QTableView/QTableWidget + QProgressBar).</li>
+<li>backend: <code>cortex_unified.system_tools.performance_tuner</code>, <code>browser_extensions</code>, <code>driver_inventory</code></li>
+</ul>
+<h2 id="videoduplicatespage-premiumvideo_duplicates_pagepy">VideoDuplicatesPage (premium/video_duplicates_page.py)<a class="headerlink" href="#videoduplicatespage-premiumvideo_duplicates_pagepy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>Choose Folder…</code> + <code>Find Video Duplicates</code> (<code>_VideoWorker</code>); QProgressBar.</li>
+<li>Results table <code>["Video File","Group","Hint"]</code>; <code>No video duplicates found</code>.</li>
+<li>backend: <code>cortex_unified.analyzers.video_duplicate_finder.VideoDuplicateFinder</code></li>
+</ul>
+<h2 id="winupdaterepairpage-premiumwin_update_repair_pagepy">WinUpdateRepairPage (premium/win_update_repair_page.py)<a class="headerlink" href="#winupdaterepairpage-premiumwin_update_repair_pagepy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>Run Preflight</code> (<code>_PreflightWorker</code>: <code>Services: / Network: / Pending reboot: / Recent errors:</code> card); phase table <code>["Phase","Status","Duration","Details"]</code>; QCheckBox repair options.</li>
+<li><code>Run Repair</code> (<code>_RepairWorker</code>, question confirm); QProgressBar + info dialogs.</li>
+<li>backend: <code>cortex_unified.system_tools.windows_update_repair</code></li>
+</ul>
+<h2 id="winapp2cleanerpage-premiumwinapp2_pagepy">Winapp2CleanerPage (premium/winapp2_page.py)<a class="headerlink" href="#winapp2cleanerpage-premiumwinapp2_pagepy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>Scan Installed Applications</code> (<code>_Winapp2Worker</code> over Winapp2 definitions); rule table <code>["Application / Rule","Category","Target Cache Path","Size"]</code> with QCheckBox picks.</li>
+<li><code>Clean Selected Caches</code> (question confirm); scanning/cleaning states + QProgressBar.</li>
+<li>backend: <code>cortex_unified.system_tools.winapp2_cleaner.Winapp2Cleaner/AppCleanTarget/Winapp2Report</code></li>
+</ul>
+<h2 id="wslpage-premiumwsl_pagepy">WslPage (premium/wsl_page.py)<a class="headerlink" href="#wslpage-premiumwsl_pagepy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>List Distros</code> (<code>_WslListWorker</code>); distro table <code>["Distro","State","Path","Size (on disk)","Size (logical)"]</code> + QProgressBar.</li>
+<li><code>Stop WSL (wsl --shutdown)</code> (<code>_WslShutdownWorker</code>, confirm), <code>Compact Selected</code> (vhdx compact via WslCleaner, confirm); <code>WSL is not installed…</code> / <code>No WSL distros detected…</code> states.</li>
+<li>backend: <code>cortex_unified.system_tools.wsl_cleaner.WslCleaner</code></li>
+</ul>
+<hr />
+<h2 id="dashboardtab-tabsdashboard_tabpy">DashboardTab (tabs/dashboard_tab.py)<a class="headerlink" href="#dashboardtab-tabsdashboard_tabpy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>START SMART SCAN</code> (OptimizerWorker/SmartScannerWorker with <code>Scanning…</code> progress); health-score cards; <code>OPTIMIZE NOW</code> / <code>RESCAN SYSTEM</code> apply fixes.</li>
+<li>backend: <code>cortex_unified.core.smart_scanner</code>, <code>cortex_unified.core.config</code></li>
+</ul>
+<h2 id="emptyfilestab-tabsempty_files_tabpy">EmptyFilesTab (tabs/empty_files_tab.py)<a class="headerlink" href="#emptyfilestab-tabsempty_files_tabpy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>Browse</code> (dir dialog) + <code>Scan</code> (EmptyFilesWorker over Scanner); files/dirs tables; <code>Select All</code> / <code>Deselect All</code> / <code>Delete Selected</code> (Deleter, confirm); <code>Scan completed</code> status.</li>
+<li>backend: <code>cortex_unified.core.scanner.Scanner</code>, <code>cortex_unified.core.deleter.Deleter</code></li>
+</ul>
+<h2 id="deepcleanertab-tabsdeep_cleaner_tabpy">DeepCleanerTab (tabs/deep_cleaner_tab.py)<a class="headerlink" href="#deepcleanertab-tabsdeep_cleaner_tabpy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>🔍 Start Deep Scan</code> (DeepCleanerWorker); category tree with checkboxes; <code>☑ Check All</code> / <code>☐ Uncheck All</code>; <code>🗑️ Clean Selected</code> (Deleter); <code>Scan completed ✅</code> status.</li>
+<li>backend: <code>cortex_unified.analyzers.deep_cleaner.DeepCleaner</code>, <code>cortex_unified.core.deleter</code></li>
+</ul>
+<h2 id="duplicatestab-tabsduplicates_tabpy">DuplicatesTab (tabs/duplicates_tab.py)<a class="headerlink" href="#duplicatestab-tabsduplicates_tabpy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>Browse</code> + <code>Find Duplicates</code> (DuplicateFinderWorker); hash-group table; <code>Select All</code> / <code>Deselect All</code> / <code>Delete Selected</code> (<code>Deleting files...</code> progress).</li>
+<li>backend: <code>cortex_unified.analyzers.duplicate_finder.DuplicateFinder</code>, <code>cortex_unified.core.deleter</code></li>
+</ul>
+<h2 id="largefilestab-tabslarge_files_tabpy">LargeFilesTab (tabs/large_files_tab.py)<a class="headerlink" href="#largefilestab-tabslarge_files_tabpy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>Browse</code> + <code>Find Large Files</code> (LargeFileFinderWorker with size QSpinBox); size-sorted table; <code>Select All</code> / <code>Deselect All</code> / <code>Delete Selected</code>.</li>
+<li>backend: <code>cortex_unified.analyzers.large_file_finder.LargeFileFinder</code>, <code>cortex_unified.core.deleter</code></li>
+</ul>
+<h2 id="diskanalyzertab-tabsdisk_analyzer_tabpy">DiskAnalyzerTab (tabs/disk_analyzer_tab.py)<a class="headerlink" href="#diskanalyzertab-tabsdisk_analyzer_tabpy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>Browse</code> + <code>Analyze Disk</code> (DiskAnalyzerWorker); folder table; <code>TreeMap View</code> / <code>Sunburst View</code> / <code>Interactive Dashboard</code> visualizations; <code>Export Visualization</code>.</li>
+<li>backend: <code>cortex_unified.analyzers.disk_analyzer.DiskAnalyzer</code>, <code>cortex_unified.visualization.interactive_dashboard</code></li>
+</ul>
+<h2 id="dockertab-tabsdocker_tabpy">DockerTab (tabs/docker_tab.py)<a class="headerlink" href="#dockertab-tabsdocker_tabpy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>Scan Docker Resources</code> (DockerScanWorker); image/container/volume table with availability banner (<code>✓ Docker is available…</code> / <code>✗ Docker is not available…</code>); <code>Clean Up Resources</code> (DockerCleanupWorker).</li>
+<li>backend: <code>cortex_unified.analyzers.docker_cleaner.DockerCleaner</code>, <code>cortex_unified.core.deleter</code></li>
+</ul>
+<h2 id="brokenlinkstab-tabsbroken_links_tabpy">BrokenLinksTab (tabs/broken_links_tab.py)<a class="headerlink" href="#brokenlinkstab-tabsbroken_links_tabpy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>Browse</code> + <code>Scan for Broken Links</code> (BrokenLinksWorker); link table; <code>Select All</code> / <code>Deselect All</code> / <code>Repair Selected</code> (LinkRepairWorker) / <code>Export Results</code>.</li>
+<li>backend: <code>cortex_unified.analyzers.broken_link_detector</code></li>
+</ul>
+<h2 id="restoretab-tabsrestore_tabpy">RestoreTab (tabs/restore_tab.py)<a class="headerlink" href="#restoretab-tabsrestore_tabpy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>Refresh Recovery Points</code> (manifest list); snapshot table; <code>Restore Selected Snapshot</code> + <code>Delete Backup</code> (RestoreWorker, confirms).</li>
+<li>backend: <code>cortex_unified.reports.restore_manager.RestoreManager</code></li>
+</ul>
+<h2 id="settingstab-tabssettings_tabpy">SettingsTab (tabs/settings_tab.py)<a class="headerlink" href="#settingstab-tabssettings_tabpy" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Forms for scan/delete preferences, language selector (i18n manager), performance toggles; <code>Save System Configurations</code> persists via QSettings/Config.</li>
+<li>backend: <code>cortex_unified.performance.settings_integration</code>, <code>cortex_unified.translations.settings_integration</code>, <code>cortex_unified.core.config</code></li>
+</ul>
+<h2 id="uninstallertab-tabsuninstaller_tabpy">UninstallerTab (tabs/uninstaller_tab.py)<a class="headerlink" href="#uninstallertab-tabsuninstaller_tabpy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>Refresh</code> app list (AppListWorker); app table; <code>Run Official Uninstaller</code>; <code>Scan for Leftover Files</code> (ResidualScanWorker); leftover table + <code>Clean Selected (Recycle Bin)</code> (ResidualCleanWorker).</li>
+<li>backend: <code>cortex_unified.system_tools.app_uninstaller</code>, <code>cortex_unified.system_tools.leftover_cleaner</code></li>
+</ul>
+<h2 id="privacytab-tabsprivacy_tabpy">PrivacyTab (tabs/privacy_tab.py)<a class="headerlink" href="#privacytab-tabsprivacy_tabpy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>Scan Browsers &amp; System Traces</code> (BrowserScanWorker); trace table; <code>Sweep Selected Data</code> (PrivacyCleaner); <code>Block All Telemetry</code> / <code>Restore Defaults</code> + <code>All Blocked</code> status (TelemetryBlocker).</li>
+<li>backend: <code>cortex_unified.analyzers.privacy_cleaner</code>, <code>cortex_unified.system_tools.telemetry_blocker</code></li>
+</ul>
+<h2 id="packagemanagertab-tabspackage_manager_tabpy">PackageManagerTab (tabs/package_manager_tab.py)<a class="headerlink" href="#packagemanagertab-tabspackage_manager_tabpy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>🔍 Detect Available Package Managers</code> (detecting…/not-found states); <code>➕ Add Folder</code> / <code>➖ Remove Selected</code> / <code>🗑️ Clear All</code> custom roots; <code>🔍 Scan for Caches</code> (PMScanWorker/PMSearchWorker); cache table + <code>🧹 Clean Selected Caches</code> (PMCleanWorker).</li>
+<li>backend: <code>cortex_unified.analyzers.package_manager_cleaner.PackageManagerCleaner</code>, <code>cortex_unified.core.deleter</code></li>
+</ul>
+<h2 id="fileshreddertab-tabsfile_shredder_tabpy">FileShredderTab (tabs/file_shredder_tab.py)<a class="headerlink" href="#fileshreddertab-tabsfile_shredder_tabpy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>Add Files</code> / <code>Add Folder</code> (file/dir dialogs) into queue table; <code>Remove Selected</code> / <code>Clear All</code>; passes QSpinBox + mode QComboBox; <code>Start Shredding</code> (FileShredderWorker over AdvancedShredder + FreeSpaceWiper; Pro-gated via licensing Feature).</li>
+<li>backend: <code>cortex_unified.analyzers.advanced_shredder.AdvancedShredder</code>, <code>cortex_unified.system_tools.free_space_wipe</code>, <code>cortex_unified.licensing</code></li>
+</ul>
+<h2 id="schedulertab-tabsscheduler_tabpy">SchedulerTab (tabs/scheduler_tab.py)<a class="headerlink" href="#schedulertab-tabsscheduler_tabpy" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Task table + <code>Add New Task</code> (AddTaskDialog: schedule QComboBox + path QLineEdit + <code>Create Task</code>/<code>Browse...</code>/<code>Cancel</code>), <code>Remove Task</code>, <code>Refresh List</code>, <code>Run Selected Now</code>; rules section (<code>Create Rule</code>/<code>Test Rule</code>/<code>Delete Rule</code>/<code>Refresh Rules</code> over AutoCleanRules + <code>Apply Auto-Rules</code>, <code>Daemon: ACTIVE</code> badge).</li>
+<li>backend: <code>cortex_unified.scheduler.scheduler.TaskScheduler</code>, <code>cortex_unified.scheduler.auto_clean_rules.AutoCleanRules</code></li>
+</ul>
+<h2 id="reportstab-tabsreports_tabpy">ReportsTab (tabs/reports_tab.py)<a class="headerlink" href="#reportstab-tabsreports_tabpy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>Generate Report</code> / <code>Preview Report</code> (ReportsGenerator); report list + <code>Open Selected Report</code>/<code>Refresh Reports</code>/<code>Save as Template</code>/<code>Load Template</code>; <code>Schedule Report (Pro)</code> (TaskScheduler, license-gated); <code>Refresh Activity Log</code>; chart zoom <code>🔍 Zoom In</code> / <code>🔍 Zoom Out</code> / <code>🔄 Reset Zoom</code>.</li>
+<li>backend: <code>cortex_unified.reports.reports.ReportsGenerator</code>, <code>cortex_unified.scheduler.scheduler</code>, <code>cortex_unified.licensing</code></li>
+</ul>
+<h2 id="resourcemonitortab-tabsresource_monitor_tabpy">ResourceMonitorTab (tabs/resource_monitor_tab.py)<a class="headerlink" href="#resourcemonitortab-tabsresource_monitor_tabpy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>Start Monitoring</code> / <code>Stop Monitoring</code> live CPU/RAM/disk charts + process table (ResourceMonitor).</li>
+<li>backend: <code>cortex_unified.performance.resource_monitor.ResourceMonitor</code></li>
+</ul>
+<h2 id="startupmanagertab-tabsstartup_manager_tabpy">StartupManagerTab (tabs/startup_manager_tab.py)<a class="headerlink" href="#startupmanagertab-tabsstartup_manager_tabpy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>Refresh Startup Items</code> (StartupScanWorker); startup-entry table; <code>Disable Selected Item</code> (confirm).</li>
+<li>backend: <code>cortex_unified.system_tools.startup_manager.StartupManager</code></li>
+</ul>
+<h2 id="systemtoolstab-tabssystem_tools_tabpy">SystemToolsTab (tabs/system_tools_tab.py)<a class="headerlink" href="#systemtoolstab-tabssystem_tools_tabpy" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Container hub embedding ProcessAnalyzerTab + RegistryCleanerTab + StartupManagerTab (no direct actions; navigation only).</li>
+<li>backend: <code>cortex_unified.ui.tabs.process_analyzer_tab</code>, <code>registry_cleaner_tab</code>, <code>startup_manager_tab</code></li>
+</ul>
+<h2 id="processanalyzertab-tabsprocess_analyzer_tabpy">ProcessAnalyzerTab (tabs/process_analyzer_tab.py)<a class="headerlink" href="#processanalyzertab-tabsprocess_analyzer_tabpy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>Refresh Activity</code> (ProcessAnalyzerWorker); live process table (PID/CPU/RAM) with kill/sort.</li>
+<li>backend: <code>cortex_unified.system_tools.process_analyzer.ProcessAnalyzer</code></li>
+</ul>
+<h2 id="registrycleanertab-tabsregistry_cleaner_tabpy">RegistryCleanerTab (tabs/registry_cleaner_tab.py)<a class="headerlink" href="#registrycleanertab-tabsregistry_cleaner_tabpy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>Scan Registry</code> (RegistryScanWorker); issue table; <code>Clean Registry</code> (RegistryCleanWorker, backup confirm).</li>
+<li>backend: <code>cortex_unified.system_tools.registry_cleaner.RegistryCleaner</code></li>
+</ul>
+<h2 id="securityscannertab-tabssecurity_scanner_tabpy">SecurityScannerTab (tabs/security_scanner_tab.py)<a class="headerlink" href="#securityscannertab-tabssecurity_scanner_tabpy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>Browse</code> target + <code>🔍 Start Security Scan</code> (SentinelScanWorker over secrets scanner); finding table; <code>📄 Export JSON Report</code> (file dialog); <code>Starting security scan...</code> progress.</li>
+<li>backend: <code>cortex_unified.system_tools.secrets_scanner</code></li>
+</ul>
+<h2 id="heuristicstab-tabsheuristics_tabpy">HeuristicsTab (tabs/heuristics_tab.py)<a class="headerlink" href="#heuristicstab-tabsheuristics_tabpy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>Browse...</code> + <code>Scan for Leftovers</code> (Scanner heuristics); leftover table; <code>Clean Up Leftovers</code> (Deleter).</li>
+<li>backend: <code>cortex_unified.core.scanner</code>, <code>cortex_unified.core.deleter</code></li>
+</ul>
+<h2 id="basetab-tabsbase_tabpy">BaseTab (tabs/base_tab.py)<a class="headerlink" href="#basetab-tabsbase_tabpy" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Non-visual base class: translator hookup, SafetyManager-guarded <code>run_safety_checked</code> scaffold, shared worker/signal helpers. No direct user actions.</li>
+<li>backend: <code>cortex_unified.ui.safety</code>, <code>cortex_unified.core.config</code>, <code>cortex_unified.translations.translator</code></li>
+</ul>
+<hr />
+<h2 id="deepcleanergui-shell-uimain_windowpy">DeepCleanerGUI shell (ui/main_window.py)<a class="headerlink" href="#deepcleanergui-shell-uimain_windowpy" title="Permanent link">&para;</a></h2>
+<ul>
+<li>QMainWindow + NavigationController with 19 icon tabs: Dashboard, Cleaner (EmptyFiles), Duplicates, Deep Cleaner, Large Files, Disk Analyzer, Docker, Broken Links, Restore, Settings, Package Caches, File Shredder, Scheduler (+ <code>Scheduled Tasks</code>/<code>Auto-Clean Rules</code> sub-tabs with <code>Create Task</code>/<code>Run Selected Now</code>/<code>Delete Selected</code>/<code>Refresh Tasks</code>/<code>Create Rule</code>/<code>Test Rule</code>/<code>Delete Rule</code>/<code>Refresh Rules</code>), Reports (<code>Generate/Preview/Schedule/Refresh/Save/Load Template</code>), Resource Monitor (<code>Start/Stop Monitoring</code>), System Tools (Process/Registry/Startup), Security Scanner, Deep Uninstaller, Privacy Shield; ScanWorker/DeleteWorker/MultiDriveScanWorker (QThread) + progress/cancel (<code>Export</code>, <code>Cancel</code>, <code>Browse...</code>, <code>Scan for Leftovers</code>, <code>Clean Up Leftovers</code>, <code>Add Files/Folder</code>, <code>Remove Selected</code>, <code>Clear All</code>, <code>Start Shredding</code>, <code>Test Connection</code>, <code>Add</code>, <code>View</code>, <code>Delete</code>, <code>Close</code> dialogs).</li>
+<li>backend: <code>cortex_unified.core.scanner</code>, <code>core.deleter</code>, <code>core.config</code>, <code>analyzers.*</code> (duplicate/large-file/cache/old-file/shredder/disk/duplicate-folder/docker/broken-link/package-manager), <code>system_tools.startup_manager/process_analyzer/registry_cleaner</code>, <code>scheduler.scheduler/auto_clean_rules</code>, <code>reports.restore_manager/reports</code>, <code>ui.navigation.navigation_controller</code>, <code>ui.safety.safety_manager</code>, <code>ui.tray_icon.SystemTrayManager</code></li>
+</ul>
+<h2 id="safety-layer-uisafetysafety_managerpy-path_validatorpy-process_managerpy-manifest_systempy">Safety layer (ui/safety/safety_manager.py, path_validator.py, process_manager.py, manifest_system.py)<a class="headerlink" href="#safety-layer-uisafetysafety_managerpy-path_validatorpy-process_managerpy-manifest_systempy" title="Permanent link">&para;</a></h2>
+<ul>
+<li>SafetyManager (non-visual gate used by every tab/page): operation factory (<code>create_operation</code>), path-safety validation, dry-run enforcement, resource limits, custom callbacks, <code>validate_operation</code>/<code>execute_safe_operation</code> with confirm/error dialogs surfaced by callers; system blacklists + whitelist/blacklist config.</li>
+<li>PathValidator: critical-dir + symlink + permission checks (<code>is_safe_to_delete</code>, <code>validate_operation_paths</code>, whitelist/blacklist, blocking-reason summary).</li>
+<li>ProcessManager: allow-listed executable validation, arg sanitization, <code>execute_safe_command</code>/<code>execute_with_progress</code>, timeouts, kill/cleanup.</li>
+<li>ManifestSystem: pre-op manifests (<code>create_operation_manifest</code>), per-file hash log, error log, finalize, restore-point listing (<code>get_restore_operations</code>/<code>list_manifests</code>/<code>get_manifest_details</code>), retention cleanup. No direct widgets; backs Refresh/Restore/Delete/Preview actions.</li>
+<li>backend: <code>cortex_unified.ui.safety</code> (pure service layer; no engine dependency beyond caller-supplied callbacks)</li>
+</ul>
+<h2 id="systemtraymanager-uitray_iconpy">SystemTrayManager (ui/tray_icon.py)<a class="headerlink" href="#systemtraymanager-uitray_iconpy" title="Permanent link">&para;</a></h2>
+<ul>
+<li>QSystemTrayIcon (<code>Cortex Cleaner — System Monitor</code>, bundled <code>assets/icon.png</code> or OS fallback) with menu: <code>Open Cortex Cleaner</code> (show/raise window), <code>Instant Smart Scan</code> (opens Dashboard → <code>run_smart_scan</code>), <code>Exit</code> (stops agent, hides icon, quits); click-to-show activation.</li>
+<li>BackgroundAgent (15s QThread): <code>High Memory Usage</code> / <code>High CPU Usage</code> / <code>Low Disk Space</code> balloon alerts suggesting Cleaner/startup-optimizer actions.</li>
+<li>backend: <code>cortex_unified.core.background_agent.BackgroundAgent</code></li>
+</ul>
+<hr />
+<h2 id="counts">Counts<a class="headerlink" href="#counts" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Premium page files audited: 42 (<code>*_pages.py</code> + <code>*_page.py</code>); individual premium GUI pages: ~127 (30 single-page files incl. Nexus + License; ~97 sub-pages inside 12 aggregate files).</li>
+<li>Legacy tab files: 24 (23 user-facing tabs + BaseTab scaffold); main-window shell: 1 (DeepCleanerGUI, 19 nav tabs); safety modules: 4; tray manager: 1.</li>
+<li>Total user-facing surfaces: ~152 (127 premium pages + 23 tabs + main shell + tray). Total discrete user actions catalogued: ~640 (scan/analyze/refresh buttons, tables with select-all/clean/delete/sweep/shred/compact/repair/optimize/block/uninstall/export/preview/restore/sync/split/verify/benchmark pickers, combos, checkboxes, file/folder dialogs, confirm + progress + empty-state dialogs).</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.expand", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight", "search.share", "content.code.copy", "content.tabs.link"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

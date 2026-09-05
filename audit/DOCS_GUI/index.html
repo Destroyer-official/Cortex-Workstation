@@ -1,0 +1,3493 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="The Ultimate Windows NT Systems Optimization, Forensics & File Management Platform">
+      
+      
+        <meta name="author" content="Destroyer-official">
+      
+      
+        <link rel="canonical" href="https://destroyer-official.github.io/Cortex-Workstation/audit/DOCS_GUI/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/icons/cortex.ico">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>GUI Purpose Documentation (DOCS_GUI) - Cortex Workstation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="deep-purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#gui-purpose-documentation-docs_gui" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Cortex Workstation" class="md-header__button md-logo" aria-label="Cortex Workstation" data-md-component="logo">
+      
+  <img src="../../assets/icons/cortex.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Cortex Workstation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              GUI Purpose Documentation (DOCS_GUI)
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="deep-purple"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="deep-purple"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/Destroyer-official/Cortex-Workstation" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Destroyer-official/Cortex-Workstation
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../.." class="md-tabs__link">
+          
+  
+  
+  🌎 Welcome Hub
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../user/getting-started/" class="md-tabs__link">
+          
+  
+  
+  📦 User Space
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../ARCHITECTURE/" class="md-tabs__link">
+          
+  
+  
+  🏗️ Developer Platform
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../api/overview/" class="md-tabs__link">
+          
+  
+  
+  🔌 API & Subsystems
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Cortex Workstation" class="md-nav__button md-logo" aria-label="Cortex Workstation" data-md-component="logo">
+      
+  <img src="../../assets/icons/cortex.png" alt="logo">
+
+    </a>
+    Cortex Workstation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/Destroyer-official/Cortex-Workstation" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Destroyer-official/Cortex-Workstation
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_1" id="__nav_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    🌎 Welcome Hub
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    🌎 Welcome Hub
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Command Center
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../FEATURE_DIRECTORY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Feature Directory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../quick_reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quick Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    📦 User Space
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    📦 User Space
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/how-to-guides/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How-To Guides
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ui_visual_guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UI Visual Tour & Design Tokens
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI & Shell Usage Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../advanced-features/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Advanced Forensic & Performance Tuning
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../package_manager_guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Package Manager Cleaner Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/nexus-explorer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Nexus File Manager (VFS)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../i18n_accessibility/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Accessibility & Keybindings
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting & Diagnostics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    🏗️ Developer Platform
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    🏗️ Developer Platform
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ARCHITECTURE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Windows NT Kernel & Architecture Spec
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dev/architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Repository Architecture Map
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../DEVELOPER_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer Onboarding & Contribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dev/threading-safety/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    State Management & Safety
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dev/testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing & CI/CD
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dev/release-process/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Release & Review Process
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    🔌 API & Subsystems
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    🔌 API & Subsystems
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Subsystem Core Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/system-tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System Tools Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/analyzers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Analyzers Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/core-engine/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Engine & Algorithmic Caches
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../API_REFERENCE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Complete API Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../FUNCTION_INVENTORY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Function & Symbol Inventory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#srccortex_unifieduipremiumwindowpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/cortex_unified/ui/premium/window.py
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="src/cortex_unified/ui/premium/window.py">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fmt_bytesn-int-str-l54" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fmt_bytes(n: int) -&gt; str (L54)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_titlebarchromeinitself-brand-min_btn-max_btn-close_btn-l109" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        _TitleBarChrome.init(self, brand, min_btn, max_btn, close_btn) (L109)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_lazypageregistryinitself-win-premiummainwindow-none-l130" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        _LazyPageRegistry.init(self, win: "PremiumMainWindow") -&gt; None (L130)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_lazypageregistrygetitemself-page_id-str-qwidget-l137" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        _LazyPageRegistry.getitem(self, page_id: str) -&gt; QWidget (L137)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_lazypageregistryiterself-l152" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        _LazyPageRegistry.iter(self) (L152)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_lazypageregistrylenself-int-l157" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        _LazyPageRegistry.len(self) -&gt; int (L157)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_lazypageregistrycontainsself-page_id-object-bool-l161" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        _LazyPageRegistry.contains(self, page_id: object) -&gt; bool (L161)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_lazypageregistryis_builtself-page_id-str-bool-l167" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        _LazyPageRegistry.is_built(self, page_id: str) -&gt; bool (L167)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_lazypageregistrybuilt_idsself-frozensetstr-l172" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        _LazyPageRegistry.built_ids(self) -&gt; frozenset[str] (L172)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#singlescrollfilterinitself-inner-qwidget-outer-qscrollarea-none-none-parent-qobject-none-none-l1198" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SingleScrollFilter.init(self, inner: QWidget, outer: QScrollArea | None = None, parent: QObject | None = None) (L1198)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#singlescrollfiltereventfilterself-obj-event-l1205" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SingleScrollFilter.eventFilter(self, obj, event) (L1205)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#singlescrollfilter_forward_to_outerself-event-bool-l1229" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SingleScrollFilter._forward_to_outer(self, event) -&gt; bool (L1229)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#set_tab_orderparent-qwidget-none-widgets-listqwidget-l1242" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        set_tab_order(parent: QWidget | None, widgets) -&gt; list[QWidget] (L1242)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ensure_focusablewidgets-none-l1266" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ensure_focusable(*widgets) -&gt; None (L1266)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#run_modaldialog-trigger-qwidget-none-none-l1286" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        run_modal(dialog, trigger: QWidget | None = None) (L1286)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_pageinitself-win-premiummainwindow-l1344" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        _Page.init(self, win: PremiumMainWindow) (L1344)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_pagepin_footerself-widget-qwidget-qwidget-l1376" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        _Page.pin_footer(self, widget: QWidget) -&gt; QWidget (L1376)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_pageattach_single_scrollself-inner-qwidget-singlescrollfilter-l1391" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        _Page.attach_single_scroll(self, inner: QWidget) -&gt; SingleScrollFilter (L1391)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_pageadd_scrolling_listself-inner-qwidget-stretch-int-1-minimum_height-int-none-none-qwidget-l1409" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        _Page.add_scrolling_list(self, inner: QWidget, *, stretch: int = 1, minimum_height: int | None = None) -&gt; QWidget (L1409)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srccortex_unifieduimain_windowpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/cortex_unified/ui/main_window.py
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="src/cortex_unified/ui/main_window.py">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#scanworkerinitself-config-config-path-str-enable_checkpoints-boolfalse-enable_throttling-boolfalse-checkpoint_id-str-l83" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ScanWorker.init(self, config: Config, path: str, enable_checkpoints: bool=False, enable_throttling: bool=False, checkpoint_id: str='') (L83)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scanworkerrunself-l96" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ScanWorker.run(self) (L96)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scanworkerpauseself-l126" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ScanWorker.pause(self) (L126)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scanworkerresumeself-l133" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ScanWorker.resume(self) (L133)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scanworkerstopself-l140" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ScanWorker.stop(self) (L140)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deleteworkerinitself-deleter-deleter-empty_files-listpath-empty_dirs-listpath-l159" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DeleteWorker.init(self, deleter: Deleter, empty_files: List[Path], empty_dirs: List[Path]) (L159)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deleteworkerrunself-l168" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DeleteWorker.run(self) (L168)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#multidrivescanworkerinitself-config-config-paths-liststr-enable_checkpoints-boolfalse-enable_throttling-boolfalse-l185" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MultiDriveScanWorker.init(self, config: Config, paths: List[str], enable_checkpoints: bool=False, enable_throttling: bool=False) (L185)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#multidrivescanworkerrunself-l197" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MultiDriveScanWorker.run(self) (L197)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#multidrivescanworkerpauseself-l237" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MultiDriveScanWorker.pause(self) (L237)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#multidrivescanworkerresumeself-l243" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MultiDriveScanWorker.resume(self) (L243)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#multidrivescanworkerstopself-l249" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MultiDriveScanWorker.stop(self) (L249)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deepcleanerguiinitself-l259" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DeepCleanerGUI.init(self) (L259)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deepcleanerguiinit_tray_iconself-l308" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DeepCleanerGUI.init_tray_icon(self) (L308)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deepcleanerguigetattrself-name-l316" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DeepCleanerGUI.getattr(self, name) (L316)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deepcleanergui_safe_widgetself-name-defaultnone-l333" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DeepCleanerGUI._safe_widget(self, name, default=None) (L333)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deepcleanerguiinit_uiself-l340" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DeepCleanerGUI.init_ui(self) (L340)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deepcleanerguiadd_advanced_tabsself-l382" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DeepCleanerGUI.add_advanced_tabs(self) (L382)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deepcleanerguibrowse_pathself-l423" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DeepCleanerGUI.browse_path(self) (L423)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deepcleanerguibrowse_path_for_widgetself-widget-l429" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DeepCleanerGUI.browse_path_for_widget(self, widget) (L429)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deepcleanerguiadd_activityself-message-l435" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DeepCleanerGUI.add_activity(self, message) (L435)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deepcleanerguiget_current_timeself-l443" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DeepCleanerGUI.get_current_time(self) (L443)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deepcleanerguiquick_scanself-l450" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DeepCleanerGUI.quick_scan(self) (L450)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deepcleanerguistart_scanself-l462" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DeepCleanerGUI.start_scan(self) (L462)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deepcleanerguiscan_finishedself-empty_files-listpath-empty_dirs-listpath-l581" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DeepCleanerGUI.scan_finished(self, empty_files: List[Path], empty_dirs: List[Path]) (L581)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deepcleanerguiscan_errorself-error-str-l615" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DeepCleanerGUI.scan_error(self, error: str) (L615)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deepcleanerguiupdate_scan_progressself-progress-l632" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DeepCleanerGUI.update_scan_progress(self, progress) (L632)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deepcleanerguistart_deleteself-l642" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DeepCleanerGUI.start_delete(self) (L642)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deepcleanerguipause_scanself-l686" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DeepCleanerGUI.pause_scan(self) (L686)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deepcleanerguiresume_scanself-l714" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DeepCleanerGUI.resume_scan(self) (L714)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deepcleanerguidelete_finishedself-result-dictstr-any-l742" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DeepCleanerGUI.delete_finished(self, result: Dict[str, Any]) (L742)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deepcleanerguidelete_errorself-error-str-l768" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DeepCleanerGUI.delete_error(self, error: str) (L768)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deepcleanerguishow_treemap_visualizationself-l778" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DeepCleanerGUI.show_treemap_visualization(self) (L778)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deepcleanerguishow_sunburst_visualizationself-l802" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DeepCleanerGUI.show_sunburst_visualization(self) (L802)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deepcleanerguishow_interactive_dashboardself-l826" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DeepCleanerGUI.show_interactive_dashboard(self) (L826)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deepcleanerguiexport_visualization_dialogself-l856" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DeepCleanerGUI.export_visualization_dialog(self) (L856)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deepcleanerguiperform_visualization_exportself-dialog-l898" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DeepCleanerGUI.perform_visualization_export(self, dialog) (L898)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deepcleanerguirefresh_startup_itemsself-l948" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DeepCleanerGUI.refresh_startup_items(self) (L948)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deepcleanerguidisable_selected_startup_itemsself-l985" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DeepCleanerGUI.disable_selected_startup_items(self) (L985)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deepcleanerguirefresh_processesself-l1030" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DeepCleanerGUI.refresh_processes(self) (L1030)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srccortex_unifieduipremiumworkerspy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/cortex_unified/ui/premium/workers.py
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="src/cortex_unified/ui/premium/workers.py">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_normp-l131" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        _norm(p) (L131)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#aggregate_rootsentries-roots-l136" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        aggregate_roots(entries, roots) (L136)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#children_underentries-prefix-str-l157" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        children_under(entries, prefix: str) (L157)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#group_by_appentries-bases-l205" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        group_by_app(entries, bases) (L205)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scanworker-backend-cleanerservicescan_categories-l25" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ScanWorker — backend CleanerService.scan_categories (L25)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cleanworker-backend-cleanerserviceclean_categories-l62" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CleanWorker — backend CleanerService.clean_categories (L62)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#duplicateworker-backend-cleanerservicefind_duplicates-l102" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DuplicateWorker — backend CleanerService.find_duplicates (L102)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dirpreviewworker-backend-pure-helpers-group_by_appaggregate_rootschildren_under-l232" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DirPreviewWorker — backend pure helpers (group_by_app/aggregate_roots/children_under) (L232)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#duplicatephotosworker-backend-cleanerservicefind_duplicates-image_exts-filter-l262" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DuplicatePhotosWorker — backend CleanerService.find_duplicates + IMAGE_EXTS filter (L262)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#largefilesworker-backend-cleanerservicefind_large_files-l298" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LargeFilesWorker — backend CleanerService.find_large_files (L298)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#emptyworker-backend-cleanerservicefind_empty-l327" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        EmptyWorker — backend CleanerService.find_empty (L327)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deleteselectedworker-backend-securedeleterdelete_many-l352" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DeleteSelectedWorker — backend SecureDeleter.delete_many (L352)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#restorepointworker-backend-restorepointmanagercreate-l380" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RestorePointWorker — backend RestorePointManager.create (L380)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#restorepointlistworker-backend-restorepointmanagerlist_points-l401" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RestorePointListWorker — backend RestorePointManager.list_points (L401)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#storageworker-backend-enginedetect_storage-l416" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        StorageWorker — backend engine.detect_storage (L416)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#freespacewipeworker-backend-freespacewiperwipe-cipher-w-l437" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FreeSpaceWipeWorker — backend FreeSpaceWiper.wipe (cipher /w) (L437)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#shredworker-backend-securedeleterdelete-overwrite-storage-aware-l467" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ShredWorker — backend SecureDeleter.delete (OVERWRITE, storage-aware) (L467)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adaptiveshredworker-backend-adaptivesanitizersanitize-pl0pl3-l501" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AdaptiveShredWorker — backend AdaptiveSanitizer.sanitize (PL0–PL3) (L501)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vhdxlistworker-backend-vhdxmanagerlist_disks-l545" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        VhdxListWorker — backend VhdxManager.list_disks (L545)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#wslshutdownworker-backend-vhdxmanagershutdown_wsl-wsl-shutdown-l576" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        WslShutdownWorker — backend VhdxManager.shutdown_wsl (wsl --shutdown) (L576)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vhdxcompactworker-backend-vhdxmanagercompact-per-disk-diskpart-l594" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        VhdxCompactWorker — backend VhdxManager.compact per disk (diskpart) (L594)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vhdxsparseworker-backend-vhdxmanagerset_sparse-l635" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        VhdxSparseWorker — backend VhdxManager.set_sparse (L635)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#componentstoreanalyzeworker-backend-componentstoreanalyze-find_leftovers-dism-l663" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ComponentStoreAnalyzeWorker — backend ComponentStore.analyze + find_leftovers (DISM) (L663)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#componentstorecleanworker-backend-componentstorecleanup-dism-startcomponentcleanup-l705" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ComponentStoreCleanWorker — backend ComponentStore.cleanup (DISM /StartComponentCleanup) (L705)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#servicingtaskworker-backend-componentstorerun_servicing_task-l728" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ServicingTaskWorker — backend ComponentStore.run_servicing_task (L728)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#leftoverdeleteworker-backend-securedeleterdelete_many-guarded-l746" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LeftoverDeleteWorker — backend SecureDeleter.delete_many (guarded) (L746)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#projectcachescanworker-backend-packagemanagercleanerscan_caches-l790" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ProjectCacheScanWorker — backend PackageManagerCleaner.scan_caches (L790)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#projectcachecleanworker-backend-packagemanagercleanercleanup_caches-l833" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ProjectCacheCleanWorker — backend PackageManagerCleaner.cleanup_caches (L833)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#autoprojectcacheworker-backend-packagemanagercleanerauto_discover_project_caches-l878" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AutoProjectCacheWorker — backend PackageManagerCleaner.auto_discover_project_caches (L878)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cachelogsweepworker-backend-cachecleanerfind_large_logs-l918" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CacheLogSweepWorker — backend CacheCleaner.find_large_logs (L918)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dockerfscacheworker-backend-dockercleanerget_filesystem_cache_size-l949" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DockerFsCacheWorker — backend DockerCleaner.get_filesystem_cache_size (L949)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#wsllistworker-backend-wslcleanerlist_distros-l964" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        WslListWorker — backend WslCleaner.list_distros (L964)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#largefileaiworker-backend-largefilefinder-is_ai_model-l979" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LargeFileAiWorker — backend LargeFileFinder + is_ai_model (L979)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srcnexusexplorernativenexus_explorerpy-explorerwidget-only" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/NexusExplorer/native/nexus_explorer.py — ExplorerWidget only
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="src/NexusExplorer/native/nexus_explorer.py — ExplorerWidget only">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#explorerwidgetinitself-start_path-str-parentnone-root-str-l5479" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ExplorerWidget.init(self, start_path: str = "", parent=None, root: str = "") (L5479)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#explorerwidgetmount_tabs_to_windowself-win-none-l6106" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ExplorerWidget.mount_tabs_to_window(self, win) -&gt; None (L6106)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#explorerwidget_on_about_to_quitself-none-l6112" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ExplorerWidget._on_about_to_quit(self) -&gt; None (L6112)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#explorerwidgetsave_sessionself-forcefalse-l6117" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ExplorerWidget.save_session(self, force=False) (L6117)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#explorerwidgetrestore_sessionself-l6135" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ExplorerWidget.restore_session(self) (L6135)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#explorerwidgetadd_tabself-path-str-none-l6402" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ExplorerWidget.add_tab(self, path: str) -&gt; None (L6402)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#explorerwidget_close_tabself-idx-int-none-l6430" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ExplorerWidget._close_tab(self, idx: int) -&gt; None (L6430)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#explorerwidget_on_tab_movedself-from_pos-int-to_pos-int-none-l6441" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ExplorerWidget._on_tab_moved(self, from_pos: int, to_pos: int) -&gt; None (L6441)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#explorerwidget_close_current_tabself-none-l6454" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ExplorerWidget._close_current_tab(self) -&gt; None (L6454)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#explorerwidget_switch_tabself-idx-int-none-l6460" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ExplorerWidget._switch_tab(self, idx: int) -&gt; None (L6460)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#explorerwidget_tabself-dict-l6470" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ExplorerWidget._tab(self) -&gt; dict (L6470)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#explorerwidgetnavigateself-path-str-push-bool-true-none-l6478" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ExplorerWidget.navigate(self, path: str, push: bool = True) -&gt; None (L6478)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#explorerwidget_loadself-path-str-none-l6499" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ExplorerWidget._load(self, path: str) -&gt; None (L6499)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#explorerwidget_on_rowsself-code-int-rows-listdict-none-l6527" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ExplorerWidget._on_rows(self, code: int, rows: list[dict]) -&gt; None (L6527)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#explorerwidget_reload_currentself-none-l6551" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ExplorerWidget._reload_current(self) -&gt; None (L6551)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#explorerwidget_on_fs_changeself-_path-str-none-l6620" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ExplorerWidget._on_fs_change(self, _path: str) -&gt; None (L6620)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#explorerwidgetgo_backself-l6625" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ExplorerWidget.go_back(self) (L6625)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#explorerwidgetgo_forwardself-l6633" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ExplorerWidget.go_forward(self) (L6633)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#explorerwidget_right_go_backself-l6642" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ExplorerWidget._right_go_back(self) (L6642)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#explorerwidget_right_go_forwardself-l6650" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ExplorerWidget._right_go_forward(self) (L6650)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#explorerwidget_install_mouse_side_buttonsself-none-l6658" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ExplorerWidget._install_mouse_side_buttons(self) -&gt; None (L6658)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#explorerwidgeteventfilterself-obj-ev-l6699" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ExplorerWidget.eventFilter(self, obj, ev) (L6699)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#explorerwidget_handle_viewport_dropself-obj-ev-bool-l6739" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ExplorerWidget._handle_viewport_drop(self, obj, ev) -&gt; bool (L6739)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#explorerwidget_update_drop_hintself-obj-ev-none-l6845" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ExplorerWidget._update_drop_hint(self, obj, ev) -&gt; None (L6845)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#explorerwidgetgo_upself-l6883" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ExplorerWidget.go_up(self) (L6883)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#explorerwidget_start_edit_pathself-l6893" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ExplorerWidget._start_edit_path(self) (L6893)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#explorerwidgetdragentereventself-ev-qdragenterevent-l7891" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ExplorerWidget.dragEnterEvent(self, ev: QDragEnterEvent) (L7891)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#explorerwidgetdragmoveeventself-ev-qdragmoveevent-l7896" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ExplorerWidget.dragMoveEvent(self, ev: QDragMoveEvent) (L7896)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#explorerwidgetdragleaveeventself-ev-l7922" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ExplorerWidget.dragLeaveEvent(self, ev) (L7922)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#explorerwidgetdropeventself-ev-l7930" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ExplorerWidget.dropEvent(self, ev) (L7930)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#explorerwidgetstartdragself-actions-qtdropaction-l7936" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ExplorerWidget.startDrag(self, actions: Qt.DropAction) (L7936)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#explorerwidget_on_transfer_startedself-job_id-str-l7475" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ExplorerWidget._on_transfer_started(self, job_id: str) (L7475)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#explorerwidget_on_transfer_addedself-job_id-str-l7481" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ExplorerWidget._on_transfer_added(self, job_id: str) (L7481)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#explorerwidgetopen_transfer_monitorself-l7489" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ExplorerWidget.open_transfer_monitor(self) (L7489)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#explorerwidget_on_transfer_progressself-job_id-str-percent-int-text-str-l7499" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ExplorerWidget._on_transfer_progress(self, job_id: str, percent: int, text: str) (L7499)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#explorerwidget_on_transfer_cancelledself-job_id-str-l7505" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ExplorerWidget._on_transfer_cancelled(self, job_id: str) (L7505)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#explorerwidget_on_transfer_completedself-job_id-str-success-bool-message-str-l7512" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ExplorerWidget._on_transfer_completed(self, job_id: str, success: bool, message: str) (L7512)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#explorerwidget_on_transfer_queue_emptyself-l7517" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ExplorerWidget._on_transfer_queue_empty(self) (L7517)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#explorerwidget_move_to_folderself-l7695" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ExplorerWidget._move_to_folder(self) (L7695)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#explorerwidget_pasteself-target_dest-str-none-none-l7745" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ExplorerWidget._paste(self, target_dest: str | None = None) (L7745)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#explorerwidget_on_staging_pasteself-mode-str-paths-liststr-target_dir-str-l7786" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ExplorerWidget._on_staging_paste(self, mode: str, paths: list[str], target_dir: str) (L7786)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#explorerwidget_deleteself-permanent-bool-false-l7820" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ExplorerWidget._delete(self, permanent: bool = False) (L7820)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#explorerwidget_compress_toself-fmt-str-l7630" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ExplorerWidget._compress_to(self, fmt: str) (L7630)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#explorerwidget_undoself-l7843" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ExplorerWidget._undo(self) (L7843)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#explorerwidget_redoself-l7855" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ExplorerWidget._redo(self) (L7855)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="gui-purpose-documentation-docs_gui">GUI Purpose Documentation (DOCS_GUI)<a class="headerlink" href="#gui-purpose-documentation-docs_gui" title="Permanent link">&para;</a></h1>
+<p>Scope: <code>src/cortex_unified/ui/premium/window.py</code> (_Page base + helpers only),
+<code>src/cortex_unified/ui/main_window.py</code> (top 40 methods in file order),
+<code>src/cortex_unified/ui/premium/workers.py</code> (all worker classes + module helpers),
+<code>src/NexusExplorer/native/nexus_explorer.py</code> (ExplorerWidget: navigation, tabs,
+drag-drop, transfer wiring, undo methods only).
+Every entry was written from the method body. No stubs invented.
+<code>PremiumMainWindow</code> and other page subclasses in <code>window.py</code> are out of scope
+and are not documented here.</p>
+<hr />
+<h2 id="srccortex_unifieduipremiumwindowpy">src/cortex_unified/ui/premium/window.py<a class="headerlink" href="#srccortex_unifieduipremiumwindowpy" title="Permanent link">&para;</a></h2>
+<h3 id="fmt_bytesn-int-str-l54">fmt_bytes(n: int) -&gt; str (L54)<a class="headerlink" href="#fmt_bytesn-int-str-l54" title="Permanent link">&para;</a></h3>
+<p>Formats a byte count with the largest fitting binary unit (B…PB), one decimal.
+Pure helper used by page labels; iterates dividing by 1024 until <code>size &lt; 1024</code>.</p>
+<h3 id="_titlebarchromeinitself-brand-min_btn-max_btn-close_btn-l109">_TitleBarChrome.<strong>init</strong>(self, brand, min_btn, max_btn, close_btn) (L109)<a class="headerlink" href="#_titlebarchromeinitself-brand-min_btn-max_btn-close_btn-l109" title="Permanent link">&para;</a></h3>
+<p>Read-only handle storing the brand mark plus the three window-control buttons.
+Widgets live on the window; this namespace exposes them as <code>_brand/_min/_max/_close</code>
+so chrome code and tests avoid reaching into concrete attributes.</p>
+<h3 id="_lazypageregistryinitself-win-premiummainwindow-none-l130">_LazyPageRegistry.<strong>init</strong>(self, win: "PremiumMainWindow") -&gt; None (L130)<a class="headerlink" href="#_lazypageregistryinitself-win-premiummainwindow-none-l130" title="Permanent link">&para;</a></h3>
+<p>Keeps the owning window and the cache (<code>_built</code>) of already-constructed pages.
+Implements <code>Mapping</code>, so it reads like the eager <code>dict[str, QWidget]</code> it replaced.</p>
+<h3 id="_lazypageregistrygetitemself-page_id-str-qwidget-l137">_LazyPageRegistry.<strong>getitem</strong>(self, page_id: str) -&gt; QWidget (L137)<a class="headerlink" href="#_lazypageregistrygetitemself-page_id-str-qwidget-l137" title="Permanent link">&para;</a></h3>
+<p>Builds (or returns cached) the page via <code>registry.BY_ID[page_id].load()(win)</code>,
+adds it to <code>win._stack</code>, and caches it. Raises <code>KeyError(page_id)</code> for unknown ids.</p>
+<h3 id="_lazypageregistryiterself-l152">_LazyPageRegistry.<strong>iter</strong>(self) (L152)<a class="headerlink" href="#_lazypageregistryiterself-l152" title="Permanent link">&para;</a></h3>
+<p>Iterates page ids in sidebar/navigation order via <code>registry.ordered_ids()</code>.
+Keeps iteration matching what the user sees rather than construction order.</p>
+<h3 id="_lazypageregistrylenself-int-l157">_LazyPageRegistry.<strong>len</strong>(self) -&gt; int (L157)<a class="headerlink" href="#_lazypageregistrylenself-int-l157" title="Permanent link">&para;</a></h3>
+<p>Total number of registered pages (<code>len(registry.PAGES)</code>), built or not.
+Lets <code>len(win._pages)</code> report all 43 pages while construction stays lazy.</p>
+<h3 id="_lazypageregistrycontainsself-page_id-object-bool-l161">_LazyPageRegistry.<strong>contains</strong>(self, page_id: object) -&gt; bool (L161)<a class="headerlink" href="#_lazypageregistrycontainsself-page_id-object-bool-l161" title="Permanent link">&para;</a></h3>
+<p>Membership test against <code>registry.BY_ID</code>, so <code>in</code> works without building anything.
+Backs <code>page_id not in self._nav_buttons_by_page</code>-style guards elsewhere.</p>
+<h3 id="_lazypageregistryis_builtself-page_id-str-bool-l167">_LazyPageRegistry.is_built(self, page_id: str) -&gt; bool (L167)<a class="headerlink" href="#_lazypageregistryis_builtself-page_id-str-bool-l167" title="Permanent link">&para;</a></h3>
+<p>True only when the page was actually constructed (present in <code>_built</code>).
+Introspection helper for tests/diagnostics; does not trigger a build.</p>
+<h3 id="_lazypageregistrybuilt_idsself-frozensetstr-l172">_LazyPageRegistry.built_ids(self) -&gt; frozenset[str] (L172)<a class="headerlink" href="#_lazypageregistrybuilt_idsself-frozensetstr-l172" title="Permanent link">&para;</a></h3>
+<p>Property returning the frozenset of pages constructed so far.
+Useful for tests and diagnostics without exposing the mutable cache.</p>
+<h3 id="singlescrollfilterinitself-inner-qwidget-outer-qscrollarea-none-none-parent-qobject-none-none-l1198">SingleScrollFilter.<strong>init</strong>(self, inner: QWidget, outer: QScrollArea | None = None, parent: QObject | None = None) (L1198)<a class="headerlink" href="#singlescrollfilterinitself-inner-qwidget-outer-qscrollarea-none-none-parent-qobject-none-none-l1198" title="Permanent link">&para;</a></h3>
+<p>Stores the inner scrollable view and the page's outer <code>QScrollArea</code>.
+<code>outer</code> may be <code>None</code>, in which case the filter lets the inner view handle wheels alone.</p>
+<h3 id="singlescrollfiltereventfilterself-obj-event-l1205">SingleScrollFilter.eventFilter(self, obj, event) (L1205)<a class="headerlink" href="#singlescrollfiltereventfilterself-obj-event-l1205" title="Permanent link">&para;</a></h3>
+<p>Enforces "one gesture, one container": non-wheel events pass through; a wheel over
+an inner view that can still scroll in that direction returns False (inner consumes
+it), while a boundary push or a non-scrollable inner is forwarded to the outer area.</p>
+<h3 id="singlescrollfilter_forward_to_outerself-event-bool-l1229">SingleScrollFilter._forward_to_outer(self, event) -&gt; bool (L1229)<a class="headerlink" href="#singlescrollfilter_forward_to_outerself-event-bool-l1229" title="Permanent link">&para;</a></h3>
+<p>Sends the wheel event to <code>outer.viewport()</code> via <code>QApplication.sendEvent</code> and
+returns True so exactly one container reacts. Returns False when <code>outer</code> is None.</p>
+<h3 id="set_tab_orderparent-qwidget-none-widgets-listqwidget-l1242">set_tab_order(parent: QWidget | None, widgets) -&gt; list[QWidget] (L1242)<a class="headerlink" href="#set_tab_orderparent-qwidget-none-widgets-listqwidget-l1242" title="Permanent link">&para;</a></h3>
+<p>Chains <code>QWidget.setTabOrder</code> across <code>widgets</code> so Tab moves in visual/logical order
+instead of construction order. Skips <code>None</code>, never raises; returns the filtered list.</p>
+<h3 id="ensure_focusablewidgets-none-l1266">ensure_focusable(*widgets) -&gt; None (L1266)<a class="headerlink" href="#ensure_focusablewidgets-none-l1266" title="Permanent link">&para;</a></h3>
+<p>Promotes any <code>NoFocus</code> widget to <code>StrongFocus</code> so primary actions stay keyboard
+reachable. Ignores <code>None</code> and swallows failures; a defensive nudge, not a layout change.</p>
+<h3 id="run_modaldialog-trigger-qwidget-none-none-l1286">run_modal(dialog, trigger: QWidget | None = None) (L1286)<a class="headerlink" href="#run_modaldialog-trigger-qwidget-none-none-l1286" title="Permanent link">&para;</a></h3>
+<p>Shows the dialog modally (<code>exec()</code>) and restores keyboard focus to <code>trigger</code> on close
+in a <code>finally</code> block. Returns the exec result code; focus-restore failure is swallowed.</p>
+<h3 id="_pageinitself-win-premiummainwindow-l1344">_Page.<strong>init</strong>(self, win: PremiumMainWindow) (L1344)<a class="headerlink" href="#_pageinitself-win-premiummainwindow-l1344" title="Permanent link">&para;</a></h3>
+<p>Base-page setup: stores <code>win</code>/<code>win.palette_tokens</code>, builds the outer <code>QVBoxLayout</code>
+with a single <code>widgetResizable</code> <code>QScrollArea</code> (scrollbars <code>AsNeeded</code>), the content
+<code>self.v</code> layout, momentum scrolling via <code>install_smooth_scroll</code>, and the filter list.</p>
+<h3 id="_pagepin_footerself-widget-qwidget-qwidget-l1376">_Page.pin_footer(self, widget: QWidget) -&gt; QWidget (L1376)<a class="headerlink" href="#_pagepin_footerself-widget-qwidget-qwidget-l1376" title="Permanent link">&para;</a></h3>
+<p>Pins <code>widget</code> below the scroll area (added to <code>self._outer</code>, outside the <code>QScrollArea</code>)
+so a primary action row stays visible at every window size. Returns the widget for chaining.</p>
+<h3 id="_pageattach_single_scrollself-inner-qwidget-singlescrollfilter-l1391">_Page.attach_single_scroll(self, inner: QWidget) -&gt; SingleScrollFilter (L1391)<a class="headerlink" href="#_pageattach_single_scrollself-inner-qwidget-singlescrollfilter-l1391" title="Permanent link">&para;</a></h3>
+<p>Installs a <code>SingleScrollFilter(inner, self._scroll)</code> on <code>inner</code> and its viewport (when
+present) so wheel gestures scroll either the list or the page, never both. Retains and
+returns the filter (filters must stay referenced or Qt drops them).</p>
+<h3 id="_pageadd_scrolling_listself-inner-qwidget-stretch-int-1-minimum_height-int-none-none-qwidget-l1409">_Page.add_scrolling_list(self, inner: QWidget, *, stretch: int = 1, minimum_height: int | None = None) -&gt; QWidget (L1409)<a class="headerlink" href="#_pageadd_scrolling_listself-inner-qwidget-stretch-int-1-minimum_height-int-none-none-qwidget-l1409" title="Permanent link">&para;</a></h3>
+<p>Applies the list-dominant scroll policy: sets <code>minimumHeight</code> (default
+<code>LIST_MIN_HEIGHT = 140</code>), adds <code>inner</code> to <code>self.v</code> with stretch, then wires
+<code>attach_single_scroll</code>. Returns <code>inner</code> for chaining.</p>
+<hr />
+<h2 id="srccortex_unifieduimain_windowpy">src/cortex_unified/ui/main_window.py<a class="headerlink" href="#srccortex_unifieduimain_windowpy" title="Permanent link">&para;</a></h2>
+<p>Top 40 methods in file order (L83–L1030): 3 worker classes + first 28 <code>DeepCleanerGUI</code> methods.</p>
+<h3 id="scanworkerinitself-config-config-path-str-enable_checkpoints-boolfalse-enable_throttling-boolfalse-checkpoint_id-str-l83">ScanWorker.<strong>init</strong>(self, config: Config, path: str, enable_checkpoints: bool=False, enable_throttling: bool=False, checkpoint_id: str='') (L83)<a class="headerlink" href="#scanworkerinitself-config-config-path-str-enable_checkpoints-boolfalse-enable_throttling-boolfalse-checkpoint_id-str-l83" title="Permanent link">&para;</a></h3>
+<p>Stores scan config, target path, checkpoint/throttle flags, and the stop flag.
+Signals: <code>finished(list, list)</code>, <code>error(str)</code>, <code>progress_updated(object)</code>.</p>
+<h3 id="scanworkerrunself-l96">ScanWorker.run(self) (L96)<a class="headerlink" href="#scanworkerrunself-l96" title="Permanent link">&para;</a></h3>
+<p>Runs <code>Scanner(config, path, …).scan(checkpoint_id=…)</code> and emits <code>finished(files, dirs)</code>
+or <code>error</code>. With checkpoints enabled, spawns a daemon poller thread relaying
+<code>get_scan_progress()</code> through <code>progress_updated</code> every 0.5 s.</p>
+<h3 id="scanworkerpauseself-l126">ScanWorker.pause(self) (L126)<a class="headerlink" href="#scanworkerpauseself-l126" title="Permanent link">&para;</a></h3>
+<p>Pauses via <code>self.scanner.pause_scan()</code> when a scanner exists. No-op otherwise.
+Called from the GUI pause button through the worker reference.</p>
+<h3 id="scanworkerresumeself-l133">ScanWorker.resume(self) (L133)<a class="headerlink" href="#scanworkerresumeself-l133" title="Permanent link">&para;</a></h3>
+<p>Resumes via <code>self.scanner.resume_scan()</code> when a scanner exists. Mirrors <code>pause()</code>.</p>
+<h3 id="scanworkerstopself-l140">ScanWorker.stop(self) (L140)<a class="headerlink" href="#scanworkerstopself-l140" title="Permanent link">&para;</a></h3>
+<p>Sets <code>_should_stop</code> (stops the progress poller) and, when checkpoints are enabled,
+creates a resumable checkpoint and returns its id (else None). Abort-then-resume path.</p>
+<h3 id="deleteworkerinitself-deleter-deleter-empty_files-listpath-empty_dirs-listpath-l159">DeleteWorker.<strong>init</strong>(self, deleter: Deleter, empty_files: List[Path], empty_dirs: List[Path]) (L159)<a class="headerlink" href="#deleteworkerinitself-deleter-deleter-empty_files-listpath-empty_dirs-listpath-l159" title="Permanent link">&para;</a></h3>
+<p>Stores the <code>Deleter</code> plus the file/dir lists to remove. Signals: <code>finished(dict)</code>,
+<code>error(str)</code>. Runs fully off the GUI thread.</p>
+<h3 id="deleteworkerrunself-l168">DeleteWorker.run(self) (L168)<a class="headerlink" href="#deleteworkerrunself-l168" title="Permanent link">&para;</a></h3>
+<p>Calls <code>self.deleter.delete(files, dirs)</code> and emits <code>finished(result_dict)</code> or <code>error</code>.
+The GUI thread renders counts/errors in <code>delete_finished</code> / <code>delete_error</code>.</p>
+<h3 id="multidrivescanworkerinitself-config-config-paths-liststr-enable_checkpoints-boolfalse-enable_throttling-boolfalse-l185">MultiDriveScanWorker.<strong>init</strong>(self, config: Config, paths: List[str], enable_checkpoints: bool=False, enable_throttling: bool=False) (L185)<a class="headerlink" href="#multidrivescanworkerinitself-config-config-paths-liststr-enable_checkpoints-boolfalse-enable_throttling-boolfalse-l185" title="Permanent link">&para;</a></h3>
+<p>Stores config, the drive-path list, checkpoint/throttle flags, and pause/stop flags.
+Signals mirror <code>ScanWorker</code>: <code>finished</code>, <code>error</code>, <code>progress_updated</code>.</p>
+<h3 id="multidrivescanworkerrunself-l197">MultiDriveScanWorker.run(self) (L197)<a class="headerlink" href="#multidrivescanworkerrunself-l197" title="Permanent link">&para;</a></h3>
+<p>Scans each drive sequentially with <code>MultiDriveScanner.scan_drive</code>, honoring pause
+(busy-wait 0.2 s) and stop flags, aggregating <code>(files, dirs)</code> into one <code>finished</code>
+emit. With checkpoints, polls <code>get_overall_progress()</code> from a daemon thread.</p>
+<h3 id="multidrivescanworkerpauseself-l237">MultiDriveScanWorker.pause(self) (L237)<a class="headerlink" href="#multidrivescanworkerpauseself-l237" title="Permanent link">&para;</a></h3>
+<p>Sets <code>_is_paused = True</code> so the per-drive loop waits. Cleared by <code>resume()</code>.</p>
+<h3 id="multidrivescanworkerresumeself-l243">MultiDriveScanWorker.resume(self) (L243)<a class="headerlink" href="#multidrivescanworkerresumeself-l243" title="Permanent link">&para;</a></h3>
+<p>Clears <code>_is_paused</code> so the drive loop continues. No scanner call needed.</p>
+<h3 id="multidrivescanworkerstopself-l249">MultiDriveScanWorker.stop(self) (L249)<a class="headerlink" href="#multidrivescanworkerstopself-l249" title="Permanent link">&para;</a></h3>
+<p>Sets <code>_should_stop = True</code> (and clears pause) to break the per-drive loop.
+Less granular than <code>ScanWorker.stop</code>: no checkpoint is created here.</p>
+<h3 id="deepcleanerguiinitself-l259">DeepCleanerGUI.<strong>init</strong>(self) (L259)<a class="headerlink" href="#deepcleanerguiinitself-l259" title="Permanent link">&para;</a></h3>
+<p>Builds config, worker/thread slots, result stores, <code>SafetyManager</code>, <code>QSettings</code>,
+base UI via <code>init_ui()</code>, then defers <code>add_advanced_tabs</code> (100 ms) and <code>init_tray_icon</code>
+(150 ms) with <code>QTimer.singleShot</code> so the event loop is up first.</p>
+<h3 id="deepcleanerguiinit_tray_iconself-l308">DeepCleanerGUI.init_tray_icon(self) (L308)<a class="headerlink" href="#deepcleanerguiinit_tray_iconself-l308" title="Permanent link">&para;</a></h3>
+<p>Attaches <code>SystemTrayManager(self, QApplication.instance())</code>. Failure is logged
+and ignored so a tray error never aborts the window.</p>
+<h3 id="deepcleanerguigetattrself-name-l316">DeepCleanerGUI.<strong>getattr</strong>(self, name) (L316)<a class="headerlink" href="#deepcleanerguigetattrself-name-l316" title="Permanent link">&para;</a></h3>
+<p>Proxies missing attribute access to child <code>BaseTab</code>s (e.g. legacy <code>scan_button</code>
+refs). Guards underscore/dunder names and re-entrancy via <code>_in_getattr</code>.</p>
+<h3 id="deepcleanergui_safe_widgetself-name-defaultnone-l333">DeepCleanerGUI._safe_widget(self, name, default=None) (L333)<a class="headerlink" href="#deepcleanergui_safe_widgetself-name-defaultnone-l333" title="Permanent link">&para;</a></h3>
+<p><code>getattr</code> with an <code>AttributeError</code> fallback to <code>default</code>. Used because legacy
+methods reference widgets that may not exist in the navigation-controller layout.</p>
+<h3 id="deepcleanerguiinit_uiself-l340">DeepCleanerGUI.init_ui(self) (L340)<a class="headerlink" href="#deepcleanerguiinit_uiself-l340" title="Permanent link">&para;</a></h3>
+<p>Builds the central layout: <code>NavigationController</code> plus the 10 base tabs (Dashboard,
+Cleaner, Duplicates, Deep Cleaner, Large Files, Disk Analyzer, Docker, Broken Links,
+Restore, Settings), then a <code>Ready</code> status label.</p>
+<h3 id="deepcleanerguiadd_advanced_tabsself-l382">DeepCleanerGUI.add_advanced_tabs(self) (L382)<a class="headerlink" href="#deepcleanerguiadd_advanced_tabsself-l382" title="Permanent link">&para;</a></h3>
+<p>Lazily appends Package Caches, File Shredder, Scheduler, Reports, Resource Monitor,
+System Tools, Security Scanner, Deep Uninstaller, Privacy Shield tabs. Any import
+failure is logged as a warning, keeping the base window usable.</p>
+<h3 id="deepcleanerguibrowse_pathself-l423">DeepCleanerGUI.browse_path(self) (L423)<a class="headerlink" href="#deepcleanerguibrowse_pathself-l423" title="Permanent link">&para;</a></h3>
+<p>Opens a directory picker and writes the result into <code>self.path_input</code>.
+Legacy single-path scan entry point.</p>
+<h3 id="deepcleanerguibrowse_path_for_widgetself-widget-l429">DeepCleanerGUI.browse_path_for_widget(self, widget) (L429)<a class="headerlink" href="#deepcleanerguibrowse_path_for_widgetself-widget-l429" title="Permanent link">&para;</a></h3>
+<p>Same directory picker but writes into the given widget. Generic helper for tabs
+that own their own path fields.</p>
+<h3 id="deepcleanerguiadd_activityself-message-l435">DeepCleanerGUI.add_activity(self, message) (L435)<a class="headerlink" href="#deepcleanerguiadd_activityself-message-l435" title="Permanent link">&para;</a></h3>
+<p>Appends a <code>[HH:MM:SS] message</code> line to <code>activity_list</code> when present (via
+<code>_safe_widget</code>). Central activity-feed writer for scan/delete flows.</p>
+<h3 id="deepcleanerguiget_current_timeself-l443">DeepCleanerGUI.get_current_time(self) (L443)<a class="headerlink" href="#deepcleanerguiget_current_timeself-l443" title="Permanent link">&para;</a></h3>
+<p>Returns local time as <code>HH:MM:SS</code>. Timestamp source for <code>add_activity</code>.</p>
+<h3 id="deepcleanerguiquick_scanself-l450">DeepCleanerGUI.quick_scan(self) (L450)<a class="headerlink" href="#deepcleanerguiquick_scanself-l450" title="Permanent link">&para;</a></h3>
+<p>Points <code>path_input</code> at the home folder, switches <code>tab_widget</code> to index 1, and calls
+<code>start_scan()</code>. One-click entry guarded by <code>_safe_widget</code> lookups.</p>
+<h3 id="deepcleanerguistart_scanself-l462">DeepCleanerGUI.start_scan(self) (L462)<a class="headerlink" href="#deepcleanerguistart_scanself-l462" title="Permanent link">&para;</a></h3>
+<p>Validates single/multi-drive targets (<code>normalize_path</code> + existence), copies config
+with pattern/age overrides, then moves a <code>ScanWorker</code>/<code>MultiDriveScanWorker</code> onto a
+<code>QThread</code>, wiring <code>finished→scan_finished</code>, <code>error→scan_error</code>, progress signals,
+and <code>quit</code>/<code>deleteLater</code> teardown before <code>start()</code>.</p>
+<h3 id="deepcleanerguiscan_finishedself-empty_files-listpath-empty_dirs-listpath-l581">DeepCleanerGUI.scan_finished(self, empty_files: List[Path], empty_dirs: List[Path]) (L581)<a class="headerlink" href="#deepcleanerguiscan_finishedself-empty_files-listpath-empty_dirs-listpath-l581" title="Permanent link">&para;</a></h3>
+<p>UI-thread completion handler: stores results, re-enables controls, hides progress,
+writes the status/activity entries, and renders the file/dir listing (or the
+empty-result text) while gating the delete button.</p>
+<h3 id="deepcleanerguiscan_errorself-error-str-l615">DeepCleanerGUI.scan_error(self, error: str) (L615)<a class="headerlink" href="#deepcleanerguiscan_errorself-error-str-l615" title="Permanent link">&para;</a></h3>
+<p>Resets scan controls, sets <code>Scan failed</code> status/activity, and shows a critical
+dialog. Error path counterpart to <code>scan_finished</code>.</p>
+<h3 id="deepcleanerguiupdate_scan_progressself-progress-l632">DeepCleanerGUI.update_scan_progress(self, progress) (L632)<a class="headerlink" href="#deepcleanerguiupdate_scan_progressself-progress-l632" title="Permanent link">&para;</a></h3>
+<p>Renders a worker progress object (<code>percentage</code>, <code>processed_count/total_count</code>) into
+<code>progress_bar</code> and <code>scan_stats_label</code>. Called via the checkpoint progress signal.</p>
+<h3 id="deepcleanerguistart_deleteself-l642">DeepCleanerGUI.start_delete(self) (L642)<a class="headerlink" href="#deepcleanerguistart_deleteself-l642" title="Permanent link">&para;</a></h3>
+<p>Confirms dry-run/trash options with the user, then runs <code>Deleter(dry_run, use_trash)</code>
+in a <code>DeleteWorker</code>/<code>QThread</code> with the same moveToThread + <code>finished/error→quit</code> +
+<code>deleteLater</code> lifecycle as scanning.</p>
+<h3 id="deepcleanerguipause_scanself-l686">DeepCleanerGUI.pause_scan(self) (L686)<a class="headerlink" href="#deepcleanerguipause_scanself-l686" title="Permanent link">&para;</a></h3>
+<p>Calls <code>scan_worker.pause()</code> when available, flips pause/resume buttons, and sets
+<code>Scan paused</code>. Warns when no scan runs or the worker lacks <code>pause</code>.</p>
+<h3 id="deepcleanerguiresume_scanself-l714">DeepCleanerGUI.resume_scan(self) (L714)<a class="headerlink" href="#deepcleanerguiresume_scanself-l714" title="Permanent link">&para;</a></h3>
+<p>Calls <code>scan_worker.resume()</code> when available, restores the button states, and sets
+<code>Scanning…</code>. Mirrors <code>pause_scan</code> including the no-worker warnings.</p>
+<h3 id="deepcleanerguidelete_finishedself-result-dictstr-any-l742">DeepCleanerGUI.delete_finished(self, result: Dict[str, Any]) (L742)<a class="headerlink" href="#deepcleanerguidelete_finishedself-result-dictstr-any-l742" title="Permanent link">&para;</a></h3>
+<p>Appends deletion counts/errors to <code>results_text</code>, re-enables controls, hides
+progress, logs <code>files_deleted/dirs_deleted</code>, clears the pending lists, and disables
+the delete button until the next scan.</p>
+<h3 id="deepcleanerguidelete_errorself-error-str-l768">DeepCleanerGUI.delete_error(self, error: str) (L768)<a class="headerlink" href="#deepcleanerguidelete_errorself-error-str-l768" title="Permanent link">&para;</a></h3>
+<p>Re-enables controls, sets <code>Deletion failed</code> status/activity, and shows a critical
+dialog. Error path counterpart to <code>delete_finished</code>.</p>
+<h3 id="deepcleanerguishow_treemap_visualizationself-l778">DeepCleanerGUI.show_treemap_visualization(self) (L778)<a class="headerlink" href="#deepcleanerguishow_treemap_visualizationself-l778" title="Permanent link">&para;</a></h3>
+<p>Exports the current analyzer via <code>TreeMapGenerator.export_as_html()</code> to a temp file
+and opens it in a browser. Requires <code>current_analyzer</code> and Plotly; warns otherwise.</p>
+<h3 id="deepcleanerguishow_sunburst_visualizationself-l802">DeepCleanerGUI.show_sunburst_visualization(self) (L802)<a class="headerlink" href="#deepcleanerguishow_sunburst_visualizationself-l802" title="Permanent link">&para;</a></h3>
+<p>Same flow as treemap but with <code>SunburstGenerator</code>. Temp-HTML + <code>webbrowser.open</code>,
+gated on analyzer presence and Plotly availability.</p>
+<h3 id="deepcleanerguishow_interactive_dashboardself-l826">DeepCleanerGUI.show_interactive_dashboard(self) (L826)<a class="headerlink" href="#deepcleanerguishow_interactive_dashboardself-l826" title="Permanent link">&para;</a></h3>
+<p>Builds an <code>InteractiveDashboard</code> figure, serializes it with <code>plotly.offline.plot</code>
+(CDN JS) to temp HTML, and opens it. Same analyzer/Plotly preconditions.</p>
+<h3 id="deepcleanerguiexport_visualization_dialogself-l856">DeepCleanerGUI.export_visualization_dialog(self) (L856)<a class="headerlink" href="#deepcleanerguiexport_visualization_dialogself-l856" title="Permanent link">&para;</a></h3>
+<p>Modal dialog choosing visualization type (treemap/sunburst/dashboard radio) and
+format (HTML/PNG/SVG radio); stores radios on <code>self</code> and routes Export to
+<code>perform_visualization_export(dialog)</code>.</p>
+<h3 id="deepcleanerguiperform_visualization_exportself-dialog-l898">DeepCleanerGUI.perform_visualization_export(self, dialog) (L898)<a class="headerlink" href="#deepcleanerguiperform_visualization_exportself-dialog-l898" title="Permanent link">&para;</a></h3>
+<p>Reads the dialog radios, prompts for a save filename, then writes HTML text or image
+bytes from the matching generator (dashboard delegates to <code>export_visualization</code>).
+Accepts the dialog and reports success; failures show a critical dialog.</p>
+<h3 id="deepcleanerguirefresh_startup_itemsself-l948">DeepCleanerGUI.refresh_startup_items(self) (L948)<a class="headerlink" href="#deepcleanerguirefresh_startup_itemsself-l948" title="Permanent link">&para;</a></h3>
+<p>Loads <code>StartupManager().list_startup_items()</code> + stats into <code>startup_table</code>
+(name/location/enabled/type), updates the progress bar and status/activity, and
+enables the disable button only when rows exist. Errors restore controls + dialog.</p>
+<h3 id="deepcleanerguidisable_selected_startup_itemsself-l985">DeepCleanerGUI.disable_selected_startup_items(self) (L985)<a class="headerlink" href="#deepcleanerguidisable_selected_startup_itemsself-l985" title="Permanent link">&para;</a></h3>
+<p>Collects selected <code>(name, type)</code> rows, calls <code>manager.disable_startup_item</code> per row,
+tallies <code>disabled_count</code> vs errors, reports the summary, and refreshes the table.
+No-op with an info dialog when nothing is selected.</p>
+<h3 id="deepcleanerguirefresh_processesself-l1030">DeepCleanerGUI.refresh_processes(self) (L1030)<a class="headerlink" href="#deepcleanerguirefresh_processesself-l1030" title="Permanent link">&para;</a></h3>
+<p>Loads <code>ProcessAnalyzer.list_processes()/list_services()</code> into <code>processes_table</code>
+(name/pid/memory/cpu, Windows vs non-Windows field mapping) and <code>services_table</code>,
+then logs totals from <code>get_stats()</code>. Button/progress restored in <code>finally</code>.</p>
+<hr />
+<h2 id="srccortex_unifieduipremiumworkerspy">src/cortex_unified/ui/premium/workers.py<a class="headerlink" href="#srccortex_unifieduipremiumworkerspy" title="Permanent link">&para;</a></h2>
+<p>Module contract: every class is a plain <code>QObject</code> moved onto a <code>QThread</code> by
+<code>PremiumMainWindow.run_worker</code>; results travel only via signals. <code>cancel()</code> sets a
+<code>threading.Event</code> the engine polls. <code>run()</code> never touches widgets.</p>
+<h3 id="_normp-l131">_norm(p) (L131)<a class="headerlink" href="#_normp-l131" title="Permanent link">&para;</a></h3>
+<p>Normalizes a path to Windows backslash form (<code>/</code> → <code>\</code>) for prefix matching.
+Shared by the aggregate/children/group helpers below.</p>
+<h3 id="aggregate_rootsentries-roots-l136">aggregate_roots(entries, roots) (L136)<a class="headerlink" href="#aggregate_rootsentries-roots-l136" title="Permanent link">&para;</a></h3>
+<p>Aggregates already-scanned entries under each root folder into <code>{name, path, size,
+count, is_dir, expandable}</code> buckets sorted by size desc. Pure computation for a
+category node; no filesystem walk.</p>
+<h3 id="children_underentries-prefix-str-l157">children_under(entries, prefix: str) (L157)<a class="headerlink" href="#children_underentries-prefix-str-l157" title="Permanent link">&para;</a></h3>
+<p>Returns immediate files plus aggregated subfolders directly under <code>prefix</code> from the
+in-memory entries (splits the remainder on <code>\</code>, one level deep). Caps work at the
+caller (<code>DirPreviewWorker</code> slices to 400); sorted by size desc.</p>
+<h3 id="group_by_appentries-bases-l205">group_by_app(entries, bases) (L205)<a class="headerlink" href="#group_by_appentries-bases-l205" title="Permanent link">&para;</a></h3>
+<p>Groups cache entries by owning app (first folder after a base root like
+<code>%LOCALAPPDATA%</code>), mapping vendor folder names through <code>_APP_FRIENDLY</code>
+("google" → "Google Chrome"). Returns selectable app nodes sorted by size.</p>
+<h3 id="scanworker-backend-cleanerservicescan_categories-l25">ScanWorker — backend <code>CleanerService.scan_categories</code> (L25)<a class="headerlink" href="#scanworker-backend-cleanerservicescan_categories-l25" title="Permanent link">&para;</a></h3>
+<p>Signals: <code>finished(object/CleanupReport)</code>, <code>progress(str)</code>, <code>failed(str)</code>.
+<code>__init__(max_risk, include_disabled)</code> (L37) stores the risk ceiling + cancel event;
+<code>cancel()</code> (L44) sets it; <code>run()</code> (L48) forwards <code>progress.emit</code>/<code>cancel_event</code> to the
+engine and emits <code>finished(report)</code> or <code>failed</code>.</p>
+<h3 id="cleanworker-backend-cleanerserviceclean_categories-l62">CleanWorker — backend <code>CleanerService.clean_categories</code> (L62)<a class="headerlink" href="#cleanworker-backend-cleanerserviceclean_categories-l62" title="Permanent link">&para;</a></h3>
+<p>Signals: <code>finished(object, int, int)</code> = (bytes_freed, items_cleaned, items_skipped),
+<code>progress(str)</code>, <code>failed(str)</code>. <code>__init__(report, method)</code> (L69) stores inputs;
+<code>cancel()</code> (L76) aborts; <code>run()</code> (L80) maps <code>(done, total)</code> to <code>"Cleaning… d / t"</code>,
+sums per-result sizes, and emits the triple (dry-run bytes excluded).</p>
+<h3 id="duplicateworker-backend-cleanerservicefind_duplicates-l102">DuplicateWorker — backend <code>CleanerService.find_duplicates</code> (L102)<a class="headerlink" href="#duplicateworker-backend-cleanerservicefind_duplicates-l102" title="Permanent link">&para;</a></h3>
+<p>Signals: <code>finished(dict)</code> = <code>{hash: [Path, …]}</code>, <code>progress(str)</code>, <code>failed(str)</code>.
+<code>__init__(roots)</code> (L108) stores roots + cancel event; <code>cancel()</code> (L114); <code>run()</code> (L118)
+converts roots to <code>Path</code>s and emits the hash groups.</p>
+<h3 id="dirpreviewworker-backend-pure-helpers-group_by_appaggregate_rootschildren_under-l232">DirPreviewWorker — backend pure helpers (<code>group_by_app</code>/<code>aggregate_roots</code>/<code>children_under</code>) (L232)<a class="headerlink" href="#dirpreviewworker-backend-pure-helpers-group_by_appaggregate_rootschildren_under-l232" title="Permanent link">&para;</a></h3>
+<p>Signals: <code>finished(int, list)</code> = (node_id, children), <code>failed(str)</code>. No progress or
+cancel (fast in-memory work). <code>__init__(node_id, entries, mode, roots, prefix)</code> (L238);
+<code>run()</code> (L248) picks the helper by <code>mode</code> (<code>appwise</code>/<code>category</code>/else-prefix) and emits
+up to 400 children so tree expansion stays snappy off the UI thread.</p>
+<h3 id="duplicatephotosworker-backend-cleanerservicefind_duplicates-image_exts-filter-l262">DuplicatePhotosWorker — backend <code>CleanerService.find_duplicates</code> + <code>IMAGE_EXTS</code> filter (L262)<a class="headerlink" href="#duplicatephotosworker-backend-cleanerservicefind_duplicates-image_exts-filter-l262" title="Permanent link">&para;</a></h3>
+<p>Signals: <code>finished(dict)</code>, <code>progress(str)</code>, <code>failed(str)</code>. Same shape as
+<code>DuplicateWorker</code> but <code>run()</code> (L284) passes the image-extension set
+(jpg/png/gif/bmp/tiff/webp/heic/raw/cr2/nef/arw/dng…); <code>__init__</code> (L274), <code>cancel()</code> (L280).</p>
+<h3 id="largefilesworker-backend-cleanerservicefind_large_files-l298">LargeFilesWorker — backend <code>CleanerService.find_large_files</code> (L298)<a class="headerlink" href="#largefilesworker-backend-cleanerservicefind_large_files-l298" title="Permanent link">&para;</a></h3>
+<p>Signals: <code>finished(list)</code> = up to 200 <code>FileEntry</code>s, <code>progress(str)</code>, <code>failed(str)</code>.
+<code>__init__(root, min_mb)</code> (L304); <code>cancel()</code> (L311); <code>run()</code> (L315) forwards
+<code>limit=200</code> + progress/cancel to the engine.</p>
+<h3 id="emptyworker-backend-cleanerservicefind_empty-l327">EmptyWorker — backend <code>CleanerService.find_empty</code> (L327)<a class="headerlink" href="#emptyworker-backend-cleanerservicefind_empty-l327" title="Permanent link">&para;</a></h3>
+<p>Signals: <code>finished(list, list)</code> = (empty_files, empty_dirs), <code>progress(str)</code>,
+<code>failed(str)</code>. <code>__init__(root)</code> (L334); <code>cancel()</code> (L340); <code>run()</code> (L343). Note:
+<code>find_empty</code> takes only <code>cancel_event</code> (no progress callback wired here).</p>
+<h3 id="deleteselectedworker-backend-securedeleterdelete_many-l352">DeleteSelectedWorker — backend <code>SecureDeleter.delete_many</code> (L352)<a class="headerlink" href="#deleteselectedworker-backend-securedeleterdelete_many-l352" title="Permanent link">&para;</a></h3>
+<p>Signals: <code>finished(object, int, int)</code> = (bytes_freed, succeeded, blocked), <code>failed(str)</code>.
+No progress/cancel. <code>__init__(paths, method)</code> (L358); <code>run()</code> (L364) builds a
+<code>SecureDeleter</code>, deletes with <code>DeletionMethod(method)</code>, and splits counts by
+<code>succeeded</code> (dry-run bytes excluded from <code>freed</code>).</p>
+<h3 id="restorepointworker-backend-restorepointmanagercreate-l380">RestorePointWorker — backend <code>RestorePointManager.create</code> (L380)<a class="headerlink" href="#restorepointworker-backend-restorepointmanagercreate-l380" title="Permanent link">&para;</a></h3>
+<p>Signals: <code>finished(str, str)</code> = (status, message), <code>failed(str)</code>.
+<code>__init__(description="Cortex Cleaner")</code> (L386); <code>run()</code> (L391) shells to
+PowerShell-backed creation off the UI thread.</p>
+<h3 id="restorepointlistworker-backend-restorepointmanagerlist_points-l401">RestorePointListWorker — backend <code>RestorePointManager.list_points</code> (L401)<a class="headerlink" href="#restorepointlistworker-backend-restorepointmanagerlist_points-l401" title="Permanent link">&para;</a></h3>
+<p>Signals: <code>finished(list)</code>, <code>failed(str)</code>. Read-only. <code>run()</code> (L407) emits the
+existing-point list; no <code>__init__</code> args, no cancel.</p>
+<h3 id="storageworker-backend-enginedetect_storage-l416">StorageWorker — backend <code>engine.detect_storage</code> (L416)<a class="headerlink" href="#storageworker-backend-enginedetect_storage-l416" title="Permanent link">&para;</a></h3>
+<p>Signals: <code>finished(str, bool)</code> = (kind, overwrite_effective), <code>failed(str)</code>.
+<code>__init__(path)</code> (L422); <code>run()</code> (L427) emits <code>info.kind.value</code> plus
+<code>info.kind.overwrite_effective</code> (subprocess-backed detection, hence threaded).</p>
+<h3 id="freespacewipeworker-backend-freespacewiperwipe-cipher-w-l437">FreeSpaceWipeWorker — backend <code>FreeSpaceWiper.wipe</code> (<code>cipher /w</code>) (L437)<a class="headerlink" href="#freespacewipeworker-backend-freespacewiperwipe-cipher-w-l437" title="Permanent link">&para;</a></h3>
+<p>Signals: <code>finished(bool, str)</code> = (success, message), <code>failed(str)</code>.
+<code>__init__(drive_letter)</code> (L443); <code>cancel()</code> (L449) reaches down to <code>core.proc.run()</code>,
+which kills the process tree within one poll interval (cipher can run ~1 h);
+<code>run()</code> (L457) forwards the cancel event.</p>
+<h3 id="shredworker-backend-securedeleterdelete-overwrite-storage-aware-l467">ShredWorker — backend <code>SecureDeleter.delete</code> (OVERWRITE, storage-aware) (L467)<a class="headerlink" href="#shredworker-backend-securedeleterdelete-overwrite-storage-aware-l467" title="Permanent link">&para;</a></h3>
+<p>Signals: <code>finished(str, str)</code> = (outcome, reason), <code>refused(str, str)</code> = (medium_kind,
+guidance), <code>failed(str)</code>. <code>__init__(target, passes, force_flash)</code> (L474); <code>run()</code> (L481)
+catches <code>OverwriteNotEffective</code> into <code>refused</code> (wired to <code>thread.quit</code> by <code>run_worker</code>;
+ShredPage adds its own handler) instead of <code>failed</code>.</p>
+<h3 id="adaptiveshredworker-backend-adaptivesanitizersanitize-pl0pl3-l501">AdaptiveShredWorker — backend <code>AdaptiveSanitizer.sanitize</code> (PL0–PL3) (L501)<a class="headerlink" href="#adaptiveshredworker-backend-adaptivesanitizersanitize-pl0pl3-l501" title="Permanent link">&para;</a></h3>
+<p>Signals: <code>finished(str, str, str)</code> = (outcome, message, detail), <code>failed(str)</code>.
+<code>__init__(target, level=None, verify=True)</code> (L511) where None/"auto" picks PL by
+storage kind + file hotness; <code>run()</code> (L518) maps <code>PrivacyLevel</code>, sanitizes, and emits
+<code>shredded/failed</code> plus <code>PL=… method wear=… verified=…</code> detail.</p>
+<h3 id="vhdxlistworker-backend-vhdxmanagerlist_disks-l545">VhdxListWorker — backend <code>VhdxManager.list_disks</code> (L545)<a class="headerlink" href="#vhdxlistworker-backend-vhdxmanagerlist_disks-l545" title="Permanent link">&para;</a></h3>
+<p>Signals: <code>finished(list)</code> = <code>VirtualDisk</code>s, <code>progress(str)</code>, <code>failed(str)</code>.
+<code>__init__</code> (L552) only makes the cancel event; <code>cancel()</code> (L557); <code>run()</code> (L561)
+emits a status line, lists disks, and returns silently (no <code>finished</code>) when cancelled
+mid-scan so a closed page never resolves stale results.</p>
+<h3 id="wslshutdownworker-backend-vhdxmanagershutdown_wsl-wsl-shutdown-l576">WslShutdownWorker — backend <code>VhdxManager.shutdown_wsl</code> (<code>wsl --shutdown</code>) (L576)<a class="headerlink" href="#wslshutdownworker-backend-vhdxmanagershutdown_wsl-wsl-shutdown-l576" title="Permanent link">&para;</a></h3>
+<p>Signals: <code>finished(bool, str)</code> = (ok, message), <code>progress(str)</code>, <code>failed(str)</code>.
+No <code>__init__</code> args/cancel; <code>run()</code> (L583) announces "Stopping WSL…" then emits the
+detachment result needed before compacting virtual disks.</p>
+<h3 id="vhdxcompactworker-backend-vhdxmanagercompact-per-disk-diskpart-l594">VhdxCompactWorker — backend <code>VhdxManager.compact</code> per disk (diskpart) (L594)<a class="headerlink" href="#vhdxcompactworker-backend-vhdxmanagercompact-per-disk-diskpart-l594" title="Permanent link">&para;</a></h3>
+<p>Signals: <code>finished(list)</code> = <code>CompactResult</code>s, <code>progress(str)</code>, <code>failed(str)</code>.
+<code>__init__(disks)</code> (L606); <code>cancel()</code> (L612) stops <em>between</em> disks (compaction is not
+interruptible once diskpart owns the file); <code>run()</code> (L616) emits per-disk progress
+with position/total and the measured space-returned list.</p>
+<h3 id="vhdxsparseworker-backend-vhdxmanagerset_sparse-l635">VhdxSparseWorker — backend <code>VhdxManager.set_sparse</code> (L635)<a class="headerlink" href="#vhdxsparseworker-backend-vhdxmanagerset_sparse-l635" title="Permanent link">&para;</a></h3>
+<p>Signals: <code>finished(bool, str)</code>, <code>progress(str)</code>, <code>failed(str)</code>.
+<code>__init__(disk, enabled=True)</code> (L642); <code>run()</code> (L648) toggles WSL sparse mode so
+reclaimed bloat does not return. No cancel (single quick toggle).</p>
+<h3 id="componentstoreanalyzeworker-backend-componentstoreanalyze-find_leftovers-dism-l663">ComponentStoreAnalyzeWorker — backend <code>ComponentStore.analyze</code> + <code>find_leftovers</code> (DISM) (L663)<a class="headerlink" href="#componentstoreanalyzeworker-backend-componentstoreanalyze-find_leftovers-dism-l663" title="Permanent link">&para;</a></h3>
+<p>Signals: <code>finished(object, list)</code> = (StoreAnalysis, leftovers), <code>progress(str)</code>,
+<code>failed(str)</code>. Read-only but minutes-long, hence threaded. <code>__init__</code> (L674);
+<code>cancel()</code> (L679); <code>run()</code> (L683) sizes WinSxS from DISM (not a hard-link walk),
+checks cancel between phases, and passes <code>analysis</code> into <code>find_leftovers</code>.</p>
+<h3 id="componentstorecleanworker-backend-componentstorecleanup-dism-startcomponentcleanup-l705">ComponentStoreCleanWorker — backend <code>ComponentStore.cleanup</code> (DISM <code>/StartComponentCleanup</code>) (L705)<a class="headerlink" href="#componentstorecleanworker-backend-componentstorecleanup-dism-startcomponentcleanup-l705" title="Permanent link">&para;</a></h3>
+<p>Signals: <code>finished(object)</code> = CleanupOutcome, <code>progress(str)</code>, <code>failed(str)</code>.
+<code>__init__(reset_base=False)</code> (L712); <code>run()</code> (L717) forwards the flag + progress.
+No cancel handle (DISM owns the run once started).</p>
+<h3 id="servicingtaskworker-backend-componentstorerun_servicing_task-l728">ServicingTaskWorker — backend <code>ComponentStore.run_servicing_task</code> (L728)<a class="headerlink" href="#servicingtaskworker-backend-componentstorerun_servicing_task-l728" title="Permanent link">&para;</a></h3>
+<p>Signals: <code>finished(bool, str)</code>, <code>progress(str)</code>, <code>failed(str)</code>. <code>run()</code> (L735)
+triggers Windows' own scheduled component-cleanup task with a status line. No
+<code>__init__</code> args/cancel.</p>
+<h3 id="leftoverdeleteworker-backend-securedeleterdelete_many-guarded-l746">LeftoverDeleteWorker — backend <code>SecureDeleter.delete_many</code> (guarded) (L746)<a class="headerlink" href="#leftoverdeleteworker-backend-securedeleterdelete_many-guarded-l746" title="Permanent link">&para;</a></h3>
+<p>Signals: <code>finished(object, int, int)</code> = (bytes_freed, removed, blocked), <code>progress(str)</code>,
+<code>failed(str)</code>. <code>__init__(paths, sizes=None)</code> (L757); <code>cancel()</code> (L764); <code>run()</code> (L768)
+forces <code>DeletionMethod.DELETE</code> (system dirs cannot go to the Recycle Bin) with the
+path guard intact, mapping <code>(done, total)</code> to <code>"Removing…"</code> progress.</p>
+<h3 id="projectcachescanworker-backend-packagemanagercleanerscan_caches-l790">ProjectCacheScanWorker — backend <code>PackageManagerCleaner.scan_caches</code> (L790)<a class="headerlink" href="#projectcachescanworker-backend-packagemanagercleanerscan_caches-l790" title="Permanent link">&para;</a></h3>
+<p>Signals: <code>finished(list)</code> = resources, <code>progress(str, int, object)</code> = (status,
+items, bytes), <code>failed(str)</code>. <code>__init__(target_folders, keep_recent_days=7,
+enabled_categories=None)</code> (L797); <code>cancel()</code> (L805); <code>run()</code> (L809) relays the
+<code>(status, items, size)</code> callback into the 3-arg signal.</p>
+<h3 id="projectcachecleanworker-backend-packagemanagercleanercleanup_caches-l833">ProjectCacheCleanWorker — backend <code>PackageManagerCleaner.cleanup_caches</code> (L833)<a class="headerlink" href="#projectcachecleanworker-backend-packagemanagercleanercleanup_caches-l833" title="Permanent link">&para;</a></h3>
+<p>Signals: <code>finished(dict)</code> = results, <code>progress(int, int, object)</code> = (done, total,
+freed), <code>failed(str)</code>. <code>__init__(resources, dry_run=True)</code> (L840) — dry run by
+default; <code>cancel()</code> (L847); <code>run()</code> (L851) relays <code>(done, total, freed)</code>.</p>
+<h3 id="autoprojectcacheworker-backend-packagemanagercleanerauto_discover_project_caches-l878">AutoProjectCacheWorker — backend <code>PackageManagerCleaner.auto_discover_project_caches</code> (L878)<a class="headerlink" href="#autoprojectcacheworker-backend-packagemanagercleanerauto_discover_project_caches-l878" title="Permanent link">&para;</a></h3>
+<p>Signals: <code>finished(list)</code>, <code>progress(str, int, object)</code>, <code>failed(str)</code>.
+<code>__init__(enabled_categories=None, keep_recent_days=7)</code> (L885) — walks fixed drives
+(or known <code>D:\code</code>) across <code>PROJECT_CACHE_CATEGORIES</code> with no manual folder pick;
+<code>cancel()</code> (L892); <code>run()</code> (L896).</p>
+<h3 id="cachelogsweepworker-backend-cachecleanerfind_large_logs-l918">CacheLogSweepWorker — backend <code>CacheCleaner.find_large_logs</code> (L918)<a class="headerlink" href="#cachelogsweepworker-backend-cachecleanerfind_large_logs-l918" title="Permanent link">&para;</a></h3>
+<p>Signals: <code>finished(list)</code> = [(Path, size)], <code>progress(str)</code>, <code>failed(str)</code>.
+<code>__init__(roots, min_size_mb=100.0)</code> (L925); <code>cancel()</code> (L932); <code>run()</code> (L936) sweeps
+<code>*.log/*.txt</code> with <code>exclude_archives=True</code>, forwarding progress + cancel.</p>
+<h3 id="dockerfscacheworker-backend-dockercleanerget_filesystem_cache_size-l949">DockerFsCacheWorker — backend <code>DockerCleaner.get_filesystem_cache_size</code> (L949)<a class="headerlink" href="#dockerfscacheworker-backend-dockercleanerget_filesystem_cache_size-l949" title="Permanent link">&para;</a></h3>
+<p>Signals: <code>finished(dict)</code>, <code>failed(str)</code>. No progress/cancel (single measurement).
+<code>run()</code> (L955) emits the <code>AppData\Local\Docker</code> cache-size dict.</p>
+<h3 id="wsllistworker-backend-wslcleanerlist_distros-l964">WslListWorker — backend <code>WslCleaner.list_distros</code> (L964)<a class="headerlink" href="#wsllistworker-backend-wslcleanerlist_distros-l964" title="Permanent link">&para;</a></h3>
+<p>Signals: <code>finished(list)</code>, <code>failed(str)</code>. <code>run()</code> (L970) emits
+<code>[d.to_dict() for d in …]</code> (distro + ext4.vhdx sizes). No progress/cancel.</p>
+<h3 id="largefileaiworker-backend-largefilefinder-is_ai_model-l979">LargeFileAiWorker — backend <code>LargeFileFinder</code> + <code>is_ai_model</code> (L979)<a class="headerlink" href="#largefileaiworker-backend-largefilefinder-is_ai_model-l979" title="Permanent link">&para;</a></h3>
+<p>Signals: <code>finished(list, list)</code> = (other_files, ai_model_files), <code>progress(str)</code>,
+<code>failed(str)</code>. <code>__init__(root, min_mb=100.0)</code> (L986); <code>cancel()</code> (L993, stored but the
+finder call in <code>run()</code> takes no cancel event); <code>run()</code> (L997) splits the finder
+output by <code>is_ai_model(path)</code> and emits both lists.</p>
+<hr />
+<h2 id="srcnexusexplorernativenexus_explorerpy-explorerwidget-only">src/NexusExplorer/native/nexus_explorer.py — ExplorerWidget only<a class="headerlink" href="#srcnexusexplorernativenexus_explorerpy-explorerwidget-only" title="Permanent link">&para;</a></h2>
+<h3 id="explorerwidgetinitself-start_path-str-parentnone-root-str-l5479">ExplorerWidget.<strong>init</strong>(self, start_path: str = "", parent=None, root: str = "") (L5479)<a class="headerlink" href="#explorerwidgetinitself-start_path-str-parentnone-root-str-l5479" title="Permanent link">&para;</a></h3>
+<p>Builds the whole explorer: <code>Engine</code>, <code>FileTableModel</code> + <code>SortProxy</code>, tab/history
+state, <code>QuickLookPopup</code>/<code>FolderSizeCalculator</code>/<code>ColorTagManager</code>/<code>SmartFolderManager</code>/
+<code>UndoManager</code>/<code>ArchiveBrowser</code>, bookmarks, and the <code>TransferQueue</code> (wired to the six
+<code>_on_transfer_*</code> slots below). Lays out the Tier-1 tab bar (<code>QTabBar</code> + new-tab button)
+and Tier-2 nav/address/search row with <code>nav_btn</code>/<code>action_btn</code> factories.</p>
+<h3 id="explorerwidgetmount_tabs_to_windowself-win-none-l6106">ExplorerWidget.mount_tabs_to_window(self, win) -&gt; None (L6106)<a class="headerlink" href="#explorerwidgetmount_tabs_to_windowself-win-none-l6106" title="Permanent link">&para;</a></h3>
+<p>Reparents <code>tab_container</code> into the host window's title-bar row via
+<code>win.set_titlebar_tab_widget</code> (the <code>PremiumMainWindow</code> counterpart). Lets Nexus tabs
+live in the frameless title bar instead of the page body.</p>
+<h3 id="explorerwidget_on_about_to_quitself-none-l6112">ExplorerWidget._on_about_to_quit(self) -&gt; None (L6112)<a class="headerlink" href="#explorerwidget_on_about_to_quitself-none-l6112" title="Permanent link">&para;</a></h3>
+<p>Persists the session on app quit by calling <code>save_session(force=True)</code>.
+Connected to the application <code>aboutToQuit</code> signal.</p>
+<h3 id="explorerwidgetsave_sessionself-forcefalse-l6117">ExplorerWidget.save_session(self, force=False) (L6117)<a class="headerlink" href="#explorerwidgetsave_sessionself-forcefalse-l6117" title="Permanent link">&para;</a></h3>
+<p>Writes schema-v1 session (last path, sidebar/debug flags, tab paths JSON, active tab,
+view mode, dual-pane, splitter sizes) to <code>QSettings("Nexus", "NexusExplorer")</code>.
+Never raises; failures log at debug.</p>
+<h3 id="explorerwidgetrestore_sessionself-l6135">ExplorerWidget.restore_session(self) (L6135)<a class="headerlink" href="#explorerwidgetrestore_sessionself-l6135" title="Permanent link">&para;</a></h3>
+<p>Rebuilds tabs/paths, active index, icons/details mode (<code>_pending_view_mode</code>), dual
+pane, sidebar, and splitter sizes from QSettings, validating every value (bad paths
+dropped, indices clamped). Never raises; falls back to initialized state.</p>
+<h3 id="explorerwidgetadd_tabself-path-str-none-l6402">ExplorerWidget.add_tab(self, path: str) -&gt; None (L6402)<a class="headerlink" href="#explorerwidgetadd_tabself-path-str-none-l6402" title="Permanent link">&para;</a></h3>
+<p>Appends <code>{path, history:[path], hindex:0}</code>, adds a <code>QTabBar</code> tab with a custom
+hover-red close button (resolves the button back to its index in <code>_on_close_btn</code>),
+selects it, and logs the addition. New-tab button passes <code>~</code>.</p>
+<h3 id="explorerwidget_close_tabself-idx-int-none-l6430">ExplorerWidget._close_tab(self, idx: int) -&gt; None (L6430)<a class="headerlink" href="#explorerwidget_close_tabself-idx-int-none-l6430" title="Permanent link">&para;</a></h3>
+<p>Refuses when only one tab remains or the index is out of range; otherwise pops the
+state, removes the tab, clamps to a neighbor, and <code>_switch_tab</code>s to it.</p>
+<h3 id="explorerwidget_on_tab_movedself-from_pos-int-to_pos-int-none-l6441">ExplorerWidget._on_tab_moved(self, from_pos: int, to_pos: int) -&gt; None (L6441)<a class="headerlink" href="#explorerwidget_on_tab_movedself-from_pos-int-to_pos-int-none-l6441" title="Permanent link">&para;</a></h3>
+<p>Keeps <code>_tabs</code> in sync with a <code>QTabBar</code> drag-reorder and remaps <code>_current_tab</code>
+through the move. Backs the movable-tab UX.</p>
+<h3 id="explorerwidget_close_current_tabself-none-l6454">ExplorerWidget._close_current_tab(self) -&gt; None (L6454)<a class="headerlink" href="#explorerwidget_close_current_tabself-none-l6454" title="Permanent link">&para;</a></h3>
+<p>Closes <code>_current_tab</code> via <code>_close_tab</code> when valid. Shortcut/command-palette target.</p>
+<h3 id="explorerwidget_switch_tabself-idx-int-none-l6460">ExplorerWidget._switch_tab(self, idx: int) -&gt; None (L6460)<a class="headerlink" href="#explorerwidget_switch_tabself-idx-int-none-l6460" title="Permanent link">&para;</a></h3>
+<p>Sets <code>_current_tab</code>, clears the inline filter, and <code>_load</code>s that tab's path.
+Slot for <code>tabbar.currentChanged</code>.</p>
+<h3 id="explorerwidget_tabself-dict-l6470">ExplorerWidget._tab(self) -&gt; dict (L6470)<a class="headerlink" href="#explorerwidget_tabself-dict-l6470" title="Permanent link">&para;</a></h3>
+<p>Returns the current tab dict, or a synthetic home-folder tab when none is valid.
+Every navigation/operation method reads the location through here.</p>
+<h3 id="explorerwidgetnavigateself-path-str-push-bool-true-none-l6478">ExplorerWidget.navigate(self, path: str, push: bool = True) -&gt; None (L6478)<a class="headerlink" href="#explorerwidgetnavigateself-path-str-push-bool-true-none-l6478" title="Permanent link">&para;</a></h3>
+<p>Normalizes/expands the path, rejects non-dirs in the status bar, truncates forward
+history and pushes when <code>push=True</code>, renames the tab, syncs <code>folder_tree.select_path</code>,
+and <code>_load</code>s. <code>push=False</code> is the back/forward/tab-switch path.</p>
+<h3 id="explorerwidget_loadself-path-str-none-l6499">ExplorerWidget._load(self, path: str) -&gt; None (L6499)<a class="headerlink" href="#explorerwidget_loadself-path-str-none-l6499" title="Permanent link">&para;</a></h3>
+<p>Refreshes crumbs, preview folder, filter placeholder, terminal cwd, address text, and
+the <code>QFileSystemWatcher</code> (re-pointed with signals blocked), clears the folder-size
+queue, bumps the <code>_load_seq</code> guard, and calls <code>engine.list_dir(path, _deliver)</code> where
+<code>_deliver</code> drops stale (superseded-sequence) listings.</p>
+<h3 id="explorerwidget_on_rowsself-code-int-rows-listdict-none-l6527">ExplorerWidget._on_rows(self, code: int, rows: list[dict]) -&gt; None (L6527)<a class="headerlink" href="#explorerwidget_on_rowsself-code-int-rows-listdict-none-l6527" title="Permanent link">&para;</a></h3>
+<p>Applies engine rows to the model, updates status, honors a pending icons-mode switch,
+routes empty/non-empty rows to the empty/table/icon stack pages, and kicks off
+background folder-size calculation. Delivery point for <code>_deliver</code>.</p>
+<h3 id="explorerwidget_reload_currentself-none-l6551">ExplorerWidget._reload_current(self) -&gt; None (L6551)<a class="headerlink" href="#explorerwidget_reload_currentself-none-l6551" title="Permanent link">&para;</a></h3>
+<p>Reloads the current tab's path via <code>_load</code>. Called after every mutation (transfer
+completion, undo/redo, create, rename) to reflect the new on-disk state.</p>
+<h3 id="explorerwidget_on_fs_changeself-_path-str-none-l6620">ExplorerWidget._on_fs_change(self, _path: str) -&gt; None (L6620)<a class="headerlink" href="#explorerwidget_on_fs_changeself-_path-str-none-l6620" title="Permanent link">&para;</a></h3>
+<p>Debounces filesystem-watcher notifications by (re)starting <code>_reload_timer</code> instead
+of reloading inline, so burst writes collapse into one refresh.</p>
+<h3 id="explorerwidgetgo_backself-l6625">ExplorerWidget.go_back(self) (L6625)<a class="headerlink" href="#explorerwidgetgo_backself-l6625" title="Permanent link">&para;</a></h3>
+<p>Steps <code>hindex</code> back and <code>navigate</code>s with <code>push=False</code>. Per-tab history; no-op at
+the oldest entry.</p>
+<h3 id="explorerwidgetgo_forwardself-l6633">ExplorerWidget.go_forward(self) (L6633)<a class="headerlink" href="#explorerwidgetgo_forwardself-l6633" title="Permanent link">&para;</a></h3>
+<p>Steps <code>hindex</code> forward and <code>navigate</code>s with <code>push=False</code>. Mirrors <code>go_back</code>.</p>
+<h3 id="explorerwidget_right_go_backself-l6642">ExplorerWidget._right_go_back(self) (L6642)<a class="headerlink" href="#explorerwidget_right_go_backself-l6642" title="Permanent link">&para;</a></h3>
+<p>Same as <code>go_back</code> for the dual-pane right tab (<code>_right_tab</code>/<code>_right_navigate</code>).
+Target of mouse BackButton when the cursor is over the right viewport.</p>
+<h3 id="explorerwidget_right_go_forwardself-l6650">ExplorerWidget._right_go_forward(self) (L6650)<a class="headerlink" href="#explorerwidget_right_go_forwardself-l6650" title="Permanent link">&para;</a></h3>
+<p>Same as <code>go_forward</code> for the right pane. Target of mouse ForwardButton over it.</p>
+<h3 id="explorerwidget_install_mouse_side_buttonsself-none-l6658">ExplorerWidget._install_mouse_side_buttons(self) -&gt; None (L6658)<a class="headerlink" href="#explorerwidget_install_mouse_side_buttonsself-none-l6658" title="Permanent link">&para;</a></h3>
+<p>Enables drops and installs <code>eventFilter(self)</code> on the widget, stack, empty state,
+splitter, all table/icon/quick/smart views + viewports, and the folder tree, so one
+filter sees every drag event and mouse side-button press.</p>
+<h3 id="explorerwidgeteventfilterself-obj-ev-l6699">ExplorerWidget.eventFilter(self, obj, ev) (L6699)<a class="headerlink" href="#explorerwidgeteventfilterself-obj-ev-l6699" title="Permanent link">&para;</a></h3>
+<p>Two jobs: (1) accept-propose every DragEnter/DragMove (with <code>_update_drop_hint</code>),
+route DragLeave to <code>_update_status</code> and Drop to <code>_handle_viewport_drop</code>; (2) map
+BackButton/ForwardButton to left/right-pane back/forward based on which viewport the
+press landed in. Falls through to super otherwise.</p>
+<h3 id="explorerwidget_handle_viewport_dropself-obj-ev-bool-l6739">ExplorerWidget._handle_viewport_drop(self, obj, ev) -&gt; bool (L6739)<a class="headerlink" href="#explorerwidget_handle_viewport_dropself-obj-ev-bool-l6739" title="Permanent link">&para;</a></h3>
+<p>Core drop executor: gathers sources (MIME URLs → text lines → staging shelf →
+selection), resolves the destination dir (current tab, or the folder row/item/tree
+node under the cursor), picks move (Shift or cut mode incl. staging shelf) vs copy,
+records undo per file, enqueues a <code>TransferQueue</code> copy/move job, clears cut staging,
+and confirms in the status bar. Returns True when it consumed the drop.</p>
+<h3 id="explorerwidget_update_drop_hintself-obj-ev-none-l6845">ExplorerWidget._update_drop_hint(self, obj, ev) -&gt; None (L6845)<a class="headerlink" href="#explorerwidget_update_drop_hintself-obj-ev-none-l6845" title="Permanent link">&para;</a></h3>
+<p>Best-effort hover hint: counts dragged items and, when hovering a folder row/item,
+writes <code>Drop N item(s) into &lt;name&gt;</code> to <code>status_sel</code> (and current-indexes the table
+row). Never raises, never changes selection otherwise.</p>
+<h3 id="explorerwidgetgo_upself-l6883">ExplorerWidget.go_up(self) (L6883)<a class="headerlink" href="#explorerwidgetgo_upself-l6883" title="Permanent link">&para;</a></h3>
+<p>Navigates to the parent directory, or <code>_archive_go_up()</code> when browsing inside an
+archive. Up-button/keyboard target.</p>
+<h3 id="explorerwidget_start_edit_pathself-l6893">ExplorerWidget._start_edit_path(self) (L6893)<a class="headerlink" href="#explorerwidget_start_edit_pathself-l6893" title="Permanent link">&para;</a></h3>
+<p>Swaps the crumb bar for the address <code>QLineEdit</code> prefilled with the tab path, focused
+and selected. Entry to type-a-path mode (commit/cancel handled by the addr slots).</p>
+<h3 id="explorerwidgetdragentereventself-ev-qdragenterevent-l7891">ExplorerWidget.dragEnterEvent(self, ev: QDragEnterEvent) (L7891)<a class="headerlink" href="#explorerwidgetdragentereventself-ev-qdragenterevent-l7891" title="Permanent link">&para;</a></h3>
+<p>Accepts the proposed drag action at widget level so external drags can enter.
+Viewport-level drags are handled by <code>eventFilter</code>; this covers the chrome.</p>
+<h3 id="explorerwidgetdragmoveeventself-ev-qdragmoveevent-l7896">ExplorerWidget.dragMoveEvent(self, ev: QDragMoveEvent) (L7896)<a class="headerlink" href="#explorerwidgetdragmoveeventself-ev-qdragmoveevent-l7896" title="Permanent link">&para;</a></h3>
+<p>Accepts the move and, when hovering a folder row in the main table, highlights it
+and shows the <code>Drop N item(s) into &lt;name&gt;</code> hint in <code>status_sel</code>. Failures swallowed.</p>
+<h3 id="explorerwidgetdragleaveeventself-ev-l7922">ExplorerWidget.dragLeaveEvent(self, ev) (L7922)<a class="headerlink" href="#explorerwidgetdragleaveeventself-ev-l7922" title="Permanent link">&para;</a></h3>
+<p>Refreshes the status bar via <code>_update_status()</code> to clear drop hints. Best-effort.</p>
+<h3 id="explorerwidgetdropeventself-ev-l7930">ExplorerWidget.dropEvent(self, ev) (L7930)<a class="headerlink" href="#explorerwidgetdropeventself-ev-l7930" title="Permanent link">&para;</a></h3>
+<p>Delegates to <code>_handle_viewport_drop(self, ev)</code>; ignores the event when it returns
+False. Widget-level drop path (viewport drops arrive via <code>eventFilter</code>).</p>
+<h3 id="explorerwidgetstartdragself-actions-qtdropaction-l7936">ExplorerWidget.startDrag(self, actions: Qt.DropAction) (L7936)<a class="headerlink" href="#explorerwidgetstartdragself-actions-qtdropaction-l7936" title="Permanent link">&para;</a></h3>
+<p>Drag source: builds <code>QMimeData</code> with <code>file://</code> URLs + newline text from selected
+existing paths, uses the first item's icon as the drag pixmap, and <code>drag.exec</code>s it
+for inter-app / intra-view drags.</p>
+<h3 id="explorerwidget_on_transfer_startedself-job_id-str-l7475">ExplorerWidget._on_transfer_started(self, job_id: str) (L7475)<a class="headerlink" href="#explorerwidget_on_transfer_startedself-job_id-str-l7475" title="Permanent link">&para;</a></h3>
+<p>Shows <code>Transfer active (&lt;id&gt;…)</code> in <code>status_items</code>. Slot for <code>TransferQueue.job_started</code>.</p>
+<h3 id="explorerwidget_on_transfer_addedself-job_id-str-l7481">ExplorerWidget._on_transfer_added(self, job_id: str) (L7481)<a class="headerlink" href="#explorerwidget_on_transfer_addedself-job_id-str-l7481" title="Permanent link">&para;</a></h3>
+<p>No-op by design: the preview-pane <code>TransferStatusDock</code> tracks <code>job_added</code> itself via
+<code>bind_queue</code>, so no manual refresh is needed here.</p>
+<h3 id="explorerwidgetopen_transfer_monitorself-l7489">ExplorerWidget.open_transfer_monitor(self) (L7489)<a class="headerlink" href="#explorerwidgetopen_transfer_monitorself-l7489" title="Permanent link">&para;</a></h3>
+<p>Lazily creates <code>TransferMonitorDialog(queue, self)</code> and opens it. Manual entry to the
+full transfer monitor (progress/cancel per job).</p>
+<h3 id="explorerwidget_on_transfer_progressself-job_id-str-percent-int-text-str-l7499">ExplorerWidget._on_transfer_progress(self, job_id: str, percent: int, text: str) (L7499)<a class="headerlink" href="#explorerwidget_on_transfer_progressself-job_id-str-percent-int-text-str-l7499" title="Permanent link">&para;</a></h3>
+<p>Writes <code>Transfer &lt;pct&gt;% — &lt;text&gt;</code> to <code>status_items</code>. Slot for <code>job_progress</code>.</p>
+<h3 id="explorerwidget_on_transfer_cancelledself-job_id-str-l7505">ExplorerWidget._on_transfer_cancelled(self, job_id: str) (L7505)<a class="headerlink" href="#explorerwidget_on_transfer_cancelledself-job_id-str-l7505" title="Permanent link">&para;</a></h3>
+<p>Writes <code>Transfer cancelled</code> and reloads the current folder to drop partial state.
+Slot for <code>job_cancelled</code>.</p>
+<h3 id="explorerwidget_on_transfer_completedself-job_id-str-success-bool-message-str-l7512">ExplorerWidget._on_transfer_completed(self, job_id: str, success: bool, message: str) (L7512)<a class="headerlink" href="#explorerwidget_on_transfer_completedself-job_id-str-success-bool-message-str-l7512" title="Permanent link">&para;</a></h3>
+<p>Reloads the current folder so copy/move/delete results appear. Slot for <code>job_completed</code>.</p>
+<h3 id="explorerwidget_on_transfer_queue_emptyself-l7517">ExplorerWidget._on_transfer_queue_empty(self) (L7517)<a class="headerlink" href="#explorerwidget_on_transfer_queue_emptyself-l7517" title="Permanent link">&para;</a></h3>
+<p>Reloads once the queue drains (final consistency after chained jobs). Slot for
+<code>queue_empty</code>.</p>
+<h3 id="explorerwidget_move_to_folderself-l7695">ExplorerWidget._move_to_folder(self) (L7695)<a class="headerlink" href="#explorerwidget_move_to_folderself-l7695" title="Permanent link">&para;</a></h3>
+<p>Moves the selection via a directory picker, enqueuing <code>TransferQueue(kind="move",
+sources, dest)</code>. Undo for the move is recorded inside the queue path, not here.</p>
+<h3 id="explorerwidget_pasteself-target_dest-str-none-none-l7745">ExplorerWidget._paste(self, target_dest: str | None = None) (L7745)<a class="headerlink" href="#explorerwidget_pasteself-target_dest-str-none-none-l7745" title="Permanent link">&para;</a></h3>
+<p>Pastes clipboard (falling back to the staging shelf), filters to existing sources,
+records per-file undo (copy vs move), enqueues the serialized <code>TransferQueue</code> job,
+and clears cut clipboard/shelf afterwards. Reports <code>Nothing to paste</code> when empty.</p>
+<h3 id="explorerwidget_on_staging_pasteself-mode-str-paths-liststr-target_dir-str-l7786">ExplorerWidget._on_staging_paste(self, mode: str, paths: list[str], target_dir: str) (L7786)<a class="headerlink" href="#explorerwidget_on_staging_pasteself-mode-str-paths-liststr-target_dir-str-l7786" title="Permanent link">&para;</a></h3>
+<p>Staging-shelf variant of <code>_paste</code>: validates paths, records undo per file, enqueues
+the queue job, and clears the shelf/clipboard on cut. Keeps shelf and queue in sync.</p>
+<h3 id="explorerwidget_deleteself-permanent-bool-false-l7820">ExplorerWidget._delete(self, permanent: bool = False) (L7820)<a class="headerlink" href="#explorerwidget_deleteself-permanent-bool-false-l7820" title="Permanent link">&para;</a></h3>
+<p>Confirms permanent deletes, records <code>record_delete</code> per path <em>before</em> executing,
+then enqueues <code>TransferQueue(kind="delete", sources, permanent)</code>. Recycle vs
+permanent is decided by the flag.</p>
+<h3 id="explorerwidget_compress_toself-fmt-str-l7630">ExplorerWidget._compress_to(self, fmt: str) (L7630)<a class="headerlink" href="#explorerwidget_compress_toself-fmt-str-l7630" title="Permanent link">&para;</a></h3>
+<p>Compresses the selection with 7z (<code>ZIP/7z/TAR.GZ</code> → ext/flag map): prompts for the
+archive name, shows <code>ExtractionProgressWidget</code>, builds a temp file list, and runs
+<code>_CompressWorker(cmd, name)</code> with progress/finish wired to the widget + <code>_reload_current</code>.</p>
+<h3 id="explorerwidget_undoself-l7843">ExplorerWidget._undo(self) (L7843)<a class="headerlink" href="#explorerwidget_undoself-l7843" title="Permanent link">&para;</a></h3>
+<p>Calls <code>UndoManager.undo()</code>, logs + shows the message, refreshes the undo description
+label, and reloads the folder; <code>Nothing to undo</code> when the stack is empty.</p>
+<h3 id="explorerwidget_redoself-l7855">ExplorerWidget._redo(self) (L7855)<a class="headerlink" href="#explorerwidget_redoself-l7855" title="Permanent link">&para;</a></h3>
+<p>Calls <code>UndoManager.redo()</code> with the same log/status-label/reload flow as <code>_undo</code>;
+<code>Nothing to redo</code> when empty. Redo descriptions update <code>status_undo</code>.</p>
+<p>Note — undo <em>recording</em> call sites (all in this file): <code>_handle_viewport_drop</code>
+(record_copy/record_move per dropped file, L6821–6826), <code>_new_folder</code> (L7532),
+<code>_new_nested_folder</code> / <code>_new_file</code> / <code>_new_nested_file</code> / <code>_batch_scaffold</code>
+(record_new_folder/record_new_file/record_batch_create), <code>_rename</code>
+(record_rename, L7725), <code>_paste</code> / <code>_on_staging_paste</code> (record_copy/record_move),
+<code>_delete</code> (record_delete before enqueue, L7833–7834).</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.expand", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight", "search.share", "content.code.copy", "content.tabs.link"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

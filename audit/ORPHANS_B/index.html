@@ -1,0 +1,3090 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="The Ultimate Windows NT Systems Optimization, Forensics & File Management Platform">
+      
+      
+        <meta name="author" content="Destroyer-official">
+      
+      
+        <link rel="canonical" href="https://destroyer-official.github.io/Cortex-Workstation/audit/ORPHANS_B/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/icons/cortex.ico">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>ORPHANS_B - backend symbols never referenced by GUI code - Cortex Workstation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="deep-purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#orphans_b-backend-symbols-never-referenced-by-gui-code" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Cortex Workstation" class="md-header__button md-logo" aria-label="Cortex Workstation" data-md-component="logo">
+      
+  <img src="../../assets/icons/cortex.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Cortex Workstation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              ORPHANS_B - backend symbols never referenced by GUI code
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="deep-purple"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="deep-purple"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/Destroyer-official/Cortex-Workstation" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Destroyer-official/Cortex-Workstation
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../.." class="md-tabs__link">
+          
+  
+  
+  🌎 Welcome Hub
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../user/getting-started/" class="md-tabs__link">
+          
+  
+  
+  📦 User Space
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../ARCHITECTURE/" class="md-tabs__link">
+          
+  
+  
+  🏗️ Developer Platform
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../api/overview/" class="md-tabs__link">
+          
+  
+  
+  🔌 API & Subsystems
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Cortex Workstation" class="md-nav__button md-logo" aria-label="Cortex Workstation" data-md-component="logo">
+      
+  <img src="../../assets/icons/cortex.png" alt="logo">
+
+    </a>
+    Cortex Workstation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/Destroyer-official/Cortex-Workstation" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Destroyer-official/Cortex-Workstation
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_1" id="__nav_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    🌎 Welcome Hub
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    🌎 Welcome Hub
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Command Center
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../FEATURE_DIRECTORY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Feature Directory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../quick_reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quick Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    📦 User Space
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    📦 User Space
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/how-to-guides/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How-To Guides
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ui_visual_guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UI Visual Tour & Design Tokens
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI & Shell Usage Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../advanced-features/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Advanced Forensic & Performance Tuning
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../package_manager_guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Package Manager Cleaner Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/nexus-explorer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Nexus File Manager (VFS)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../i18n_accessibility/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Accessibility & Keybindings
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting & Diagnostics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    🏗️ Developer Platform
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    🏗️ Developer Platform
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ARCHITECTURE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Windows NT Kernel & Architecture Spec
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dev/architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Repository Architecture Map
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../DEVELOPER_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer Onboarding & Contribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dev/threading-safety/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    State Management & Safety
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dev/testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing & CI/CD
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dev/release-process/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Release & Review Process
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    🔌 API & Subsystems
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    🔌 API & Subsystems
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Subsystem Core Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/system-tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System Tools Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/analyzers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Analyzers Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/core-engine/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Engine & Algorithmic Caches
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../API_REFERENCE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Complete API Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../FUNCTION_INVENTORY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Function & Symbol Inventory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#advanced_disk_analyzerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        advanced_disk_analyzer.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#advanced_shredderpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        advanced_shredder.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#advanced_uninstallerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        advanced_uninstaller.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#audio_duplicate_finderpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        audio_duplicate_finder.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#broken_link_detectorpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        broken_link_detector.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cloud_storage_analyzerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        cloud_storage_analyzer.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#content_defined_chunkerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        content_defined_chunker.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#czkawka_toolspy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        czkawka_tools.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#deep_cleanerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        deep_cleaner.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#docker_cleanerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        docker_cleaner.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#duplicate_finderpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        duplicate_finder.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fuzzy_finderpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fuzzy_finder.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#leftover_detectorpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        leftover_detector.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#near_duplicate_finderpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        near_duplicate_finder.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#package_manager_cleanerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        package_manager_cleaner.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#perceptual_duplicate_finderpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        perceptual_duplicate_finder.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#project_cache_scannerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        project_cache_scanner.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#registry_cleaner_aipy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        registry_cleaner_ai.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#residual_cleanerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        residual_cleaner.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#video_duplicate_finderpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        video_duplicate_finder.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#adaptive_sanitizerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        adaptive_sanitizer.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ai_telemetry_cleanerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ai_telemetry_cleaner.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#app_updaterpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        app_updater.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bitlocker_auditorpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        bitlocker_auditor.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bitrot_scrubberpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        bitrot_scrubber.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#boot_performancepy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        boot_performance.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#browser_cleanerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        browser_cleaner.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#browser_deep_cleanerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        browser_deep_cleaner.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#checksum_matrixpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        checksum_matrix.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#compact_ospy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        compact_os.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#component_storepy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        component_store.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#component_store_cleanerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        component_store_cleaner.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#crash_dump_cleanerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        crash_dump_cleaner.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#delivery_optimization_cleanerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        delivery_optimization_cleaner.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dev_cleanerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        dev_cleaner.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dev_drive_optimizerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        dev_drive_optimizer.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dev_package_cache_cleanerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        dev_package_cache_cleaner.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#device_fingerprintpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        device_fingerprint.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#diagnostic_data_managerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        diagnostic_data_manager.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#directstorage_optimizerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        directstorage_optimizer.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#disk_benchmarkpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        disk_benchmark.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dns_benchmarkpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        dns_benchmark.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#drive_optimizerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        drive_optimizer.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#driver_inventorypy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        driver_inventory.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#driver_managerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        driver_manager.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#driver_store_cleanerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        driver_store_cleaner.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#env_variable_managerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        env_variable_manager.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#event_log_cleanerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        event_log_cleaner.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#event_log_monitorpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        event_log_monitor.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#external_exposurepy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        external_exposure.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#firewall_managerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        firewall_manager.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#font_cache_managerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        font_cache_manager.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#free_space_wipepy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        free_space_wipe.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#game_modepy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        game_mode.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hosts_file_managerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        hosts_file_manager.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#junction_auditorpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        junction_auditor.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#lan_scannerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        lan_scanner.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#leftover_cleanerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        leftover_cleaner.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#load_testerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        load_tester.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#memory_compression_tunerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        memory_compression_tuner.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#memory_optimizerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        memory_optimizer.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#memory_standby_purgerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        memory_standby_purger.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#network_automationpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        network_automation.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#network_inventorypy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        network_inventory.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#network_security_auditpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        network_security_audit.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#network_service_scannerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        network_service_scanner.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#network_stack_optimizerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        network_stack_optimizer.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#network_toolspy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        network_tools.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#network_trafficpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        network_traffic.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nmap_adapterpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        nmap_adapter.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#notification_cleanerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        notification_cleaner.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ouipy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        oui.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pagefile_optimizerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        pagefile_optimizer.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#power_plan_optimizerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        power_plan_optimizer.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prefetch_analyzerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        prefetch_analyzer.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#privacy_blockerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        privacy_blocker.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#process_metapy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        process_meta.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#process_token_auditorpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        process_token_auditor.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#restart_manager_unlockerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        restart_manager_unlocker.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#restore_pointpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        restore_point.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#s3_fifopy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        s3_fifo.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sandbox_cleanerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        sandbox_cleaner.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#secrets_scannerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        secrets_scanner.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#secure_shredderpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        secure_shredder.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#shader_cache_cleanerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        shader_cache_cleaner.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#shellbags_privacy_cleanerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        shellbags_privacy_cleaner.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sieve_cachepy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        sieve_cache.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#slack_space_analyzerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        slack_space_analyzer.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#smb_share_auditorpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        smb_share_auditor.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srum_bam_cleanerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        srum_bam_cleaner.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ssd_trim_optimizerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ssd_trim_optimizer.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#startup_impact_analyzerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        startup_impact_analyzer.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#startup_optimizerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        startup_optimizer.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#storage_growth_trackerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        storage_growth_tracker.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#system_cache_rebuilderpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        system_cache_rebuilder.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#system_repairpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        system_repair.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#temp_folder_cleanerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        temp_folder_cleaner.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#update_checkerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        update_checker.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#vhdx_managerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        vhdx_manager.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#vss_health_analyzerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        vss_health_analyzer.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#vss_managerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        vss_manager.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#vulnerability_catalogpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        vulnerability_catalog.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#wake_on_lanpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        wake_on_lan.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#wan_auditpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        wan_audit.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#winapp2_cleanerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        winapp2_cleaner.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#windows_updatepy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        windows_update.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#windows_update_repairpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        windows_update_repair.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="orphans_b-backend-symbols-never-referenced-by-gui-code">ORPHANS_B - backend symbols never referenced by GUI code<a class="headerlink" href="#orphans_b-backend-symbols-never-referenced-by-gui-code" title="Permanent link">&para;</a></h1>
+<p>Scope: <code>src/cortex_unified/analyzers/</code> (31 files) + <code>src/cortex_unified/system_tools/</code> (all) vs GUI dirs <code>src/cortex_unified/ui/</code>, <code>src/cortex_unified/explorer/</code>, <code>run_gui.py</code> (includes <code>ui/premium/</code> + <code>ui/tabs/</code>).
+Method: top-level public <code>class</code>/<code>def</code> per backend file (AST, skips <code>_private</code> and methods); substring name-grep across full GUI corpus. Zero hits outside own file/tests = ORPHAN. Module stem nowhere in corpus = FULLY-ORPHAN module.
+Statistics: 550 top-level public symbols; 287 orphans in 107 modules; 13 fully-orphan modules: czkawka_tools, residual_cleaner, residual_hunter, weaponized_shredder, browser_cleaner, component_store_cleaner, delivery_optimization_cleaner, game_mode, lan_scanner, network_scan_cli, process_meta, sieve_cache, wan_audit.
+Caveat: substring grep can over-match short/generic names, so generic helpers that DO match are (correctly) not listed; listed items had literally zero GUI hits. <code>(helper)</code> marks internal utilities with no direct GUI value; <code>(verify)</code> means a GUI page exists but does not reference this symbol - confirm before wiring.
+Note: <code>residual_hunter.py</code> and <code>weaponized_shredder.py</code> are shim/re-export modules with zero own public top-level symbols (docstring + imports + aliases only) and zero GUI references - whole-file orphans, no per-symbol rows. <code>network_scan_cli.main()</code> is excluded only because the generic name <code>main</code> over-matches; the module itself is never imported by GUI (CLI-only entry point).</p>
+<h2 id="advanced_disk_analyzerpy">advanced_disk_analyzer.py<a class="headerlink" href="#advanced_disk_analyzerpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via disk_analyzer_tab.py / premium disk_analyzer_page.py - expose NTFSScanner/PosixScanner/CloudScanner as scan-engine options
+- <code>FolderNode()</code> (src/cortex_unified/analyzers/advanced_disk_analyzer.py:122) [class]: Aggregated folder node for visualization. - unused by GUI.
+- <code>NTFSScanner()</code> (src/cortex_unified/analyzers/advanced_disk_analyzer.py:241) [class]: Fast NTFS scanner using direct MFT parsing via Windows API. - unused by GUI.
+- <code>PosixScanner()</code> (src/cortex_unified/analyzers/advanced_disk_analyzer.py:314) [class]: Linux/macOS scanner using iterative scandir with stat metadata. - unused by GUI.
+- <code>CloudScanner()</code> (src/cortex_unified/analyzers/advanced_disk_analyzer.py:356) [class]: Cloud target scanner delegating to rclone <code>lsf</code> per configured remote. - unused by GUI.</p>
+<h2 id="advanced_shredderpy">advanced_shredder.py<a class="headerlink" href="#advanced_shredderpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via file_shredder_tab.py / secure_shredder_page.py - offer ShredMethod choice in shred dialog
+- <code>ShredMethod()</code> (src/cortex_unified/analyzers/advanced_shredder.py:23) [class]: Sanitization standards for secure data erasure. - unused by GUI.</p>
+<h2 id="advanced_uninstallerpy">advanced_uninstaller.py<a class="headerlink" href="#advanced_uninstallerpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via uninstaller_tab.py / advanced_uninstaller_page.py - render LeftoverScanResult rows
+- <code>LeftoverScanResult()</code> (src/cortex_unified/analyzers/advanced_uninstaller.py:115) [class]: LeftoverScanResult. - unused by GUI.</p>
+<h2 id="audio_duplicate_finderpy">audio_duplicate_finder.py<a class="headerlink" href="#audio_duplicate_finderpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via duplicates_tab.py / audio_duplicates_page.py - wire compute_audio_fingerprint/audio_compare into audio-dup scan
+- <code>compute_audio_fingerprint()</code> (src/cortex_unified/analyzers/audio_duplicate_finder.py:415) [func]: Compute Chromaprint-inspired acoustic fingerprint (sequence of 32-bit ints). - unused by GUI.
+- <code>audio_compare()</code> (src/cortex_unified/analyzers/audio_duplicate_finder.py:455) [func]: Similarity 0.0..1.0 between two fingerprints (higher = more similar). - unused by GUI.</p>
+<h2 id="broken_link_detectorpy">broken_link_detector.py<a class="headerlink" href="#broken_link_detectorpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via broken_links_tab.py - surface result/outcome types in repair report
+- <code>BrokenSymlink()</code> (src/cortex_unified/analyzers/broken_link_detector.py:29) [class]: Information about a broken symlink. - unused by GUI.
+- <code>BrokenShortcut()</code> (src/cortex_unified/analyzers/broken_link_detector.py:40) [class]: Information about a broken Windows shortcut (.lnk file). - unused by GUI.
+- <code>BrokenRegistryRef()</code> (src/cortex_unified/analyzers/broken_link_detector.py:53) [class]: Information about a broken registry reference (Windows only). - unused by GUI.
+- <code>RepairResult()</code> (src/cortex_unified/analyzers/broken_link_detector.py:65) [class]: Result of a repair attempt. - unused by GUI.
+- <code>RepairOutcome()</code> (src/cortex_unified/analyzers/broken_link_detector.py:76) [class]: Per-item outcome of a :func:<code>repair</code> run. - unused by GUI.</p>
+<h2 id="cloud_storage_analyzerpy">cloud_storage_analyzer.py<a class="headerlink" href="#cloud_storage_analyzerpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via premium cloud_storage_page.py - wire provider classes + PricingCatalog estimate card
+- <code>PricingCatalog()</code> (src/cortex_unified/analyzers/cloud_storage_analyzer.py:147) [class]: Storage pricing resolved at runtime from the provider's public API. - unused by GUI.
+- <code>CloudProvider()</code> (src/cortex_unified/analyzers/cloud_storage_analyzer.py:341) [class]: Abstract cloud storage provider. - unused by GUI.
+- <code>S3Provider()</code> (src/cortex_unified/analyzers/cloud_storage_analyzer.py:406) [class]: AWS S3 backend driven by boto3, listing object versions when available. - unused by GUI.
+- <code>AzureBlobProvider()</code> (src/cortex_unified/analyzers/cloud_storage_analyzer.py:538) [class]: Azure Blob backend via BlobServiceClient (connection string or token auth). - unused by GUI.
+- <code>GoogleDriveProvider()</code> (src/cortex_unified/analyzers/cloud_storage_analyzer.py:652) [class]: Google Drive listing via the Drive v3 REST API. - unused by GUI.
+- <code>OneDriveProvider()</code> (src/cortex_unified/analyzers/cloud_storage_analyzer.py:752) [class]: OneDrive / SharePoint listing via Microsoft Graph <code>/children</code>. - unused by GUI.
+- <code>RcloneProvider()</code> (src/cortex_unified/analyzers/cloud_storage_analyzer.py:840) [class]: Any of rclone's 40+ backends via <code>rclone lsjson</code>. - unused by GUI.</p>
+<h2 id="content_defined_chunkerpy">content_defined_chunker.py<a class="headerlink" href="#content_defined_chunkerpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via premium cdc_page.py / near_duplicates_page.py - expose chunk/similarity helpers in CDC/near-dup flow
+- <code>ChunkStats()</code> (src/cortex_unified/analyzers/content_defined_chunker.py:116) [class]: ChunkStats. - unused by GUI.
+- <code>gear_chunk()</code> (src/cortex_unified/analyzers/content_defined_chunker.py:138) [func]: Content-defined chunking via Gear (FastCDC §3). - unused by GUI.
+- <code>file_chunks()</code> (src/cortex_unified/analyzers/content_defined_chunker.py:190) [func]: Chunk a file (streamed, bounded). - unused by GUI.
+- <code>jaccard()</code> (src/cortex_unified/analyzers/content_defined_chunker.py:205) [func]: Jaccard similarity of two fingerprint sets (0..1). - unused by GUI.
+- <code>chunk_similarity()</code> (src/cortex_unified/analyzers/content_defined_chunker.py:216) [func]: CDC-Jaccard similarity between two byte strings (1.0 = identical). - unused by GUI.
+- <code>vector_cdc_chunk()</code> (src/cortex_unified/analyzers/content_defined_chunker.py:444) [func]: VectorCDC (FAST'25) accelerated content-defined chunking. - unused by GUI.
+- <code>IdeaInvertedIndex()</code> (src/cortex_unified/analyzers/content_defined_chunker.py:495) [class]: IDEA: Inverted Deduplication-Aware Index (FAST '24). - unused by GUI.</p>
+<h2 id="czkawka_toolspy">czkawka_tools.py<a class="headerlink" href="#czkawka_toolspy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via EMPTY module - EmptyFinder-&gt;empty_files_tab.py; InvalidSymlinkFinder/BrokenFileFinder-&gt;broken_links_tab.py; BadExtension/BadNames-&gt;heuristics_tab.py; ExifCleaner-&gt;privacy_tab.py; TempFileFinder-&gt;deep_cleaner_tab.py; VideoOptimizer-&gt;new Media page
+- <code>EmptyResult()</code> (src/cortex_unified/analyzers/czkawka_tools.py:135) [class]: Empty scan result with empty files, folders, and scan stats. - unused by GUI.
+- <code>EmptyFinder()</code> (src/cortex_unified/analyzers/czkawka_tools.py:142) [class]: Walk a root tree collecting zero-byte files and empty folders. - unused by GUI.
+- <code>SymlinkResult()</code> (src/cortex_unified/analyzers/czkawka_tools.py:194) [class]: Broken-symlink scan result with link targets and scan stats. - unused by GUI.
+- <code>InvalidSymlinkFinder()</code> (src/cortex_unified/analyzers/czkawka_tools.py:200) [class]: Walk a root tree collecting symlinks whose targets no longer exist. - unused by GUI.
+- <code>BrokenFileFinder()</code> (src/cortex_unified/analyzers/czkawka_tools.py:239) [class]: Detect corrupt images, archives, and PDFs via content verification. - unused by GUI.
+- <code>BadExtResult()</code> (src/cortex_unified/analyzers/czkawka_tools.py:319) [class]: One file whose sniffed content type disagrees with its extension. - unused by GUI.
+- <code>BadExtensionFinder()</code> (src/cortex_unified/analyzers/czkawka_tools.py:325) [class]: Compare each file's magic-byte type against its claimed extension. - unused by GUI.
+- <code>BadNamesFinder()</code> (src/cortex_unified/analyzers/czkawka_tools.py:371) [class]: Collect files and folders with illegal, reserved, or overlong names. - unused by GUI.
+- <code>ExifCleaner()</code> (src/cortex_unified/analyzers/czkawka_tools.py:397) [class]: Scan images for EXIF metadata and strip it to protect privacy. - unused by GUI.
+- <code>TempFileFinder()</code> (src/cortex_unified/analyzers/czkawka_tools.py:465) [class]: Locate temp/log/backup files under a root or system temp dirs. - unused by GUI.
+- <code>VideoInfo()</code> (src/cortex_unified/analyzers/czkawka_tools.py:504) [class]: VideoInfo. - unused by GUI.
+- <code>VideoOptimizer()</code> (src/cortex_unified/analyzers/czkawka_tools.py:517) [class]: VideoOptimizer. - unused by GUI.</p>
+<h2 id="deep_cleanerpy">deep_cleaner.py<a class="headerlink" href="#deep_cleanerpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via deep_cleaner_tab.py - internal helper get_path_size_safe; no GUI needed
+- <code>get_path_size_safe()</code> (src/cortex_unified/analyzers/deep_cleaner.py:19) [func]: Recursive byte size of <em>path</em>; 0 for anything unreadable. - unused by GUI.</p>
+<h2 id="docker_cleanerpy">docker_cleaner.py<a class="headerlink" href="#docker_cleanerpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via docker_tab.py - bind dataclasses/CleanupResult to docker clean report
+- <code>DockerImage()</code> (src/cortex_unified/analyzers/docker_cleaner.py:26) [class]: An image flagged as dangling or referenced by no container. - unused by GUI.
+- <code>DockerContainer()</code> (src/cortex_unified/analyzers/docker_cleaner.py:42) [class]: A non-running container eligible for removal. - unused by GUI.
+- <code>DockerVolume()</code> (src/cortex_unified/analyzers/docker_cleaner.py:58) [class]: A volume not mounted by any container. - unused by GUI.
+- <code>DockerNetwork()</code> (src/cortex_unified/analyzers/docker_cleaner.py:73) [class]: A user-defined network with no attached containers. - unused by GUI.
+- <code>CleanupResult()</code> (src/cortex_unified/analyzers/docker_cleaner.py:87) [class]: Outcome of a cleanup pass; counts include dry-run simulations. - unused by GUI.</p>
+<h2 id="duplicate_finderpy">duplicate_finder.py<a class="headerlink" href="#duplicate_finderpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via duplicates_tab.py - internal fastcdc_chunk helper; no direct GUI
+- <code>fastcdc_chunk()</code> (src/cortex_unified/analyzers/duplicate_finder.py:49) [func]: FastCDC content-defined chunking (paper Algorithm 1). - unused by GUI.</p>
+<h2 id="fuzzy_finderpy">fuzzy_finder.py<a class="headerlink" href="#fuzzy_finderpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via premium fuzzy_hash_page.py / duplicates_tab.py - wire fuzzy_hash_<em>/fuzzy_compare actions
+- <code>fuzzy_hash_bytes()</code> (src/cortex_unified/analyzers/fuzzy_finder.py:162) [func]: Return an ssdeep-style CTPH signature for </em>data*. - unused by GUI.
+- <code>fuzzy_hash_file()</code> (src/cortex_unified/analyzers/fuzzy_finder.py:177) [func]: Fuzzy-hash an entire file (streamed, bounded like ssdeep's 0–64 bases). - unused by GUI.
+- <code>fuzzy_compare()</code> (src/cortex_unified/analyzers/fuzzy_finder.py:207) [func]: Similarity score 0..100 between two CTPH signatures (higher = closer). - unused by GUI.</p>
+<h2 id="leftover_detectorpy">leftover_detector.py<a class="headerlink" href="#leftover_detectorpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via uninstaller_tab.py - show DetectedItem/OrphanedFolder/RegistryOrphan/CleanupRecommendation in leftover report
+- <code>DetectedItem()</code> (src/cortex_unified/analyzers/leftover_detector.py:25) [class]: Base class for detected leftover items. - unused by GUI.
+- <code>OrphanedFolder()</code> (src/cortex_unified/analyzers/leftover_detector.py:45) [class]: Represents an orphaned application folder. - unused by GUI.
+- <code>InstallerFile()</code> (src/cortex_unified/analyzers/leftover_detector.py:58) [class]: Represents a detected installer file. - unused by GUI.
+- <code>RegistryOrphan()</code> (src/cortex_unified/analyzers/leftover_detector.py:70) [class]: Represents an orphaned registry entry (Windows only). - unused by GUI.
+- <code>CleanupRecommendation()</code> (src/cortex_unified/analyzers/leftover_detector.py:82) [class]: Represents a cleanup recommendation with risk assessment. - unused by GUI.</p>
+<h2 id="near_duplicate_finderpy">near_duplicate_finder.py<a class="headerlink" href="#near_duplicate_finderpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via premium near_duplicates_page.py - expose BloomFilter stats/pre-filter toggle
+- <code>BloomFilter()</code> (src/cortex_unified/analyzers/near_duplicate_finder.py:72) [class]: Simple Bloom filter with k hash functions. - unused by GUI.</p>
+<h2 id="package_manager_cleanerpy">package_manager_cleaner.py<a class="headerlink" href="#package_manager_cleanerpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via package_manager_tab.py - render CleanupResult/HealthStatus cards
+- <code>CleanupResult()</code> (src/cortex_unified/analyzers/package_manager_cleaner.py:52) [class]: Outcome of one cache-clean operation (counts, bytes, errors). - unused by GUI.
+- <code>HealthStatus()</code> (src/cortex_unified/analyzers/package_manager_cleaner.py:68) [class]: Post-cleanup health verdict for a single package manager. - unused by GUI.</p>
+<h2 id="perceptual_duplicate_finderpy">perceptual_duplicate_finder.py<a class="headerlink" href="#perceptual_duplicate_finderpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via premium perceptual_duplicates_page.py - wire *_hash/hamming_distance into image-dup pipeline
+- <code>average_hash()</code> (src/cortex_unified/analyzers/perceptual_duplicate_finder.py:140) [func]: aHash: 64 bits, bit k set when the k-th 8x8-block mean &gt;= global mean. - unused by GUI.
+- <code>difference_hash()</code> (src/cortex_unified/analyzers/perceptual_duplicate_finder.py:157) [func]: dHash: 64 bits from horizontal left-vs-right gradients of an 8x9 grid. - unused by GUI.
+- <code>perceptual_hash()</code> (src/cortex_unified/analyzers/perceptual_duplicate_finder.py:176) [func]: pHash: 64-bit DCT low-frequency hash (the canonical, most robust). - unused by GUI.
+- <code>wavelet_hash()</code> (src/cortex_unified/analyzers/perceptual_duplicate_finder.py:248) [func]: wHash (Haar wavelet): 64 bits via multi-resolution Haar DWT. - unused by GUI.
+- <code>hamming_distance()</code> (src/cortex_unified/analyzers/perceptual_duplicate_finder.py:291) [func]: Number of differing bits between two hashes (0..64). - unused by GUI.</p>
+<h2 id="project_cache_scannerpy">project_cache_scanner.py<a class="headerlink" href="#project_cache_scannerpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via deep_cleaner_tab.py (Dev caches section) - expose ProjectCacheScanner scan/clean
+- <code>ProjectCacheScanner()</code> (src/cortex_unified/analyzers/project_cache_scanner.py:119) [class]: Drive-aware scanner for PROJECT_CACHE_CATEGORIES patterns. - unused by GUI.</p>
+<h2 id="registry_cleaner_aipy">registry_cleaner_ai.py<a class="headerlink" href="#registry_cleaner_aipy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via registry_cleaner_tab.py / registry_ai_page.py - show RegistryIssue AI verdict column
+- <code>RegistryIssue()</code> (src/cortex_unified/analyzers/registry_cleaner_ai.py:93) [class]: Single registry issue with ML risk score. - unused by GUI.</p>
+<h2 id="residual_cleanerpy">residual_cleaner.py<a class="headerlink" href="#residual_cleanerpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via EMPTY module - uninstaller_tab.py leftover/residual sweep section
+- <code>ResidualCleaner()</code> (src/cortex_unified/analyzers/residual_cleaner.py:15) [class]: Finds leftover files and folders for uninstalled applications. - unused by GUI.</p>
+<h2 id="video_duplicate_finderpy">video_duplicate_finder.py<a class="headerlink" href="#video_duplicate_finderpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via premium video_duplicates_page.py - wire compute_video_fingerprint/video_compare
+- <code>compute_video_fingerprint()</code> (src/cortex_unified/analyzers/video_duplicate_finder.py:292) [func]: Sequence fingerprint (list of 64-bit pHashes) for a video file. - unused by GUI.
+- <code>video_compare()</code> (src/cortex_unified/analyzers/video_duplicate_finder.py:312) [func]: Similarity 0.0..1.0 between two video fingerprints. - unused by GUI.</p>
+<h2 id="adaptive_sanitizerpy">adaptive_sanitizer.py<a class="headerlink" href="#adaptive_sanitizerpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via deep_cleaner_tab.py - SanitizeResult report card
+- <code>SanitizeResult()</code> (src/cortex_unified/system_tools/adaptive_sanitizer.py:89) [class]: Outcome of one sanitization attempt. - unused by GUI.</p>
+<h2 id="ai_telemetry_cleanerpy">ai_telemetry_cleaner.py<a class="headerlink" href="#ai_telemetry_cleanerpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via privacy_tab.py - AiArtifactInfo list in AI-telemetry section
+- <code>AiArtifactInfo()</code> (src/cortex_unified/system_tools/ai_telemetry_cleaner.py:35) [class]: Detailed metadata for a discovered AI or Copilot local storage artifact. - unused by GUI.</p>
+<h2 id="app_updaterpy">app_updater.py<a class="headerlink" href="#app_updaterpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via system_tools_tab.py / dashboard - UpgradableApp update list
+- <code>UpgradableApp()</code> (src/cortex_unified/system_tools/app_updater.py:32) [class]: Upgradable App data container. - unused by GUI.</p>
+<h2 id="bitlocker_auditorpy">bitlocker_auditor.py<a class="headerlink" href="#bitlocker_auditorpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via system_tools_tab.py (Security) - EncryptedVolumeInfo volume list
+- <code>EncryptedVolumeInfo()</code> (src/cortex_unified/system_tools/bitlocker_auditor.py:23) [class]: Encrypted Volume Info data container. - unused by GUI.</p>
+<h2 id="bitrot_scrubberpy">bitrot_scrubber.py<a class="headerlink" href="#bitrot_scrubberpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via system_tools_tab.py (Disk health) - ScrubberRecord/BitRotIssue report
+- <code>ScrubberRecord()</code> (src/cortex_unified/system_tools/bitrot_scrubber.py:25) [class]: Scrubber Record data container. - unused by GUI.
+- <code>BitRotIssue()</code> (src/cortex_unified/system_tools/bitrot_scrubber.py:35) [class]: Bit Rot Issue data container. - unused by GUI.</p>
+<h2 id="boot_performancepy">boot_performance.py<a class="headerlink" href="#boot_performancepy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via startup_manager_tab.py - BootRecord/BootIssue boot-time cards
+- <code>BootRecord()</code> (src/cortex_unified/system_tools/boot_performance.py:45) [class]: Boot Record data container. - unused by GUI.
+- <code>BootIssue()</code> (src/cortex_unified/system_tools/boot_performance.py:63) [class]: Boot Issue data container. - unused by GUI.</p>
+<h2 id="browser_cleanerpy">browser_cleaner.py<a class="headerlink" href="#browser_cleanerpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via EMPTY module - privacy_tab.py deep-browser section (DeepBrowserCleaner/Cleanable)
+- <code>Cleanable()</code> (src/cortex_unified/system_tools/browser_cleaner.py:75) [class]: Cleanable data container. - unused by GUI.
+- <code>DeepBrowserCleaner()</code> (src/cortex_unified/system_tools/browser_cleaner.py:156) [class]: Deep Browser Cleaner. - unused by GUI.</p>
+<h2 id="browser_deep_cleanerpy">browser_deep_cleaner.py<a class="headerlink" href="#browser_deep_cleanerpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via privacy_tab.py - BrowserCleanResult summary
+- <code>BrowserCleanResult()</code> (src/cortex_unified/system_tools/browser_deep_cleaner.py:30) [class]: Browser Clean Result data container. - unused by GUI.</p>
+<h2 id="checksum_matrixpy">checksum_matrix.py<a class="headerlink" href="#checksum_matrixpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via system_tools_tab.py - ManifestVerifyItem integrity table
+- <code>ManifestVerifyItem()</code> (src/cortex_unified/system_tools/checksum_matrix.py:63) [class]: Individual verification status of a file against its manifest entry. - unused by GUI.</p>
+<h2 id="compact_ospy">compact_os.py<a class="headerlink" href="#compact_ospy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via premium compact_os_page.py - FolderEstimate/CompressionResult cards
+- <code>FolderEstimate()</code> (src/cortex_unified/system_tools/compact_os.py:97) [class]: Folder Estimate data container. - unused by GUI.
+- <code>CompressionResult()</code> (src/cortex_unified/system_tools/compact_os.py:119) [class]: Compression Result data container. - unused by GUI.</p>
+<h2 id="component_storepy">component_store.py<a class="headerlink" href="#component_storepy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via system_tools_tab.py - LeftoverRisk WinSxS rows
+- <code>LeftoverRisk()</code> (src/cortex_unified/system_tools/component_store.py:39) [class]: What you give up by removing a leftover. - unused by GUI.</p>
+<h2 id="component_store_cleanerpy">component_store_cleaner.py<a class="headerlink" href="#component_store_cleanerpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via EMPTY module - deep_cleaner_tab.py / system_tools_tab.py WinSxS clean section
+- <code>ComponentStoreInfo()</code> (src/cortex_unified/system_tools/component_store_cleaner.py:93) [class]: Parsed output of <code>DISM /AnalyzeComponentStore</code>. - unused by GUI.
+- <code>CleanupResult()</code> (src/cortex_unified/system_tools/component_store_cleaner.py:115) [class]: Cleanup Result data container. - unused by GUI.
+- <code>PackageInfo()</code> (src/cortex_unified/system_tools/component_store_cleaner.py:127) [class]: Single package from <code>dism /get-packages</code>. - unused by GUI.
+- <code>ComponentStoreCleaner()</code> (src/cortex_unified/system_tools/component_store_cleaner.py:139) [class]: DISM-based Component Store analyzer and cleaner. - unused by GUI.</p>
+<h2 id="crash_dump_cleanerpy">crash_dump_cleaner.py<a class="headerlink" href="#crash_dump_cleanerpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via deep_cleaner_tab.py - CrashDumpItem/CrashDumpCleanReport section
+- <code>CrashDumpItem()</code> (src/cortex_unified/system_tools/crash_dump_cleaner.py:18) [class]: Crash Dump Item data container. - unused by GUI.
+- <code>CrashDumpCleanReport()</code> (src/cortex_unified/system_tools/crash_dump_cleaner.py:28) [class]: Crash Dump Clean Report data container. - unused by GUI.</p>
+<h2 id="delivery_optimization_cleanerpy">delivery_optimization_cleaner.py<a class="headerlink" href="#delivery_optimization_cleanerpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via EMPTY module - system_tools_tab.py Windows-Update section
+- <code>DeliveryOptimizationStatus()</code> (src/cortex_unified/system_tools/delivery_optimization_cleaner.py:18) [class]: Delivery Optimization Status data container. - unused by GUI.
+- <code>DeliveryOptimizationCleanReport()</code> (src/cortex_unified/system_tools/delivery_optimization_cleaner.py:27) [class]: Delivery Optimization Clean Report data container. - unused by GUI.
+- <code>DeliveryOptimizationCleaner()</code> (src/cortex_unified/system_tools/delivery_optimization_cleaner.py:41) [class]: Production Delivery Optimization cache sanitizer. - unused by GUI.</p>
+<h2 id="dev_cleanerpy">dev_cleaner.py<a class="headerlink" href="#dev_cleanerpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via deep_cleaner_tab.py (Dev) - DevCleanResult card
+- <code>DevCleanResult()</code> (src/cortex_unified/system_tools/dev_cleaner.py:36) [class]: Dev Clean Result data container. - unused by GUI.</p>
+<h2 id="dev_drive_optimizerpy">dev_drive_optimizer.py<a class="headerlink" href="#dev_drive_optimizerpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via premium directstorage_page.py / system_tools_tab.py - DevDriveInfo card
+- <code>DevDriveInfo()</code> (src/cortex_unified/system_tools/dev_drive_optimizer.py:28) [class]: Dev Drive Info data container. - unused by GUI.</p>
+<h2 id="dev_package_cache_cleanerpy">dev_package_cache_cleaner.py<a class="headerlink" href="#dev_package_cache_cleanerpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via deep_cleaner_tab.py (Dev) - DevPackageStoreInfo section
+- <code>DevPackageStoreInfo()</code> (src/cortex_unified/system_tools/dev_package_cache_cleaner.py:36) [class]: Status and storage consumption of a specific developer package cache. - unused by GUI.</p>
+<h2 id="device_fingerprintpy">device_fingerprint.py<a class="headerlink" href="#device_fingerprintpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via system_pages / settings - DeviceFingerprint/FingerprintEvidence identity card
+- <code>FingerprintEvidence()</code> (src/cortex_unified/system_tools/device_fingerprint.py:13) [class]: Fingerprint Evidence data container. - unused by GUI.
+- <code>DeviceFingerprint()</code> (src/cortex_unified/system_tools/device_fingerprint.py:33) [class]: Device Fingerprint data container. - unused by GUI.</p>
+<h2 id="diagnostic_data_managerpy">diagnostic_data_manager.py<a class="headerlink" href="#diagnostic_data_managerpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via privacy_tab.py - TelemetrySetting toggles
+- <code>TelemetrySetting()</code> (src/cortex_unified/system_tools/diagnostic_data_manager.py:25) [class]: Telemetry Setting data container. - unused by GUI.</p>
+<h2 id="directstorage_optimizerpy">directstorage_optimizer.py<a class="headerlink" href="#directstorage_optimizerpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via premium directstorage_page.py - BypassIoVolumeReport card
+- <code>BypassIoVolumeReport()</code> (src/cortex_unified/system_tools/directstorage_optimizer.py:23) [class]: BypassIO and DirectStorage status for a single storage volume. - unused by GUI.</p>
+<h2 id="disk_benchmarkpy">disk_benchmark.py<a class="headerlink" href="#disk_benchmarkpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via system_tools_tab.py - DiskBenchmarkMetric chart
+- <code>DiskBenchmarkMetric()</code> (src/cortex_unified/system_tools/disk_benchmark.py:23) [class]: Disk Benchmark Metric data container. - unused by GUI.</p>
+<h2 id="dns_benchmarkpy">dns_benchmark.py<a class="headerlink" href="#dns_benchmarkpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via system_tools_tab.py (Network) - DnsServerSpec benchmark table
+- <code>DnsServerSpec()</code> (src/cortex_unified/system_tools/dns_benchmark.py:21) [class]: Dns Server Spec data container. - unused by GUI.</p>
+<h2 id="drive_optimizerpy">drive_optimizer.py<a class="headerlink" href="#drive_optimizerpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via system_tools_tab.py - OptimizeOp/DriveInfo optimize actions
+- <code>OptimizeOp()</code> (src/cortex_unified/system_tools/drive_optimizer.py:33) [class]: Optimize Op enumeration. - unused by GUI.
+- <code>DriveInfo()</code> (src/cortex_unified/system_tools/drive_optimizer.py:41) [class]: Drive Info data container. - unused by GUI.</p>
+<h2 id="driver_inventorypy">driver_inventory.py<a class="headerlink" href="#driver_inventorypy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via premium driver_manager_page.py - DriverInfo table
+- <code>DriverInfo()</code> (src/cortex_unified/system_tools/driver_inventory.py:28) [class]: Driver Info data container. - unused by GUI.</p>
+<h2 id="driver_managerpy">driver_manager.py<a class="headerlink" href="#driver_managerpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via premium driver_manager_page.py - DriverInfo detail rows
+- <code>DriverInfo()</code> (src/cortex_unified/system_tools/driver_manager.py:78) [class]: Single device driver information. - unused by GUI.</p>
+<h2 id="driver_store_cleanerpy">driver_store_cleaner.py<a class="headerlink" href="#driver_store_cleanerpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via premium driver_manager_page.py - DriverCleanResult report
+- <code>DriverCleanResult()</code> (src/cortex_unified/system_tools/driver_store_cleaner.py:36) [class]: Driver Clean Result data container. - unused by GUI.</p>
+<h2 id="env_variable_managerpy">env_variable_manager.py<a class="headerlink" href="#env_variable_managerpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via system_tools_tab.py - CleanupResult env-var clean report
+- <code>CleanupResult()</code> (src/cortex_unified/system_tools/env_variable_manager.py:56) [class]: Cleanup Result data container. - unused by GUI.</p>
+<h2 id="event_log_cleanerpy">event_log_cleaner.py<a class="headerlink" href="#event_log_cleanerpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via system_tools_tab.py - EventLogChannel/CleanResult section
+- <code>EventLogChannel()</code> (src/cortex_unified/system_tools/event_log_cleaner.py:20) [class]: Event Log Channel data container. - unused by GUI.
+- <code>EventLogCleanResult()</code> (src/cortex_unified/system_tools/event_log_cleaner.py:31) [class]: Event Log Clean Result data container. - unused by GUI.</p>
+<h2 id="event_log_monitorpy">event_log_monitor.py<a class="headerlink" href="#event_log_monitorpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via resource_monitor_tab.py - LogAnomalyEvent alert feed
+- <code>LogAnomalyEvent()</code> (src/cortex_unified/system_tools/event_log_monitor.py:22) [class]: Log Anomaly Event data container. - unused by GUI.</p>
+<h2 id="external_exposurepy">external_exposure.py<a class="headerlink" href="#external_exposurepy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via security_scanner_tab.py - ExternalService/ExposureResult exposure card
+- <code>ExposureLookupError()</code> (src/cortex_unified/system_tools/external_exposure.py:18) [class]: Raised for invalid consent, target, credentials, or provider output. - unused by GUI.
+- <code>ExternalService()</code> (src/cortex_unified/system_tools/external_exposure.py:23) [class]: External Service data container. - unused by GUI.
+- <code>ExposureResult()</code> (src/cortex_unified/system_tools/external_exposure.py:42) [class]: Exposure Result data container. - unused by GUI.</p>
+<h2 id="firewall_managerpy">firewall_manager.py<a class="headerlink" href="#firewall_managerpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via system_tools_tab.py - FirewallRule rule list
+- <code>FirewallRule()</code> (src/cortex_unified/system_tools/firewall_manager.py:35) [class]: Firewall Rule data container. - unused by GUI.</p>
+<h2 id="font_cache_managerpy">font_cache_manager.py<a class="headerlink" href="#font_cache_managerpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via system_tools_tab.py - FontCleanResult card
+- <code>FontCleanResult()</code> (src/cortex_unified/system_tools/font_cache_manager.py:51) [class]: Font Clean Result data container. - unused by GUI.</p>
+<h2 id="free_space_wipepy">free_space_wipe.py<a class="headerlink" href="#free_space_wipepy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via file_shredder_tab.py - WipeResult free-space wipe action
+- <code>WipeResult()</code> (src/cortex_unified/system_tools/free_space_wipe.py:32) [class]: Wipe Result data container. - unused by GUI.</p>
+<h2 id="game_modepy">game_mode.py<a class="headerlink" href="#game_modepy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via EMPTY module - system_tools_tab.py or tray menu GameMode toggle (gate behind safety confirm)
+- <code>BoostReport()</code> (src/cortex_unified/system_tools/game_mode.py:64) [class]: Outcome of starting or stopping a boosted session. - unused by GUI.
+- <code>GameMode()</code> (src/cortex_unified/system_tools/game_mode.py:92) [class]: Apply and revert a gaming-session performance profile. - unused by GUI.
+- <code>run_proc_checked()</code> (src/cortex_unified/system_tools/game_mode.py:252) [func]: Convenience wrapper used by diagnostics; True when exit code is 0. - unused by GUI.</p>
+<h2 id="hosts_file_managerpy">hosts_file_manager.py<a class="headerlink" href="#hosts_file_managerpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via system_tools_tab.py (Network) - HostsOperationResult editor feedback
+- <code>HostsOperationResult()</code> (src/cortex_unified/system_tools/hosts_file_manager.py:51) [class]: Hosts Operation Result data container. - unused by GUI.</p>
+<h2 id="junction_auditorpy">junction_auditor.py<a class="headerlink" href="#junction_auditorpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via disk_analyzer_tab.py - ReparseItem junction list
+- <code>ReparseItem()</code> (src/cortex_unified/system_tools/junction_auditor.py:28) [class]: Reparse Item data container. - unused by GUI.</p>
+<h2 id="lan_scannerpy">lan_scanner.py<a class="headerlink" href="#lan_scannerpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via EMPTY module - system_tools_tab.py Network section / explorer network.py (LanScanner scan view)
+- <code>LanScanner()</code> (src/cortex_unified/system_tools/lan_scanner.py:49) [class]: Enumerate LAN devices from the OS ARP cache (read-only). - unused by GUI.</p>
+<h2 id="leftover_cleanerpy">leftover_cleaner.py<a class="headerlink" href="#leftover_cleanerpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via uninstaller_tab.py - SafetyPolicy/confidence + CleanOutcome report; string helpers are internal
+- <code>edit_distance()</code> (src/cortex_unified/system_tools/leftover_cleaner.py:64) [func]: Exact Levenshtein distance; early-exits once <em>max_distance</em> is exceeded - unused by GUI.
+- <code>match_string_to_product()</code> (src/cortex_unified/system_tools/leftover_cleaner.py:91) [func]: Decide whether <em>candidate</em> (a folder/key name) names <em>product_name</em>. - unused by GUI.
+- <code>build_tokens()</code> (src/cortex_unified/system_tools/leftover_cleaner.py:138) [func]: Extract specific-enough search tokens from an app's display name. - unused by GUI.
+- <code>confidence_level()</code> (src/cortex_unified/system_tools/leftover_cleaner.py:179) [func]: Map a raw signed score to a human review tier (BCU mapping). - unused by GUI.
+- <code>SafetyPolicy()</code> (src/cortex_unified/system_tools/leftover_cleaner.py:222) [class]: Paths the scanner/cleaner must never propose or touch. - unused by GUI.
+- <code>detect_installer_type()</code> (src/cortex_unified/system_tools/leftover_cleaner.py:335) [func]: Classify the installer family from registry fingerprints. - unused by GUI.
+- <code>read_installed_apps()</code> (src/cortex_unified/system_tools/leftover_cleaner.py:347) [func]: Enumerate installed apps from all Uninstall branches (read-only). - unused by GUI.
+- <code>CleanOutcome()</code> (src/cortex_unified/system_tools/leftover_cleaner.py:1400) [class]: What happened to one finding during cleanup. - unused by GUI.
+- <code>stamp_now()</code> (src/cortex_unified/system_tools/leftover_cleaner.py:1664) [func]: Current local time as an ISO-like <code>YYYY-MM-DDTHH:MM:SS</code> string. - unused by GUI.</p>
+<h2 id="load_testerpy">load_tester.py<a class="headerlink" href="#load_testerpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via system_tools_tab.py (Network diag, expert) - LoadResult cards; gate behind explicit consent
+- <code>LoadResult()</code> (src/cortex_unified/system_tools/load_tester.py:172) [class]: Load Result data container. - unused by GUI.</p>
+<h2 id="memory_compression_tunerpy">memory_compression_tuner.py<a class="headerlink" href="#memory_compression_tunerpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via resource_monitor_tab.py - MemoryCompressionStatus card
+- <code>MemoryCompressionStatus()</code> (src/cortex_unified/system_tools/memory_compression_tuner.py:25) [class]: Memory Compression Status data container. - unused by GUI.</p>
+<h2 id="memory_optimizerpy">memory_optimizer.py<a class="headerlink" href="#memory_optimizerpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via resource_monitor_tab.py - SystemRamMetrics/MemoryOptimizeResult + memory_stats action
+- <code>SystemRamMetrics()</code> (src/cortex_unified/system_tools/memory_optimizer.py:22) [class]: System Ram Metrics data container. - unused by GUI.
+- <code>MemoryOptimizeResult()</code> (src/cortex_unified/system_tools/memory_optimizer.py:44) [class]: Memory Optimize Result data container. - unused by GUI.
+- <code>memory_stats()</code> (src/cortex_unified/system_tools/memory_optimizer.py:204) [func]: Query current system RAM statistics and top consumer processes. - unused by GUI.</p>
+<h2 id="memory_standby_purgerpy">memory_standby_purger.py<a class="headerlink" href="#memory_standby_purgerpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via premium memory_standby_page.py - wire LUID*/MEMORYSTATUSEX result display (page exists; verify wiring)
+- <code>LUID()</code> (src/cortex_unified/system_tools/memory_standby_purger.py:39) [class]: L U I D. - unused by GUI.
+- <code>LUID_AND_ATTRIBUTES()</code> (src/cortex_unified/system_tools/memory_standby_purger.py:47) [class]: L U I D_ A N D_ A T T R I B U T E S. - unused by GUI.
+- <code>TOKEN_PRIVILEGES()</code> (src/cortex_unified/system_tools/memory_standby_purger.py:55) [class]: T O K E N_ P R I V I L E G E S. - unused by GUI.
+- <code>MEMORYSTATUSEX()</code> (src/cortex_unified/system_tools/memory_standby_purger.py:63) [class]: M E M O R Y S T A T U S E X. - unused by GUI.</p>
+<h2 id="network_automationpy">network_automation.py<a class="headerlink" href="#network_automationpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via scheduler_tab.py - NetworkSchedule/NetworkScanScheduler scheduled-scan CRUD
+- <code>NetworkScheduleError()</code> (src/cortex_unified/system_tools/network_automation.py:38) [class]: Raised when schedule validation or OS task creation fails. - unused by GUI.
+- <code>build_scan_command()</code> (src/cortex_unified/system_tools/network_automation.py:72) [func]: Build the fixed CLI command; no user-provided executable is accepted. - unused by GUI.
+- <code>build_windows_arguments()</code> (src/cortex_unified/system_tools/network_automation.py:89) [func]: Build windows arguments. - unused by GUI.</p>
+<h2 id="network_inventorypy">network_inventory.py<a class="headerlink" href="#network_inventorypy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via premium network_pages.py - Inventory*/normalize/record/export actions (history + CSV)
+- <code>InventoryService()</code> (src/cortex_unified/system_tools/network_inventory.py:60) [class]: Inventory Service data container. - unused by GUI.
+- <code>InventoryFinding()</code> (src/cortex_unified/system_tools/network_inventory.py:83) [class]: Inventory Finding data container. - unused by GUI.
+- <code>InventoryDevice()</code> (src/cortex_unified/system_tools/network_inventory.py:106) [class]: Inventory Device data container. - unused by GUI.
+- <code>DeviceMetadata()</code> (src/cortex_unified/system_tools/network_inventory.py:132) [class]: Device Metadata data container. - unused by GUI.
+- <code>InventoryChange()</code> (src/cortex_unified/system_tools/network_inventory.py:154) [class]: Inventory Change data container. - unused by GUI.
+- <code>InventoryChanges()</code> (src/cortex_unified/system_tools/network_inventory.py:173) [class]: Inventory Changes data container. - unused by GUI.
+- <code>InventorySnapshot()</code> (src/cortex_unified/system_tools/network_inventory.py:198) [class]: Inventory Snapshot data container. - unused by GUI.
+- <code>normalize_device()</code> (src/cortex_unified/system_tools/network_inventory.py:330) [func]: Normalize mappings or discovery objects into a validated observation. - unused by GUI.</p>
+<h2 id="network_security_auditpy">network_security_audit.py<a class="headerlink" href="#network_security_auditpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via security_scanner_tab.py - SecurityFinding cards + analyze_services/audit_devices/audit_wan actions
+- <code>SecurityFinding()</code> (src/cortex_unified/system_tools/network_security_audit.py:15) [class]: Security Finding data container. - unused by GUI.
+- <code>analyze_services()</code> (src/cortex_unified/system_tools/network_security_audit.py:221) [func]: Compatibility analysis entry point returning fingerprint and findings. - unused by GUI.
+- <code>audit_wan()</code> (src/cortex_unified/system_tools/network_security_audit.py:349) [func]: Report enabled IGD mappings as exposure observations, never connectivity tests. - unused by GUI.</p>
+<h2 id="network_service_scannerpy">network_service_scanner.py<a class="headerlink" href="#network_service_scannerpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via system_tools_tab.py Network - ServiceObservation/parse/ports actions + observation_json export
+- <code>ServiceObservation()</code> (src/cortex_unified/system_tools/network_service_scanner.py:63) [class]: One observed service endpoint on an authorized host. - unused by GUI.
+- <code>parse_allowed_networks()</code> (src/cortex_unified/system_tools/network_service_scanner.py:192) [func]: Validate explicit private IPv4 scopes. - unused by GUI.
+- <code>ports_for_profile()</code> (src/cortex_unified/system_tools/network_service_scanner.py:262) [func]: Return the TCP ports a profile covers; DEEP means every port. - unused by GUI.
+- <code>normalize_custom_ports()</code> (src/cortex_unified/system_tools/network_service_scanner.py:273) [func]: Validate a bounded custom TCP-port set without opening sockets. - unused by GUI.
+- <code>validate_private_target()</code> (src/cortex_unified/system_tools/network_service_scanner.py:816) [func]: Validate a private IPv4 address against standard LAN ranges. - unused by GUI.
+- <code>observation_json()</code> (src/cortex_unified/system_tools/network_service_scanner.py:824) [func]: Stable compact JSON, useful for inventory snapshots and tests. - unused by GUI.</p>
+<h2 id="network_stack_optimizerpy">network_stack_optimizer.py<a class="headerlink" href="#network_stack_optimizerpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via system_tools_tab.py Network - TcpGlobalSettings/NetworkResetReport repair actions
+- <code>TcpGlobalSettings()</code> (src/cortex_unified/system_tools/network_stack_optimizer.py:17) [class]: Tcp Global Settings data container. - unused by GUI.
+- <code>NetworkResetReport()</code> (src/cortex_unified/system_tools/network_stack_optimizer.py:28) [class]: Network Reset Report data container. - unused by GUI.</p>
+<h2 id="network_toolspy">network_tools.py<a class="headerlink" href="#network_toolspy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via system_tools_tab.py Network - PingResult/Hop ping/traceroute/dns/port/ip tools
+- <code>PingResult()</code> (src/cortex_unified/system_tools/network_tools.py:47) [class]: Ping Result data container. - unused by GUI.
+- <code>Hop()</code> (src/cortex_unified/system_tools/network_tools.py:70) [class]: Hop data container. - unused by GUI.</p>
+<h2 id="network_trafficpy">network_traffic.py<a class="headerlink" href="#network_trafficpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via resource_monitor_tab.py - NicSample/TrafficSample throughput cards
+- <code>NicSample()</code> (src/cortex_unified/system_tools/network_traffic.py:25) [class]: Counters and derived rates (bytes/sec) for one network interface. - unused by GUI.
+- <code>TrafficSample()</code> (src/cortex_unified/system_tools/network_traffic.py:46) [class]: System-wide rates plus per-NIC breakdown, sorted by total activity. - unused by GUI.</p>
+<h2 id="nmap_adapterpy">nmap_adapter.py<a class="headerlink" href="#nmap_adapterpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via system_tools_tab.py Network - parse_nmap_xml/is_nmap_available/scan_nmap + NmapStatus card
+- <code>NmapUnavailableError()</code> (src/cortex_unified/system_tools/nmap_adapter.py:44) [class]: Raised when the optional Nmap executable cannot be found. - unused by GUI.
+- <code>NmapAuthorizationError()</code> (src/cortex_unified/system_tools/nmap_adapter.py:48) [class]: Raised when any requested target is not explicitly authorized. - unused by GUI.
+- <code>NmapPrivilegeError()</code> (src/cortex_unified/system_tools/nmap_adapter.py:52) [class]: Raised when an expert mode is requested without Windows elevation. - unused by GUI.
+- <code>NmapExecutionError()</code> (src/cortex_unified/system_tools/nmap_adapter.py:56) [class]: Raised when Nmap exits unsuccessfully. - unused by GUI.
+- <code>NmapOutputError()</code> (src/cortex_unified/system_tools/nmap_adapter.py:60) [class]: Raised when Nmap XML is malformed, unsafe, or exceeds a bound. - unused by GUI.
+- <code>NmapStatus()</code> (src/cortex_unified/system_tools/nmap_adapter.py:65) [class]: Side-effect-free optional executable status. - unused by GUI.
+- <code>parse_nmap_xml()</code> (src/cortex_unified/system_tools/nmap_adapter.py:219) [func]: Parse bounded Nmap XML into deterministic service observations. - unused by GUI.
+- <code>is_nmap_available()</code> (src/cortex_unified/system_tools/nmap_adapter.py:433) [func]: Return whether the optional executable can be resolved. - unused by GUI.
+- <code>scan_nmap()</code> (src/cortex_unified/system_tools/nmap_adapter.py:438) [func]: Explicit function API for a bounded optional Nmap scan. - unused by GUI.</p>
+<h2 id="notification_cleanerpy">notification_cleaner.py<a class="headerlink" href="#notification_cleanerpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via privacy_tab.py / deep_cleaner_tab.py - Notification* status + clean action
+- <code>NotificationDatabaseStatus()</code> (src/cortex_unified/system_tools/notification_cleaner.py:20) [class]: Notification Database Status data container. - unused by GUI.
+- <code>NotificationCleanResult()</code> (src/cortex_unified/system_tools/notification_cleaner.py:30) [class]: Notification Clean Result data container. - unused by GUI.</p>
+<h2 id="ouipy">oui.py<a class="headerlink" href="#ouipy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via system_tools_tab.py Network - vendor lookup display + registry refresh/status actions
+- <code>is_randomized()</code> (src/cortex_unified/system_tools/oui.py:88) [func]: True when <em>mac</em> is a locally-administered (typically privacy) address. - unused by GUI.
+- <code>is_multicast()</code> (src/cortex_unified/system_tools/oui.py:101) [func]: True for a multicast/broadcast MAC (not a real device address). - unused by GUI.
+- <code>cached_registry_path()</code> (src/cortex_unified/system_tools/oui.py:184) [func]: Where a downloaded IEEE registry is kept between runs. - unused by GUI.
+- <code>load_ieee_registry()</code> (src/cortex_unified/system_tools/oui.py:189) [func]: Merge an IEEE registry CSV into the lookup tables. - unused by GUI.
+- <code>load_cached_registry()</code> (src/cortex_unified/system_tools/oui.py:229) [func]: Load the previously downloaded registry, if present. Never raises. - unused by GUI.
+- <code>ensure_registry_loaded()</code> (src/cortex_unified/system_tools/oui.py:237) [func]: Load the cached IEEE registry once, on first use. - unused by GUI.
+- <code>has_full_registry()</code> (src/cortex_unified/system_tools/oui.py:251) [func]: True when a real IEEE registry is loaded (not just the LA conventions). - unused by GUI.
+- <code>registry_age_days()</code> (src/cortex_unified/system_tools/oui.py:257) [func]: Age of the cached registry in days, or <code>None</code> when absent. - unused by GUI.
+- <code>registry_status()</code> (src/cortex_unified/system_tools/oui.py:266) [func]: Describe the vendor database for display in the UI. - unused by GUI.
+- <code>prefix_count()</code> (src/cortex_unified/system_tools/oui.py:352) [func]: Number of known assignment prefixes (useful for diagnostics/tests). - unused by GUI.</p>
+<h2 id="pagefile_optimizerpy">pagefile_optimizer.py<a class="headerlink" href="#pagefile_optimizerpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via system_tools_tab.py - PagefileConfig/VirtualMemoryStatus cards
+- <code>MEMORYSTATUSEX()</code> (src/cortex_unified/system_tools/pagefile_optimizer.py:27) [class]: M E M O R Y S T A T U S E X. - unused by GUI.
+- <code>PagefileConfig()</code> (src/cortex_unified/system_tools/pagefile_optimizer.py:43) [class]: Pagefile Config data container. - unused by GUI.</p>
+<h2 id="power_plan_optimizerpy">power_plan_optimizer.py<a class="headerlink" href="#power_plan_optimizerpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via power_suite_pages / system_tools_tab.py - PowerScheme plan switch UI
+- <code>PowerScheme()</code> (src/cortex_unified/system_tools/power_plan_optimizer.py:22) [class]: Power Scheme data container. - unused by GUI.</p>
+<h2 id="prefetch_analyzerpy">prefetch_analyzer.py<a class="headerlink" href="#prefetch_analyzerpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via system_tools_tab.py - PrefetchStatus/CleanResult prefetch section
+- <code>PrefetchStatus()</code> (src/cortex_unified/system_tools/prefetch_analyzer.py:36) [class]: Prefetch Status data container. - unused by GUI.
+- <code>PrefetchCleanResult()</code> (src/cortex_unified/system_tools/prefetch_analyzer.py:46) [class]: Prefetch Clean Result data container. - unused by GUI.</p>
+<h2 id="privacy_blockerpy">privacy_blocker.py<a class="headerlink" href="#privacy_blockerpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via premium privacy_blocker_page.py - TweakDef list rendering (verify)
+- <code>TweakDef()</code> (src/cortex_unified/system_tools/privacy_blocker.py:92) [class]: Single privacy tweak definition. - unused by GUI.</p>
+<h2 id="process_metapy">process_meta.py<a class="headerlink" href="#process_metapy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via EMPTY module - process_analyzer_tab.py description column (internal helpers known_description/file_description)
+- <code>known_description()</code> (src/cortex_unified/system_tools/process_meta.py:91) [func]: Return the curated description for a process <em>name</em>, or ''. - unused by GUI.
+- <code>file_description()</code> (src/cortex_unified/system_tools/process_meta.py:96) [func]: Read the vendor's embedded FileDescription for <em>exe_path</em> (cached). - unused by GUI.</p>
+<h2 id="process_token_auditorpy">process_token_auditor.py<a class="headerlink" href="#process_token_auditorpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via security_scanner_tab.py - ProcessTokenInfo audit report
+- <code>ProcessTokenInfo()</code> (src/cortex_unified/system_tools/process_token_auditor.py:38) [class]: Process Token Info data container. - unused by GUI.</p>
+<h2 id="restart_manager_unlockerpy">restart_manager_unlocker.py<a class="headerlink" href="#restart_manager_unlockerpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via system_tools_tab.py / file_shredder_tab.py unlock flow - LockingProcessInfo/FileLockReport display
+- <code>RM_UNIQUE_PROCESS()</code> (src/cortex_unified/system_tools/restart_manager_unlocker.py:41) [class]: R M_ U N I Q U E_ P R O C E S S. - unused by GUI.
+- <code>RM_PROCESS_INFO()</code> (src/cortex_unified/system_tools/restart_manager_unlocker.py:49) [class]: R M_ P R O C E S S_ I N F O. - unused by GUI.
+- <code>LockingProcessInfo()</code> (src/cortex_unified/system_tools/restart_manager_unlocker.py:63) [class]: Identity and telemetry of a process holding an exclusive file lock. - unused by GUI.</p>
+<h2 id="restore_pointpy">restore_point.py<a class="headerlink" href="#restore_pointpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via restore_tab.py - RestoreStatus/RestorePointResult cards (verify)
+- <code>RestoreStatus()</code> (src/cortex_unified/system_tools/restore_point.py:47) [class]: Outcome of a restore-point create attempt - each is honest &amp; distinct. - unused by GUI.
+- <code>RestorePointResult()</code> (src/cortex_unified/system_tools/restore_point.py:59) [class]: Result of a create attempt. - unused by GUI.</p>
+<h2 id="s3_fifopy">s3_fifo.py<a class="headerlink" href="#s3_fifopy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via premium s3_fifo_page.py - internal cache; verify page wiring, else no GUI needed
+- <code>S3FIFOStats()</code> (src/cortex_unified/system_tools/s3_fifo.py:83) [class]: S3 F I F O Stats data container. - unused by GUI.</p>
+<h2 id="sandbox_cleanerpy">sandbox_cleaner.py<a class="headerlink" href="#sandbox_cleanerpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via deep_cleaner_tab.py - VirtualArtifact scan/clean section
+- <code>VirtualArtifact()</code> (src/cortex_unified/system_tools/sandbox_cleaner.py:23) [class]: Virtual Artifact data container. - unused by GUI.</p>
+<h2 id="secrets_scannerpy">secrets_scanner.py<a class="headerlink" href="#secrets_scannerpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via security_scanner_tab.py - verify_* buttons, baseline/delta, FP manager, export SARIF/JSON/CSV, HTML via reports_tab.py, serve_dashboard via premium
+- <code>DetectionPattern()</code> (src/cortex_unified/system_tools/secrets_scanner.py:120) [class]: Detection Pattern data container. - unused by GUI.
+- <code>VerificationResult()</code> (src/cortex_unified/system_tools/secrets_scanner.py:221) [class]: Verification Result data container. - unused by GUI.
+- <code>compute_confidence()</code> (src/cortex_unified/system_tools/secrets_scanner.py:929) [func]: Compute confidence. - unused by GUI.
+- <code>scan_file_bytes()</code> (src/cortex_unified/system_tools/secrets_scanner.py:972) [func]: Scan file bytes. - unused by GUI.
+- <code>scan_single_file()</code> (src/cortex_unified/system_tools/secrets_scanner.py:1005) [func]: Scan single file. - unused by GUI.
+- <code>walk_files()</code> (src/cortex_unified/system_tools/secrets_scanner.py:1034) [func]: Walk directory, returning (file_paths, skipped_count). - unused by GUI.
+- <code>compute_risk_score()</code> (src/cortex_unified/system_tools/secrets_scanner.py:1063) [func]: Compute risk score. - unused by GUI.
+- <code>scan_zip()</code> (src/cortex_unified/system_tools/secrets_scanner.py:1131) [func]: Scan zip. - unused by GUI.
+- <code>scan_tar()</code> (src/cortex_unified/system_tools/secrets_scanner.py:1154) [func]: Scan tar. - unused by GUI.
+- <code>verify_aws()</code> (src/cortex_unified/system_tools/secrets_scanner.py:1273) [func]: Verify aws. - unused by GUI.
+- <code>verify_github()</code> (src/cortex_unified/system_tools/secrets_scanner.py:1313) [func]: Verify github. - unused by GUI.
+- <code>verify_stripe()</code> (src/cortex_unified/system_tools/secrets_scanner.py:1325) [func]: Verify stripe. - unused by GUI.
+- <code>verify_slack()</code> (src/cortex_unified/system_tools/secrets_scanner.py:1340) [func]: Verify slack. - unused by GUI.
+- <code>verify_npm()</code> (src/cortex_unified/system_tools/secrets_scanner.py:1351) [func]: Verify npm. - unused by GUI.
+- <code>verify_openai()</code> (src/cortex_unified/system_tools/secrets_scanner.py:1363) [func]: Verify openai. - unused by GUI.
+- <code>verify_all_findings()</code> (src/cortex_unified/system_tools/secrets_scanner.py:1386) [func]: Verify all findings. - unused by GUI.
+- <code>save_baseline()</code> (src/cortex_unified/system_tools/secrets_scanner.py:1422) [func]: Save baseline. - unused by GUI.
+- <code>load_baseline()</code> (src/cortex_unified/system_tools/secrets_scanner.py:1434) [func]: Load baseline. - unused by GUI.
+- <code>compute_delta()</code> (src/cortex_unified/system_tools/secrets_scanner.py:1442) [func]: Compute delta. - unused by GUI.
+- <code>load_fp_db()</code> (src/cortex_unified/system_tools/secrets_scanner.py:1457) [func]: Load fp db. - unused by GUI.
+- <code>save_fp_db()</code> (src/cortex_unified/system_tools/secrets_scanner.py:1465) [func]: Save fp db. - unused by GUI.
+- <code>add_fp()</code> (src/cortex_unified/system_tools/secrets_scanner.py:1470) [func]: Add fp. - unused by GUI.
+- <code>apply_fp_filter()</code> (src/cortex_unified/system_tools/secrets_scanner.py:1477) [func]: Apply fp filter. - unused by GUI.
+- <code>save_to_history()</code> (src/cortex_unified/system_tools/secrets_scanner.py:1491) [func]: Save to history. - unused by GUI.
+- <code>load_history()</code> (src/cortex_unified/system_tools/secrets_scanner.py:1506) [func]: Load history. - unused by GUI.
+- <code>create_jira_ticket()</code> (src/cortex_unified/system_tools/secrets_scanner.py:1522) [func]: Create a Jira issue from a finding. Returns issue key or None. - unused by GUI.
+- <code>create_github_issue()</code> (src/cortex_unified/system_tools/secrets_scanner.py:1558) [func]: Create a GitHub issue from a finding. Returns issue URL or None. - unused by GUI.
+- <code>export_sarif()</code> (src/cortex_unified/system_tools/secrets_scanner.py:1609) [func]: Export sarif. - unused by GUI.
+- <code>send_slack()</code> (src/cortex_unified/system_tools/secrets_scanner.py:1639) [func]: Send slack. - unused by GUI.
+- <code>print_terminal_report()</code> (src/cortex_unified/system_tools/secrets_scanner.py:1977) [func]: Print terminal report. - unused by GUI.
+- <code>DashboardHandler()</code> (src/cortex_unified/system_tools/secrets_scanner.py:2145) [class]: Dashboard Handler. - unused by GUI.
+- <code>serve_dashboard()</code> (src/cortex_unified/system_tools/secrets_scanner.py:2166) [func]: Serve dashboard. - unused by GUI.
+- <code>cmd_scan()</code> (src/cortex_unified/system_tools/secrets_scanner.py:2178) [func]: Cmd scan. - unused by GUI.
+- <code>cmd_baseline()</code> (src/cortex_unified/system_tools/secrets_scanner.py:2313) [func]: Cmd baseline. - unused by GUI.
+- <code>cmd_fp()</code> (src/cortex_unified/system_tools/secrets_scanner.py:2341) [func]: Cmd fp. - unused by GUI.
+- <code>cmd_verify()</code> (src/cortex_unified/system_tools/secrets_scanner.py:2363) [func]: Cmd verify. - unused by GUI.
+- <code>cmd_serve()</code> (src/cortex_unified/system_tools/secrets_scanner.py:2383) [func]: Cmd serve. - unused by GUI.
+- <code>cmd_patterns()</code> (src/cortex_unified/system_tools/secrets_scanner.py:2389) [func]: Cmd patterns. - unused by GUI.
+- <code>build_parser()</code> (src/cortex_unified/system_tools/secrets_scanner.py:2408) [func]: Build parser. - unused by GUI.</p>
+<h2 id="secure_shredderpy">secure_shredder.py<a class="headerlink" href="#secure_shredderpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via premium secure_shredder_page.py - ShredResult/detect_storage_type/smart default (verify)
+- <code>ShredResult()</code> (src/cortex_unified/system_tools/secure_shredder.py:260) [class]: Shred Result data container. - unused by GUI.
+- <code>detect_storage_type()</code> (src/cortex_unified/system_tools/secure_shredder.py:347) [func]: Detect storage type for a given path. - unused by GUI.</p>
+<h2 id="shader_cache_cleanerpy">shader_cache_cleaner.py<a class="headerlink" href="#shader_cache_cleanerpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via deep_cleaner_tab.py (Gaming) - ShaderLocationInfo scan/clean
+- <code>ShaderLocationInfo()</code> (src/cortex_unified/system_tools/shader_cache_cleaner.py:35) [class]: Metadata and size analysis for a specific shader cache target location. - unused by GUI.</p>
+<h2 id="shellbags_privacy_cleanerpy">shellbags_privacy_cleaner.py<a class="headerlink" href="#shellbags_privacy_cleanerpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via premium srum_bam_page.py / privacy_tab.py - ShellbagsCleanResult card
+- <code>ShellbagsCleanResult()</code> (src/cortex_unified/system_tools/shellbags_privacy_cleaner.py:36) [class]: Shellbags Clean Result data container. - unused by GUI.</p>
+<h2 id="sieve_cachepy">sieve_cache.py<a class="headerlink" href="#sieve_cachepy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via EMPTY module - internal cache infra (SieveCache/SieveNode); no GUI needed
+- <code>SieveNode()</code> (src/cortex_unified/system_tools/sieve_cache.py:23) [class]: Internal doubly-linked list node for SIEVE cache. - unused by GUI.
+- <code>SieveCache()</code> (src/cortex_unified/system_tools/sieve_cache.py:42) [class]: Production thread-safe implementation of the NSDI 2024 SIEVE Cache Algorithm. - unused by GUI.</p>
+<h2 id="slack_space_analyzerpy">slack_space_analyzer.py<a class="headerlink" href="#slack_space_analyzerpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via disk_analyzer_tab.py - DirectorySlackStat/VolumeSlackReport slack view
+- <code>DirectorySlackStat()</code> (src/cortex_unified/system_tools/slack_space_analyzer.py:23) [class]: Directory Slack Stat data container. - unused by GUI.</p>
+<h2 id="smb_share_auditorpy">smb_share_auditor.py<a class="headerlink" href="#smb_share_auditorpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via security_scanner_tab.py - SmbShareInfo/SmbSecurityReport share audit
+- <code>SmbShareInfo()</code> (src/cortex_unified/system_tools/smb_share_auditor.py:24) [class]: Smb Share Info data container. - unused by GUI.</p>
+<h2 id="srum_bam_cleanerpy">srum_bam_cleaner.py<a class="headerlink" href="#srum_bam_cleanerpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via premium srum_bam_page.py - SrumDatabaseInfo card (verify)
+- <code>SrumDatabaseInfo()</code> (src/cortex_unified/system_tools/srum_bam_cleaner.py:53) [class]: Status of the Windows SRUM forensic database. - unused by GUI.</p>
+<h2 id="ssd_trim_optimizerpy">ssd_trim_optimizer.py<a class="headerlink" href="#ssd_trim_optimizerpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via system_tools_tab.py - VolumeTrimStatus/TrimAudit/TrimExecution cards
+- <code>VolumeTrimStatus()</code> (src/cortex_unified/system_tools/ssd_trim_optimizer.py:39) [class]: Storage volume status, media classification, and TRIM capability. - unused by GUI.</p>
+<h2 id="startup_impact_analyzerpy">startup_impact_analyzer.py<a class="headerlink" href="#startup_impact_analyzerpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via startup_manager_tab.py - StartupAppItem impact list
+- <code>StartupAppItem()</code> (src/cortex_unified/system_tools/startup_impact_analyzer.py:27) [class]: Startup App Item data container. - unused by GUI.</p>
+<h2 id="startup_optimizerpy">startup_optimizer.py<a class="headerlink" href="#startup_optimizerpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via premium startup_optimizer_page.py - AppType/StartupEntry delay feature (verify)
+- <code>AppType()</code> (src/cortex_unified/system_tools/startup_optimizer.py:69) [class]: High-level classification for startup entries used by the UI filter. - unused by GUI.
+- <code>StartupEntry()</code> (src/cortex_unified/system_tools/startup_optimizer.py:79) [class]: Startup Entry data container. - unused by GUI.</p>
+<h2 id="storage_growth_trackerpy">storage_growth_tracker.py<a class="headerlink" href="#storage_growth_trackerpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via disk_analyzer_tab.py - DirectoryDelta snapshot-compare view
+- <code>DirectoryDelta()</code> (src/cortex_unified/system_tools/storage_growth_tracker.py:47) [class]: Directory Delta data container. - unused by GUI.</p>
+<h2 id="system_cache_rebuilderpy">system_cache_rebuilder.py<a class="headerlink" href="#system_cache_rebuilderpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via system_tools_tab.py - CacheRebuildReport rebuild actions
+- <code>CacheRebuildReport()</code> (src/cortex_unified/system_tools/system_cache_rebuilder.py:22) [class]: Cache Rebuild Report data container. - unused by GUI.</p>
+<h2 id="system_repairpy">system_repair.py<a class="headerlink" href="#system_repairpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via system_tools_tab.py - RepairResult SFC/DISM/CHKDSK actions
+- <code>RepairResult()</code> (src/cortex_unified/system_tools/system_repair.py:37) [class]: Repair Result data container. - unused by GUI.</p>
+<h2 id="temp_folder_cleanerpy">temp_folder_cleaner.py<a class="headerlink" href="#temp_folder_cleanerpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via deep_cleaner_tab.py - TempCleanResult card (verify scan/clean)
+- <code>TempCleanResult()</code> (src/cortex_unified/system_tools/temp_folder_cleaner.py:45) [class]: Temp Clean Result data container. - unused by GUI.</p>
+<h2 id="update_checkerpy">update_checker.py<a class="headerlink" href="#update_checkerpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via settings_tab.py / dashboard - parse_version/fetch_latest_tag auto-check wiring
+- <code>parse_version()</code> (src/cortex_unified/system_tools/update_checker.py:27) [func]: 'v1.2.3' / '1.2.3' -&gt; (1, 2, 3); anything else -&gt; None. - unused by GUI.
+- <code>fetch_latest_tag()</code> (src/cortex_unified/system_tools/update_checker.py:44) [func]: Latest release tag from GitHub, or None when offline/blocked. - unused by GUI.</p>
+<h2 id="vhdx_managerpy">vhdx_manager.py<a class="headerlink" href="#vhdx_managerpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via premium wsl_page.py / disk_analyzer_tab.py - DiskKind/VirtualDisk/CompactResult cards
+- <code>DiskKind()</code> (src/cortex_unified/system_tools/vhdx_manager.py:44) [class]: Which runtime owns a virtual disk (drives the shutdown advice). - unused by GUI.</p>
+<h2 id="vss_health_analyzerpy">vss_health_analyzer.py<a class="headerlink" href="#vss_health_analyzerpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via restore_tab.py - VssWriterStatus/StorageAllocation/HealthReport cards
+- <code>VssWriterStatus()</code> (src/cortex_unified/system_tools/vss_health_analyzer.py:39) [class]: Status, state code, and error condition of an NT VSS Writer. - unused by GUI.
+- <code>VssStorageAllocation()</code> (src/cortex_unified/system_tools/vss_health_analyzer.py:61) [class]: Volume shadow copy storage allocation and limit metrics. - unused by GUI.</p>
+<h2 id="vss_managerpy">vss_manager.py<a class="headerlink" href="#vss_managerpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via restore_tab.py - ShadowCopyInfo/ShadowStorageInfo/audit list view
+- <code>ShadowCopyInfo()</code> (src/cortex_unified/system_tools/vss_manager.py:25) [class]: Shadow Copy Info data container. - unused by GUI.
+- <code>ShadowStorageInfo()</code> (src/cortex_unified/system_tools/vss_manager.py:36) [class]: Shadow Storage Info data container. - unused by GUI.</p>
+<h2 id="vulnerability_catalogpy">vulnerability_catalog.py<a class="headerlink" href="#vulnerability_catalogpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via security_scanner_tab.py - CatalogError/VersionConstraint/Advisory correlate/match + scheduler refresh
+- <code>CatalogError()</code> (src/cortex_unified/system_tools/vulnerability_catalog.py:17) [class]: Catalog Error error. - unused by GUI.
+- <code>VersionConstraint()</code> (src/cortex_unified/system_tools/vulnerability_catalog.py:23) [class]: Version Constraint data container. - unused by GUI.
+- <code>Advisory()</code> (src/cortex_unified/system_tools/vulnerability_catalog.py:34) [class]: Advisory data container. - unused by GUI.
+- <code>normalize_product()</code> (src/cortex_unified/system_tools/vulnerability_catalog.py:77) [func]: Normalize product. - unused by GUI.</p>
+<h2 id="wake_on_lanpy">wake_on_lan.py<a class="headerlink" href="#wake_on_lanpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via system_tools_tab.py Network - validate/build/send magic-packet action + error display
+- <code>WakeOnLanError()</code> (src/cortex_unified/system_tools/wake_on_lan.py:24) [class]: Base exception for Wake-on-LAN failures. - unused by GUI.
+- <code>InvalidMacAddress()</code> (src/cortex_unified/system_tools/wake_on_lan.py:28) [class]: Raised when a MAC is malformed or unsafe for a unicast device. - unused by GUI.
+- <code>InvalidBroadcastAddress()</code> (src/cortex_unified/system_tools/wake_on_lan.py:32) [class]: Raised when a broadcast is outside supplied active LAN scopes. - unused by GUI.
+- <code>WakeOnLanSendError()</code> (src/cortex_unified/system_tools/wake_on_lan.py:36) [class]: Raised when the bounded UDP send fails. - unused by GUI.
+- <code>validate_broadcast()</code> (src/cortex_unified/system_tools/wake_on_lan.py:110) [func]: Return a subnet-directed broadcast in a supplied active private LAN. - unused by GUI.
+- <code>build_magic_packet()</code> (src/cortex_unified/system_tools/wake_on_lan.py:140) [func]: Build the standard 102-byte Wake-on-LAN magic packet. - unused by GUI.</p>
+<h2 id="wan_auditpy">wan_audit.py<a class="headerlink" href="#wan_auditpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via EMPTY module - system_tools_tab.py Network / security_scanner_tab.py WAN exposure card (WanAuditor/audit/audit_wan/classify_*)
+- <code>InterfaceStatus()</code> (src/cortex_unified/system_tools/wan_audit.py:42) [class]: A local IPv4 interface used to establish the audit trust boundary. - unused by GUI.
+- <code>PortMapping()</code> (src/cortex_unified/system_tools/wan_audit.py:56) [class]: One port mapping returned by <code>GetGenericPortMappingEntry</code>. - unused by GUI.
+- <code>WanStatus()</code> (src/cortex_unified/system_tools/wan_audit.py:75) [class]: JSON-safe outcome of a WAN audit. - unused by GUI.
+- <code>classify_external_ip()</code> (src/cortex_unified/system_tools/wan_audit.py:122) [func]: Classify an IGD-reported address without making an external request. - unused by GUI.
+- <code>classify_public_ip()</code> (src/cortex_unified/system_tools/wan_audit.py:141) [func]: Compatibility wrapper using the previous labels. - unused by GUI.
+- <code>WanAuditor()</code> (src/cortex_unified/system_tools/wan_audit.py:238) [class]: Perform a synchronous, cancellable, read-only local WAN audit. - unused by GUI.
+- <code>audit_wan()</code> (src/cortex_unified/system_tools/wan_audit.py:712) [func]: Return route-only status unless optional local UPnP reads are authorized. - unused by GUI.</p>
+<h2 id="winapp2_cleanerpy">winapp2_cleaner.py<a class="headerlink" href="#winapp2_cleanerpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via premium winapp2_page.py - Winapp2Rule target list (verify)
+- <code>Winapp2Rule()</code> (src/cortex_unified/system_tools/winapp2_cleaner.py:137) [class]: Represents a single parsed Winapp2 application cleaning rule. - unused by GUI.</p>
+<h2 id="windows_updatepy">windows_update.py<a class="headerlink" href="#windows_updatepy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via premium win_update_repair_page.py - PendingUpdate list (verify)
+- <code>PendingUpdate()</code> (src/cortex_unified/system_tools/windows_update.py:36) [class]: Pending Update data container. - unused by GUI.</p>
+<h2 id="windows_update_repairpy">windows_update_repair.py<a class="headerlink" href="#windows_update_repairpy" title="Permanent link">&para;</a></h2>
+<p>Suggest: expose via premium win_update_repair_page.py - PhaseResult/DiagnosticReport/RepairResult flows (verify)
+- <code>PhaseResult()</code> (src/cortex_unified/system_tools/windows_update_repair.py:95) [class]: Phase Result data container. - unused by GUI.
+- <code>DiagnosticReport()</code> (src/cortex_unified/system_tools/windows_update_repair.py:106) [class]: Diagnostic Report data container. - unused by GUI.
+- <code>RepairResult()</code> (src/cortex_unified/system_tools/windows_update_repair.py:125) [class]: Repair Result data container. - unused by GUI.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.expand", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight", "search.share", "content.code.copy", "content.tabs.link"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

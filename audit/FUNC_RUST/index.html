@@ -1,0 +1,1908 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="The Ultimate Windows NT Systems Optimization, Forensics & File Management Platform">
+      
+      
+        <meta name="author" content="Destroyer-official">
+      
+      
+        <link rel="canonical" href="https://destroyer-official.github.io/Cortex-Workstation/audit/FUNC_RUST/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/icons/cortex.ico">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Rust Public API Audit — NexusExplorer (src-tauri) + nexus_engine_ffi + C Header - Cortex Workstation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="deep-purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#rust-public-api-audit-nexusexplorer-src-tauri-nexus_engine_ffi-c-header" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Cortex Workstation" class="md-header__button md-logo" aria-label="Cortex Workstation" data-md-component="logo">
+      
+  <img src="../../assets/icons/cortex.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Cortex Workstation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Rust Public API Audit — NexusExplorer (src-tauri) + nexus_engine_ffi + C Header
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="deep-purple"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="deep-purple"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/Destroyer-official/Cortex-Workstation" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Destroyer-official/Cortex-Workstation
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../.." class="md-tabs__link">
+          
+  
+  
+  🌎 Welcome Hub
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../user/getting-started/" class="md-tabs__link">
+          
+  
+  
+  📦 User Space
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../ARCHITECTURE/" class="md-tabs__link">
+          
+  
+  
+  🏗️ Developer Platform
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../api/overview/" class="md-tabs__link">
+          
+  
+  
+  🔌 API & Subsystems
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Cortex Workstation" class="md-nav__button md-logo" aria-label="Cortex Workstation" data-md-component="logo">
+      
+  <img src="../../assets/icons/cortex.png" alt="logo">
+
+    </a>
+    Cortex Workstation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/Destroyer-official/Cortex-Workstation" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Destroyer-official/Cortex-Workstation
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_1" id="__nav_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    🌎 Welcome Hub
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    🌎 Welcome Hub
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Command Center
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../FEATURE_DIRECTORY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Feature Directory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../quick_reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quick Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    📦 User Space
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    📦 User Space
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/how-to-guides/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How-To Guides
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ui_visual_guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UI Visual Tour & Design Tokens
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI & Shell Usage Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../advanced-features/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Advanced Forensic & Performance Tuning
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../package_manager_guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Package Manager Cleaner Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/nexus-explorer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Nexus File Manager (VFS)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../i18n_accessibility/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Accessibility & Keybindings
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting & Diagnostics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    🏗️ Developer Platform
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    🏗️ Developer Platform
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ARCHITECTURE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Windows NT Kernel & Architecture Spec
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dev/architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Repository Architecture Map
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../DEVELOPER_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer Onboarding & Contribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dev/threading-safety/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    State Management & Safety
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dev/testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing & CI/CD
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dev/release-process/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Release & Review Process
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    🔌 API & Subsystems
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    🔌 API & Subsystems
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Subsystem Core Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/system-tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System Tools Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/analyzers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Analyzers Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/core-engine/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Engine & Algorithmic Caches
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../API_REFERENCE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Complete API Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../FUNCTION_INVENTORY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Function & Symbol Inventory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#srcnexusexplorersrc-taurisrclibrs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/NexusExplorer/src-tauri/src/lib.rs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srcnexusexplorersrc-taurisrcmainrs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/NexusExplorer/src-tauri/src/main.rs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srcnexusexplorersrc-taurisrcbinnexus-clirs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/NexusExplorer/src-tauri/src/bin/nexus-cli.rs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srcnexusexplorersrc-taurisrcenginemodrs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/NexusExplorer/src-tauri/src/engine/mod.rs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srcnexusexplorersrc-taurisrcenginelistingrs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/NexusExplorer/src-tauri/src/engine/listing.rs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srcnexusexplorersrc-taurisrcenginesearch_enginers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/NexusExplorer/src-tauri/src/engine/search_engine.rs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srcnexusexplorersrc-taurisrcenginecopy_enginers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/NexusExplorer/src-tauri/src/engine/copy_engine.rs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srcnexusexplorersrc-taurisrcenginejob_managerrs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/NexusExplorer/src-tauri/src/engine/job_manager.rs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srcnexusexplorersrc-taurisrcenginewatchrs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/NexusExplorer/src-tauri/src/engine/watch.rs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srcnexusexplorersrc-taurisrccommandsmodrs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/NexusExplorer/src-tauri/src/commands/mod.rs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srcnexusexplorersrc-taurisrccommandsfs_cmdsrs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/NexusExplorer/src-tauri/src/commands/fs_cmds.rs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srcnexusexplorersrc-taurisrccommandsops_cmdsrs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/NexusExplorer/src-tauri/src/commands/ops_cmds.rs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srcnexusexplorersrc-taurisrccommandssearch_cmdsrs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/NexusExplorer/src-tauri/src/commands/search_cmds.rs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srcnexusexplorersrc-taurisrcmodelsmodrs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/NexusExplorer/src-tauri/src/models/mod.rs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srcnexusexplorersrc-taurisrcmodelsfile_entryrs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/NexusExplorer/src-tauri/src/models/file_entry.rs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srcnexusexplorersrc-taurisrcmodelseventsrs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/NexusExplorer/src-tauri/src/models/events.rs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srcnexusexplorernexus_engine_ffisrclibrs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/NexusExplorer/nexus_engine_ffi/src/lib.rs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srcnexusexplorernexus_engine_ffisrcffi_typesrs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/NexusExplorer/nexus_engine_ffi/src/ffi_types.rs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srcnexusexplorernexus_engine_ffisrclistingrs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/NexusExplorer/nexus_engine_ffi/src/listing.rs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srcnexusexplorernexus_engine_ffisrcsearchrs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/NexusExplorer/nexus_engine_ffi/src/search.rs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srcnexusexplorernexus_engine_ffisrccopyrs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/NexusExplorer/nexus_engine_ffi/src/copy.rs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srcnexusexplorernexus_engine_ffisrcdrivesrs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/NexusExplorer/nexus_engine_ffi/src/drives.rs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srcnexusexplorernexus_engine_ffisrcwatchrs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/NexusExplorer/nexus_engine_ffi/src/watch.rs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srcnexusexplorernexus_engine_ffisrcutilsrs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/NexusExplorer/nexus_engine_ffi/src/utils.rs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srcnexusexplorernexus_engine_ffiincludenexus_engineh" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/NexusExplorer/nexus_engine_ffi/include/nexus_engine.h
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="rust-public-api-audit-nexusexplorer-src-tauri-nexus_engine_ffi-c-header">Rust Public API Audit — NexusExplorer (<code>src-tauri</code>) + <code>nexus_engine_ffi</code> + C Header<a class="headerlink" href="#rust-public-api-audit-nexusexplorer-src-tauri-nexus_engine_ffi-c-header" title="Permanent link">&para;</a></h1>
+<p>Base: <code>D:\code\Main_projects\Cortex_Cleaner</code>
+Scope: <code>src/NexusExplorer/src-tauri/src/**</code> (lib.rs, bin/nexus-cli.rs, engine/, commands/, models/) + <code>src/NexusExplorer/nexus_engine_ffi/src/**</code> (*.rs) + <code>nexus_engine_ffi/include/nexus_engine.h</code>
+Method: read source; one line purpose per item. <code>L&lt;n&gt;</code> = definition line in that file.</p>
+<h2 id="srcnexusexplorersrc-taurisrclibrs">src/NexusExplorer/src-tauri/src/lib.rs<a class="headerlink" href="#srcnexusexplorersrc-taurisrclibrs" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>pub mod commands</code> (L1): re-exports Tauri IPC command modules.</li>
+<li><code>pub mod engine</code> (L2): re-exports copy/search/listing/job/watch core.</li>
+<li><code>pub mod models</code> (L3): re-exports FileEntry/event DTOs.</li>
+<li><code>pub fn run()</code> (L29): builds Tauri app, registers state/plugins and invoke_handler, runs event loop.</li>
+</ul>
+<h2 id="srcnexusexplorersrc-taurisrcmainrs">src/NexusExplorer/src-tauri/src/main.rs<a class="headerlink" href="#srcnexusexplorersrc-taurisrcmainrs" title="Permanent link">&para;</a></h2>
+<ul>
+<li>(no <code>pub</code> items) private <code>fn main()</code> (L3): delegates to <code>nexus_explorer_lib::run()</code>.</li>
+</ul>
+<h2 id="srcnexusexplorersrc-taurisrcbinnexus-clirs">src/NexusExplorer/src-tauri/src/bin/nexus-cli.rs<a class="headerlink" href="#srcnexusexplorersrc-taurisrcbinnexus-clirs" title="Permanent link">&para;</a></h2>
+<ul>
+<li>(no <code>pub</code> items; binary crate) private helpers <code>print_usage</code> (L26), <code>fmt_bytes</code> (L40), <code>file_mtime_ms</code> (L58), <code>ms_to_string</code> (L67), <code>entries_to_json</code> (L88), <code>cmd_list</code> (L94), <code>cmd_search</code> (L143), <code>render_progress</code> (L190), <code>truncate</code> (L215), <code>format_eta</code> (L223), <code>cmd_transfer</code> (L234), <code>cmd_delete</code> (L316), <code>cmd_drives</code> (L351), <code>cmd_drives_json</code> (L549), <code>cmd_hash</code> (L473), <code>cmd_rename</code> (L511), <code>cmd_mkdir</code> (L535), <code>cmd_gui</code> (L582), <code>fn main</code> (L610): CLI frontend reusing <code>nexus_explorer_lib::engine::{copy_engine,search_engine}</code> + <code>commands::fs_cmds::__cli_read_dir</code>.</li>
+<li><code>#[cfg(windows)] fn with_wide / struct ErrorModeGuard / fs_free_total / drive_type_name / fs_name / volume_label</code> (L388–471): Windows drive-probe helpers with SEM_FAILCRITICALERRORS guard.</li>
+</ul>
+<h2 id="srcnexusexplorersrc-taurisrcenginemodrs">src/NexusExplorer/src-tauri/src/engine/mod.rs<a class="headerlink" href="#srcnexusexplorersrc-taurisrcenginemodrs" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>pub mod copy_engine</code> (L1): transfer/delete engine.</li>
+<li><code>pub mod job_manager</code> (L2): job registry/control plane.</li>
+<li><code>pub mod listing</code> (L3): scan cancellation registry.</li>
+<li><code>pub mod search_engine</code> (L4): parallel filename search.</li>
+<li><code>pub mod watch</code> (L5): recursive fs watchers.</li>
+</ul>
+<h2 id="srcnexusexplorersrc-taurisrcenginelistingrs">src/NexusExplorer/src-tauri/src/engine/listing.rs<a class="headerlink" href="#srcnexusexplorersrc-taurisrcenginelistingrs" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>pub struct ScanRegistry { flags: Arc&lt;Mutex&lt;HashMap&lt;String, Arc&lt;AtomicBool&gt;&gt;&gt;&gt; }</code> (L11): maps scan-id → cancel flag.</li>
+<li><code>pub fn ScanRegistry::new() -&gt; Self</code> (L17): creates empty registry.</li>
+<li><code>pub fn ScanRegistry::insert(&amp;self, id: String, flag: Arc&lt;AtomicBool&gt;)</code> (L22): registers cancel flag under id.</li>
+<li><code>pub fn ScanRegistry::cancel(&amp;self, id: &amp;str) -&gt; bool</code> (L27): sets cancel flag; true if id was registered.</li>
+<li><code>pub fn ScanRegistry::remove(&amp;self, id: &amp;str) -&gt; Option&lt;Arc&lt;AtomicBool&gt;&gt;</code> (L38): unregisters and returns flag.</li>
+</ul>
+<h2 id="srcnexusexplorersrc-taurisrcenginesearch_enginers">src/NexusExplorer/src-tauri/src/engine/search_engine.rs<a class="headerlink" href="#srcnexusexplorersrc-taurisrcenginesearch_enginers" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>pub struct SearchRegistry { flags: Arc&lt;Mutex&lt;HashMap&lt;String, Arc&lt;AtomicBool&gt;&gt;&gt;&gt; }</code> (L16): maps search-id → cancel flag.</li>
+<li><code>pub fn SearchRegistry::new() -&gt; Self</code> (L21): creates empty registry.</li>
+<li><code>pub fn SearchRegistry::register(&amp;self, id: String, flag: Arc&lt;AtomicBool&gt;)</code> (L25): registers search cancel flag.</li>
+<li><code>pub fn SearchRegistry::cancel(&amp;self, id: &amp;str) -&gt; bool</code> (L29): signals cancellation for id.</li>
+<li><code>pub fn SearchRegistry::remove(&amp;self, id: &amp;str) -&gt; Option&lt;Arc&lt;AtomicBool&gt;&gt;</code> (L39): unregisters search flag.</li>
+<li><code>pub fn run_search_blocking(root: String, query: String, opts: SearchOptions, cancel: Arc&lt;AtomicBool&gt;, sink: &amp;mut dyn FnMut(SearchEvent))</code> (L140): jwalk parallel walk with wildcard/substring matcher, streams Batch/Done/Error via sink.</li>
+</ul>
+<h2 id="srcnexusexplorersrc-taurisrcenginecopy_enginers">src/NexusExplorer/src-tauri/src/engine/copy_engine.rs<a class="headerlink" href="#srcnexusexplorersrc-taurisrcenginecopy_enginers" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>pub enum JobKind { Copy, Move }</code> (L32): transfer operation discriminator.</li>
+<li><code>pub fn JobKind::as_str(self) -&gt; &amp;'static str</code> (L38): maps variant to "copy"/"move".</li>
+<li><code>pub struct OrphanPart { job_id, kind, dst_dir, part_file, bytes, last_state }</code> (L627): one interrupted-transfer <code>.nexuspart</code> leftover found via journal.</li>
+<li><code>pub fn list_orphan_parts() -&gt; Vec&lt;OrphanPart&gt;</code> (L638): scans <code>jobs.jsonl</code> for non-completed jobs with residual <code>.nexuspart</code> files.</li>
+<li><code>pub fn run_transfer_blocking(kind: JobKind, sources: Vec&lt;String&gt;, dest_dir: String, control: Arc&lt;JobControl&gt;, job_id: String, sink: &amp;mut dyn FnMut(JobEvent))</code> (L884): plans, copies/moves with resume/checkpoint/verify/conflict flow, emits Started/Progress/Conflict/FileDone/Error/State.</li>
+<li><code>pub fn run_delete_blocking(paths: Vec&lt;String&gt;, to_trash: bool, control: Arc&lt;JobControl&gt;, job_id: String, sink: &amp;mut dyn FnMut(JobEvent))</code> (L1085): deletes to trash or permanently with progress events.</li>
+<li>Note (non-<code>pub</code>, excluded from count): <code>pub(crate) const SMALL_FILE_FAST_MAX</code> (L52), <code>pub(crate) fn journal_dir()</code> (L581), <code>pub(crate) fn verify_copy()</code> (L703) — internal fast-path threshold, journal path, xxh3 verify helper.</li>
+</ul>
+<h2 id="srcnexusexplorersrc-taurisrcenginejob_managerrs">src/NexusExplorer/src-tauri/src/engine/job_manager.rs<a class="headerlink" href="#srcnexusexplorersrc-taurisrcenginejob_managerrs" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>pub struct JobControl { kind, cancel, paused, resume_notify, state, total_files, processed_files, total_bytes, processed_bytes, speed_bps, eta_secs, current_file, errors, pending_conflicts, apply_all, deferred_verify }</code> (L12): shared per-job flags, counters, conflict channels.</li>
+<li><code>pub fn JobControl::new(kind: &amp;str) -&gt; Self</code> (L33): initializes running-state control block.</li>
+<li><code>pub fn JobControl::wait_while_paused(&amp;self) -&gt; bool</code> (L55): sleeps while paused; false if cancelled.</li>
+<li><code>pub fn JobControl::set_state(&amp;self, state: &amp;str)</code> (L65): updates terminal/running state string.</li>
+<li><code>pub fn JobControl::snapshot(&amp;self, job_id: &amp;str) -&gt; JobSummary</code> (L69): builds immutable status summary for IPC.</li>
+<li><code>pub struct JobManager { jobs: Arc&lt;Mutex&lt;HashMap&lt;String, Arc&lt;JobControl&gt;&gt;&gt;&gt; }</code> (L88): registry of all jobs keyed by id.</li>
+<li><code>pub fn JobManager::new() -&gt; Self</code> (L93): creates empty registry.</li>
+<li><code>pub fn JobManager::register(&amp;self, id: String, control: Arc&lt;JobControl&gt;)</code> (L97): inserts job control handle.</li>
+<li><code>pub fn JobManager::get(&amp;self, id: &amp;str) -&gt; Option&lt;Arc&lt;JobControl&gt;&gt;</code> (L101): clones handle for id if present.</li>
+<li><code>pub fn JobManager::list_summaries(&amp;self) -&gt; Vec&lt;JobSummary&gt;</code> (L105): snapshots every known job.</li>
+<li><code>pub fn JobManager::resolve(&amp;self, job_id: &amp;str, conflict_id: &amp;str, resolution: String, apply_to_all: bool) -&gt; Result&lt;(), String&gt;</code> (L113): delivers conflict answer to waiting engine thread.</li>
+</ul>
+<h2 id="srcnexusexplorersrc-taurisrcenginewatchrs">src/NexusExplorer/src-tauri/src/engine/watch.rs<a class="headerlink" href="#srcnexusexplorersrc-taurisrcenginewatchrs" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>pub const FS_CHANGE_EVENT: &amp;str</code> (L17): Tauri event name <code>"fs-change"</code>.</li>
+<li><code>pub struct FsChangePayload { pub path: String }</code> (L24): watched-root payload emitted on debounced batch.</li>
+<li><code>pub struct WatchManager { watchers: Mutex&lt;HashMap&lt;String, WatcherHandle&gt;&gt; }</code> (L30): per-directory recursive debounced watchers.</li>
+<li><code>pub fn WatchManager::new() -&gt; Self</code> (L35): creates empty manager.</li>
+<li><code>pub fn WatchManager::watch(&amp;self, app: AppHandle, path: String) -&gt; Result&lt;(), String&gt;</code> (L42): starts recursive watch; no-op if already watched.</li>
+<li><code>pub fn WatchManager::unwatch(&amp;self, path: String) -&gt; Result&lt;(), String&gt;</code> (L76): drops watcher for path.</li>
+</ul>
+<h2 id="srcnexusexplorersrc-taurisrccommandsmodrs">src/NexusExplorer/src-tauri/src/commands/mod.rs<a class="headerlink" href="#srcnexusexplorersrc-taurisrccommandsmodrs" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>pub mod fs_cmds</code> (L1): scan/list/drives/file-op commands.</li>
+<li><code>pub mod ops_cmds</code> (L2): copy/move/delete job commands.</li>
+<li><code>pub mod search_cmds</code> (L3): search commands.</li>
+</ul>
+<h2 id="srcnexusexplorersrc-taurisrccommandsfs_cmdsrs">src/NexusExplorer/src-tauri/src/commands/fs_cmds.rs<a class="headerlink" href="#srcnexusexplorersrc-taurisrccommandsfs_cmdsrs" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>pub async fn scan_dir(path: String, on_event: Channel&lt;ScanEvent&gt;, registry: State&lt;'_, ScanRegistry&gt;) -&gt; Result&lt;ScanStart, String&gt;</code> (L32): spawns async batched sorted scan streaming over channel.</li>
+<li><code>pub async fn cancel_scan(scan_id: String, registry: State&lt;'_, ScanRegistry&gt;) -&gt; Result&lt;(), String&gt;</code> (L66): cancels active scan by id.</li>
+<li><code>pub async fn read_dir_sync(path: String) -&gt; Result&lt;Vec&lt;FileEntry&gt;, String&gt;</code> (L76): synchronous dirs-first sorted listing.</li>
+<li><code>pub fn __cli_read_dir(path: &amp;str) -&gt; Result&lt;Vec&lt;FileEntry&gt;, String&gt;</code> (L84): sync listing shared with <code>nexus-cli</code> binary.</li>
+<li><code>pub async fn stat_path(path: String) -&gt; Result&lt;Option&lt;FileEntry&gt;, String&gt;</code> (L93): metadata for path, None if missing.</li>
+<li><code>pub async fn get_drives() -&gt; Result&lt;Vec&lt;DriveInfo&gt;, String&gt;</code> (L118): enumerates Windows volumes with label/fs/space.</li>
+<li><code>pub async fn home_dir() -&gt; Result&lt;String, String&gt;</code> (L124): returns USERPROFILE or error.</li>
+<li><code>pub async fn rename_entry(path: String, new_name: String) -&gt; Result&lt;FileEntry, String&gt;</code> (L131): validates name, renames, returns refreshed entry.</li>
+<li><code>pub async fn create_folder(parent: String, name: String) -&gt; Result&lt;FileEntry, String&gt;</code> (L152): validates and creates folder, returns entry.</li>
+<li><code>pub async fn read_text_file(path: String, max_bytes: u32) -&gt; Result&lt;TextPreview, String&gt;</code> (L167): reads up-to-limit preview, rejects NUL-prefixed binary.</li>
+<li><code>pub async fn open_path(app: AppHandle, path: String) -&gt; Result&lt;(), String&gt;</code> (L198): opens path with default app via opener plugin.</li>
+<li><code>pub async fn reveal_in_shell(path: String) -&gt; Result&lt;(), String&gt;</code> (L207): selects path in Explorer via <code>explorer /select,</code>.</li>
+<li><code>pub async fn watch_dir(app: AppHandle, path: String, watcher: State&lt;'_, WatchManager&gt;) -&gt; Result&lt;(), String&gt;</code> (L217): starts watching directory.</li>
+<li><code>pub async fn unwatch_dir(path: String, watcher: State&lt;'_, WatchManager&gt;) -&gt; Result&lt;(), String&gt;</code> (L227): stops watching directory.</li>
+</ul>
+<h2 id="srcnexusexplorersrc-taurisrccommandsops_cmdsrs">src/NexusExplorer/src-tauri/src/commands/ops_cmds.rs<a class="headerlink" href="#srcnexusexplorersrc-taurisrccommandsops_cmdsrs" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>pub async fn copy_entries(sources: Vec&lt;String&gt;, dest_dir: String, on_event: Channel&lt;JobEvent&gt;, jobs: State&lt;'_, JobManager&gt;) -&gt; Result&lt;String, String&gt;</code> (L52): starts copy job, returns job_id.</li>
+<li><code>pub async fn move_entries(sources: Vec&lt;String&gt;, dest_dir: String, on_event: Channel&lt;JobEvent&gt;, jobs: State&lt;'_, JobManager&gt;) -&gt; Result&lt;String, String&gt;</code> (L62): starts move job, returns job_id.</li>
+<li><code>pub async fn delete_entries(paths: Vec&lt;String&gt;, to_trash: bool, on_event: Channel&lt;JobEvent&gt;, jobs: State&lt;'_, JobManager&gt;) -&gt; Result&lt;String, String&gt;</code> (L72): starts delete/trash job, returns job_id.</li>
+<li><code>pub async fn pause_job(job_id: String, jobs: State&lt;'_, JobManager&gt;) -&gt; Result&lt;JobSummary, String&gt;</code> (L104): sets paused flag/state, returns snapshot.</li>
+<li><code>pub async fn resume_job(job_id: String, jobs: State&lt;'_, JobManager&gt;) -&gt; Result&lt;JobSummary, String&gt;</code> (L115): clears paused flag, notifies, returns snapshot.</li>
+<li><code>pub async fn cancel_job(job_id: String, jobs: State&lt;'_, JobManager&gt;) -&gt; Result&lt;JobSummary, String&gt;</code> (L129): sets cancel flag, returns snapshot.</li>
+<li><code>pub async fn resolve_conflict(job_id: String, conflict_id: String, resolution: String, apply_to_all: bool, jobs: State&lt;'_, JobManager&gt;) -&gt; Result&lt;(), String&gt;</code> (L140): validates skip/overwrite/keepBoth and delivers resolution.</li>
+<li><code>pub async fn get_active_jobs(jobs: State&lt;'_, JobManager&gt;) -&gt; Result&lt;Vec&lt;JobSummary&gt;, String&gt;</code> (L154): lists all job snapshots.</li>
+</ul>
+<h2 id="srcnexusexplorersrc-taurisrccommandssearch_cmdsrs">src/NexusExplorer/src-tauri/src/commands/search_cmds.rs<a class="headerlink" href="#srcnexusexplorersrc-taurisrccommandssearch_cmdsrs" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>pub async fn search_files(root: String, query: String, opts: SearchOptions, on_event: Channel&lt;SearchEvent&gt;, registry: State&lt;'_, SearchRegistry&gt;) -&gt; Result&lt;String, String&gt;</code> (L14): spawns blocking search streaming batches, returns search_id.</li>
+<li><code>pub async fn cancel_search(search_id: String, registry: State&lt;'_, SearchRegistry&gt;) -&gt; Result&lt;(), String&gt;</code> (L51): cancels active search.</li>
+</ul>
+<h2 id="srcnexusexplorersrc-taurisrcmodelsmodrs">src/NexusExplorer/src-tauri/src/models/mod.rs<a class="headerlink" href="#srcnexusexplorersrc-taurisrcmodelsmodrs" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>pub mod events</code> (L1): Scan/Search/Job event enums.</li>
+<li><code>pub mod file_entry</code> (L2): FileEntry/DriveInfo/JobSummary DTOs.</li>
+<li>Re-exports (L4–5): <code>pub use events::{JobEvent, ScanEvent, SearchEvent}</code>; <code>pub use file_entry::{DriveInfo, FileEntry, JobSummary, ScanStart, SearchOptions, TextPreview}</code>.</li>
+</ul>
+<h2 id="srcnexusexplorersrc-taurisrcmodelsfile_entryrs">src/NexusExplorer/src-tauri/src/models/file_entry.rs<a class="headerlink" href="#srcnexusexplorersrc-taurisrcmodelsfile_entryrs" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>pub struct FileEntry { name, path, parent_path, is_dir, size, modified_ms, created_ms, is_hidden, is_system, is_readonly, ext }</code> (L5): serializable file row (camelCase).</li>
+<li><code>pub struct DriveInfo { path, label, drive_type, filesystem, free_bytes, total_bytes, is_ready }</code> (L21): volume descriptor.</li>
+<li><code>pub struct ScanStart { scan_id, root_path }</code> (L33): scan handshake return.</li>
+<li><code>pub struct TextPreview { content, truncated, size }</code> (L40): bounded text preview.</li>
+<li><code>pub struct JobSummary { job_id, kind, state, total_files, processed_files, total_bytes, processed_bytes, speed_bps, eta_secs, current_file, conflicts_pending }</code> (L48): job status snapshot.</li>
+<li><code>pub struct SearchOptions { recursive, max_results, include_hidden }</code> (L64): search flags (Serialize+Deserialize).</li>
+</ul>
+<h2 id="srcnexusexplorersrc-taurisrcmodelseventsrs">src/NexusExplorer/src-tauri/src/models/events.rs<a class="headerlink" href="#srcnexusexplorersrc-taurisrcmodelseventsrs" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>pub enum ScanEvent { Batch{entries}, Done{total,duration_ms}, Error{message} }</code> (L7): streamed scan batches/completion.</li>
+<li><code>pub enum SearchEvent { Batch{entries}, Done{total,duration_ms}, Error{message} }</code> (L15): streamed search batches/completion.</li>
+<li><code>pub enum JobEvent { Started, Progress, FileDone, Conflict, State, Error }</code> (L23): transfer lifecycle incl. conflict request and per-file/error reports.</li>
+</ul>
+<h2 id="srcnexusexplorernexus_engine_ffisrclibrs">src/NexusExplorer/nexus_engine_ffi/src/lib.rs<a class="headerlink" href="#srcnexusexplorernexus_engine_ffisrclibrs" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>pub type NexusHandle = *mut c_void</code> (L25): opaque async-operation handle alias.</li>
+<li><code>pub type ListCallback = extern "C" fn(user_data, entries, count, done, error)</code> (L28): directory batch callback.</li>
+<li><code>pub type ProgressCallback = extern "C" fn(user_data, job_id, processed_bytes, total_bytes, speed_bps, eta_seconds, current_file)</code> (L37): transfer progress callback.</li>
+<li><code>pub type CompletionCallback = extern "C" fn(user_data, job_id, success, error)</code> (L48): terminal job callback.</li>
+<li><code>pub type ConflictCallback = extern "C" fn(user_data, job_id, conflict_id, source, destination, source_size, dest_size, source_mtime, dest_mtime, is_dir) -&gt; c_int</code> (L56): returns 0=skip,1=overwrite,2=keep_both,-1=cancel.</li>
+<li><code>pub type SearchCallback = extern "C" fn(user_data, entries, count, done, error)</code> (L70): search batch callback.</li>
+<li><code>pub type FsEventCallback = extern "C" fn(user_data, path)</code> (L79): fs-change notification callback.</li>
+<li><code>pub unsafe extern "C" fn nexus_init() -&gt; *mut c_void</code> (L89): creates Arc-wrapped NexusContext, returns opaque handle.</li>
+<li><code>pub unsafe extern "C" fn nexus_free(ctx: *mut c_void)</code> (L96): drops context Arc for handle.</li>
+<li><code>pub extern "C" fn nexus_version() -&gt; *const c_char</code> (L103): returns static CARGO_PKG_VERSION string.</li>
+<li>Re-exports (L16–22): <code>pub use ffi_types::*; listing::*; copy::*; search::*; watch::*; drives::*; utils::*</code>.</li>
+<li>Internal (non-<code>pub</code>): <code>pub(crate) struct NexusContext</code> (L109), <code>pub(crate) struct SendPtr</code> (L143) — shared registries + Send user-data wrapper.</li>
+</ul>
+<h2 id="srcnexusexplorernexus_engine_ffisrcffi_typesrs">src/NexusExplorer/nexus_engine_ffi/src/ffi_types.rs<a class="headerlink" href="#srcnexusexplorernexus_engine_ffisrcffi_typesrs" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>pub struct FileEntry { name, path, parent_path, is_dir, size, modified_ms, created_ms, is_hidden, is_system, is_readonly, ext }</code> (L6): #[repr(C)] file row with owned C strings.</li>
+<li><code>pub struct DriveInfo { path, label, drive_type, filesystem, free_bytes, total_bytes, is_ready }</code> (L22): #[repr(C)] volume descriptor.</li>
+<li><code>pub struct SearchOptions { recursive, max_results, include_hidden }</code> (L34): #[repr(C)] search flags (defaults recursive=1, max=10000).</li>
+<li><code>pub struct TextPreview { content, truncated, size }</code> (L42): #[repr(C)] text preview out-param shape.</li>
+<li><code>pub struct JobSummary { job_id, kind, state, total_files, processed_files, total_bytes, processed_bytes, speed_bps, eta_seconds, current_file, conflicts_pending }</code> (L50): #[repr(C)] job snapshot.</li>
+<li><code>impl Default</code> for each (L66,84,98,108,118): zero/null defaults for FFI construction.</li>
+</ul>
+<h2 id="srcnexusexplorernexus_engine_ffisrclistingrs">src/NexusExplorer/nexus_engine_ffi/src/listing.rs<a class="headerlink" href="#srcnexusexplorernexus_engine_ffisrclistingrs" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>pub unsafe extern "C" fn nexus_scan_dir(ctx: *mut c_void, path: *const c_char, callback: ListCallback, user_data: *mut c_void) -&gt; c_int</code> (L15): spawns thread scanning dir in 500-entry batches, final done callback.</li>
+<li><code>pub unsafe extern "C" fn nexus_cancel_scan(ctx: *mut c_void, scan_id: *const c_char) -&gt; c_int</code> (L130): cancels scan id (0 ok, -1 missing/invalid).</li>
+<li><code>pub unsafe extern "C" fn nexus_read_dir_sync(ctx: *mut c_void, path: *const c_char, out_entries: *mut *mut FileEntry, out_count: *mut size_t) -&gt; c_int</code> (L147): sync listing into malloc-style boxed slice for caller + <code>nexus_free_entries</code>.</li>
+<li><code>pub unsafe extern "C" fn nexus_read_dir_sync_json(ctx: *mut c_void, path: *const c_char, out_json: *mut *mut c_char) -&gt; c_int</code> (L219): sync listing serialized to JSON string (free with <code>nexus_free_string</code>); <strong>not declared in header</strong>.</li>
+<li><code>pub unsafe extern "C" fn nexus_free_entries(entries: *mut FileEntry, count: size_t)</code> (L289): frees per-row C strings and entry slice.</li>
+</ul>
+<h2 id="srcnexusexplorernexus_engine_ffisrcsearchrs">src/NexusExplorer/nexus_engine_ffi/src/search.rs<a class="headerlink" href="#srcnexusexplorernexus_engine_ffisrcsearchrs" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>pub unsafe extern "C" fn nexus_search_files(ctx: *mut c_void, root: *const c_char, query: *const c_char, options: *const SearchOptions, callback: SearchCallback, user_data: *mut c_void) -&gt; c_int</code> (L11): threaded jwalk search with 200-entry batches + done; records thread-local last-search-id.</li>
+<li><code>pub unsafe extern "C" fn nexus_cancel_search(ctx: *mut c_void, search_id: *const c_char) -&gt; c_int</code> (L163): cancels by id, or thread-local last id when NULL.</li>
+<li><code>pub unsafe extern "C" fn nexus_last_search_id(ctx: *mut c_void, out_id: *mut *mut c_char) -&gt; c_int</code> (L182): copies thread-local last search id to caller-owned string.</li>
+</ul>
+<h2 id="srcnexusexplorernexus_engine_ffisrccopyrs">src/NexusExplorer/nexus_engine_ffi/src/copy.rs<a class="headerlink" href="#srcnexusexplorernexus_engine_ffisrccopyrs" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>pub unsafe extern "C" fn nexus_copy(ctx, sources, sources_count, dest_dir, progress_cb, complete_cb, conflict_cb, user_data) -&gt; *mut c_void</code> (L190): starts copy thread via <code>run_transfer_blocking(Copy)</code>, returns job handle.</li>
+<li><code>pub unsafe extern "C" fn nexus_move(ctx, sources, sources_count, dest_dir, progress_cb, complete_cb, conflict_cb, user_data) -&gt; *mut c_void</code> (L255): starts move thread via <code>run_transfer_blocking(Move)</code>, returns job handle.</li>
+<li><code>pub unsafe extern "C" fn nexus_delete(ctx, paths, paths_count, to_trash, progress_cb, complete_cb, user_data) -&gt; *mut c_void</code> (L319): starts delete thread via <code>run_delete_blocking</code>, returns job handle.</li>
+<li><code>pub unsafe extern "C" fn nexus_pause_job(handle: *mut c_void) -&gt; c_int</code> (L392): sets paused flags/state on job handle.</li>
+<li><code>pub unsafe extern "C" fn nexus_resume_job(handle: *mut c_void) -&gt; c_int</code> (L402): clears paused flags, resumes job.</li>
+<li><code>pub unsafe extern "C" fn nexus_cancel_job(handle: *mut c_void) -&gt; c_int</code> (L412): sets cancel flags/state on job handle.</li>
+<li><code>pub unsafe extern "C" fn nexus_free_job_handle(handle: *mut c_void)</code> (L423): drops boxed job handle triple.</li>
+</ul>
+<h2 id="srcnexusexplorernexus_engine_ffisrcdrivesrs">src/NexusExplorer/nexus_engine_ffi/src/drives.rs<a class="headerlink" href="#srcnexusexplorernexus_engine_ffisrcdrivesrs" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>pub unsafe extern "C" fn nexus_get_drives(ctx, out_drives: *mut *mut DriveInfo, out_count: *mut size_t) -&gt; c_int</code> (L21): enumerates A–Z via GetLogicalDrives/Volume/Space, suppressing critical-error dialogs.</li>
+<li><code>pub unsafe extern "C" fn nexus_free_drives(drives: *mut DriveInfo, count: size_t)</code> (L117): frees per-drive strings and slice.</li>
+<li><code>pub unsafe extern "C" fn nexus_home_dir(ctx, out_path: *mut *mut c_char) -&gt; c_int</code> (L142): returns USERPROFILE (fallback C:) as owned string.</li>
+<li><code>pub unsafe extern "C" fn nexus_free_string(ptr: *mut c_char)</code> (L156): frees any engine-allocated C string.</li>
+</ul>
+<h2 id="srcnexusexplorernexus_engine_ffisrcwatchrs">src/NexusExplorer/nexus_engine_ffi/src/watch.rs<a class="headerlink" href="#srcnexusexplorernexus_engine_ffisrcwatchrs" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>pub struct WatcherMap(Mutex&lt;HashMap&lt;String, Debouncer&lt;RecommendedWatcher, RecommendedCache&gt;&gt;&gt;)</code> (L12): path-lowercased debouncer registry.</li>
+<li><code>pub fn WatcherMap::new() -&gt; Self</code> (L15): creates empty watcher map.</li>
+<li><code>pub unsafe extern "C" fn nexus_watch_dir(ctx, path, callback, user_data) -&gt; c_int</code> (L32): installs recursive 250ms debounced watcher + dispatch thread filtering to create/modify/remove.</li>
+<li><code>pub unsafe extern "C" fn nexus_unwatch_dir(ctx, path) -&gt; c_int</code> (L114): removes watcher for path.</li>
+</ul>
+<h2 id="srcnexusexplorernexus_engine_ffisrcutilsrs">src/NexusExplorer/nexus_engine_ffi/src/utils.rs<a class="headerlink" href="#srcnexusexplorernexus_engine_ffisrcutilsrs" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>pub unsafe extern "C" fn nexus_rename(ctx, path, new_name) -&gt; c_int</code> (L7): renames path into sibling <code>parent/new_name</code>.</li>
+<li><code>pub unsafe extern "C" fn nexus_create_folder(ctx, parent, name) -&gt; c_int</code> (L36): creates single-level directory <code>parent/name</code>.</li>
+<li><code>pub unsafe extern "C" fn nexus_read_text_file(ctx, path, max_bytes: u32, out_content, out_truncated, out_size) -&gt; c_int</code> (L62): bounded read with NUL-truncation handling for binary safety.</li>
+<li><code>pub unsafe extern "C" fn nexus_open_path(ctx, path) -&gt; c_int</code> (L121): opens path via explorer.exe (detached) or xdg-open.</li>
+<li><code>pub unsafe extern "C" fn nexus_reveal_in_shell(ctx, path) -&gt; c_int</code> (L150): reveals in Explorer via <code>explorer.exe /select,</code> (Windows only, -1 elsewhere).</li>
+<li><code>pub unsafe extern "C" fn nexus_orphans_json(out_json: *mut *mut c_char) -&gt; c_int</code> (L174): serializes <code>list_orphan_parts()</code> to JSON string; <strong>not declared in header</strong>.</li>
+</ul>
+<h2 id="srcnexusexplorernexus_engine_ffiincludenexus_engineh">src/NexusExplorer/nexus_engine_ffi/include/nexus_engine.h<a class="headerlink" href="#srcnexusexplorernexus_engine_ffiincludenexus_engineh" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>typedef void* NexusHandle</code> (L12) / <code>typedef void* NexusJobHandle</code> (L13): opaque context/job handles matching <code>*mut c_void</code> / boxed triple.</li>
+<li><code>typedef struct NexusFileEntry { char*,int,uint64_t... }</code> (L16): mirrors FFI <code>FileEntry</code> field-for-field.</li>
+<li><code>typedef struct NexusDriveInfo {...}</code> (L31): mirrors FFI <code>DriveInfo</code>.</li>
+<li><code>typedef struct NexusSearchOptions { int recursive; unsigned max_results; int include_hidden; }</code> (L42): mirrors FFI <code>SearchOptions</code>.</li>
+<li><code>typedef struct NexusTextPreview {...}</code> (L49): mirrors FFI <code>TextPreview</code> (no Rust producer; consumed via <code>nexus_read_text_file</code> out-params).</li>
+<li><code>typedef struct NexusJobSummary {...}</code> (L56): mirrors FFI <code>JobSummary</code> (defined but no <code>nexus_get_job_summary</code> accessor exists).</li>
+<li>Callbacks <code>NexusListCallback</code> (L71), <code>NexusProgressCallback</code> (L79), <code>NexusCompletionCallback</code> (L89), <code>NexusConflictCallback</code> (L96), <code>NexusSearchCallback</code> (L109), <code>NexusFsEventCallback</code> (L117): match Rust <code>*Callback</code> aliases.</li>
+<li>Lifecycle <code>nexus_init</code> (L123), <code>nexus_free</code> (L124), <code>nexus_version</code> (L125): match lib.rs L89/96/103.</li>
+<li>Dir ops <code>nexus_scan_dir</code> (L128), <code>nexus_cancel_scan</code> (L135), <code>nexus_read_dir_sync</code> (L137), <code>nexus_free_entries</code> (L144): match listing.rs L15/130/147/289.</li>
+<li>File ops <code>nexus_copy</code> (L149), <code>nexus_move</code> (L160), <code>nexus_delete</code> (L171), <code>nexus_pause_job</code> (L181), <code>nexus_resume_job</code> (L182), <code>nexus_cancel_job</code> (L183), <code>nexus_free_job_handle</code> (L184): match copy.rs L190/255/319/392/402/412/423.</li>
+<li>Search <code>nexus_search_files</code> (L187), <code>nexus_cancel_search</code> (L199), <code>nexus_last_search_id</code> (L203): match search.rs L11/163/182 (NULL-id fallback documented in header).</li>
+<li>Watch <code>nexus_watch_dir</code> (L206), <code>nexus_unwatch_dir</code> (L213): match watch.rs L32/114.</li>
+<li>Drives <code>nexus_get_drives</code> (L216), <code>nexus_free_drives</code> (L222): match drives.rs L21/117.</li>
+<li>Utils <code>nexus_home_dir</code> (L225), <code>nexus_free_string</code> (L226), <code>nexus_rename</code> (L227), <code>nexus_create_folder</code> (L228), <code>nexus_read_text_file</code> (L229), <code>nexus_open_path</code> (L237), <code>nexus_reveal_in_shell</code> (L238): match drives.rs L142/156 + utils.rs L7/36/62/121/150.</li>
+<li>Mismatches: header <strong>omits</strong> <code>nexus_read_dir_sync_json</code> (listing.rs:219) and <code>nexus_orphans_json</code> (utils.rs:174); header declares no extras — every header function exists in Rust.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.expand", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight", "search.share", "content.code.copy", "content.tabs.link"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

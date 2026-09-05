@@ -1,0 +1,2259 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="The Ultimate Windows NT Systems Optimization, Forensics & File Management Platform">
+      
+      
+        <meta name="author" content="Destroyer-official">
+      
+      
+        <link rel="canonical" href="https://destroyer-official.github.io/Cortex-Workstation/package_manager_guide/">
+      
+      
+        <link rel="prev" href="../advanced-features/">
+      
+      
+        <link rel="next" href="../user/nexus-explorer/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/icons/cortex.ico">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Package Manager Cleaner Guide - Cortex Workstation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="deep-purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#package-manager-cache-cleaner-user-guide" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Cortex Workstation" class="md-header__button md-logo" aria-label="Cortex Workstation" data-md-component="logo">
+      
+  <img src="../assets/icons/cortex.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Cortex Workstation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Package Manager Cleaner Guide
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="deep-purple"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="deep-purple"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/Destroyer-official/Cortex-Workstation" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Destroyer-official/Cortex-Workstation
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href=".." class="md-tabs__link">
+          
+  
+  
+  🌎 Welcome Hub
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../user/getting-started/" class="md-tabs__link">
+          
+  
+  
+  📦 User Space
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../ARCHITECTURE/" class="md-tabs__link">
+          
+  
+  
+  🏗️ Developer Platform
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../api/overview/" class="md-tabs__link">
+          
+  
+  
+  🔌 API & Subsystems
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Cortex Workstation" class="md-nav__button md-logo" aria-label="Cortex Workstation" data-md-component="logo">
+      
+  <img src="../assets/icons/cortex.png" alt="logo">
+
+    </a>
+    Cortex Workstation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/Destroyer-official/Cortex-Workstation" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Destroyer-official/Cortex-Workstation
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_1" id="__nav_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    🌎 Welcome Hub
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    🌎 Welcome Hub
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Command Center
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../FEATURE_DIRECTORY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Feature Directory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../quick_reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quick Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    📦 User Space
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    📦 User Space
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user/getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user/how-to-guides/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How-To Guides
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ui_visual_guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UI Visual Tour & Design Tokens
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI & Shell Usage Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user/configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../advanced-features/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Advanced Forensic & Performance Tuning
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Package Manager Cleaner Guide
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Package Manager Cleaner Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#what-was-fixed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Was Fixed
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#two-operating-modes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Two Operating Modes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Two Operating Modes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mode-1-clean-package-manager-caches-global" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mode 1: Clean Package Manager Caches (Global)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mode-2-clean-project-folder-caches-local" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mode 2: Clean Project Folder Caches (Local)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important Settings
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Important Settings">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#keep-cache-files-newer-than-x-days" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        "Keep cache files newer than: X days"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dry-run-preview-only" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        "Dry Run (Preview Only)"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scan-for-python-caches" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        "Scan for Python caches"
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#safety-features-built-in" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Safety Features Built In
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-scenarios" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common Scenarios
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Common Scenarios">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#scenario-1-reduce-large-project-size" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scenario 1: Reduce Large Project Size
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scenario-2-clean-all-python-development-caches" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scenario 2: Clean All Python Development Caches
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scenario-3-clean-just-package-manager-cache" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scenario 3: Clean Just Package Manager Cache
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scenario-4-deep-project-with-vendor-folder" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scenario 4: Deep Project with Vendor Folder
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tips-best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tips &amp; Best Practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Troubleshooting
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#scan-found-0-cache-locations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        "Scan found 0 cache locations"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#clean-up-is-grayed-out-after-scan" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        "Clean Up is grayed out after Scan"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dry-run-shows-large-numbers-but-i-trust-these-folders" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        "Dry Run shows large numbers but I trust these folders"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#clean-up-deleted-source-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        "Clean Up deleted source files!"
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#performance-impact" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Performance Impact
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#faq" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FAQ
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#version-history" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Version History
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user/nexus-explorer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Nexus File Manager (VFS)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../i18n_accessibility/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Accessibility & Keybindings
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user/troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting & Diagnostics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    🏗️ Developer Platform
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    🏗️ Developer Platform
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ARCHITECTURE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Windows NT Kernel & Architecture Spec
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dev/architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Repository Architecture Map
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../DEVELOPER_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer Onboarding & Contribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dev/threading-safety/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    State Management & Safety
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dev/testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing & CI/CD
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dev/release-process/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Release & Review Process
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    🔌 API & Subsystems
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    🔌 API & Subsystems
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Subsystem Core Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/system-tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System Tools Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/analyzers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Analyzers Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/core-engine/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Engine & Algorithmic Caches
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API_REFERENCE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Complete API Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../FUNCTION_INVENTORY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Function & Symbol Inventory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#what-was-fixed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Was Fixed
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#two-operating-modes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Two Operating Modes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Two Operating Modes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mode-1-clean-package-manager-caches-global" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mode 1: Clean Package Manager Caches (Global)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mode-2-clean-project-folder-caches-local" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mode 2: Clean Project Folder Caches (Local)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important Settings
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Important Settings">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#keep-cache-files-newer-than-x-days" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        "Keep cache files newer than: X days"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dry-run-preview-only" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        "Dry Run (Preview Only)"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scan-for-python-caches" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        "Scan for Python caches"
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#safety-features-built-in" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Safety Features Built In
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-scenarios" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common Scenarios
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Common Scenarios">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#scenario-1-reduce-large-project-size" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scenario 1: Reduce Large Project Size
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scenario-2-clean-all-python-development-caches" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scenario 2: Clean All Python Development Caches
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scenario-3-clean-just-package-manager-cache" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scenario 3: Clean Just Package Manager Cache
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scenario-4-deep-project-with-vendor-folder" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scenario 4: Deep Project with Vendor Folder
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tips-best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tips &amp; Best Practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Troubleshooting
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#scan-found-0-cache-locations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        "Scan found 0 cache locations"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#clean-up-is-grayed-out-after-scan" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        "Clean Up is grayed out after Scan"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dry-run-shows-large-numbers-but-i-trust-these-folders" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        "Dry Run shows large numbers but I trust these folders"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#clean-up-deleted-source-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        "Clean Up deleted source files!"
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#performance-impact" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Performance Impact
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#faq" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FAQ
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#version-history" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Version History
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="package-manager-cache-cleaner-user-guide">Package Manager Cache Cleaner - User Guide<a class="headerlink" href="#package-manager-cache-cleaner-user-guide" title="Permanent link">&para;</a></h1>
+<h2 id="what-was-fixed">What Was Fixed<a class="headerlink" href="#what-was-fixed" title="Permanent link">&para;</a></h2>
+<p>The Package Manager Cache feature now:
+✓ <strong>Has folder selection</strong> - Choose which folders to clean
+✓ <strong>Is selective</strong> - Only cleans Python caches, not project files<br />
+✓ <strong>Is safe</strong> - Limits scanning depth to prevent aggressive deletion in deep projects
+✓ <strong>Shows previews</strong> - Dry-run mode lets you see what will be deleted
+✓ <strong>Preserves source</strong> - Won't delete your .py files, only cache (.pyc, <strong>pycache</strong>, etc.)</p>
+<h2 id="two-operating-modes">Two Operating Modes<a class="headerlink" href="#two-operating-modes" title="Permanent link">&para;</a></h2>
+<h3 id="mode-1-clean-package-manager-caches-global">Mode 1: Clean Package Manager Caches (Global)<a class="headerlink" href="#mode-1-clean-package-manager-caches-global" title="Permanent link">&para;</a></h3>
+<p><strong>Best for:</strong> Cleaning system package caches (pip, npm, conda, etc.)</p>
+<p><strong>Steps:</strong>
+1. Open Cortex Workstation
+2. Go to Package Manager Caches tab
+3. Click "Detect Package Managers" to find available package managers
+4. Make sure the tab shows "Package Managers"
+5. Click "Scan" 
+6. Review the detected caches in the results table
+7. (Optional) Uncheck "Dry Run" if you're confident
+8. Click "Clean Up"</p>
+<p><strong>Example:</strong>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>Found 4 cache locations: 2.3 GB total
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>- pip cache: 1.2 GB
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>- npm cache: 800 MB  
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>- conda cache: 300 MB
+</span></code></pre></div></p>
+<hr />
+<h3 id="mode-2-clean-project-folder-caches-local">Mode 2: Clean Project Folder Caches (Local)<a class="headerlink" href="#mode-2-clean-project-folder-caches-local" title="Permanent link">&para;</a></h3>
+<p><strong>Best for:</strong> Cleaning cache files in large Python projects</p>
+<p><strong>Steps:</strong>
+1. Open Cortex Workstation
+2. Go to Package Manager Caches → "Project Folders" tab
+3. Click "Add Folder"
+4. Select a project directory (e.g., <code>C:\Projects\my_project</code>)
+5. (Optional) Add more folders to scan
+6. Make sure "Scan for Python caches" is checked
+7. Click "Scan"
+8. Review found caches (only <strong>pycache</strong>, .egg-info, etc. shown)
+9. Review the results table showing:
+   - <strong>Name</strong>: Cache type (e.g., <strong>pycache</strong>)
+   - <strong>Type</strong>: Cache category
+   - <strong>Path</strong>: Exact location
+   - <strong>Size</strong>: How much space it uses
+   - <strong>Files</strong>: Number of cache files
+10. (Optional) Uncheck "Dry Run" for actual deletion
+11. Click "Clean Up"</p>
+<p><strong>Example:</strong>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>Selected: C:\projects\my_big_app
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>Scan Results - Found 6 cache locations: 850 MB total
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>- __pycache__ (my_big_app/src): 450 MB
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>- __pycache__ (my_big_app/tests): 180 MB
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>- .egg-info: 120 MB
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>- .pytest_cache: 75 MB
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>- .mypy_cache: 15 MB
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>- .tox: 10 MB
+</span></code></pre></div></p>
+<h2 id="important-settings">Important Settings<a class="headerlink" href="#important-settings" title="Permanent link">&para;</a></h2>
+<h3 id="keep-cache-files-newer-than-x-days">"Keep cache files newer than: X days"<a class="headerlink" href="#keep-cache-files-newer-than-x-days" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Default:</strong> 7 days</li>
+<li><strong>Purpose:</strong> Don't delete recently cached files</li>
+<li><strong>Use case:</strong> If you're actively developing, keeping recent caches can speed up rebuilds</li>
+<li><strong>Recommendation:</strong> Keep at 7-14 days for development, increase to 30 for cleanup</li>
+</ul>
+<h3 id="dry-run-preview-only">"Dry Run (Preview Only)"<a class="headerlink" href="#dry-run-preview-only" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Default:</strong> ✓ Checked</li>
+<li><strong>Purpose:</strong> Shows what would be deleted WITHOUT actually deleting it</li>
+<li><strong>Workflow:</strong> Always run with this checked first, review results, then uncheck and re-run</li>
+<li><strong>Safety:</strong> Highly recommended to always preview first</li>
+</ul>
+<h3 id="scan-for-python-caches">"Scan for Python caches"<a class="headerlink" href="#scan-for-python-caches" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Default:</strong> ✓ Checked (in Project Folders mode)</li>
+<li><strong>Purpose:</strong> Looks for Python-specific cache files</li>
+<li><strong>Targets:</strong> <strong>pycache</strong>, .egg-info, .dist-info, .pyc, .pyo, .pytest_cache, .mypy_cache, etc.</li>
+</ul>
+<h2 id="safety-features-built-in">Safety Features Built In<a class="headerlink" href="#safety-features-built-in" title="Permanent link">&para;</a></h2>
+<ol>
+<li><strong>Depth Limiting (3 levels)</strong></li>
+<li>Won't scan through massive nested structures</li>
+<li>Protects deeply nested vendor dependencies</li>
+<li>
+<p>Prevents performance degradation on large projects</p>
+</li>
+<li>
+<p><strong>Pattern Matching</strong></p>
+</li>
+<li>Only targets known cache patterns</li>
+<li>Won't delete .py source files</li>
+<li>
+<p>Won't delete configuration files</p>
+</li>
+<li>
+<p><strong>Dry-Run Preview</strong></p>
+</li>
+<li>See exactly what will be deleted</li>
+<li>Verify sizes and locations</li>
+<li>
+<p>Safe to run multiple times</p>
+</li>
+<li>
+<p><strong>Automatic Backups</strong></p>
+</li>
+<li>Package lists backed up before cleanup</li>
+<li>Stored in: <code>~/.cortex_cleaner_backups/</code></li>
+<li>
+<p>Can help recovery if issues occur</p>
+</li>
+<li>
+<p><strong>Error Handling</strong></p>
+</li>
+<li>Continues even if individual files fail to delete</li>
+<li>Reports detailed error messages</li>
+<li>No data loss from permission errors</li>
+</ol>
+<h2 id="common-scenarios">Common Scenarios<a class="headerlink" href="#common-scenarios" title="Permanent link">&para;</a></h2>
+<h3 id="scenario-1-reduce-large-project-size">Scenario 1: Reduce Large Project Size<a class="headerlink" href="#scenario-1-reduce-large-project-size" title="Permanent link">&para;</a></h3>
+<p><strong>Problem:</strong> Your Python project folder is 5 GB, mostly cache files</p>
+<p><strong>Solution:</strong>
+1. Go to "Project Folders" tab
+2. Click "Add Folder", select project root
+3. Click "Scan"
+4. See results: <strong>pycache</strong> = 2.5 GB, .egg-info = 800 MB, etc.
+5. Keep "Dry Run" checked, click "Clean Up"
+6. Review what would be deleted: safe?
+7. Uncheck "Dry Run", click "Clean Up" again
+8. Freed 3.3 GB!</p>
+<hr />
+<h3 id="scenario-2-clean-all-python-development-caches">Scenario 2: Clean All Python Development Caches<a class="headerlink" href="#scenario-2-clean-all-python-development-caches" title="Permanent link">&para;</a></h3>
+<p><strong>Problem:</strong> Multiple Python projects, all have stale caches</p>
+<p><strong>Solution:</strong>
+1. Go to "Project Folders" tab
+2. Add Folder → select <code>C:\projects</code>
+3. Add Folder → select <code>C:\dev</code>
+4. Add Folder → select <code>C:\work</code>
+5. Click "Scan"
+6. Reviews all <strong>pycache</strong> folders across all 3 locations
+7. Click "Clean Up" with dry-run to preview
+8. Uncheck dry-run and run actual cleanup</p>
+<hr />
+<h3 id="scenario-3-clean-just-package-manager-cache">Scenario 3: Clean Just Package Manager Cache<a class="headerlink" href="#scenario-3-clean-just-package-manager-cache" title="Permanent link">&para;</a></h3>
+<p><strong>Problem:</strong> pip/npm/conda caches are taking up space</p>
+<p><strong>Solution:</strong>
+1. Go to "Package Managers" tab (default)
+2. Click "Detect Package Managers"
+3. Click "Scan"
+4. See pip cache (1.2 GB), npm cache (500 MB), etc.
+5. Uncheck "Dry Run" (you trust the official cache dirs)
+6. Click "Clean Up"</p>
+<hr />
+<h3 id="scenario-4-deep-project-with-vendor-folder">Scenario 4: Deep Project with Vendor Folder<a class="headerlink" href="#scenario-4-deep-project-with-vendor-folder" title="Permanent link">&para;</a></h3>
+<p><strong>Problem:</strong> Project has <code>vendor/</code> folder with 20+ nested levels</p>
+<p><strong>Solution:</strong> 
+- <strong>OLD BEHAVIOR:</strong> Would scan all 20 levels, might delete files incorrectly
+- <strong>NEW BEHAVIOR:</strong> Stops at 3 levels deep automatically
+- Only caches in first 3 levels are cleaned
+- Deep vendor code is protected</p>
+<hr />
+<h2 id="tips-best-practices">Tips &amp; Best Practices<a class="headerlink" href="#tips-best-practices" title="Permanent link">&para;</a></h2>
+<p>✓ <strong>Always do a dry-run first</strong>
+  - Click "Clean Up" with "Dry Run" checked
+  - Review what would be deleted
+  - Then uncheck and run for real</p>
+<p>✓ <strong>Start with small projects</strong>
+  - Add one folder at a time
+  - Review results carefully
+  - Then add more folders</p>
+<p>✓ <strong>Keep recent caches (7-14 days)</strong>
+  - Active development needs recent cache
+  - Clean builds might be slower without it
+  - Balance between space and speed</p>
+<p>✓ <strong>Clean large projects individually</strong>
+  - Don't add 10 projects at once
+  - Process one or two at a time
+  - Monitor available disk space after each</p>
+<p>✓ <strong>Schedule regular cleanups</strong>
+  - Run monthly or quarterly
+  - Prevents cache buildup
+  - Keeps projects responsive</p>
+<h2 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">&para;</a></h2>
+<h3 id="scan-found-0-cache-locations">"Scan found 0 cache locations"<a class="headerlink" href="#scan-found-0-cache-locations" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Cause:</strong> No caches exist in selected folder</li>
+<li><strong>Solution:</strong> Project might be new or caches already cleaned</li>
+<li><strong>Action:</strong> Select a different folder with active cache</li>
+</ul>
+<h3 id="clean-up-is-grayed-out-after-scan">"Clean Up is grayed out after Scan"<a class="headerlink" href="#clean-up-is-grayed-out-after-scan" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Cause:</strong> No valid caches were found</li>
+<li><strong>Solution:</strong> Check folder selection or patterns</li>
+<li><strong>Action:</strong> Manually verify folder contains <strong>pycache</strong> or .egg-info</li>
+</ul>
+<h3 id="dry-run-shows-large-numbers-but-i-trust-these-folders">"Dry Run shows large numbers but I trust these folders"<a class="headerlink" href="#dry-run-shows-large-numbers-but-i-trust-these-folders" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Cause:</strong> Script is correctly reporting cache sizes</li>
+<li><strong>Solution:</strong> Uncheck "Dry Run" and run actual cleanup</li>
+<li><strong>Safety:</strong> Your source files are protected by pattern matching</li>
+</ul>
+<h3 id="clean-up-deleted-source-files">"Clean Up deleted source files!"<a class="headerlink" href="#clean-up-deleted-source-files" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Report as bug</strong> (this should not happen with current version)</li>
+<li><strong>Immediate fix:</strong> Restore from backup</li>
+<li>Backups stored in <code>~/.cortex_cleaner_backups/</code></li>
+<li>Or restore from version control</li>
+</ul>
+<h2 id="performance-impact">Performance Impact<a class="headerlink" href="#performance-impact" title="Permanent link">&para;</a></h2>
+<p><strong>Before Cleanup:</strong>
+- Project loads slowly (cache invalidation)
+- IDE rebuild takes 2-5 minutes
+- Disk usage: 5 GB</p>
+<p><strong>After Cleanup (typical):</strong>
+- First load slightly slower (rebuilding cache)
+- Subsequent loads: same speed
+- IDE rebuild: first time ~3-5 min, then cached
+- Disk usage: 1-2 GB
+- Long-term: same or faster (fresh cache)</p>
+<h2 id="faq">FAQ<a class="headerlink" href="#faq" title="Permanent link">&para;</a></h2>
+<p><strong>Q: Will this break my project?</strong>
+A: No. Caches are always rebuilable. The cleaner only removes cache files (like .pyc), not source code.</p>
+<p><strong>Q: Do I need to reinstall packages after cleanup?</strong>
+A: No. The cleaner only removes cache, not packages themselves. Package managers still know what's installed.</p>
+<p><strong>Q: Should I clean before or after git push?</strong>
+A: Either time is fine. Caches are typically in .gitignore, so they're not in git anyway.</p>
+<p><strong>Q: Why keep caches at all? Why not clean everything?</strong>
+A: Caches speed up rebuilds and imports. Cleaning old caches but keeping recent ones balances space savings with performance.</p>
+<p><strong>Q: Can I exclude specific folders?</strong>
+A: Currently no, but you can manually select which folders to add. Exclusion list may be added in future versions.</p>
+<p><strong>Q: What if cleanup is interrupted?</strong>
+A: The cleaner will report what was successfully deleted and what failed. Re-run if needed. Partial cleanups are safe.</p>
+<h2 id="version-history">Version History<a class="headerlink" href="#version-history" title="Permanent link">&para;</a></h2>
+<p><strong>Current Version</strong>: With folder selection and selective cleaning
+- ✓ Folder selection dialog
+- ✓ Python cache pattern matching
+- ✓ Depth limiting (3 levels)
+- ✓ Dry-run preview mode
+- ✓ Package backup before cleanup</p>
+<p><strong>Previous Version</strong>: No folder selection, aggressive deletion
+- ✗ No folder choice (all caches deleted)
+- ✗ No pattern selectivity
+- ✗ Would traverse entire project recursively
+- ✗ Risk of deleting files in deep nested projects</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.expand", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight", "search.share", "content.code.copy", "content.tabs.link"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

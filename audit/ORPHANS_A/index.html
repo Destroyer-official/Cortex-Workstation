@@ -1,0 +1,2246 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="The Ultimate Windows NT Systems Optimization, Forensics & File Management Platform">
+      
+      
+        <meta name="author" content="Destroyer-official">
+      
+      
+        <link rel="canonical" href="https://destroyer-official.github.io/Cortex-Workstation/audit/ORPHANS_A/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/icons/cortex.ico">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Orphan Hunt A — backend exists, never called from GUI - Cortex Workstation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="deep-purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#orphan-hunt-a-backend-exists-never-called-from-gui" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Cortex Workstation" class="md-header__button md-logo" aria-label="Cortex Workstation" data-md-component="logo">
+      
+  <img src="../../assets/icons/cortex.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Cortex Workstation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Orphan Hunt A — backend exists, never called from GUI
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="deep-purple"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="deep-purple"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/Destroyer-official/Cortex-Workstation" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Destroyer-official/Cortex-Workstation
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../.." class="md-tabs__link">
+          
+  
+  
+  🌎 Welcome Hub
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../user/getting-started/" class="md-tabs__link">
+          
+  
+  
+  📦 User Space
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../ARCHITECTURE/" class="md-tabs__link">
+          
+  
+  
+  🏗️ Developer Platform
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../api/overview/" class="md-tabs__link">
+          
+  
+  
+  🔌 API & Subsystems
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Cortex Workstation" class="md-nav__button md-logo" aria-label="Cortex Workstation" data-md-component="logo">
+      
+  <img src="../../assets/icons/cortex.png" alt="logo">
+
+    </a>
+    Cortex Workstation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/Destroyer-official/Cortex-Workstation" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Destroyer-official/Cortex-Workstation
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_1" id="__nav_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    🌎 Welcome Hub
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    🌎 Welcome Hub
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Command Center
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../FEATURE_DIRECTORY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Feature Directory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../quick_reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quick Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    📦 User Space
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    📦 User Space
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/how-to-guides/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How-To Guides
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ui_visual_guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UI Visual Tour & Design Tokens
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI & Shell Usage Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../advanced-features/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Advanced Forensic & Performance Tuning
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../package_manager_guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Package Manager Cleaner Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/nexus-explorer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Nexus File Manager (VFS)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../i18n_accessibility/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Accessibility & Keybindings
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting & Diagnostics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    🏗️ Developer Platform
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    🏗️ Developer Platform
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ARCHITECTURE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Windows NT Kernel & Architecture Spec
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dev/architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Repository Architecture Map
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../DEVELOPER_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer Onboarding & Contribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dev/threading-safety/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    State Management & Safety
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dev/testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing & CI/CD
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dev/release-process/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Release & Review Process
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    🔌 API & Subsystems
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    🔌 API & Subsystems
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Subsystem Core Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/system-tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System Tools Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/analyzers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Analyzers Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/core-engine/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Engine & Algorithmic Caches
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../API_REFERENCE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Complete API Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../FUNCTION_INVENTORY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Function & Symbol Inventory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#srcnexusexplorernativebinary_differpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/NexusExplorer/native/binary_differ.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srcnexusexplorernativefile_signature_snifferpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/NexusExplorer/native/file_signature_sniffer.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srcnexusexplorernativenexus_ads_managerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/NexusExplorer/native/nexus_ads_manager.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srcnexusexplorernativenexus_archivepy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/NexusExplorer/native/nexus_archive.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srcnexusexplorernativenexus_archive_managerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/NexusExplorer/native/nexus_archive_manager.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srcnexusexplorernativenexus_batch_renamerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/NexusExplorer/native/nexus_batch_renamer.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srcnexusexplorernativenexus_cloudpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/NexusExplorer/native/nexus_cloud.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srcnexusexplorernativenexus_content_searchpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/NexusExplorer/native/nexus_content_search.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srcnexusexplorernativenexus_corepy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/NexusExplorer/native/nexus_core.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srcnexusexplorernativenexus_dir_diffpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/NexusExplorer/native/nexus_dir_diff.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srcnexusexplorernativenexus_ffipy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/NexusExplorer/native/nexus_ffi.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srcnexusexplorernativenexus_file_splitterpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/NexusExplorer/native/nexus_file_splitter.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srcnexusexplorernativenexus_folder_treepy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/NexusExplorer/native/nexus_folder_tree.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srcnexusexplorernativenexus_hash_toolpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/NexusExplorer/native/nexus_hash_tool.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srcnexusexplorernativenexus_indexerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/NexusExplorer/native/nexus_indexer.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srcnexusexplorernativenexus_links_managerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/NexusExplorer/native/nexus_links_manager.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srcnexusexplorernativenexus_native_apppy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/NexusExplorer/native/nexus_native_app.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srcnexusexplorernativenexus_networkpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/NexusExplorer/native/nexus_network.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srcnexusexplorernativenexus_pluginspy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/NexusExplorer/native/nexus_plugins.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srcnexusexplorernativenexus_timestamp_touchpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/NexusExplorer/native/nexus_timestamp_touch.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srcnexusexplorernativenexus_transfer_queuepy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/NexusExplorer/native/nexus_transfer_queue.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srcnexusexplorernativenexus_undopy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/NexusExplorer/native/nexus_undo.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srcnexusexplorernativenexus_unlockerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/NexusExplorer/native/nexus_unlocker.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srcnexusexplorernativepar2_recoverypy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/NexusExplorer/native/par2_recovery.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srcnexusexplorernativeusn_journal_scannerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/NexusExplorer/native/usn_journal_scanner.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srccortex_unifiedenginecategoriespy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/cortex_unified/engine/categories.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srccortex_unifiedenginefastwalkpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/cortex_unified/engine/fastwalk.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srccortex_unifiedengineguardpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/cortex_unified/engine/guard.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srccortex_unifiedenginehashingpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/cortex_unified/engine/hashing.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srccortex_unifiedenginemodelspy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/cortex_unified/engine/models.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srccortex_unifiedenginestoragepy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/cortex_unified/engine/storage.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srccortex_unifiedenginewinattrspy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/cortex_unified/engine/winattrs.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srccortex_unifiedcoreconfig_v2py" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/cortex_unified/core/config_v2.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srccortex_unifiedcoredatabasepy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/cortex_unified/core/database.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srccortex_unifiedcorelogging_setuppy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/cortex_unified/core/logging_setup.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srccortex_unifiedcoresecuritypy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/cortex_unified/core/security.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srccortex_unifiedcoresmart_suggestpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/cortex_unified/core/smart_suggest.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srccortex_unifiedcoretemp_cleanerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/cortex_unified/core/temp_cleaner.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srccortex_unifiedcoreutilspy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/cortex_unified/core/utils.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srccortex_unifiedperformancemulti_drive_scannerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/cortex_unified/performance/multi_drive_scanner.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srccortex_unifiedperformanceoptimizationpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/cortex_unified/performance/optimization.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srccortex_unifiedperformanceprofilerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/cortex_unified/performance/profiler.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srccortex_unifiedperformanceresource_monitorpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/cortex_unified/performance/resource_monitor.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srccortex_unifiedperformanceresource_throttlerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/cortex_unified/performance/resource_throttler.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srccortex_unifiedperformancescan_managerpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/cortex_unified/performance/scan_manager.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#srccortex_unifiedperformancesettings_integrationpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/cortex_unified/performance/settings_integration.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#notes-method-level-verified-via-smethods-grep" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Notes (method-level, verified via \.\s*METHOD\s*\( Grep)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="orphan-hunt-a-backend-exists-never-called-from-gui">Orphan Hunt A — backend exists, never called from GUI<a class="headerlink" href="#orphan-hunt-a-backend-exists-never-called-from-gui" title="Permanent link">&para;</a></h1>
+<p>Method: enumerated public top-level funcs/classes via AST in <code>src/NexusExplorer/native/*.py</code>, <code>src/cortex_unified/engine/</code>, <code>src/cortex_unified/core/</code>, <code>src/cortex_unified/performance/</code> (305 defs). For each name ran word-boundary Grep (<code>\bNAME\b</code>) across GUI scope: <code>src/cortex_unified/ui/</code> (rglob), <code>src/cortex_unified/explorer/*.py</code>, <code>src/NexusExplorer/native/nexus_explorer.py</code>, <code>run_gui.py</code>. Zero hits outside own file (+tests ignored) = ORPHAN. <code>nexus_explorer.py</code> defs excluded (that file IS GUI). Bodies sampled via Read for <code>does X</code>. Spot-verified with <code>Grep</code> tool: <code>CloudManager|NetworkManager|PluginHost|ContentSearchEngine|FileIndexer|TempCleaner</code> → zero hits; <code>BinaryDiffer|DirectoryDiffEngine|HashTool|FileUnlocker|FileSplitterJoiner|LinksManager|FastCopier|TimestampTouchEngine|TransferQueue|UndoStack|ScanManager</code> → hits in <code>premium/*_pages.py</code> / <code>explorer/transfers.py</code> / <code>explorer/undo.py</code> / <code>main_window.py</code>, correctly EXCLUDED below.</p>
+<p>Result: <strong>176 top-level orphans</strong> (DTOs included). Parents that ARE wired (correctly excluded): <code>BinaryDiffer</code>, <code>DirectoryDiffEngine</code>, <code>HashTool</code>, <code>FileUnlocker</code>, <code>FileSplitterJoiner</code>, <code>BatchRenamer</code>, <code>LinksManager</code>, <code>FastCopier</code>, <code>TimestampTouchEngine</code>, <code>TransferQueue</code>, <code>UndoStack</code>, <code>Par2RecoveryEngine</code> (+report), <code>UsnJournalScanner</code>, <code>ImageOptimizer</code>, <code>FileSignatureSniffer</code>, <code>AlternateDataStreamsManager</code>, <code>ScanManager</code>, <code>MultiDriveScanner</code>, <code>ResourceMonitor</code>, <code>Scanner</code>, <code>CleanerService</code>, <code>SecureDeleter</code>, <code>SmartSuggester</code>.</p>
+<h2 id="srcnexusexplorernativebinary_differpy">src/NexusExplorer/native/binary_differ.py<a class="headerlink" href="#srcnexusexplorernativebinary_differpy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>HexDiffChunk()</code> (src\NexusExplorer\native\binary_differ.py:18): does chunk DTO (offset/bytes) for hex diff — unused by GUI. Suggest: expose via Apex Binary-Diff page detail tooltip (already wires <code>BinaryDiffer.compare_binary_files</code>).</li>
+</ul>
+<h2 id="srcnexusexplorernativefile_signature_snifferpy">src/NexusExplorer/native/file_signature_sniffer.py<a class="headerlink" href="#srcnexusexplorernativefile_signature_snifferpy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>FileSignature()</code> (src\NexusExplorer\native\file_signature_sniffer.py:18): does magic-number signature DTO — unused by GUI. Suggest: expose via Apex Sniffer page "why matched" tooltip.</li>
+</ul>
+<h2 id="srcnexusexplorernativenexus_ads_managerpy">src/NexusExplorer/native/nexus_ads_manager.py<a class="headerlink" href="#srcnexusexplorernativenexus_ads_managerpy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>AlternateDataStream()</code> (src\NexusExplorer\native\nexus_ads_manager.py:30): does ADS entry DTO — unused by GUI. Suggest: expose via PowerTools ADS list (already wires manager, needs typed rows).</li>
+</ul>
+<h2 id="srcnexusexplorernativenexus_archivepy">src/NexusExplorer/native/nexus_archive.py<a class="headerlink" href="#srcnexusexplorernativenexus_archivepy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>is_7z_available()</code> (src\NexusExplorer\native\nexus_archive.py:124): does 7z-CLI presence probe — unused by GUI. Suggest: expose via ArchiveBrowser/tools_pages capability badge + fallback notice.</li>
+<li><code>ArchiveSecurityError()</code> (src\NexusExplorer\native\nexus_archive.py:145): does zip-slip guard exception — unused by GUI. Suggest: expose via ArchiveBrowser error dialog (catch → message).</li>
+<li><code>validate_extract_path()</code> (src\NexusExplorer\native\nexus_archive.py:153): does traversal-safe join check — unused by GUI. Suggest: expose via ArchiveBrowser extract path validator.</li>
+<li><code>ArchiveType()</code> (src\NexusExplorer\native\nexus_archive.py:181): does archive-kind enum — unused by GUI. Suggest: expose via ArchiveBrowser filter chips.</li>
+<li><code>ArchiveInfo()</code> (src\NexusExplorer\native\nexus_archive.py:232): does archive summary DTO — unused by GUI. Suggest: expose via ArchiveBrowser header.</li>
+<li><code>detect_archive_type()</code> (src\NexusExplorer\native\nexus_archive.py:245): does magic sniff for archives — unused by GUI. Suggest: expose via ExplorerWidget double-click routing + PreviewPane badge.</li>
+</ul>
+<h2 id="srcnexusexplorernativenexus_archive_managerpy">src/NexusExplorer/native/nexus_archive_manager.py<a class="headerlink" href="#srcnexusexplorernativenexus_archive_managerpy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>ArchiveEntryInfo()</code> (src\NexusExplorer\native\nexus_archive_manager.py:41): does entry DTO — unused by GUI. Suggest: expose via ArchiveBrowser table model.</li>
+<li><code>ArchiveOperationResult()</code> (src\NexusExplorer\native\nexus_archive_manager.py:53): does op result DTO — unused by GUI. Suggest: expose via ArchiveBrowser status bar.</li>
+</ul>
+<h2 id="srcnexusexplorernativenexus_batch_renamerpy">src/NexusExplorer/native/nexus_batch_renamer.py<a class="headerlink" href="#srcnexusexplorernativenexus_batch_renamerpy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>RenamePlanItem()</code> (src\NexusExplorer\native\nexus_batch_renamer.py:34): does rename plan row DTO — unused by GUI. Suggest: expose via BulkRenameDialog preview table (already wires <code>BatchRenamer</code>, needs typed rows).</li>
+<li><code>RenameTransaction()</code> (src\NexusExplorer\native\nexus_batch_renamer.py:47): does atomic rename txn — unused by GUI. Suggest: expose via BulkRenameDialog undo support.</li>
+</ul>
+<h2 id="srcnexusexplorernativenexus_cloudpy">src/NexusExplorer/native/nexus_cloud.py<a class="headerlink" href="#srcnexusexplorernativenexus_cloudpy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>retry_on_rate_limit()</code> (src\NexusExplorer\native\nexus_cloud.py:134): does 429-backoff decorator — unused by GUI. Suggest: expose via Cloud page (implicit once manager wired).</li>
+<li><code>CloudProviderType()</code> (src\NexusExplorer\native\nexus_cloud.py:185): does provider enum — unused by GUI. Suggest: expose via <code>premium/cloud_storage_page.py</code> provider tabs.</li>
+<li><code>SyncStatus()</code> (src\NexusExplorer\native\nexus_cloud.py:193): does sync-state enum — unused by GUI. Suggest: expose via Cloud page status icons.</li>
+<li><code>CloudFile()</code> (src\NexusExplorer\native\nexus_cloud.py:205): does cloud file DTO — unused by GUI. Suggest: expose via Cloud page table.</li>
+<li><code>CloudAccount()</code> (src\NexusExplorer\native\nexus_cloud.py:221): does account DTO — unused by GUI. Suggest: expose via Cloud page account header.</li>
+<li><code>CloudProvider()</code> (src\NexusExplorer\native\nexus_cloud.py:235): does provider ABC — unused by GUI. Suggest: expose via Cloud page (plug OneDrive/Google/Dropbox/S3).</li>
+<li><code>OneDriveProvider()</code> (src\NexusExplorer\native\nexus_cloud.py:306): does OneDrive OAuth+Graph — unused by GUI. Suggest: expose via Cloud page Connect button.</li>
+<li><code>GoogleDriveProvider()</code> (src\NexusExplorer\native\nexus_cloud.py:626): does Google Drive OAuth — unused by GUI. Suggest: expose via Cloud page Connect button.</li>
+<li><code>DropboxProvider()</code> (src\NexusExplorer\native\nexus_cloud.py:932): does Dropbox OAuth — unused by GUI. Suggest: expose via Cloud page Connect button.</li>
+<li><code>S3Provider()</code> (src\NexusExplorer\native\nexus_cloud.py:1197): does S3 key/secret provider — unused by GUI. Suggest: expose via Cloud page Connect button.</li>
+<li><code>CloudManager()</code> (src\NexusExplorer\native\nexus_cloud.py:1349): does 4-provider fan-out (parallel list/search) — unused by GUI. Suggest: expose via <code>premium/cloud_storage_page.py</code> + <code>explorer/cloud.py</code> shim.</li>
+</ul>
+<h2 id="srcnexusexplorernativenexus_content_searchpy">src/NexusExplorer/native/nexus_content_search.py<a class="headerlink" href="#srcnexusexplorernativenexus_content_searchpy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>ContentMatch()</code> (src\NexusExplorer\native\nexus_content_search.py:62): does single hit DTO — unused by GUI. Suggest: expose via new Find-in-Files panel / SearchDialog content tab.</li>
+<li><code>ContentSearchResult()</code> (src\NexusExplorer\native\nexus_content_search.py:72): does per-file hits DTO — unused by GUI. Suggest: expose via Find-in-Files results model.</li>
+<li><code>is_searchable()</code> (src\NexusExplorer\native\nexus_content_search.py:79): does text-extension gate — unused by GUI. Suggest: expose via Find-in-Files prefilter + <code>explorer/content_search.py</code>.</li>
+<li><code>search_file_content()</code> (src\NexusExplorer\native\nexus_content_search.py:91): does regex/plain per-file search — unused by GUI. Suggest: expose via Find-in-Files worker.</li>
+<li><code>ContentSearchEngine()</code> (src\NexusExplorer\native\nexus_content_search.py:291): does cancellable tree search — unused by GUI. Suggest: expose via SearchDialog "content" mode.</li>
+</ul>
+<h2 id="srcnexusexplorernativenexus_corepy">src/NexusExplorer/native/nexus_core.py<a class="headerlink" href="#srcnexusexplorernativenexus_corepy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>marshal_call()</code> (src\NexusExplorer\native\nexus_core.py:209): does FFI/IPC arg marshaller — unused by GUI. Suggest: expose via ExplorerWidget→Engine bridge (internal, no direct UI).</li>
+</ul>
+<h2 id="srcnexusexplorernativenexus_dir_diffpy">src/NexusExplorer/native/nexus_dir_diff.py<a class="headerlink" href="#srcnexusexplorernativenexus_dir_diffpy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>DiffEntry()</code> (src\NexusExplorer\native\nexus_dir_diff.py:41): does diff-row DTO — unused by GUI. Suggest: expose via DirDiff page table (engine already wired).</li>
+<li><code>SyncStats()</code> (src\NexusExplorer\native\nexus_dir_diff.py:56): does sync-counts DTO — unused by GUI. Suggest: expose via DirDiff result bar.</li>
+</ul>
+<h2 id="srcnexusexplorernativenexus_ffipy">src/NexusExplorer/native/nexus_ffi.py<a class="headerlink" href="#srcnexusexplorernativenexus_ffipy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>find_dll()</code> (src\NexusExplorer\native\nexus_ffi.py:54): does native DLL locator — unused by GUI. Suggest: expose via ExplorerWidget backend status / <code>explorer/ffi.py</code> init.</li>
+<li><code>NexusFfi()</code> (src\NexusExplorer\native\nexus_ffi.py:164): does Rust/DLL fast list/search/transfer bridge — unused by GUI. Suggest: expose via ExplorerWidget engine switch + <code>explorer/ffi.py</code>.</li>
+</ul>
+<h2 id="srcnexusexplorernativenexus_file_splitterpy">src/NexusExplorer/native/nexus_file_splitter.py<a class="headerlink" href="#srcnexusexplorernativenexus_file_splitterpy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>SplitManifest()</code> (src\NexusExplorer\native\nexus_file_splitter.py:43): does split manifest DTO — unused by GUI. Suggest: expose via Split/Join page manifest view.</li>
+<li><code>SplitResult()</code> (src\NexusExplorer\native\nexus_file_splitter.py:56): does split result DTO — unused by GUI. Suggest: expose via Split page status.</li>
+<li><code>JoinResult()</code> (src\NexusExplorer\native\nexus_file_splitter.py:67): does join result DTO — unused by GUI. Suggest: expose via Join page status.</li>
+</ul>
+<h2 id="srcnexusexplorernativenexus_folder_treepy">src/NexusExplorer/native/nexus_folder_tree.py<a class="headerlink" href="#srcnexusexplorernativenexus_folder_treepy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>FolderTreeModel()</code> (src\NexusExplorer\native\nexus_folder_tree.py:23): does lazy drive/tree Qt model — unused by GUI. Suggest: expose via ExplorerWidget sidebar (<code>explorer/folder_tree.py</code> shim exists).</li>
+</ul>
+<h2 id="srcnexusexplorernativenexus_hash_toolpy">src/NexusExplorer/native/nexus_hash_tool.py<a class="headerlink" href="#srcnexusexplorernativenexus_hash_toolpy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>HashResult()</code> (src\NexusExplorer\native\nexus_hash_tool.py:33): does hash DTO — unused by GUI. Suggest: expose via Checksum/Hash page rows.</li>
+<li><code>VerifyItem()</code> (src\NexusExplorer\native\nexus_hash_tool.py:46): does manifest-verify row — unused by GUI. Suggest: expose via Verify-manifest results.</li>
+</ul>
+<h2 id="srcnexusexplorernativenexus_indexerpy">src/NexusExplorer/native/nexus_indexer.py<a class="headerlink" href="#srcnexusexplorernativenexus_indexerpy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>IndexedEntry()</code> (src\NexusExplorer\native\nexus_indexer.py:152): does indexed-path DTO — unused by GUI. Suggest: expose via instant-search service (<code>explorer/indexer.py</code>).</li>
+<li><code>IndexStats()</code> (src\NexusExplorer\native\nexus_indexer.py:164): does index counters — unused by GUI. Suggest: expose via Explorer status bar.</li>
+<li><code>FileIndex()</code> (src\NexusExplorer\native\nexus_indexer.py:252): does thread-safe name/ext/prefix index — unused by GUI. Suggest: expose via ExplorerWidget quick-open.</li>
+<li><code>FileIndexer()</code> (src\NexusExplorer\native\nexus_indexer.py:689): does background crawler + FTS + DB persist — unused by GUI. Suggest: expose via background service toggled in Settings.</li>
+</ul>
+<h2 id="srcnexusexplorernativenexus_links_managerpy">src/NexusExplorer/native/nexus_links_manager.py<a class="headerlink" href="#srcnexusexplorernativenexus_links_managerpy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>LinkOperationResult()</code> (src\NexusExplorer\native\nexus_links_manager.py:47): does link-op result DTO — unused by GUI. Suggest: expose via Links page status (manager already wired).</li>
+</ul>
+<h2 id="srcnexusexplorernativenexus_native_apppy">src/NexusExplorer/native/nexus_native_app.py<a class="headerlink" href="#srcnexusexplorernativenexus_native_apppy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>main()</code> (src\NexusExplorer\native\nexus_native_app.py:24): does standalone explorer entrypoint — unused by GUI. Suggest: expose via <code>run_gui.py --explorer</code> flag / launcher.</li>
+</ul>
+<h2 id="srcnexusexplorernativenexus_networkpy">src/NexusExplorer/native/nexus_network.py<a class="headerlink" href="#srcnexusexplorernativenexus_networkpy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>NetworkProtocol()</code> (src\NexusExplorer\native\nexus_network.py:62): does protocol enum — unused by GUI. Suggest: expose via <code>premium/network_pages.py</code> protocol picker.</li>
+<li><code>NetworkFile()</code> (src\NexusExplorer\native\nexus_network.py:72): does remote-file DTO — unused by GUI. Suggest: expose via Network browser table.</li>
+<li><code>NetworkConnection()</code> (src\NexusExplorer\native\nexus_network.py:85): does connection DTO — unused by GUI. Suggest: expose via recent-connections menu.</li>
+<li><code>store_credential()</code> (src\NexusExplorer\native\nexus_network.py:96): does cred-store helper — unused by GUI. Suggest: expose via Connect dialog "remember me".</li>
+<li><code>get_credential()</code> (src\NexusExplorer\native\nexus_network.py:107): does cred-fetch helper — unused by GUI. Suggest: expose via Connect dialog autofill.</li>
+<li><code>NetworkFS()</code> (src\NexusExplorer\native\nexus_network.py:131): does FS ABC — unused by GUI. Suggest: expose via Network browser (plug SMB/FTP/SFTP/WebDAV).</li>
+<li><code>SMBProvider()</code> (src\NexusExplorer\native\nexus_network.py:186): does SMB share client — unused by GUI. Suggest: expose via Network Connect.</li>
+<li><code>FTPProvider()</code> (src\NexusExplorer\native\nexus_network.py:341): does FTP client — unused by GUI. Suggest: expose via Network Connect.</li>
+<li><code>SFTPProvider()</code> (src\NexusExplorer\native\nexus_network.py:533): does SFTP client — unused by GUI. Suggest: expose via Network Connect.</li>
+<li><code>WebDAVProvider()</code> (src\NexusExplorer\native\nexus_network.py:724): does WebDAV client — unused by GUI. Suggest: expose via Network Connect.</li>
+<li><code>ConnectionPool()</code> (src\NexusExplorer\native\nexus_network.py:863): does pooled-connection cache — unused by GUI. Suggest: expose via NetworkManager internals (no direct UI).</li>
+<li><code>NetworkManager()</code> (src\NexusExplorer\native\nexus_network.py:946): does pooled multi-protocol manager + MRU — unused by GUI. Suggest: expose via <code>premium/network_pages.py</code> + <code>explorer/network.py</code>.</li>
+</ul>
+<h2 id="srcnexusexplorernativenexus_pluginspy">src/NexusExplorer/native/nexus_plugins.py<a class="headerlink" href="#srcnexusexplorernativenexus_pluginspy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>PluginManifest()</code> (src\NexusExplorer\native\nexus_plugins.py:45): does plugin manifest DTO — unused by GUI. Suggest: expose via Plugin Manager list.</li>
+<li><code>PluginState()</code> (src\NexusExplorer\native\nexus_plugins.py:103): does lifecycle enum — unused by GUI. Suggest: expose via Plugin Manager badges.</li>
+<li><code>PluginLifecycle()</code> (src\NexusExplorer\native\nexus_plugins.py:123): does state machine — unused by GUI. Suggest: expose via Plugin Manager (internal).</li>
+<li><code>ScopedConfig()</code> (src\NexusExplorer\native\nexus_plugins.py:171): does per-plugin config — unused by GUI. Suggest: expose via Plugin Settings dialog.</li>
+<li><code>EventBridge()</code> (src\NexusExplorer\native\nexus_plugins.py:210): does scoped event bus — unused by GUI. Suggest: expose via plugin API (no direct UI).</li>
+<li><code>EventBus()</code> (src\NexusExplorer\native\nexus_plugins.py:237): does global event bus — unused by GUI. Suggest: expose via plugin API (no direct UI).</li>
+<li><code>PluginContext()</code> (src\NexusExplorer\native\nexus_plugins.py:279): does path/selection/navigate API — unused by GUI. Suggest: expose via ExplorerWidget <code>set_host_callbacks</code> wiring.</li>
+<li><code>NexusPlugin()</code> (src\NexusExplorer\native\nexus_plugins.py:353): does plugin ABC — unused by GUI. Suggest: expose via Plugin SDK docs + sample.</li>
+<li><code>APIAdapter()</code> (src\NexusExplorer\native\nexus_plugins.py:395): does compat adapter — unused by GUI. Suggest: expose via Plugin Manager (internal).</li>
+<li><code>HotReloadWatcher()</code> (src\NexusExplorer\native\nexus_plugins.py:434): does plugin file watcher — unused by GUI. Suggest: expose via Plugin Manager dev-mode toggle.</li>
+<li><code>PluginHost()</code> (src\NexusExplorer\native\nexus_plugins.py:542): does discover/load/unload + context-menu/toolbar/preview hooks — unused by GUI. Suggest: expose via Settings → Plugins page + <code>explorer/plugins.py</code>, wire <code>get_all_context_menu_actions</code> into ExplorerWidget menus.</li>
+</ul>
+<h2 id="srcnexusexplorernativenexus_timestamp_touchpy">src/NexusExplorer/native/nexus_timestamp_touch.py<a class="headerlink" href="#srcnexusexplorernativenexus_timestamp_touchpy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>FileAttributeFlags()</code> (src\NexusExplorer\native\nexus_timestamp_touch.py:24): does attrib-flag enum — unused by GUI. Suggest: expose via Touch page checkboxes.</li>
+<li><code>TimestampUpdateResult()</code> (src\NexusExplorer\native\nexus_timestamp_touch.py:53): does touch result DTO — unused by GUI. Suggest: expose via Touch page status.</li>
+</ul>
+<h2 id="srcnexusexplorernativenexus_transfer_queuepy">src/NexusExplorer/native/nexus_transfer_queue.py<a class="headerlink" href="#srcnexusexplorernativenexus_transfer_queuepy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>JobState()</code> (src\NexusExplorer\native\nexus_transfer_queue.py:36): does job-state enum — unused by GUI. Suggest: expose via TransferStatusDock badges (queue already wired via <code>explorer/transfers.py</code>).</li>
+<li><code>human_bytes()</code> (src\NexusExplorer\native\nexus_transfer_queue.py:72): does byte formatter — unused by GUI. Suggest: expose via transfer progress labels (replace ad-hoc formatting).</li>
+<li><code>fmt_eta()</code> (src\NexusExplorer\native\nexus_transfer_queue.py:91): does ETA formatter — unused by GUI. Suggest: expose via transfer progress labels.</li>
+</ul>
+<h2 id="srcnexusexplorernativenexus_undopy">src/NexusExplorer/native/nexus_undo.py<a class="headerlink" href="#srcnexusexplorernativenexus_undopy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>RenameEntry()</code> (src\NexusExplorer\native\nexus_undo.py:88): does rename undo-op — unused by GUI. Suggest: expose via Edit→Undo stack view (stack already wired via <code>explorer/undo.py</code>).</li>
+<li><code>MoveEntry()</code> (src\NexusExplorer\native\nexus_undo.py:113): does move undo-op — unused by GUI. Suggest: expose via Undo history.</li>
+<li><code>CopyEntry()</code> (src\NexusExplorer\native\nexus_undo.py:138): does copy undo-op — unused by GUI. Suggest: expose via Undo history.</li>
+<li><code>DeleteEntry()</code> (src\NexusExplorer\native\nexus_undo.py:167): does delete+backup undo-op — unused by GUI. Suggest: expose via Undo history.</li>
+<li><code>MkdirEntry()</code> (src\NexusExplorer\native\nexus_undo.py:198): does mkdir undo-op — unused by GUI. Suggest: expose via Undo history.</li>
+<li><code>CreateFileEntry()</code> (src\NexusExplorer\native\nexus_undo.py:232): does create-file undo-op — unused by GUI. Suggest: expose via Undo history.</li>
+<li><code>BatchCreateEntry()</code> (src\NexusExplorer\native\nexus_undo.py:268): does composite undo-op — unused by GUI. Suggest: expose via scaffold-dialog undo.</li>
+</ul>
+<h2 id="srcnexusexplorernativenexus_unlockerpy">src/NexusExplorer/native/nexus_unlocker.py<a class="headerlink" href="#srcnexusexplorernativenexus_unlockerpy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>LockingProcessInfo()</code> (src\NexusExplorer\native\nexus_unlocker.py:53): does locker-process DTO — unused by GUI. Suggest: expose via Unlocker page table (engine <code>FileUnlocker</code> already wired).</li>
+</ul>
+<h2 id="srcnexusexplorernativepar2_recoverypy">src/NexusExplorer/native/par2_recovery.py<a class="headerlink" href="#srcnexusexplorernativepar2_recoverypy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>Par2FileInfo()</code> (src\NexusExplorer\native\par2_recovery.py:20): does PAR2 file DTO — unused by GUI. Suggest: expose via PAR2 page file list.</li>
+<li><code>Par2PacketInfo()</code> (src\NexusExplorer\native\par2_recovery.py:31): does packet DTO — unused by GUI. Suggest: expose via PAR2 details view.</li>
+</ul>
+<h2 id="srcnexusexplorernativeusn_journal_scannerpy">src/NexusExplorer/native/usn_journal_scanner.py<a class="headerlink" href="#srcnexusexplorernativeusn_journal_scannerpy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>USN_JOURNAL_DATA_V0()</code> (src\NexusExplorer\native\usn_journal_scanner.py:38): does journal ctypes struct — unused by GUI. Suggest: internal; expose <code>UsnJournalStatus</code> fields in USN page instead.</li>
+</ul>
+<h2 id="srccortex_unifiedenginecategoriespy">src/cortex_unified/engine/categories.py<a class="headerlink" href="#srccortex_unifiedenginecategoriespy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>categories_by_id()</code> (src\cortex_unified\engine\categories.py:855): does id→category map — unused by GUI. Suggest: expose via cleanup_hub/settings category picker (currently calls <code>default_categories</code>/<code>scan_categories</code> only).</li>
+</ul>
+<h2 id="srccortex_unifiedenginefastwalkpy">src/cortex_unified/engine/fastwalk.py<a class="headerlink" href="#srccortex_unifiedenginefastwalkpy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>WalkOptions()</code> (src\cortex_unified\engine\fastwalk.py:43): does traversal tuning DTO — unused by GUI. Suggest: expose via Settings → Scan depth/excludes + large/empty tabs.</li>
+<li><code>FastWalker()</code> (src\cortex_unified\engine\fastwalk.py:77): does cancellable streaming walker + USN fast path — unused by GUI. Suggest: expose via workers.py scan backend (replace ad-hoc walk; wire <code>scan_ntfs_usn</code> into USN page).</li>
+</ul>
+<h2 id="srccortex_unifiedengineguardpy">src/cortex_unified/engine/guard.py<a class="headerlink" href="#srccortex_unifiedengineguardpy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>GuardVerdict()</code> (src\cortex_unified\engine\guard.py:26): does safe/blocked verdict — unused by GUI. Suggest: expose via delete-confirm dialog reason line + <code>safety_manager</code>.</li>
+<li><code>PathGuard()</code> (src\cortex_unified\engine\guard.py:74): does protected-path/sandbox guard — unused by GUI. Suggest: expose via SafetyManager + all delete/shred entry points.</li>
+</ul>
+<h2 id="srccortex_unifiedenginehashingpy">src/cortex_unified/engine/hashing.py<a class="headerlink" href="#srccortex_unifiedenginehashingpy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>DuplicateFinderEngine()</code> (src\cortex_unified\engine\hashing.py:89): does threaded dup finder + wasted-bytes — unused by GUI. Suggest: expose via duplicates_tab/workers (currently routes via <code>CleanerService.find_duplicates</code>; switch or add perceptual/fuzzy option).</li>
+</ul>
+<h2 id="srccortex_unifiedenginemodelspy">src/cortex_unified/engine/models.py<a class="headerlink" href="#srccortex_unifiedenginemodelspy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>StorageKind()</code> (src\cortex_unified\engine\models.py:17): does HDD/SSD/NVMe enum — unused by GUI. Suggest: expose via Shredder/analyzer medium badge.</li>
+<li><code>DeletionOutcome()</code> (src\cortex_unified\engine\models.py:48): does deletion result enum — unused by GUI. Suggest: expose via results table status.</li>
+<li><code>DeletionResult()</code> (src\cortex_unified\engine\models.py:181): does per-item deletion record — unused by GUI. Suggest: expose via delete results + Reports.</li>
+</ul>
+<h2 id="srccortex_unifiedenginestoragepy">src/cortex_unified/engine/storage.py<a class="headerlink" href="#srccortex_unifiedenginestoragepy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>StorageInfo()</code> (src\cortex_unified\engine\storage.py:54): does medium-probe DTO — unused by GUI. Suggest: expose via Disk/Shredder pages.</li>
+<li><code>StorageProbe()</code> (src\cortex_unified\engine\storage.py:69): does per-mount medium cache — unused by GUI. Suggest: expose via <code>SecureDeleter.adaptive_delete</code> pre-check + Shredder UI hint.</li>
+<li><code>detect_storage()</code> (src\cortex_unified\engine\storage.py:219): does one-shot probe helper — unused by GUI. Suggest: expose via Shredder "effective?" hint.</li>
+</ul>
+<h2 id="srccortex_unifiedenginewinattrspy">src/cortex_unified/engine/winattrs.py<a class="headerlink" href="#srccortex_unifiedenginewinattrspy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>attrs_of()</code> (src\cortex_unified\engine\winattrs.py:72): does stat→attrs extract — unused by GUI. Suggest: expose via file-table badge pipeline (internal).</li>
+<li><code>reparse_tag_of()</code> (src\cortex_unified\engine\winattrs.py:77): does stat→reparse-tag extract — unused by GUI. Suggest: expose via badge pipeline.</li>
+<li><code>is_reparse_point()</code> (src\cortex_unified\engine\winattrs.py:92): does reparse predicate — unused by GUI. Suggest: expose via Explorer badges.</li>
+<li><code>is_cloud_tag()</code> (src\cortex_unified\engine\winattrs.py:97): does cloud-tag predicate — unused by GUI. Suggest: expose via "cloud-synced" badge.</li>
+<li><code>is_dehydrated()</code> (src\cortex_unified\engine\winattrs.py:102): does recall-on-access predicate — unused by GUI. Suggest: expose via skip-hash guard + "online-only" badge (critical: prevents accidental downloads).</li>
+<li><code>is_cloud()</code> (src\cortex_unified\engine\winattrs.py:113): does cloud-managed predicate — unused by GUI. Suggest: expose via cloud badge.</li>
+<li><code>is_junction()</code> (src\cortex_unified\engine\winattrs.py:122): does junction predicate — unused by GUI. Suggest: expose via "junction, not counted" badge.</li>
+<li><code>size_may_be_misleading()</code> (src\cortex_unified\engine\winattrs.py:132): does sparse/compressed/cloud size-lies check — unused by GUI. Suggest: expose via analyzer "actual vs logical" column.</li>
+<li><code>describe()</code> (src\cortex_unified\engine\winattrs.py:137): does plain-words storage note — unused by GUI. Suggest: expose via tooltips/PreviewPane (<code>tooltips.py</code>).</li>
+<li><code>on_disk_size()</code> (src\cortex_unified\engine\winattrs.py:160): does allocated-size probe — unused by GUI. Suggest: expose via Disk Analyzer "on-disk" column.</li>
+</ul>
+<h2 id="srccortex_unifiedcoreconfig_v2py">src/cortex_unified/core/config_v2.py<a class="headerlink" href="#srccortex_unifiedcoreconfig_v2py" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>ScanConfig()</code> (src\cortex_unified\core\config_v2.py:102): does scan-settings model — unused by GUI. Suggest: expose via settings_tab Scan section.</li>
+<li><code>PerformanceConfig()</code> (src\cortex_unified\core\config_v2.py:149): does perf-settings model — unused by GUI. Suggest: expose via settings_tab Performance section + <code>PerformanceManager</code>.</li>
+<li><code>SecurityConfig()</code> (src\cortex_unified\core\config_v2.py:190): does safety-settings model — unused by GUI. Suggest: expose via settings_tab Safety section.</li>
+<li><code>LoggingConfig()</code> (src\cortex_unified\core\config_v2.py:228): does log-settings model — unused by GUI. Suggest: expose via settings_tab Diagnostics.</li>
+<li><code>DatabaseConfig()</code> (src\cortex_unified\core\config_v2.py:252): does DB-settings model — unused by GUI. Suggest: expose via settings_tab History toggle.</li>
+<li><code>UIConfig()</code> (src\cortex_unified\core\config_v2.py:278): does theme/lang model — unused by GUI. Suggest: expose via settings_tab Appearance.</li>
+<li><code>create_default_config()</code> (src\cortex_unified\core\config_v2.py:556): does yaml scaffold writer — unused by GUI. Suggest: expose via Settings "reset to defaults".</li>
+</ul>
+<h2 id="srccortex_unifiedcoredatabasepy">src/cortex_unified/core/database.py<a class="headerlink" href="#srccortex_unifiedcoredatabasepy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>ScanRun()</code> (src\cortex_unified\core\database.py:39): does scan-run ORM row — unused by GUI. Suggest: expose via reports_tab History.</li>
+<li><code>DeletedItem()</code> (src\cortex_unified\core\database.py:102): does deleted-item ORM row — unused by GUI. Suggest: expose via restore_tab quarantine list.</li>
+<li><code>ScheduledJob()</code> (src\cortex_unified\core\database.py:162): does scheduled-job ORM row — unused by GUI. Suggest: expose via scheduler_tab persistence.</li>
+<li><code>SystemMetric()</code> (src\cortex_unified\core\database.py:196): does metrics ORM row — unused by GUI. Suggest: expose via resource_monitor_tab history chart.</li>
+<li><code>UserPreference()</code> (src\cortex_unified\core\database.py:224): does prefs ORM row — unused by GUI. Suggest: expose via settings persistence.</li>
+<li><code>Database()</code> (src\cortex_unified\core\database.py:242): does scan/quarantine/metrics store — unused by GUI. Suggest: expose via Reports/Restore/Scheduler (wire <code>get_scan_history</code>, <code>get_restorable_items</code>, <code>record_metric</code>).</li>
+<li><code>get_database()</code> (src\cortex_unified\core\database.py:559): does singleton accessor — unused by GUI. Suggest: expose via app startup init.</li>
+<li><code>db_session()</code> (src\cortex_unified\core\database.py:574): does session ctx manager — unused by GUI. Suggest: expose via tab data loading (internal).</li>
+</ul>
+<h2 id="srccortex_unifiedcorelogging_setuppy">src/cortex_unified/core/logging_setup.py<a class="headerlink" href="#srccortex_unifiedcorelogging_setuppy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>add_correlation_id()</code> (src\cortex_unified\core\logging_setup.py:23): does structlog correlation injector — unused by GUI. Suggest: expose via worker log init (no direct UI).</li>
+<li><code>add_app_context()</code> (src\cortex_unified\core\logging_setup.py:30): does app/version injector — unused by GUI. Suggest: expose via log viewer About.</li>
+<li><code>censor_sensitive_data()</code> (src\cortex_unified\core\logging_setup.py:40): does secret redactor — unused by GUI. Suggest: expose via log export (auto-apply).</li>
+<li><code>configure_logging()</code> (src\cortex_unified\core\logging_setup.py:72): does structlog setup — unused by GUI. Suggest: expose via main_window startup + Diagnostics page level picker.</li>
+<li><code>get_logger()</code> (src\cortex_unified\core\logging_setup.py:170): does component logger factory — unused by GUI. Suggest: internal standardisation (no UI).</li>
+<li><code>set_correlation_id()</code> (src\cortex_unified\core\logging_setup.py:190): does per-scan correlation setter — unused by GUI. Suggest: expose via scan workers (correlate logs per run).</li>
+<li><code>clear_correlation_id()</code> (src\cortex_unified\core\logging_setup.py:207): does correlation reset — unused by GUI. Suggest: expose via worker teardown.</li>
+<li><code>LogContext()</code> (src\cortex_unified\core\logging_setup.py:212): does scoped log ctx — unused by GUI. Suggest: expose via workers (internal).</li>
+<li><code>log_scan_start()</code> (src\cortex_unified\core\logging_setup.py:239): does scan-start event — unused by GUI. Suggest: expose via workers + Reports timeline.</li>
+<li><code>log_scan_complete()</code> (src\cortex_unified\core\logging_setup.py:253): does scan-complete event — unused by GUI. Suggest: expose via Reports timeline.</li>
+<li><code>log_scan_error()</code> (src\cortex_unified\core\logging_setup.py:271): does scan-fail event — unused by GUI. Suggest: expose via error toast + Reports.</li>
+<li><code>log_file_operation()</code> (src\cortex_unified\core\logging_setup.py:287): does per-file op event — unused by GUI. Suggest: expose via Undo/History feed.</li>
+<li><code>log_performance_metric()</code> (src\cortex_unified\core\logging_setup.py:305): does perf event — unused by GUI. Suggest: expose via resource_monitor_tab.</li>
+</ul>
+<h2 id="srccortex_unifiedcoresecuritypy">src/cortex_unified/core/security.py<a class="headerlink" href="#srccortex_unifiedcoresecuritypy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>is_safe_path()</code> (src\cortex_unified\core\security.py:95): does protected-dir/extension gate — unused by GUI. Suggest: expose via safety_manager pre-delete check + confirm dialog.</li>
+<li><code>is_system_file()</code> (src\cortex_unified\core\security.py:168): does system-file predicate — unused by GUI. Suggest: expose via warning badge.</li>
+<li><code>is_path_writable()</code> (src\cortex_unified\core\security.py:256): does writability probe — unused by GUI. Suggest: expose via action enablement (grey out).</li>
+<li><code>get_safe_temp_dir()</code> (src\cortex_unified\core\security.py:280): does safe tmp resolver — unused by GUI. Suggest: expose via export/quarantine paths.</li>
+<li><code>check_deletion_safety()</code> (src\cortex_unified\core\security.py:289): does (safe, reason) verdict — unused by GUI. Suggest: expose via delete-confirm reason line.</li>
+</ul>
+<h2 id="srccortex_unifiedcoresmart_suggestpy">src/cortex_unified/core/smart_suggest.py<a class="headerlink" href="#srccortex_unifiedcoresmart_suggestpy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>featurize()</code> (src\cortex_unified\core\smart_suggest.py:81): does cleanup-item featurizer — unused by GUI. Suggest: expose via SmartSuggester rank explanations ("why suggested") in dashboard.</li>
+</ul>
+<h2 id="srccortex_unifiedcoretemp_cleanerpy">src/cortex_unified/core/temp_cleaner.py<a class="headerlink" href="#srccortex_unifiedcoretemp_cleanerpy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>TempFinding()</code> (src\cortex_unified\core\temp_cleaner.py:57): does temp-hit DTO — unused by GUI. Suggest: expose via DeepCleaner/Hub temp section table.</li>
+<li><code>TempCleaner()</code> (src\cortex_unified\core\temp_cleaner.py:88): does stale-temp scan+clean — unused by GUI. Suggest: expose via deep_cleaner_tab + cleanup_hub_page (highest ROI cleaner orphan).</li>
+</ul>
+<h2 id="srccortex_unifiedcoreutilspy">src/cortex_unified/core/utils.py<a class="headerlink" href="#srccortex_unifiedcoreutilspy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>is_system_directory()</code> (src\cortex_unified\core\utils.py:40): does protected-dir predicate — unused by GUI. Suggest: expose via safety badges.</li>
+<li><code>get_component_logger()</code> (src\cortex_unified\core\utils.py:179): does per-component logger — unused by GUI. Suggest: internal (no UI).</li>
+<li><code>log_operation_start()</code> (src\cortex_unified\core\utils.py:194): does op-start log — unused by GUI. Suggest: expose via workers (internal).</li>
+<li><code>log_operation_end()</code> (src\cortex_unified\core\utils.py:214): does op-end log — unused by GUI. Suggest: expose via workers (internal).</li>
+<li><code>log_performance_metrics()</code> (src\cortex_unified\core\utils.py:241): does perf-dict log — unused by GUI. Suggest: expose via resource tab.</li>
+<li><code>generate_manifest_filename()</code> (src\cortex_unified\core\utils.py:257): does timestamped manifest name — unused by GUI. Suggest: expose via Deleter/export manifest save dialog.</li>
+<li><code>get_file_age_days()</code> (src\cortex_unified\core\utils.py:266): does mtime→age helper — unused by GUI. Suggest: expose via age filter/column.</li>
+<li><code>DockerError()</code> (src\cortex_unified\core\utils.py:295): does docker error type — unused by GUI. Suggest: expose via docker_tab error toast.</li>
+<li><code>VisualizationError()</code> (src\cortex_unified\core\utils.py:299): does viz error type — unused by GUI. Suggest: expose via disk_analyzer_tab error state.</li>
+<li><code>HeuristicsError()</code> (src\cortex_unified\core\utils.py:303): does heuristics error type — unused by GUI. Suggest: expose via heuristics_tab error state.</li>
+<li><code>PackageManagerError()</code> (src\cortex_unified\core\utils.py:307): does pkg error type — unused by GUI. Suggest: expose via package_manager_tab error state.</li>
+<li><code>PerformanceError()</code> (src\cortex_unified\core\utils.py:311): does perf error type — unused by GUI. Suggest: expose via resource tab error state.</li>
+<li><code>AccessibilityError()</code> (src\cortex_unified\core\utils.py:315): does a11y error type — unused by GUI. Suggest: expose via settings a11y check.</li>
+<li><code>safe_execute()</code> (src\cortex_unified\core\utils.py:349): does guarded-call wrapper — unused by GUI. Suggest: expose via tab workers (internal).</li>
+<li><code>ResourceManager()</code> (src\cortex_unified\core\utils.py:373): does resource cleanup ctx — unused by GUI. Suggest: expose via workers (internal).</li>
+<li><code>format_duration()</code> (src\cortex_unified\core\utils.py:448): does ms/s/m/h formatter — unused by GUI. Suggest: expose via scan status labels (transfer_queue has own <code>fmt_eta</code>; unify).</li>
+<li><code>validate_path()</code> (src\cortex_unified\core\utils.py:461): does path validator — unused by GUI. Suggest: expose via GoToPathDialog + all path inputs.</li>
+<li><code>get_system_info()</code> (src\cortex_unified\core\utils.py:520): does diagnostics bundle — unused by GUI. Suggest: expose via Settings → Diagnostics "copy info".</li>
+<li><code>create_error_report()</code> (src\cortex_unified\core\utils.py:553): does error+trace bundle — unused by GUI. Suggest: expose via error dialog "Report" button.</li>
+</ul>
+<h2 id="srccortex_unifiedperformancemulti_drive_scannerpy">src/cortex_unified/performance/multi_drive_scanner.py<a class="headerlink" href="#srccortex_unifiedperformancemulti_drive_scannerpy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>DriveInfo()</code> (src\cortex_unified\performance\multi_drive_scanner.py:34): does drive DTO — unused by GUI. Suggest: expose via disk_analyzer/drive picker.</li>
+<li><code>NetworkDrive()</code> (src\cortex_unified\performance\multi_drive_scanner.py:58): does net-share DTO — unused by GUI. Suggest: expose via Network page (merge with NetworkManager).</li>
+<li><code>UserProfile()</code> (src\cortex_unified\performance\multi_drive_scanner.py:69): does OS-profile DTO — unused by GUI. Suggest: expose via multi-user scan page.</li>
+<li><code>ScanProgress()</code> (src\cortex_unified\performance\multi_drive_scanner.py:81): does multi-loc progress DTO — unused by GUI. Suggest: expose via scan progress bar.</li>
+<li><code>AggregatedResult()</code> (src\cortex_unified\performance\multi_drive_scanner.py:110): does merged-totals DTO — unused by GUI. Suggest: expose via summary cards.</li>
+<li><code>MultiUserScanner()</code> (src\cortex_unified\performance\multi_drive_scanner.py:120): does cross-profile scanner — unused by GUI. Suggest: expose via Settings "include other users" + disk pages.</li>
+<li><code>DriveManager()</code> (src\cortex_unified\performance\multi_drive_scanner.py:490): does drive monitor + net-drive handler — unused by GUI. Suggest: expose via drive-change notifications + disk_analyzer.</li>
+</ul>
+<h2 id="srccortex_unifiedperformanceoptimizationpy">src/cortex_unified/performance/optimization.py<a class="headerlink" href="#srccortex_unifiedperformanceoptimizationpy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>OptimizationSettings()</code> (src\cortex_unified\performance\optimization.py:19): does optimizer tuning DTO — unused by GUI. Suggest: expose via settings_tab Performance.</li>
+<li><code>PerformanceOptimizer()</code> (src\cortex_unified\performance\optimization.py:32): does thread/buffer/GC tuner — unused by GUI. Suggest: expose via <code>PerformanceManager</code> + workers auto-tune + settings.</li>
+</ul>
+<h2 id="srccortex_unifiedperformanceprofilerpy">src/cortex_unified/performance/profiler.py<a class="headerlink" href="#srccortex_unifiedperformanceprofilerpy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>ProfileReport()</code> (src\cortex_unified\performance\profiler.py:12): does timing DTO — unused by GUI. Suggest: expose via Diagnostics "last scan profile".</li>
+<li><code>OperationProfiler()</code> (src\cortex_unified\performance\profiler.py:34): does profile start/end + reports — unused by GUI. Suggest: expose via workers (<code>profile_operation</code> ctx) + Diagnostics.</li>
+</ul>
+<h2 id="srccortex_unifiedperformanceresource_monitorpy">src/cortex_unified/performance/resource_monitor.py<a class="headerlink" href="#srccortex_unifiedperformanceresource_monitorpy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>SystemMetrics()</code> (src\cortex_unified\performance\resource_monitor.py:17): does CPU/mem/IO snapshot DTO — unused by GUI. Suggest: expose via resource_monitor_tab charts (monitor itself wired; DTO not imported by name).</li>
+</ul>
+<h2 id="srccortex_unifiedperformanceresource_throttlerpy">src/cortex_unified/performance/resource_throttler.py<a class="headerlink" href="#srccortex_unifiedperformanceresource_throttlerpy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>SystemLoad()</code> (src\cortex_unified\performance\resource_throttler.py:14): does load DTO — unused by GUI. Suggest: expose via throttling indicator.</li>
+<li><code>ResourceThrottler()</code> (src\cortex_unified\performance\resource_throttler.py:27): does prio/EcoQoS/throttle manager — unused by GUI. Suggest: expose via <code>PerformanceManager</code> + settings "low-impact mode" + workers <code>throttle_if_needed</code>.</li>
+</ul>
+<h2 id="srccortex_unifiedperformancescan_managerpy">src/cortex_unified/performance/scan_manager.py<a class="headerlink" href="#srccortex_unifiedperformancescan_managerpy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>ScanCheckpoint()</code> (src\cortex_unified\performance\scan_manager.py:15): does resume-checkpoint DTO — unused by GUI. Suggest: expose via "resume scan" picker (manager already wired in main_window).</li>
+<li><code>ScanProgress()</code> (src\cortex_unified\performance\scan_manager.py:41): does progress DTO — unused by GUI. Suggest: expose via progress bar model.</li>
+</ul>
+<h2 id="srccortex_unifiedperformancesettings_integrationpy">src/cortex_unified/performance/settings_integration.py<a class="headerlink" href="#srccortex_unifiedperformancesettings_integrationpy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>PerformanceSettingsWidget()</code> (src\cortex_unified\performance\settings_integration.py:20): does perf settings Qt widget — unused by GUI. Suggest: expose via settings_tab embed (currently builds own controls).</li>
+<li><code>PerformanceManager()</code> (src\cortex_unified\performance\settings_integration.py:127): does optimizer+throttler singleton — unused by GUI. Suggest: expose via app startup + <code>get_performance_manager</code> in workers/tabs.</li>
+</ul>
+<h2 id="notes-method-level-verified-via-smethods-grep">Notes (method-level, verified via <code>\.\s*METHOD\s*\(</code> Grep)<a class="headerlink" href="#notes-method-level-verified-via-smethods-grep" title="Permanent link">&para;</a></h2>
+<p>Wired parents with unwired high-value methods (suggest wiring next): <code>SecureDeleter.adaptive_delete</code> (SSD-aware delete → file_shredder_tab), <code>HashTool.create_manifest/verify_manifest</code> partially wired (verify used; create not surfaced), <code>TimestampTouchEngine.touch_batch</code>, <code>TransferQueue.clear_finished/get_all_jobs</code>, <code>UndoStack.can_undo/can_redo</code> (wire to Edit menu enablement), <code>Database.*</code> (all methods above), <code>SmartSuggester.rank/observe_batch</code>, <code>MultiDriveScanner.scan_multiple_drives/get_aggregated_results</code>, <code>ResourceMonitor.get_optimization_recommendations/should_throttle_operations/export_metrics</code>, <code>ScanManager.load_checkpoint</code>. Generic Qt/model/dunder methods excluded from counts.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.expand", "navigation.top", "navigation.tracking", "search.suggest", "search.highlight", "search.share", "content.code.copy", "content.tabs.link"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>
