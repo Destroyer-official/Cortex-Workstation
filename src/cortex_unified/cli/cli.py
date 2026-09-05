@@ -70,37 +70,6 @@ def main():
     pass
 
 @main.command()
-@click.option('--delay', type=float, default=0.06, help='Simulation step animation delay')
-def demo(delay: float):
-    """Run an interactive simulated system scan & optimization demo."""
-    import time
-    click.secho("\n" + "=" * 64, fg="cyan", bold=True)
-    click.secho("🛡️  CORTEX WORKSTATION — SIMULATION & DEMO MODE", fg="cyan", bold=True)
-    click.secho("    Safe sandbox preview: no disk modifications will occur", fg="white", dim=True)
-    click.secho("=" * 64 + "\n", fg="cyan", bold=True)
-
-    steps = [
-        ("Scanning Windows Temp & Scratch Files...", "4.2 GB", "SAFE"),
-        ("Auditing DirectX & GPU Shader Caches...", "2.8 GB", "SAFE"),
-        ("Inspecting Developer Package Stores (npm/cargo/pip)...", "5.1 GB", "SAFE"),
-        ("Analyzing Web Browser Cache & Offline Data...", "1.9 GB", "REVIEW"),
-        ("Checking Windows Error Dumps & Forensic Logs...", "810 MB", "SAFE"),
-    ]
-
-    for idx, (label, size, risk) in enumerate(steps, 1):
-        click.echo(f"[{idx}/{len(steps)}] 🔍 {label:<55} ", nl=False)
-        time.sleep(delay * 2)
-        risk_color = "green" if risk == "SAFE" else "yellow"
-        click.secho(f"[{size} - {risk}]", fg=risk_color, bold=True)
-        time.sleep(delay)
-
-    click.secho("\n" + "-" * 64, fg="cyan")
-    click.secho("⚡ SIMULATION SCAN COMPLETE: 13.9 GB reclaimable across 38,894 files", fg="green", bold=True)
-    click.secho("🛡️  Safe to reclaim automatically: 12.1 GB", fg="green")
-    click.secho("💡  Launch interactive GUI demo: python run_gui.py --demo\n", fg="cyan")
-    click.secho("=" * 64 + "\n", fg="cyan", bold=True)
-
-@main.command()
 @click.option('--dry-run', is_flag=True, default=None, help='Show what would be deleted without actually deleting (default)')
 @click.option('--delete', is_flag=True, default=False, help='Permanently delete empty files and folders')
 @click.option('--trash', is_flag=True, default=False, help='Move empty files and folders to trash/recycle bin')

@@ -50,8 +50,6 @@ def _show_crash_dialog(title: str, message: str) -> None:
 
 def main() -> int:
     """Entry point: run the premium GUI."""
-    if "--demo" in sys.argv or "--simulation" in sys.argv:
-        os.environ["CORTEX_SIMULATION"] = "1"
     try:
         from cortex_unified.ui.premium.app import main as gui_main
     except ImportError as exc:

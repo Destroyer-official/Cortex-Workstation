@@ -4974,7 +4974,7 @@ _Module: Reporting & recovery pages: exportable PC Health Report, Backups/Restor
   - _fail(self, msg) (L434)
 
 ### src/cortex_unified/ui/premium/s3_fifo_page.py
-_Module: S3-FIFO cache policy demo – FIFO queues are all you need (SOSP'23)._
+_Module: S3-FIFO cache policy benchmark – FIFO queues are all you need (SOSP'23)._
 - class _BenchWorker (L28)
   - __init__(self, capacity, trace_len) (L33)
   - run(self) (L39)
@@ -6125,7 +6125,6 @@ _Module: Tab for reports tab in Cortex Cleaner GUI._
   - format_bytes(self, size) (L218)
   - _on_table_selection(self) (L226)
   - get_live_analytics_data(self) (L231)
-  - get_dummy_data(self) (L290)
   - generate_report(self) (L294)
   - preview_report(self) (L330)
   - schedule_report(self) (L366)

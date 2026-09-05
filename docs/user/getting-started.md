@@ -64,29 +64,16 @@ To launch the full 132-tool workstation interface with HiDPI support and modern 
 python run_gui.py
 ```
 
-### Optional Non-Destructive Evaluation Mode (Sandbox)
-For automated CI/CD runs, headless test environments, or non-destructive evaluation without disk writes:
-```bash
-# GUI Evaluation Mode:
-python run_gui.py --demo
-
-# CLI Evaluation Mode:
-python -m cortex_unified.cli demo
-```
-
 Or run the one-click Conda launcher:
 ```powershell
 .\run_with_conda.ps1
 ```
 
 ### Command Line Interface (CLI)
-Cortex Workstation includes 22 high-throughput CLI subcommands for headless and server environments:
+Cortex Workstation includes 21 high-throughput CLI subcommands for headless and server environments:
 ```bash
 # View all available CLI tools
 python -m cortex_unified.cli --help
-
-# Run interactive simulation demo
-python -m cortex_unified.cli demo
 
 # Run a quick system disk analysis
 python -m cortex_unified.cli analyze-disk --path C:\
@@ -97,7 +84,7 @@ python -m cortex_unified.cli clean-temp --dry-run
 
 ---
 
-## 🛡️ Administrative Privileges
+## 🔐 Administrative Privileges
 While basic file analysis, deduplication, and file management run in user-space, certain forensic and repair tools require elevated permissions:
 * **Registry Compaction & Cleaning**
 * **Windows Update (DISM / SFC) Repair**

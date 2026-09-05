@@ -316,7 +316,6 @@ def main() -> int:
         int: Result of the operation.
     """
     debug = ("--debug" in sys.argv) or os.environ.get("CORTEX_DEBUG") in ("1", "true", "True")
-    simulation = ("--demo" in sys.argv) or ("--simulation" in sys.argv) or (os.environ.get("CORTEX_SIMULATION") in ("1", "true", "True"))
     log_file = setup_logging(debug)
 
     # Declare DPI awareness to Windows *first*, before Qt is even imported, so
@@ -384,7 +383,7 @@ def main() -> int:
     theme = settings.theme
     apply_theme(app, theme)
 
-    window = PremiumMainWindow(theme=theme, settings=settings, simulation=simulation)
+    window = PremiumMainWindow(theme=theme, settings=settings)
     if app_icon and not app_icon.isNull():
         window.setWindowIcon(app_icon)
     window.show()

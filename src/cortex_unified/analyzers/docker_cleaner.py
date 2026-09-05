@@ -101,7 +101,7 @@ class DockerNetwork:
 
 @dataclass
 class CleanupResult:
-    """Outcome of a cleanup pass; counts include dry-run simulations.
+    """Outcome of a cleanup pass; counts include dry-run previews.
 
     Permanently purges or removes specified target items, reclaiming storage space and logging actions taken.
     """
@@ -394,10 +394,10 @@ class DockerCleaner:
     
     def cleanup_resources(self, resources: List[Union[DockerImage, DockerContainer, DockerVolume, DockerNetwork]], 
                          dry_run: bool = True) -> CleanupResult:
-        """Remove the given resources, or simulate removal when dry_run.
+        """Remove the given resources, or preview removal when dry_run.
 
         Counters and ``space_freed`` are updated regardless of dry_run, so a
-        simulated pass reports what a real one would free.
+        dry-run pass reports what a real one would free.
 
         Args:
             resources: Mixed list of scan results to remove.

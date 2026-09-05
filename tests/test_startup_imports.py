@@ -149,8 +149,8 @@ def test_legacy_cli_still_exposes_every_command():
         "print(len(main.commands), ','.join(sorted(main.commands)))"
     )
     count, names = out.split(" ", 1)
-    # 22 commands including Next-Gen tools (clean-ai, clean-shaders, trim-ssd, verify-checksums, vss-health, demo).
-    assert int(count) == 22, f"expected 22 commands, got {count}: {names}"
+    # 21 commands including Next-Gen tools (clean-ai, clean-shaders, trim-ssd, verify-checksums, vss-health).
+    assert int(count) == 21, f"expected 21 commands, got {count}: {names}"
     # Spot-check the commands whose dependencies are now deferred.
     for expected in ("docker-cleanup", "secure-delete", "generate-report",
                      "restore", "scan-broken-links", "analyze-disk",

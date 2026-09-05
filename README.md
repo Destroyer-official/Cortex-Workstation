@@ -82,7 +82,7 @@ Combining the **Cortex Unified Optimization Engine** with the high-performance *
 Experience the production user interface of Cortex Workstation:
 
 <div align="center">
-  <img src="assets/screenshots/dashboard_simulated_demo.png" alt="Cortex Workstation Command Center" width="95%">
+  <img src="assets/screenshots/dashboard_overview.png" alt="Cortex Workstation Command Center" width="95%">
   <p><em>Figure 1: Cortex Command Center Dashboard — Real-Time Live System Telemetry, Circular Hero Storage Gauge & Enterprise Risk Profiling.</em></p>
 </div>
 
@@ -92,44 +92,30 @@ Experience the production user interface of Cortex Workstation:
   <table width="100%">
     <tr>
       <td width="50%" align="center">
-        <img src="assets/screenshots/cleanuphub_demo.png" alt="Cleanup Hub" width="100%"><br>
+        <img src="assets/screenshots/cleanuphub.png" alt="Cleanup Hub" width="100%"><br>
         <strong>🧹 One-Click Deep Cleanup Hub</strong><br>
         <em>Winapp2.ini deep cleaning, shader caches, dev package purger</em>
       </td>
       <td width="50%" align="center">
-        <img src="assets/screenshots/nexus_explorer_demo.png" alt="Nexus Explorer" width="100%"><br>
+        <img src="assets/screenshots/nexus_explorer.png" alt="Nexus Explorer" width="100%"><br>
         <strong>📁 Nexus Dual-Pane VFS Explorer</strong><br>
         <em>Instant USN Journal indexer, PAR2 parity codec, tabbed queues</em>
       </td>
     </tr>
     <tr>
       <td width="50%" align="center">
-        <img src="assets/screenshots/directstorage_demo.png" alt="DirectStorage BypassIO" width="100%"><br>
+        <img src="assets/screenshots/directstorage.png" alt="DirectStorage BypassIO" width="100%"><br>
         <strong>⚡ DirectStorage & BypassIO Auditor</strong><br>
         <em>Validate NVMe-to-GPU paths and storage minifilter drivers</em>
       </td>
       <td width="50%" align="center">
-        <img src="assets/screenshots/vssmanager_demo.png" alt="VSS Shadow Copy Manager" width="100%"><br>
+        <img src="assets/screenshots/vssmanager.png" alt="VSS Shadow Copy Manager" width="100%"><br>
         <strong>💾 VSS Shadow Copy & Snapshot Manager</strong><br>
         <em>Volume shadow auditing, snapshot creation, and writer health resets</em>
       </td>
     </tr>
   </table>
 </div>
-
-### 🧪 Optional Safe Evaluation / Sandbox Mode
-
-By default, Cortex Workstation operates in **100% live production mode**, communicating directly with Windows NT kernel APIs, NTFS/ReFS filesystems, and hardware controllers.
-
-For enterprise software evaluators, IT administrators, or CI/CD test pipelines wishing to audit the complete UI surface and navigation without committing changes to disk:
-
-```powershell
-# Launch GUI in non-destructive sandbox evaluation mode:
-python run_gui.py --demo
-
-# Launch CLI in non-destructive evaluation mode:
-python -m cortex_unified.cli.cli demo
-```
 
 ---
 
@@ -249,9 +235,6 @@ python -m cortex_unified.cli.cli scan
 
 # Clean temporary files with dry-run preview
 python -m cortex_unified.cli.cli clean --dry-run
-
-# Run interactive simulation demo (safe sandbox mode)
-python -m cortex_unified.cli.cli demo
 
 # Run full production readiness verification
 python -m cortex_unified.debug.runner

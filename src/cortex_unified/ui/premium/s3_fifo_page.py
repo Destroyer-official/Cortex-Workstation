@@ -1,4 +1,4 @@
-"""S3-FIFO cache policy demo – FIFO queues are all you need (SOSP'23).
+"""S3-FIFO cache policy benchmark – FIFO queues are all you need (SOSP'23).
 
 Research: Yang et al., SOSP'23 – three static FIFO queues (Small 10 %,
 Main 90 %, Ghost) with 2-bit frequency, quick demotion of one-hit wonders,
@@ -107,8 +107,8 @@ class S3FifoPage(_Page):
         self.v.addWidget(title_block(
             "S3-FIFO Cache (SOSP'23)",
             "FIFO Queues Are All You Need – three static FIFO queues (Small 10 % + "
-            "Main 90 % + Ghost) with 2-bit frequency and quick demotion. This demo "
-            "benchmarks the policy on a synthetic Zipf trace versus LRU.",
+            "Main 90 % + Ghost) with 2-bit frequency and quick demotion. This benchmark "
+            "evaluates the policy on a synthetic Zipf trace versus LRU.",
         ))
 
         picker = QHBoxLayout()

@@ -305,10 +305,6 @@ class ReportsTab(BaseTab):
             },
         }
 
-    def get_dummy_data(self) -> Dict[str, Any]:
-        """Backward-compatible alias for get_live_analytics_data."""
-        return self.get_live_analytics_data()
-
     def generate_report(self):
         """Generate dynamic analytical report from live system telemetry."""
         self.reports_progress_bar.setVisible(True)

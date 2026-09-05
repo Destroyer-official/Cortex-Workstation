@@ -1403,7 +1403,6 @@
       - `def format_bytes(self, size)` (Line 218) - Format a byte count as a human-readable string (B up to PB).
       - `def _on_table_selection(self)` (Line 226) - Enable/disable preview based on selection.
       - `def get_live_analytics_data(self)` (Line 231) - Collect live dynamic system analytics and telemetry for report generation.
-      - `def get_dummy_data(self)` (Line 290) - Backward-compatible alias for get_live_analytics_data.
       - `def generate_report(self)` (Line 294) - Generate dynamic analytical report from live system telemetry.
       - `def preview_report(self)` (Line 330) - Open the highlighted report file manually.
       - `def schedule_report(self)` (Line 366) - Register a recurring HTML report job with the OS scheduler (Pro).
@@ -12392,7 +12391,7 @@
 
 ### File: `src/cortex_unified/ui/premium/s3_fifo_page.py`
 - **Size**: 6,594 bytes | **Total Lines**: 175
-- **Purpose**: *S3-FIFO cache policy demo – FIFO queues are all you need (SOSP'23).*
+- **Purpose**: *S3-FIFO cache policy benchmark – FIFO queues are all you need (SOSP'23).*
 - **Classes (2)**:
   - `class _BenchWorker (QObject)` (Line 28):
     - Description: _BenchWorker class.

@@ -1215,7 +1215,7 @@ Each entry details the file path, total lines of code, core architectural purpos
   - **Classes (5)**: `HealthReportWorker` (2 methods: `_collect`, `run`), `ManifestListWorker` (2 methods: `_leftover_sessions`, `run`), `RestoreWorker` (1 methods: `run`), `HealthReportPage` (4 methods: `_generate`, `_on_done`, `_open_last`, `_fail`), `BackupsPage` (10 methods: `_on_sel`, `_load`, `_on_listed`, `_selected_manifest`)
 
 - [ ] **293. [`src/cortex_unified/ui/premium/s3_fifo_page.py`](src/cortex_unified/ui/premium/s3_fifo_page.py)** (175 LOC)
-  - **Purpose**: S3-FIFO cache policy demo – FIFO queues are all you need (SOSP'23).
+  - **Purpose**: S3-FIFO cache policy benchmark – FIFO queues are all you need (SOSP'23).
   - **Classes (2)**: `_BenchWorker` (1 methods: `run`), `S3FifoPage` (3 methods: `_run`, `_on_done`, `_fail`)
 
 - [ ] **294. [`src/cortex_unified/ui/premium/search_optimizer_page.py`](src/cortex_unified/ui/premium/search_optimizer_page.py)** (227 LOC)
