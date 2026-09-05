@@ -18,9 +18,9 @@ src/
 │   ├── licensing/        # Hardware fingerprinting and tier gating (FREE/PRO/ENT)
 │   ├── performance/      # Multi-drive scanner, CPU/IO throttler, resource monitor
 │   ├── reports/          # Audit report generator and undo/restore snapshots
-│   ├── resources/icons/  # 132 crisp vector SVG icons (zero glyphs)
+│   ├── resources/icons/  # High-contrast vector SVG icons (zero glyphs)
 │   ├── system_tools/     # 62 system maintenance, hardware, and network modules
-│   └── ui/premium/       # Modern Fluent UI shell, design tokens, and 132 lazy pages
+│   └── ui/premium/       # Modern Fluent UI shell, design tokens, and 139 lazy pages
 └── NexusExplorer/
     ├── native/           # High-performance VFS transport, C/Rust FFI bridge, USN journal scanner
     └── tests/            # Explorer benchmarks, transport parity, and UI state tests
@@ -32,8 +32,8 @@ src/
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/Destroyer40/Cortex_Cleaner.git
-   cd Cortex_Cleaner
+   git clone https://github.com/Destroyer-official/Cortex-Workstation.git
+   cd Cortex-Workstation
    ```
 2. **Create & activate virtual environment**:
    ```bash

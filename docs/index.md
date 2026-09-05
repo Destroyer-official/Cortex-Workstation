@@ -6,7 +6,7 @@
 
 Welcome to the central documentation command for **Cortex Workstation** — the ultimate, high-performance Windows NT systems optimization, digital forensics, and native file management platform.
 
-Because this repository contains over **132 interactive tools**, **62 native Windows system modules**, **23 forensic analyzers**, and deeply optimized multi-threaded C/Python engines, our documentation is structured strictly by audience and intent:
+Because this repository contains over **139 interactive tools**, **62 native Windows system modules**, **23 forensic analyzers**, and deeply optimized multi-threaded C/Python engines, our documentation is structured strictly by audience and intent:
 
 * **[📦 User & Integrator Space](user/getting-started.md)** — Installation, step-by-step how-to recipes, configuration schemas, and daily system operations.
 * **[🏗️ Developer & Contributor Platform](dev/architecture.md)** — Repository architecture map, thread safety models, PathGuard boundaries, testing pipelines, and PR standards.
@@ -24,7 +24,7 @@ Before diving into the code, here is how the core repository directories are arr
 | 📂 [`/src/cortex_unified/system_tools`](https://github.com/Destroyer-official/Cortex-Workstation/tree/main/src/cortex_unified/system_tools) | OS & Forensics | 62 standalone Windows NT diagnostic tools (VSS, DirectStorage, MFT Slack, SRUM/BAM, BitLocker, Dev Drives). |
 | 📂 [`/src/cortex_unified/analyzers`](https://github.com/Destroyer-official/Cortex-Workstation/tree/main/src/cortex_unified/analyzers) | Deduplication | 23 advanced analyzers including Perceptual Hash, Fuzzy Ssdeep, FastCDC chunking, and Czkawka algorithms. |
 | 📂 [`/src/NexusExplorer`](https://github.com/Destroyer-official/Cortex-Workstation/tree/main/src/NexusExplorer) | Native File Manager | Ultra-fast VFS tabbed explorer with USN Journal change tracking, PAR2 error correction, and unbounded undo/redo. |
-| 📂 [`/src/cortex_unified/ui`](https://github.com/Destroyer-official/Cortex-Workstation/tree/main/src/cortex_unified/ui) | Presentation Shell | 132 lazy-loaded Qt/PySide6 tool pages, HiDPI design tokens, and 132 scalable vector SVG icons. |
+| 📂 [`/src/cortex_unified/ui`](https://github.com/Destroyer-official/Cortex-Workstation/tree/main/src/cortex_unified/ui) | Presentation Shell | 139 lazy-loaded Qt/PySide6 tool pages, HiDPI design tokens, and 145 scalable vector SVG icons. |
 | 📂 [`/src/cortex_unified/translations`](https://github.com/Destroyer-official/Cortex-Workstation/tree/main/src/cortex_unified/translations) | Multi-Language | Real-time locale switching supporting English, German, Spanish, French, Chinese, and Japanese. |
 | 📂 [`/tests`](https://github.com/Destroyer-official/Cortex-Workstation/tree/main/tests) | Automated Test Suites | 1,569 automated test cases covering every tool, engine, worker thread, and GUI component. |
 | 📂 [`/scripts`](https://github.com/Destroyer-official/Cortex-Workstation/tree/main/scripts) | Diagnostics & Build | Diagnostic verification suites (`verify_production_readiness.py`), PyInstaller packaging, and code audits. |
@@ -72,7 +72,7 @@ Before diving into the code, here is how the core repository directories are arr
 | `cortex_unified.system_tools` | `scan()`, `optimize()`, `audit()` | 62 standalone OS diagnostics querying Windows NT APIs, PowerShell, and registry. | Read-only discovery by default; system mutations require user confirmation. |
 | `cortex_unified.analyzers` | `find_duplicates()`, `hash_file()` | High-throughput hashing (BLAKE3, SHA-256), perceptual imaging, and CDC chunking. | Zero-memory file streaming with chunk-level cancellation checkpoints. |
 | `NexusExplorer.native` | `read_directory()`, `copy_batch()` | Fast VFS filesystem operations with USN Journal change streams. | Fully transactional; every write operation logs to the undo/redo ledger. |
-| `cortex_unified.ui.premium` | `load()`, `_refresh()`, `_run()` | 132 lazy-loaded presentation pages with HiDPI tokenized CSS palettes. | Zero eager imports on startup; UI threads remain responsive at 60 FPS. |
+| `cortex_unified.ui.premium` | `load()`, `_refresh()`, `_run()` | 139 lazy-loaded presentation pages with HiDPI tokenized CSS palettes. | Zero eager imports on startup; UI threads remain responsive at 60 FPS. |
 
 ---
 

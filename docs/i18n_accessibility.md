@@ -1,12 +1,12 @@
 # Internationalization and Accessibility Guide
 
-This guide covers the internationalization (i18n) and accessibility features implemented in Deep Cleaner.
+This guide covers the internationalization (i18n) and accessibility features implemented in Cortex Workstation.
 
 ## Internationalization (i18n)
 
 ### Overview
 
-Deep Cleaner supports multiple languages through a comprehensive internationalization system that includes:
+Cortex Workstation supports multiple languages through a comprehensive internationalization system that includes:
 
 - Translation management for multiple languages
 - Locale detection and switching
@@ -71,8 +71,8 @@ Translation files are stored in `src/cortex_unified/translations/locales/` as JS
     "completion": 100
   },
   "app": {
-    "name": "Deep Cleaner",
-    "description": "A safe, powerful utility..."
+    "name": "Cortex Workstation",
+    "description": "The Ultimate Windows NT Systems, Forensics & File Management Platform"
   },
   "buttons": {
     "ok": "OK",
@@ -96,7 +96,7 @@ Translation files are stored in `src/cortex_unified/translations/locales/` as JS
 
 ### Overview
 
-Deep Cleaner includes comprehensive accessibility features:
+Cortex Workstation includes comprehensive accessibility features:
 
 - Keyboard navigation support
 - Screen reader compatibility

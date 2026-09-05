@@ -23,7 +23,7 @@ flowchart TB
     subgraph UI_Layer["Presentation and Shell Layer - PySide6"]
         A["PremiumMainWindow"] --> B["Sidebar Navigation and Search: Ctrl+K"]
         A --> C["PageRegistry and Lazy Page Loader"]
-        C --> D["132 Theme-Aware GUI Pages"]
+        C --> D["139 Theme-Aware GUI Pages"]
         D --> E["WorkerRuntime / QThreadPool"]
     end
 
@@ -156,5 +156,5 @@ User preferences and historical tracking baselines are stored persistently in th
 
 The presentation layer utilizes a modern, cohesive design system defined in [`tokens.py`](https://github.com/Destroyer-official/Cortex-Workstation/blob/main/src/cortex_unified/ui/premium/tokens.py):
 - **Dynamic Palette**: Tailored dark mode (`#0B0E14` background, `#121722` card surface, `#00D2FF` electric cyan accents).
-- **100% Vector SVG Icons**: All 132 UI pages use pure SVG vector assets located in `src/cortex_unified/resources/icons/`. No unicode glyphs or rasterized low-DPI PNGs are used in navigation.
+- **100% Vector SVG Icons**: All 139 UI pages use pure SVG vector assets located in `src/cortex_unified/resources/icons/`. No unicode glyphs or rasterized low-DPI PNGs are used in navigation.
 - **Dynamic Tinting**: Icons are dynamically recolored at runtime (`src/cortex_unified/ui/premium/icons.py`) based on theme active/inactive states and HiDPI device pixel ratios (100%, 125%, 150%, 200%).

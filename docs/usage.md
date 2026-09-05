@@ -1,10 +1,10 @@
-# Cortex Cleaner Usage Guide
+# Cortex Workstation Usage Guide
 
-**Cortex Cleaner** is a comprehensive, production-grade system maintenance suite and advanced file manager built with Python, PySide6 (Qt6), and high-performance native engines.
+**Cortex Workstation** is a comprehensive, production-grade system maintenance suite and advanced file manager built with Python, PySide6 (Qt6), and high-performance native engines.
 
 ---
 
-## 🚀 Launching Cortex Cleaner
+## 🚀 Launching Cortex Workstation
 
 ### 1. Graphical User Interface (GUI)
 Launch the full premium interface with sidebar navigation, **139 system maintenance and power tool pages**, and the embedded **Nexus File Manager**:
@@ -14,24 +14,34 @@ Launch the full premium interface with sidebar navigation, **139 system maintena
 python run_gui.py
 
 # Or via the package module
-python -m cortex_unified.ui.premium.window
+python -m cortex_unified.ui.premium.app
 ```
 
 ### 2. Command Line Interface (CLI)
-Cortex Cleaner provides safe, high-speed CLI commands for automated scripts, CI/CD pipelines, and headless environments:
+Cortex Workstation provides safe, high-speed CLI commands for automated scripts, CI/CD pipelines, and headless environments:
 
 ```bash
-# General help and command list
-cortex --help
+# Forensic and System Tools CLI (cortex-workstation)
+cortex-workstation --help
+# or via module:
+python -m cortex_unified.cli --help
 
 # Safe dry-run scan of empty files and directories
-cortex clean-empty
+cortex-workstation clean-empty
 
 # Perform actual cleanup
-cortex clean-empty --delete
+cortex-workstation clean-empty --delete
 
 # Move items to system trash
-cortex clean-empty --trash
+cortex-workstation clean-empty --trash
+
+# Optimization Engine CLI (cortex)
+cortex --help
+# or via module:
+python -m cortex_unified.engine --help
+
+# Category disk scan
+cortex scan
 ```
 
 ---
@@ -102,15 +112,21 @@ The GUI consists of four main functional tiers:
 | `find-large-files` | Locate large files consuming significant disk space |
 | `find-duplicates` | Multi-phase duplicate detection (size -> partial hash -> full BLAKE3) |
 | `clean-temp` | Clean temporary system, user, and application caches |
+| `clean-shaders` | Audit and purge DirectX and GPU vendor shader caches |
+| `clean-ai` | Audit and clean Windows 11 Copilot and Recall telemetry caches |
+| `trim-ssd` | Trigger NVMe SSD wear-leveling deallocation |
+| `vss-health` | Inspect Volume Shadow Copy (VSS) writers and shadow states |
 | `analyze-disk` | Generate disk usage breakdowns and interactive TreeMaps |
 | `docker-cleanup` | Remove dangling images, stopped containers, and unused volumes |
 | `package-cleanup` | Clean pip, npm, yarn, cargo, and build caches |
 | `heuristics-scan` | Detect leftover registry keys and orphan application folders |
 | `list-startup-items` | Inspect and manage Windows startup entries |
 | `analyze-processes` | Monitor memory, CPU, and handle usage per process |
-| `shred-files` | DoD 5220.22-M / Gutmann compliant multi-pass secure file eraser |
-| `restore-files` | Restore files from safe backup manifests |
+| `secure-delete` | Multi-pass secure file eraser with verification |
+| `restore` | Restore files from safe backup manifests |
 | `scan-broken-links` | Identify and repair invalid shortcuts and symlinks |
+| `verify-checksums` | Verify integrity manifests (.sha256, .md5, .sfv) |
+| `generate-report` | Generate comprehensive system diagnostics report |
 
 ---
 

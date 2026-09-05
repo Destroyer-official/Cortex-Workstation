@@ -79,10 +79,11 @@ where = ["src"]
 
 [tool.setuptools.package-data]
 cortex_unified = [
+    "translations/locales/*.json",
     "i18n/locales/*.json",
     # Shipped SVG icon set. Without this the navigation renders blank in an
     # installed build, because wheels only include .py files by default.
-    "ui/premium/resources/icons/*.svg",
+    "resources/icons/ui/*.svg",
 ]
 
 [tool.pytest.ini_options]

@@ -1,6 +1,6 @@
 # 🛠️ How-To Guides & Real-World Recipes
 
-Step-by-step practical recipes for getting the most out of Cortex Workstation's 132 tools and forensic engines.
+Step-by-step practical recipes for getting the most out of Cortex Workstation's 139 tools and forensic engines.
 
 ---
 

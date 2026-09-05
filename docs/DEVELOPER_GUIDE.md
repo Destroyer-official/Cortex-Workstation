@@ -1,6 +1,6 @@
-# Cortex Cleaner — Developer Onboarding & Extension Guide
+# Cortex Workstation — Developer Onboarding & Extension Guide
 
-Welcome to the Cortex Cleaner developer guide. This document provides step-by-step instructions for contributors on how to set up the development environment, understand coding conventions, build new system tools, create UI pages, and verify code with automated tests.
+Welcome to the Cortex Workstation developer guide. This document provides step-by-step instructions for contributors on how to set up the development environment, understand coding conventions, build new system tools, create UI pages, and verify code with automated tests.
 
 ---
 
@@ -15,8 +15,8 @@ Welcome to the Cortex Cleaner developer guide. This document provides step-by-st
 
 ```powershell
 # 1. Clone the repository
-git clone https://github.com/Destroyer40/Cortex_Cleaner.git
-cd Cortex_Cleaner
+git clone https://github.com/Destroyer-official/Cortex-Workstation.git
+cd Cortex-Workstation
 
 # 2. Create and activate a virtual environment
 python -m venv .venv
@@ -40,7 +40,7 @@ pip install -e .
   ```
 - **CLI Interface**:
   ```powershell
-  python -m cortex_unified.cli.cli --help
+  python -m cortex_unified.cli --help
   ```
 
 ---

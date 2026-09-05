@@ -6,8 +6,8 @@
     "completion": 100
   },
   "app": {
-    "name": "Deep Cleaner",
-    "description": "Una utilidad segura, potente y multiplataforma para encontrar y eliminar archivos y carpetas vacías"
+    "name": "Cortex Workstation",
+    "description": "La plataforma definitiva de gestión de archivos, análisis forense y sistemas Windows NT"
   },
   "menu": {
     "file": {

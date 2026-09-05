@@ -16,7 +16,7 @@ The Package Manager Cache feature now:
 **Best for:** Cleaning system package caches (pip, npm, conda, etc.)
 
 **Steps:**
-1. Open Cortex Cleaner
+1. Open Cortex Workstation
 2. Go to Package Manager Caches tab
 3. Click "Detect Package Managers" to find available package managers
 4. Make sure the tab shows "Package Managers"
@@ -40,10 +40,10 @@ Found 4 cache locations: 2.3 GB total
 **Best for:** Cleaning cache files in large Python projects
 
 **Steps:**
-1. Open Cortex Cleaner
+1. Open Cortex Workstation
 2. Go to Package Manager Caches → "Project Folders" tab
 3. Click "Add Folder"
-4. Select a project directory (e.g., `C:\Users\shant\Documents\my_project`)
+4. Select a project directory (e.g., `C:\Projects\my_project`)
 5. (Optional) Add more folders to scan
 6. Make sure "Scan for Python caches" is checked
 7. Click "Scan"

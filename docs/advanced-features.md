@@ -1,8 +1,8 @@
-# Deep Cleaner Advanced Features Guide
+# Cortex Workstation Advanced Features Guide
 
 ## Overview
 
-This guide covers the advanced features of Deep Cleaner, including Docker cleanup, interactive visualizations, performance enhancements, package manager integration, heuristics-based detection, and accessibility features.
+This guide covers the advanced features of Cortex Workstation, including Docker cleanup, interactive visualizations, performance enhancements, package manager integration, heuristics-based detection, and accessibility features.
 
 ## Docker Cleanup
 
@@ -13,13 +13,13 @@ The Docker cleanup feature helps free up significant disk space by removing unus
 
 ```bash
 # Show what would be cleaned (dry run)
-deep-cleaner docker-cleanup
+cortex-workstation docker-cleanup
 
 # Clean all Docker resources
-deep-cleaner docker-cleanup --clean --all
+cortex-workstation docker-cleanup --clean --all
 
 # Clean specific resource types
-deep-cleaner docker-cleanup --clean --images --volumes
+cortex-workstation docker-cleanup --clean --images --volumes
 ```
 
 ### Resource Types
@@ -31,10 +31,10 @@ deep-cleaner docker-cleanup --clean --images --volumes
 
 ```bash
 # Clean only unused images
-deep-cleaner docker-cleanup --clean --images
+cortex-workstation docker-cleanup --clean --images
 
 # Include verbose output to see image details
-deep-cleaner docker-cleanup --clean --images --verbose
+cortex-workstation docker-cleanup --clean --images --verbose
 ```
 
 #### Docker Containers
@@ -44,7 +44,7 @@ deep-cleaner docker-cleanup --clean --images --verbose
 
 ```bash
 # Clean stopped containers
-deep-cleaner docker-cleanup --clean --containers
+cortex-workstation docker-cleanup --clean --containers
 ```
 
 #### Docker Volumes
@@ -54,7 +54,7 @@ deep-cleaner docker-cleanup --clean --containers
 
 ```bash
 # Clean unused volumes (use with caution)
-deep-cleaner docker-cleanup --clean --volumes
+cortex-workstation docker-cleanup --clean --volumes
 ```
 
 #### Docker Networks
@@ -64,20 +64,20 @@ deep-cleaner docker-cleanup --clean --volumes
 
 ```bash
 # Clean unused networks
-deep-cleaner docker-cleanup --clean --networks
+cortex-workstation docker-cleanup --clean --networks
 ```
 
 ### Advanced Options
 
 ```bash
 # Export findings to JSON for analysis
-deep-cleaner docker-cleanup --export docker-analysis.json
+cortex-workstation docker-cleanup --export docker-analysis.json
 
 # Skip confirmation prompts (automation)
-deep-cleaner docker-cleanup --clean --all --yes
+cortex-workstation docker-cleanup --clean --all --yes
 
 # Detailed logging
-deep-cleaner docker-cleanup --clean --verbose --log-file docker-cleanup.log
+cortex-workstation docker-cleanup --clean --verbose --log-file docker-cleanup.log
 ```
 
 ### Safety Features
@@ -89,7 +89,7 @@ deep-cleaner docker-cleanup --clean --verbose --log-file docker-cleanup.log
 ## Interactive Visualizations
 
 ### Overview
-Deep Cleaner provides interactive visualizations to help understand disk usage patterns through TreeMaps, Sunburst charts, and comprehensive dashboards.
+Cortex Workstation provides interactive visualizations to help understand disk usage patterns through TreeMaps, Sunburst charts, and comprehensive dashboards.
 
 ### TreeMap Visualization
 
@@ -97,13 +97,13 @@ TreeMaps show hierarchical disk usage where larger rectangles represent larger d
 
 ```bash
 # Generate interactive TreeMap
-deep-cleaner analyze-disk --export-treemap disk-usage.html
+cortex-workstation analyze-disk --export-treemap disk-usage.html
 
 # Generate static image
-deep-cleaner analyze-disk --export-treemap disk-usage.png
+cortex-workstation analyze-disk --export-treemap disk-usage.png
 
 # Control depth for performance
-deep-cleaner analyze-disk --export-treemap disk-usage.html --max-depth 4
+cortex-workstation analyze-disk --export-treemap disk-usage.html --max-depth 4
 ```
 
 **Features**:
@@ -119,10 +119,10 @@ Sunburst charts display directory hierarchies in a circular format with nested r
 
 ```bash
 # Generate Sunburst chart
-deep-cleaner analyze-disk --export-sunburst disk-chart.html
+cortex-workstation analyze-disk --export-sunburst disk-chart.html
 
 # Export as SVG for scalability
-deep-cleaner analyze-disk --export-sunburst disk-chart.svg
+cortex-workstation analyze-disk --export-sunburst disk-chart.svg
 ```
 
 **Features**:
@@ -138,10 +138,10 @@ The dashboard combines multiple visualization types with real-time data updates.
 
 ```bash
 # Create comprehensive dashboard
-deep-cleaner analyze-disk --export-dashboard dashboard.html
+cortex-workstation analyze-disk --export-dashboard dashboard.html
 
 # Include all analysis types
-deep-cleaner analyze-disk --export-dashboard dashboard.html --max-depth 5
+cortex-workstation analyze-disk --export-dashboard dashboard.html --max-depth 5
 ```
 
 **Dashboard Components**:
@@ -168,17 +168,17 @@ deep-cleaner analyze-disk --export-dashboard dashboard.html --max-depth 5
 
 ### Checkpoint System
 
-For large-scale operations, Deep Cleaner supports checkpoints to enable resumable scans.
+For large-scale operations, Cortex Workstation supports checkpoints to enable resumable scans.
 
 ```bash
 # Enable checkpoints (save every 1000 directories)
-deep-cleaner analyze-disk --checkpoint-interval 1000
+cortex-workstation analyze-disk --checkpoint-interval 1000
 
 # Resume from checkpoint
-deep-cleaner analyze-disk --resume-from checkpoint_20231201_143022.json
+cortex-workstation analyze-disk --resume-from checkpoint_20231201_143022.json
 
 # Custom checkpoint location
-deep-cleaner analyze-disk --checkpoint-interval 500 --log-file /path/to/logs/
+cortex-workstation analyze-disk --checkpoint-interval 500 --log-file /path/to/logs/
 ```
 
 ### Resource Management
@@ -187,54 +187,53 @@ Control system resource usage to prevent overloading.
 
 ```bash
 # CPU priority control
-deep-cleaner clean-empty --cpu-priority low     # Background processing
-deep-cleaner clean-empty --cpu-priority normal  # Default
-deep-cleaner clean-empty --cpu-priority high    # Foreground processing
+cortex-workstation clean-empty --cpu-priority low     # Background processing
+cortex-workstation clean-empty --cpu-priority normal  # Default
+cortex-workstation clean-empty --cpu-priority high    # Foreground processing
 
 # I/O priority control
-deep-cleaner clean-empty --io-priority low      # Gentle on disk
-deep-cleaner clean-empty --io-priority normal   # Default
-deep-cleaner clean-empty --io-priority high     # Fast disk access
+cortex-workstation clean-empty --io-priority low      # Gentle on disk
+cortex-workstation clean-empty --io-priority normal   # Default
+cortex-workstation clean-empty --io-priority high     # Fast disk access
 
 # Memory limits
-deep-cleaner analyze-disk --memory-limit 512    # Limit to 512MB
-deep-cleaner analyze-disk --memory-limit 2048   # Allow up to 2GB
+cortex-workstation analyze-disk --memory-limit 512    # Limit to 512MB
+cortex-workstation analyze-disk --memory-limit 2048   # Allow up to 2GB
 
 # Thread control
-deep-cleaner clean-empty --threads 2            # Limit CPU cores
-deep-cleaner clean-empty --threads 8            # Use more cores
+cortex-workstation clean-empty --threads 2            # Limit CPU cores
+cortex-workstation clean-empty --threads 8            # Use more cores
 ```
 
 ### Multi-Drive Scanning
 
-Scan multiple drives and locations simultaneously.
+Scan drives and directories sequentially or via PowerShell parallel pipelines.
 
-```bash
-# Scan multiple drives (Windows)
-deep-cleaner scan-multi-drive --drives "C:,D:,E:" --parallel
+```powershell
+# Scan specific drive or mount point
+cortex-workstation analyze-disk D:\
 
-# Scan with different priorities per drive
-deep-cleaner scan-multi-drive --drives "C:,\\server\share" --network-timeout 30
-
-# Handle network drives
-deep-cleaner scan-multi-drive --drives "\\server\share" --credentials user:pass
+# Scan multiple fixed drives via PowerShell pipeline
+"C:", "D:", "E:" | ForEach-Object {
+    cortex-workstation analyze-disk $_ --export-json "$($_.Substring(0, 1))_analysis.json"
+}
 ```
 
 ### Performance Monitoring
 
 ```bash
 # Monitor system load during operations
-deep-cleaner analyze-disk --verbose --cpu-priority low
+cortex-workstation analyze-disk --verbose --cpu-priority low
 
 # Export performance metrics
-deep-cleaner analyze-disk --export-json analysis.json --verbose
+cortex-workstation analyze-disk --export-json analysis.json --verbose
 ```
 
 ## Package Manager Integration
 
 ### Supported Package Managers
 
-Deep Cleaner supports cleaning caches and finding orphaned packages across multiple package managers:
+Cortex Workstation supports cleaning caches and finding orphaned packages across multiple package managers:
 
 - **Python**: pip, conda
 - **Node.js**: npm, yarn
@@ -244,57 +243,56 @@ Deep Cleaner supports cleaning caches and finding orphaned packages across multi
 
 ```bash
 # Auto-detect and clean all package managers
-deep-cleaner package-cleanup --clean --all
+cortex-workstation package-cleanup --clean --all
 
 # Clean specific package managers
-deep-cleaner package-cleanup --clean --pip --npm
+cortex-workstation package-cleanup --clean --pip --npm
 
 # Find orphaned packages
-deep-cleaner package-cleanup --orphaned --verbose
+cortex-workstation package-cleanup --orphaned --verbose
 ```
 
 ### Cache Management
 
 ```bash
 # Keep recent cache files (last 30 days)
-deep-cleaner package-cleanup --clean --keep-recent-days 30
+cortex-workstation package-cleanup --clean --keep-recent-days 30
 
 # Clean with integrity verification
-deep-cleaner package-cleanup --clean --npm  # npm includes integrity check
+cortex-workstation package-cleanup --clean --npm  # npm includes integrity check
 
 # Export cache analysis
-deep-cleaner package-cleanup --export cache-analysis.json
+cortex-workstation package-cleanup --export cache-analysis.json
 ```
 
 ### Orphaned Package Detection
 
 ```bash
 # Find packages no longer needed
-deep-cleaner package-cleanup --orphaned
+cortex-workstation package-cleanup --orphaned
 
 # Clean orphaned packages (with confirmation)
-deep-cleaner package-cleanup --orphaned --clean
+cortex-workstation package-cleanup --orphaned --clean
 
 # Detailed orphan analysis
-deep-cleaner package-cleanup --orphaned --verbose --export orphans.json
+cortex-workstation package-cleanup --orphaned --verbose --export orphans.json
 ```
 
 ### Safety Features
 
-- **Package List Backups**: Automatic backup before changes
-- **Integrity Verification**: Verify package manager health after cleaning
-- **Rollback Support**: Restore from backups if needed
-- **Dependency Analysis**: Understand package relationships
+- **Manifest Backups**: Automatic backup manifests for deleted artifacts
+- **Dry Run Safety**: Preview reclaimable space by default
+- **Export Reports**: Generate JSON audit logs before deletion
 
 ```bash
-# Create backup before cleaning
-deep-cleaner package-cleanup --clean --pip  # Automatic backup
+# Preview pip cache without deleting
+cortex-workstation package-cleanup --pip --dry-run
 
-# Verify package manager health
-deep-cleaner package-cleanup --verify-health
+# Export findings to JSON before performing cleanup
+cortex-workstation package-cleanup --export package-analysis.json
 
-# Restore from backup (if needed)
-deep-cleaner restore-packages --backup package-backup-20231201.json
+# Clean verified package caches
+cortex-workstation package-cleanup --clean --pip --npm --yes
 ```
 
 ## Advanced Heuristics and Machine Learning
@@ -307,13 +305,13 @@ The heuristics system uses machine learning and pattern recognition to detect ap
 
 ```bash
 # Scan with default settings
-deep-cleaner heuristics-scan
+cortex-workstation heuristics-scan
 
 # High confidence detection only
-deep-cleaner heuristics-scan --confidence-threshold 0.9
+cortex-workstation heuristics-scan --confidence-threshold 0.9
 
 # Include machine learning patterns
-deep-cleaner heuristics-scan --ml-patterns
+cortex-workstation heuristics-scan --ml-patterns
 ```
 
 ### Confidence Scoring
@@ -327,10 +325,10 @@ The system assigns confidence scores (0.0-1.0) to each detection:
 
 ```bash
 # Only show high confidence items
-deep-cleaner heuristics-scan --confidence-threshold 0.8
+cortex-workstation heuristics-scan --confidence-threshold 0.8
 
 # Show all detections with scores
-deep-cleaner heuristics-scan --confidence-threshold 0.0 --verbose
+cortex-workstation heuristics-scan --confidence-threshold 0.0 --verbose
 ```
 
 ### Detection Types
@@ -340,10 +338,10 @@ Detects leftover folders in common installation directories:
 
 ```bash
 # Scan common installation paths
-deep-cleaner heuristics-scan /path/to/programs
+cortex-workstation heuristics-scan /path/to/programs
 
 # Windows-specific paths
-deep-cleaner heuristics-scan "C:\Program Files"
+cortex-workstation heuristics-scan "C:\Program Files"
 ```
 
 #### Installer Files and Duplicates
@@ -351,10 +349,10 @@ Finds temporary installer files and duplicate installers:
 
 ```bash
 # Detect installer files
-deep-cleaner heuristics-scan --verbose  # Shows installer detection
+cortex-workstation heuristics-scan --verbose  # Shows installer detection
 
 # Export findings for review
-deep-cleaner heuristics-scan --export installer-analysis.json
+cortex-workstation heuristics-scan --export installer-analysis.json
 ```
 
 #### Registry Analysis (Windows)
@@ -362,10 +360,10 @@ Correlates filesystem and registry entries to find orphaned references:
 
 ```bash
 # Include registry analysis (Windows only)
-deep-cleaner heuristics-scan --scan-registry
+cortex-workstation heuristics-scan --scan-registry
 
 # Registry-only analysis
-deep-cleaner heuristics-scan --scan-registry --confidence-threshold 0.8
+cortex-workstation heuristics-scan --scan-registry --confidence-threshold 0.8
 ```
 
 ### Machine Learning Patterns
@@ -374,27 +372,27 @@ The ML system learns from patterns to improve detection accuracy:
 
 ```bash
 # Enable ML patterns (default)
-deep-cleaner heuristics-scan --ml-patterns
+cortex-workstation heuristics-scan --ml-patterns
 
 # Disable ML for faster scanning
-deep-cleaner heuristics-scan --no-ml-patterns
+cortex-workstation heuristics-scan --no-ml-patterns
 
-# Update ML models (if available)
-deep-cleaner update-ml-models
+# Export findings with ML scores
+cortex-workstation heuristics-scan --export ml-findings.json
 ```
 
 ### Safety and Review
 
 ```bash
 # Always review before cleaning
-deep-cleaner heuristics-scan --export review.json
+cortex-workstation heuristics-scan --export review.json
 # Review the JSON file before proceeding
 
 # Clean with high confidence only
-deep-cleaner heuristics-scan --clean --confidence-threshold 0.9
+cortex-workstation heuristics-scan --clean --confidence-threshold 0.9
 
 # Dry run with detailed output
-deep-cleaner heuristics-scan --dry-run --verbose
+cortex-workstation heuristics-scan --dry-run --verbose
 ```
 
 ## Broken Link Detection and Repair
@@ -407,62 +405,44 @@ Comprehensive detection and repair of broken symlinks, shortcuts, and registry r
 
 ```bash
 # Scan for all types of broken links
-deep-cleaner scan-broken-links
+cortex-workstation scan-broken-links
 
 # Scan specific types
-deep-cleaner scan-broken-links --scan-symlinks --scan-shortcuts
+cortex-workstation scan-broken-links --scan-symlinks --scan-shortcuts
 
 # Include repair attempts
-deep-cleaner scan-broken-links --repair
+cortex-workstation scan-broken-links --repair
 ```
 
 ### Link Types
 
-#### Symlinks (All Platforms)
+#### Symlinks and Windows Shortcuts
 ```bash
-# Scan for broken symlinks
-deep-cleaner scan-broken-links --scan-symlinks
+# Scan for broken symlinks and shortcuts
+cortex-workstation scan-broken-links --scan-symlinks --scan-shortcuts
 
-# Attempt repair with target search
-deep-cleaner scan-broken-links --scan-symlinks --repair --search-targets
+# Scan registry references on Windows
+cortex-workstation scan-broken-links --scan-registry
 ```
 
-#### Windows Shortcuts (.lnk files)
-```bash
-# Scan Windows shortcuts
-deep-cleaner scan-broken-links --scan-shortcuts
-
-# Repair with heuristic target finding
-deep-cleaner scan-broken-links --scan-shortcuts --repair --heuristic-search
-```
-
-#### Registry References (Windows)
-```bash
-# Scan registry for broken file references
-deep-cleaner scan-broken-links --scan-registry
-
-# Cross-reference with filesystem
-deep-cleaner scan-broken-links --scan-registry --cross-reference
-```
-
-### Repair Options
+### Repair and Backup Options
 
 ```bash
-# Automatic repair with confirmation
-deep-cleaner scan-broken-links --repair --confidence-threshold 0.8
+# Repair detected links with confidence threshold
+cortex-workstation scan-broken-links --repair --confidence-threshold 0.8
 
-# Manual repair mode
-deep-cleaner scan-broken-links --repair --interactive
+# Create safe backup manifest before repairing
+cortex-workstation scan-broken-links --repair --backup
 
-# Backup before repair
-deep-cleaner scan-broken-links --repair --backup
+# Export findings to JSON
+cortex-workstation scan-broken-links --export broken-links.json
 ```
 
 ## Internationalization and Accessibility
 
 ### Language Support
 
-Deep Cleaner supports multiple languages with automatic detection:
+Cortex Workstation supports multiple languages with automatic detection:
 
 ```bash
 # Set language in configuration
@@ -517,39 +497,38 @@ accessibility:
 
 ```bash
 # Non-interactive mode for scripts
-deep-cleaner docker-cleanup --clean --all --yes --quiet
+cortex-workstation docker-cleanup --clean --all --yes --quiet
 
 # JSON output for parsing
-deep-cleaner analyze-disk --export-json analysis.json --quiet
+cortex-workstation analyze-disk --export-json analysis.json --quiet
 
 # Exit codes for error handling
-deep-cleaner clean-empty --delete || echo "Cleanup failed"
+cortex-workstation clean-empty --delete || echo "Cleanup failed"
 ```
 
-### Scheduled Operations
+### Scheduled Operations (Windows Task Scheduler)
 
-```bash
-# Create scheduled cleanup task
-deep-cleaner schedule-task --name "weekly-cleanup" --command "clean-empty --delete" --schedule "weekly"
+Automate routine cleanups using native Windows NT Task Scheduler (`schtasks.exe`):
 
-# List scheduled tasks
-deep-cleaner list-scheduled-tasks
+```powershell
+# Register weekly automated dry-run report
+schtasks /create /tn "CortexWeeklyReport" /tr "cortex-workstation clean-empty --json-log --log-file C:\Logs\cleanup.log" /sc weekly /d SUN /st 02:00
 
-# Run scheduled task manually
-deep-cleaner run-scheduled-task --name "weekly-cleanup"
+# Query registered task status
+schtasks /query /tn "CortexWeeklyReport"
+
+# Trigger task on demand
+schtasks /run /tn "CortexWeeklyReport"
 ```
 
 ### Configuration Management
 
 ```bash
-# Validate configuration
-deep-cleaner validate-config --config ~/.deepcleaner.yaml
+# Execute command with custom YAML/JSON configuration
+cortex-workstation clean-empty --config custom-settings.yaml
 
-# Export default configuration
-deep-cleaner export-default-config > default-config.yaml
-
-# Merge configurations
-deep-cleaner merge-configs --base base.yaml --override custom.yaml --output merged.yaml
+# Execute command ignoring configuration files
+cortex-workstation clean-empty --no-config
 ```
 
 ## Best Practices
@@ -575,4 +554,4 @@ deep-cleaner merge-configs --base base.yaml --override custom.yaml --output merg
 3. **Log Monitoring**: Check logs for errors and performance issues
 4. **Cleanup Validation**: Verify system health after major cleanups
 
-This guide covers the advanced features of Deep Cleaner. For basic usage, see the main usage guide. For troubleshooting, refer to the troubleshooting guide.
+This guide covers the advanced features of Cortex Workstation. For basic usage, see the main usage guide. For troubleshooting, refer to the troubleshooting guide.

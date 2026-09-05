@@ -1,6 +1,6 @@
 # Cortex Workstation — Complete Feature & UI Directory
 
-This directory documents all **132 interactive pages** across the **10 navigation groups** in Cortex Workstation.
+This directory documents all **139 interactive pages** across the **10 navigation groups** in Cortex Workstation.
 Every page is backed by real Windows NT subsystem tools and asynchronous worker threads.
 
 ---
@@ -10,12 +10,12 @@ Every page is backed by real Windows NT subsystem tools and asynchronous worker 
 | Group ID | Section Name | Page Count | Primary Scope |
 | :--- | :--- | :--- | :--- |
 | `overview` | **Command Center** | 2 | Overview tools and management |
-| `cleanup` | **Cleanup & Storage** | 32 | Cleanup tools and management |
-| `files` | **Files & Explorer** | 21 | Files tools and management |
-| `system` | **System Performance** | 29 | System tools and management |
+| `cleanup` | **Cleanup & Storage** | 34 | Cleanup tools and management |
+| `files` | **Files & Explorer** | 22 | Files tools and management |
+| `system` | **System Performance** | 31 | System tools and management |
 | `activity` | **Privacy & Activity** | 9 | Activity tools and management |
-| `network` | **Network & Defense** | 10 | Network tools and management |
-| `apps` | **Apps & Security** | 14 | Apps tools and management |
+| `network` | **Network & Defense** | 11 | Network tools and management |
+| `apps` | **Apps & Security** | 15 | Apps tools and management |
 | `security` | **Security Tools** | 5 | Security tools and management |
 | `recovery` | **Recovery & Reports** | 5 | Recovery tools and management |
 | `maintenance` | **Maintenance & Repair** | 5 | Maintenance tools and management |
@@ -31,7 +31,7 @@ Every page is backed by real Windows NT subsystem tools and asynchronous worker 
 | `health` | **PC Health Check** | `health.svg` | [`HealthCheckPage`](https://github.com/Destroyer-official/Cortex-Workstation/blob/main/src/cortex_unified/ui/premium/analysis_pages.py) | Forensic execution via `HealthCheckPage` |
 
 ## Cleanup & Storage (`cleanup`)
-*Contains 32 interactive pages.*
+*Contains 34 interactive pages.*
 
 | Page ID | Display Title | Icon Asset | Factory Target | Capabilities & Operations |
 | :--- | :--- | :--- | :--- | :--- |
@@ -69,7 +69,7 @@ Every page is backed by real Windows NT subsystem tools and asynchronous worker 
 | `winapp2` | **Extended Third-Party App Caches** | `winapp2.svg` | [`Winapp2CleanerPage`](https://github.com/Destroyer-official/Cortex-Workstation/blob/main/src/cortex_unified/ui/premium/winapp2_page.py) | Forensic execution via `Winapp2CleanerPage` |
 
 ## Files & Explorer (`files`)
-*Contains 21 interactive pages.*
+*Contains 22 interactive pages.*
 
 | Page ID | Display Title | Icon Asset | Factory Target | Capabilities & Operations |
 | :--- | :--- | :--- | :--- | :--- |
@@ -96,7 +96,7 @@ Every page is backed by real Windows NT subsystem tools and asynchronous worker 
 | `mftslack` | **MFT File Record Slack Scrubber** | `mftslack.svg` | [`MftSlackScrubberPage`](https://github.com/Destroyer-official/Cortex-Workstation/blob/main/src/cortex_unified/ui/premium/mft_slack_page.py) | Forensic execution via `MftSlackScrubberPage` |
 
 ## System Performance (`system`)
-*Contains 29 interactive pages.*
+*Contains 31 interactive pages.*
 
 | Page ID | Display Title | Icon Asset | Factory Target | Capabilities & Operations |
 | :--- | :--- | :--- | :--- | :--- |
@@ -128,6 +128,8 @@ Every page is backed by real Windows NT subsystem tools and asynchronous worker 
 | `ssdtrim` | **SSD & NVMe TRIM Optimizer** | `ssdtrim.svg` | [`SsdTrimOptimizerPage`](https://github.com/Destroyer-official/Cortex-Workstation/blob/main/src/cortex_unified/ui/premium/nextgen_suite_pages.py) | Forensic execution via `SsdTrimOptimizerPage` |
 | `directstorage` | **DirectStorage & BypassIO Gaming Acceleration** | `directstorage.svg` | [`DirectStorageOptimizerPage`](https://github.com/Destroyer-official/Cortex-Workstation/blob/main/src/cortex_unified/ui/premium/directstorage_page.py) | Forensic execution via `DirectStorageOptimizerPage` |
 | `standbymem` | **Kernel Memory Standby List Purger** | `standbymem.svg` | [`MemoryStandbyPurgerPage`](https://github.com/Destroyer-official/Cortex-Workstation/blob/main/src/cortex_unified/ui/premium/memory_standby_page.py) | Forensic execution via `MemoryStandbyPurgerPage` |
+| `gamemode` | **Gaming Session & FPS Booster** | `controller.svg` | [`GameModePage`](https://github.com/Destroyer-official/Cortex-Workstation/blob/main/src/cortex_unified/ui/premium/game_mode_page.py) | Ultimate performance power scheme switch and background process trimming |
+| `procstudio` | **Advanced Process & Threat Studio** | `processing.svg` | [`ProcessStudioPage`](https://github.com/Destroyer-official/Cortex-Workstation/blob/main/src/cortex_unified/ui/premium/process_studio_page.py) | Live process inspector with memory/CPU telemetry and safe termination |
 | `searchopt` | **Windows Search Catalog Compactor** | `searchopt.svg` | [`SearchIndexOptimizerPage`](https://github.com/Destroyer-official/Cortex-Workstation/blob/main/src/cortex_unified/ui/premium/search_optimizer_page.py) | Forensic execution via `SearchIndexOptimizerPage` |
 
 ## Privacy & Activity (`activity`)
@@ -146,7 +148,7 @@ Every page is backed by real Windows NT subsystem tools and asynchronous worker 
 | `srumbam` | **Application Execution Forensics (BAM & SRUM)** | `srumbam.svg` | [`SrumBamCleanerPage`](https://github.com/Destroyer-official/Cortex-Workstation/blob/main/src/cortex_unified/ui/premium/srum_bam_page.py) | Forensic execution via `SrumBamCleanerPage` |
 
 ## Network & Defense (`network`)
-*Contains 10 interactive pages.*
+*Contains 11 interactive pages.*
 
 | Page ID | Display Title | Icon Asset | Factory Target | Capabilities & Operations |
 | :--- | :--- | :--- | :--- | :--- |
@@ -162,7 +164,7 @@ Every page is backed by real Windows NT subsystem tools and asynchronous worker 
 | `smbshares` | **Network File Shares (SMB)** | `smbshares.svg` | [`SmbShareAuditorPage`](https://github.com/Destroyer-official/Cortex-Workstation/blob/main/src/cortex_unified/ui/premium/enterprise_suite_pages.py) | Forensic execution via `SmbShareAuditorPage` |
 
 ## Apps & Security (`apps`)
-*Contains 14 interactive pages.*
+*Contains 15 interactive pages.*
 
 | Page ID | Display Title | Icon Asset | Factory Target | Capabilities & Operations |
 | :--- | :--- | :--- | :--- | :--- |

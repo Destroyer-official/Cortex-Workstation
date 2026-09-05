@@ -23,7 +23,7 @@ flowchart TB
     subgraph UI_Layer["Presentation and Shell Layer - PySide6"]
         A["PremiumMainWindow"] --> B["Sidebar Navigation and Search: Ctrl+K"]
         A --> C["PageRegistry and Lazy Page Loader"]
-        C --> D["132 Theme-Aware GUI Pages"]
+        C --> D["139 Theme-Aware GUI Pages"]
         D --> E["WorkerRuntime / QThreadPool"]
     end
 
@@ -66,4 +66,4 @@ class PageSpec:
     factory: str   # Lazy import string "module.path:ClassName"
 ```
 
-Because `factory` is stored as a string, declaring 132 tools costs under **1 millisecond** at boot time. Modules are only imported when the user navigates to that specific page.
+Because `factory` is stored as a string, declaring 139 tools costs under **1 millisecond** at boot time. Modules are only imported when the user navigates to that specific page.

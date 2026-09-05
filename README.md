@@ -7,7 +7,7 @@
     <a href="https://www.python.org/"><img src="https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13%20%7C%203.14-blueviolet.svg?style=for-the-badge" alt="Python"></a>
     <a href="https://www.microsoft.com/windows"><img src="https://img.shields.io/badge/Platform-Windows%2010%20%2F%2011%20(x64)-0078D6.svg?style=for-the-badge" alt="Platform"></a>
     <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge" alt="License"></a>
-    <a href="docs/FEATURE_DIRECTORY.md"><img src="https://img.shields.io/badge/Interactive%20Pages-132%20Pages-00D2FF.svg?style=for-the-badge" alt="Interactive Pages"></a>
+    <a href="docs/FEATURE_DIRECTORY.md"><img src="https://img.shields.io/badge/Interactive%20Pages-139%20Pages-00D2FF.svg?style=for-the-badge" alt="Interactive Pages"></a>
     <a href="ONE_BY_ONE_VERIFICATION_REPORT.md"><img src="https://img.shields.io/badge/Program%20Files-484%20Verified%20(100%25)-success.svg?style=for-the-badge" alt="Program Files"></a>
     <a href="tests/"><img src="https://img.shields.io/badge/Unit%20Tests-1569%20Passed%20(100%25)-success.svg?style=for-the-badge" alt="Unit Tests"></a>
     <a href="tests/"><img src="https://img.shields.io/badge/Diagnostics-297%20Passed%20(100%25)-success.svg?style=for-the-badge" alt="Diagnostics"></a>
@@ -19,7 +19,7 @@
 
 **Cortex Workstation** is an enterprise-grade Windows operating system workstation, forensic storage analyzer, and dual-pane virtual file manager. Designed for systems administrators, forensic investigators, power users, and developers, Cortex Workstation provides direct, low-level control over Windows NT internals, NTFS/ReFS filesystems, kernel memory management, and process security tokens.
 
-Combining the **Cortex Unified Optimization Engine** with the high-performance **Nexus Explorer VFS Subsystem**, Cortex Workstation delivers a responsive, non-destructive, and military-grade toolkit that eliminates system rot, reclaims gigabytes of locked storage, and protects data integrity.
+Combining the **Cortex Unified Optimization Engine** with the high-performance **Nexus Explorer VFS Subsystem**, Cortex Workstation delivers a responsive, non-destructive, and high-assurance forensic toolkit that eliminates system rot, reclaims gigabytes of locked storage, and protects data integrity.
 
 ---
 
@@ -126,7 +126,7 @@ flowchart TB
     subgraph UI_Layer["Presentation and Shell Layer - PySide6"]
         A["PremiumMainWindow"] --> B["Sidebar Navigation and Search: Ctrl+K"]
         A --> C["PageRegistry and Lazy Page Loader"]
-        C --> D["132 Theme-Aware GUI Pages"]
+        C --> D["139 Theme-Aware GUI Pages"]
         D --> E["WorkerRuntime / QThreadPool"]
     end
 
@@ -159,20 +159,20 @@ For comprehensive technical specifications on threading, Win32 interop, and desi
 
 ## 🖥️ Interactive Navigation & UI Pages
 
-Cortex Workstation features **132 interactive GUI pages** organized into **10 intuitive sections**:
+Cortex Workstation features **139 interactive GUI pages** organized into **10 intuitive sections**:
 
 | Section ID | Section Title | Page Count | Primary Features |
 | :--- | :--- | :--- | :--- |
 | `overview` | **Command Center** | 2 | System Overview Dashboard, PC Health Check |
-| `cleanup` | **Cleanup & Storage** | 32 | One-Click Cleanup Hub, Extended Third-Party App Caches, Shader Caches, Dev Packages |
-| `files` | **Files & Explorer** | 21 | Nexus File Explorer, Process Restart Manager Unlocker, Checksum Matrix, USN Journal |
-| `system` | **System Performance** | 29 | DirectStorage BypassIO, Kernel Standby Purger, SSD NVMe TRIM, Dev Drive CoW |
+| `cleanup` | **Cleanup & Storage** | 34 | One-Click Cleanup Hub, Extended Third-Party App Caches, Shader Caches, Dev Packages, WUDO Delivery Optimization, Old Files |
+| `files` | **Files & Explorer** | 22 | Nexus File Explorer, Process Restart Manager Unlocker, Checksum Matrix, USN Journal, Bad Extensions & EXIF Studio |
+| `system` | **System Performance** | 31 | DirectStorage BypassIO, Kernel Standby Purger, SSD NVMe TRIM, Dev Drive CoW, Gaming Session Booster, Process Studio |
 | `activity` | **Privacy & Activity** | 9 | BAM/SRUM Execution Forensics, AI Features & Recall Sanitizer, Privacy Shield |
-| `network` | **Network & Defense** | 10 | SMB Share Auditor, DNS Benchmark, Firewall Manager, Traffic Monitor |
-| `apps` | **Apps & Security** | 14 | Deep Software Uninstaller, Outdated Driver Store Cleaner, Context Menu Manager |
-| `security` | **Security Tools** | 5 | Process Tokens, BitLocker Encryption Status, BitRot Scrubber, Secure Shredder |
-| `recovery` | **Recovery & Reports** | 5 | Volume Shadow Copies (VSS), Restore Points, Audit Reports, System Recovery |
-| `maintenance`| **Maintenance & Repair** | 5 | VSS Writer Health, Windows Update Cleaner, Update Repair, Deep Disk Space Scanner |
+| `network` | **Network & Defense** | 11 | Network Security Audit, WAN & UPnP Gateway Auditor, TCP/IP Optimization, Hosts File Shield |
+| `apps` | **Apps & Security** | 15 | Installed Application Manager, Uninstalled Residual Hunter, Windows Services, Context Menu Cleaner |
+| `security` | **Security Tools** | 5 | Process Security Tokens, BitLocker & TPM Status, Silent BitRot Integrity Scrubber |
+| `recovery` | **Recovery & Reports** | 5 | Undo/Redo File Manifest Restoration, Diagnostic Export, System Reports |
+| `maintenance` | **Maintenance & Repair** | 5 | Windows Update Component Store Repair, DISM/SFC Integration, VSS Health Monitor |
 
 *Full catalog and factory class mapping available in [`docs/FEATURE_DIRECTORY.md`](docs/FEATURE_DIRECTORY.md).*
 
@@ -225,18 +225,34 @@ python run_gui.py
 Cortex Workstation provides a comprehensive command-line interface for automation and administrative scripts:
 
 ```powershell
-# Display help and available commands
+# 1. Forensic & Workstation Systems CLI (cortex-workstation)
+cortex-workstation --help
+# or via module:
+python -m cortex_unified.cli --help
+
+# Scan and clean temporary caches safely (dry run preview)
+cortex-workstation clean-temp --dry-run
+
+# Audit DirectX and GPU vendor shader caches
+cortex-workstation clean-shaders --dry-run
+
+# Trigger NVMe SSD wear-leveling deallocation
+cortex-workstation trim-ssd --drive C:
+
+# 2. Optimization Engine CLI (cortex)
 cortex --help
-# or
-python -m cortex_unified.cli.cli --help
+# or via module:
+python -m cortex_unified.engine --help
 
-# Run a quick system diagnostic scan
-python -m cortex_unified.cli.cli scan
+# Read-only scan of reclaimable disk space by category
+cortex scan
 
-# Clean temporary files with dry-run preview
-python -m cortex_unified.cli.cli clean --dry-run
+# Safe preview clean pass
+cortex clean --dry-run
 
-# Run full production readiness verification
+# 3. Production Readiness Diagnostics
+cortex-debug
+# or via module:
 python -m cortex_unified.debug.runner
 ```
 
@@ -249,8 +265,8 @@ Every program file, tool, and page in the repository is backed by automated test
 | Test / Diagnostic Suite | Target Scope | Passed | Failures | Pass Rate |
 | :--- | :--- | :--- | :--- | :--- |
 | **Complete Unit Test Suite** (`pytest`) | Backend tools, VFS, hashing, and OS modules | **1569 / 1569** | **0** | **100%** |
-| **Page Registry & Factory Verification** | All 132 page factories dynamically resolve | **132 / 132** | **0** | **100%** |
-| **Vector SVG Icon Pipeline** | Crisp vector assets (no glyphs, no duplicates) | **132 / 132** | **0** | **100%** |
+| **Page Registry & Factory Verification** | All 139 page factories dynamically resolve | **139 / 139** | **0** | **100%** |
+| **Vector SVG Icon Pipeline** | Crisp vector assets (no glyphs, no duplicates) | **139 / 139** | **0** | **100%** |
 | **One-by-One Program File Audit** | AST syntax, compilation, and package imports | **484 / 484** | **0** | **100%** |
 | **Docstring Coverage** | Public defs across `src + tests + scripts` | **9287 / 9287** | **0** | **100%** |
 

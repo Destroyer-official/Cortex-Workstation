@@ -32,6 +32,7 @@ try:
 except ImportError:  # pragma: no cover
     click = None  # type: ignore
 
+from cortex_unified import __version__
 from .categories import RiskLevel
 from .models import DeletionMethod
 from .secure_delete import OverwriteNotEffective, SecureDeleter
@@ -170,7 +171,7 @@ def _fmt_bytes(n: int) -> str:
 if click is not None:
 
     @click.group()
-    @click.version_option(package_name="cortex-cleaner", message="cortex engine %(version)s")
+    @click.version_option(version=__version__, message="cortex engine %(version)s")
     def main() -> None:
         """Main.
 
