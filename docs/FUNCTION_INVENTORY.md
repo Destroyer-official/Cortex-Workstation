@@ -1,23 +1,76 @@
-# Function Inventory — full project (AST ground truth)
+---
+hide:
+  - toc
+---
+
+# 📚 Function & Symbol Inventory (AST Ground Truth)
+
+> Complete abstract syntax tree (AST) symbol extraction covering every class, method, function, and parameter signature across the repository with exact file and line citations.
+
+<div class="grid cards" markdown>
+
+-   :material-cog: **Core Engine**
+    
+    ---
+    
+    [Jump to Engine (`engine/`)](#srccortex_unifiedengineinitpy) • [Core (`core/`)](#srccortex_unifiedcoreinitpy)
+
+-   :material-magnify-scan: **Analyzers & Scanners**
+    
+    ---
+    
+    [Jump to Analyzers (`analyzers/`)](#srccortex_unifiedanalyzersinitpy)
+
+-   :material-tools: **System Engines (62 Modules)**
+    
+    ---
+    
+    [Jump to System Tools (`system_tools/`)](#srccortex_unifiedsystem_toolsinitpy)
+
+-   :material-view-dashboard: **Presentation & UI**
+    
+    ---
+    
+    [Jump to UI & Pages (`ui/`)](#srccortex_unifieduiinitpy)
+
+-   :material-folder-multiple: **Nexus Explorer (VFS & Rust FFI)**
+    
+    ---
+    
+    [Jump to Nexus Explorer (`NexusExplorer/`)](#srcnexusexplorerinitpy)
+
+-   :material-test-tube: **Verification & Test Suites**
+    
+    ---
+    
+    [Jump to Test Suites (`tests/`)](#tests-103-files) • [Scripts (`scripts/`)](#scripts-22-files)
+
+</div>
+
+---
 
 ## src — 359 files
 
 ### src/cortex_unified/__init__.py
 _Module: Cortex Cleaner - safe, fast cleanup and system-care toolkit._
+
 - __getattr__(name) (L62)
 - __dir__() (L82)
 
 ### src/cortex_unified/__main__.py
 _Module: ``python -m cortex_unified`` entry point._
+
 - main() (L24)
 
 ### src/cortex_unified/accessibility/__init__.py
 _Module: Accessibility module for Cortex Cleaner._
+
 - setup_accessibility(widget) (L25)
 - setup_full_accessibility(widget, enable_shortcuts, enable_announcements) (L35)
 
 ### src/cortex_unified/accessibility/keyboard_handler.py
 _Module: Keyboard-only navigation: focus cycling, tab order, and app shortcuts._
+
 - class KeyboardHandler (L20)
   - __init__(self, widget) (L27)
   - setup_keyboard_navigation(self) (L39)
@@ -46,6 +99,7 @@ _Module: Keyboard-only navigation: focus cycling, tab order, and app shortcuts._
 
 ### src/cortex_unified/accessibility/screen_reader.py
 _Module: Screen-reader affordances for Qt widget hierarchies._
+
 - class ScreenReaderSupport (L34)
   - __init__(self, widget) (L42)
   - _init_platform_accessibility(self) (L53)
@@ -71,6 +125,7 @@ _Module: Screen-reader affordances for Qt widget hierarchies._
 
 ### src/cortex_unified/accessibility/themes.py
 _Module: High contrast and accessibility themes for Cortex Cleaner._
+
 - class AccessibilityThemes (L16)
   - __init__(self) (L19)
   - apply_high_contrast_theme(self, widget) (L30)
@@ -89,6 +144,7 @@ _Module: Analyzers module for Cortex Cleaner._
 
 ### src/cortex_unified/analyzers/advanced_disk_analyzer.py
 _Module: Advanced Disk Analyzer — MFT fast scan, treemap/sunburst, cloud targets._
+
 - class FileEntry (L105)
 - class FolderNode (L122)
   - add_file(self, rel_path, size, ext) (L132)
@@ -128,6 +184,7 @@ _Module: Advanced Disk Analyzer — MFT fast scan, treemap/sunburst, cloud targe
 
 ### src/cortex_unified/analyzers/advanced_shredder.py
 _Module: Advanced multi-pattern overwrite disk sanitization (DoD 5220.22-M style pass sequence)._
+
 - class ShredMethod (L23)
 - class AdvancedShredder (L36)
   - __init__(self) (L54)
@@ -137,6 +194,7 @@ _Module: Advanced multi-pattern overwrite disk sanitization (DoD 5220.22-M style
 
 ### src/cortex_unified/analyzers/advanced_uninstaller.py
 _Module: Advanced Uninstaller — Steam, Chocolatey, Winget, Store, portable, orphaned._
+
 - class AppInfo (L87)
   - to_dict(self) (L106)
 - class LeftoverScanResult (L115)
@@ -168,6 +226,7 @@ _Module: Advanced Uninstaller — Steam, Chocolatey, Winget, Store, portable, or
 
 ### src/cortex_unified/analyzers/audio_duplicate_finder.py
 _Module: Audio duplicate detection via acoustic fingerprinting (Chromaprint-inspired)._
+
 - _build_band_edges() (L95)
 - _fft(mag) (L120)
 - _magnitude_spectrum(frame) (L151)
@@ -193,6 +252,7 @@ _Module: Audio duplicate detection via acoustic fingerprinting (Chromaprint-insp
 
 ### src/cortex_unified/analyzers/broken_link_detector.py
 _Module: Enhanced broken link detector for Cortex Cleaner._
+
 - class BrokenLink (L16)
 - class BrokenSymlink (L29)
   - __post_init__(self) (L33)
@@ -236,6 +296,7 @@ _Module: Enhanced broken link detector for Cortex Cleaner._
 
 ### src/cortex_unified/analyzers/cache_cleaner.py
 _Module: Discovery of application caches and log files._
+
 - class CacheCleaner (L17)
   - __init__(self, config) (L20)
   - _get_platform_cache_paths(self) (L124)
@@ -253,6 +314,7 @@ _Module: Discovery of application caches and log files._
 
 ### src/cortex_unified/analyzers/cloud_storage_analyzer.py
 _Module: Cloud Storage Analyzer — rclone, S3, Azure, Google Drive, OneDrive, SharePoint._
+
 - class CloudFileEntry (L75)
   - to_dict(self) (L90)
 - class CloudScanStats (L101)
@@ -317,6 +379,7 @@ _Module: Cloud Storage Analyzer — rclone, S3, Azure, Google Drive, OneDrive, S
 
 ### src/cortex_unified/analyzers/content_defined_chunker.py
 _Module: Content-Defined Chunking (FastCDC / VectorCDC) for deduplication acceleration._
+
 - _build_gear_table(seed) (L77)
 - _mask_for_avg(avg) (L87)
 - class Chunk (L102)
@@ -343,6 +406,7 @@ _Module: Content-Defined Chunking (FastCDC / VectorCDC) for deduplication accele
 
 ### src/cortex_unified/analyzers/czkawka_tools.py
 _Module: Czkawka multi-tool suite — empty, broken, bad-ext, bad-names, exif, video-optimizer._
+
 - _temp_dirs() (L62)
 - _sniff_extension(path) (L112)
 - class EmptyResult (L135)
@@ -379,6 +443,7 @@ _Module: Czkawka multi-tool suite — empty, broken, bad-ext, bad-names, exif, v
 
 ### src/cortex_unified/analyzers/deep_cleaner.py
 _Module: Cross-platform "deep clean" discovery over per-OS target tables._
+
 - get_path_size_safe(path) (L19)
 - class DeepCleaner (L39)
   - __init__(self, config) (L42)
@@ -390,6 +455,7 @@ _Module: Cross-platform "deep clean" discovery over per-OS target tables._
 
 ### src/cortex_unified/analyzers/disk_analyzer.py
 _Module: Disk space analysis: volume usage, tree breakdown, per-extension stats._
+
 - class DiskAnalyzer (L17)
   - __init__(self, config, root_path) (L20)
   - _should_exclude_path(self, path) (L38)
@@ -404,6 +470,7 @@ _Module: Disk space analysis: volume usage, tree breakdown, per-extension stats.
 
 ### src/cortex_unified/analyzers/docker_cleaner.py
 _Module: Scans a local Docker daemon for reclaimable resources (images, stopped_
+
 - class DockerImage (L26)
   - __str__(self) (L35)
 - class DockerContainer (L42)
@@ -435,6 +502,7 @@ _Module: Scans a local Docker daemon for reclaimable resources (images, stopped_
 
 ### src/cortex_unified/analyzers/duplicate_finder.py
 _Module: Hash-based duplicate file detection._
+
 - _gear_hash(data) (L37)
 - fastcdc_chunk(data, min_size, avg_size, max_size) (L49)
 - _fsb_hash(chunk) (L86)
@@ -458,6 +526,7 @@ _Module: Hash-based duplicate file detection._
 
 ### src/cortex_unified/analyzers/duplicate_folder_finder.py
 _Module: Content-identical folder detection._
+
 - class DuplicateFolderFinder (L19)
   - __init__(self, config, root_path) (L22)
   - _should_exclude_path(self, path) (L42)
@@ -470,6 +539,7 @@ _Module: Content-identical folder detection._
 
 ### src/cortex_unified/analyzers/file_shredder.py
 _Module: Overwrite-based file shredding._
+
 - class FileShredder (L18)
   - __init__(self, config) (L21)
   - _generate_random_data(self, size) (L34)
@@ -482,6 +552,7 @@ _Module: Overwrite-based file shredding._
 
 ### src/cortex_unified/analyzers/fuzzy_finder.py
 _Module: Fuzzy (similarity, not exact) file hashing via CTPH / TLSH-style digests._
+
 - _fnv1a(data) (L98)
 - _chunk_hash(chunk) (L109)
 - _to_char(values) (L118)
@@ -505,6 +576,7 @@ _Module: Fuzzy (similarity, not exact) file hashing via CTPH / TLSH-style digest
 
 ### src/cortex_unified/analyzers/large_file_finder.py
 _Module: Discovery of files above a configurable size threshold._
+
 - is_ai_model(path) (L26)
 - class LargeFileFinder (L31)
   - __init__(self, config, root_path) (L34)
@@ -521,6 +593,7 @@ _Module: Discovery of files above a configurable size threshold._
 
 ### src/cortex_unified/analyzers/leftover_detector.py
 _Module: Advanced heuristics and leftover detection for Cortex Cleaner._
+
 - class DetectedItem (L25)
   - to_dict(self) (L35)
 - class OrphanedFolder (L45)
@@ -566,6 +639,7 @@ _Module: Advanced heuristics and leftover detection for Cortex Cleaner._
 
 ### src/cortex_unified/analyzers/near_duplicate_finder.py
 _Module: Near-duplicate detection via MinHash LSH + Bloom filtering._
+
 - class BloomFilter (L72)
   - __init__(self, n, p, k) (L79)
   - _hashes(self, data) (L91)
@@ -592,6 +666,7 @@ _Module: Near-duplicate detection via MinHash LSH + Bloom filtering._
 
 ### src/cortex_unified/analyzers/old_file_cleaner.py
 _Module: Discovery of files untouched for a configurable number of days._
+
 - class OldFileCleaner (L14)
   - __init__(self, config, root_path) (L17)
   - _should_exclude_path(self, path) (L35)
@@ -603,6 +678,7 @@ _Module: Discovery of files untouched for a configurable number of days._
 
 ### src/cortex_unified/analyzers/package_manager_cleaner.py
 _Module: Detects installed package managers and clears their regenerable caches._
+
 - class Package (L23)
   - __post_init__(self) (L33)
 - class PackageManager (L41)
@@ -645,6 +721,7 @@ _Module: Detects installed package managers and clears their regenerable caches.
 
 ### src/cortex_unified/analyzers/perceptual_duplicate_finder.py
 _Module: Perceptual image/photo duplicate detection via pHash / aHash / dHash._
+
 - _validate_pil() (L88)
 - _cos_table(n) (L103)
 - _dct2d(rows, cos, size) (L116)
@@ -669,6 +746,7 @@ _Module: Perceptual image/photo duplicate detection via pHash / aHash / dHash._
 
 ### src/cortex_unified/analyzers/portable_manager.py
 _Module: Portable Manager — PortableApps.com / LiberKey catalog, USB toolkit._
+
 - class PortableApp (L73)
   - to_dict(self) (L87)
 - _find_removable_drives() (L101)
@@ -684,6 +762,7 @@ _Module: Portable Manager — PortableApps.com / LiberKey catalog, USB toolkit._
 
 ### src/cortex_unified/analyzers/privacy_cleaner.py
 _Module: Detects and removes browser traces (cache, cookies, history, sessions)_
+
 - class PrivacyCleaner (L18)
   - __init__(self) (L25)
   - scan_browsers(self) (L46)
@@ -702,6 +781,7 @@ _Module: Detects and removes browser traces (cache, cookies, history, sessions)_
 
 ### src/cortex_unified/analyzers/project_cache_scanner.py
 _Module: Auto-discovery of project cache folders across fixed drives._
+
 - _fixed_drive_roots() (L38)
 - _known_code_roots() (L71)
 - class ProjectCacheScanner (L119)
@@ -715,6 +795,7 @@ _Module: Auto-discovery of project cache folders across fixed drives._
 
 ### src/cortex_unified/analyzers/registry_cleaner_ai.py
 _Module: AI/ML-Enhanced Registry Cleaner — learned safety, contextual risk scoring._
+
 - class RegistryIssue (L93)
   - to_dict(self) (L106)
 - class ScanResult (L115)
@@ -772,6 +853,7 @@ _Module: AI/ML-Enhanced Registry Cleaner — learned safety, contextual risk sco
 
 ### src/cortex_unified/analyzers/residual_cleaner.py
 _Module: Residual Cleaner — finds leftover folders after application uninstall._
+
 - class ResidualCleaner (L15)
   - __init__(self) (L27)
   - scan_for_app(self, app_name, publisher) (L42)
@@ -784,6 +866,7 @@ _Module: Backward-compatibility alias for ResidualCleaner._
 
 ### src/cortex_unified/analyzers/video_duplicate_finder.py
 _Module: Video near-duplicate detection via keyframe perceptual hashing + temporal consistency._
+
 - _cos_table(n) (L108)
 - _dct2d(rows, cos, size) (L117)
 - _phash_image(img) (L138)
@@ -811,6 +894,7 @@ _Module: Command Line Interface (CLI) module for Cortex Workstation._
 
 ### src/cortex_unified/cli/cli.py
 _Module: Command-line interface for Cortex Cleaner (legacy ``cortex-cleaner``)._
+
 - _has_registry_cleaner() (L42)
 - __getattr__(name) (L56)
 - main() (L68)
@@ -844,6 +928,7 @@ _Module: Cortex Workstation Core Engine and Orchestration Framework._
 
 ### src/cortex_unified/core/background_agent.py
 _Module: Background Agent — lightweight real-time system monitor._
+
 - class BackgroundAgent (L16)
   - __init__(self, check_interval) (L24)
   - start_monitoring(self) (L43)
@@ -851,6 +936,7 @@ _Module: Background Agent — lightweight real-time system monitor._
 
 ### src/cortex_unified/core/config.py
 _Module: Legacy YAML configuration management for Cortex Cleaner._
+
 - class Config (L19)
   - __init__(self, config_path) (L29)
   - _get_default_config_path(self) (L35)
@@ -869,6 +955,7 @@ _Module: Legacy YAML configuration management for Cortex Cleaner._
 
 ### src/cortex_unified/core/config_v2.py
 _Module: Pydantic-based configuration management for Cortex Cleaner._
+
 - _read_yaml_file(path) (L65)
 - class _YamlConfigSource (L77)
   - __init__(self, settings_cls, config_file) (L85)
@@ -900,6 +987,7 @@ _Module: Pydantic-based configuration management for Cortex Cleaner._
 
 ### src/cortex_unified/core/database.py
 _Module: SQLite persistence layer for Cortex Cleaner._
+
 - class Base (L35)
 - class ScanRun (L39)
   - __repr__(self) (L71)
@@ -932,6 +1020,7 @@ _Module: SQLite persistence layer for Cortex Cleaner._
 
 ### src/cortex_unified/core/deleter.py
 _Module: File and directory deletion functionality for Cortex Cleaner._
+
 - class Deleter (L17)
   - __init__(self, dry_run, use_trash) (L26)
   - _delete_file(self, filepath) (L40)
@@ -941,6 +1030,7 @@ _Module: File and directory deletion functionality for Cortex Cleaner._
 
 ### src/cortex_unified/core/logging_setup.py
 _Module: Structured logging configuration for Cortex Cleaner._
+
 - add_correlation_id(logger, method_name, event_dict) (L23)
 - add_app_context(logger, method_name, event_dict) (L30)
 - censor_sensitive_data(logger, method_name, event_dict) (L40)
@@ -961,6 +1051,7 @@ _Module: Structured logging configuration for Cortex Cleaner._
 
 ### src/cortex_unified/core/proc.py
 _Module: Cancellable, tree-safe subprocess execution._
+
 - class ProcessCancelled (L56)
   - __init__(self, args) (L63)
 - run(args, timeout, cancel_event, text, encoding, errors, input, creationflags, cwd, env) (L70)
@@ -969,6 +1060,7 @@ _Module: Cancellable, tree-safe subprocess execution._
 
 ### src/cortex_unified/core/scanner.py
 _Module: Discovery of empty files and directories under a configured root._
+
 - class Scanner (L21)
   - __init__(self, config, root_path, enable_checkpoints, enable_throttling) (L29)
   - _should_exclude_path(self, path) (L65)
@@ -988,6 +1080,7 @@ _Module: Discovery of empty files and directories under a configured root._
 
 ### src/cortex_unified/core/security.py
 _Module: Security utilities for Cortex Cleaner._
+
 - _get_protected_paths() (L59)
 - is_safe_path(path, base_dir) (L95)
 - is_system_file(path) (L168)
@@ -998,6 +1091,7 @@ _Module: Security utilities for Cortex Cleaner._
 
 ### src/cortex_unified/core/smart_scanner.py
 _Module: Smart Scanner — orchestrates parallel system analysis and produces a Health Score._
+
 - class SmartScanReport (L25)
   - __init__(self) (L28)
   - total_cleanable_mb(self) (L46)
@@ -1013,6 +1107,7 @@ _Module: Smart Scanner — orchestrates parallel system analysis and produces a 
 
 ### src/cortex_unified/core/smart_suggest.py
 _Module: Smart Suggestions - a tiny, fully-offline, on-device learning engine._
+
 - _sigmoid(z) (L40)
 - _size_bucket(size_bytes) (L50)
 - _age_bucket(age_days) (L67)
@@ -1032,6 +1127,7 @@ _Module: Smart Suggestions - a tiny, fully-offline, on-device learning engine._
 
 ### src/cortex_unified/core/temp_cleaner.py
 _Module: Discovery and safe removal of stale files from operating-system temp locations._
+
 - class TempFinding (L57)
 - _normalize(path) (L66)
 - _is_junction(entry) (L71)
@@ -1049,6 +1145,7 @@ _Module: Discovery and safe removal of stale files from operating-system temp lo
 
 ### src/cortex_unified/core/utils.py
 _Module: Shared utilities: logging setup, formatting, path helpers, error types._
+
 - get_system_excludes() (L15)
 - is_system_directory(path) (L40)
 - setup_logging(verbose, log_file, json_logging, component, log_level) (L45)
@@ -1087,6 +1184,7 @@ _Module: Cortex Cleaner Production Debugging & Diagnostics Engine._
 
 ### src/cortex_unified/debug/runner.py
 _Module: Production-Grade Diagnostics and Debugging Runner._
+
 - _col(text, code) (L36)
 - green(text) (L43)
 - red(text) (L50)
@@ -1119,6 +1217,7 @@ _Module: Cortex Cleaner high-performance engine._
 
 ### src/cortex_unified/engine/categories.py
 _Module: Data-driven, risk-annotated registry of cleanable locations._
+
 - class RiskLevel (L25)
   - rank(self) (L33)
 - class CleanupCategory (L41)
@@ -1146,6 +1245,7 @@ _Module: Data-driven, risk-annotated registry of cleanable locations._
 
 ### src/cortex_unified/engine/cli.py
 _Module: Modern, safe CLI for the Cortex engine._
+
 - _require_feature(feature) (L65)
 - _fmt_memory_stats(stats) (L74)
 - _find_app_by_name(name) (L93)
@@ -1154,6 +1254,7 @@ _Module: Modern, safe CLI for the Cortex engine._
 
 ### src/cortex_unified/engine/fastwalk.py
 _Module: High-performance filesystem traversal built on ``os.scandir``._
+
 - class WalkOptions (L43)
 - class FastWalker (L77)
   - __init__(self, options) (L84)
@@ -1169,6 +1270,7 @@ _Module: High-performance filesystem traversal built on ``os.scandir``._
 
 ### src/cortex_unified/engine/guard.py
 _Module: Path safety guard for destructive operations._
+
 - class GuardVerdict (L26)
   - __bool__(self) (L32)
 - _windows_protected() (L39)
@@ -1181,6 +1283,7 @@ _Module: Path safety guard for destructive operations._
 
 ### src/cortex_unified/engine/hashing.py
 _Module: Fast content hashing and duplicate detection._
+
 - _new_hasher() (L56)
 - hash_file(path, limit) (L65)
 - class DuplicateFinderEngine (L89)
@@ -1191,6 +1294,7 @@ _Module: Fast content hashing and duplicate detection._
 
 ### src/cortex_unified/engine/models.py
 _Module: Immutable-ish data models shared across the engine._
+
 - class StorageKind (L17)
   - overwrite_effective(self) (L34)
 - class DeletionMethod (L39)
@@ -1211,6 +1315,7 @@ _Module: Immutable-ish data models shared across the engine._
 
 ### src/cortex_unified/engine/secure_delete.py
 _Module: Storage-aware deletion with honest guarantees._
+
 - _resolve_send2trash() (L45)
 - _has_trash() (L61)
 - __getattr__(name) (L66)
@@ -1238,6 +1343,7 @@ _Module: Storage-aware deletion with honest guarantees._
 
 ### src/cortex_unified/engine/service.py
 _Module: High-level cleaner service - the single orchestration entry point._
+
 - _throttle(cb, interval) (L38)
   - wrapped(msg) (L49)
 - class CategoryScan (L62)
@@ -1266,6 +1372,7 @@ _Module: High-level cleaner service - the single orchestration entry point._
 
 ### src/cortex_unified/engine/storage.py
 _Module: Cross-platform storage-medium detection._
+
 - class StorageInfo (L54)
   - overwrite_effective(self) (L62)
 - class StorageProbe (L69)
@@ -1282,6 +1389,7 @@ _Module: Cross-platform storage-medium detection._
 
 ### src/cortex_unified/engine/winattrs.py
 _Module: Windows file-attribute and reparse-point classification._
+
 - attrs_of(st) (L72)
 - reparse_tag_of(st) (L77)
 - is_reparse_point(attrs) (L92)
@@ -1343,6 +1451,7 @@ _Module: Offline-first licensing and entitlement system._
 
 ### src/cortex_unified/licensing/fingerprint.py
 _Module: Stable, privacy-preserving machine fingerprint for license binding._
+
 - _windows_ids() (L35)
 - _macos_ids() (L62)
 - _linux_ids() (L86)
@@ -1353,6 +1462,7 @@ _Module: Stable, privacy-preserving machine fingerprint for license binding._
 
 ### src/cortex_unified/licensing/gating.py
 _Module: Entitlement checks: the single gateway every gated feature goes through._
+
 - class EntitlementError (L39)
   - __init__(self, feature, required, current, message) (L42)
 - current_tier() (L57)
@@ -1366,6 +1476,7 @@ _Module: Entitlement checks: the single gateway every gated feature goes through
 
 ### src/cortex_unified/licensing/license_manager.py
 _Module: Offline license activation, validation and trial management._
+
 - _today() (L57)
 - _parse_date(value) (L64)
 - class LicensePayload (L75)
@@ -1396,6 +1507,7 @@ _Module: Offline license activation, validation and trial management._
 
 ### src/cortex_unified/licensing/tiers.py
 _Module: Tier and feature definitions for Cortex Cleaner._
+
 - class Tier (L19)
   - rank(self) (L29)
   - includes(self, minimum) (L33)
@@ -1408,6 +1520,7 @@ _Module: Performance optimization and monitoring module for Cortex Cleaner._
 
 ### src/cortex_unified/performance/multi_drive_scanner.py
 _Module: Parallel scanning across multiple drives, volumes, and user profiles._
+
 - class DriveInfo (L34)
   - used_size(self) (L46)
   - usage_percent(self) (L51)
@@ -1479,6 +1592,7 @@ _Module: Parallel scanning across multiple drives, volumes, and user profiles._
 
 ### src/cortex_unified/performance/optimization.py
 _Module: Performance optimization utilities for Cortex Cleaner operations._
+
 - class OptimizationSettings (L19)
 - class PerformanceOptimizer (L32)
   - __init__(self, settings, logger) (L35)
@@ -1500,6 +1614,7 @@ _Module: Performance optimization utilities for Cortex Cleaner operations._
 
 ### src/cortex_unified/performance/profiler.py
 _Module: Performance profiling and monitoring for Cortex Cleaner operations._
+
 - class ProfileReport (L12)
   - to_dict(self) (L21)
 - class OperationProfiler (L34)
@@ -1514,6 +1629,7 @@ _Module: Performance profiling and monitoring for Cortex Cleaner operations._
 
 ### src/cortex_unified/performance/resource_monitor.py
 _Module: Resource monitoring and management for Cortex Cleaner operations._
+
 - class SystemMetrics (L17)
 - class ResourceMonitor (L30)
   - __init__(self, logger) (L33)
@@ -1533,6 +1649,7 @@ _Module: Resource monitoring and management for Cortex Cleaner operations._
 
 ### src/cortex_unified/performance/resource_throttler.py
 _Module: Resource throttling and system performance management._
+
 - class SystemLoad (L14)
   - is_high_load(self, cpu_threshold, memory_threshold) (L22)
 - class ResourceThrottler (L27)
@@ -1552,6 +1669,7 @@ _Module: Resource throttling and system performance management._
 
 ### src/cortex_unified/performance/scan_manager.py
 _Module: Scan management with checkpoint and resume functionality._
+
 - class ScanCheckpoint (L15)
   - to_dict(self) (L26)
   - from_dict(cls, data) (L33)
@@ -1574,6 +1692,7 @@ _Module: Scan management with checkpoint and resume functionality._
 
 ### src/cortex_unified/performance/settings_integration.py
 _Module: Settings integration for performance optimization and throttling logic._
+
 - class PerformanceSettingsWidget (L20)
   - __init__(self, parent) (L25)
   - setup_ui(self) (L36)
@@ -1591,6 +1710,7 @@ _Module: Reports and restore module for Cortex Cleaner._
 
 ### src/cortex_unified/reports/reports.py
 _Module: Report generation and export: text, HTML, JSON, and CSV._
+
 - class ReportsGenerator (L17)
   - __init__(self, config, reports_dir) (L20)
   - _get_default_reports_dir(self) (L33)
@@ -1608,6 +1728,7 @@ _Module: Report generation and export: text, HTML, JSON, and CSV._
 
 ### src/cortex_unified/reports/restore_manager.py
 _Module: Backup manifests and quarantine-style restoration of deleted files._
+
 - class RestoreManager (L16)
   - __init__(self, config, backup_dir) (L19)
   - _get_default_backup_dir(self) (L33)
@@ -1624,6 +1745,7 @@ _Module: Task scheduling module for Cortex Cleaner._
 
 ### src/cortex_unified/scheduler/auto_clean_rules.py
 _Module: Condition-triggered cleanup rules evaluated against live system state._
+
 - class AutoCleanRules (L19)
   - __init__(self, config) (L22)
   - add_disk_usage_rule(self, threshold_percent, action, clean_params) (L37)
@@ -1647,6 +1769,7 @@ _Module: Condition-triggered cleanup rules evaluated against live system state._
 
 ### src/cortex_unified/scheduler/scheduler.py
 _Module: OS-native scheduling for cleanup jobs: schtasks, launchd, cron._
+
 - class TaskScheduler (L18)
   - __init__(self, config) (L21)
   - create_scheduled_task(self, name, command, schedule_type, schedule_params) (L32)
@@ -1667,6 +1790,7 @@ _Module: System tools module for Cortex Cleaner._
 
 ### src/cortex_unified/system_tools/adaptive_sanitizer.py
 _Module: Adaptive privacy-preserving sanitization (PL0-PL3)._
+
 - class PrivacyLevel (L73)
 - class SanitizeResult (L89)
   - to_dict(self) (L103)
@@ -1684,6 +1808,7 @@ _Module: Adaptive privacy-preserving sanitization (PL0-PL3)._
 
 ### src/cortex_unified/system_tools/ai_telemetry_cleaner.py
 _Module: Windows 11 AI, Copilot, Recall & Semantic Telemetry Cleaner._
+
 - class AiArtifactInfo (L35)
   - to_dict(self) (L45)
 - class AiTelemetryReport (L59)
@@ -1700,6 +1825,7 @@ _Module: Windows 11 AI, Copilot, Recall & Semantic Telemetry Cleaner._
 
 ### src/cortex_unified/system_tools/app_uninstaller.py
 _Module: Windows Application Uninstaller for Cortex Cleaner._
+
 - class AppUninstaller (L12)
   - __init__(self) (L22)
   - get_installed_apps(self) (L30)
@@ -1710,6 +1836,7 @@ _Module: Windows Application Uninstaller for Cortex Cleaner._
 
 ### src/cortex_unified/system_tools/app_updater.py
 _Module: Software Updater - a safe GUI-friendly wrapper over Windows Package Manager._
+
 - class UpgradableApp (L32)
   - to_dict(self) (L40)
 - class AppUpdater (L51)
@@ -1723,6 +1850,7 @@ _Module: Software Updater - a safe GUI-friendly wrapper over Windows Package Man
 
 ### src/cortex_unified/system_tools/bitlocker_auditor.py
 _Module: Cortex Cleaner — BitLocker & Drive Encryption Auditor._
+
 - class EncryptedVolumeInfo (L23)
   - is_protected(self) (L37)
   - is_fully_encrypted(self) (L42)
@@ -1735,6 +1863,7 @@ _Module: Cortex Cleaner — BitLocker & Drive Encryption Auditor._
 
 ### src/cortex_unified/system_tools/bitrot_scrubber.py
 _Module: Cortex Cleaner — Silent BitRot & File Integrity Scrubber._
+
 - class ScrubberRecord (L25)
 - class BitRotIssue (L35)
 - class BitRotScrubReport (L45)
@@ -1747,6 +1876,7 @@ _Module: Cortex Cleaner — Silent BitRot & File Integrity Scrubber._
 
 ### src/cortex_unified/system_tools/boot_performance.py
 _Module: Boot performance analysis - using Windows' OWN boot measurements._
+
 - class BootRecord (L45)
   - boot_seconds(self) (L52)
   - to_dict(self) (L56)
@@ -1764,6 +1894,7 @@ _Module: Boot performance analysis - using Windows' OWN boot measurements._
 
 ### src/cortex_unified/system_tools/browser_cleaner.py
 _Module: Deep Browser Cleaner — IndexedDB, Service Workers, Code Cache, GPU cache, cookies._
+
 - class Cleanable (L75)
 - _discover_chromium_profiles(base_names) (L89)
 - _discover_firefox_profiles() (L125)
@@ -1778,6 +1909,7 @@ _Module: Deep Browser Cleaner — IndexedDB, Service Workers, Code Cache, GPU ca
 
 ### src/cortex_unified/system_tools/browser_deep_cleaner.py
 _Module: Cortex Cleaner — Forensic Multi-Browser Deep Privacy & Cache Sanitizer._
+
 - class BrowserTarget (L20)
 - class BrowserCleanResult (L30)
   - __post_init__(self) (L37)
@@ -1788,6 +1920,7 @@ _Module: Cortex Cleaner — Forensic Multi-Browser Deep Privacy & Cache Sanitize
 
 ### src/cortex_unified/system_tools/browser_extensions.py
 _Module: Browser-extension audit - read-only inventory of installed extensions._
+
 - class BrowserExtension (L27)
   - broad_permissions(self) (L36)
   - to_dict(self) (L43)
@@ -1805,6 +1938,7 @@ _Module: Browser-extension audit - read-only inventory of installed extensions._
 
 ### src/cortex_unified/system_tools/checksum_matrix.py
 _Module: Forensic Checksum Matrix & Integrity Manifest Generator/Verifier._
+
 - class FileChecksumResult (L37)
   - to_dict(self) (L48)
 - class ManifestVerifyItem (L63)
@@ -1820,6 +1954,7 @@ _Module: Forensic Checksum Matrix & Integrity Manifest Generator/Verifier._
 
 ### src/cortex_unified/system_tools/compact_os.py
 _Module: NTFS CompactOS / per-folder NTFS compression support._
+
 - class FolderEstimate (L97)
   - to_dict(self) (L106)
 - class CompressionResult (L119)
@@ -1838,6 +1973,7 @@ _Module: NTFS CompactOS / per-folder NTFS compression support._
 
 ### src/cortex_unified/system_tools/component_store.py
 _Module: Component store (WinSxS) analysis and Windows upgrade leftovers._
+
 - class LeftoverRisk (L39)
 - class StoreAnalysis (L48)
   - explorer_gap_note(self) (L65)
@@ -1868,6 +2004,7 @@ _Module: Component store (WinSxS) analysis and Windows upgrade leftovers._
 
 ### src/cortex_unified/system_tools/component_store_cleaner.py
 _Module: Component Store / WinSxS Cleaner — DISM-based analysis and cleanup._
+
 - class ComponentStoreInfo (L93)
   - reclaimable_gb(self) (L106)
 - class CleanupResult (L115)
@@ -1886,6 +2023,7 @@ _Module: Component Store / WinSxS Cleaner — DISM-based analysis and cleanup._
 
 ### src/cortex_unified/system_tools/context_menu_manager.py
 _Module: Cortex Cleaner — Windows Context Menu & Shell Extension Manager._
+
 - class ContextMenuItem (L25)
 - class ContextMenuReport (L38)
 - class ContextMenuManager (L45)
@@ -1898,6 +2036,7 @@ _Module: Cortex Cleaner — Windows Context Menu & Shell Extension Manager._
 
 ### src/cortex_unified/system_tools/crash_dump_cleaner.py
 _Module: Cortex Cleaner — Windows Crash Dump & Error Reporting (WER) Cleaner._
+
 - class CrashDumpItem (L18)
 - class CrashDumpCleanReport (L28)
   - __post_init__(self) (L36)
@@ -1907,6 +2046,7 @@ _Module: Cortex Cleaner — Windows Crash Dump & Error Reporting (WER) Cleaner._
 
 ### src/cortex_unified/system_tools/defender.py
 _Module: Windows Security (Defender) status + quick scan trigger._
+
 - class DefenderStatus (L27)
   - healthy(self) (L40)
   - to_dict(self) (L45)
@@ -1923,6 +2063,7 @@ _Module: Windows Security (Defender) status + quick scan trigger._
 
 ### src/cortex_unified/system_tools/delivery_optimization_cleaner.py
 _Module: Cortex Cleaner — Windows Delivery Optimization (WUDO) Cache Cleaner._
+
 - class DeliveryOptimizationStatus (L18)
 - class DeliveryOptimizationCleanReport (L27)
   - __post_init__(self) (L33)
@@ -1932,6 +2073,7 @@ _Module: Cortex Cleaner — Windows Delivery Optimization (WUDO) Cache Cleaner._
 
 ### src/cortex_unified/system_tools/dev_cleaner.py
 _Module: Cortex Cleaner — Developer Ecosystem & Build Artifacts Purger._
+
 - class DevCacheItem (L24)
 - class DevCleanResult (L36)
   - __post_init__(self) (L42)
@@ -1942,6 +2084,7 @@ _Module: Cortex Cleaner — Developer Ecosystem & Build Artifacts Purger._
 
 ### src/cortex_unified/system_tools/dev_drive_optimizer.py
 _Module: Cortex Cleaner — ReFS Dev Drive & Block-Cloning Optimizer._
+
 - class DevDriveInfo (L28)
 - class DevDriveAuditReport (L42)
 - class DevDriveOptimizer (L50)
@@ -1953,6 +2096,7 @@ _Module: Cortex Cleaner — ReFS Dev Drive & Block-Cloning Optimizer._
 
 ### src/cortex_unified/system_tools/dev_package_cache_cleaner.py
 _Module: Developer Package Caches (Winget, Cargo, Vcpkg, NuGet, Pip) Deep Cleaner._
+
 - class DevPackageStoreInfo (L36)
   - to_dict(self) (L46)
 - class DevPackageReport (L60)
@@ -1967,6 +2111,7 @@ _Module: Developer Package Caches (Winget, Cargo, Vcpkg, NuGet, Pip) Deep Cleane
 
 ### src/cortex_unified/system_tools/device_fingerprint.py
 _Module: Pure, conservative device fingerprinting from observed LAN evidence._
+
 - class FingerprintEvidence (L13)
   - to_dict(self) (L21)
 - class DeviceFingerprint (L33)
@@ -1981,6 +2126,7 @@ _Module: Pure, conservative device fingerprinting from observed LAN evidence._
 
 ### src/cortex_unified/system_tools/diagnostic_data_manager.py
 _Module: Cortex Cleaner — Windows Telemetry & Diagnostic Data Manager._
+
 - class TelemetrySetting (L25)
 - class TelemetryAuditReport (L39)
 - class DiagnosticDataManager (L48)
@@ -1991,6 +2137,7 @@ _Module: Cortex Cleaner — Windows Telemetry & Diagnostic Data Manager._
 
 ### src/cortex_unified/system_tools/directstorage_optimizer.py
 _Module: Windows 11 DirectStorage & BypassIO Hardware Acceleration Auditor._
+
 - class BypassIoVolumeReport (L23)
   - to_dict(self) (L34)
 - class DirectStorageAuditReport (L47)
@@ -2003,6 +2150,7 @@ _Module: Windows 11 DirectStorage & BypassIO Hardware Acceleration Auditor._
 
 ### src/cortex_unified/system_tools/disk_benchmark.py
 _Module: Cortex Cleaner — Storage Performance & IOPS Disk Benchmark._
+
 - class DiskBenchmarkMetric (L23)
 - class DiskBenchmarkReport (L32)
 - class DiskBenchmarkEngine (L45)
@@ -2010,6 +2158,7 @@ _Module: Cortex Cleaner — Storage Performance & IOPS Disk Benchmark._
 
 ### src/cortex_unified/system_tools/disk_health.py
 _Module: Disk health (S.M.A.R.T.) reporting - read-only, honest._
+
 - class DiskHealth (L27)
   - is_healthy(self) (L40)
   - to_dict(self) (L44)
@@ -2022,6 +2171,7 @@ _Module: Disk health (S.M.A.R.T.) reporting - read-only, honest._
 
 ### src/cortex_unified/system_tools/dns_benchmark.py
 _Module: Cortex Cleaner — Multi-Threaded DNS Latency Benchmark & Optimizer._
+
 - class DnsServerSpec (L21)
 - class DnsBenchmarkResult (L44)
 - class DnsBenchmarkEngine (L57)
@@ -2033,6 +2183,7 @@ _Module: Cortex Cleaner — Multi-Threaded DNS Latency Benchmark & Optimizer._
 
 ### src/cortex_unified/system_tools/drive_optimizer.py
 _Module: Media-aware drive optimization - the honest way._
+
 - class OptimizeOp (L33)
 - class DriveInfo (L41)
   - to_dict(self) (L48)
@@ -2048,6 +2199,7 @@ _Module: Media-aware drive optimization - the honest way._
 
 ### src/cortex_unified/system_tools/driver_inventory.py
 _Module: Driver inventory - READ-ONLY listing of installed device drivers._
+
 - class DriverInfo (L28)
   - to_dict(self) (L36)
 - class DriverInventory (L47)
@@ -2059,6 +2211,7 @@ _Module: Driver inventory - READ-ONLY listing of installed device drivers._
 
 ### src/cortex_unified/system_tools/driver_manager.py
 _Module: Driver Cleaner & Updater — offline-capable, WHQL-verified, restore points._
+
 - class DriverInfo (L78)
   - to_dict(self) (L98)
 - class DriverPack (L105)
@@ -2087,6 +2240,7 @@ _Module: Driver Cleaner & Updater — offline-capable, WHQL-verified, restore po
 
 ### src/cortex_unified/system_tools/driver_store_cleaner.py
 _Module: Cortex Cleaner — Driver Store Explorer & Superseded Driver Purger._
+
 - class DriverPackage (L22)
 - class DriverCleanResult (L36)
   - __post_init__(self) (L42)
@@ -2097,6 +2251,7 @@ _Module: Cortex Cleaner — Driver Store Explorer & Superseded Driver Purger._
 
 ### src/cortex_unified/system_tools/env_variable_manager.py
 _Module: Cortex Cleaner — Windows Environment Variable & PATH Optimizer._
+
 - class PathEntry (L26)
 - class EnvVariable (L36)
 - class PathAnalysisReport (L45)
@@ -2111,6 +2266,7 @@ _Module: Cortex Cleaner — Windows Environment Variable & PATH Optimizer._
 
 ### src/cortex_unified/system_tools/event_log_cleaner.py
 _Module: Cortex Cleaner — Enterprise Windows Event Log Sweeper._
+
 - class EventLogChannel (L20)
 - class EventLogCleanResult (L31)
 - class EventLogCleaner (L41)
@@ -2120,6 +2276,7 @@ _Module: Cortex Cleaner — Enterprise Windows Event Log Sweeper._
 
 ### src/cortex_unified/system_tools/event_log_monitor.py
 _Module: Cortex Cleaner — Windows Event Log Anomaly & Hardware Error Monitor._
+
 - class LogAnomalyEvent (L22)
 - class AnomalyScanReport (L34)
 - class EventLogMonitor (L45)
@@ -2127,6 +2284,7 @@ _Module: Cortex Cleaner — Windows Event Log Anomaly & Hardware Error Monitor._
 
 ### src/cortex_unified/system_tools/external_exposure.py
 _Module: Explicit, read-only exposure lookup for a router-reported public IPv4._
+
 - class ExposureLookupError (L18)
 - class ExternalService (L23)
   - to_dict(self) (L32)
@@ -2143,6 +2301,7 @@ _Module: Explicit, read-only exposure lookup for a router-reported public IPv4._
 
 ### src/cortex_unified/system_tools/firewall_manager.py
 _Module: Windows Firewall control - block/allow programs and remote addresses._
+
 - class FirewallRule (L35)
   - to_dict(self) (L47)
 - class FirewallManager (L62)
@@ -2161,6 +2320,7 @@ _Module: Windows Firewall control - block/allow programs and remote addresses._
 
 ### src/cortex_unified/system_tools/font_cache_manager.py
 _Module: Cortex Cleaner — Windows Font Cache Inspector & Optimizer._
+
 - class FontEntry (L26)
 - class FontAnalysisReport (L39)
 - class FontCleanResult (L51)
@@ -2173,6 +2333,7 @@ _Module: Cortex Cleaner — Windows Font Cache Inspector & Optimizer._
 
 ### src/cortex_unified/system_tools/free_space_wipe.py
 _Module: Free-space wipe - overwrite the unused space on a volume._
+
 - class WipeResult (L32)
 - class FreeSpaceWiper (L40)
   - is_supported() (L44)
@@ -2181,6 +2342,7 @@ _Module: Free-space wipe - overwrite the unused space on a volume._
 
 ### src/cortex_unified/system_tools/game_mode.py
 _Module: Gaming Mode - one-click, fully reversible PC boost for game sessions._
+
 - class BoostReport (L64)
   - to_dict(self) (L77)
 - class GameMode (L92)
@@ -2197,6 +2359,7 @@ _Module: Gaming Mode - one-click, fully reversible PC boost for game sessions._
 
 ### src/cortex_unified/system_tools/health_check.py
 _Module: One-click PC health check - aggregates the fast, read-only diagnostics._
+
 - class HealthCheck (L31)
   - to_dict(self) (L39)
 - class HealthReport (L46)
@@ -2213,6 +2376,7 @@ _Module: One-click PC health check - aggregates the fast, read-only diagnostics.
 
 ### src/cortex_unified/system_tools/hosts_file_manager.py
 _Module: Cortex Cleaner — Windows Hosts File Editor & Anti-Telemetry DNS Shield._
+
 - class HostEntry (L22)
 - class HostsOperationResult (L51)
 - class HostsFileManager (L59)
@@ -2224,6 +2388,7 @@ _Module: Cortex Cleaner — Windows Hosts File Editor & Anti-Telemetry DNS Shiel
 
 ### src/cortex_unified/system_tools/junction_auditor.py
 _Module: Cortex Cleaner — NTFS Hard Link, Junction & Reparse Point Auditor._
+
 - class ReparseItem (L28)
 - class JunctionAuditReport (L39)
 - class JunctionAuditor (L50)
@@ -2234,6 +2399,7 @@ _Module: Cortex Cleaner — NTFS Hard Link, Junction & Reparse Point Auditor._
 
 ### src/cortex_unified/system_tools/lan_scanner.py
 _Module: LAN device discovery - see what else is on your local network._
+
 - class LanDevice (L37)
   - to_dict(self) (L44)
 - class LanScanner (L49)
@@ -2244,6 +2410,7 @@ _Module: LAN device discovery - see what else is on your local network._
 
 ### src/cortex_unified/system_tools/leftover_cleaner.py
 _Module: Leftover Cleaner - find and safely remove what an uninstaller leaves behind._
+
 - edit_distance(a, b, max_distance) (L64)
 - match_string_to_product(candidate, product_name) (L91)
 - build_tokens(display_name, publisher) (L138)
@@ -2321,6 +2488,7 @@ _Module: Leftover Cleaner - find and safely remove what an uninstaller leaves be
 
 ### src/cortex_unified/system_tools/load_tester.py
 _Module: Load / resilience tester - measure how much YOUR OWN service can take._
+
 - class Authorization (L52)
   - to_dict(self) (L60)
 - class TargetAuthorizer (L68)
@@ -2347,6 +2515,7 @@ _Module: Load / resilience tester - measure how much YOUR OWN service can take._
 
 ### src/cortex_unified/system_tools/memory_compression_tuner.py
 _Module: Cortex Cleaner — Windows Memory Compression & SysMain Optimizer._
+
 - class MemoryCompressionStatus (L25)
   - compressed_mb(self) (L38)
   - total_ram_gb(self) (L43)
@@ -2360,6 +2529,7 @@ _Module: Cortex Cleaner — Windows Memory Compression & SysMain Optimizer._
 
 ### src/cortex_unified/system_tools/memory_optimizer.py
 _Module: Cortex Cleaner — Working Set & System RAM Memory Optimizer._
+
 - class SystemRamMetrics (L22)
 - class ProcessMemoryItem (L34)
 - class MemoryOptimizeResult (L44)
@@ -2377,6 +2547,7 @@ _Module: Cortex Cleaner — Working Set & System RAM Memory Optimizer._
 
 ### src/cortex_unified/system_tools/memory_standby_purger.py
 _Module: Windows NT Kernel RAM Standby List & Working Set Purger._
+
 - class LUID (L39)
 - class LUID_AND_ATTRIBUTES (L47)
 - class TOKEN_PRIVILEGES (L55)
@@ -2395,6 +2566,7 @@ _Module: Windows NT Kernel RAM Standby List & Working Set Purger._
 
 ### src/cortex_unified/system_tools/mft_slack_scrubber.py
 _Module: NTFS Master File Table ($MFT) & Directory Index Slack Scrubber._
+
 - class NtfsMftGeometry (L24)
   - to_dict(self) (L39)
 - class MftScrubReport (L55)
@@ -2408,6 +2580,7 @@ _Module: NTFS Master File Table ($MFT) & Directory Index Slack Scrubber._
 
 ### src/cortex_unified/system_tools/model_cache_manager.py
 _Module: Model cache manager – hardlink-aware HF hub, Ollama, LM Studio, ComfyUI._
+
 - _verify_path(path, allowed_roots) (L61)
 - class ModelStore (L81)
   - to_dict(self) (L95)
@@ -2428,6 +2601,7 @@ _Module: Model cache manager – hardlink-aware HF hub, Ollama, LM Studio, Comfy
 
 ### src/cortex_unified/system_tools/network_automation.py
 _Module: Safe Windows scheduling for unattended private-LAN inventory scans._
+
 - class NetworkSchedule (L26)
 - class NetworkScheduleError (L38)
 - _validated(spec) (L42)
@@ -2441,6 +2615,7 @@ _Module: Safe Windows scheduling for unattended private-LAN inventory scans._
 
 ### src/cortex_unified/system_tools/network_discovery.py
 _Module: Deep LAN device discovery - find everything actually on your network._
+
 - class Device (L177)
   - randomized_mac(self) (L200)
   - label(self) (L205)
@@ -2490,6 +2665,7 @@ _Module: Deep LAN device discovery - find everything actually on your network._
 
 ### src/cortex_unified/system_tools/network_inventory.py
 _Module: Persistent, point-in-time network inventory with typed change reporting._
+
 - _text(value, limit) (L32)
 - _json_safe(value, depth) (L39)
 - class InventoryService (L60)
@@ -2549,6 +2725,7 @@ _Module: Persistent, point-in-time network inventory with typed change reporting
 
 ### src/cortex_unified/system_tools/network_monitor.py
 _Module: Network connection monitor - see what's talking to your machine and out._
+
 - class Connection (L50)
   - listening_public(self) (L65)
   - remote_external(self) (L71)
@@ -2561,12 +2738,14 @@ _Module: Network connection monitor - see what's talking to your machine and out
 
 ### src/cortex_unified/system_tools/network_scan_cli.py
 _Module: Noninteractive entry point for scheduled private-LAN inventory scans._
+
 - _parser() (L17)
 - _write_atomic(path, payload) (L31)
 - main(argv) (L50)
 
 ### src/cortex_unified/system_tools/network_security_audit.py
 _Module: Evidence-backed analysis for authorized private-LAN observations._
+
 - class SecurityFinding (L15)
   - __post_init__(self) (L28)
   - to_dict(self) (L37)
@@ -2586,6 +2765,7 @@ _Module: Evidence-backed analysis for authorized private-LAN observations._
 
 ### src/cortex_unified/system_tools/network_service_scanner.py
 _Module: Bounded, non-destructive service observation on authorized private LANs._
+
 - class ScanProfile (L33)
 - _json_safe(value) (L47)
 - class ServiceObservation (L63)
@@ -2627,6 +2807,7 @@ _Module: Bounded, non-destructive service observation on authorized private LANs
 
 ### src/cortex_unified/system_tools/network_stack_optimizer.py
 _Module: Cortex Cleaner — Enterprise Network Stack & DNS Optimizer._
+
 - class TcpGlobalSettings (L17)
 - class NetworkResetReport (L28)
   - __post_init__(self) (L36)
@@ -2642,6 +2823,7 @@ _Module: Cortex Cleaner — Enterprise Network Stack & DNS Optimizer._
 
 ### src/cortex_unified/system_tools/network_tools.py
 _Module: Network diagnostic utilities: ping, traceroute, DNS, port & IP checks._
+
 - class PingResult (L47)
   - to_dict(self) (L59)
 - class Hop (L70)
@@ -2661,6 +2843,7 @@ _Module: Network diagnostic utilities: ping, traceroute, DNS, port & IP checks._
 
 ### src/cortex_unified/system_tools/network_traffic.py
 _Module: Live network throughput monitor - system-wide and per-interface._
+
 - class NicSample (L25)
   - to_dict(self) (L34)
 - class TrafficSample (L46)
@@ -2672,6 +2855,7 @@ _Module: Live network throughput monitor - system-wide and per-interface._
 
 ### src/cortex_unified/system_tools/nmap_adapter.py
 _Module: Optional Nmap integration, bounded to explicitly authorized private LANs._
+
 - class NmapError (L40)
 - class NmapUnavailableError (L44)
 - class NmapAuthorizationError (L48)
@@ -2701,6 +2885,7 @@ _Module: Optional Nmap integration, bounded to explicitly authorized private LAN
 
 ### src/cortex_unified/system_tools/notification_cleaner.py
 _Module: Cortex Cleaner — Windows Action Center & Push Notification Database Cleaner._
+
 - class NotificationDatabaseStatus (L20)
 - class NotificationCleanResult (L30)
   - __post_init__(self) (L37)
@@ -2710,6 +2895,7 @@ _Module: Cortex Cleaner — Windows Action Center & Push Notification Database C
 
 ### src/cortex_unified/system_tools/oui.py
 _Module: MAC address identity: IEEE-backed vendor lookup and privacy detection._
+
 - normalize(mac) (L62)
 - _first_octet(mac) (L73)
 - is_randomized(mac) (L88)
@@ -2730,6 +2916,7 @@ _Module: MAC address identity: IEEE-backed vendor lookup and privacy detection._
 
 ### src/cortex_unified/system_tools/pagefile_optimizer.py
 _Module: Cortex Cleaner — Windows Pagefile & Virtual Memory Optimizer._
+
 - class MEMORYSTATUSEX (L27)
 - class PagefileConfig (L43)
 - class VirtualMemoryStatus (L53)
@@ -2742,6 +2929,7 @@ _Module: Cortex Cleaner — Windows Pagefile & Virtual Memory Optimizer._
 
 ### src/cortex_unified/system_tools/performance_tuner.py
 _Module: Windows power-plan tuner - safe, reversible performance control._
+
 - class PowerPlan (L34)
   - to_dict(self) (L41)
 - class PerformanceTuner (L46)
@@ -2754,6 +2942,7 @@ _Module: Windows power-plan tuner - safe, reversible performance control._
 
 ### src/cortex_unified/system_tools/power_plan_optimizer.py
 _Module: Cortex Cleaner — Windows Power Scheme & CPU Throttle Optimizer._
+
 - class PowerScheme (L22)
 - class PowerPlanStatus (L31)
 - class PowerPlanOptimizer (L40)
@@ -2765,6 +2954,7 @@ _Module: Cortex Cleaner — Windows Power Scheme & CPU Throttle Optimizer._
 
 ### src/cortex_unified/system_tools/prefetch_analyzer.py
 _Module: Cortex Cleaner — Windows Prefetch & SysMain (SuperFetch) Trace Analyzer._
+
 - class PrefetchEntry (L24)
 - class PrefetchStatus (L36)
 - class PrefetchCleanResult (L46)
@@ -2776,6 +2966,7 @@ _Module: Cortex Cleaner — Windows Prefetch & SysMain (SuperFetch) Trace Analyz
 
 ### src/cortex_unified/system_tools/privacy_blocker.py
 _Module: Privacy & Telemetry Blocker — 300+ settings, IFEO persistence, profiles._
+
 - class TweakDef (L92)
   - applies_to_current_os(self) (L129)
 - class PrivacyBlocker (L459)
@@ -2801,6 +2992,7 @@ _Module: Privacy & Telemetry Blocker — 300+ settings, IFEO persistence, profil
 
 ### src/cortex_unified/system_tools/process_analyzer.py
 _Module: Process and service enumeration via platform CLI tools._
+
 - class ProcessAnalyzer (L16)
   - __init__(self, config) (L19)
   - list_processes(self) (L29)
@@ -2818,12 +3010,14 @@ _Module: Process and service enumeration via platform CLI tools._
 
 ### src/cortex_unified/system_tools/process_meta.py
 _Module: Human-friendly process identity: what a running program actually is._
+
 - known_description(name) (L91)
 - file_description(exe_path) (L96)
 - describe(name, exe_path) (L118)
 
 ### src/cortex_unified/system_tools/process_token_auditor.py
 _Module: Cortex Cleaner — Process Security Token & Integrity Forensics._
+
 - class ProcessTokenInfo (L38)
 - class ProcessTokenAuditReport (L51)
 - class ProcessTokenAuditor (L63)
@@ -2836,6 +3030,7 @@ _Module: Cortex Cleaner — Process Security Token & Integrity Forensics._
 
 ### src/cortex_unified/system_tools/registry_cleaner.py
 _Module: Orphaned Windows registry entry detection with export-before-delete safety._
+
 - class RegistryCleaner (L21)
   - __init__(self, config) (L24)
   - scan(self) (L40)
@@ -2855,6 +3050,7 @@ _Module: Orphaned Windows registry entry detection with export-before-delete saf
 
 ### src/cortex_unified/system_tools/restart_manager_unlocker.py
 _Module: Windows Native Restart Manager File Unlocker & Process Lock Auditor._
+
 - class RM_UNIQUE_PROCESS (L41)
 - class RM_PROCESS_INFO (L49)
 - class LockingProcessInfo (L63)
@@ -2872,6 +3068,7 @@ _Module: Windows Native Restart Manager File Unlocker & Process Lock Auditor._
 
 ### src/cortex_unified/system_tools/restore_point.py
 _Module: Windows System Restore point management - the trust/safety foundation._
+
 - class RestoreStatus (L47)
 - class RestorePointResult (L59)
   - created(self) (L66)
@@ -2889,6 +3086,7 @@ _Module: Windows System Restore point management - the trust/safety foundation._
 
 ### src/cortex_unified/system_tools/s3_fifo.py
 _Module: S3-FIFO cache eviction — "FIFO queues are all you need" (SOSP'23)._
+
 - class _Entry (L73)
 - class S3FIFOStats (L83)
   - to_dict(self) (L93)
@@ -2912,6 +3110,7 @@ _Module: S3-FIFO cache eviction — "FIFO queues are all you need" (SOSP'23)._
 
 ### src/cortex_unified/system_tools/sandbox_cleaner.py
 _Module: Cortex Cleaner — Windows Sandbox & Virtual Environment Artifact Purger._
+
 - class VirtualArtifact (L23)
   - size_mb(self) (L33)
   - size_gb(self) (L38)
@@ -2923,6 +3122,7 @@ _Module: Cortex Cleaner — Windows Sandbox & Virtual Environment Artifact Purge
 
 ### src/cortex_unified/system_tools/search_index_optimizer.py
 _Module: Cortex Cleaner — Windows Search Index Database (Windows.edb) Optimizer._
+
 - class SearchIndexStatus (L22)
 - class SearchIndexOperationResult (L33)
   - __post_init__(self) (L41)
@@ -2933,6 +3133,7 @@ _Module: Cortex Cleaner — Windows Search Index Database (Windows.edb) Optimize
 
 ### src/cortex_unified/system_tools/secrets_scanner.py
 _Module: Filesystem secrets scanner with live credential validation._
+
 - class DetectionPattern (L120)
 - class Finding (L132)
   - to_dict(self) (L150)
@@ -3007,6 +3208,7 @@ _Module: Filesystem secrets scanner with live credential validation._
 
 ### src/cortex_unified/system_tools/secure_shredder.py
 _Module: Secure File Shredder — DoD 5220.22-M, Gutmann, NIST 800-88, SSD TRIM._
+
 - class StorageType (L112)
 - class ShredStandard (L121)
   - passes(self) (L158)
@@ -3029,6 +3231,7 @@ _Module: Secure File Shredder — DoD 5220.22-M, Gutmann, NIST 800-88, SSD TRIM.
 
 ### src/cortex_unified/system_tools/service_manager.py
 _Module: Cortex Cleaner — Windows Service Manager & Profile Optimizer._
+
 - class ServiceInfo (L21)
 - class ServiceProfileResult (L72)
 - class WindowsServiceManager (L81)
@@ -3039,6 +3242,7 @@ _Module: Cortex Cleaner — Windows Service Manager & Profile Optimizer._
 
 ### src/cortex_unified/system_tools/shader_cache_cleaner.py
 _Module: GPU & DirectX Shader Cache Forensics & Cleanup Engine._
+
 - class ShaderLocationInfo (L35)
   - to_dict(self) (L46)
 - class ShaderCacheReport (L61)
@@ -3053,6 +3257,7 @@ _Module: GPU & DirectX Shader Cache Forensics & Cleanup Engine._
 
 ### src/cortex_unified/system_tools/shellbags_privacy_cleaner.py
 _Module: Cortex Cleaner — Windows Shellbags & JumpLists Activity Forensics Purger._
+
 - class ShellbagsTarget (L26)
 - class ShellbagsCleanResult (L36)
   - __post_init__(self) (L43)
@@ -3064,6 +3269,7 @@ _Module: Cortex Cleaner — Windows Shellbags & JumpLists Activity Forensics Pur
 
 ### src/cortex_unified/system_tools/sieve_cache.py
 _Module: SIEVE Cache Eviction Algorithm._
+
 - class SieveNode (L23)
   - __init__(self, key, value) (L27)
   - __repr__(self) (L35)
@@ -3084,6 +3290,7 @@ _Module: SIEVE Cache Eviction Algorithm._
 
 ### src/cortex_unified/system_tools/slack_space_analyzer.py
 _Module: Cortex Cleaner — NTFS Disk Cluster & Slack Space Forensics Analyzer._
+
 - class DirectorySlackStat (L23)
 - class VolumeSlackReport (L34)
 - class SlackSpaceAnalyzer (L46)
@@ -3092,6 +3299,7 @@ _Module: Cortex Cleaner — NTFS Disk Cluster & Slack Space Forensics Analyzer._
 
 ### src/cortex_unified/system_tools/smb_share_auditor.py
 _Module: Cortex Cleaner — Network Share & SMB Exposure Auditor._
+
 - class SmbShareInfo (L24)
 - class SmbSecurityReport (L36)
 - class SmbShareAuditor (L47)
@@ -3103,6 +3311,7 @@ _Module: Cortex Cleaner — Network Share & SMB Exposure Auditor._
 
 ### src/cortex_unified/system_tools/srum_bam_cleaner.py
 _Module: Windows BAM/DAM & SRUM Forensic Privacy Cleaner._
+
 - class BamExecutionEntry (L32)
   - to_dict(self) (L41)
 - class SrumDatabaseInfo (L53)
@@ -3117,6 +3326,7 @@ _Module: Windows BAM/DAM & SRUM Forensic Privacy Cleaner._
 
 ### src/cortex_unified/system_tools/ssd_trim_optimizer.py
 _Module: Solid-State Drive (SSD) NVMe TRIM & Flash Wear-Leveling Optimizer._
+
 - class VolumeTrimStatus (L39)
   - to_dict(self) (L49)
 - class TrimAuditReport (L63)
@@ -3131,6 +3341,7 @@ _Module: Solid-State Drive (SSD) NVMe TRIM & Flash Wear-Leveling Optimizer._
 
 ### src/cortex_unified/system_tools/startup_impact_analyzer.py
 _Module: Cortex Cleaner — Windows Startup Impact Analyzer & Delayed Launch Sequencer._
+
 - class StartupAppItem (L27)
 - class StartupImpactReport (L41)
 - class StartupImpactAnalyzer (L51)
@@ -3142,6 +3353,7 @@ _Module: Cortex Cleaner — Windows Startup Impact Analyzer & Delayed Launch Seq
 
 ### src/cortex_unified/system_tools/startup_manager.py
 _Module: Startup item enumeration and disabling across platforms._
+
 - class StartupManager (L16)
   - __init__(self, config) (L19)
   - list_startup_items(self) (L27)
@@ -3164,6 +3376,7 @@ _Module: Startup item enumeration and disabling across platforms._
 
 ### src/cortex_unified/system_tools/startup_optimizer.py
 _Module: Startup Optimizer — stagger/delay engine with resource-aware gating._
+
 - class AppType (L69)
 - class StartupEntry (L79)
   - to_dict(self) (L95)
@@ -3186,6 +3399,7 @@ _Module: Startup Optimizer — stagger/delay engine with resource-aware gating._
 
 ### src/cortex_unified/system_tools/storage_growth_tracker.py
 _Module: Cortex Cleaner — Storage Growth Tracker & Timeline Differ._
+
 - class SnapshotSummary (L25)
   - formatted_time(self) (L36)
   - total_gb(self) (L41)
@@ -3203,6 +3417,7 @@ _Module: Cortex Cleaner — Storage Growth Tracker & Timeline Differ._
 
 ### src/cortex_unified/system_tools/storage_sense.py
 _Module: Storage Sense - surface and configure Windows' built-in auto-cleanup._
+
 - class StorageSense (L31)
   - is_supported() (L35)
   - get_status(self) (L41)
@@ -3215,6 +3430,7 @@ _Module: Storage Sense - surface and configure Windows' built-in auto-cleanup._
 
 ### src/cortex_unified/system_tools/system_cache_rebuilder.py
 _Module: Cortex Cleaner — Windows Font, Icon & Thumbnail Cache Rebuilder._
+
 - class CacheRebuildReport (L22)
   - __post_init__(self) (L32)
 - class SystemCacheRebuilder (L40)
@@ -3226,6 +3442,7 @@ _Module: Cortex Cleaner — Windows Font, Icon & Thumbnail Cache Rebuilder._
 
 ### src/cortex_unified/system_tools/system_info.py
 _Module: System information & diagnostics - lightweight, offline, read-only._
+
 - _fmt_bytes(n) (L23)
 - class SystemInfo (L37)
   - platform_info(self) (L40)
@@ -3238,6 +3455,7 @@ _Module: System information & diagnostics - lightweight, offline, read-only._
 
 ### src/cortex_unified/system_tools/system_repair.py
 _Module: System file health & repair - orchestrating Windows' own repair tools._
+
 - class RepairResult (L37)
   - to_dict(self) (L46)
 - class SystemRepair (L55)
@@ -3254,6 +3472,7 @@ _Module: System file health & repair - orchestrating Windows' own repair tools._
 
 ### src/cortex_unified/system_tools/task_manager.py
 _Module: Task manager backend - live process + resource monitor with honest totals._
+
 - _describe(name, exe) (L29)
 - class TaskManager (L38)
   - instance(cls) (L48)
@@ -3267,6 +3486,7 @@ _Module: Task manager backend - live process + resource monitor with honest tota
 
 ### src/cortex_unified/system_tools/telemetry_blocker.py
 _Module: Telemetry Blocker — comprehensive Windows privacy hardening via Registry._
+
 - _get_windows_build() (L29)
 - _is_win11_24h2_plus() (L43)
 - class TelemetryBlocker (L51)
@@ -3283,6 +3503,7 @@ _Module: Telemetry Blocker — comprehensive Windows privacy hardening via Regis
 
 ### src/cortex_unified/system_tools/temp_folder_cleaner.py
 _Module: Cortex Cleaner — Windows Temp Folder Deep Scanner & Auto-Cleaner._
+
 - class TempLocation (L22)
 - class TempScanReport (L34)
 - class TempCleanResult (L45)
@@ -3293,6 +3514,7 @@ _Module: Cortex Cleaner — Windows Temp Folder Deep Scanner & Auto-Cleaner._
 
 ### src/cortex_unified/system_tools/update_checker.py
 _Module: Release update checker - informational only._
+
 - parse_version(tag) (L27)
 - current_version() (L35)
 - fetch_latest_tag(api_url, timeout) (L44)
@@ -3300,6 +3522,7 @@ _Module: Release update checker - informational only._
 
 ### src/cortex_unified/system_tools/vhdx_manager.py
 _Module: Virtual disk (VHDX) reclaim for WSL2, Docker Desktop and Hyper-V._
+
 - class DiskKind (L44)
 - class VirtualDisk (L54)
   - potential_saving_bytes(self) (L70)
@@ -3331,6 +3554,7 @@ _Module: Virtual disk (VHDX) reclaim for WSL2, Docker Desktop and Hyper-V._
 
 ### src/cortex_unified/system_tools/vss_health_analyzer.py
 _Module: Volume Shadow Copy (VSS) Writer Health, Shadow Storage & State Recovery Engine._
+
 - class VssWriterStatus (L39)
   - to_dict(self) (L48)
 - class VssStorageAllocation (L61)
@@ -3351,6 +3575,7 @@ _Module: Volume Shadow Copy (VSS) Writer Health, Shadow Storage & State Recovery
 
 ### src/cortex_unified/system_tools/vss_manager.py
 _Module: Cortex Cleaner — Volume Shadow Copy (VSS) & Snapshot Manager._
+
 - class ShadowCopyInfo (L25)
 - class ShadowStorageInfo (L36)
   - used_gb(self) (L45)
@@ -3368,6 +3593,7 @@ _Module: Cortex Cleaner — Volume Shadow Copy (VSS) & Snapshot Manager._
 
 ### src/cortex_unified/system_tools/vulnerability_catalog.py
 _Module: Versioned, local-only advisory catalog with exact product/version matching._
+
 - class CatalogError (L17)
 - class VersionConstraint (L23)
   - to_dict(self) (L28)
@@ -3389,6 +3615,7 @@ _Module: Versioned, local-only advisory catalog with exact product/version match
 
 ### src/cortex_unified/system_tools/wake_on_lan.py
 _Module: Strict, scope-bound Wake-on-LAN packet construction and transmission._
+
 - class WakeOnLanError (L24)
 - class InvalidMacAddress (L28)
 - class InvalidBroadcastAddress (L32)
@@ -3401,6 +3628,7 @@ _Module: Strict, scope-bound Wake-on-LAN packet construction and transmission._
 
 ### src/cortex_unified/system_tools/wan_audit.py
 _Module: Read-only, local-only WAN and UPnP IGD audit._
+
 - class InterfaceStatus (L42)
   - to_dict(self) (L50)
 - class PortMapping (L56)
@@ -3436,6 +3664,7 @@ _Module: Read-only, local-only WAN and UPnP IGD audit._
 
 ### src/cortex_unified/system_tools/winapp2_cleaner.py
 _Module: Declarative Community & Third-Party Application Cleaner (Winapp2.ini Engine)._
+
 - class Winapp2Rule (L137)
 - class AppCleanTarget (L152)
 - class Winapp2Report (L163)
@@ -3451,6 +3680,7 @@ _Module: Declarative Community & Third-Party Application Cleaner (Winapp2.ini En
 
 ### src/cortex_unified/system_tools/windows_update.py
 _Module: Windows Update status - what's pending and when you last updated._
+
 - class PendingUpdate (L36)
   - to_dict(self) (L43)
 - class WindowsUpdate (L49)
@@ -3466,6 +3696,7 @@ _Module: Windows Update status - what's pending and when you last updated._
 
 ### src/cortex_unified/system_tools/windows_update_repair.py
 _Module: Windows Update Repair Toolkit — comprehensive component reset and repair._
+
 - class PhaseResult (L95)
 - class DiagnosticReport (L106)
   - to_json(self) (L118)
@@ -3497,6 +3728,7 @@ _Module: Windows Update Repair Toolkit — comprehensive component reset and rep
 
 ### src/cortex_unified/system_tools/wsl_cleaner.py
 _Module: WSL distro cleanup: size reporting, shutdown + vhdx compaction._
+
 - class WslDistro (L33)
   - to_dict(self) (L42)
 - _fmt_bytes(n) (L56)
@@ -3513,11 +3745,13 @@ _Module: WSL distro cleanup: size reporting, shutdown + vhdx compaction._
 
 ### src/cortex_unified/translations/__init__.py
 _Module: Internationalization module for Cortex Cleaner._
+
 - get_available_locales() (L28)
 - set_locale(locale) (L33)
 
 ### src/cortex_unified/translations/settings_integration.py
 _Module: Qt settings surface for i18n and accessibility preferences._
+
 - class I18nSettingsWidget (L24)
   - __init__(self, parent) (L31)
   - setup_ui(self) (L42)
@@ -3539,6 +3773,7 @@ _Module: Qt settings surface for i18n and accessibility preferences._
 
 ### src/cortex_unified/translations/translator.py
 _Module: Translation and internationalization management._
+
 - class Translator (L14)
   - __init__(self, locale) (L22)
   - load_translations(self, locale) (L37)
@@ -3560,6 +3795,7 @@ _Module: GUI entry point for Cortex Cleaner._
 
 ### src/cortex_unified/ui/main_window.py
 _Module: Main window for Cortex Cleaner GUI._
+
 - class ScanWorker (L67)
   - __init__(self, config, path, enable_checkpoints, enable_throttling, checkpoint_id) (L83)
   - run(self) (L96)
@@ -3675,6 +3911,7 @@ _Module: Navigation framework for Cortex Cleaner GUI._
 
 ### src/cortex_unified/ui/navigation/icon_helper.py
 _Module: Icon helper for navigation system._
+
 - class IconHelper (L8)
   - create_text_icon(text, size, color) (L12)
   - get_standard_icon(icon_type) (L46)
@@ -3683,6 +3920,7 @@ _Module: Icon helper for navigation system._
 
 ### src/cortex_unified/ui/navigation/navigation_controller.py
 _Module: Navigation controller for Cortex Cleaner GUI._
+
 - class NavigationController (L13)
   - __init__(self, parent) (L20)
   - setup_ui(self) (L34)
@@ -3708,6 +3946,7 @@ _Module: Cortex Cleaner - premium GUI._
 
 ### src/cortex_unified/ui/premium/advanced_uninstaller_page.py
 _Module: Advanced Uninstaller — multi-source app removal with forced uninstall and leftover scanning._
+
 - class _UninstallWorker (L40)
   - __init__(self, app_ids, force, scan_leftovers, max_leftovers_mb, sources) (L46)
   - cancel(self) (L63)
@@ -3727,6 +3966,7 @@ _Module: Advanced Uninstaller — multi-source app removal with forced uninstall
 
 ### src/cortex_unified/ui/premium/analysis_pages.py
 _Module: Analysis & system pages: Disk Analyzer, Disk Health (S.M.A.R.T.), Scheduled Tasks._
+
 - class DiskAnalyzeWorker (L44)
   - __init__(self, root) (L49)
   - run(self) (L54)
@@ -3830,6 +4070,7 @@ _Module: Analysis & system pages: Disk Analyzer, Disk Health (S.M.A.R.T.), Sched
 
 ### src/cortex_unified/ui/premium/apex_tools_pages.py
 _Module: Cortex Cleaner & NexusExplorer — Apex Enterprise Power Tools Pages._
+
 - _fmt_bytes(b) (L61)
 - _PrimaryButton(text, parent) (L72)
 - _SecondaryButton(text, parent) (L80)
@@ -3887,6 +4128,7 @@ _Module: Cortex Cleaner & NexusExplorer — Apex Enterprise Power Tools Pages._
 
 ### src/cortex_unified/ui/premium/app.py
 _Module: Premium GUI entry point (installed as the ``cortex-gui`` command)._
+
 - log_dir() (L20)
 - setup_logging(debug) (L27)
 - _install_qt_message_handler() (L60)
@@ -3903,6 +4145,7 @@ _Module: Premium GUI entry point (installed as the ``cortex-gui`` command)._
 
 ### src/cortex_unified/ui/premium/audio_duplicates_page.py
 _Module: Audio duplicate detection page – Chromaprint-inspired acoustic fingerprinting._
+
 - class _AudioWorker (L26)
   - __init__(self, root, threshold) (L32)
   - cancel(self) (L41)
@@ -3917,11 +4160,13 @@ _Module: Audio duplicate detection page – Chromaprint-inspired acoustic finger
 
 ### src/cortex_unified/ui/premium/backdrop.py
 _Module: Optional native window backdrop (Windows 11 Mica/Acrylic)._
+
 - _windows_build() (L46)
 - apply_backdrop(win) (L59)
 
 ### src/cortex_unified/ui/premium/cdc_page.py
 _Module: Content-Defined Chunking page – FastCDC / VectorCDC (FAST'25)._
+
 - class _CdcWorker (L25)
   - __init__(self, root, threshold) (L31)
   - cancel(self) (L40)
@@ -3936,6 +4181,7 @@ _Module: Content-Defined Chunking page – FastCDC / VectorCDC (FAST'25)._
 
 ### src/cortex_unified/ui/premium/cleanup_hub_page.py
 _Module: Cleanup Hub: unified Storage Sense-style view of all cleanup categories._
+
 - class HubScanWorker (L48)
   - __init__(self, max_risk, include_disabled) (L58)
   - cancel(self) (L66)
@@ -3961,6 +4207,7 @@ _Module: Cleanup Hub: unified Storage Sense-style view of all cleanup categories
 
 ### src/cortex_unified/ui/premium/cloud_storage_page.py
 _Module: Cloud Storage Analyzer — S3, Azure, Google Drive, OneDrive, rclone._
+
 - class _WorkerResult (L43)
 - class _CloudWorker (L50)
   - __init__(self, target, max_objects, include_versions, include_delete_markers) (L56)
@@ -3984,6 +4231,7 @@ _Module: Cloud Storage Analyzer — S3, Azure, Google Drive, OneDrive, rclone._
 
 ### src/cortex_unified/ui/premium/compact_os_page.py
 _Module: CompactOS / NTFS compression page – estimate, then compress only on demand._
+
 - class _ScanWorker (L35)
   - __init__(self, root, min_mb) (L41)
   - cancel(self) (L50)
@@ -4007,6 +4255,7 @@ _Module: CompactOS / NTFS compression page – estimate, then compress only on d
 
 ### src/cortex_unified/ui/premium/device_window.py
 _Module: Per-device deep scan worker and the premium device detail window._
+
 - _severity_badge_kind(severity) (L68)
 - class DeviceDeepScanWorker (L73)
   - __init__(self, device, networks, profile, custom_ports, nmap_modes, catalog_path) (L80)
@@ -4060,6 +4309,7 @@ _Module: Per-device deep scan worker and the premium device detail window._
 
 ### src/cortex_unified/ui/premium/directstorage_page.py
 _Module: Windows 11 DirectStorage & BypassIO Hardware Acceleration Page._
+
 - class _DirectStorageWorker (L34)
   - __init__(self, optimizer) (L38)
   - run_audit(self) (L43)
@@ -4070,6 +4320,7 @@ _Module: Windows 11 DirectStorage & BypassIO Hardware Acceleration Page._
 
 ### src/cortex_unified/ui/premium/disk_analyzer_page.py
 _Module: Advanced Disk Analyzer page — MFT fast scan, treemap, deep folder breakdown._
+
 - class _ScanWorker (L42)
   - __init__(self, root, max_depth) (L49)
   - cancel(self) (L56)
@@ -4088,6 +4339,7 @@ _Module: Advanced Disk Analyzer page — MFT fast scan, treemap, deep folder bre
 
 ### src/cortex_unified/ui/premium/driver_manager_page.py
 _Module: Driver Manager page — scan, update, backup and clean device drivers._
+
 - class _ScanWorker (L56)
   - __init__(self, offline_mode, index_path) (L63)
   - cancel(self) (L70)
@@ -4117,6 +4369,7 @@ _Module: Driver Manager page — scan, update, backup and clean device drivers._
 
 ### src/cortex_unified/ui/premium/enterprise_suite_pages.py
 _Module: Cortex Cleaner & NexusExplorer — Enterprise Next-Gen Suite GUI Pages._
+
 - _fmt_bytes(b) (L53)
 - _PrimaryButton(text, parent) (L64)
 - _SecondaryButton(text, parent) (L72)
@@ -4187,6 +4440,7 @@ _Module: Cortex Cleaner & NexusExplorer — Enterprise Next-Gen Suite GUI Pages.
 
 ### src/cortex_unified/ui/premium/expanded_tools_pages.py
 _Module: Cortex Cleaner & NexusExplorer — Expanded Enterprise Power Tools Pages._
+
 - PrimaryButton(text, parent) (L48)
 - SecondaryButton(text, parent) (L55)
 - _fmt_bytes(b) (L74)
@@ -4257,6 +4511,7 @@ _Module: Cortex Cleaner & NexusExplorer — Expanded Enterprise Power Tools Page
 
 ### src/cortex_unified/ui/premium/focus.py
 _Module: Focus-visible: show keyboard focus rings only for keyboard navigation._
+
 - class FocusVisibleFilter (L43)
   - __init__(self, app) (L46)
   - eventFilter(self, obj, event) (L52)
@@ -4265,6 +4520,7 @@ _Module: Focus-visible: show keyboard focus rings only for keyboard navigation._
 
 ### src/cortex_unified/ui/premium/fuzzy_hash_page.py
 _Module: Fuzzy hash page – ssdeep-style CTPH for *close-but-different* binaries._
+
 - class _FuzzyWorker (L26)
   - __init__(self, root, threshold) (L32)
   - cancel(self) (L41)
@@ -4279,6 +4535,7 @@ _Module: Fuzzy hash page – ssdeep-style CTPH for *close-but-different* binarie
 
 ### src/cortex_unified/ui/premium/icons.py
 _Module: Crisp, theme-tinted SVG icons._
+
 - _svg_source(name) (L56)
 - _render(name, size, color, dpr_x100) (L67)
 - _device_pixel_ratio() (L119)
@@ -4292,6 +4549,7 @@ _Module: Crisp, theme-tinted SVG icons._
 
 ### src/cortex_unified/ui/premium/license_page.py
 _Module: License & Tiers page: current entitlement, offline activation, trial._
+
 - class LicensePage (L47)
   - __init__(self, win) (L50)
   - _refresh(self) (L145)
@@ -4302,6 +4560,7 @@ _Module: License & Tiers page: current entitlement, offline activation, trial._
 
 ### src/cortex_unified/ui/premium/log_sweeper_page.py
 _Module: Log Sweeper: find huge *.log/*.txt across user-selected roots (D:\code)._
+
 - class _LogWorker (L36)
   - __init__(self, roots, min_mb) (L42)
   - cancel(self) (L51)
@@ -4321,6 +4580,7 @@ _Module: Log Sweeper: find huge *.log/*.txt across user-selected roots (D:\code)
 
 ### src/cortex_unified/ui/premium/memory_standby_page.py
 _Module: Windows RAM Standby List & Working Set Kernel Purger Page._
+
 - class MemoryStandbyPurgerPage (L34)
   - __init__(self, win) (L37)
   - _refresh_stats(self) (L113)
@@ -4332,6 +4592,7 @@ _Module: Windows RAM Standby List & Working Set Kernel Purger Page._
 
 ### src/cortex_unified/ui/premium/mft_slack_page.py
 _Module: NTFS Master File Table ($MFT) & Directory Index Slack Scrubber Page._
+
 - class _MftScrubWorker (L36)
   - __init__(self, scrubber) (L41)
   - run_audit(self) (L46)
@@ -4346,6 +4607,7 @@ _Module: NTFS Master File Table ($MFT) & Directory Index Slack Scrubber Page._
 
 ### src/cortex_unified/ui/premium/model_cache_page.py
 _Module: Model Cache page – hardlink-aware HF hub / Ollama / LM Studio._
+
 - class _ScanWorker (L35)
   - run(self) (L40)
 - class _CleanOrphansWorker (L50)
@@ -4361,6 +4623,7 @@ _Module: Model Cache page – hardlink-aware HF hub / Ollama / LM Studio._
 
 ### src/cortex_unified/ui/premium/more_pages.py
 _Module: Additional premium pages: Software Updater, Drive Optimizer, System Info._
+
 - _windows_only(page, feature) (L58)
 - _allow_multi_select(table) (L77)
 - _selected_records(table) (L87)
@@ -4513,6 +4776,7 @@ _Module: Additional premium pages: Software Updater, Drive Optimizer, System Inf
 
 ### src/cortex_unified/ui/premium/motion.py
 _Module: Motion system: a single shared set of animation durations and easing curves_
+
 - prefers_reduced_motion() (L29)
 - set_reduced_motion(value) (L34)
 - class Duration (L40)
@@ -4528,6 +4792,7 @@ _Module: Motion system: a single shared set of animation durations and easing cu
 
 ### src/cortex_unified/ui/premium/near_duplicates_page.py
 _Module: Near-duplicate finder page – MinHash LSH + Bloom (SEDD/LSHBloom/SemHash)._
+
 - class _NearDupWorker (L29)
   - __init__(self, root, threshold) (L35)
   - cancel(self) (L44)
@@ -4542,6 +4807,7 @@ _Module: Near-duplicate finder page – MinHash LSH + Bloom (SEDD/LSHBloom/SemHa
 
 ### src/cortex_unified/ui/premium/network_pages.py
 _Module: Network suite pages: live Traffic Monitor and Firewall control._
+
 - _ip_sort_key(device) (L57)
 - _fmt_rate(bps) (L75)
 - class TrafficMonitorPage (L89)
@@ -4677,6 +4943,7 @@ _Module: Network suite pages: live Traffic Monitor and Firewall control._
 
 ### src/cortex_unified/ui/premium/nextgen_suite_pages.py
 _Module: Cortex Cleaner & NexusExplorer — Next-Generation Enterprise Suite GUI Pages._
+
 - _fmt_bytes(b) (L50)
 - _PrimaryButton(text) (L61)
 - _SecondaryButton(text) (L69)
@@ -4743,6 +5010,7 @@ _Module: Cortex Cleaner & NexusExplorer — Next-Generation Enterprise Suite GUI
 
 ### src/cortex_unified/ui/premium/nexus_page.py
 _Module: Nexus File Manager page._
+
 - _load_nexus_module() (L38)
 - class _ErrorCard (L58)
   - __init__(self, message, parent) (L60)
@@ -4752,6 +5020,7 @@ _Module: Nexus File Manager page._
 
 ### src/cortex_unified/ui/premium/perceptual_duplicates_page.py
 _Module: Perceptual duplicate photos page – pHash / dHash / aHash._
+
 - class _PerceptualWorker (L26)
   - __init__(self, root, max_distance) (L32)
   - cancel(self) (L41)
@@ -4766,6 +5035,7 @@ _Module: Perceptual duplicate photos page – pHash / dHash / aHash._
 
 ### src/cortex_unified/ui/premium/portable_manager_page.py
 _Module: Portable App Manager page — scan, track, and update portable apps._
+
 - class _PortableWorker (L41)
   - __init__(self, roots, target_apps) (L47)
   - cancel(self) (L54)
@@ -4789,6 +5059,7 @@ _Module: Portable App Manager page — scan, track, and update portable apps._
 
 ### src/cortex_unified/ui/premium/power_suite_pages.py
 _Module: Cortex Cleaner & NexusExplorer — Enterprise Power Suite GUI Pages._
+
 - _fmt_bytes(b) (L56)
 - _PrimaryButton(text, parent) (L67)
 - _SecondaryButton(text, parent) (L75)
@@ -4844,6 +5115,7 @@ _Module: Cortex Cleaner & NexusExplorer — Enterprise Power Suite GUI Pages._
 
 ### src/cortex_unified/ui/premium/power_tools_pages.py
 _Module: Premium GUI pages for Enterprise Power Tools & System Maintainers._
+
 - class HashVerifierPage (L60)
   - __init__(self, win) (L63)
   - _pick_file(self) (L118)
@@ -4901,6 +5173,7 @@ _Module: Premium GUI pages for Enterprise Power Tools & System Maintainers._
 
 ### src/cortex_unified/ui/premium/privacy_blocker_page.py
 _Module: Privacy & Telemetry Blocker page — profile-based telemetry control._
+
 - class _PrivacyWorker (L33)
   - __init__(self, mode, profile, tweak_ids) (L40)
   - cancel(self) (L52)
@@ -4918,6 +5191,7 @@ _Module: Privacy & Telemetry Blocker page — profile-based telemetry control._
 
 ### src/cortex_unified/ui/premium/registry.py
 _Module: The single source of truth for every tool page in the premium shell._
+
 - class NavGroup (L44)
 - class PageSpec (L52)
   - load(self) (L71)
@@ -4929,6 +5203,7 @@ _Module: The single source of truth for every tool page in the premium shell._
 
 ### src/cortex_unified/ui/premium/registry_ai_page.py
 _Module: AI Registry Cleaner page — ML-powered risk scoring for registry cleanup._
+
 - class _RegistryWorker (L39)
   - __init__(self, root, categories, risk_threshold, create_restore_point) (L45)
   - cancel(self) (L60)
@@ -4944,6 +5219,7 @@ _Module: AI Registry Cleaner page — ML-powered risk scoring for registry clean
 
 ### src/cortex_unified/ui/premium/report_pages.py
 _Module: Reporting & recovery pages: exportable PC Health Report, Backups/Restore._
+
 - class HealthReportWorker (L37)
   - __init__(self, fmt) (L43)
   - _collect(self) (L48)
@@ -4975,6 +5251,7 @@ _Module: Reporting & recovery pages: exportable PC Health Report, Backups/Restor
 
 ### src/cortex_unified/ui/premium/s3_fifo_page.py
 _Module: S3-FIFO cache policy benchmark – FIFO queues are all you need (SOSP'23)._
+
 - class _BenchWorker (L28)
   - __init__(self, capacity, trace_len) (L33)
   - run(self) (L39)
@@ -4986,6 +5263,7 @@ _Module: S3-FIFO cache policy benchmark – FIFO queues are all you need (SOSP'2
 
 ### src/cortex_unified/ui/premium/search_optimizer_page.py
 _Module: Windows Search Index Database (Windows.edb) Optimizer Page._
+
 - class _SearchWorker (L33)
   - run_status(self) (L38)
   - run_compact(self) (L43)
@@ -5001,6 +5279,7 @@ _Module: Windows Search Index Database (Windows.edb) Optimizer Page._
 
 ### src/cortex_unified/ui/premium/secure_shredder_page.py
 _Module: Secure File Shredder — multi-standard sanitization with verification._
+
 - class _ShredWorker (L39)
   - __init__(self, file_paths, standard, verify) (L46)
   - cancel(self) (L59)
@@ -5019,6 +5298,7 @@ _Module: Secure File Shredder — multi-standard sanitization with verification.
 
 ### src/cortex_unified/ui/premium/settings_store.py
 _Module: Durable, atomically-written user settings for the premium GUI._
+
 - settings_path() (L46)
 - class SettingsStore (L51)
   - __init__(self, path) (L61)
@@ -5040,6 +5320,7 @@ _Module: Durable, atomically-written user settings for the premium GUI._
 
 ### src/cortex_unified/ui/premium/skeleton.py
 _Module: Skeleton shimmer: a reassuring "loading" placeholder for premium feel._
+
 - class ShimmerSkeleton (L25)
   - __init__(self, palette, rows, row_height, parent) (L33)
   - _get_phase(self) (L51)
@@ -5051,6 +5332,7 @@ _Module: Skeleton shimmer: a reassuring "loading" placeholder for premium feel._
 
 ### src/cortex_unified/ui/premium/smoothscroll.py
 _Module: Smooth momentum scrolling for a premium, non-janky scroll feel._
+
 - class SmoothScroller (L45)
   - __init__(self, area, parent) (L48)
   - eventFilter(self, obj, event) (L64)
@@ -5059,6 +5341,7 @@ _Module: Smooth momentum scrolling for a premium, non-janky scroll feel._
 
 ### src/cortex_unified/ui/premium/srum_bam_page.py
 _Module: Windows BAM/DAM & SRUM Forensic Privacy Studio Page._
+
 - class _SrumBamWorker (L35)
   - __init__(self, cleaner, entries) (L40)
   - run_scan(self) (L46)
@@ -5072,6 +5355,7 @@ _Module: Windows BAM/DAM & SRUM Forensic Privacy Studio Page._
 
 ### src/cortex_unified/ui/premium/startup_optimizer_page.py
 _Module: Startup Optimizer page — stagger/delay engine with resource-aware gating._
+
 - class _StartupScanWorker (L42)
   - __init__(self) (L49)
   - cancel(self) (L54)
@@ -5108,6 +5392,7 @@ _Module: Startup Optimizer page — stagger/delay engine with resource-aware gat
 
 ### src/cortex_unified/ui/premium/states.py
 _Module: Reusable loading / empty / error state panels for data-backed pages._
+
 - class StatePanel (L65)
   - __init__(self, palette, parent) (L86)
   - bind_content(self, *widgets) (L102)
@@ -5135,6 +5420,7 @@ _Module: Reusable loading / empty / error state panels for data-backed pages._
 
 ### src/cortex_unified/ui/premium/system_pages.py
 _Module: Premium GUI pages for the real system-tool backends._
+
 - _windows_only(page, feature) (L54)
 - class PrivacyScanWorker (L69)
   - run(self) (L74)
@@ -5266,6 +5552,7 @@ _Module: Premium GUI pages for the real system-tool backends._
 
 ### src/cortex_unified/ui/premium/tablemodel.py
 _Module: A reusable model/view foundation for the data-dense tables._
+
 - _read(record, name) (L57)
 - class Column (L65)
   - display(self, record) (L96)
@@ -5298,6 +5585,7 @@ _Module: A reusable model/view foundation for the data-dense tables._
 
 ### src/cortex_unified/ui/premium/theme.py
 _Module: Premium design system: color tokens, typography, and a full QSS builder._
+
 - _hex_to_rgb(color) (L43)
 - _shade(color, factor) (L62)
 - class Palette (L78)
@@ -5309,6 +5597,7 @@ _Module: Premium design system: color tokens, typography, and a full QSS builder
 
 ### src/cortex_unified/ui/premium/tokens.py
 _Module: Qt-free design tokens for the premium UI/UX design system._
+
 - class Spacing (L27)
 - class Radius (L46)
 - class Elevation (L80)
@@ -5321,6 +5610,7 @@ _Module: Qt-free design tokens for the premium UI/UX design system._
 
 ### src/cortex_unified/ui/premium/tools_pages.py
 _Module: Tool pages: Performance (power plans), Browser Extensions, Driver inventory._
+
 - _windows_only(page, feature) (L33)
 - class PowerPlanListWorker (L48)
   - run(self) (L53)
@@ -5354,6 +5644,7 @@ _Module: Tool pages: Performance (power plans), Browser Extensions, Driver inven
 
 ### src/cortex_unified/ui/premium/tray.py
 _Module: Premium system tray: a background presence with a live resource monitor._
+
 - _render_tray_icon(palette, size) (L51)
 - class PremiumTray (L106)
   - __init__(self, window, settings) (L114)
@@ -5376,6 +5667,7 @@ _Module: Premium system tray: a background presence with a live resource monitor
 
 ### src/cortex_unified/ui/premium/video_duplicates_page.py
 _Module: Video near-duplicate detection page – keyframe pHash + temporal consistence._
+
 - class _VideoWorker (L25)
   - __init__(self, root, threshold) (L31)
   - cancel(self) (L40)
@@ -5390,6 +5682,7 @@ _Module: Video near-duplicate detection page – keyframe pHash + temporal consi
 
 ### src/cortex_unified/ui/premium/widgets.py
 _Module: Reusable premium widgets: elevated cards, a custom circular gauge, stat_
+
 - class Card (L39)
   - __init__(self, palette, object_name, parent) (L65)
 - class StatCard (L83)
@@ -5430,6 +5723,7 @@ _Module: Reusable premium widgets: elevated cards, a custom circular gauge, stat
 
 ### src/cortex_unified/ui/premium/win_update_repair_page.py
 _Module: Windows Update Repair page — comprehensive component reset and repair._
+
 - class _RepairWorker (L36)
   - __init__(self, phases) (L43)
   - cancel(self) (L49)
@@ -5448,6 +5742,7 @@ _Module: Windows Update Repair page — comprehensive component reset and repair
 
 ### src/cortex_unified/ui/premium/winapp2_page.py
 _Module: Winapp2 Community Declarative Application Cleaner Page._
+
 - class _Winapp2Worker (L31)
   - __init__(self, cleaner, targets) (L37)
   - run_scan(self) (L43)
@@ -5462,6 +5757,7 @@ _Module: Winapp2 Community Declarative Application Cleaner Page._
 
 ### src/cortex_unified/ui/premium/window.py
 _Module: The premium main window: sidebar navigation + engine-backed pages._
+
 - fmt_bytes(n) (L54)
 - class _TitleBarChrome (L97)
   - __init__(self, brand, min_btn, max_btn, close_btn) (L109)
@@ -5600,6 +5896,7 @@ _Module: The premium main window: sidebar navigation + engine-backed pages._
 
 ### src/cortex_unified/ui/premium/workers.py
 _Module: Background workers bridging the GUI to the engine._
+
 - class ScanWorker (L25)
   - __init__(self, max_risk, include_disabled) (L37)
   - cancel(self) (L44)
@@ -5705,6 +6002,7 @@ _Module: Background workers bridging the GUI to the engine._
 
 ### src/cortex_unified/ui/premium/wsl_page.py
 _Module: WSL Cleaner page: list distros + compact ext4.vhdx._
+
 - class _WslListWorker (L35)
   - run(self) (L39)
 - class _WslShutdownWorker (L48)
@@ -5727,6 +6025,7 @@ _Module: Safety infrastructure for Cortex Cleaner GUI operations._
 
 ### src/cortex_unified/ui/safety/manifest_system.py
 _Module: Atomic manifest creation and operation logging system._
+
 - class ManifestError (L15)
 - class ManifestSystem (L19)
   - __init__(self, manifest_dir, logger) (L22)
@@ -5745,6 +6044,7 @@ _Module: Atomic manifest creation and operation logging system._
 
 ### src/cortex_unified/ui/safety/path_validator.py
 _Module: Path validation with OS-specific safety rules and symlink protection._
+
 - class PathValidationError (L12)
 - class PathValidator (L16)
   - __init__(self, logger) (L19)
@@ -5762,6 +6062,7 @@ _Module: Path validation with OS-specific safety rules and symlink protection._
 
 ### src/cortex_unified/ui/safety/process_manager.py
 _Module: Safe external command execution manager._
+
 - class ProcessError (L16)
 - class ProcessTimeoutError (L20)
 - class ExecutableNotFoundError (L24)
@@ -5780,6 +6081,7 @@ _Module: Safe external command execution manager._
 
 ### src/cortex_unified/ui/safety/safety_manager.py
 _Module: Central safety manager that coordinates all safety components._
+
 - class OperationType (L18)
 - class ValidationResult (L26)
 - class Operation (L33)
@@ -5836,6 +6138,7 @@ _Module: GUI tabs module for Cortex Cleaner._
 
 ### src/cortex_unified/ui/tabs/base_tab.py
 _Module: Base tab class for Cortex Cleaner GUI tabs with safety manager integration._
+
 - class BaseTab (L16)
   - __init__(self, config, logger, safety_manager) (L25)
   - __getattr__(self, name) (L48)
@@ -5863,6 +6166,7 @@ _Module: Base tab class for Cortex Cleaner GUI tabs with safety manager integrat
 
 ### src/cortex_unified/ui/tabs/broken_links_tab.py
 _Module: Tab for broken links tab in Cortex Cleaner GUI._
+
 - class BrokenLinksWorker (L25)
   - __init__(self, scan_path, scan_symlinks, scan_shortcuts, scan_registry) (L30)
   - run(self) (L40)
@@ -5887,6 +6191,7 @@ _Module: Tab for broken links tab in Cortex Cleaner GUI._
 
 ### src/cortex_unified/ui/tabs/dashboard_tab.py
 _Module: Dashboard tab — the command center for Cortex Cleaner._
+
 - class OptimizerWorker (L27)
   - __init__(self) (L34)
   - run(self) (L40)
@@ -5906,6 +6211,7 @@ _Module: Dashboard tab — the command center for Cortex Cleaner._
 
 ### src/cortex_unified/ui/tabs/deep_cleaner_tab.py
 _Module: Tab for deep disk cleaning in Cortex Cleaner GUI._
+
 - class DeepCleanerWorker (L22)
   - __init__(self, config) (L29)
   - run(self) (L37)
@@ -5926,6 +6232,7 @@ _Module: Tab for deep disk cleaning in Cortex Cleaner GUI._
 
 ### src/cortex_unified/ui/tabs/disk_analyzer_tab.py
 _Module: Tab for disk analyzer tab in Cortex Cleaner GUI._
+
 - class DiskAnalyzerWorker (L31)
   - __init__(self, config, path) (L36)
   - run(self) (L45)
@@ -5944,6 +6251,7 @@ _Module: Tab for disk analyzer tab in Cortex Cleaner GUI._
 
 ### src/cortex_unified/ui/tabs/docker_tab.py
 _Module: Tab for docker tab in Cortex Cleaner GUI._
+
 - class DockerScanWorker (L33)
   - __init__(self, scan_images, scan_containers, scan_volumes, scan_networks) (L38)
   - run(self) (L47)
@@ -5964,6 +6272,7 @@ _Module: Tab for docker tab in Cortex Cleaner GUI._
 
 ### src/cortex_unified/ui/tabs/duplicates_tab.py
 _Module: Tab for duplicates tab in Cortex Cleaner GUI._
+
 - class DuplicateFinderWorker (L27)
   - __init__(self, config, path, hash_algorithm) (L34)
   - run(self) (L44)
@@ -5982,6 +6291,7 @@ _Module: Tab for duplicates tab in Cortex Cleaner GUI._
 
 ### src/cortex_unified/ui/tabs/empty_files_tab.py
 _Module: Empty files cleaner tab for Cortex Cleaner GUI._
+
 - class EmptyFilesWorker (L24)
   - __init__(self, config, path, operation, files_to_delete, dirs_to_delete) (L33)
   - run(self) (L44)
@@ -6001,6 +6311,7 @@ _Module: Empty files cleaner tab for Cortex Cleaner GUI._
 
 ### src/cortex_unified/ui/tabs/file_shredder_tab.py
 _Module: Tab for file shredder tab in Cortex Cleaner GUI._
+
 - class FileShredderWorker (L26)
   - __init__(self, config, target_paths, passes, method, wipe_drive) (L32)
   - run(self) (L44)
@@ -6022,11 +6333,13 @@ _Module: Tab for file shredder tab in Cortex Cleaner GUI._
 
 ### src/cortex_unified/ui/tabs/heuristics_tab.py
 _Module: Tab for heuristics tab in Cortex Cleaner GUI._
+
 - class HeuristicsTab (L25)
   - __init__(self, config, logger, safety_manager) (L28)
 
 ### src/cortex_unified/ui/tabs/large_files_tab.py
 _Module: Tab for large files tab in Cortex Cleaner GUI._
+
 - class LargeFileFinderWorker (L26)
   - __init__(self, config, path, min_size_mb) (L31)
   - run(self) (L40)
@@ -6044,6 +6357,7 @@ _Module: Tab for large files tab in Cortex Cleaner GUI._
 
 ### src/cortex_unified/ui/tabs/package_manager_tab.py
 _Module: Tab for package manager tab in Cortex Cleaner GUI._
+
 - class PMSearchWorker (L41)
   - __init__(self, config) (L46)
   - run(self) (L52)
@@ -6072,6 +6386,7 @@ _Module: Tab for package manager tab in Cortex Cleaner GUI._
 
 ### src/cortex_unified/ui/tabs/privacy_tab.py
 _Module: Privacy Shield tab — comprehensive browser and system privacy management._
+
 - class BrowserScanWorker (L27)
   - run(self) (L31)
 - class PrivacyTab (L47)
@@ -6087,6 +6402,7 @@ _Module: Privacy Shield tab — comprehensive browser and system privacy managem
 
 ### src/cortex_unified/ui/tabs/process_analyzer_tab.py
 _Module: Tab for process analyzer tab in Cortex Cleaner GUI._
+
 - class ProcessAnalyzerWorker (L14)
   - __init__(self, config) (L23)
   - run(self) (L28)
@@ -6099,6 +6415,7 @@ _Module: Tab for process analyzer tab in Cortex Cleaner GUI._
 
 ### src/cortex_unified/ui/tabs/registry_cleaner_tab.py
 _Module: Tab for registry cleaner tab in Cortex Cleaner GUI._
+
 - class RegistryScanWorker (L15)
   - __init__(self, config) (L24)
   - run(self) (L29)
@@ -6116,6 +6433,7 @@ _Module: Tab for registry cleaner tab in Cortex Cleaner GUI._
 
 ### src/cortex_unified/ui/tabs/reports_tab.py
 _Module: Tab for reports tab in Cortex Cleaner GUI._
+
 - class ReportsTab (L29)
   - __init__(self, config, logger, safety_manager) (L32)
   - setup_ui(self) (L37)
@@ -6134,6 +6452,7 @@ _Module: Tab for reports tab in Cortex Cleaner GUI._
 
 ### src/cortex_unified/ui/tabs/resource_monitor_tab.py
 _Module: Tab for resource monitor tab in Cortex Cleaner GUI._
+
 - class ResourceMonitorTab (L22)
   - __init__(self, config, logger, safety_manager) (L25)
   - setup_ui(self) (L30)
@@ -6146,6 +6465,7 @@ _Module: Tab for resource monitor tab in Cortex Cleaner GUI._
 
 ### src/cortex_unified/ui/tabs/restore_tab.py
 _Module: Tab for restore tab in Cortex Cleaner GUI._
+
 - class RestoreWorker (L25)
   - __init__(self, manager, target_path) (L35)
   - run(self) (L41)
@@ -6162,6 +6482,7 @@ _Module: Tab for restore tab in Cortex Cleaner GUI._
 
 ### src/cortex_unified/ui/tabs/scheduler_tab.py
 _Module: Tab for scheduler tab in Cortex Cleaner GUI._
+
 - class AddTaskDialog (L26)
   - __init__(self, parent) (L28)
 - class SchedulerTab (L57)
@@ -6176,6 +6497,7 @@ _Module: Tab for scheduler tab in Cortex Cleaner GUI._
 
 ### src/cortex_unified/ui/tabs/security_scanner_tab.py
 _Module: Tab for Sentinel Pro security scanner in Cortex Cleaner GUI._
+
 - class SentinelScanWorker (L20)
   - __init__(self, directory, scan_archives, scan_git, max_workers) (L26)
   - run(self) (L35)
@@ -6192,6 +6514,7 @@ _Module: Tab for Sentinel Pro security scanner in Cortex Cleaner GUI._
 
 ### src/cortex_unified/ui/tabs/settings_tab.py
 _Module: Tab for settings tab in Cortex Cleaner GUI._
+
 - class SettingsTab (L32)
   - __init__(self, config, logger, safety_manager) (L35)
   - setup_ui(self) (L39)
@@ -6199,6 +6522,7 @@ _Module: Tab for settings tab in Cortex Cleaner GUI._
 
 ### src/cortex_unified/ui/tabs/startup_manager_tab.py
 _Module: Tab for startup manager tab in Cortex Cleaner GUI._
+
 - class StartupScanWorker (L14)
   - __init__(self, config) (L23)
   - run(self) (L28)
@@ -6213,12 +6537,14 @@ _Module: Tab for startup manager tab in Cortex Cleaner GUI._
 
 ### src/cortex_unified/ui/tabs/system_tools_tab.py
 _Module: Tab for system tools tab in Cortex Cleaner GUI._
+
 - class SystemToolsTab (L18)
   - __init__(self, config, logger, safety_manager) (L21)
   - setup_ui(self) (L25)
 
 ### src/cortex_unified/ui/tabs/uninstaller_tab.py
 _Module: Deep Uninstaller tab — safe app removal + residual cleanup._
+
 - class AppListWorker (L33)
   - run(self) (L39)
 - class ResidualScanWorker (L44)
@@ -6247,6 +6573,7 @@ _Module: Deep Uninstaller tab — safe app removal + residual cleanup._
 
 ### src/cortex_unified/ui/tooltips.py
 _Module: Comprehensive tooltip and help system for Cortex Cleaner GUI._
+
 - class TooltipManager (L8)
   - apply_tooltip(cls, widget, tooltip_key, include_help) (L373)
   - apply_tooltips_to_window(cls, window) (L397)
@@ -6259,6 +6586,7 @@ _Module: Comprehensive tooltip and help system for Cortex Cleaner GUI._
 
 ### src/cortex_unified/ui/tray_icon.py
 _Module: System Tray Manager — manages the tray icon, background agent, and notifications._
+
 - class SystemTrayManager (L11)
   - __init__(self, main_window, app) (L14)
   - _setup_menu(self) (L50)
@@ -6275,6 +6603,7 @@ _Module: Visualization module for Cortex Cleaner._
 
 ### src/cortex_unified/visualization/interactive_dashboard.py
 _Module: Interactive dashboard for comprehensive data visualization._
+
 - class InteractiveDashboard (L70)
   - __init__(self, analyzer) (L78)
   - _initialize_generators(self) (L90)
@@ -6296,6 +6625,7 @@ _Module: Interactive dashboard for comprehensive data visualization._
 
 ### src/cortex_unified/visualization/sunburst_generator.py
 _Module: Plotly sunburst renderer for hierarchical disk usage trees._
+
 - class SunburstSegment (L58)
 - class SunburstGenerator (L71)
   - __init__(self, data) (L74)
@@ -6311,6 +6641,7 @@ _Module: Plotly sunburst renderer for hierarchical disk usage trees._
 
 ### src/cortex_unified/visualization/treemap_generator.py
 _Module: TreeMap visualization generator for disk usage analysis._
+
 - class TreeMapNode (L55)
 - class TreeMapGenerator (L66)
   - __init__(self, data) (L69)
@@ -6334,6 +6665,7 @@ _Module: NexusExplorer native Qt package._
 
 ### src/NexusExplorer/native/binary_differ.py
 _Module: Nexus Explorer — Binary & Hex File Differ Engine._
+
 - class HexDiffChunk (L18)
 - class BinaryDiffReport (L32)
 - class BinaryDiffer (L47)
@@ -6342,6 +6674,7 @@ _Module: Nexus Explorer — Binary & Hex File Differ Engine._
 
 ### src/NexusExplorer/native/file_signature_sniffer.py
 _Module: Nexus Explorer — Binary Magic Bytes & MIME Header Forensic Sniffer._
+
 - class FileSignature (L18)
 - class SniffResult (L81)
 - class FileSignatureSniffer (L95)
@@ -6350,6 +6683,7 @@ _Module: Nexus Explorer — Binary Magic Bytes & MIME Header Forensic Sniffer._
 
 ### src/NexusExplorer/native/image_optimizer.py
 _Module: Nexus Explorer — High-Throughput Batch Image Optimizer & WebP Transcoder._
+
 - class ImageOptimizeResult (L21)
 - class BatchOptimizeSummary (L35)
 - class ImageOptimizer (L46)
@@ -6358,6 +6692,7 @@ _Module: Nexus Explorer — High-Throughput Batch Image Optimizer & WebP Transco
 
 ### src/NexusExplorer/native/nexus_ads_manager.py
 _Module: Nexus Explorer — NTFS Alternate Data Streams (ADS) & Zone.Identifier Manager._
+
 - class AlternateDataStream (L30)
 - class AlternateDataStreamsManager (L42)
   - list_streams(cls, file_path) (L46)
@@ -6368,6 +6703,7 @@ _Module: Nexus Explorer — NTFS Alternate Data Streams (ADS) & Zone.Identifier 
 
 ### src/NexusExplorer/native/nexus_archive.py
 _Module: Archive support via native 7-Zip CLI — multithreaded extraction._
+
 - _get_7z_search_paths() (L32)
 - _find_7z() (L76)
 - is_7z_available() (L124)
@@ -6413,6 +6749,7 @@ _Module: Archive support via native 7-Zip CLI — multithreaded extraction._
 
 ### src/NexusExplorer/native/nexus_archive_manager.py
 _Module: Nexus Explorer — Multi-Format Archive Studio & Compression Engine._
+
 - class ArchiveFormat (L21)
 - class CompressionLevel (L31)
 - class ArchiveEntryInfo (L41)
@@ -6426,6 +6763,7 @@ _Module: Nexus Explorer — Multi-Format Archive Studio & Compression Engine._
 
 ### src/NexusExplorer/native/nexus_batch_renamer.py
 _Module: Nexus Explorer — Enterprise Batch Multi-Rename Engine._
+
 - class CaseTransformation (L21)
 - class RenamePlanItem (L34)
 - class RenameTransaction (L47)
@@ -6440,6 +6778,7 @@ _Module: Nexus Explorer — Enterprise Batch Multi-Rename Engine._
 
 ### src/NexusExplorer/native/nexus_cloud.py
 _Module: Cloud storage integration module._
+
 - _parse_iso_datetime(iso_str) (L71)
 - _secure_store(key, value) (L83)
 - _secure_load(key) (L104)
@@ -6532,6 +6871,7 @@ _Module: Cloud storage integration module._
 
 ### src/NexusExplorer/native/nexus_content_search.py
 _Module: Content search engine for searching inside file contents._
+
 - class ContentMatch (L62)
 - class ContentSearchResult (L72)
 - is_searchable(path) (L79)
@@ -6548,6 +6888,7 @@ _Module: Content search engine for searching inside file contents._
 
 ### src/NexusExplorer/native/nexus_core.py
 _Module: Nexus native core: engine bridge, native icons/thumbnails, table model._
+
 - find_cli() (L70)
 - human(n) (L81)
 - fmt_ms(ms) (L97)
@@ -6638,6 +6979,7 @@ _Module: Nexus native core: engine bridge, native icons/thumbnails, table model.
 
 ### src/NexusExplorer/native/nexus_dir_diff.py
 _Module: Nexus Explorer — Directory Comparison & Folder Synchronization Engine._
+
 - class DiffStatus (L20)
 - class SyncMode (L31)
 - class DiffEntry (L41)
@@ -6650,6 +6992,7 @@ _Module: Nexus Explorer — Directory Comparison & Folder Synchronization Engine
 
 ### src/NexusExplorer/native/nexus_explorer.py
 _Module: NexusExplorerWidget — premium native Qt6 file explorer._
+
 - _safe_ts(ms) (L151)
 - _scaled(px) (L164)
 - _init_dpi() (L170)
@@ -7058,6 +7401,7 @@ _Module: NexusExplorerWidget — premium native Qt6 file explorer._
 
 ### src/NexusExplorer/native/nexus_fast_copier.py
 _Module: Nexus Explorer — High-Performance Fast File Copier & Transfer Engine._
+
 - class CopyMode (L23)
 - class CopyItemProgress (L32)
 - class CopySummary (L46)
@@ -7068,6 +7412,7 @@ _Module: Nexus Explorer — High-Performance Fast File Copier & Transfer Engine.
 
 ### src/NexusExplorer/native/nexus_ffi.py
 _Module: ctypes bridge to the NexusExplorer Rust engine (nexus_engine.dll)._
+
 - _dll_candidates() (L40)
 - find_dll() (L54)
 - class _FileEntry (L68)
@@ -7108,6 +7453,7 @@ _Module: ctypes bridge to the NexusExplorer Rust engine (nexus_engine.dll)._
 
 ### src/NexusExplorer/native/nexus_file_splitter.py
 _Module: Nexus Explorer — High-Performance File Splitter & Joiner Engine._
+
 - class SplitPreset (L20)
 - class SplitManifest (L43)
 - class SplitResult (L56)
@@ -7118,6 +7464,7 @@ _Module: Nexus Explorer — High-Performance File Splitter & Joiner Engine._
 
 ### src/NexusExplorer/native/nexus_folder_tree.py
 _Module: Folder tree widget for hierarchical filesystem navigation._
+
 - class FolderTreeModel (L23)
   - __init__(self, parent) (L28)
   - populate_drives(self) (L36)
@@ -7135,6 +7482,7 @@ _Module: Folder tree widget for hierarchical filesystem navigation._
 
 ### src/NexusExplorer/native/nexus_hash_tool.py
 _Module: Nexus Explorer — High-Performance File Checksum & Integrity Utility._
+
 - class HashAlgorithm (L20)
 - class HashResult (L33)
 - class VerifyItem (L46)
@@ -7146,6 +7494,7 @@ _Module: Nexus Explorer — High-Performance File Checksum & Integrity Utility._
 
 ### src/NexusExplorer/native/nexus_icons.py
 _Module: Fluent Design icon library for NexusExplorer._
+
 - class _LRUCache (L560)
   - __init__(self, maxsize) (L563)
   - get(self, key) (L569)
@@ -7161,6 +7510,7 @@ _Module: Fluent Design icon library for NexusExplorer._
 
 ### src/NexusExplorer/native/nexus_indexer.py
 _Module: Production-grade file indexer for instant filename search._
+
 - _fast_scandir(path) (L85)
 - _fallback_scandir(path) (L128)
 - class IndexedEntry (L152)
@@ -7220,6 +7570,7 @@ _Module: Production-grade file indexer for instant filename search._
 
 ### src/NexusExplorer/native/nexus_links_manager.py
 _Module: Nexus Explorer — NTFS Links, Junctions & Reparse Points Manager._
+
 - class LinkType (L21)
 - class LinkItem (L32)
 - class LinkOperationResult (L47)
@@ -7234,11 +7585,13 @@ _Module: Nexus Explorer — NTFS Links, Junctions & Reparse Points Manager._
 
 ### src/NexusExplorer/native/nexus_native_app.py
 _Module: Standalone launcher for the native Nexus explorer (Qt6)._
+
 - main() (L24)
   - on_quit() (L54)
 
 ### src/NexusExplorer/native/nexus_network.py
 _Module: Network file system support module._
+
 - class NetworkProtocol (L62)
 - class NetworkFile (L72)
 - class NetworkConnection (L85)
@@ -7331,6 +7684,7 @@ _Module: Network file system support module._
 
 ### src/NexusExplorer/native/nexus_plugins.py
 _Module: Production-grade plugin system for NexusExplorer._
+
 - class PluginManifest (L45)
   - from_dict(cls, data, plugin_dir) (L59)
 - class PluginState (L103)
@@ -7423,6 +7777,7 @@ _Module: Production-grade plugin system for NexusExplorer._
 
 ### src/NexusExplorer/native/nexus_timestamp_touch.py
 _Module: Nexus Explorer — Forensic File Timestamp & Attribute Modifier (MACB Touch)._
+
 - class FileAttributeFlags (L24)
 - class TimestampInfo (L37)
 - class TimestampUpdateResult (L53)
@@ -7436,6 +7791,7 @@ _Module: Nexus Explorer — Forensic File Timestamp & Attribute Modifier (MACB T
 
 ### src/NexusExplorer/native/nexus_transfer_monitor.py
 _Module: Transfer Monitor — non-modal window showing the live transfer queue._
+
 - class _JobRow (L34)
   - __init__(self, job_id, queue, parent) (L37)
   - _describe(job) (L101)
@@ -7455,6 +7811,7 @@ _Module: Transfer Monitor — non-modal window showing the live transfer queue._
 
 ### src/NexusExplorer/native/nexus_transfer_queue.py
 _Module: Transfer queue for serialized file operations._
+
 - class JobState (L36)
 - class TransferJob (L48)
 - human_bytes(n) (L72)
@@ -7496,6 +7853,7 @@ _Module: Transfer queue for serialized file operations._
 
 ### src/NexusExplorer/native/nexus_undo.py
 _Module: Undo/redo stack for file operations._
+
 - _safe_rmtree(path) (L34)
 - class OpKind (L43)
 - class UndoEntry (L55)
@@ -7554,6 +7912,7 @@ _Module: Undo/redo stack for file operations._
 
 ### src/NexusExplorer/native/nexus_unlocker.py
 _Module: Nexus Explorer — Process Unlocker & File Handle Inspector._
+
 - class LockingProcessInfo (L53)
 - class FileUnlocker (L65)
   - get_locking_processes(cls, file_path) (L69)
@@ -7563,6 +7922,7 @@ _Module: Nexus Explorer — Process Unlocker & File Handle Inspector._
 
 ### src/NexusExplorer/native/par2_recovery.py
 _Module: Nexus Explorer — PAR2 (Parchive) Parity Checksum & Packet Integrity Engine._
+
 - class Par2FileInfo (L20)
 - class Par2PacketInfo (L31)
 - class Par2ValidationReport (L41)
@@ -7571,6 +7931,7 @@ _Module: Nexus Explorer — PAR2 (Parchive) Parity Checksum & Packet Integrity E
 
 ### src/NexusExplorer/native/usn_journal_scanner.py
 _Module: Nexus Explorer — NTFS USN (Update Sequence Number) Change Journal Scanner._
+
 - class UsnJournalStatus (L21)
 - class USN_JOURNAL_DATA_V0 (L38)
 - class UsnJournalScanner (L52)
@@ -7578,11 +7939,13 @@ _Module: Nexus Explorer — NTFS USN (Update Sequence Number) Change Journal Sca
 
 ### src/NexusExplorer/test_explorer.py
 _Module: NexusExplorer comprehensive offscreen smoke test._
+
 - run_smoke_test() (L12)
   - test(name, fn) (L36)
 
 ### src/NexusExplorer/tests/benchmarks.py
 _Module: Performance benchmarks for NexusExplorer core operations._
+
 - _create_test_tree(root, depth, files_per_dir, file_size) (L19)
 - _cleanup_tree(root) (L30)
 - class BenchmarkTimer (L36)
@@ -7611,6 +7974,7 @@ _Module: Performance benchmarks for NexusExplorer core operations._
 
 ### src/NexusExplorer/tests/native/test_ffi_bridge.py
 _Module: Stage-1 tests: ctypes FFI bridge (nexus_ffi.NexusFfi) contract._
+
 - ffi() (L27)
 - tree(tmp_path) (L35)
 - test_dll_discovery_paths() (L45)
@@ -7628,6 +7992,7 @@ _Module: Stage-1 tests: ctypes FFI bridge (nexus_ffi.NexusFfi) contract._
 
 ### src/NexusExplorer/tests/native/test_journal.py
 _Module: Stage-2b tests: job journal + orphan .nexuspart discovery._
+
 - data_dir(tmp_path, monkeypatch) (L25)
 - ffi() (L34)
 - _journal_lines(data_dir) (L41)
@@ -7637,6 +8002,7 @@ _Module: Stage-2b tests: job journal + orphan .nexuspart discovery._
 
 ### src/NexusExplorer/tests/native/test_mouse_interactions.py
 _Module: Regression tests for the mouse-interaction incident (2026-08-25):_
+
 - qapp() (L26)
 - class _FakeMenu (L32)
   - __init__(self, parent) (L37)
@@ -7662,6 +8028,7 @@ _Module: Regression tests for the mouse-interaction incident (2026-08-25):_
 
 ### src/NexusExplorer/tests/native/test_nested_creation.py
 _Module: Tests for NexusExplorer nested folder, nested file, batch scaffolding, and undo/redo._
+
 - test_create_nested_folder() (L27)
 - test_create_nested_file() (L41)
 - test_scaffold_hierarchy_indented() (L54)
@@ -7673,6 +8040,7 @@ _Module: Tests for NexusExplorer nested folder, nested file, batch scaffolding, 
 
 ### src/NexusExplorer/tests/native/test_stage0.py
 _Module: Stage-0 unit tests for the NexusExplorer native Python layer._
+
 - class TestFormatters (L27)
   - test_human_bytes_scale(self) (L29)
   - test_fmt_ms_empty(self) (L38)
@@ -7687,6 +8055,7 @@ _Module: Stage-0 unit tests for the NexusExplorer native Python layer._
 
 ### src/NexusExplorer/tests/native/test_transfer_monitor.py
 _Module: Stage-2b UI: Transfer Monitor window + FFI-backed queue integration._
+
 - qapp() (L28)
 - env(qapp, tmp_path, monkeypatch) (L35)
 - _pump(qapp, secs) (L81)
@@ -7696,6 +8065,7 @@ _Module: Stage-2b UI: Transfer Monitor window + FFI-backed queue integration._
 
 ### src/NexusExplorer/tests/native/test_transfers_ffi.py
 _Module: Stage-2 tests: end-to-end FFI transfers (copy/move/delete/pause/conflicts)._
+
 - ffi() (L27)
 - dirs(tmp_path) (L35)
 - _payload(n, byte) (L44)
@@ -7722,6 +8092,7 @@ _Module: Stage-2 tests: end-to-end FFI transfers (copy/move/delete/pause/conflic
 
 ### src/NexusExplorer/tests/native/test_transport_parity.py
 _Module: Stage-1 transport parity: nexus-cli.exe subprocess vs ctypes NexusFfi bridge._
+
 - _norm(path) (L48)
 - _cli_run(cli, args) (L53)
 - _cli_list(cli, path) (L66)
@@ -7739,6 +8110,7 @@ _Module: Stage-1 transport parity: nexus-cli.exe subprocess vs ctypes NexusFfi b
 
 ### src/NexusExplorer/tests/native/test_ui_state.py
 _Module: Stage-1 tests: incremental model diffing + session persistence round-trip._
+
 - qapp() (L25)
 - _row(name, size, is_dir, mtime) (L31)
 - class TestUpdateRowsIncremental (L43)
@@ -7754,12 +8126,14 @@ _Module: Tests for Cortex Cleaner._
 
 ### tests/conftest.py
 _Module: Global pytest fixtures and test environment configuration._
+
 - temp_dir(tmp_path) (L10)
 - test_env(temp_dir) (L15)
 - clean_config() (L38)
 
 ### tests/test_advanced_disk_analyzer.py
 _Module: Tests for cortex_unified.analyzers.advanced_disk_analyzer._
+
 - class TestFileEntry (L32)
   - test_default_values(self) (L34)
   - test_cloud_provider_field(self) (L55)
@@ -7837,6 +8211,7 @@ _Module: Tests for cortex_unified.analyzers.advanced_disk_analyzer._
 
 ### tests/test_apex_power_tools.py
 _Module: Unit tests for the 10 Apex Enterprise Power Tools and Forensic Modules._
+
 - test_file_signature_sniffer(tmp_path) (L19)
 - test_binary_differ(tmp_path) (L36)
 - test_usn_journal_scanner() (L52)
@@ -7850,6 +8225,7 @@ _Module: Unit tests for the 10 Apex Enterprise Power Tools and Forensic Modules.
 
 ### tests/test_app_updater.py
 _Module: Tests for the Software Updater (winget wrapper)._
+
 - class TestParser (L24)
   - test_parses_all_rows(self) (L26)
   - test_fields_extracted(self) (L32)
@@ -7863,6 +8239,7 @@ _Module: Tests for the Software Updater (winget wrapper)._
 
 ### tests/test_audio_duplicate_finder.py
 _Module: Tests for Chromaprint-inspired audio duplicate detection._
+
 - _make_wav(path, freq, duration, sr) (L19)
 - _make_noise_wav(path, duration, sr) (L33)
 - test_fingerprint_is_list_of_ints(tmp_path) (L48)
@@ -7877,6 +8254,7 @@ _Module: Tests for Chromaprint-inspired audio duplicate detection._
 
 ### tests/test_boot_performance.py
 _Module: Tests for boot-performance analysis (parsing Windows' own diagnostics)._
+
 - class TestParse (L16)
   - test_empty(self) (L18)
   - test_parses_boots_and_issues(self) (L24)
@@ -7892,6 +8270,7 @@ _Module: Tests for boot-performance analysis (parsing Windows' own diagnostics).
 
 ### tests/test_browser_cleaner.py
 _Module: Tests for :mod:`cortex_unified.system_tools.browser_cleaner`._
+
 - _make_sqlite(path, table, rows, populate) (L30)
 - _make_cache_dir(base, category, count, file_size) (L59)
 - _make_chromium_profile(root, browser) (L70)
@@ -7968,6 +8347,7 @@ _Module: Tests for :mod:`cortex_unified.system_tools.browser_cleaner`._
 
 ### tests/test_browser_extensions.py
 _Module: Tests for the read-only browser-extension auditor._
+
 - class TestPermissionRisk (L23)
   - test_broad_permissions_flagged(self) (L25)
   - test_narrow_permissions_not_flagged(self) (L30)
@@ -7984,12 +8364,14 @@ _Module: Tests for the read-only browser-extension auditor._
 
 ### tests/test_cli.py
 _Module: Tests for the Cortex Workstation CLI commands._
+
 - test_cli_help() (L6)
 - test_cli_version() (L13)
 - test_cli_clean_empty_help() (L20)
 
 ### tests/test_cli_leftovers.py
 _Module: Tests for the `cortex leftovers` command group (engine CLI)._
+
 - fake_scan(monkeypatch) (L19)
   - _make(findings) (L23)
     - class FakeScanner (L25)
@@ -8014,6 +8396,7 @@ _Module: Tests for the `cortex leftovers` command group (engine CLI)._
 
 ### tests/test_cloud_aware_scan.py
 _Module: Cloud-placeholder / reparse-point awareness in the scan engine._
+
 - _mark_as_online(path) (L28)
 - cloud_attrs(monkeypatch) (L34)
 - test_dehydrated_detects_all_recall_flags() (L44)
@@ -8034,6 +8417,7 @@ _Module: Cloud-placeholder / reparse-point awareness in the scan engine._
 
 ### tests/test_compact_os.py
 _Module: Tests for NTFS CompactOS / compaction estimation logic._
+
 - _write_text(folder, name, size_kb) (L22)
 - _write_fill(folder, name, size_kb) (L29)
 - test_is_supported_reflects_platform() (L38)
@@ -8047,6 +8431,7 @@ _Module: Tests for NTFS CompactOS / compaction estimation logic._
 
 ### tests/test_component_store.py
 _Module: Component store (WinSxS) analysis, cleanup and leftover inventory._
+
 - test_parses_windows_own_figures() (L89)
 - test_reclaimable_estimate_excludes_shared_bytes() (L103)
 - test_explains_the_explorer_size_gap() (L111)
@@ -8075,11 +8460,13 @@ _Module: Component store (WinSxS) analysis, cleanup and leftover inventory._
 
 ### tests/test_config.py
 _Module: Tests for the Cortex Workstation configuration loader._
+
 - test_config_initialization_defaults() (L8)
 - test_config_loading_from_file(temp_dir) (L14)
 
 ### tests/test_config_defaults_unified.py
 _Module: The two config implementations must agree on safety-critical defaults._
+
 - test_scan_defaults_match_the_legacy_baseline() (L29)
 - test_editor_state_directories_are_protected() (L39)
 - test_v2_defaults_do_not_alias_the_shared_constant() (L48)
@@ -8088,6 +8475,7 @@ _Module: The two config implementations must agree on safety-critical defaults._
 
 ### tests/test_config_legacy_loading.py
 _Module: Failure-reporting contracts for the legacy YAML config loader._
+
 - test_missing_file_is_silent_and_yields_defaults(tmp_path, caplog) (L20)
 - test_valid_yaml_is_loaded_over_the_defaults(tmp_path) (L29)
 - test_malformed_yaml_warns_and_falls_back(tmp_path, caplog) (L40)
@@ -8103,6 +8491,7 @@ _Module: Failure-reporting contracts for the legacy YAML config loader._
 
 ### tests/test_config_v2.py
 _Module: Tests for the new Pydantic-based configuration system._
+
 - class TestScanConfig (L24)
   - test_default_values(self) (L27)
   - test_min_age_validation(self) (L37)
@@ -8136,6 +8525,7 @@ _Module: Tests for the new Pydantic-based configuration system._
 
 ### tests/test_content_defined_chunker.py
 _Module: Tests for FastCDC / VectorCDC content-defined chunking._
+
 - test_gear_chunk_deterministic() (L20)
 - test_gear_chunk_shift_resistant() (L30)
 - test_gear_chunk_empty() (L44)
@@ -8154,6 +8544,7 @@ _Module: Tests for FastCDC / VectorCDC content-defined chunking._
 
 ### tests/test_core_proc.py
 _Module: Cancellable, tree-safe subprocess execution (``core.proc``)._
+
 - test_normal_completion_returns_output() (L25)
 - test_nonzero_exit_is_reported_not_raised() (L33)
 - test_real_timeout_raises_and_is_prompt() (L40)
@@ -8168,6 +8559,7 @@ _Module: Cancellable, tree-safe subprocess execution (``core.proc``)._
 
 ### tests/test_czkawka_tools.py
 _Module: Tests for czkawka multi-tool suite — empty, broken, bad-ext, bad-names, exif, temp, video-optimizer._
+
 - _touch_empty(path) (L41)
 - _touch_file(path, content) (L48)
 - _make_minimal_png(path) (L55)
@@ -8269,6 +8661,7 @@ _Module: Tests for czkawka multi-tool suite — empty, broken, bad-ext, bad-name
 
 ### tests/test_defender.py
 _Module: Tests for the Windows Defender status reader (parsing + gating)._
+
 - class TestStatusParse (L12)
   - test_empty(self) (L14)
   - test_healthy(self) (L19)
@@ -8287,18 +8680,21 @@ _Module: Tests for the Windows Defender status reader (parsing + gating)._
 
 ### tests/test_deleter.py
 _Module: Tests for the safe Deleter component and dry-run safety modes._
+
 - test_deleter_dry_run(test_env) (L8)
 - test_deleter_real_deletion(test_env) (L24)
 - test_deleter_handles_missing_files(test_env) (L40)
 
 ### tests/test_directstorage_optimizer.py
 _Module: Unit tests for DirectStorage & BypassIO hardware optimizer._
+
 - test_parse_bypassio_supported() (L12)
 - test_parse_bypassio_blocked() (L27)
 - test_audit_structure() (L42)
 
 ### tests/test_disk_health.py
 _Module: Tests for the read-only S.M.A.R.T. / disk-health monitor._
+
 - class TestParse (L17)
   - test_empty_returns_empty_list(self) (L19)
   - test_invalid_json_returns_empty(self) (L24)
@@ -8315,6 +8711,7 @@ _Module: Tests for the read-only S.M.A.R.T. / disk-health monitor._
 
 ### tests/test_drive_optimizer.py
 _Module: Tests for the media-aware Drive Optimizer._
+
 - class TestRecommendation (L22)
   - test_hdd_recommends_defrag(self) (L24)
   - test_ssd_recommends_trim(self) (L29)
@@ -8328,6 +8725,7 @@ _Module: Tests for the media-aware Drive Optimizer._
 
 ### tests/test_driver_inventory.py
 _Module: Tests for the read-only driver inventory (parsing + platform gating)._
+
 - class TestParse (L12)
   - test_empty(self) (L14)
   - test_single_object(self) (L20)
@@ -8341,6 +8739,7 @@ _Module: Tests for the read-only driver inventory (parsing + platform gating)._
 
 ### tests/test_engine.py
 _Module: Tests for the cortex_unified.engine package._
+
 - tree(tmp_path) (L37)
 - class TestFastWalker (L61)
   - test_scan_counts_and_bytes(self, tree) (L63)
@@ -8378,6 +8777,7 @@ _Module: Tests for the cortex_unified.engine package._
 
 ### tests/test_engine_cloud_safety.py
 _Module: Cloud-placeholder and reparse-point safety in the scan engine._
+
 - test_recall_attributes_mean_dehydrated() (L35)
 - test_cloud_tag_family_is_matched() (L45)
 - test_junction_detected_by_tag_only() (L55)
@@ -8397,6 +8797,7 @@ _Module: Cloud-placeholder and reparse-point safety in the scan engine._
 
 ### tests/test_engine_service.py
 _Module: Tests for the engine's category registry and CleanerService orchestration._
+
 - class TestCategories (L22)
   - test_default_registry_nonempty_and_typed(self) (L24)
   - test_ids_unique(self) (L31)
@@ -8426,6 +8827,7 @@ _Module: Tests for the engine's category registry and CleanerService orchestrati
 
 ### tests/test_enterprise_suite_tools.py
 _Module: Tests for Enterprise Next-Gen Storage, Security & Forensics Suite tools._
+
 - test_vss_manager() (L22)
 - test_dev_drive_optimizer() (L33)
 - test_bitlocker_auditor() (L45)
@@ -8439,6 +8841,7 @@ _Module: Tests for Enterprise Next-Gen Storage, Security & Forensics Suite tools
 
 ### tests/test_expanded_power_tools.py
 _Module: Tests for Expanded Enterprise Power Tools & System Modules._
+
 - test_links_manager(tmp_path) (L41)
 - test_fast_copier(tmp_path) (L73)
 - test_timestamp_touch(tmp_path) (L103)
@@ -8453,6 +8856,7 @@ _Module: Tests for Expanded Enterprise Power Tools & System Modules._
 
 ### tests/test_external_exposure.py
 _Module: No-network tests for explicit public-IP exposure lookups._
+
 - test_lookup_requires_consent_and_global_public_ip() (L13)
 - test_shodan_sends_only_selected_ip_and_normalizes_services() (L24)
   - transport(url, headers, timeout) (L28)
@@ -8461,6 +8865,7 @@ _Module: No-network tests for explicit public-IP exposure lookups._
 
 ### tests/test_feature_matrix_audit.py
 _Module: Comprehensive Feature Matrix & Production-Grade Verification Suite._
+
 - test_fm_core_and_power_features(qapp) (L34)
 - test_disk_and_storage_analyzers() (L77)
 - test_system_maintenance_and_repair() (L120)
@@ -8475,6 +8880,7 @@ _Module: Comprehensive Feature Matrix & Production-Grade Verification Suite._
 
 ### tests/test_firewall_manager.py
 _Module: Tests for the Windows Firewall manager (validation, parsing, safety)._
+
 - class TestGating (L17)
   - test_is_supported_matches_platform(self) (L19)
   - test_list_returns_list(self) (L23)
@@ -8498,6 +8904,7 @@ _Module: Tests for the Windows Firewall manager (validation, parsing, safety)._
 
 ### tests/test_free_space_wipe.py
 _Module: Tests for the free-space wiper (validation + platform gating)._
+
 - class TestGating (L17)
   - test_is_supported_matches_platform(self) (L19)
   - test_non_windows_refuses(self) (L23)
@@ -8509,6 +8916,7 @@ _Module: Tests for the free-space wiper (validation + platform gating)._
 
 ### tests/test_fuzzy_finder.py
 _Module: Tests for CTPH fuzzy (similarity) hashing._
+
 - _text(n) (L17)
 - _noise(n, seed) (L23)
 - test_fuzzy_hash_is_deterministic() (L33)
@@ -8523,6 +8931,7 @@ _Module: Tests for CTPH fuzzy (similarity) hashing._
 
 ### tests/test_game_mode_memory.py
 _Module: Tests for Gaming Mode and the memory optimizer._
+
 - class TestGameModeLogic (L29)
   - test_protected_never_in_candidates(self) (L31)
   - test_boost_report_serializes(self) (L37)
@@ -8540,6 +8949,7 @@ _Module: Tests for Gaming Mode and the memory optimizer._
 
 ### tests/test_gui_device_window.py
 _Module: Offscreen tests for the per-device deep scan window (no live network)._
+
 - app() (L30)
 - window(app) (L36)
 - _observation(port, name, **kwargs) (L48)
@@ -8562,6 +8972,7 @@ _Module: Offscreen tests for the per-device deep scan window (no live network)._
 
 ### tests/test_gui_pages_e2e.py
 _Module: End-to-end, page-by-page GUI tests for the premium interface._
+
 - app() (L31)
 - window(app) (L37)
 - pro_license(monkeypatch, tmp_path) (L49)
@@ -8617,6 +9028,7 @@ _Module: End-to-end, page-by-page GUI tests for the premium interface._
 
 ### tests/test_health_check.py
 _Module: Tests for the one-click health check (scoring logic + resilient run)._
+
 - _c(sev) (L16)
 - class TestScoring (L21)
   - test_all_good_is_a(self) (L23)
@@ -8635,6 +9047,7 @@ _Module: Tests for the one-click health check (scoring logic + resilient run)._
 
 ### tests/test_icons.py
 _Module: Contracts for the SVG icon system._
+
 - app() (L29)
 - test_every_page_has_its_own_icon_asset() (L36)
 - test_no_two_pages_share_an_icon() (L42)
@@ -8654,6 +9067,7 @@ _Module: Contracts for the SVG icon system._
 
 ### tests/test_lan_scanner.py
 _Module: Tests for the ARP-based LAN device scanner (parsing + vendor lookup)._
+
 - class TestParse (L25)
   - test_empty(self) (L27)
   - test_windows_parse_and_filter(self) (L32)
@@ -8671,6 +9085,7 @@ _Module: Tests for the ARP-based LAN device scanner (parsing + vendor lookup)._
 
 ### tests/test_lazy_pages.py
 _Module: Contracts for on-demand page construction in the premium shell._
+
 - app() (L27)
 - window(app) (L33)
 - test_only_the_initial_page_is_built_at_startup(window) (L43)
@@ -8685,6 +9100,7 @@ _Module: Contracts for on-demand page construction in the premium shell._
 
 ### tests/test_leftover_cleaner.py
 _Module: Tests for the production leftover cleaner (post-uninstall residuals)._
+
 - class TestEditDistance (L39)
   - test_identical_strings_cost_zero(self) (L41)
   - test_empty_inputs(self) (L45)
@@ -8770,6 +9186,7 @@ _Module: Tests for the production leftover cleaner (post-uninstall residuals)._
 
 ### tests/test_license_gui.py
 _Module: Headless tests for the license GUI: LicensePage + require_feature gating._
+
 - app() (L22)
 - isolated_license(monkeypatch, tmp_path) (L29)
 - window(app, isolated_license) (L41)
@@ -8786,6 +9203,7 @@ _Module: Headless tests for the license GUI: LicensePage + require_feature gatin
 
 ### tests/test_licensing.py
 _Module: Tests for the offline licensing / entitlement system._
+
 - manager(tmp_path) (L38)
 - class TestFingerprint (L46)
   - test_stable_across_calls(self) (L48)
@@ -8823,6 +9241,7 @@ _Module: Tests for the offline licensing / entitlement system._
 
 ### tests/test_load_tester.py
 _Module: Tests for the authorized load/resilience tester._
+
 - class TestAuthorization (L30)
   - test_loopback_authorized(self) (L32)
   - test_localhost_authorized(self) (L38)
@@ -8849,18 +9268,21 @@ _Module: Tests for the authorized load/resilience tester._
 
 ### tests/test_memory_standby_purger.py
 _Module: Unit tests for Windows MemoryStandbyPurger NTDLL engine._
+
 - test_memory_snapshot() (L13)
 - test_privilege_enable() (L26)
 - test_purge_actions_safe() (L35)
 
 ### tests/test_mft_slack_scrubber.py
 _Module: Unit tests for NTFS MFT & Directory Index slack scrubber._
+
 - test_parse_ntfsinfo() (L12)
 - test_audit_structure() (L36)
 - test_scrub_structure() (L46)
 
 ### tests/test_network_audit.py
 _Module: Focused synthetic tests for the private-LAN audit foundation._
+
 - class SyntheticDevice (L32)
 - observation(port, name, **kwargs) (L43)
 - test_scope_rejects_public_special_and_out_of_scope_without_sockets(monkeypatch) (L57)
@@ -8877,6 +9299,7 @@ _Module: Focused synthetic tests for the private-LAN audit foundation._
 
 ### tests/test_network_automation.py
 _Module: Offline tests for fixed-command recurring network scans._
+
 - test_schedule_builds_only_fixed_private_scan_command(monkeypatch) (L12)
 - test_schedule_rejects_public_scope_and_arbitrary_frequency() (L35)
 - test_scheduler_uses_process_runner_without_shell(monkeypatch) (L45)
@@ -8884,6 +9307,7 @@ _Module: Offline tests for fixed-command recurring network scans._
 
 ### tests/test_network_discovery.py
 _Module: Deep LAN discovery: parsing, filtering and honest identification._
+
 - class TestUsableHost (L35)
   - test_zero_mac_is_absence_not_presence(self) (L37)
   - test_broadcast_mac_rejected(self) (L41)
@@ -8962,6 +9386,7 @@ _Module: Deep LAN discovery: parsing, filtering and honest identification._
 
 ### tests/test_network_expert_tools.py
 _Module: Offline tests for the optional Nmap adapter and strict Wake-on-LAN API._
+
 - _available(monkeypatch) (L23)
 - test_nmap_status_does_not_execute(monkeypatch) (L31)
 - test_nmap_missing_executable_has_clear_error(monkeypatch) (L43)
@@ -8990,6 +9415,7 @@ _Module: Offline tests for the optional Nmap adapter and strict Wake-on-LAN API.
 
 ### tests/test_network_inventory.py
 _Module: Synthetic tests for transactional network snapshot inventory._
+
 - device(ip, mac, services, findings, **kwargs) (L19)
 - kinds(snapshot) (L36)
 - test_first_snapshot_reports_new_device_and_is_json_safe(tmp_path) (L41)
@@ -9009,6 +9435,7 @@ _Module: Synthetic tests for transactional network snapshot inventory._
 
 ### tests/test_network_monitor.py
 _Module: Tests for the read-only network connection monitor._
+
 - class TestClassification (L16)
   - test_loopback_is_private(self) (L18)
   - test_lan_is_private(self) (L23)
@@ -9026,6 +9453,7 @@ _Module: Tests for the read-only network connection monitor._
 
 ### tests/test_network_security_audit.py
 _Module: Safety-guard tests for defensive private-LAN scanning (no live network)._
+
 - test_guard_accepts_rfc1918_lan_addresses(target) (L37)
 - test_guard_rejects_every_out_of_scope_address(target) (L56)
 - test_guard_rejects_malformed_and_non_ipv4_input(target) (L73)
@@ -9034,6 +9462,7 @@ _Module: Safety-guard tests for defensive private-LAN scanning (no live network)
 
 ### tests/test_network_tools.py
 _Module: Tests for the network diagnostic utilities (parsers + offline logic)._
+
 - class TestPingParse (L47)
   - test_windows_success(self) (L49)
   - test_nix_success(self) (L58)
@@ -9060,6 +9489,7 @@ _Module: Tests for the network diagnostic utilities (parsers + offline logic)._
 
 ### tests/test_network_traffic.py
 _Module: Tests for the live throughput monitor (rate math + shape)._
+
 - class TestSample (L16)
   - test_first_sample_zero_rate(self) (L18)
   - test_since_start_starts_zero(self) (L27)
@@ -9070,6 +9500,7 @@ _Module: Tests for the live throughput monitor (rate math + shape)._
 
 ### tests/test_nextgen_tools.py
 _Module: Comprehensive test suite for Next-Generation Enterprise System Tools & Forensics._
+
 - test_shader_cache_cleaner_scan_and_clean() (L31)
 - test_ai_telemetry_cleaner_wal_checkpoint() (L62)
 - test_ssd_trim_optimizer() (L96)
@@ -9080,6 +9511,7 @@ _Module: Comprehensive test suite for Next-Generation Enterprise System Tools & 
 
 ### tests/test_nexus_exhaustive_audit.py
 _Module: Exhaustive End-to-End Audit & Edge-Case Verification Suite for NexusExplorer._
+
 - qapp() (L29)
 - test_audit_in_place_copy_protection(qapp) (L37)
 - test_audit_circular_directory_protection(qapp) (L71)
@@ -9090,6 +9522,7 @@ _Module: Exhaustive End-to-End Audit & Edge-Case Verification Suite for NexusExp
 
 ### tests/test_page_registry.py
 _Module: Contracts for the declarative page registry._
+
 - test_registry_is_internally_consistent() (L26)
 - test_every_declared_factory_actually_resolves() (L37)
 - test_malformed_factory_is_rejected_with_a_clear_message() (L45)
@@ -9102,6 +9535,7 @@ _Module: Contracts for the declarative page registry._
 
 ### tests/test_perceptual_duplicate_finder.py
 _Module: Tests for perceptual image duplicate detection (pHash/dHash/aHash)._
+
 - _make_image(path, size) (L23)
 - _make_plain(path, size, color) (L33)
 - test_hashes_are_int(tmp_path) (L40)
@@ -9118,6 +9552,7 @@ _Module: Tests for perceptual image duplicate detection (pHash/dHash/aHash)._
 
 ### tests/test_performance_tuner.py
 _Module: Tests for the power-plan tuner (parsing + safety gating)._
+
 - class TestParse (L20)
   - test_parses_all_plans(self) (L22)
   - test_marks_active_plan(self) (L30)
@@ -9130,6 +9565,7 @@ _Module: Tests for the power-plan tuner (parsing + safety gating)._
 
 ### tests/test_portable_manager.py
 _Module: Tests for portable_manager — PortableApps.com / LiberKey catalog, USB toolkit._
+
 - class TestPortableApp (L27)
   - test_basic_construction(self, tmp_path) (L29)
   - test_to_dict_slots_incompatibility(self, tmp_path) (L47)
@@ -9194,6 +9630,7 @@ _Module: Tests for portable_manager — PortableApps.com / LiberKey catalog, USB
 
 ### tests/test_power_suite_tools.py
 _Module: Unit tests for the 10 Enterprise Power Suite system tools and utilities._
+
 - test_env_variable_manager() (L18)
 - test_service_manager() (L26)
 - test_font_cache_manager() (L36)
@@ -9207,6 +9644,7 @@ _Module: Unit tests for the 10 Enterprise Power Suite system tools and utilities
 
 ### tests/test_power_tools_production.py
 _Module: Comprehensive Production Unit Tests for Enterprise Power Tools & Pages._
+
 - test_hash_computation(tmp_path) (L88)
 - test_checksum_manifest_creation_and_verify(tmp_path) (L105)
 - test_batch_renamer_tokens_and_case(tmp_path) (L142)
@@ -9222,6 +9660,7 @@ _Module: Comprehensive Production Unit Tests for Enterprise Power Tools & Pages.
 
 ### tests/test_premium_gui.py
 _Module: Headless smoke tests for the premium GUI._
+
 - app() (L21)
 - window(app) (L28)
 - test_stylesheet_builds_for_both_themes(app) (L46)
@@ -9332,6 +9771,7 @@ _Module: Headless smoke tests for the premium GUI._
 
 ### tests/test_premium_hidpi.py
 _Module: High-DPI crispness regression tests for the premium GUI._
+
 - app() (L32)
 - window(app) (L39)
 - test_card_has_no_persistent_graphics_effect(app) (L50)
@@ -9343,6 +9783,7 @@ _Module: High-DPI crispness regression tests for the premium GUI._
 
 ### tests/test_premium_tokens.py
 _Module: Tests for the Qt-free premium design tokens (`tokens.py`)._
+
 - test_elevation_has_four_ordered_levels() (L29)
 - test_elevation_named_levels_present() (L35)
 - test_elevation_style_returns_valid_style(palette, level) (L48)
@@ -9362,6 +9803,7 @@ _Module: Tests for the Qt-free premium design tokens (`tokens.py`)._
 
 ### tests/test_process_meta.py
 _Module: Tests for human-friendly process descriptions (honest, cached)._
+
 - class TestKnown (L12)
   - test_common_system_processes(self) (L14)
   - test_idle_labeled_as_not_real(self) (L20)
@@ -9378,6 +9820,7 @@ _Module: Tests for human-friendly process descriptions (honest, cached)._
 
 ### tests/test_production_hardening.py
 _Module: Tests for the production-hardening round:_
+
 - fake_env(monkeypatch, tmp_path) (L20)
 - class TestExclusionsStore (L43)
   - test_add_is_persisted_and_prefix_matched(self, tmp_path) (L45)
@@ -9410,6 +9853,7 @@ _Module: Tests for the production-hardening round:_
 
 ### tests/test_registry_cleaner_ai.py
 _Module: Tests for the AI registry cleaner's detectors and path resolution._
+
 - test_resolve_target_keeps_unquoted_path_with_spaces() (L47)
 - test_resolve_target_strips_quotes_and_keeps_args_out() (L53)
 - test_resolve_target_expands_system_root_prefix() (L59)
@@ -9449,6 +9893,7 @@ _Module: Tests for the AI registry cleaner's detectors and path resolution._
 
 ### tests/test_release_infra.py
 _Module: Tests for the release infrastructure helpers._
+
 - class TestParseVersion (L16)
   - test_plain_and_v_prefixed(self) (L18)
   - test_unparseable_tags_return_none(self, bad) (L27)
@@ -9463,6 +9908,7 @@ _Module: Tests for the release infrastructure helpers._
 
 ### tests/test_restore_point.py
 _Module: Tests for the Windows restore-point safety module._
+
 - class TestResultSemantics (L21)
   - test_created_flags(self) (L23)
   - test_throttled_is_ok_to_proceed(self) (L29)
@@ -9488,6 +9934,7 @@ _Module: Tests for the Windows restore-point safety module._
 
 ### tests/test_s3_fifo.py
 _Module: Tests for S3-FIFO cache (SOSP'23)._
+
 - test_basic_put_get() (L10)
 - test_update_existing_increments_freq() (L18)
 - test_ghost_promotion() (L27)
@@ -9501,6 +9948,7 @@ _Module: Tests for S3-FIFO cache (SOSP'23)._
 
 ### tests/test_scanner.py
 _Module: Tests for the filesystem Scanner component._
+
 - test_scanner_finds_empty_files(test_env, clean_config) (L7)
 - test_scanner_finds_empty_dirs(test_env, clean_config) (L18)
 - test_scanner_exclude_patterns(test_env, clean_config) (L29)
@@ -9508,11 +9956,13 @@ _Module: Tests for the filesystem Scanner component._
 
 ### tests/test_search_index_optimizer.py
 _Module: Unit tests for Windows SearchIndexOptimizer._
+
 - test_search_index_get_status() (L12)
 - test_operation_result_structure() (L19)
 
 ### tests/test_secrets_page.py
 _Module: Verify the secrets scanner detects a planted credential and stays offline._
+
 - test_run_scan_detects_planted_aws_key(tmp_path) (L6)
 - test_worker_emits_offline(tmp_path) (L27)
 - test_secrets_scan_makes_no_network_calls(tmp_path, monkeypatch) (L45)
@@ -9520,6 +9970,7 @@ _Module: Verify the secrets scanner detects a planted credential and stays offli
 
 ### tests/test_secure_delete_batch.py
 _Module: Tests for the batched recycle path (production performance + correctness)._
+
 - _make_files(base, n) (L17)
 - test_batch_recycle_removes_all_and_reports_progress(tmp_path) (L28)
 - test_batch_recycle_cancel_stops_early(tmp_path) (L43)
@@ -9530,6 +9981,7 @@ _Module: Tests for the batched recycle path (production performance + correctnes
 
 ### tests/test_secure_shredder.py
 _Module: Tests for the secure file shredder (DoD, Gutmann, NIST, etc.)._
+
 - _make_file(base, name, content) (L34)
 - _read_all(path) (L41)
 - _patch_storage(monkeypatch) (L49)
@@ -9626,6 +10078,7 @@ _Module: Tests for the secure file shredder (DoD, Gutmann, NIST, etc.)._
 
 ### tests/test_security_fixes.py
 _Module: Regression tests for the shell-injection and no-op-stub fixes._
+
 - class TestCustomCommandHardening (L12)
   - test_disabled_by_default(self) (L14)
   - test_runs_without_shell_when_allowed(self) (L21)
@@ -9636,6 +10089,7 @@ _Module: Regression tests for the shell-injection and no-op-stub fixes._
 
 ### tests/test_shutdown_safety.py
 _Module: Worker-shutdown safety: never call ``QThread.terminate()``._
+
 - app() (L35)
 - window(app) (L41)
 - class _CooperativeWorker (L55)
@@ -9655,6 +10109,7 @@ _Module: Worker-shutdown safety: never call ``QThread.terminate()``._
 
 ### tests/test_sidebar_chevrons_and_icons.py
 _Module: Regression tests for sidebar navigation expand/collapse chevrons and icon color consistency._
+
 - app() (L17)
 - test_sidebar_group_headers_have_valid_chevrons_and_escaped_titles(app) (L22)
 - test_sidebar_expand_collapse_preserves_chevrons(app) (L49)
@@ -9662,6 +10117,7 @@ _Module: Regression tests for sidebar navigation expand/collapse chevrons and ic
 
 ### tests/test_sieve_cache.py
 _Module: Unit tests for the NSDI 2024 SIEVE Cache Algorithm._
+
 - test_sieve_basic_put_get() (L8)
 - test_sieve_eviction_order() (L22)
 - test_sieve_stats_and_hit_ratio() (L46)
@@ -9671,6 +10127,7 @@ _Module: Unit tests for the NSDI 2024 SIEVE Cache Algorithm._
 
 ### tests/test_smart_suggest.py
 _Module: Tests for the offline Smart Suggestions learning engine._
+
 - _ctx(category, ext, size, age, path) (L13)
 - class TestFeaturize (L18)
   - test_includes_bias_and_known_features(self) (L20)
@@ -9689,6 +10146,7 @@ _Module: Tests for the offline Smart Suggestions learning engine._
 
 ### tests/test_srum_bam_cleaner.py
 _Module: Unit and integration tests for Windows BAM/DAM and SRUM forensic cleaner._
+
 - test_filetime_conversion() (L15)
 - test_srum_query() (L34)
 - test_srum_bam_scan() (L42)
@@ -9696,6 +10154,7 @@ _Module: Unit and integration tests for Windows BAM/DAM and SRUM forensic cleane
 
 ### tests/test_staging_shelf.py
 _Module: Tests for the Interactive Staging Shelf & Clipboard Dock in NexusExplorer._
+
 - qapp() (L15)
 - test_nexus_clipboard_cut_copy_clear(qapp) (L23)
 - test_staging_shelf_widget_basic(qapp) (L50)
@@ -9716,6 +10175,7 @@ _Module: Tests for the Interactive Staging Shelf & Clipboard Dock in NexusExplor
 
 ### tests/test_startup_imports.py
 _Module: Startup-cost and public-API contracts for the package import root._
+
 - _run(code) (L32)
 - test_package_import_does_not_load_heavy_dependencies() (L50)
 - test_engine_import_does_not_load_recycle_bin_stack() (L62)
@@ -9731,6 +10191,7 @@ _Module: Startup-cost and public-API contracts for the package import root._
 
 ### tests/test_startup_optimizer.py
 _Module: Tests for the startup optimizer — enumeration, delays, persistence, cancel._
+
 - class TestAppType (L30)
   - test_all_members(self) (L32)
   - test_member_count(self) (L37)
@@ -9800,6 +10261,7 @@ _Module: Tests for the startup optimizer — enumeration, delays, persistence, c
 
 ### tests/test_storage_sense.py
 _Module: Tests for the Storage Sense config reader (interpretation + gating)._
+
 - class TestInterpret (L12)
   - test_unconfigured(self) (L14)
   - test_enabled_weekly(self) (L20)
@@ -9816,6 +10278,7 @@ _Module: Tests for the Storage Sense config reader (interpretation + gating)._
 
 ### tests/test_system_info.py
 _Module: Tests for the read-only System Information collector._
+
 - test_platform_info_has_core_fields() (L8)
 - test_snapshot_structure() (L16)
 - test_memory_info_sane() (L24)
@@ -9824,6 +10287,7 @@ _Module: Tests for the read-only System Information collector._
 
 ### tests/test_system_repair.py
 _Module: Tests for the SFC/DISM/CHKDSK repair orchestrator (parsers + gating)._
+
 - class TestSfcParse (L17)
   - test_clean(self) (L19)
   - test_repaired(self) (L25)
@@ -9849,6 +10313,7 @@ _Module: Tests for the SFC/DISM/CHKDSK repair orchestrator (parsers + gating)._
 
 ### tests/test_tablemodel.py
 _Module: Contracts for the model/view table foundation._
+
 - app() (L37)
 - _records(count) (L42)
 - _columns() (L50)
@@ -9877,6 +10342,7 @@ _Module: Contracts for the model/view table foundation._
 
 ### tests/test_tabs_gating.py
 _Module: Headless gating + repair tests for legacy GUI tabs._
+
 - app() (L42)
 - make_tab(app) (L48)
   - _make(tab_cls) (L54)
@@ -9912,6 +10378,7 @@ _Module: Headless gating + repair tests for legacy GUI tabs._
 
 ### tests/test_task_manager.py
 _Module: Tests for the task-manager backend (live snapshot + honest reconciliation)._
+
 - tm() (L13)
 - class TestSnapshot (L19)
   - test_snapshot_shape(self, tm) (L21)
@@ -9933,6 +10400,7 @@ _Module: Tests for the task-manager backend (live snapshot + honest reconciliati
 
 ### tests/test_temp_cleaner.py
 _Module: Tests for :mod:`cortex_unified.core.temp_cleaner` and the ``clean-temp`` CLI._
+
 - _backdate(path, ts) (L24)
 - _make_old(path, size, ts) (L29)
 - temp_roots(tmp_path, monkeypatch) (L38)
@@ -9964,10 +10432,12 @@ _Module: Tests for :mod:`cortex_unified.core.temp_cleaner` and the ``clean-temp`
 
 ### tests/test_utils.py
 _Module: Tests for core filesystem utility helpers._
+
 - test_normalize_path() (L7)
 
 ### tests/test_vhdx_manager.py
 _Module: Virtual-disk (VHDX) discovery and compaction safety._
+
 - fake_vhdx(tmp_path) (L33)
 - test_saving_is_unknown_without_a_guest_measurement(fake_vhdx) (L44)
 - test_saving_is_host_size_minus_guest_usage(fake_vhdx) (L53)
@@ -9992,6 +10462,7 @@ _Module: Virtual-disk (VHDX) discovery and compaction safety._
 
 ### tests/test_video_duplicate_finder.py
 _Module: Tests for video near-duplicate detection (keyframe pHash + temporal)._
+
 - _make_fake_video(path, payload, size_kb) (L16)
 - test_fingerprint_is_list(tmp_path) (L26)
 - test_identical_videos_compare_high(tmp_path) (L35)
@@ -10005,6 +10476,7 @@ _Module: Tests for video near-duplicate detection (keyframe pHash + temporal)._
 
 ### tests/test_wan_audit.py
 _Module: Synthetic tests for the local-only, read-only WAN auditor._
+
 - test_public_ip_classification(address, expected) (L36)
 - test_ssrf_guard_requires_literal_private_host_on_local_network() (L41)
 - test_xml_rejects_entities_and_excessive_depth() (L59)
@@ -10024,6 +10496,7 @@ _Module: Synthetic tests for the local-only, read-only WAN auditor._
 
 ### tests/test_winapp2_cleaner.py
 _Module: Unit and integration tests for Winapp2Cleaner engine._
+
 - test_winapp2_cleaner_initialization() (L16)
 - test_winapp2_expand_vars(monkeypatch) (L25)
 - test_winapp2_path_safety() (L37)
@@ -10031,6 +10504,7 @@ _Module: Unit and integration tests for Winapp2Cleaner engine._
 
 ### tests/test_windows_update.py
 _Module: Tests for Windows Update surfacing (parsers + gating)._
+
 - class TestPendingParse (L12)
   - test_empty(self) (L14)
   - test_single(self) (L19)
@@ -10051,10 +10525,12 @@ _Module: Tests for Windows Update surfacing (parsers + gating)._
 
 ### scripts/audit_all_page_functions.py
 _Module: Deep Functional & UI Inspection across all 59 Pages._
+
 - audit_all_pages() (L28)
 
 ### scripts/audit_imports.py
 _Module: Static import health audit for the cortex_unified package._
+
 - module_symbols(path) (L27)
 - get_syms(modname) (L76)
 
@@ -10066,24 +10542,29 @@ _Module: Audit script to inspect classes and functions across all system tools._
 
 ### scripts/build_exe.py
 _Module: Compile run_gui.py into a distributable Windows executable via PyInstaller._
+
 - build_app() (L11)
 
 ### scripts/check_all_structure_files.py
 _Module: Deep, exhaustive, file-by-file verification of every program file in structure.txt._
+
 - find_all_python_files() (L21)
 - verify_file(p) (L30)
 - main() (L102)
 
 ### scripts/check_hardcoded_paths.py
 _Module: Diagnostic script to check for hardcoded Windows paths._
+
 - analyze_paths() (L7)
 
 ### scripts/check_lint_issues.py
 _Module: Diagnostic script to check for undefined names and lint anomalies._
+
 - check_undefined_names_in_file(filepath) (L8)
 
 ### scripts/deep_codebase_inspection.py
 _Module: Deep exhaustive codebase inspector._
+
 - scan_file(filepath) (L28)
 - main() (L95)
 
@@ -10092,12 +10573,14 @@ _Module: Deep inspector for placeholders, TODOs, stubs, and mocks across all src
 
 ### scripts/gen_inventory.py
 _Module: Generate docs/FUNCTION_INVENTORY.md: every class/function in every .py file._
+
 - sig(fn) (L13)
 - walk(body, depth, out, counter) (L26)
 - main() (L39)
 
 ### scripts/generate_complete_features.py
 _Module: Generate the master exhaustive COMPLETE_FEATURES_CHECKLIST.md covering every feature and module._
+
 - get_module_info(p) (L9)
 
 ### scripts/generate_feature_directory.py
@@ -10105,10 +10588,12 @@ _Module: Generate docs/FEATURE_DIRECTORY.md listing all 118 UI pages across all 
 
 ### scripts/generate_program_checklist.py
 _Module: Generate an exhaustive, program-file-by-program-file verification checklist._
+
 - parse_file(p) (L8)
 
 ### scripts/run_all_tests.py
 _Module: Runner script to execute all unit tests and collect failure reports._
+
 - class FailureCollector (L9)
   - __init__(self) (L11)
   - pytest_runtest_logreport(self, report) (L17)
@@ -10118,6 +10603,7 @@ _Module: Scanner script to detect placeholders, TODOs, and mock patterns._
 
 ### scripts/stress_test_gui_all_actions.py
 _Module: Deep interactive action stress-test for Cortex Cleaner GUI._
+
 - pump_events(app, duration_ms) (L40)
 - main() (L48)
 
@@ -10129,6 +10615,7 @@ _Module: Diagnostic script to test UI navigation and theme application._
 
 ### scripts/update_structure_txt.py
 _Module: Generate an up-to-date, clean structure.txt of the entire repository._
+
 - build_tree(dir_path, prefix) (L28)
 - main() (L58)
 
@@ -10142,6 +10629,7 @@ _Module: Comprehensive Production Readiness & Diagnostics Verification Suite._
 
 ### run_gui.py
 _Module: Launch the Cortex Workstation GUI from a source checkout._
+
 - main() (L26)
 
 **Totals: 485 files, 8682 defs/classes (incl. nested)**

@@ -8,6 +8,7 @@ _Module: NexusExplorer native Qt package._
 
 ### src/NexusExplorer/native/binary_differ.py
 _Module: Nexus Explorer — Binary & Hex File Differ Engine._
+
 - class HexDiffChunk (L18)
 - class BinaryDiffReport (L32)
 - class BinaryDiffer (L47)
@@ -16,6 +17,7 @@ _Module: Nexus Explorer — Binary & Hex File Differ Engine._
 
 ### src/NexusExplorer/native/file_signature_sniffer.py
 _Module: Nexus Explorer — Binary Magic Bytes & MIME Header Forensic Sniffer._
+
 - class FileSignature (L18)
 - class SniffResult (L81)
 - class FileSignatureSniffer (L95)
@@ -24,6 +26,7 @@ _Module: Nexus Explorer — Binary Magic Bytes & MIME Header Forensic Sniffer._
 
 ### src/NexusExplorer/native/image_optimizer.py
 _Module: Nexus Explorer — High-Throughput Batch Image Optimizer & WebP Transcoder._
+
 - class ImageOptimizeResult (L21)
 - class BatchOptimizeSummary (L35)
 - class ImageOptimizer (L46)
@@ -32,6 +35,7 @@ _Module: Nexus Explorer — High-Throughput Batch Image Optimizer & WebP Transco
 
 ### src/NexusExplorer/native/nexus_ads_manager.py
 _Module: Nexus Explorer — NTFS Alternate Data Streams (ADS) & Zone.Identifier Manager._
+
 - class AlternateDataStream (L30)
 - class AlternateDataStreamsManager (L42)
   - list_streams(cls, file_path) (L46)
@@ -42,6 +46,7 @@ _Module: Nexus Explorer — NTFS Alternate Data Streams (ADS) & Zone.Identifier 
 
 ### src/NexusExplorer/native/nexus_archive.py
 _Module: Archive support via native 7-Zip CLI — multithreaded extraction._
+
 - _get_7z_search_paths() (L32)
 - _find_7z() (L76)
 - is_7z_available() (L124)
@@ -87,6 +92,7 @@ _Module: Archive support via native 7-Zip CLI — multithreaded extraction._
 
 ### src/NexusExplorer/native/nexus_archive_manager.py
 _Module: Nexus Explorer — Multi-Format Archive Studio & Compression Engine._
+
 - class ArchiveFormat (L21)
 - class CompressionLevel (L31)
 - class ArchiveEntryInfo (L41)
@@ -100,6 +106,7 @@ _Module: Nexus Explorer — Multi-Format Archive Studio & Compression Engine._
 
 ### src/NexusExplorer/native/nexus_batch_renamer.py
 _Module: Nexus Explorer — Enterprise Batch Multi-Rename Engine._
+
 - class CaseTransformation (L21)
 - class RenamePlanItem (L34)
 - class RenameTransaction (L47)
@@ -114,6 +121,7 @@ _Module: Nexus Explorer — Enterprise Batch Multi-Rename Engine._
 
 ### src/NexusExplorer/native/nexus_cloud.py
 _Module: Cloud storage integration module._
+
 - _parse_iso_datetime(iso_str) (L71)
 - _secure_store(key, value) (L83)
 - _secure_load(key) (L104)
@@ -206,6 +214,7 @@ _Module: Cloud storage integration module._
 
 ### src/NexusExplorer/native/nexus_content_search.py
 _Module: Content search engine for searching inside file contents._
+
 - class ContentMatch (L62)
 - class ContentSearchResult (L72)
 - is_searchable(path) (L79)
@@ -222,6 +231,7 @@ _Module: Content search engine for searching inside file contents._
 
 ### src/NexusExplorer/native/nexus_core.py
 _Module: Nexus native core: engine bridge, native icons/thumbnails, table model._
+
 - find_cli() (L70)
 - human(n) (L81)
 - fmt_ms(ms) (L97)
@@ -312,6 +322,7 @@ _Module: Nexus native core: engine bridge, native icons/thumbnails, table model.
 
 ### src/NexusExplorer/native/nexus_dir_diff.py
 _Module: Nexus Explorer — Directory Comparison & Folder Synchronization Engine._
+
 - class DiffStatus (L20)
 - class SyncMode (L31)
 - class DiffEntry (L41)
@@ -324,6 +335,7 @@ _Module: Nexus Explorer — Directory Comparison & Folder Synchronization Engine
 
 ### src/NexusExplorer/native/nexus_explorer.py
 _Module: NexusExplorerWidget — premium native Qt6 file explorer._
+
 - _safe_ts(ms) (L151)
 - _scaled(px) (L164)
 - _init_dpi() (L170)
@@ -732,6 +744,7 @@ _Module: NexusExplorerWidget — premium native Qt6 file explorer._
 
 ### src/NexusExplorer/native/nexus_fast_copier.py
 _Module: Nexus Explorer — High-Performance Fast File Copier & Transfer Engine._
+
 - class CopyMode (L23)
 - class CopyItemProgress (L32)
 - class CopySummary (L46)
@@ -742,6 +755,7 @@ _Module: Nexus Explorer — High-Performance Fast File Copier & Transfer Engine.
 
 ### src/NexusExplorer/native/nexus_ffi.py
 _Module: ctypes bridge to the NexusExplorer Rust engine (nexus_engine.dll)._
+
 - _dll_candidates() (L40)
 - find_dll() (L54)
 - class _FileEntry (L68)
@@ -782,6 +796,7 @@ _Module: ctypes bridge to the NexusExplorer Rust engine (nexus_engine.dll)._
 
 ### src/NexusExplorer/native/nexus_file_splitter.py
 _Module: Nexus Explorer — High-Performance File Splitter & Joiner Engine._
+
 - class SplitPreset (L20)
 - class SplitManifest (L43)
 - class SplitResult (L56)
@@ -792,6 +807,7 @@ _Module: Nexus Explorer — High-Performance File Splitter & Joiner Engine._
 
 ### src/NexusExplorer/native/nexus_folder_tree.py
 _Module: Folder tree widget for hierarchical filesystem navigation._
+
 - class FolderTreeModel (L23)
   - __init__(self, parent) (L28)
   - populate_drives(self) (L36)
@@ -809,6 +825,7 @@ _Module: Folder tree widget for hierarchical filesystem navigation._
 
 ### src/NexusExplorer/native/nexus_hash_tool.py
 _Module: Nexus Explorer — High-Performance File Checksum & Integrity Utility._
+
 - class HashAlgorithm (L20)
 - class HashResult (L33)
 - class VerifyItem (L46)
@@ -820,6 +837,7 @@ _Module: Nexus Explorer — High-Performance File Checksum & Integrity Utility._
 
 ### src/NexusExplorer/native/nexus_icons.py
 _Module: Fluent Design icon library for NexusExplorer._
+
 - class _LRUCache (L560)
   - __init__(self, maxsize) (L563)
   - get(self, key) (L569)
@@ -835,6 +853,7 @@ _Module: Fluent Design icon library for NexusExplorer._
 
 ### src/NexusExplorer/native/nexus_indexer.py
 _Module: Production-grade file indexer for instant filename search._
+
 - _fast_scandir(path) (L85)
 - _fallback_scandir(path) (L128)
 - class IndexedEntry (L152)
@@ -894,6 +913,7 @@ _Module: Production-grade file indexer for instant filename search._
 
 ### src/NexusExplorer/native/nexus_links_manager.py
 _Module: Nexus Explorer — NTFS Links, Junctions & Reparse Points Manager._
+
 - class LinkType (L21)
 - class LinkItem (L32)
 - class LinkOperationResult (L47)
@@ -908,11 +928,13 @@ _Module: Nexus Explorer — NTFS Links, Junctions & Reparse Points Manager._
 
 ### src/NexusExplorer/native/nexus_native_app.py
 _Module: Standalone launcher for the native Nexus explorer (Qt6)._
+
 - main() (L24)
   - on_quit() (L54)
 
 ### src/NexusExplorer/native/nexus_network.py
 _Module: Network file system support module._
+
 - class NetworkProtocol (L62)
 - class NetworkFile (L72)
 - class NetworkConnection (L85)
@@ -1005,6 +1027,7 @@ _Module: Network file system support module._
 
 ### src/NexusExplorer/native/nexus_plugins.py
 _Module: Production-grade plugin system for NexusExplorer._
+
 - class PluginManifest (L45)
   - from_dict(cls, data, plugin_dir) (L59)
 - class PluginState (L103)
@@ -1097,6 +1120,7 @@ _Module: Production-grade plugin system for NexusExplorer._
 
 ### src/NexusExplorer/native/nexus_timestamp_touch.py
 _Module: Nexus Explorer — Forensic File Timestamp & Attribute Modifier (MACB Touch)._
+
 - class FileAttributeFlags (L24)
 - class TimestampInfo (L37)
 - class TimestampUpdateResult (L53)
@@ -1110,6 +1134,7 @@ _Module: Nexus Explorer — Forensic File Timestamp & Attribute Modifier (MACB T
 
 ### src/NexusExplorer/native/nexus_transfer_monitor.py
 _Module: Transfer Monitor — non-modal window showing the live transfer queue._
+
 - class _JobRow (L34)
   - __init__(self, job_id, queue, parent) (L37)
   - _describe(job) (L101)
@@ -1129,6 +1154,7 @@ _Module: Transfer Monitor — non-modal window showing the live transfer queue._
 
 ### src/NexusExplorer/native/nexus_transfer_queue.py
 _Module: Transfer queue for serialized file operations._
+
 - class JobState (L36)
 - class TransferJob (L48)
 - human_bytes(n) (L72)
@@ -1170,6 +1196,7 @@ _Module: Transfer queue for serialized file operations._
 
 ### src/NexusExplorer/native/nexus_undo.py
 _Module: Undo/redo stack for file operations._
+
 - _safe_rmtree(path) (L34)
 - class OpKind (L43)
 - class UndoEntry (L55)
@@ -1228,6 +1255,7 @@ _Module: Undo/redo stack for file operations._
 
 ### src/NexusExplorer/native/nexus_unlocker.py
 _Module: Nexus Explorer — Process Unlocker & File Handle Inspector._
+
 - class LockingProcessInfo (L53)
 - class FileUnlocker (L65)
   - get_locking_processes(cls, file_path) (L69)
@@ -1237,6 +1265,7 @@ _Module: Nexus Explorer — Process Unlocker & File Handle Inspector._
 
 ### src/NexusExplorer/native/par2_recovery.py
 _Module: Nexus Explorer — PAR2 (Parchive) Parity Checksum & Packet Integrity Engine._
+
 - class Par2FileInfo (L20)
 - class Par2PacketInfo (L31)
 - class Par2ValidationReport (L41)
@@ -1245,6 +1274,7 @@ _Module: Nexus Explorer — PAR2 (Parchive) Parity Checksum & Packet Integrity E
 
 ### src/NexusExplorer/native/usn_journal_scanner.py
 _Module: Nexus Explorer — NTFS USN (Update Sequence Number) Change Journal Scanner._
+
 - class UsnJournalStatus (L21)
 - class USN_JOURNAL_DATA_V0 (L38)
 - class UsnJournalScanner (L52)
@@ -1252,11 +1282,13 @@ _Module: Nexus Explorer — NTFS USN (Update Sequence Number) Change Journal Sca
 
 ### src/NexusExplorer/test_explorer.py
 _Module: NexusExplorer comprehensive offscreen smoke test._
+
 - run_smoke_test() (L12)
   - test(name, fn) (L36)
 
 ### src/NexusExplorer/tests/benchmarks.py
 _Module: Performance benchmarks for NexusExplorer core operations._
+
 - _create_test_tree(root, depth, files_per_dir, file_size) (L19)
 - _cleanup_tree(root) (L30)
 - class BenchmarkTimer (L36)
@@ -1285,6 +1317,7 @@ _Module: Performance benchmarks for NexusExplorer core operations._
 
 ### src/NexusExplorer/tests/native/test_ffi_bridge.py
 _Module: Stage-1 tests: ctypes FFI bridge (nexus_ffi.NexusFfi) contract._
+
 - ffi() (L27)
 - tree(tmp_path) (L35)
 - test_dll_discovery_paths() (L45)
@@ -1302,6 +1335,7 @@ _Module: Stage-1 tests: ctypes FFI bridge (nexus_ffi.NexusFfi) contract._
 
 ### src/NexusExplorer/tests/native/test_journal.py
 _Module: Stage-2b tests: job journal + orphan .nexuspart discovery._
+
 - data_dir(tmp_path, monkeypatch) (L25)
 - ffi() (L34)
 - _journal_lines(data_dir) (L41)
@@ -1311,6 +1345,7 @@ _Module: Stage-2b tests: job journal + orphan .nexuspart discovery._
 
 ### src/NexusExplorer/tests/native/test_mouse_interactions.py
 _Module: Regression tests for the mouse-interaction incident (2026-08-25):_
+
 - qapp() (L26)
 - class _FakeMenu (L32)
   - __init__(self, parent) (L37)
@@ -1336,6 +1371,7 @@ _Module: Regression tests for the mouse-interaction incident (2026-08-25):_
 
 ### src/NexusExplorer/tests/native/test_nested_creation.py
 _Module: Tests for NexusExplorer nested folder, nested file, batch scaffolding, and undo/redo._
+
 - test_create_nested_folder() (L27)
 - test_create_nested_file() (L41)
 - test_scaffold_hierarchy_indented() (L54)
@@ -1347,6 +1383,7 @@ _Module: Tests for NexusExplorer nested folder, nested file, batch scaffolding, 
 
 ### src/NexusExplorer/tests/native/test_stage0.py
 _Module: Stage-0 unit tests for the NexusExplorer native Python layer._
+
 - class TestFormatters (L27)
   - test_human_bytes_scale(self) (L29)
   - test_fmt_ms_empty(self) (L38)
@@ -1361,6 +1398,7 @@ _Module: Stage-0 unit tests for the NexusExplorer native Python layer._
 
 ### src/NexusExplorer/tests/native/test_transfer_monitor.py
 _Module: Stage-2b UI: Transfer Monitor window + FFI-backed queue integration._
+
 - qapp() (L28)
 - env(qapp, tmp_path, monkeypatch) (L35)
 - _pump(qapp, secs) (L81)
@@ -1370,6 +1408,7 @@ _Module: Stage-2b UI: Transfer Monitor window + FFI-backed queue integration._
 
 ### src/NexusExplorer/tests/native/test_transfers_ffi.py
 _Module: Stage-2 tests: end-to-end FFI transfers (copy/move/delete/pause/conflicts)._
+
 - ffi() (L27)
 - dirs(tmp_path) (L35)
 - _payload(n, byte) (L44)
@@ -1396,6 +1435,7 @@ _Module: Stage-2 tests: end-to-end FFI transfers (copy/move/delete/pause/conflic
 
 ### src/NexusExplorer/tests/native/test_transport_parity.py
 _Module: Stage-1 transport parity: nexus-cli.exe subprocess vs ctypes NexusFfi bridge._
+
 - _norm(path) (L48)
 - _cli_run(cli, args) (L53)
 - _cli_list(cli, path) (L66)
@@ -1413,6 +1453,7 @@ _Module: Stage-1 transport parity: nexus-cli.exe subprocess vs ctypes NexusFfi b
 
 ### src/NexusExplorer/tests/native/test_ui_state.py
 _Module: Stage-1 tests: incremental model diffing + session persistence round-trip._
+
 - qapp() (L25)
 - _row(name, size, is_dir, mtime) (L31)
 - class TestUpdateRowsIncremental (L43)
