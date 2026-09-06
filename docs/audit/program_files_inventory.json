@@ -3,7 +3,7 @@
   "passed": 501,
   "failed": 0,
   "pass_rate_percent": 100.0,
-  "duration_seconds": 6.75,
+  "duration_seconds": 6.8,
   "python_runtime": "3.14.7",
   "files": [
     {
@@ -9675,7 +9675,7 @@
     {
       "path": "tests/conftest.py",
       "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/conftest.py",
-      "loc": 55,
+      "loc": 59,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
