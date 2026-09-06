@@ -18,28 +18,34 @@ from tkinter import ttk, messagebox, filedialog
 from pathlib import Path
 
 APP_NAME = "Cortex Workstation"
-APP_VERSION = "1.2.0"
+
+try:
+    from cortex_unified import __version__ as APP_VERSION
+except ImportError:
+    APP_VERSION = "1.2.0"
+
 DEFAULT_INSTALL_DIR = os.path.join(os.environ.get("LOCALAPPDATA", os.path.expanduser("~")), "Programs", "CortexWorkstation")
 
 
 def get_bundle_zip() -> str:
     """Locate the bundled distribution zip file."""
+    zip_name = f"Cortex-Workstation-v{APP_VERSION}-Windows-x64.zip"
     # 1. PyInstaller onefile temp folder
     base_dir = getattr(sys, "_MEIPASS", None)
     if base_dir:
-        candidate = os.path.join(base_dir, "Cortex-Workstation-v1.2.0-Windows-x64.zip")
+        candidate = os.path.join(base_dir, zip_name)
         if os.path.exists(candidate):
             return candidate
     # 2. Local dist folder relative to script or exe
     candidates = [
-        os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "dist", "Cortex-Workstation-v1.2.0-Windows-x64.zip"),
-        os.path.join(os.path.dirname(sys.executable), "Cortex-Workstation-v1.2.0-Windows-x64.zip"),
-        os.path.join(os.getcwd(), "dist", "Cortex-Workstation-v1.2.0-Windows-x64.zip"),
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "dist", zip_name),
+        os.path.join(os.path.dirname(sys.executable), zip_name),
+        os.path.join(os.getcwd(), "dist", zip_name),
     ]
     for c in candidates:
         if os.path.exists(c):
             return os.path.abspath(c)
-    raise FileNotFoundError("Could not find bundled distribution package 'Cortex-Workstation-v1.2.0-Windows-x64.zip'.")
+    raise FileNotFoundError(f"Could not find bundled distribution package '{zip_name}'.")
 
 
 def create_shortcut(target_exe: str, shortcut_path: str, description: str = APP_NAME) -> bool:

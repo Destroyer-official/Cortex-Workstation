@@ -24,7 +24,7 @@ If you are an end-user or system administrator who wants to run Cortex Workstati
 | :--- | :--- | :--- | :--- |
 | **Windows 10/11 x64 Setup Installer**<br>*(Recommended)* | `.exe` | ✅ **Fully Supported** | Download [**`Cortex-Workstation-v1.2.0-Setup.exe`**](https://github.com/Destroyer-official/Cortex-Workstation/releases/download/v1.2.0/Cortex-Workstation-v1.2.0-Setup.exe) (338 MB) from [**GitHub Release v1.2.0**](https://github.com/Destroyer-official/Cortex-Workstation/releases/tag/v1.2.0). Automated 1-click installer with desktop & Start Menu shortcuts and clean uninstaller. |
 | **Windows 10/11 x64 Standalone Portable** | `.zip` | ✅ **Fully Supported** | Download [**`Cortex-Workstation-v1.2.0-Windows-x64.zip`**](https://github.com/Destroyer-official/Cortex-Workstation/releases/download/v1.2.0/Cortex-Workstation-v1.2.0-Windows-x64.zip) (328 MB). Extract anywhere and run `CortexCleaner.exe`. Zero installation required. |
-| **Windows 11 ARM64**<br>*(Snapdragon X Elite / Copilot+ PCs)* | `.exe` / `.zip` | ✅ **Natively Supported** | Natively supported via Windows 11 Microsoft Prism x64 emulation. Runs seamlessly with zero setup. |
+| **Windows 11 ARM64**<br>*(Snapdragon X Elite / Copilot+ PCs)* | `.exe` / `.zip` | ✅ **Supported via Emulation** | Supported on Windows ARM64 via Microsoft Prism x64 emulation. Runs seamlessly with zero setup. |
 | **Windows 32-bit (x86)** | — | ❌ **Not Supported** | PySide6 / Qt 6 officially dropped 32-bit Windows support upstream in Qt 6.0; Windows 11 itself strictly requires a 64-bit CPU architecture. |
 
 ---

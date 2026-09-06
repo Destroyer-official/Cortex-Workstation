@@ -161,9 +161,24 @@ def main():
             report_lines.append(f"  - **Error Detail**: `{r['error']}`")
         report_lines.append("")
 
-    out_file = REPO_ROOT / "ONE_BY_ONE_VERIFICATION_REPORT.md"
+    audit_dir = REPO_ROOT / "docs" / "audit"
+    audit_dir.mkdir(parents=True, exist_ok=True)
+    out_file = audit_dir / "ONE_BY_ONE_VERIFICATION_REPORT.md"
     out_file.write_text("\n".join(report_lines), encoding="utf-8")
     print(f"\nDetailed report written to: {out_file}")
+
+    import json
+    json_file = audit_dir / "program_files_inventory.json"
+    json_file.write_text(json.dumps({
+        "total_files": total,
+        "passed": passed,
+        "failed": failed,
+        "pass_rate_percent": round((passed / total) * 100, 2),
+        "duration_seconds": round(duration, 2),
+        "python_runtime": sys.version.split()[0],
+        "files": results
+    }, indent=2), encoding="utf-8")
+    print(f"Machine-readable inventory written to: {json_file}")
 
     return 0 if failed == 0 else 1
 

@@ -1,7 +1,7 @@
 # Deep One-By-One Program File Verification Report
 
-> **Audited Files**: 499 | **Passed**: 499 | **Failed**: 0 | **Pass Rate**: 100.0%
-> **Verification Duration**: 6.72 seconds | **Python Runtime**: 3.14.7
+> **Audited Files**: 500 | **Passed**: 500 | **Failed**: 0 | **Pass Rate**: 100.0%
+> **Verification Duration**: 7.17 seconds | **Python Runtime**: 3.14.7
 
 ## File-By-File Verification Results
 
@@ -24,11 +24,11 @@
 - [ ] **005. [`scripts/audit_system_tools.py`](scripts/audit_system_tools.py)** — **✓ PASS** (23 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
 
-- [ ] **006. [`scripts/build_exe.py`](scripts/build_exe.py)** — **✓ PASS** (61 LOC)
+- [ ] **006. [`scripts/build_exe.py`](scripts/build_exe.py)** — **✓ PASS** (96 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
-  - **Functions (1)**: `build_app`
+  - **Functions (2)**: `calculate_sha256`, `build_app`
 
-- [ ] **007. [`scripts/check_all_structure_files.py`](scripts/check_all_structure_files.py)** — **✓ PASS** (172 LOC)
+- [ ] **007. [`scripts/check_all_structure_files.py`](scripts/check_all_structure_files.py)** — **✓ PASS** (187 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Functions (3)**: `find_all_python_files`, `verify_file`, `main`
 
@@ -66,7 +66,7 @@
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Functions (1)**: `parse_file`
 
-- [ ] **017. [`scripts/installer.py`](scripts/installer.py)** — **✓ PASS** (285 LOC)
+- [ ] **017. [`scripts/installer.py`](scripts/installer.py)** — **✓ PASS** (291 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (1)**: `InstallerApp` (8 methods)
   - **Functions (4)**: `get_bundle_zip`, `create_shortcut`, `register_uninstaller`, `main`
@@ -130,7 +130,7 @@
   - **Classes (7)**: `FileEntry` (0 methods), `FolderNode` (5 methods), `Scanner` (4 methods), `NTFSScanner` (5 methods)
   - **Functions (1)**: `scan_sync`
 
-- [ ] **034. [`src/cortex_unified/analyzers/advanced_shredder.py`](src/cortex_unified/analyzers/advanced_shredder.py)** — **✓ PASS** (196 LOC)
+- [ ] **034. [`src/cortex_unified/analyzers/advanced_shredder.py`](src/cortex_unified/analyzers/advanced_shredder.py)** — **✓ PASS** (231 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (2)**: `ShredMethod` (0 methods), `AdvancedShredder` (4 methods)
 
@@ -284,7 +284,7 @@
   - **Classes (7)**: `Base` (0 methods), `ScanRun` (3 methods), `DeletedItem` (2 methods), `ScheduledJob` (1 methods)
   - **Functions (2)**: `get_database`, `db_session`
 
-- [ ] **071. [`src/cortex_unified/core/deleter.py`](src/cortex_unified/core/deleter.py)** — **✓ PASS** (195 LOC)
+- [ ] **071. [`src/cortex_unified/core/deleter.py`](src/cortex_unified/core/deleter.py)** — **✓ PASS** (237 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (1)**: `Deleter` (5 methods)
 
@@ -330,7 +330,7 @@
 - [ ] **081. [`src/cortex_unified/debug/__main__.py`](src/cortex_unified/debug/__main__.py)** — **✓ PASS** (14 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
 
-- [ ] **082. [`src/cortex_unified/debug/runner.py`](src/cortex_unified/debug/runner.py)** — **✓ PASS** (948 LOC)
+- [ ] **082. [`src/cortex_unified/debug/runner.py`](src/cortex_unified/debug/runner.py)** — **✓ PASS** (938 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (4)**: `DiagnosticItem` (0 methods), `DiagnosticSection` (2 methods), `DiagnosticReport` (1 methods), `DiagnosticRunner` (11 methods)
   - **Functions (7)**: `green`, `red`, `yellow`, `cyan`, `bold`, `run_all_diagnostics`
@@ -366,7 +366,7 @@
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (6)**: `StorageKind` (1 methods), `DeletionMethod` (0 methods), `DeletionOutcome` (0 methods), `FileEntry` (6 methods)
 
-- [ ] **091. [`src/cortex_unified/engine/secure_delete.py`](src/cortex_unified/engine/secure_delete.py)** — **✓ PASS** (657 LOC)
+- [ ] **091. [`src/cortex_unified/engine/secure_delete.py`](src/cortex_unified/engine/secure_delete.py)** — **✓ PASS** (680 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (2)**: `OverwriteNotEffective` (1 methods), `SecureDeleter` (16 methods)
   - **Functions (1)**: `recycle_path`
@@ -801,9 +801,9 @@
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (3)**: `ProcessTokenInfo` (0 methods), `ProcessTokenAuditReport` (0 methods), `ProcessTokenAuditor` (6 methods)
 
-- [ ] **201. [`src/cortex_unified/system_tools/registry_cleaner.py`](src/cortex_unified/system_tools/registry_cleaner.py)** — **✓ PASS** (476 LOC)
+- [ ] **201. [`src/cortex_unified/system_tools/registry_cleaner.py`](src/cortex_unified/system_tools/registry_cleaner.py)** — **✓ PASS** (548 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
-  - **Classes (1)**: `RegistryCleaner` (15 methods)
+  - **Classes (1)**: `RegistryCleaner` (16 methods)
 
 - [ ] **202. [`src/cortex_unified/system_tools/restart_manager_unlocker.py`](src/cortex_unified/system_tools/restart_manager_unlocker.py)** — **✓ PASS** (302 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
@@ -1633,406 +1633,410 @@
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Functions (9)**: `test_fingerprint_is_list_of_ints`, `test_identical_wavs_compare_high`, `test_different_tones_compare_low`, `test_audio_compare_empty`, `test_finder_groups_identical_audio`, `test_finder_excludes_non_audio`
 
-- [ ] **403. [`tests/test_boot_performance.py`](tests/test_boot_performance.py)** — **✓ PASS** (91 LOC)
+- [ ] **403. [`tests/test_audit_safety_hardening.py`](tests/test_audit_safety_hardening.py)** — **✓ PASS** (134 LOC)
+  - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
+  - **Functions (8)**: `test_deleter_refuses_protected_path`, `test_deleter_refuses_symlink_directory`, `test_deleter_refuses_mocked_symlink_directory`, `test_advanced_shredder_refuses_mocked_symlink_file`, `test_advanced_shredder_refuses_symlink_target`, `test_advanced_shredder_refuses_protected_path`
+
+- [ ] **404. [`tests/test_boot_performance.py`](tests/test_boot_performance.py)** — **✓ PASS** (91 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (3)**: `TestParse` (5 methods), `TestDataclasses` (2 methods), `TestSupport` (2 methods)
 
-- [ ] **404. [`tests/test_browser_cleaner.py`](tests/test_browser_cleaner.py)** — **✓ PASS** (1030 LOC)
+- [ ] **405. [`tests/test_browser_cleaner.py`](tests/test_browser_cleaner.py)** — **✓ PASS** (1030 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (11)**: `TestDeepBrowserCleanerInit` (5 methods), `TestProfileDiscovery` (5 methods), `TestCookieCleaning` (5 methods), `TestClean` (8 methods)
   - **Functions (3)**: `fake_chromium_home`, `fake_firefox_home`, `fake_multi_browser`
 
-- [ ] **405. [`tests/test_browser_extensions.py`](tests/test_browser_extensions.py)** — **✓ PASS** (144 LOC)
+- [ ] **406. [`tests/test_browser_extensions.py`](tests/test_browser_extensions.py)** — **✓ PASS** (144 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (3)**: `TestPermissionRisk` (3 methods), `TestChromiumScan` (4 methods), `TestAuditNeverRaises` (1 methods)
   - **Functions (1)**: `fake_home`
 
-- [ ] **406. [`tests/test_cli.py`](tests/test_cli.py)** — **✓ PASS** (25 LOC)
+- [ ] **407. [`tests/test_cli.py`](tests/test_cli.py)** — **✓ PASS** (25 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Functions (3)**: `test_cli_help`, `test_cli_version`, `test_cli_clean_empty_help`
 
-- [ ] **407. [`tests/test_cli_leftovers.py`](tests/test_cli_leftovers.py)** — **✓ PASS** (246 LOC)
+- [ ] **408. [`tests/test_cli_leftovers.py`](tests/test_cli_leftovers.py)** — **✓ PASS** (246 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (3)**: `TestLeftoversScan` (3 methods), `TestLeftoversClean` (4 methods), `TestLeftoversOrphans` (1 methods)
   - **Functions (1)**: `fake_scan`
 
-- [ ] **408. [`tests/test_cloud_aware_scan.py`](tests/test_cloud_aware_scan.py)** — **✓ PASS** (245 LOC)
+- [ ] **409. [`tests/test_cloud_aware_scan.py`](tests/test_cloud_aware_scan.py)** — **✓ PASS** (245 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Functions (16)**: `cloud_attrs`, `test_dehydrated_detects_all_recall_flags`, `test_cloud_tag_covers_the_provider_range`, `test_junction_is_distinct_from_symlink`, `test_attribute_readers_tolerate_a_posix_stat`, `test_describe_explains_special_entries`
 
-- [ ] **409. [`tests/test_compact_os.py`](tests/test_compact_os.py)** — **✓ PASS** (156 LOC)
+- [ ] **410. [`tests/test_compact_os.py`](tests/test_compact_os.py)** — **✓ PASS** (156 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Functions (8)**: `test_is_supported_reflects_platform`, `test_system_folder_names_are_blocked`, `test_estimate_text_heavy_folder`, `test_estimate_incompressible_folder`, `test_find_compressible_folders_respects_min_size`, `test_find_skips_blocked_and_system_subfolders`
 
-- [ ] **410. [`tests/test_component_store.py`](tests/test_component_store.py)** — **✓ PASS** (423 LOC)
+- [ ] **411. [`tests/test_component_store.py`](tests/test_component_store.py)** — **✓ PASS** (423 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Functions (22)**: `test_parses_windows_own_figures`, `test_reclaimable_estimate_excludes_shared_bytes`, `test_explains_the_explorer_size_gap`, `test_no_cleanup_needed_is_stated_plainly`, `test_dism_error_is_surfaced_with_its_code`, `test_unreadable_report_yields_zero_not_a_guess`
 
-- [ ] **411. [`tests/test_config.py`](tests/test_config.py)** — **✓ PASS** (31 LOC)
+- [ ] **412. [`tests/test_config.py`](tests/test_config.py)** — **✓ PASS** (31 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Functions (2)**: `test_config_initialization_defaults`, `test_config_loading_from_file`
 
-- [ ] **412. [`tests/test_config_defaults_unified.py`](tests/test_config_defaults_unified.py)** — **✓ PASS** (74 LOC)
+- [ ] **413. [`tests/test_config_defaults_unified.py`](tests/test_config_defaults_unified.py)** — **✓ PASS** (74 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Functions (5)**: `test_scan_defaults_match_the_legacy_baseline`, `test_editor_state_directories_are_protected`, `test_v2_defaults_do_not_alias_the_shared_constant`, `test_legacy_config_does_not_alias_the_shared_constant`, `test_both_configs_expose_the_same_flat_accessors`
 
-- [ ] **413. [`tests/test_config_legacy_loading.py`](tests/test_config_legacy_loading.py)** — **✓ PASS** (204 LOC)
+- [ ] **414. [`tests/test_config_legacy_loading.py`](tests/test_config_legacy_loading.py)** — **✓ PASS** (204 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Functions (12)**: `test_missing_file_is_silent_and_yields_defaults`, `test_valid_yaml_is_loaded_over_the_defaults`, `test_malformed_yaml_warns_and_falls_back`, `test_non_mapping_top_level_warns_and_falls_back`, `test_empty_file_is_treated_as_no_settings`, `test_non_utf8_bytes_warn_and_fall_back`
 
-- [ ] **414. [`tests/test_config_v2.py`](tests/test_config_v2.py)** — **✓ PASS** (386 LOC)
+- [ ] **415. [`tests/test_config_v2.py`](tests/test_config_v2.py)** — **✓ PASS** (386 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (8)**: `TestScanConfig` (3 methods), `TestPerformanceConfig` (2 methods), `TestSecurityConfig` (2 methods), `TestLoggingConfig` (1 methods)
 
-- [ ] **415. [`tests/test_content_defined_chunker.py`](tests/test_content_defined_chunker.py)** — **✓ PASS** (211 LOC)
+- [ ] **416. [`tests/test_content_defined_chunker.py`](tests/test_content_defined_chunker.py)** — **✓ PASS** (211 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Functions (15)**: `test_gear_chunk_deterministic`, `test_gear_chunk_shift_resistant`, `test_gear_chunk_empty`, `test_gear_chunk_invalid_params`, `test_jaccard_basic`, `test_chunk_similarity_identical_is_one`
 
-- [ ] **416. [`tests/test_core_proc.py`](tests/test_core_proc.py)** — **✓ PASS** (137 LOC)
+- [ ] **417. [`tests/test_core_proc.py`](tests/test_core_proc.py)** — **✓ PASS** (137 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Functions (10)**: `test_normal_completion_returns_output`, `test_nonzero_exit_is_reported_not_raised`, `test_real_timeout_raises_and_is_prompt`, `test_cancel_event_raises_and_is_prompt`, `test_cancel_takes_priority_even_with_a_long_timeout`, `test_timeout_kills_the_whole_process_tree`
 
-- [ ] **417. [`tests/test_czkawka_tools.py`](tests/test_czkawka_tools.py)** — **✓ PASS** (1240 LOC)
+- [ ] **418. [`tests/test_czkawka_tools.py`](tests/test_czkawka_tools.py)** — **✓ PASS** (1240 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (10)**: `TestEmptyFinder` (9 methods), `TestInvalidSymlinkFinder` (8 methods), `TestBrokenFileFinder` (10 methods), `TestBadExtensionFinder` (8 methods)
 
-- [ ] **418. [`tests/test_defender.py`](tests/test_defender.py)** — **✓ PASS** (93 LOC)
+- [ ] **419. [`tests/test_defender.py`](tests/test_defender.py)** — **✓ PASS** (93 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (3)**: `TestStatusParse` (6 methods), `TestThreatsParse` (3 methods), `TestDataclassAndSupport` (3 methods)
 
-- [ ] **419. [`tests/test_deleter.py`](tests/test_deleter.py)** — **✓ PASS** (50 LOC)
+- [ ] **420. [`tests/test_deleter.py`](tests/test_deleter.py)** — **✓ PASS** (50 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Functions (3)**: `test_deleter_dry_run`, `test_deleter_real_deletion`, `test_deleter_handles_missing_files`
 
-- [ ] **420. [`tests/test_directstorage_optimizer.py`](tests/test_directstorage_optimizer.py)** — **✓ PASS** (50 LOC)
+- [ ] **421. [`tests/test_directstorage_optimizer.py`](tests/test_directstorage_optimizer.py)** — **✓ PASS** (50 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Functions (3)**: `test_parse_bypassio_supported`, `test_parse_bypassio_blocked`, `test_audit_structure`
 
-- [ ] **421. [`tests/test_disk_health.py`](tests/test_disk_health.py)** — **✓ PASS** (125 LOC)
+- [ ] **422. [`tests/test_disk_health.py`](tests/test_disk_health.py)** — **✓ PASS** (125 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (3)**: `TestParse` (7 methods), `TestToDict` (1 methods), `TestSupport` (2 methods)
 
-- [ ] **422. [`tests/test_drive_optimizer.py`](tests/test_drive_optimizer.py)** — **✓ PASS** (82 LOC)
+- [ ] **423. [`tests/test_drive_optimizer.py`](tests/test_drive_optimizer.py)** — **✓ PASS** (82 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (2)**: `TestRecommendation` (4 methods), `TestSafety` (4 methods)
 
-- [ ] **423. [`tests/test_driver_inventory.py`](tests/test_driver_inventory.py)** — **✓ PASS** (77 LOC)
+- [ ] **424. [`tests/test_driver_inventory.py`](tests/test_driver_inventory.py)** — **✓ PASS** (77 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (2)**: `TestParse` (5 methods), `TestSupport` (3 methods)
 
-- [ ] **424. [`tests/test_engine.py`](tests/test_engine.py)** — **✓ PASS** (415 LOC)
+- [ ] **425. [`tests/test_engine.py`](tests/test_engine.py)** — **✓ PASS** (415 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (6)**: `TestFastWalker` (6 methods), `TestPathGuard` (5 methods), `TestDuplicates` (3 methods), `TestStorage` (3 methods)
   - **Functions (1)**: `tree`
 
-- [ ] **425. [`tests/test_engine_cloud_safety.py`](tests/test_engine_cloud_safety.py)** — **✓ PASS** (248 LOC)
+- [ ] **426. [`tests/test_engine_cloud_safety.py`](tests/test_engine_cloud_safety.py)** — **✓ PASS** (248 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Functions (14)**: `test_recall_attributes_mean_dehydrated`, `test_cloud_tag_family_is_matched`, `test_junction_detected_by_tag_only`, `test_describe_explains_each_special_case`, `test_pure_helpers_never_raise_on_missing_attributes`, `cloud_tree`
 
-- [ ] **426. [`tests/test_engine_service.py`](tests/test_engine_service.py)** — **✓ PASS** (316 LOC)
+- [ ] **427. [`tests/test_engine_service.py`](tests/test_engine_service.py)** — **✓ PASS** (316 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (6)**: `TestCategories` (3 methods), `TestDeepDiscovery` (3 methods), `TestBreakdown` (3 methods), `TestCleanerServiceCategories` (4 methods)
 
-- [ ] **427. [`tests/test_enterprise_suite_tools.py`](tests/test_enterprise_suite_tools.py)** — **✓ PASS** (179 LOC)
+- [ ] **428. [`tests/test_enterprise_suite_tools.py`](tests/test_enterprise_suite_tools.py)** — **✓ PASS** (179 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Functions (10)**: `test_vss_manager`, `test_dev_drive_optimizer`, `test_bitlocker_auditor`, `test_junction_auditor`, `test_bitrot_scrubber`, `test_memory_compression_tuner`
 
-- [ ] **428. [`tests/test_expanded_power_tools.py`](tests/test_expanded_power_tools.py)** — **✓ PASS** (251 LOC)
+- [ ] **429. [`tests/test_expanded_power_tools.py`](tests/test_expanded_power_tools.py)** — **✓ PASS** (251 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Functions (11)**: `test_links_manager`, `test_fast_copier`, `test_timestamp_touch`, `test_archive_manager`, `test_prefetch_analyzer`, `test_search_index_optimizer`
 
-- [ ] **429. [`tests/test_external_exposure.py`](tests/test_external_exposure.py)** — **✓ PASS** (83 LOC)
+- [ ] **430. [`tests/test_external_exposure.py`](tests/test_external_exposure.py)** — **✓ PASS** (83 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Functions (3)**: `test_lookup_requires_consent_and_global_public_ip`, `test_shodan_sends_only_selected_ip_and_normalizes_services`, `test_censys_credentials_use_header_not_url`
 
-- [ ] **430. [`tests/test_feature_matrix_audit.py`](tests/test_feature_matrix_audit.py)** — **✓ PASS** (548 LOC)
+- [ ] **431. [`tests/test_feature_matrix_audit.py`](tests/test_feature_matrix_audit.py)** — **✓ PASS** (548 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Functions (11)**: `test_fm_core_and_power_features`, `test_disk_and_storage_analyzers`, `test_system_maintenance_and_repair`, `test_security_and_sanitization_standards`, `test_privacy_and_telemetry`, `test_process_and_performance_optimization`
 
-- [ ] **431. [`tests/test_firewall_manager.py`](tests/test_firewall_manager.py)** — **✓ PASS** (120 LOC)
+- [ ] **432. [`tests/test_firewall_manager.py`](tests/test_firewall_manager.py)** — **✓ PASS** (120 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (5)**: `TestGating` (2 methods), `TestAddressValidation` (6 methods), `TestQuoting` (2 methods), `TestParsing` (4 methods)
 
-- [ ] **432. [`tests/test_free_space_wipe.py`](tests/test_free_space_wipe.py)** — **✓ PASS** (68 LOC)
+- [ ] **433. [`tests/test_free_space_wipe.py`](tests/test_free_space_wipe.py)** — **✓ PASS** (68 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (3)**: `TestGating` (2 methods), `TestValidation` (2 methods), `TestMediumHonesty` (1 methods)
 
-- [ ] **433. [`tests/test_fuzzy_finder.py`](tests/test_fuzzy_finder.py)** — **✓ PASS** (137 LOC)
+- [ ] **434. [`tests/test_fuzzy_finder.py`](tests/test_fuzzy_finder.py)** — **✓ PASS** (137 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Functions (9)**: `test_fuzzy_hash_is_deterministic`, `test_identical_content_matches_at_100`, `test_similar_content_scores_high_pairs`, `test_unrelated_content_scores_low`, `test_empty_signature`, `test_finder_groups_near_identical_binaries`
 
-- [ ] **434. [`tests/test_game_mode_memory.py`](tests/test_game_mode_memory.py)** — **✓ PASS** (144 LOC)
+- [ ] **435. [`tests/test_game_mode_memory.py`](tests/test_game_mode_memory.py)** — **✓ PASS** (144 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (3)**: `TestGameModeLogic` (4 methods), `TestGameModeWindows` (4 methods), `TestMemoryOptimizer` (3 methods)
 
-- [ ] **435. [`tests/test_gui_device_window.py`](tests/test_gui_device_window.py)** — **✓ PASS** (467 LOC)
+- [ ] **436. [`tests/test_gui_device_window.py`](tests/test_gui_device_window.py)** — **✓ PASS** (467 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Functions (11)**: `app`, `window`, `test_window_renders_discovery_evidence_before_any_scan`, `test_window_renders_completed_scan_payload_with_severity_badge`, `test_worker_refuses_target_outside_authorized_scope`, `test_worker_collects_services_findings_and_history`
 
-- [ ] **436. [`tests/test_gui_pages_e2e.py`](tests/test_gui_pages_e2e.py)** — **✓ PASS** (1035 LOC)
+- [ ] **437. [`tests/test_gui_pages_e2e.py`](tests/test_gui_pages_e2e.py)** — **✓ PASS** (1035 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Functions (49)**: `app`, `window`, `pro_license`, `pump_until`, `data_tree`, `test_page_dashboard_scan`
 
-- [ ] **437. [`tests/test_health_check.py`](tests/test_health_check.py)** — **✓ PASS** (104 LOC)
+- [ ] **438. [`tests/test_health_check.py`](tests/test_health_check.py)** — **✓ PASS** (104 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (3)**: `TestScoring` (6 methods), `TestRun` (4 methods), `TestDiskSpaceCheck` (1 methods)
 
-- [ ] **438. [`tests/test_icons.py`](tests/test_icons.py)** — **✓ PASS** (271 LOC)
+- [ ] **439. [`tests/test_icons.py`](tests/test_icons.py)** — **✓ PASS** (271 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Functions (16)**: `app`, `test_every_page_has_its_own_icon_asset`, `test_no_two_pages_share_an_icon`, `test_registry_icons_are_asset_names_not_glyphs`, `test_window_chrome_and_status_icons_are_shipped`, `test_every_shipped_icon_renders`
 
-- [ ] **439. [`tests/test_lan_scanner.py`](tests/test_lan_scanner.py)** — **✓ PASS** (113 LOC)
+- [ ] **440. [`tests/test_lan_scanner.py`](tests/test_lan_scanner.py)** — **✓ PASS** (113 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (3)**: `TestParse` (6 methods), `TestVendorHelper` (3 methods), `TestScan` (2 methods)
 
-- [ ] **440. [`tests/test_lazy_pages.py`](tests/test_lazy_pages.py)** — **✓ PASS** (155 LOC)
+- [ ] **441. [`tests/test_lazy_pages.py`](tests/test_lazy_pages.py)** — **✓ PASS** (155 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Functions (11)**: `app`, `window`, `test_only_the_initial_page_is_built_at_startup`, `test_registry_reports_every_page_without_building_them`, `test_getitem_builds_on_demand_and_caches`, `test_selecting_a_page_builds_it_and_shows_it`
 
-- [ ] **441. [`tests/test_leftover_cleaner.py`](tests/test_leftover_cleaner.py)** — **✓ PASS** (963 LOC)
+- [ ] **442. [`tests/test_leftover_cleaner.py`](tests/test_leftover_cleaner.py)** — **✓ PASS** (963 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (14)**: `TestEditDistance` (4 methods), `TestMatchStringToProduct` (6 methods), `TestBuildTokens` (4 methods), `TestConfidenceLevels` (1 methods)
   - **Functions (3)**: `test_detect_installer_type`, `fake_env`, `fake_registry`
 
-- [ ] **442. [`tests/test_license_gui.py`](tests/test_license_gui.py)** — **✓ PASS** (241 LOC)
+- [ ] **443. [`tests/test_license_gui.py`](tests/test_license_gui.py)** — **✓ PASS** (241 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Functions (11)**: `app`, `isolated_license`, `window`, `test_license_page_shows_free_when_unlicensed`, `test_activate_with_empty_key_warns_and_stays_free`, `test_page_shows_pro_after_activation_and_refresh`
 
-- [ ] **443. [`tests/test_licensing.py`](tests/test_licensing.py)** — **✓ PASS** (380 LOC)
+- [ ] **444. [`tests/test_licensing.py`](tests/test_licensing.py)** — **✓ PASS** (380 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (4)**: `TestFingerprint` (4 methods), `TestTiers` (4 methods), `TestLicenseLifecycle` (14 methods), `TestGating` (5 methods)
   - **Functions (1)**: `manager`
 
-- [ ] **444. [`tests/test_load_tester.py`](tests/test_load_tester.py)** — **✓ PASS** (185 LOC)
+- [ ] **445. [`tests/test_load_tester.py`](tests/test_load_tester.py)** — **✓ PASS** (185 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (4)**: `TestAuthorization` (8 methods), `TestRefusesUnauthorized` (2 methods), `TestMetrics` (4 methods), `TestLocalRun` (2 methods)
 
-- [ ] **445. [`tests/test_memory_standby_purger.py`](tests/test_memory_standby_purger.py)** — **✓ PASS** (46 LOC)
+- [ ] **446. [`tests/test_memory_standby_purger.py`](tests/test_memory_standby_purger.py)** — **✓ PASS** (46 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Functions (3)**: `test_memory_snapshot`, `test_privilege_enable`, `test_purge_actions_safe`
 
-- [ ] **446. [`tests/test_mft_slack_scrubber.py`](tests/test_mft_slack_scrubber.py)** — **✓ PASS** (50 LOC)
+- [ ] **447. [`tests/test_mft_slack_scrubber.py`](tests/test_mft_slack_scrubber.py)** — **✓ PASS** (50 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Functions (3)**: `test_parse_ntfsinfo`, `test_audit_structure`, `test_scrub_structure`
 
-- [ ] **447. [`tests/test_network_audit.py`](tests/test_network_audit.py)** — **✓ PASS** (300 LOC)
+- [ ] **448. [`tests/test_network_audit.py`](tests/test_network_audit.py)** — **✓ PASS** (300 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (1)**: `SyntheticDevice` (0 methods)
   - **Functions (12)**: `observation`, `test_scope_rejects_public_special_and_out_of_scope_without_sockets`, `test_private_scope_spec_supports_host_cidr_and_range`, `test_custom_port_spec_is_bounded_and_deterministic`, `test_custom_ports_are_validated_before_any_socket`, `test_observation_serialization_is_json_safe_and_deterministic`
 
-- [ ] **448. [`tests/test_network_automation.py`](tests/test_network_automation.py)** — **✓ PASS** (71 LOC)
+- [ ] **449. [`tests/test_network_automation.py`](tests/test_network_automation.py)** — **✓ PASS** (71 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Functions (3)**: `test_schedule_builds_only_fixed_private_scan_command`, `test_schedule_rejects_public_scope_and_arbitrary_frequency`, `test_scheduler_uses_process_runner_without_shell`
 
-- [ ] **449. [`tests/test_network_discovery.py`](tests/test_network_discovery.py)** — **✓ PASS** (614 LOC)
+- [ ] **450. [`tests/test_network_discovery.py`](tests/test_network_discovery.py)** — **✓ PASS** (614 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (11)**: `TestUsableHost` (8 methods), `TestMacIdentity` (11 methods), `TestDeviceLabelling` (7 methods), `TestDeviceKind` (8 methods)
   - **Functions (5)**: `test_windows_neighbor_query_excludes_incomplete_states`, `test_ssdp_headers_parsed_case_insensitively`, `test_result_serializes_to_json`, `test_ip_sort_key_orders_numerically`, `test_ip_validation_rejects_garbage`
 
-- [ ] **450. [`tests/test_network_expert_tools.py`](tests/test_network_expert_tools.py)** — **✓ PASS** (356 LOC)
+- [ ] **451. [`tests/test_network_expert_tools.py`](tests/test_network_expert_tools.py)** — **✓ PASS** (356 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (1)**: `_Socket` (5 methods)
   - **Functions (16)**: `test_nmap_status_does_not_execute`, `test_nmap_missing_executable_has_clear_error`, `test_nmap_builds_safe_deterministic_argument_list`, `test_nmap_rejects_every_unauthorized_target`, `test_nmap_expert_modes_require_windows_admin`, `test_nmap_scan_uses_proc_and_parses_observation`
 
-- [ ] **451. [`tests/test_network_inventory.py`](tests/test_network_inventory.py)** — **✓ PASS** (326 LOC)
+- [ ] **452. [`tests/test_network_inventory.py`](tests/test_network_inventory.py)** — **✓ PASS** (326 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Functions (16)**: `device`, `kinds`, `test_first_snapshot_reports_new_device_and_is_json_safe`, `test_emits_new_service_and_severity_change`, `test_mac_and_gateway_mac_changes_are_distinct`, `test_disappearance_is_relative_to_previous_snapshot`
 
-- [ ] **452. [`tests/test_network_monitor.py`](tests/test_network_monitor.py)** — **✓ PASS** (98 LOC)
+- [ ] **453. [`tests/test_network_monitor.py`](tests/test_network_monitor.py)** — **✓ PASS** (98 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (3)**: `TestClassification` (4 methods), `TestConnectionFlags` (5 methods), `TestMonitor` (2 methods)
 
-- [ ] **453. [`tests/test_network_security_audit.py`](tests/test_network_security_audit.py)** — **✓ PASS** (96 LOC)
+- [ ] **454. [`tests/test_network_security_audit.py`](tests/test_network_security_audit.py)** — **✓ PASS** (96 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Functions (5)**: `test_guard_accepts_rfc1918_lan_addresses`, `test_guard_rejects_every_out_of_scope_address`, `test_guard_rejects_malformed_and_non_ipv4_input`, `test_guard_rejects_leading_zero_octets`, `test_guard_returns_address_usable_for_socket_operations`
 
-- [ ] **454. [`tests/test_network_tools.py`](tests/test_network_tools.py)** — **✓ PASS** (159 LOC)
+- [ ] **455. [`tests/test_network_tools.py`](tests/test_network_tools.py)** — **✓ PASS** (159 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (5)**: `TestPingParse` (4 methods), `TestTracerouteParse` (3 methods), `TestDNS` (3 methods), `TestPorts` (3 methods)
 
-- [ ] **455. [`tests/test_network_traffic.py`](tests/test_network_traffic.py)** — **✓ PASS** (64 LOC)
+- [ ] **456. [`tests/test_network_traffic.py`](tests/test_network_traffic.py)** — **✓ PASS** (64 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (1)**: `TestSample` (5 methods)
   - **Functions (1)**: `test_singleton`
 
-- [ ] **456. [`tests/test_nextgen_tools.py`](tests/test_nextgen_tools.py)** — **✓ PASS** (218 LOC)
+- [ ] **457. [`tests/test_nextgen_tools.py`](tests/test_nextgen_tools.py)** — **✓ PASS** (218 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Functions (7)**: `test_shader_cache_cleaner_scan_and_clean`, `test_ai_telemetry_cleaner_wal_checkpoint`, `test_ssd_trim_optimizer`, `test_restart_manager_unlocker`, `test_vss_health_analyzer`, `test_dev_package_cache_cleaner`
 
-- [ ] **457. [`tests/test_nexus_exhaustive_audit.py`](tests/test_nexus_exhaustive_audit.py)** — **✓ PASS** (257 LOC)
+- [ ] **458. [`tests/test_nexus_exhaustive_audit.py`](tests/test_nexus_exhaustive_audit.py)** — **✓ PASS** (257 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Functions (7)**: `qapp`, `test_audit_in_place_copy_protection`, `test_audit_circular_directory_protection`, `test_audit_empty_directory_preservation_on_copy`, `test_audit_tab_management_and_closing`, `test_audit_engine_python_simple_and_delete`
 
-- [ ] **458. [`tests/test_page_registry.py`](tests/test_page_registry.py)** — **✓ PASS** (129 LOC)
+- [ ] **459. [`tests/test_page_registry.py`](tests/test_page_registry.py)** — **✓ PASS** (129 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Functions (9)**: `test_registry_is_internally_consistent`, `test_every_declared_factory_actually_resolves`, `test_malformed_factory_is_rejected_with_a_clear_message`, `test_ordering_is_group_order_then_declaration_order`, `test_grouped_covers_every_page_exactly_once`, `test_by_id_and_group_of_agree_with_pages`
 
-- [ ] **459. [`tests/test_perceptual_duplicate_finder.py`](tests/test_perceptual_duplicate_finder.py)** — **✓ PASS** (212 LOC)
+- [ ] **460. [`tests/test_perceptual_duplicate_finder.py`](tests/test_perceptual_duplicate_finder.py)** — **✓ PASS** (212 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Functions (11)**: `test_hashes_are_int`, `test_hashes_deterministic_on_identical_image`, `test_hamming_distance_basic`, `test_perceptual_hashes_agree_across_rescales`, `test_different_images_are_far_apart_in_phash`, `test_unknown_kind_raises`
 
-- [ ] **460. [`tests/test_performance_tuner.py`](tests/test_performance_tuner.py)** — **✓ PASS** (62 LOC)
+- [ ] **461. [`tests/test_performance_tuner.py`](tests/test_performance_tuner.py)** — **✓ PASS** (62 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (2)**: `TestParse` (3 methods), `TestSafety` (4 methods)
 
-- [ ] **461. [`tests/test_portable_manager.py`](tests/test_portable_manager.py)** — **✓ PASS** (1048 LOC)
+- [ ] **462. [`tests/test_portable_manager.py`](tests/test_portable_manager.py)** — **✓ PASS** (1048 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (12)**: `TestPortableApp` (2 methods), `TestParseAppinfo` (7 methods), `TestPortableManagerInit` (3 methods), `TestScanPortableRoots` (7 methods)
 
-- [ ] **462. [`tests/test_power_suite_tools.py`](tests/test_power_suite_tools.py)** — **✓ PASS** (108 LOC)
+- [ ] **463. [`tests/test_power_suite_tools.py`](tests/test_power_suite_tools.py)** — **✓ PASS** (108 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Functions (10)**: `test_env_variable_manager`, `test_service_manager`, `test_font_cache_manager`, `test_temp_folder_cleaner`, `test_context_menu_manager`, `test_pagefile_optimizer`
 
-- [ ] **463. [`tests/test_power_tools_production.py`](tests/test_power_tools_production.py)** — **✓ PASS** (375 LOC)
+- [ ] **464. [`tests/test_power_tools_production.py`](tests/test_power_tools_production.py)** — **✓ PASS** (375 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Functions (12)**: `test_hash_computation`, `test_checksum_manifest_creation_and_verify`, `test_batch_renamer_tokens_and_case`, `test_directory_diff_and_sync`, `test_file_splitter_and_joiner`, `test_file_unlocker_inspect`
 
-- [ ] **464. [`tests/test_premium_gui.py`](tests/test_premium_gui.py)** — **✓ PASS** (1560 LOC)
+- [ ] **465. [`tests/test_premium_gui.py`](tests/test_premium_gui.py)** — **✓ PASS** (1560 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (1)**: `_CoopWorker` (1 methods)
   - **Functions (65)**: `app`, `window`, `test_stylesheet_builds_for_both_themes`, `test_all_pages_present`, `test_navigate_every_page`, `test_theme_toggle_does_not_crash`
 
-- [ ] **465. [`tests/test_premium_hidpi.py`](tests/test_premium_hidpi.py)** — **✓ PASS** (154 LOC)
+- [ ] **466. [`tests/test_premium_hidpi.py`](tests/test_premium_hidpi.py)** — **✓ PASS** (154 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Functions (8)**: `app`, `window`, `test_card_has_no_persistent_graphics_effect`, `test_hero_buttons_and_gauge_have_no_persistent_effect`, `test_attach_glow_does_not_attach_blurring_effect`, `test_gauge_paints_with_glow_enabled`
 
-- [ ] **466. [`tests/test_premium_tokens.py`](tests/test_premium_tokens.py)** — **✓ PASS** (210 LOC)
+- [ ] **467. [`tests/test_premium_tokens.py`](tests/test_premium_tokens.py)** — **✓ PASS** (210 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Functions (14)**: `test_elevation_has_four_ordered_levels`, `test_elevation_named_levels_present`, `test_elevation_style_returns_valid_style`, `test_elevation_style_accepts_int_level`, `test_glass_translucency_only_at_higher_levels`, `test_depth_monotonic_for_builtin_themes`
 
-- [ ] **467. [`tests/test_process_meta.py`](tests/test_process_meta.py)** — **✓ PASS** (75 LOC)
+- [ ] **468. [`tests/test_process_meta.py`](tests/test_process_meta.py)** — **✓ PASS** (75 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (4)**: `TestKnown` (3 methods), `TestDescribe` (3 methods), `TestFileDescriptionCache` (2 methods), `TestRealSystemExeIfWindows` (1 methods)
 
-- [ ] **468. [`tests/test_production_hardening.py`](tests/test_production_hardening.py)** — **✓ PASS** (367 LOC)
+- [ ] **469. [`tests/test_production_hardening.py`](tests/test_production_hardening.py)** — **✓ PASS** (367 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (7)**: `TestExclusionsStore` (3 methods), `TestScannerExclusions` (2 methods), `TestCleanCancel` (1 methods), `TestDisambiguation` (1 methods)
   - **Functions (1)**: `fake_env`
 
-- [ ] **469. [`tests/test_registry_cleaner_ai.py`](tests/test_registry_cleaner_ai.py)** — **✓ PASS** (487 LOC)
+- [ ] **470. [`tests/test_registry_cleaner_ai.py`](tests/test_registry_cleaner_ai.py)** — **✓ PASS** (487 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Functions (33)**: `test_resolve_target_keeps_unquoted_path_with_spaces`, `test_resolve_target_strips_quotes_and_keeps_args_out`, `test_resolve_target_expands_system_root_prefix`, `test_target_candidates_includes_full_path_first_then_prefixes`, `test_target_candidates_anchors_relative_paths_at_system_roots`, `test_verifiable_true_for_missing_but_listable_parent`
 
-- [ ] **470. [`tests/test_release_infra.py`](tests/test_release_infra.py)** — **✓ PASS** (125 LOC)
+- [ ] **471. [`tests/test_release_infra.py`](tests/test_release_infra.py)** — **✓ PASS** (125 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (3)**: `TestParseVersion` (2 methods), `TestCheckForUpdate` (5 methods), `TestCrashReport` (1 methods)
 
-- [ ] **471. [`tests/test_restore_point.py`](tests/test_restore_point.py)** — **✓ PASS** (135 LOC)
+- [ ] **472. [`tests/test_restore_point.py`](tests/test_restore_point.py)** — **✓ PASS** (135 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (4)**: `TestResultSemantics` (4 methods), `TestOutputParsing` (6 methods), `TestWmiTimeParsing` (3 methods), `TestCapabilities` (5 methods)
 
-- [ ] **472. [`tests/test_s3_fifo.py`](tests/test_s3_fifo.py)** — **✓ PASS** (137 LOC)
+- [ ] **473. [`tests/test_s3_fifo.py`](tests/test_s3_fifo.py)** — **✓ PASS** (137 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Functions (10)**: `test_basic_put_get`, `test_update_existing_increments_freq`, `test_ghost_promotion`, `test_freq_bumps_and_main_reinsertion`, `test_capacity_respected`, `test_delete_and_clear`
 
-- [ ] **473. [`tests/test_scanner.py`](tests/test_scanner.py)** — **✓ PASS** (48 LOC)
+- [ ] **474. [`tests/test_scanner.py`](tests/test_scanner.py)** — **✓ PASS** (48 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Functions (4)**: `test_scanner_finds_empty_files`, `test_scanner_finds_empty_dirs`, `test_scanner_exclude_patterns`, `test_scanner_stats`
 
-- [ ] **474. [`tests/test_search_index_optimizer.py`](tests/test_search_index_optimizer.py)** — **✓ PASS** (29 LOC)
+- [ ] **475. [`tests/test_search_index_optimizer.py`](tests/test_search_index_optimizer.py)** — **✓ PASS** (29 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Functions (2)**: `test_search_index_get_status`, `test_operation_result_structure`
 
-- [ ] **475. [`tests/test_secrets_page.py`](tests/test_secrets_page.py)** — **✓ PASS** (70 LOC)
+- [ ] **476. [`tests/test_secrets_page.py`](tests/test_secrets_page.py)** — **✓ PASS** (70 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Functions (3)**: `test_run_scan_detects_planted_aws_key`, `test_worker_emits_offline`, `test_secrets_scan_makes_no_network_calls`
 
-- [ ] **476. [`tests/test_secure_delete_batch.py`](tests/test_secure_delete_batch.py)** — **✓ PASS** (126 LOC)
+- [ ] **477. [`tests/test_secure_delete_batch.py`](tests/test_secure_delete_batch.py)** — **✓ PASS** (126 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Functions (6)**: `test_batch_recycle_removes_all_and_reports_progress`, `test_batch_recycle_cancel_stops_early`, `test_batch_recycle_reports_freed_bytes`, `test_fast_delete_batch_uses_known_sizes_and_removes_files`, `test_fast_delete_batch_cancel_stops_early`, `test_fast_delete_batch_dry_run_deletes_nothing`
 
-- [ ] **477. [`tests/test_secure_shredder.py`](tests/test_secure_shredder.py)** — **✓ PASS** (993 LOC)
+- [ ] **478. [`tests/test_secure_shredder.py`](tests/test_secure_shredder.py)** — **✓ PASS** (993 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (18)**: `TestShredStandard` (10 methods), `TestStorageType` (2 methods), `TestShredResult` (5 methods), `TestSecureShredderInit` (2 methods)
 
-- [ ] **478. [`tests/test_security_fixes.py`](tests/test_security_fixes.py)** — **✓ PASS** (62 LOC)
+- [ ] **479. [`tests/test_security_fixes.py`](tests/test_security_fixes.py)** — **✓ PASS** (62 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (2)**: `TestCustomCommandHardening` (3 methods), `TestAppUninstallerImportSafe` (2 methods)
 
-- [ ] **479. [`tests/test_shutdown_safety.py`](tests/test_shutdown_safety.py)** — **✓ PASS** (250 LOC)
+- [ ] **480. [`tests/test_shutdown_safety.py`](tests/test_shutdown_safety.py)** — **✓ PASS** (250 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (2)**: `_CooperativeWorker` (3 methods), `_StubbornWorker` (3 methods)
   - **Functions (6)**: `app`, `window`, `test_cooperative_worker_lets_close_return_promptly`, `test_uncooperative_worker_is_detached_not_terminated`, `test_shutdown_workers_never_calls_terminate`, `test_multiple_workers_shut_down_within_one_shared_deadline`
 
-- [ ] **480. [`tests/test_sidebar_chevrons_and_icons.py`](tests/test_sidebar_chevrons_and_icons.py)** — **✓ PASS** (97 LOC)
+- [ ] **481. [`tests/test_sidebar_chevrons_and_icons.py`](tests/test_sidebar_chevrons_and_icons.py)** — **✓ PASS** (97 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Functions (4)**: `app`, `test_sidebar_group_headers_have_valid_chevrons_and_escaped_titles`, `test_sidebar_expand_collapse_preserves_chevrons`, `test_all_pages_have_unique_icons_with_uniform_palette_tint`
 
-- [ ] **481. [`tests/test_sieve_cache.py`](tests/test_sieve_cache.py)** — **✓ PASS** (101 LOC)
+- [ ] **482. [`tests/test_sieve_cache.py`](tests/test_sieve_cache.py)** — **✓ PASS** (101 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Functions (5)**: `test_sieve_basic_put_get`, `test_sieve_eviction_order`, `test_sieve_stats_and_hit_ratio`, `test_sieve_delete_and_clear`, `test_sieve_concurrency_safety`
 
-- [ ] **482. [`tests/test_smart_suggest.py`](tests/test_smart_suggest.py)** — **✓ PASS** (164 LOC)
+- [ ] **483. [`tests/test_smart_suggest.py`](tests/test_smart_suggest.py)** — **✓ PASS** (164 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (3)**: `TestFeaturize` (2 methods), `TestLearning` (5 methods), `TestBoundsAndPersistence` (4 methods)
 
-- [ ] **483. [`tests/test_srum_bam_cleaner.py`](tests/test_srum_bam_cleaner.py)** — **✓ PASS** (57 LOC)
+- [ ] **484. [`tests/test_srum_bam_cleaner.py`](tests/test_srum_bam_cleaner.py)** — **✓ PASS** (57 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Functions (4)**: `test_filetime_conversion`, `test_srum_query`, `test_srum_bam_scan`, `test_clean_bam_empty`
 
-- [ ] **484. [`tests/test_staging_shelf.py`](tests/test_staging_shelf.py)** — **✓ PASS** (504 LOC)
+- [ ] **485. [`tests/test_staging_shelf.py`](tests/test_staging_shelf.py)** — **✓ PASS** (504 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Functions (15)**: `qapp`, `test_nexus_clipboard_cut_copy_clear`, `test_staging_shelf_widget_basic`, `test_staging_shelf_paste_requested_signal`, `test_preview_pane_with_staging_shelf`, `test_file_table_model_drag_mime_data`
 
-- [ ] **485. [`tests/test_startup_imports.py`](tests/test_startup_imports.py)** — **✓ PASS** (191 LOC)
+- [ ] **486. [`tests/test_startup_imports.py`](tests/test_startup_imports.py)** — **✓ PASS** (191 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Functions (12)**: `test_package_import_does_not_load_heavy_dependencies`, `test_engine_import_does_not_load_recycle_bin_stack`, `test_engine_public_api_still_imports`, `test_legacy_convenience_exports_still_resolve`, `test_version_is_importable_without_side_effects`, `test_unknown_attribute_still_raises_attribute_error`
 
-- [ ] **486. [`tests/test_startup_optimizer.py`](tests/test_startup_optimizer.py)** — **✓ PASS** (864 LOC)
+- [ ] **487. [`tests/test_startup_optimizer.py`](tests/test_startup_optimizer.py)** — **✓ PASS** (864 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (15)**: `TestAppType` (2 methods), `TestStartupEntry` (5 methods), `TestInit` (2 methods), `TestConfigPath` (2 methods)
 
-- [ ] **487. [`tests/test_storage_sense.py`](tests/test_storage_sense.py)** — **✓ PASS** (75 LOC)
+- [ ] **488. [`tests/test_storage_sense.py`](tests/test_storage_sense.py)** — **✓ PASS** (75 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (3)**: `TestInterpret` (6 methods), `TestValidation` (2 methods), `TestSupport` (2 methods)
 
-- [ ] **488. [`tests/test_system_info.py`](tests/test_system_info.py)** — **✓ PASS** (46 LOC)
+- [ ] **489. [`tests/test_system_info.py`](tests/test_system_info.py)** — **✓ PASS** (46 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Functions (5)**: `test_platform_info_has_core_fields`, `test_snapshot_structure`, `test_memory_info_sane`, `test_disk_info_entries_sane`, `test_cpu_info_sane`
 
-- [ ] **489. [`tests/test_system_repair.py`](tests/test_system_repair.py)** — **✓ PASS** (125 LOC)
+- [ ] **490. [`tests/test_system_repair.py`](tests/test_system_repair.py)** — **✓ PASS** (125 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (5)**: `TestSfcParse` (4 methods), `TestDismParse` (4 methods), `TestChkdskParse` (3 methods), `TestGating` (3 methods)
 
-- [ ] **490. [`tests/test_tablemodel.py`](tests/test_tablemodel.py)** — **✓ PASS** (347 LOC)
+- [ ] **491. [`tests/test_tablemodel.py`](tests/test_tablemodel.py)** — **✓ PASS** (347 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Functions (21)**: `app`, `binding`, `test_model_reports_shape_from_records_and_columns`, `test_display_supports_field_names_and_callables`, `test_missing_field_renders_empty_not_none`, `test_cells_are_read_only`
 
-- [ ] **491. [`tests/test_tabs_gating.py`](tests/test_tabs_gating.py)** — **✓ PASS** (531 LOC)
+- [ ] **492. [`tests/test_tabs_gating.py`](tests/test_tabs_gating.py)** — **✓ PASS** (531 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Functions (16)**: `app`, `make_tab`, `test_free_space_checkbox_disabled_on_free_tier`, `test_free_space_checkbox_enabled_when_entitled`, `test_multipass_spinbox_capped_without_entitlement`, `test_multipass_allowed_keeps_full_range`
 
-- [ ] **492. [`tests/test_task_manager.py`](tests/test_task_manager.py)** — **✓ PASS** (171 LOC)
+- [ ] **493. [`tests/test_task_manager.py`](tests/test_task_manager.py)** — **✓ PASS** (171 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (3)**: `TestSnapshot` (7 methods), `TestMemoryReconciliation` (4 methods), `TestEndProcess` (2 methods)
   - **Functions (2)**: `tm`, `test_singleton_instance`
 
-- [ ] **493. [`tests/test_temp_cleaner.py`](tests/test_temp_cleaner.py)** — **✓ PASS** (438 LOC)
+- [ ] **494. [`tests/test_temp_cleaner.py`](tests/test_temp_cleaner.py)** — **✓ PASS** (438 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (4)**: `TestScan` (7 methods), `TestTotals` (2 methods), `TestClean` (5 methods), `TestCleanTempCLI` (4 methods)
   - **Functions (1)**: `temp_roots`
 
-- [ ] **494. [`tests/test_utils.py`](tests/test_utils.py)** — **✓ PASS** (16 LOC)
+- [ ] **495. [`tests/test_utils.py`](tests/test_utils.py)** — **✓ PASS** (16 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Functions (1)**: `test_normalize_path`
 
-- [ ] **495. [`tests/test_vhdx_manager.py`](tests/test_vhdx_manager.py)** — **✓ PASS** (334 LOC)
+- [ ] **496. [`tests/test_vhdx_manager.py`](tests/test_vhdx_manager.py)** — **✓ PASS** (334 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Functions (19)**: `fake_vhdx`, `test_saving_is_unknown_without_a_guest_measurement`, `test_saving_is_host_size_minus_guest_usage`, `test_saving_never_goes_negative`, `test_running_disk_names_the_blocking_process`, `test_missing_file_is_reported_not_offered`
 
-- [ ] **496. [`tests/test_video_duplicate_finder.py`](tests/test_video_duplicate_finder.py)** — **✓ PASS** (158 LOC)
+- [ ] **497. [`tests/test_video_duplicate_finder.py`](tests/test_video_duplicate_finder.py)** — **✓ PASS** (158 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Functions (9)**: `test_fingerprint_is_list`, `test_identical_videos_compare_high`, `test_different_videos_compare_low`, `test_video_compare_empty`, `test_video_compare_identity`, `test_finder_groups_identical_videos`
 
-- [ ] **497. [`tests/test_wan_audit.py`](tests/test_wan_audit.py)** — **✓ PASS** (234 LOC)
+- [ ] **498. [`tests/test_wan_audit.py`](tests/test_wan_audit.py)** — **✓ PASS** (234 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (1)**: `SyntheticAuditor` (6 methods)
   - **Functions (8)**: `test_public_ip_classification`, `test_ssrf_guard_requires_literal_private_host_on_local_network`, `test_xml_rejects_entities_and_excessive_depth`, `test_igd_control_url_is_resolved_and_kept_local`, `test_igd_rejects_control_url_to_other_network`, `test_soap_allowlist_and_mapping_parser`
 
-- [ ] **498. [`tests/test_winapp2_cleaner.py`](tests/test_winapp2_cleaner.py)** — **✓ PASS** (97 LOC)
+- [ ] **499. [`tests/test_winapp2_cleaner.py`](tests/test_winapp2_cleaner.py)** — **✓ PASS** (97 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Functions (4)**: `test_winapp2_cleaner_initialization`, `test_winapp2_expand_vars`, `test_winapp2_path_safety`, `test_winapp2_scan_and_clean`
 
-- [ ] **499. [`tests/test_windows_update.py`](tests/test_windows_update.py)** — **✓ PASS** (95 LOC)
+- [ ] **500. [`tests/test_windows_update.py`](tests/test_windows_update.py)** — **✓ PASS** (95 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (3)**: `TestPendingParse` (5 methods), `TestHistoryParse` (3 methods), `TestGating` (4 methods)

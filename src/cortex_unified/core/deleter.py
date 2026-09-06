@@ -56,6 +56,16 @@ class Deleter:
                         "error": f"Security check failed: {reason}"
                     })
                     return False
+
+                from cortex_unified.engine.guard import PathGuard
+                guard_verdict = PathGuard().check(filepath)
+                if not guard_verdict.safe:
+                    self.errors.append({
+                        "type": "file",
+                        "path": str(filepath),
+                        "error": f"PathGuard safety check failed: {guard_verdict.reason}"
+                    })
+                    return False
             
             if self.dry_run:
                 self.deleted_items.append({
@@ -97,6 +107,38 @@ class Deleter:
         must guarantee the directory has already been emptied.
         """
         try:
+            if not self.dry_run:
+                # 1. Refuse directory junctions and symlinks to prevent traversal attacks
+                import os
+                if os.path.islink(str(dirpath)) or getattr(dirpath, "is_junction", lambda: False)():
+                    self.errors.append({
+                        "type": "directory",
+                        "path": str(dirpath),
+                        "error": "Security check failed: directory is a reparse point/junction/symlink",
+                    })
+                    return False
+
+                # 2. Check deletion safety
+                is_safe, reason = check_deletion_safety(dirpath, allow_system_files=False)
+                if not is_safe:
+                    self.errors.append({
+                        "type": "directory",
+                        "path": str(dirpath),
+                        "error": f"Security check failed: {reason}",
+                    })
+                    return False
+
+                # 3. Check engine PathGuard
+                from cortex_unified.engine.guard import PathGuard
+                guard_verdict = PathGuard().check(dirpath)
+                if not guard_verdict.safe:
+                    self.errors.append({
+                        "type": "directory",
+                        "path": str(dirpath),
+                        "error": f"PathGuard safety check failed: {guard_verdict.reason}",
+                    })
+                    return False
+
             if self.dry_run:
                 self.deleted_items.append({
                     "type": "directory",

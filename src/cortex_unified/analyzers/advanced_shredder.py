@@ -5,9 +5,10 @@ classic DoD 5220.22-M disk sanitization standard. As with any overwrite scheme t
 physically meaningful on rotational media; on SSD/NVMe wear-leveling can leave original
 blocks recoverable (see ``engine.secure_delete`` for the storage-aware path).
 
-SAFETY: Callers MUST vet every path through
-:func:`~cortex_unified.core.security.check_deletion_safety` (or PathGuard)
-before invoking it.
+SAFETY: Self-enforcing guard. Every path is automatically vetted through
+:func:`~cortex_unified.core.security.check_deletion_safety` and
+:class:`~cortex_unified.engine.guard.PathGuard` inside all shredding primitives.
+Reparse points and directory junctions are strictly refused.
 """
 
 import enum
@@ -89,9 +90,19 @@ class AdvancedShredder:
             self.logger.error(f"File not found: {file_path}")
             return False
 
+        if os.path.islink(file_path) or (hasattr(os.path, "isjunction") and os.path.isjunction(file_path)):
+            self.logger.warning("Refusing to shred symlink/junction file target: %s", file_path)
+            return False
+
         safe, reason = check_deletion_safety(file_path)
         if not safe:
             self.logger.warning("Shred blocked by safety guard: %s (%s)", file_path, reason)
+            return False
+
+        from cortex_unified.engine.guard import PathGuard
+        guard_verdict = PathGuard().check(file_path)
+        if not guard_verdict.safe:
+            self.logger.warning("Shred blocked by PathGuard: %s (%s)", file_path, guard_verdict.reason)
             return False
 
         # Resolve standard patterns
@@ -160,7 +171,9 @@ class AdvancedShredder:
         passes: int | None = None,
         method: Union[ShredMethod, str] = ShredMethod.DOD_5220_22_M,
     ) -> bool:
-        """Recursively shreds a directory and its contents.
+        """Recursively shreds a directory and its contents with self-enforced safety.
+
+        Refuses to traverse or shred directory junctions, symlinks, or protected system paths.
 
         Args:
             dir_path (str): Filesystem path to the target file or directory.
@@ -170,8 +183,27 @@ class AdvancedShredder:
         Returns:
             bool: True if the operation succeeded, False otherwise.
         """
+        if not os.path.exists(dir_path):
+            self.logger.error("Directory not found: %s", dir_path)
+            return False
+
+        if os.path.islink(dir_path) or (hasattr(os.path, "isjunction") and os.path.isjunction(dir_path)):
+            self.logger.warning("Refusing to shred directory junction/symlink: %s", dir_path)
+            return False
+
+        safe, reason = check_deletion_safety(dir_path, allow_system_files=False)
+        if not safe:
+            self.logger.warning("Directory shred blocked by safety guard: %s (%s)", dir_path, reason)
+            return False
+
+        from cortex_unified.engine.guard import PathGuard
+        guard_verdict = PathGuard().check(dir_path)
+        if not guard_verdict.safe:
+            self.logger.warning("Directory shred blocked by PathGuard: %s (%s)", dir_path, guard_verdict.reason)
+            return False
+
         success = True
-        for root, dirs, files in os.walk(dir_path, topdown=False):
+        for root, dirs, files in os.walk(dir_path, topdown=False, followlinks=False):
             for file in files:
                 filepath = os.path.join(root, file)
                 if not self.shred_file(filepath, passes=passes, method=method):
@@ -179,6 +211,9 @@ class AdvancedShredder:
 
             for d in dirs:
                 dirpath = os.path.join(root, d)
+                if os.path.islink(dirpath) or (hasattr(os.path, "isjunction") and os.path.isjunction(dirpath)):
+                    self.logger.warning("Skipping junction/symlink directory: %s", dirpath)
+                    continue
                 try:
                     os.rmdir(dirpath)
                 except OSError:

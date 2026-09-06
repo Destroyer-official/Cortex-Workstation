@@ -3,9 +3,9 @@
 Finds uninstall entries whose install path or uninstaller is gone, Run/RunOnce
 values pointing at missing executables, file associations whose handler no
 longer exists, and SharedDLLs values with a zero reference count and no file
-on disk. Deletion via ``winreg`` is irreversible, so :meth:`RegistryCleaner.
-backup_registry` should run first - though it only exports the HKCU Uninstall
-key, so HKLM deletions have no restore path.
+on disk. All mutations enforce pre-deletion rollback backup verification
+(fail-closed), protected subsystem key exclusions, and full rollback via
+:meth:`RegistryCleaner.restore_backup`.
 """
 
 import os
@@ -16,6 +16,19 @@ import logging
 from typing import List, Dict, Optional
 
 from ..core.config import Config
+
+PROTECTED_REGISTRY_KEYS = [
+    r"Winlogon",
+    r"CurrentControlSet\Services",
+    r"CurrentControlSet\Control\Lsa",
+    r"CurrentControlSet\Control\Session Manager",
+    r"KnownDLLs",
+    r"BCD00000000",
+    r"SAM",
+    r"SECURITY",
+    r"Software\Microsoft\Windows\CurrentVersion\Policies",
+    r"Software\Microsoft\Windows NT\CurrentVersion\Winlogon",
+]
 
 
 class RegistryCleaner:
@@ -289,18 +302,17 @@ class RegistryCleaner:
     # ──────────────────────────────────────────────────────────────────
 
     def backup_registry(self, backup_dir: str = None) -> Optional[str]:
-        """Export the HKCU Uninstall key to a .reg file for safety.
-
-        Scope is deliberately narrow: ``reg export`` of HKLM trees needs
-        elevation, so entries under HKLM have no restore path from here.
+        """Export registry uninstall branches (both HKCU and HKLM) to .reg files for safety and rollback.
         """
         if not backup_dir:
             backup_dir = os.path.join(os.environ.get("USERPROFILE", "."), "CortexCleanerBackups")
         os.makedirs(backup_dir, exist_ok=True)
 
         ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-        backup_file = os.path.join(backup_dir, f"registry_backup_{ts}.reg")
+        backup_file = os.path.join(backup_dir, f"registry_backup_hkcu_{ts}.reg")
+        hklm_backup_file = os.path.join(backup_dir, f"registry_backup_hklm_{ts}.reg")
 
+        exported_any = False
         try:
             result = subprocess.run(
                 ["reg", "export",
@@ -308,28 +320,44 @@ class RegistryCleaner:
                  backup_file, "/y"],
                 capture_output=True, text=True, timeout=30,
             )
-            if result.returncode == 0:
+            if result.returncode == 0 and os.path.exists(backup_file) and os.path.getsize(backup_file) > 0:
                 self.backup_files.append(backup_file)
-                self.logger.info("Registry backup saved: %s", backup_file)
-                return backup_file
+                self.logger.info("HKCU Registry backup saved: %s", backup_file)
+                exported_any = True
             else:
-                self.logger.error("reg export failed: %s", result.stderr)
-                return None
+                self.logger.warning("reg export HKCU failed: %s", result.stderr)
         except Exception as exc:
-            self.logger.error("Backup failed: %s", exc)
-            return None
+            self.logger.warning("HKCU backup failed: %s", exc)
+
+        try:
+            result_hklm = subprocess.run(
+                ["reg", "export",
+                 r"HKLM\Software\Microsoft\Windows\CurrentVersion\Uninstall",
+                 hklm_backup_file, "/y"],
+                capture_output=True, text=True, timeout=30,
+            )
+            if result_hklm.returncode == 0 and os.path.exists(hklm_backup_file) and os.path.getsize(hklm_backup_file) > 0:
+                self.backup_files.append(hklm_backup_file)
+                self.logger.info("HKLM Registry backup saved: %s", hklm_backup_file)
+                exported_any = True
+        except Exception:
+            pass
+
+        if exported_any:
+            return backup_file if os.path.exists(backup_file) else hklm_backup_file
+        return None
 
     def backup_entry(self, entry: Dict, backup_dir: Optional[str] = None) -> Optional[str]:
         """Export a specific registry entry to a .reg file before deletion for instant rollback.
 
-        Creates a backup archive or export of target resources, reporting the final output location upon success.
+        Creates a verified backup export of target key/values, returning the path on success.
 
         Args:
             entry (Dict): The entry parameter.
             backup_dir (Optional[str]): The backup dir parameter.
 
         Returns:
-            Optional[str]: Formatted string or path.
+            Optional[str]: Formatted path on success, None on failure.
         """
         hive = entry.get("hive", "")
         path = entry.get("path", "")
@@ -356,17 +384,48 @@ class RegistryCleaner:
                 ["reg", "export", target_key, backup_file, "/y"],
                 capture_output=True, text=True, timeout=15,
             )
-            if res.returncode == 0:
+            if res.returncode == 0 and os.path.exists(backup_file) and os.path.getsize(backup_file) > 0:
                 self.backup_files.append(backup_file)
                 self.logger.info("Created rollback backup for %s at %s", target_key, backup_file)
                 return backup_file
+            else:
+                self.logger.warning("Failed to export valid non-empty rollback key %s (code %s)", target_key, res.returncode)
         except Exception as exc:
             self.logger.debug("Failed to export rollback key %s: %s", target_key, exc)
         return None
 
+    def restore_backup(self, backup_file: str) -> bool:
+        """Restore a registry backup (.reg file) using reg import.
+
+        Args:
+            backup_file (str): Path to the .reg file to restore.
+
+        Returns:
+            bool: True if import succeeded, False otherwise.
+        """
+        if not os.path.exists(backup_file):
+            self.logger.error("Backup file not found for restore: %s", backup_file)
+            return False
+
+        try:
+            res = subprocess.run(
+                ["reg", "import", backup_file],
+                capture_output=True, text=True, timeout=30,
+            )
+            if res.returncode == 0:
+                self.logger.info("Successfully restored registry backup from %s", backup_file)
+                return True
+            else:
+                self.logger.error("reg import failed (%s): %s", res.returncode, res.stderr)
+                return False
+        except Exception as exc:
+            self.logger.error("Exception while restoring registry backup %s: %s", backup_file, exc)
+            return False
+
     def remove_orphaned_entry(self, entry: Dict, auto_backup: bool = True) -> bool:
         """Delete an orphaned registry entry with auto-backup for rollback.
-        
+
+        Enforces protected subsystem exclusions and fail-closed backup verification.
         Requires appropriate permissions.
         """
         import winreg
@@ -382,8 +441,21 @@ class RegistryCleaner:
         if not hive or not path:
             return False
 
+        # 1. Enforce protected Windows subsystem key exclusions
+        for protected in PROTECTED_REGISTRY_KEYS:
+            if protected.lower() in path.lower():
+                self.logger.critical("Refusing to delete protected system registry key: %s\\%s", entry.get("hive", ""), path)
+                return False
+
+        # 2. Enforce pre-mutation rollback backup (fail-closed)
         if auto_backup:
-            self.backup_entry(entry)
+            backup_path = self.backup_entry(entry)
+            if not backup_path or not os.path.exists(backup_path) or os.path.getsize(backup_path) == 0:
+                self.logger.error(
+                    "Deletion aborted: failed to create and verify pre-deletion rollback backup for %s\\%s (fail-closed)",
+                    entry.get("hive", ""), path
+                )
+                return False
 
         try:
             if entry_type in ("uninstall_entry", "file_association"):

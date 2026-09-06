@@ -37,12 +37,23 @@ jobs:
           & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer\cortex_cleaner.iss
           Get-ChildItem installer\installer_output\
 
-      - name: Upload Binaries to GitHub Release
+      - name: Generate SHA-256 Checksums
+        run: |
+          Get-ChildItem -Path dist/*.zip, installer/installer_output/*.exe | ForEach-Object {
+            $hash = (Get-FileHash -Path $_.FullName -Algorithm SHA256).Hash.ToLower()
+            $shaFile = "$($_.FullName).sha256"
+            "$hash *$($_.Name)" | Out-File -FilePath $shaFile -Encoding ascii
+            Write-Host "Generated: $shaFile ($hash)"
+          }
+
+      - name: Upload Binaries and Checksums to GitHub Release
         if: github.event_name == 'release' || github.ref_type == 'tag'
         uses: softprops/action-gh-release@v2
         with:
           files: |
             dist/*.zip
+            dist/*.zip.sha256
             installer/installer_output/*.exe
+            installer/installer_output/*.exe.sha256
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

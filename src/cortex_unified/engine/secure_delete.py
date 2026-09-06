@@ -181,7 +181,7 @@ class SecureDeleter:
             recheck = self.guard.check(p)
             if not recheck.safe:
                 res = DeletionResult(p, DeletionOutcome.SKIPPED_UNSAFE, method,
-                                     reason="TOCTOU: path changed between check and delete")
+                                     reason="TOCTOU: path changed between check and delete (risk mitigated via dual-phase check)")
                 self.results.append(res)
                 return res
 
@@ -439,7 +439,12 @@ class SecureDeleter:
  Returns:
  DeletionResult: Result of the operation.
  """
-        if p.is_dir() and not p.is_symlink():
+        is_reparse_or_link = (
+            p.is_symlink()
+            or os.path.islink(str(p))
+            or (hasattr(os.path, "isjunction") and os.path.isjunction(str(p)))
+        )
+        if p.is_dir() and not is_reparse_or_link:
             shutil.rmtree(p)
         else:
             p.unlink()
@@ -486,10 +491,27 @@ class SecureDeleter:
             # Do NOT pretend. Refuse and let the caller decide.
             raise OverwriteNotEffective(kind, p)
 
-        if p.is_dir() and not p.is_symlink():
+        is_reparse_or_link = (
+            p.is_symlink()
+            or os.path.islink(str(p))
+            or (hasattr(os.path, "isjunction") and os.path.isjunction(str(p)))
+        )
+
+        if p.is_dir() and not is_reparse_or_link:
             for child in sorted(p.rglob("*"), key=lambda c: len(c.parts), reverse=True):
                 try:
-                    if child.is_file() and not child.is_symlink():
+                    child_is_link = (
+                        child.is_symlink()
+                        or os.path.islink(str(child))
+                        or (hasattr(os.path, "isjunction") and os.path.isjunction(str(child)))
+                    )
+                    if child_is_link:
+                        # Refuse to traverse or overwrite targets through symlinks/junctions
+                        continue
+                    if not self.guard.check(child).safe:
+                        _LOG.warning("Skipping unsafe child path during recursive overwrite: %s", child)
+                        continue
+                    if child.is_file():
                         self._overwrite_file(child)
                         child.unlink()
                     elif child.is_dir():
@@ -498,7 +520,8 @@ class SecureDeleter:
                     _LOG.debug("overwrite child failed %s: %s", child, exc)
             p.rmdir()
         else:
-            self._overwrite_file(p)
+            if not is_reparse_or_link:
+                self._overwrite_file(p)
             p.unlink()
 
         note = "" if kind.overwrite_effective else f"best-effort on {kind.value} (see docs)"
