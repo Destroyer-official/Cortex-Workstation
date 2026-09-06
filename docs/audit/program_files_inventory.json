@@ -1,9 +1,9 @@
 {
-  "total_files": 501,
-  "passed": 501,
+  "total_files": 502,
+  "passed": 502,
   "failed": 0,
   "pass_rate_percent": 100.0,
-  "duration_seconds": 7.08,
+  "duration_seconds": 6.59,
   "python_runtime": "3.14.7",
   "files": [
     {
@@ -221,6 +221,21 @@
       "classes": [],
       "functions": [
         "parse_file"
+      ]
+    },
+    {
+      "path": "scripts/generate_sbom.py",
+      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/scripts/generate_sbom.py",
+      "loc": 121,
+      "syntax_ok": true,
+      "compile_ok": true,
+      "import_ok": true,
+      "error": null,
+      "classes": [],
+      "functions": [
+        "get_file_sha256",
+        "generate_sbom",
+        "main"
       ]
     },
     {
@@ -9814,7 +9829,7 @@
     {
       "path": "tests/test_audit_safety_hardening.py",
       "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_audit_safety_hardening.py",
-      "loc": 172,
+      "loc": 249,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -9831,7 +9846,10 @@
         "test_registry_cleaner_fail_closed_on_backup_failure",
         "test_deleter_fail_closed_when_send2trash_missing",
         "test_advanced_shredder_rejects_unknown_method",
-        "test_unmocked_real_hardware_storage_detection"
+        "test_unmocked_real_hardware_storage_detection",
+        "test_windows_update_repair_registry_phase_handles_errors",
+        "test_zero_fstring_backslashes_for_python_310_compatibility",
+        "test_docstring_coverage_100_percent"
       ]
     },
     {

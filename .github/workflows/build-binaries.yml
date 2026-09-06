@@ -37,9 +37,13 @@ jobs:
           & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer\cortex_cleaner.iss
           Get-ChildItem installer\installer_output\
 
+      - name: Generate SPDX 2.3 Software Bill of Materials (SBOM)
+        run: |
+          python scripts/generate_sbom.py
+
       - name: Generate SHA-256 Checksums
         run: |
-          Get-ChildItem -Path dist/*.zip, installer/installer_output/*.exe | ForEach-Object {
+          Get-ChildItem -Path dist/*.zip, installer/installer_output/*.exe, sbom.spdx.json | ForEach-Object {
             $hash = (Get-FileHash -Path $_.FullName -Algorithm SHA256).Hash.ToLower()
             $shaFile = "$($_.FullName).sha256"
             "$hash *$($_.Name)" | Out-File -FilePath $shaFile -Encoding ascii
@@ -55,5 +59,7 @@ jobs:
             dist/*.zip.sha256
             installer/installer_output/*.exe
             installer/installer_output/*.exe.sha256
+            sbom.spdx.json
+            sbom.spdx.json.sha256
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
