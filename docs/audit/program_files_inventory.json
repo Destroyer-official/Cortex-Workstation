@@ -1,9 +1,9 @@
 {
-  "total_files": 502,
-  "passed": 502,
+  "total_files": 503,
+  "passed": 503,
   "failed": 0,
   "pass_rate_percent": 100.0,
-  "duration_seconds": 9.04,
+  "duration_seconds": 6.54,
   "python_runtime": "3.14.7",
   "files": [
     {
@@ -241,15 +241,19 @@
     {
       "path": "scripts/installer.py",
       "abs_path": "D:/code/Main_projects/Cortex_Cleaner/scripts/installer.py",
-      "loc": 302,
+      "loc": 619,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
       "error": null,
       "classes": [
         [
+          "InstallWorker",
+          2
+        ],
+        [
           "InstallerApp",
-          8
+          11
         ]
       ],
       "functions": [
@@ -10837,6 +10841,28 @@
         "test_title_bar_controls_have_icons_and_accessible_names",
         "test_no_symbol_glyphs_remain_in_the_premium_ui",
         "test_status_note_pairs_an_icon_with_accessible_text"
+      ]
+    },
+    {
+      "path": "tests/test_installer_ui.py",
+      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_installer_ui.py",
+      "loc": 69,
+      "syntax_ok": true,
+      "compile_ok": true,
+      "import_ok": true,
+      "error": null,
+      "classes": [
+        [
+          "TestInstallerUI",
+          3
+        ],
+        [
+          "TestInstallWorker",
+          1
+        ]
+      ],
+      "functions": [
+        "app"
       ]
     },
     {

@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CORTEX // SYSTEM INFILTRATION</title>
+<style>
+  :root{
+    --bg:#0b1016; --line:#1c2a33;
+    --cyan:#00e5ff; --green:#39ff88; --yellow:#ffd60a;
+    --red:#ff4757; --dim:#5b7080;
+  }
+  *{box-sizing:border-box; margin:0; padding:0; user-select:none;}
+  html, body{
+    background:transparent;
+    width:100%; height:100%;
+    overflow:hidden;
+    font-family:"Cascadia Code","JetBrains Mono","Fira Code",Consolas,monospace;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .cortex{
+    width:100%; height:100%; background:linear-gradient(#0d1319,#0a0f14);
+    border:1px solid var(--line); border-radius:8px; position:relative;
+    overflow:hidden; padding:4px 8px;
+    box-shadow:0 10px 30px #0009, inset 0 0 40px #0006;
+  }
+  .crt{position:absolute; inset:0; pointer-events:none; z-index:40;
+    background:repeating-linear-gradient(to bottom, transparent 0 2px, #0002 2px 3px);
+    animation:crt 6s infinite; mix-blend-mode:overlay;}
+  @keyframes crt{0%,100%{opacity:.55}50%{opacity:.4}}
+
+  .world{position:relative; width:100%; height:100%; min-height:160px;
+    background:
+      repeating-linear-gradient(to right, #ffffff05 0 1px, transparent 1px 48px),
+      repeating-linear-gradient(to bottom, #ffffff04 0 1px, transparent 1px 48px);}
+  .lane{position:absolute; left:2%; right:2%; top:0; bottom:0}
+
+  .rail{position:absolute; left:0; right:0; bottom:52px; height:5px;
+    background:#132029; border-radius:3px; box-shadow:inset 0 0 4px #000}
+  .trail{position:absolute; left:0; bottom:52px; height:5px; width:0%;
+    background:linear-gradient(90deg,#005f6b,var(--cyan));
+    box-shadow:0 0 14px #0ff9, 0 0 34px #0ff5; border-radius:3px; z-index:2}
+  .trail::after{content:""; position:absolute; inset:0; border-radius:3px;
+    background:repeating-linear-gradient(90deg,#fff4 0 6px,transparent 6px 14px);
+    animation:flow .5s linear infinite}
+  @keyframes flow{to{background-position:14px 0}}
+  .trail .scan{position:absolute; top:-12px; width:2px; height:28px; left:0; opacity:0;
+    background:linear-gradient(to bottom, transparent, #fff, transparent)}
+  .verifying .trail .scan{opacity:1; animation:scanmove 1.2s linear infinite}
+  @keyframes scanmove{from{left:0}to{left:100%}}
+
+  .complete .trail{height:7px; bottom:51px;
+    background:linear-gradient(90deg,#8ff,#eafffa,#8ff,#bff);
+    background-size:300% 100%; animation:shimmer 3.5s linear infinite;
+    box-shadow:0 0 18px #affc, 0 0 48px #8ff6;}
+  .complete .trail::after{display:none}
+  @keyframes shimmer{from{background-position:0 0}to{background-position:300% 0}}
+
+  .obs{position:absolute; bottom:58px; transform:translateX(-50%); width:64px; text-align:center; z-index:3}
+  .obs-box{border:1px solid var(--red); background:#160c10; border-radius:4px; padding:4px 2px;
+    box-shadow:0 0 10px #f004; color:var(--red); font-size:8px; letter-spacing:1px}
+  .obs-state{font-size:7px; color:var(--dim); margin-top:3px; height:9px; letter-spacing:1px}
+  .obs.scanning .obs-box{border-color:var(--yellow); color:var(--yellow); box-shadow:0 0 12px #ffd60a44; animation:blink .3s infinite}
+  .obs.breaching .obs-box{animation:shake .12s infinite}
+  .obs.breached .obs-box{border-color:var(--green); color:var(--green); background:#07130d; box-shadow:0 0 10px #39ff8833}
+  .obs.breached .obs-state{color:var(--green)}
+  @keyframes blink{50%{opacity:.55}}
+  @keyframes shake{25%{transform:translateX(-1px)}75%{transform:translateX(1px)}}
+
+  .drone{position:absolute; bottom:82px; width:84px; height:40px; transform:translateX(-50%);
+    z-index:5; animation:bob 2.2s ease-in-out infinite; filter:drop-shadow(0 0 12px #0ff8)}
+  @keyframes bob{50%{transform:translateX(-50%) translateY(-5px)}}
+  .drone .dbody{position:absolute; left:14px; right:14px; top:16px; height:14px; border-radius:4px;
+    background:linear-gradient(#16323e,#0a161d); border:1px solid #0ff7; box-shadow:inset 0 0 8px #0ff5}
+  .drone .dcore{position:absolute; inset:3px 5px; border-radius:2px;
+    background:repeating-linear-gradient(to right, var(--cyan) 0 3px, #0ff3 3px 5px);
+    animation:blink 1s infinite}
+  .drone .rotor{position:absolute; top:6px; width:28px; height:3px; border-radius:50%;
+    background:#bffcff; box-shadow:0 0 8px var(--cyan); animation:rotor .16s infinite}
+  .drone .rl{left:0}.drone .rr{right:0}
+  .drone .stem{position:absolute; top:9px; width:2px; height:8px; background:#33505c}
+  .drone .sl{left:13px}.drone .sr{right:13px}
+  .drone .leg{position:absolute; bottom:2px; width:2px; height:8px; background:#33505c}
+  .drone .ll{left:22px}.drone .lr{right:22px}
+  @keyframes rotor{50%{transform:scaleX(.25)}}
+
+  .janitor{position:absolute; bottom:54px; width:60px; height:44px; transform:translateX(-50%); z-index:4}
+  .jsprite{position:absolute; left:8px; bottom:2px; animation:bob 1.6s ease-in-out infinite}
+  .broom{position:absolute; left:34px; bottom:2px; width:3px; height:34px; background:#8a6d3b;
+    transform-origin:bottom center; transform:rotate(20deg); animation:sweep .7s ease-in-out infinite}
+  .broom::after{content:""; position:absolute; bottom:-2px; left:-7px; width:17px; height:5px;
+    background:#cfd8dc; border-radius:2px}
+  @keyframes sweep{50%{transform:rotate(8deg)}}
+  .canister{position:absolute; left:-14px; bottom:2px; width:22px; height:14px; border-radius:3px;
+    background:linear-gradient(#2a3a46,#141d24); border:1px solid #3a5160}
+  .canister::before,.canister::after{content:""; position:absolute; bottom:-3px; width:6px; height:6px;
+    border-radius:50%; background:#0a0f14; border:1px solid #3a5160}
+  .canister::before{left:2px}.canister::after{right:2px}
+  .hose{position:absolute; left:18px; bottom:8px; width:26px; height:14px;
+    border:2px solid #3a5160; border-left:none; border-bottom:none; border-radius:0 12px 0 0}
+  .cup{position:absolute; left:26px; bottom:30px; font-size:10px; opacity:0; transform:scale(.3); transition:.3s}
+  .janitor.coffee .broom{animation:none; transform:rotate(14deg)}
+  .janitor.coffee .cup{opacity:1; transform:scale(1); animation:sip 1.4s infinite}
+  @keyframes sip{50%{transform:scale(1) translateY(-2px)}}
+
+  .spotlight{position:absolute; bottom:56px; width:86px; height:110px; transform:translateX(-50%);
+    clip-path:polygon(46% 0,54% 0,100% 100%,0 100%); opacity:0; transition:opacity .5s; z-index:2;
+    background:linear-gradient(to bottom, #ffd60a00, #ffd60a1e 55%, #ffd60a38)}
+  .spotlight.on{opacity:1}
+  .spotlight::before{content:""; position:absolute; top:-4px; left:50%; width:8px; height:4px;
+    transform:translateX(-50%); background:var(--yellow); border-radius:2px; box-shadow:0 0 10px var(--yellow)}
+
+  .shield{position:absolute; left:93%; bottom:54px; transform:translateX(-50%); z-index:3; text-align:center}
+  .sh-box{border:2px solid var(--yellow); background:#171204; border-radius:5px; padding:5px 6px;
+    box-shadow:0 0 14px #ffd60a44; color:var(--yellow); width:96px}
+  .sh-title{font-size:7px; letter-spacing:1px}
+  .sh-icon{font-size:16px; line-height:1.2; filter:drop-shadow(0 0 6px #ffd60a)}
+  .sh-sub{font-size:6px; letter-spacing:1px; color:#ffd60a99}
+  .shield.alert .sh-box{animation:shake .15s infinite; border-color:var(--red); color:var(--red)}
+  .cracks{position:absolute; inset:0; pointer-events:none}
+  .cracks path{stroke:#fff; stroke-width:1.4; fill:none; opacity:0}
+  .shield.k1 .c1{opacity:.9}.shield.k2 .c2{opacity:.9}.shield.k3 .c3{opacity:.9}
+  .shield.down{opacity:0; transition:opacity .3s}
+
+  .laser{position:absolute; bottom:92px; height:3px; z-index:6; opacity:0;
+    background:linear-gradient(90deg,#fff,var(--cyan)); box-shadow:0 0 12px var(--cyan)}
+  .laser.fire{opacity:1; animation:blink .1s infinite}
+
+  .fx{position:absolute; inset:0; z-index:7; pointer-events:none}
+  .float{position:absolute; transform:translateX(-50%); font-size:9px; letter-spacing:2px;
+    animation:rise 1.1s forwards; text-shadow:0 0 8px currentColor}
+  @keyframes rise{from{opacity:0; margin-bottom:0}20%{opacity:1}to{opacity:0; margin-bottom:30px}}
+  .debris{position:absolute; bottom:58px; font-size:7px; color:var(--red);
+    background:#160c10; border:1px solid #ff475755; padding:1px 3px; border-radius:2px;
+    animation:fall .6s ease-in; transition:transform .45s ease-in, opacity .45s}
+  @keyframes fall{from{transform:translateY(-70px); opacity:0}}
+  .debris.suck{transform:translate(var(--tx),var(--ty)) scale(.2)!important; opacity:0}
+  .spark{position:absolute; width:3px; height:3px; border-radius:1px; animation:sparkfly .6s forwards}
+  @keyframes sparkfly{to{transform:translate(var(--dx),var(--dy)); opacity:0}}
+  .frag{position:absolute; width:7px; height:7px; background:var(--yellow);
+    box-shadow:0 0 8px var(--yellow); animation:fragfly .8s forwards}
+  @keyframes fragfly{to{transform:translate(var(--dx),var(--dy)) rotate(300deg); opacity:0}}
+
+  .bigscan{position:absolute; left:0; right:0; top:-15%; height:36px; opacity:0; z-index:30;
+    background:linear-gradient(to bottom, transparent, #9ff4, #fff8, #9ff4, transparent)}
+  .bigscan.go{opacity:1; animation:bigscan .9s ease-in-out forwards}
+  @keyframes bigscan{to{top:110%}}
+
+  .badge{position:absolute; left:50%; top:42%; transform:translate(-50%,-50%) scale(.6); z-index:31;
+    border:1px solid var(--cyan); background:#06131acc; backdrop-filter:blur(4px);
+    padding:10px 24px; text-align:center; border-radius:6px; opacity:0; transition:.5s cubic-bezier(.2,1.6,.4,1);
+    box-shadow:0 0 24px #0ff5, inset 0 0 18px #0ff2}
+  .badge.show{opacity:1; transform:translate(-50%,-50%) scale(1)}
+  .badge .b1{color:var(--green); font-size:12px; letter-spacing:2px; text-shadow:0 0 10px #39ff88}
+  .badge .b2{color:var(--cyan); font-size:9px; letter-spacing:3px; margin-top:3px}
+  .badge .b3{color:var(--dim); font-size:8px; letter-spacing:2px; margin-top:3px}
+
+  .freeze .drone, .freeze .drone *, .freeze .janitor *{animation-play-state:paused}
+  .freeze .spotlight, .freeze .laser{opacity:0}
+</style>
+</head>
+<body>
+
+<div class="cortex" id="cortex">
+  <div class="crt"></div>
+  <div class="world" id="world">
+    <div class="lane" id="lane">
+      <div class="rail"></div>
+      <div class="trail" id="trail"><div class="scan"></div></div>
+      <div id="obstacles"></div>
+      <div class="spotlight" id="spotlight"></div>
+      <div class="shield" id="shield">
+        <div class="sh-box">
+          <div class="sh-title">WINDOWS DEFENDER</div>
+          <div class="sh-icon">🛡</div>
+          <div class="sh-sub" id="shieldSub">FIREWALL ACTIVE</div>
+        </div>
+        <svg class="cracks" viewBox="0 0 110 60">
+          <path class="c1" d="M55 8 L48 20 L58 28"/>
+          <path class="c2" d="M30 14 L40 30 L34 44"/>
+          <path class="c3" d="M80 12 L70 28 L78 46 M55 28 L50 46"/>
+        </svg>
+      </div>
+      <div class="laser" id="laser"></div>
+      <div class="drone" id="drone">
+        <div class="rotor rl"></div><div class="rotor rr"></div>
+        <div class="stem sl"></div><div class="stem sr"></div>
+        <div class="dbody"><div class="dcore"></div></div>
+        <div class="leg ll"></div><div class="leg lr"></div>
+      </div>
+      <div class="janitor" id="janitor">
+        <div class="canister"></div><div class="hose"></div>
+        <div class="jsprite" id="jsprite"></div>
+        <div class="broom"></div>
+        <div class="cup">☕</div>
+      </div>
+      <div class="fx" id="fx"></div>
+    </div>
+    <div class="bigscan" id="bigscan"></div>
+    <div class="badge" id="badge">
+      <div class="b1">✓ CORTEX</div>
+      <div class="b2">INSTALLATION COMPLETE</div>
+      <div class="b3">100% VERIFIED</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const lane=$('lane'),fx=$('fx'),trail=$('trail'),drone=$('drone'),
+      janitor=$('janitor'),spot=$('spotlight'),shield=$('shield'),
+      laser=$('laser'),world=$('world'),cortex=$('cortex'),badge=$('badge'),bigscan=$('bigscan');
+
+(function(){
+  const map=["....GGGG....","...GGGGGG...","....SSSS....","....SKKS....","....SSSS....",
+             "...TTTTTT...","..STTTTTTS..","..S.TTTT.S..","....TTTT....","....T..T....",
+             "....T..T....","....D..D...."];
+  const pal={G:'#39ff88',S:'#ffd9a0',K:'#12222b',T:'#0e7c8c',D:'#22303a'};
+  const ns='http://www.w3.org/2000/svg';
+  const svg=document.createElementNS(ns,'svg');
+  svg.setAttribute('viewBox','0 0 12 12'); svg.setAttribute('width',34); svg.setAttribute('height',34);
+  svg.style.imageRendering='pixelated';
+  map.forEach((row,y)=>[...row].forEach((ch,x)=>{const c=pal[ch];if(!c)return;
+    const r=document.createElementNS(ns,'rect');
+    r.setAttribute('x',x);r.setAttribute('y',y);r.setAttribute('width',1);r.setAttribute('height',1);
+    r.setAttribute('fill',c);svg.appendChild(r);}));
+  $('jsprite').appendChild(svg);
+})();
+
+const OBS=[{label:'REGISTRY',at:14},{label:'APPDATA',at:34},
+           {label:'START MENU',at:54},{label:'SYSTEM',at:72}];
+const DEFENDER_AT=88;
+const SPEED={infiltration:10,interrogation:8,cleanup:9,showdown:10,verification:4};
+
+OBS.forEach(o=>{
+  const el=document.createElement('div');
+  el.className='obs'; el.style.left=o.at+'%';
+  el.innerHTML='<div class="obs-box">'+o.label+'</div><div class="obs-state"></div>';
+  $('obstacles').appendChild(el); o.el=el; o.done=false;
+});
+
+const rnd=(a,b)=>a+Math.random()*(b-a);
+function floatText(x,txt,color,bottom){
+  const d=document.createElement('div'); d.className='float'; d.textContent=txt;
+  d.style.left=x+'%'; d.style.bottom=(bottom||110)+'px'; d.style.color=color;
+  fx.appendChild(d); setTimeout(()=>d.remove(),1150);
+}
+function sparks(x,n,color){
+  for(let i=0;i<n;i++){const s=document.createElement('div');s.className='spark';
+    s.style.left=x+'%'; s.style.bottom='66px'; s.style.background=color;
+    s.style.setProperty('--dx',rnd(-40,40)+'px'); s.style.setProperty('--dy',rnd(-50,10)+'px');
+    fx.appendChild(s); setTimeout(()=>s.remove(),650);}
+}
+const JUNK=['.tmp','.old','.bak','.dll','cache','.dat','.cfg'];
+const debrisList=[];
+function spawnDebris(x){
+  const d=document.createElement('div'); d.className='debris';
+  d.textContent=JUNK[Math.floor(Math.random()*JUNK.length)];
+  d.style.left=(x+rnd(-4,4))+'%'; fx.appendChild(d);
+  debrisList.push({el:d,x:x+rnd(-4,4),done:false});
+}
+
+let progress=0, shown=0, mode='run',
+    breach=null, showT=0, stallT=0, janX=2, done=false;
+
+function stageOf(p){ return p<20?'infiltration':p<50?'interrogation':
+  p<80?'cleanup':p<95?'showdown':'verification'; }
+
+function startBreach(o){
+  mode='breach'; breach={o,t:0};
+  o.el.classList.add('scanning'); o.el.querySelector('.obs-state').textContent='SCAN';
+  if(stageOf(progress)==='interrogation'){ spot.style.left=o.at+'%'; spot.classList.add('on'); }
+}
+function fireLaser(){
+  const dx=Math.min(progress,DEFENDER_AT-4);
+  laser.style.left=dx+'%'; laser.style.width=(93-dx)+'%';
+  laser.classList.add('fire'); setTimeout(()=>laser.classList.remove('fire'),220);
+  shield.classList.add('k'+(++fireLaser.n));
+  sparks(93,10,'#ffd60a');
+}
+fireLaser.n=0;
+function shatter(){
+  shield.classList.add('down'); $('shieldSub').textContent='OVERRIDDEN';
+  for(let i=0;i<14;i++){const f=document.createElement('div');f.className='frag';
+    f.style.left='93%'; f.style.bottom='76px';
+    f.style.setProperty('--dx',rnd(-70,70)+'px'); f.style.setProperty('--dy',rnd(-80,20)+'px');
+    fx.appendChild(f); setTimeout(()=>f.remove(),850);}
+  floatText(93,'FIREWALL OVERRIDE','#ffd60a',120);
+}
+function complete(){
+  if(done) return;
+  done=true; mode='done'; progress=100;
+  world.classList.add('freeze');
+  bigscan.classList.add('go');
+  setTimeout(()=>cortex.classList.add('complete'),700);
+  setTimeout(()=>badge.classList.add('show'),1050);
+}
+
+let last=performance.now();
+function loop(now){
+  const dt=Math.min(.05,(now-last)/1000); last=now;
+  const stage=stageOf(progress);
+
+  if(!done){
+    if(mode==='run'){
+      const next=OBS.find(o=>!o.done && progress>=o.at-0.5);
+      if(next){ startBreach(next); }
+      else if(progress>=DEFENDER_AT && !shatter.fired){
+        shatter.fired=true; mode='showdown'; showT=0; shield.classList.add('alert');
+      }
+      else if(progress>=99.8){ complete(); }
+    }
+    else if(mode==='stall'){
+      stallT-=dt; if(stallT<=0){ mode='run'; janitor.classList.remove('coffee'); }
+    }
+    else if(mode==='breach'){
+      breach.t+=dt; const o=breach.o, st=o.el.querySelector('.obs-state');
+      if(breach.t<0.4){ st.textContent='SCAN'; }
+      else if(breach.t<0.8){ o.el.classList.remove('scanning'); o.el.classList.add('breaching');
+        st.textContent='BREACH'; if(!breach.f1){breach.f1=1; floatText(o.at,'BREACH','#ff4757'); sparks(o.at,8,'#ff4757');} }
+      else if(breach.t<1.2){ if(!breach.f2){breach.f2=1; o.el.classList.remove('breaching');
+        o.el.classList.add('breached'); st.textContent='✓ GRANTED';
+        floatText(o.at,'ACCESS GRANTED','#39ff88'); sparks(o.at,8,'#39ff88');
+        for(let i=0;i<3;i++) spawnDebris(o.at);} }
+      else { o.done=true; spot.classList.remove('on'); breach=null; mode='run'; }
+    }
+    else if(mode==='showdown'){
+      showT+=dt;
+      if(showT>0.2 && !showT.e0){showT.e0=1; floatText(93,'TARGET ACQUIRED','#ff4757',120);}
+      if(showT>0.7 && !showT.e1){showT.e1=1; fireLaser();}
+      if(showT>1.3 && !showT.e2){showT.e2=1; fireLaser();}
+      if(showT>1.9 && !showT.e3){showT.e3=1; fireLaser();}
+      if(showT>2.5 && !showT.e4){showT.e4=1; shatter();}
+      if(showT>3.0){ mode='run'; }
+    }
+    if(stage==='verification') world.classList.add('verifying');
+  }
+
+  if(!isFinite(progress)) progress=0;
+  shown+=(progress-shown)*Math.min(1,dt*6);
+  if(!isFinite(shown)) shown=progress;
+
+  trail.style.width=shown+'%';
+  drone.style.left=Math.min(shown,90)+'%';
+  janX+=(Math.max(2,shown-10)-janX)*Math.min(1,dt*2.5);
+  janitor.style.left=janX+'%';
+  const w=lane.getBoundingClientRect().width;
+  debrisList.forEach(d=>{ if(!d.done && Math.abs(d.x-janX)<3){ d.done=true;
+    d.el.style.setProperty('--tx',((janX-d.x)/100*w)+'px');
+    d.el.style.setProperty('--ty','12px'); d.el.classList.add('suck');
+    setTimeout(()=>d.el.remove(),500);} });
+
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+window.CORTEX_FEED={
+  update(s){
+    if(typeof s.progress==='number' && isFinite(s.progress))
+      progress=Math.max(progress,Math.min(100,s.progress));
+    if(s.status==='stalled' && mode==='run'){ mode='stall'; stallT=2.5; janitor.classList.add('coffee'); }
+    if(s.status==='running' && mode==='stall'){ mode='run'; janitor.classList.remove('coffee'); }
+    if(s.progress>=100) complete();
+  }
+};
+</script>
+</body>
+</html>
