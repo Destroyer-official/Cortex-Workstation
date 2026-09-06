@@ -786,16 +786,6 @@ class DiagnosticRunner:
                     sec.failed += 1
 
             win.close()
-            win.deleteLater()
-            from PySide6.QtWidgets import QApplication
-
-            app = QApplication.instance()
-            if app:
-                app.processEvents()
-            del win
-            import gc
-
-            gc.collect()
         except Exception as exc:
             sec.items.append(
                 DiagnosticItem(name="UI Shell", status="FAIL", message=str(exc))
