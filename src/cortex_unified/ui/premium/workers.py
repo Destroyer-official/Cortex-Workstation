@@ -383,7 +383,7 @@ class RestorePointWorker(QObject):
     finished = Signal(str, str)   # (status, message)
     failed = Signal(str)
 
-    def __init__(self, description: str = "Cortex Cleaner"):
+    def __init__(self, description: str = "Cortex Workstation"):
         """Store the restore-point description text."""
         super().__init__()
         self._description = description

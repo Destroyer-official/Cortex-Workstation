@@ -470,7 +470,8 @@ class FirewallPage(_Page):
         self._rules = rules
         self.tbl.setRowCount(len(rules))
         for r, rule in enumerate(rules):
-            name_item = QTableWidgetItem(rule["display_name"].replace("Cortex Cleaner:", "").strip())
+            clean_name = rule["display_name"].replace("Cortex Workstation:", "").replace("Cortex Cleaner:", "").strip()
+            name_item = QTableWidgetItem(clean_name)
             name_item.setData(Qt.ItemDataRole.UserRole, rule["name"])
             self.tbl.setItem(r, 0, name_item)
             self.tbl.setItem(r, 1, QTableWidgetItem(rule["action"]))

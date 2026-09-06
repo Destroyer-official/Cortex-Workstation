@@ -1,4 +1,4 @@
-"""Cortex Cleaner - safe, fast cleanup and system-care toolkit.
+"""Cortex Workstation - safe, fast cleanup and system-care toolkit.
 
 Import cost policy
 ------------------
@@ -26,8 +26,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
+from . import compat_winreg as _compat_winreg  # noqa: F401
+
 __version__ = "1.2.0"
-__author__ = "Cortex Cleaner Team"
+__author__ = "Cortex Workstation Team"
 __email__ = "team@deepcleaner.com"
 __license__ = "MIT"
 __description__ = (

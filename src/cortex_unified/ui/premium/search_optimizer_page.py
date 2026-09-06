@@ -134,7 +134,7 @@ class SearchIndexOptimizerPage(_Page):
             self.p,
             "info",
             "Note: Compacting or rebuilding Windows.edb requires stopping the 'WSearch' service temporarily. "
-            "Please run Cortex Cleaner as Administrator to ensure service control permissions.",
+            "Please run Cortex Workstation as Administrator to ensure service control permissions.",
         )
         self.v.addWidget(self.note)
 

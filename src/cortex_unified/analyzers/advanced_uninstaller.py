@@ -70,7 +70,10 @@ import subprocess
 import sys
 import threading
 import time
-import winreg
+try:
+    import winreg
+except ImportError:
+    winreg = None  # type: ignore
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path

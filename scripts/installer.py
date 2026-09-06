@@ -12,7 +12,10 @@ import shutil
 import zipfile
 import threading
 import subprocess
-import winreg
+try:
+    import winreg
+except ImportError:
+    winreg = None  # type: ignore
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 from pathlib import Path

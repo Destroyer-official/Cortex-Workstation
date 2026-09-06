@@ -34,7 +34,7 @@ class SystemTrayManager(QObject):
             style = QApplication.style()
             self.tray_icon.setIcon(style.standardIcon(QStyle.StandardPixmap.SP_ComputerIcon))
 
-        self.tray_icon.setToolTip("Cortex Cleaner — System Monitor")
+        self.tray_icon.setToolTip("Cortex Workstation — System Monitor")
         self._setup_menu()
         self.tray_icon.show()
 
@@ -56,7 +56,7 @@ class SystemTrayManager(QObject):
         """Build the tray context menu and connect its actions and activation signal."""
         menu = QMenu()
 
-        show_action = QAction("Open Cortex Cleaner", self)
+        show_action = QAction("Open Cortex Workstation", self)
         show_action.triggered.connect(self._show_main_window)
         menu.addAction(show_action)
 
@@ -120,7 +120,7 @@ class SystemTrayManager(QObject):
         """
         self.tray_icon.showMessage(
             "High Memory Usage",
-            f"System RAM is at {value:.0f}%.  Click the tray icon to launch Cortex Cleaner and free resources.",
+            f"System RAM is at {value:.0f}%.  Click the tray icon to launch Cortex Workstation and free resources.",
             QSystemTrayIcon.Warning,
             8000,
         )
@@ -133,7 +133,7 @@ class SystemTrayManager(QObject):
         """
         self.tray_icon.showMessage(
             "High CPU Usage",
-            f"CPU is at {value:.0f}%.  Consider disabling startup programs via Cortex Cleaner.",
+            f"CPU is at {value:.0f}%.  Consider disabling startup programs via Cortex Workstation.",
             QSystemTrayIcon.Information,
             8000,
         )
@@ -147,7 +147,7 @@ class SystemTrayManager(QObject):
         self.tray_icon.showMessage(
             "Low Disk Space ⚠️",
             f"Only {free_gb:.1f} GB free on your system drive.  "
-            f"Open Cortex Cleaner to clean junk files.",
+            f"Open Cortex Workstation to clean junk files.",
             QSystemTrayIcon.Critical,
             10000,
         )

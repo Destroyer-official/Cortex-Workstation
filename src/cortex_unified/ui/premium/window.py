@@ -1201,7 +1201,7 @@ class PremiumMainWindow(QMainWindow):
             if not self._tray_hint_shown:
                 self._tray_hint_shown = True
                 self._tray.show_message(
-                    "Cortex Cleaner is still running",
+                    "Cortex Workstation is still running",
                     "Closed to the system tray. Right-click the tray icon to exit.",
                 )
             return
@@ -3213,7 +3213,7 @@ class SettingsPage(_Page):
         self.rp_create_btn.setEnabled(False)
         self.rp_progress.setVisible(True)
         self.win.statusBar().showMessage("Creating restore point\u2026")
-        self.win.run_worker(RestorePointWorker("Cortex Cleaner - manual"),
+        self.win.run_worker(RestorePointWorker("Cortex Workstation - manual"),
                             self._on_rp_created, self._on_rp_fail)
 
     def _on_rp_created(self, status: str, message: str):

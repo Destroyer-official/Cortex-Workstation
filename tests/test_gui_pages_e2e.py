@@ -25,6 +25,7 @@ from PySide6.QtCore import QDeadlineTimer, QEventLoop, Qt, QTimer  # noqa: E402
 from PySide6.QtWidgets import QApplication  # noqa: E402
 
 IS_WINDOWS = platform.system() == "Windows"
+pytestmark = pytest.mark.skipif(not IS_WINDOWS, reason="GUI E2E tests require Windows platform features")
 
 
 @pytest.fixture(scope="module")
@@ -69,7 +70,7 @@ def pro_license(monkeypatch, tmp_path):
     lm_module.reset_singleton()
 
 
-def pump_until(app, predicate, timeout_ms=45000, interval=25) -> bool:
+def pump_until(app, predicate, timeout_ms=10000, interval=25) -> bool:
     """Spin the event loop until predicate() is true or timeout. Returns final.
 
     Args:

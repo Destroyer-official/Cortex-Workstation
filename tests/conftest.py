@@ -2,8 +2,10 @@
 
 import os
 import shutil
+import sys
 import pytest
 from pathlib import Path
+import cortex_unified.compat_winreg  # noqa: F401
 from cortex_unified.core.config import Config
 
 @pytest.fixture
@@ -43,3 +45,11 @@ def clean_config():
     config.config_data["exclude_dirs"] = []
     config.config_data["min_age_days"] = 0
     return config
+
+
+def pytest_terminal_summary(terminalreporter, exitstatus, config):
+    """Cleanly exit without letting PySide6 C++ destructors crash on Windows Python 3.14."""
+    if sys.platform == "win32" and "PySide6" in sys.modules:
+        sys.stdout.flush()
+        sys.stderr.flush()
+        os._exit(int(exitstatus))

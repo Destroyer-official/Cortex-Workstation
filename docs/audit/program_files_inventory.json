@@ -1,9 +1,9 @@
 {
-  "total_files": 500,
-  "passed": 500,
+  "total_files": 501,
+  "passed": 501,
   "failed": 0,
   "pass_rate_percent": 100.0,
-  "duration_seconds": 7.17,
+  "duration_seconds": 7.35,
   "python_runtime": "3.14.7",
   "files": [
     {
@@ -226,7 +226,7 @@
     {
       "path": "scripts/installer.py",
       "abs_path": "D:/code/Main_projects/Cortex_Cleaner/scripts/installer.py",
-      "loc": 291,
+      "loc": 294,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -346,7 +346,7 @@
     {
       "path": "src/cortex_unified/__init__.py",
       "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/__init__.py",
-      "loc": 89,
+      "loc": 91,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -508,7 +508,7 @@
     {
       "path": "src/cortex_unified/analyzers/advanced_uninstaller.py",
       "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/analyzers/advanced_uninstaller.py",
-      "loc": 1182,
+      "loc": 1185,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -1100,7 +1100,7 @@
     {
       "path": "src/cortex_unified/analyzers/registry_cleaner_ai.py",
       "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/analyzers/registry_cleaner_ai.py",
-      "loc": 1405,
+      "loc": 1444,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -1244,6 +1244,17 @@
         "vss_health_cmd",
         "verify_checksums_cmd"
       ]
+    },
+    {
+      "path": "src/cortex_unified/compat_winreg.py",
+      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/compat_winreg.py",
+      "loc": 67,
+      "syntax_ok": true,
+      "compile_ok": true,
+      "import_ok": true,
+      "error": null,
+      "classes": [],
+      "functions": []
     },
     {
       "path": "src/cortex_unified/core/__init__.py",
@@ -4165,7 +4176,7 @@
     {
       "path": "src/cortex_unified/system_tools/privacy_blocker.py",
       "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/privacy_blocker.py",
-      "loc": 926,
+      "loc": 965,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -4734,7 +4745,7 @@
     {
       "path": "src/cortex_unified/system_tools/startup_optimizer.py",
       "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/startup_optimizer.py",
-      "loc": 465,
+      "loc": 477,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -5169,7 +5180,7 @@
     {
       "path": "src/cortex_unified/system_tools/windows_update_repair.py",
       "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/windows_update_repair.py",
-      "loc": 751,
+      "loc": 754,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -6282,7 +6293,7 @@
     {
       "path": "src/cortex_unified/ui/premium/network_pages.py",
       "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/network_pages.py",
-      "loc": 3518,
+      "loc": 3519,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -9660,7 +9671,7 @@
     {
       "path": "tests/conftest.py",
       "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/conftest.py",
-      "loc": 45,
+      "loc": 55,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -9669,7 +9680,8 @@
       "functions": [
         "temp_dir",
         "test_env",
-        "clean_config"
+        "clean_config",
+        "pytest_terminal_summary"
       ]
     },
     {
@@ -10001,7 +10013,7 @@
     {
       "path": "tests/test_compact_os.py",
       "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_compact_os.py",
-      "loc": 156,
+      "loc": 157,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -10473,7 +10485,7 @@
     {
       "path": "tests/test_enterprise_suite_tools.py",
       "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_enterprise_suite_tools.py",
-      "loc": 179,
+      "loc": 182,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -10680,7 +10692,7 @@
     {
       "path": "tests/test_gui_pages_e2e.py",
       "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_gui_pages_e2e.py",
-      "loc": 1035,
+      "loc": 1036,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,

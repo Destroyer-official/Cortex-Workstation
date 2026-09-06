@@ -55,8 +55,11 @@ import os
 import subprocess
 import threading
 import time
-import winreg
 from dataclasses import dataclass, field, asdict
+try:
+    import winreg
+except ImportError:
+    winreg = None  # type: ignore
 from pathlib import Path
 from typing import Callable, Dict, List, Optional
 
@@ -125,6 +128,8 @@ def _enumerate_registry() -> List[StartupEntry]:
     List[StartupEntry]: List of processed items or identifiers.
     """
     entries: List[StartupEntry] = []
+    if winreg is None:
+        return entries
     for reg_path, category in _STARTUP_LOCATIONS:
         try:
             # parse HKCU/HKLM
@@ -426,7 +431,14 @@ class StartupOptimizer:
                     except OSError:
                         self.progress(f"Skip {e.name}: no internet")
                         continue
-                subprocess.Popen(e.command, shell=True)
+                import shlex
+                if isinstance(e.command, list):
+                    launch_cmd = e.command
+                elif sys.platform == "win32":
+                    launch_cmd = e.command
+                else:
+                    launch_cmd = shlex.split(e.command)
+                subprocess.Popen(launch_cmd, shell=False)
             except Exception as exc:
                 self.progress(f"Launch failed {e.name}: {exc}")
 

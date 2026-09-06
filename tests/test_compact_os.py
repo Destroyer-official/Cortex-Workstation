@@ -17,6 +17,7 @@ import pytest
 from cortex_unified.system_tools.compact_os import CompactOSManager
 
 IS_WIN = sys.platform == "win32"
+pytestmark = pytest.mark.skipif(not IS_WIN, reason="CompactOS is Windows-only")
 
 
 def _write_text(folder: Path, name: str, size_kb: int = 64):

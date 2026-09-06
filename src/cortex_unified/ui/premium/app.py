@@ -126,7 +126,7 @@ def _install_excepthook() -> None:
             stamp = time.strftime("%Y%m%d_%H%M%S")
             report = target_dir / f"crash_{stamp}.txt"
             report.write_text(
-                "Cortex Cleaner crash report\n"
+                "Cortex Workstation Crash Report\n"
                 "NOTE: paths below may contain personal filenames.\n\n"
                 + "".join(traceback.format_exception(exc_type, exc_value, exc_tb)),
                 encoding="utf-8")
@@ -315,7 +315,7 @@ def main() -> int:
         from PySide6.QtWidgets import QApplication
     except ImportError:
         sys.stderr.write(
-            "Cortex Cleaner GUI requires PySide6.\n"
+            "Cortex Workstation GUI requires PySide6.\n"
             "Install it with:  pip install PySide6\n"
         )
         return 1

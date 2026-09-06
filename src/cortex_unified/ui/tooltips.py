@@ -429,7 +429,7 @@ class TooltipManager:
         from PySide6.QtWidgets import QDialog, QVBoxLayout, QTextEdit, QPushButton
         
         dialog = QDialog(parent)
-        dialog.setWindowTitle("Cortex Cleaner Help")
+        dialog.setWindowTitle("Cortex Workstation Help")
         dialog.setModal(True)
         dialog.resize(600, 500)
         
@@ -440,10 +440,10 @@ class TooltipManager:
         
         # Add comprehensive help content
         content = """
-        <h2>Cortex Cleaner Help</h2>
+        <h2>Cortex Workstation Help</h2>
         
         <h3>Overview</h3>
-        <p>Cortex Cleaner is a comprehensive utility for finding and removing unnecessary files, 
+        <p>Cortex Workstation is a comprehensive utility for finding and removing unnecessary files, 
         analyzing disk usage, and maintaining system cleanliness. It provides multiple specialized 
         tools for different cleanup tasks.</p>
         
@@ -513,7 +513,7 @@ def setup_tooltips_and_help(main_window) -> None:
     QToolTip.setFont(QFont('Arial', 9))
     
     main_window.setWhatsThis(
-        "Cortex Cleaner main window. Use the tabs to access different cleanup tools. "
+        "Cortex Workstation main window. Use the tabs to access different cleanup tools. "
         "Hover over controls for detailed tooltips, or press F1 for comprehensive help."
     )
 

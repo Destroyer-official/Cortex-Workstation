@@ -1,11 +1,14 @@
 """Tests for Enterprise Next-Gen Storage, Security & Forensics Suite tools."""
 
 import os
+import sys
 import tempfile
 import time
 from pathlib import Path
 
 import pytest
+
+pytestmark = pytest.mark.skipif(sys.platform != "win32", reason="Windows NT enterprise tools only")
 
 from cortex_unified.system_tools.vss_manager import VssManager, VssAuditReport
 from cortex_unified.system_tools.dev_drive_optimizer import DevDriveOptimizer, DevDriveAuditReport

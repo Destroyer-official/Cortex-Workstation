@@ -1117,7 +1117,7 @@ class SystemCacheRebuilderPage(_Page):
         self.restart_shell_chk = QCheckBox("Restart Windows Explorer immediately after rebuild (optional)")
         self.restart_shell_chk.setChecked(False)
         self.restart_shell_chk.setToolTip(
-            "Cortex Cleaner refreshes icon and font caches seamlessly via Windows Shell notifications (SHChangeNotify).\n"
+            "Cortex Workstation refreshes icon and font caches seamlessly via Windows Shell notifications (SHChangeNotify).\n"
             "Restarting Explorer is rarely needed and is optional."
         )
         c_lay.addWidget(self.restart_shell_chk)

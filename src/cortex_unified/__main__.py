@@ -27,7 +27,7 @@ def main() -> int:
         from cortex_unified.cli.cli import main as cli_main
     except ImportError as exc:
         sys.stderr.write(
-            f"Could not load the Cortex Cleaner CLI: {exc}\n"
+            f"Could not load the Cortex Workstation CLI: {exc}\n"
             "Ensure the package and its dependencies are installed:\n"
             "    pip install -e .\n"
         )

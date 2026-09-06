@@ -141,7 +141,7 @@ class PremiumTray(QObject):
         try:
             self._tray = QSystemTrayIcon(window)
             self._tray.setIcon(_render_tray_icon(window.palette_tokens))
-            self._tray.setToolTip("Cortex Cleaner")
+            self._tray.setToolTip("Cortex Workstation")
             self._tray.setContextMenu(self._build_menu())
             self._tray.activated.connect(self._on_activated)
             self._tray.show()
@@ -186,7 +186,7 @@ class PremiumTray(QObject):
             QMenu: Result of the operation.
         """
         menu = QMenu()
-        open_act = QAction("Open Cortex Cleaner", menu)
+        open_act = QAction("Open Cortex Workstation", menu)
         open_act.triggered.connect(self._restore_window)
         menu.addAction(open_act)
 

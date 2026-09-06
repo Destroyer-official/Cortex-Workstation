@@ -328,8 +328,8 @@ class ReportsTab(BaseTab):
                     "runs": [{
                         "tool": {
                             "driver": {
-                                "name": "Cortex Cleaner Reports",
-                                "version": "2.0.0",
+                                "name": "Cortex Workstation Reports",
+                                "version": "1.2.0",
                                 "rules": []
                             }
                         },
@@ -377,8 +377,8 @@ class ReportsTab(BaseTab):
                 "runs": [{
                     "tool": {
                         "driver": {
-                            "name": "Cortex Cleaner",
-                            "version": "2.0.0",
+                            "name": "Cortex Workstation",
+                            "version": "1.2.0",
                             "rules": []
                         }
                     },
@@ -484,7 +484,7 @@ class ReportsTab(BaseTab):
         form.addRow(format_label)
         layout.addLayout(form)
         note = QLabel(
-            'A scheduled task will run the Cortex Cleaner CLI '
+            'A scheduled task will run the Cortex Workstation CLI '
             "('generate-report --type html') at 02:00 with the chosen "
             'frequency.')
         note.setWordWrap(True)

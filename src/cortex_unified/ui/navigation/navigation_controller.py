@@ -76,7 +76,7 @@ class NavigationController(QWidget):
         layout.setSpacing(4)
         
         # Navigation title
-        title_label = QLabel("Cortex Cleaner")
+        title_label = QLabel("Cortex Workstation")
         title_label.setObjectName("navigationTitle")
         title_font = QFont()
         title_font.setBold(True)

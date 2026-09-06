@@ -25,13 +25,6 @@ pyarrow>=12.0.0      # Parquet exports (parquet extra)
 requests>=2.30.0     # network operations
 Pillow>=10.0.0       # perceptual image hashing (pHash/dHash) for duplicate photos
 
-# Dev tooling (mirrors the 'dev' extra; `pip install -e .[dev]` preferred)
-pytest>=7.0.0
-pytest-cov>=4.0.0
-pytest-qt>=4.0.0
-hypothesis>=6.0.0
-xxhash>=3.0.0
-
 # Platform-specific dependencies
 # Windows
 pywin32>=306; sys_platform == "win32"
