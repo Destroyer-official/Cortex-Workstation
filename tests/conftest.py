@@ -50,6 +50,10 @@ def clean_config():
 def pytest_terminal_summary(terminalreporter, exitstatus, config):
     """Cleanly exit without letting PySide6 C++ destructors crash on Windows Python 3.14."""
     if sys.platform == "win32" and "PySide6" in sys.modules:
-        sys.stdout.flush()
-        sys.stderr.flush()
-        os._exit(int(exitstatus))
+        try:
+            from PySide6.QtWidgets import QApplication
+            app = QApplication.instance()
+            if app is not None:
+                app.quit()
+        except Exception:
+            pass
