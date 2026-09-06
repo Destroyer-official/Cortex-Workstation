@@ -309,7 +309,10 @@ class TestRegistryEnumeration:
         Args:
             monkeypatch: The monkeypatch parameter.
         """
-        import winreg
+        try:
+            import winreg
+        except ImportError:
+            from cortex_unified import compat_winreg as winreg
 
         def fake_open(hive, sub, reserved, access):
             """Fake open using FileNotFoundError.
@@ -332,7 +335,10 @@ class TestRegistryEnumeration:
         Args:
             monkeypatch: The monkeypatch parameter.
         """
-        import winreg
+        try:
+            import winreg
+        except ImportError:
+            from cortex_unified import compat_winreg as winreg
 
         call_count = {"n": 0}
 

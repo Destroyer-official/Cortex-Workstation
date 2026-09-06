@@ -99,10 +99,16 @@ def _discover_chromium_profiles(base_names: List[str]) -> List[Path]:
         List[Path]: List of processed items or identifiers.
     """
     roots: List[Path] = []
-    if os.name == "nt":
-        local = Path(os.environ.get("LOCALAPPDATA", ""))
+    local_env = os.environ.get("LOCALAPPDATA")
+    if local_env:
+        local = Path(local_env)
         for name in base_names:
             roots.append(local / name / "User Data")
+    if os.name == "nt":
+        if not local_env:
+            local = Path(os.environ.get("LOCALAPPDATA", ""))
+            for name in base_names:
+                roots.append(local / name / "User Data")
     else:
         home = Path.home()
         for name in base_names:
@@ -137,7 +143,10 @@ def _discover_firefox_profiles() -> List[Path]:
         List[Path]: List of processed items or identifiers.
     """
     profiles: List[Path] = []
-    if os.name == "nt":
+    appdata_env = os.environ.get("APPDATA")
+    if appdata_env and (Path(appdata_env) / "Mozilla" / "Firefox" / "Profiles").exists():
+        base = Path(appdata_env) / "Mozilla" / "Firefox" / "Profiles"
+    elif os.name == "nt":
         base = Path(os.environ.get("APPDATA", "")) / "Mozilla" / "Firefox" / "Profiles"
     else:
         base = Path.home() / ".mozilla" / "firefox"

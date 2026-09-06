@@ -139,7 +139,7 @@ exclude_lines = [
 ]
 show_missing = true
 skip_covered = true
-fail_under = 50
+fail_under = 60
 
 [tool.black]
 line-length = 120

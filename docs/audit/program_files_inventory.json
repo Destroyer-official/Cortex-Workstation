@@ -1,9 +1,9 @@
 {
-  "total_files": 502,
-  "passed": 502,
+  "total_files": 501,
+  "passed": 501,
   "failed": 0,
   "pass_rate_percent": 100.0,
-  "duration_seconds": 6.59,
+  "duration_seconds": 6.69,
   "python_runtime": "3.14.7",
   "files": [
     {
@@ -1189,17 +1189,6 @@
         "compute_video_fingerprint",
         "video_compare"
       ]
-    },
-    {
-      "path": "src/cortex_unified/analyzers/weaponized_shredder.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/analyzers/weaponized_shredder.py",
-      "loc": 14,
-      "syntax_ok": true,
-      "compile_ok": true,
-      "import_ok": true,
-      "error": null,
-      "classes": [],
-      "functions": []
     },
     {
       "path": "src/cortex_unified/cli/__init__.py",
@@ -2631,7 +2620,7 @@
     {
       "path": "src/cortex_unified/system_tools/browser_cleaner.py",
       "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/browser_cleaner.py",
-      "loc": 397,
+      "loc": 406,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -12157,7 +12146,7 @@
     {
       "path": "tests/test_startup_optimizer.py",
       "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_startup_optimizer.py",
-      "loc": 864,
+      "loc": 870,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
