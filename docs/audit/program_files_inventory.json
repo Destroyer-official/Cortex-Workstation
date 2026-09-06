@@ -1,9 +1,9 @@
 {
-  "total_files": 501,
-  "passed": 501,
+  "total_files": 502,
+  "passed": 502,
   "failed": 0,
   "pass_rate_percent": 100.0,
-  "duration_seconds": 6.8,
+  "duration_seconds": 9.04,
   "python_runtime": "3.14.7",
   "files": [
     {
@@ -1845,7 +1845,7 @@
     {
       "path": "src/cortex_unified/engine/service.py",
       "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/engine/service.py",
-      "loc": 540,
+      "loc": 763,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -1861,7 +1861,7 @@
         ],
         [
           "CleanerService",
-          8
+          9
         ]
       ],
       "functions": []
@@ -5678,7 +5678,7 @@
     {
       "path": "src/cortex_unified/ui/premium/cleanup_hub_page.py",
       "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/cleanup_hub_page.py",
-      "loc": 660,
+      "loc": 700,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -5694,7 +5694,7 @@
         ],
         [
           "CleanupHubPage",
-          17
+          18
         ]
       ],
       "functions": []
@@ -10220,6 +10220,33 @@
         "test_run_never_leaves_output_unread_on_success",
         "test_text_mode_decodes_output",
         "test_missing_executable_raises_oserror"
+      ]
+    },
+    {
+      "path": "tests/test_custom_roots_scan.py",
+      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_custom_roots_scan.py",
+      "loc": 211,
+      "syntax_ok": true,
+      "compile_ok": true,
+      "import_ok": true,
+      "error": null,
+      "classes": [
+        [
+          "TestCustomRootsScan",
+          3
+        ],
+        [
+          "TestHubScanWorkerCustomRoots",
+          1
+        ],
+        [
+          "TestCleanupHubPageCustomRoots",
+          3
+        ]
+      ],
+      "functions": [
+        "app",
+        "window"
       ]
     },
     {

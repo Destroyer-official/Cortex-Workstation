@@ -297,6 +297,229 @@ class CleanerService:
                   report.duration_seconds, report.total_files, report.total_reclaimable_bytes)
         return report
 
+    def scan_custom_roots(
+        self,
+        roots: list[Path | str],
+        progress: "Callable[[str], None] | None" = None,
+        cancel_event=None,
+    ) -> CleanupReport:
+        """Scan user-selected custom directories or files for cleanable items.
+
+        Walks the specified custom roots and categorizes discovered cleanable items
+        into build caches, temporary files, logs/crash reports, OS cruft, and empty files.
+
+        Args:
+            roots (list[Path | str]): Target filesystem paths (directories or files) to scan.
+            progress (Callable[[str], None] | None): Optional status reporting callback.
+            cancel_event: Threading event or callable to check for cooperative cancellation.
+
+        Returns:
+            CleanupReport: Aggregated report containing category scans for the targets.
+        """
+        import time
+        start = time.perf_counter()
+        report = CleanupReport()
+        _LOG.info("scan_custom_roots start (%d roots)", len(roots))
+        emit = _throttle(progress)
+
+        target_paths: list[Path] = []
+        for r in roots:
+            try:
+                p = Path(r).resolve(strict=False)
+                if p.exists():
+                    target_paths.append(p)
+            except (OSError, ValueError):
+                continue
+
+        if not target_paths:
+            report.duration_seconds = time.perf_counter() - start
+            return report
+
+        cat_build = CleanupCategory(
+            id="custom_build_caches",
+            label="Project Build & Package Caches",
+            description="Build artifacts and dependencies (node_modules, target, __pycache__, build, dist, .next, etc.)",
+            risk=RiskLevel.LOW,
+            paths=tuple(target_paths),
+            reversible=True,
+            default_enabled=True,
+        )
+        cat_temp = CleanupCategory(
+            id="custom_temp_files",
+            label="Temporary & Backup Files",
+            description="Temporary scratch and backup files (*.tmp, *.temp, *.bak, *.swp, partial downloads)",
+            risk=RiskLevel.LOW,
+            paths=tuple(target_paths),
+            reversible=True,
+            default_enabled=True,
+        )
+        cat_logs = CleanupCategory(
+            id="custom_log_files",
+            label="Log & Diagnostic Files",
+            description="Application execution logs, crash dumps, and debug traces (*.log, *.dmp, *.crash)",
+            risk=RiskLevel.LOW,
+            paths=tuple(target_paths),
+            reversible=False,
+            default_enabled=True,
+        )
+        cat_cruft = CleanupCategory(
+            id="custom_cruft_files",
+            label="OS & Thumbnail Cruft",
+            description="System-generated folder metadata and thumbnails (Thumbs.db, .DS_Store, desktop.ini)",
+            risk=RiskLevel.LOW,
+            paths=tuple(target_paths),
+            reversible=True,
+            default_enabled=True,
+        )
+        cat_empty = CleanupCategory(
+            id="custom_empty_files",
+            label="Zero-Byte (Empty) Files",
+            description="Empty 0-byte placeholder and orphaned files",
+            risk=RiskLevel.LOW,
+            paths=tuple(target_paths),
+            reversible=True,
+            default_enabled=True,
+        )
+
+        scans: dict[str, CategoryScan] = {
+            "custom_build_caches": CategoryScan(category=cat_build),
+            "custom_temp_files": CategoryScan(category=cat_temp),
+            "custom_log_files": CategoryScan(category=cat_logs),
+            "custom_cruft_files": CategoryScan(category=cat_cruft),
+            "custom_empty_files": CategoryScan(category=cat_empty),
+        }
+
+        build_dir_names = {
+            "node_modules", "target", "build", "dist", "__pycache__",
+            ".pytest_cache", ".mypy_cache", ".ruff_cache", ".gradle",
+            ".next", ".turbo", ".dart_tool", "bin", "obj",
+        }
+        temp_suffixes = {".tmp", ".temp", ".bak", ".swp", ".swo", ".part", ".crdownload"}
+        log_suffixes = {".log", ".dmp", ".crash"}
+        cruft_names = {"thumbs.db", ".ds_store", "desktop.ini", "ehthumbs.db"}
+
+        exclude_dirs = {
+            ".git", ".svn", ".hg", "$RECYCLE.BIN", "$Recycle.Bin", "$recycle.bin",
+            "System Volume Information", "system volume information",
+            "Windows", "windows", "Program Files", "program files",
+            "Program Files (x86)", "program files (x86)", "Recovery", "recovery",
+        }
+        opts = WalkOptions(
+            exclude_dir_names=frozenset(exclude_dirs),
+            follow_symlinks=False,
+        )
+        walker = FastWalker(opts)
+        if cancel_event is not None:
+            walker._cancel = cancel_event
+
+        total_seen = 0
+
+        def _classify(entry: FileEntry, rel_parts: set[str]) -> str | None:
+            """Classify a file entry into one of the custom categories or None if keep.
+
+            Args:
+                entry (FileEntry): Scanned file entry.
+                rel_parts (set[str]): Lowercase relative directory component names under scan root.
+
+            Returns:
+                str | None: Category identifier key or None.
+            """
+            if not self.guard.check(entry.path).safe:
+                return None
+
+            name_lower = entry.path.name.lower()
+
+            # 1. Project Build & Package Caches
+            if rel_parts & build_dir_names:
+                return "custom_build_caches"
+            if name_lower.endswith((".pyc", ".pyo", ".class", ".o")):
+                return "custom_build_caches"
+
+            # 2. Empty (0-byte) files
+            if entry.size == 0:
+                return "custom_empty_files"
+
+            # 3. Temporary & backup files
+            if any(name_lower.endswith(sfx) for sfx in temp_suffixes):
+                return "custom_temp_files"
+            if name_lower.startswith("~") or name_lower.startswith(".~") or name_lower.endswith("~"):
+                return "custom_temp_files"
+            if "tmp" in rel_parts or "temp" in rel_parts:
+                return "custom_temp_files"
+
+            # 4. Log & diagnostic files
+            if any(name_lower.endswith(sfx) for sfx in log_suffixes):
+                return "custom_log_files"
+            if name_lower.startswith(("npm-debug.log", "yarn-error.log", "pnpm-debug.log")):
+                return "custom_log_files"
+            if ".log." in name_lower:
+                return "custom_log_files"
+
+            # 5. OS Cruft
+            if name_lower in cruft_names:
+                return "custom_cruft_files"
+
+            return None
+
+        for p in target_paths:
+            if cancel_event is not None and cancel_event.is_set():
+                break
+
+            if p.is_file():
+                try:
+                    st = p.stat()
+                    entry = FileEntry(
+                        path=p,
+                        size=st.st_size,
+                        mtime=st.st_mtime,
+                        is_dir=False,
+                        is_symlink=p.is_symlink(),
+                    )
+                    cat_key = _classify(entry, set())
+                    if cat_key:
+                        scans[cat_key].entries.append(entry)
+                        scans[cat_key].total_bytes += entry.reclaimable_size
+                except OSError:
+                    pass
+                continue
+
+            if p.is_dir():
+                def _rep(cur_dir: str, seen: int) -> None:
+                    """Report traversal progress to caller callback.
+
+                    Args:
+                        cur_dir (str): Currently visited directory path.
+                        seen (int): Number of items visited so far.
+                    """
+                    if emit is not None:
+                        emit(f"Scanning {p.name or p}: {seen} files\u2026")
+
+                for entry in walker.iter_files(p, progress=_rep):
+                    if cancel_event is not None and cancel_event.is_set():
+                        break
+                    total_seen += 1
+                    try:
+                        rel_parts = {part.lower() for part in entry.path.relative_to(p).parts[:-1]}
+                    except (ValueError, Exception):
+                        rel_parts = set()
+                    cat_key = _classify(entry, rel_parts)
+                    if cat_key:
+                        scans[cat_key].entries.append(entry)
+                        scans[cat_key].total_bytes += entry.reclaimable_size
+
+        for s in scans.values():
+            if s.file_count > 0:
+                report.scans.append(s)
+
+        if walker.cloud_skipped > 0 and report.scans:
+            report.scans[0].cloud_skipped = walker.cloud_skipped
+            report.scans[0].cloud_skipped_bytes = walker.cloud_skipped_bytes
+
+        report.duration_seconds = time.perf_counter() - start
+        _LOG.info("scan_custom_roots done in %.2fs: %d files, %d bytes",
+                  report.duration_seconds, report.total_files, report.total_reclaimable_bytes)
+        return report
+
     def clean_categories(
         self,
         report: CleanupReport,

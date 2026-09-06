@@ -32,7 +32,7 @@ from PySide6.QtWidgets import (
 )
 
 from cortex_unified.engine import CleanerService, RiskLevel
-from cortex_unified.engine.categories import CleanupCategory, default_categories, _get_dir_size
+from cortex_unified.engine.categories import CleanupCategory, default_categories
 
 from .states import StatePanel
 from .widgets import Card, StatCard, status_note, title_block
@@ -55,18 +55,25 @@ class HubScanWorker(QObject):
     progress = Signal(str)
     failed = Signal(str)
 
-    def __init__(self, max_risk: str = "medium", include_disabled: bool = True):
-        """Store max-risk level, disabled-category flag, and a cancel event.
+    def __init__(
+        self,
+        max_risk: str = "medium",
+        include_disabled: bool = True,
+        custom_roots: list[Path] | None = None,
+    ):
+        """Store max-risk level, disabled-category flag, custom roots, and a cancel event.
 
         Initializes the instance and configures internal state.
 
         Args:
             max_risk (str): The max risk parameter.
             include_disabled (bool): The include disabled parameter.
+            custom_roots (list[Path] | None): Optional custom target paths to scan.
         """
         super().__init__()
         self._max_risk = max_risk
         self._include_disabled = include_disabled
+        self._custom_roots = custom_roots
         import threading
         self._cancel = threading.Event()
 
@@ -78,17 +85,25 @@ class HubScanWorker(QObject):
         self._cancel.set()
 
     def run(self):
-        """Run the category scan and emit the report or a failure.
+        """Run the category scan or custom root scan and emit the report or a failure.
 
         Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
         """
         try:
-            report = CleanerService().scan_categories(
-                max_risk=RiskLevel(self._max_risk),
-                include_disabled=self._include_disabled,
-                progress=self.progress.emit,
-                cancel_event=self._cancel,
-            )
+            svc = CleanerService()
+            if self._custom_roots:
+                report = svc.scan_custom_roots(
+                    roots=self._custom_roots,
+                    progress=self.progress.emit,
+                    cancel_event=self._cancel,
+                )
+            else:
+                report = svc.scan_categories(
+                    max_risk=RiskLevel(self._max_risk),
+                    include_disabled=self._include_disabled,
+                    progress=self.progress.emit,
+                    cancel_event=self._cancel,
+                )
             self.finished.emit(report)
         except Exception as exc:  # noqa: BLE001
             self.failed.emit(str(exc))
@@ -206,7 +221,7 @@ class CleanupHubPage(_Page):
         self.scan_btn = QPushButton("Scan All Caches")
         self.scan_btn.setObjectName("Primary")
         self.scan_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.scan_btn.clicked.connect(self._scan)
+        self.scan_btn.clicked.connect(self._on_scan_all_clicked)
         ctrl.addWidget(self.scan_btn)
 
         self.btn_temp = QPushButton("Scan Temp")
@@ -219,14 +234,14 @@ class CleanupHubPage(_Page):
         self.btn_select_dir = QPushButton("Select Directory")
         self.btn_select_dir.setObjectName("Ghost")
         self.btn_select_dir.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_select_dir.setToolTip("Add any custom drive or directory to the cleanup scan.")
+        self.btn_select_dir.setToolTip("Select any custom drive or directory to scan.")
         self.btn_select_dir.clicked.connect(self._pick_custom_folder)
         ctrl.addWidget(self.btn_select_dir)
 
         self.btn_select_file = QPushButton("Select File Location")
         self.btn_select_file.setObjectName("Ghost")
         self.btn_select_file.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_select_file.setToolTip("Select a file to add its parent folder to the cleanup scan.")
+        self.btn_select_file.setToolTip("Select a file or file location to scan.")
         self.btn_select_file.clicked.connect(self._pick_custom_file)
         ctrl.addWidget(self.btn_select_file)
 
@@ -254,11 +269,11 @@ class CleanupHubPage(_Page):
         # Roots summary bar
         roots_row = QHBoxLayout()
         roots_row.setSpacing(8)
-        self.target_roots_label = QLabel("Active Scan Roots: Default System Partitions")
+        self.target_roots_label = QLabel("Active Scan Roots: Default System Partitions (C:\\, Temp, AppData)")
         self.target_roots_label.setObjectName("Muted")
         roots_row.addWidget(self.target_roots_label)
 
-        self.btn_clear_roots = QPushButton("Reset Roots")
+        self.btn_clear_roots = QPushButton("Reset to System Caches")
         self.btn_clear_roots.setObjectName("Ghost")
         self.btn_clear_roots.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_clear_roots.setVisible(False)
@@ -333,6 +348,12 @@ class CleanupHubPage(_Page):
 
     # -- scan ---------------------------------------------------------------
 
+    def _on_scan_all_clicked(self):
+        """Reset custom scan targets and scan all default system caches."""
+        self._custom_roots.clear()
+        self._update_roots_status()
+        self._scan()
+
     def _scan(self):
         """Disable buttons and start a HubScanWorker (risk level from opt-in checkbox).
 
@@ -340,11 +361,20 @@ class CleanupHubPage(_Page):
         """
         self.scan_btn.setEnabled(False)
         self.clean_btn.setEnabled(False)
-        self.state.show_loading("Scanning categories…")
+        loading_text = (
+            f"Scanning target: {self._custom_roots[0].name or self._custom_roots[0]}…"
+            if self._custom_roots
+            else "Scanning categories…"
+        )
+        self.state.show_loading(loading_text)
         self.progress.setVisible(True)
         self.scan_status.setText("Scanning…")
         risk = "high" if self.include_disabled_chk.isChecked() else "medium"
-        w = HubScanWorker(max_risk=risk, include_disabled=True)
+        w = HubScanWorker(
+            max_risk=risk,
+            include_disabled=True,
+            custom_roots=list(self._custom_roots) if self._custom_roots else None,
+        )
         self._worker = w
         self.win.run_worker(w, self._on_scanned, self._fail, on_progress=self._on_progress)
 
@@ -370,14 +400,6 @@ class CleanupHubPage(_Page):
         self.scan_btn.setEnabled(True)
         self._report = report
         self._scan_map = {s.category.id: s for s in report.scans}
-        # Summary
-        self.card_total.set_value(fmt_bytes(report.total_reclaimable_bytes), animate=True)
-        self.card_files.set_value(f"{report.total_files:,}", animate=True)
-        self.card_cats.set_value(str(len(report.scans)), animate=True)
-
-        cats = default_categories()
-        all_by_id = {c.id: c for c in cats}
-        ids_sorted = sorted(all_by_id.keys(), key=lambda cid: (all_by_id[cid].risk.rank, cid))
 
         # Clear grid
         while self.grid.count():
@@ -388,31 +410,52 @@ class CleanupHubPage(_Page):
         self._selected = {}
         self._card_checkboxes = {}
 
+        # Summary cards
+        self.card_total.set_value(fmt_bytes(report.total_reclaimable_bytes), animate=True)
+        self.card_files.set_value(f"{report.total_files:,}", animate=True)
+        self.card_cats.set_value(str(len(report.scans)), animate=True)
+
         cols = 2
-        if report.scans:
-            self.state.clear()
+        if not report.scans or report.total_files == 0:
+            target_desc = (
+                ", ".join(str(r) for r in self._custom_roots)
+                if self._custom_roots
+                else "the scanned system categories"
+            )
+            self.state.show_empty(f"No reclaimable files found under:\n{target_desc}\n\nThis target location is clean!")
+            self.win.statusBar().showMessage(
+                "Scan complete: 0 files found, 0 B reclaimable", 5000
+            )
+            self._update_clean_enabled()
+            return
+
+        self.state.clear()
+
+        if self._custom_roots:
+            for idx, scan in enumerate(report.scans):
+                card = self._make_card(scan.category, scan.total_bytes, scan.file_count)
+                r, c = divmod(idx, cols)
+                self.grid.addWidget(card, r, c)
+            self.win.statusBar().showMessage(
+                f"Scanned custom target: {len(report.scans)} categories, {report.total_files:,} files, {fmt_bytes(report.total_reclaimable_bytes)} reclaimable",
+                5000,
+            )
         else:
-            self.state.show_empty("No reclaimable files found under the scanned categories.")
-
-        total = 0
-        for idx, cid in enumerate(ids_sorted):
-            cat = all_by_id[cid]
-            scan = self._scan_map.get(cid)
-            est_bytes = scan.total_bytes if scan else 0
-            est_files = scan.file_count if scan else 0
-            if est_bytes == 0 and cat.existing_paths():
-                for p in cat.existing_paths():
-                    try:
-                        est_bytes += _get_dir_size(p)
-                    except OSError:
-                        continue
-            card = self._make_card(cat, est_bytes, est_files)
-            r, c = divmod(idx, cols)
-            self.grid.addWidget(card, r, c)
-            total += est_bytes
-
-        self.win.statusBar().showMessage(
-            f"Scanned {len(ids_sorted)} categories, {report.total_files:,} files, {fmt_bytes(report.total_reclaimable_bytes)} reclaimable", 5000)
+            cats = default_categories()
+            all_by_id = {c.id: c for c in cats}
+            ids_sorted = sorted(all_by_id.keys(), key=lambda cid: (all_by_id[cid].risk.rank, cid))
+            for idx, cid in enumerate(ids_sorted):
+                cat = all_by_id[cid]
+                scan = self._scan_map.get(cid)
+                est_bytes = scan.total_bytes if scan else 0
+                est_files = scan.file_count if scan else 0
+                card = self._make_card(cat, est_bytes, est_files)
+                r, c = divmod(idx, cols)
+                self.grid.addWidget(card, r, c)
+            self.win.statusBar().showMessage(
+                f"Scanned {len(ids_sorted)} categories, {report.total_files:,} files, {fmt_bytes(report.total_reclaimable_bytes)} reclaimable",
+                5000,
+            )
         self._update_clean_enabled()
 
     def _make_card(self, cat: CleanupCategory, est_bytes: int, est_files: int) -> Card:
@@ -570,36 +613,33 @@ class CleanupHubPage(_Page):
     # -- pickers ------------------------------------------------------------
 
     def _pick_custom_folder(self):
-        """Prompt the user with a file dialog (QFileDialog.getExistingDirectory) and apply the chosen path to the page state."""
-        folder = QFileDialog.getExistingDirectory(self, "Select Directory to Add to Cleanup Sweep", str(Path.home()))
+        """Prompt the user with a directory dialog and scan the selected folder."""
+        folder = QFileDialog.getExistingDirectory(self, "Select Directory to Scan", str(Path.home()))
         if folder:
-            p = Path(folder)
-            if p not in self._custom_roots:
-                self._custom_roots.append(p)
+            self._custom_roots = [Path(folder)]
             self._update_roots_status()
             self._scan()
 
     def _pick_custom_file(self):
-        """Prompt the user with a file dialog (QFileDialog.getOpenFileName) and apply the chosen path to the page state."""
-        file_path, _ = QFileDialog.getOpenFileName(self, "Select File to Add Parent Location", str(Path.home()))
+        """Prompt the user with a file dialog and scan the selected file."""
+        file_path, _ = QFileDialog.getOpenFileName(self, "Select File to Scan", str(Path.home()))
         if file_path:
-            p = Path(file_path).parent
-            if p not in self._custom_roots:
-                self._custom_roots.append(p)
+            self._custom_roots = [Path(file_path)]
             self._update_roots_status()
             self._scan()
 
     def _clear_custom_roots(self):
-        """Implement clear custom roots via clear, self._update_roots_status, self._scan."""
+        """Reset custom scan targets back to default system partitions and rescan."""
         self._custom_roots.clear()
         self._update_roots_status()
         self._scan()
 
     def _update_roots_status(self):
-        """Implement update roots status via join, setText, setVisible."""
+        """Update scan root status text and toggle reset button visibility."""
         if self._custom_roots:
             roots_str = ", ".join(str(r) for r in self._custom_roots)
-            self.target_roots_label.setText(f"Active Scan Roots: System Defaults + {roots_str}")
+            self.target_roots_label.setText(f"Active Scan Target: {roots_str}")
+            self.btn_clear_roots.setText("Reset to System Caches")
             self.btn_clear_roots.setVisible(True)
         else:
             self.target_roots_label.setText("Active Scan Roots: Default System Partitions (C:\\, Temp, AppData)")
