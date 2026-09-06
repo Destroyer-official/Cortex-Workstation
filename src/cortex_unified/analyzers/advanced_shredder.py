@@ -110,8 +110,11 @@ class AdvancedShredder:
         if isinstance(method, str):
             try:
                 method = ShredMethod(method)
-            except ValueError:
-                method = ShredMethod.DOD_5220_22_M
+            except ValueError as e:
+                self.logger.error("Unknown shred method '%s'. Valid methods: %s", method, [m.value for m in ShredMethod])
+                raise ValueError(f"Unknown shred method '{method}'. Valid methods: {[m.value for m in ShredMethod]}") from e
+        elif not isinstance(method, ShredMethod):
+            raise ValueError(f"Method must be a ShredMethod or valid method string, got {type(method).__name__}")
 
         if method == ShredMethod.ZERO:
             patterns = [b"\x00"]
@@ -128,7 +131,7 @@ class AdvancedShredder:
         elif method == ShredMethod.SCHNEIER:
             patterns = [b"\xFF", b"\x00", None, None, None, None, None]
         else:
-            patterns = [b"\x00", b"\xFF", None]
+            raise ValueError(f"Unsupported shred method: {method}")
 
         if passes is not None and passes > 0:
             if len(patterns) < passes:

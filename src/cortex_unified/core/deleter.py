@@ -29,11 +29,15 @@ class Deleter:
         Args:
             dry_run: Record intended deletions without touching disk.
             use_trash: Send items to the recycle bin instead of deleting
-                them outright. Silently disabled when send2trash is not
-                installed.
+                them outright. Fails closed with RuntimeError if send2trash is unavailable.
         """
+        if use_trash and not HAS_SEND2TRASH:
+            raise RuntimeError(
+                "Trash/recycle-bin deletion requested (use_trash=True), but 'send2trash' "
+                "is not installed or unavailable. Aborting to prevent irreversible permanent deletion."
+            )
         self.dry_run = dry_run
-        self.use_trash = use_trash and HAS_SEND2TRASH
+        self.use_trash = use_trash
         self.deleted_items = []
         self.errors = []
     

@@ -1,7 +1,7 @@
 # Deep One-By-One Program File Verification Report
 
 > **Audited Files**: 501 | **Passed**: 501 | **Failed**: 0 | **Pass Rate**: 100.0%
-> **Verification Duration**: 7.35 seconds | **Python Runtime**: 3.14.7
+> **Verification Duration**: 7.32 seconds | **Python Runtime**: 3.14.7
 
 ## File-By-File Verification Results
 
@@ -130,7 +130,7 @@
   - **Classes (7)**: `FileEntry` (0 methods), `FolderNode` (5 methods), `Scanner` (4 methods), `NTFSScanner` (5 methods)
   - **Functions (1)**: `scan_sync`
 
-- [ ] **034. [`src/cortex_unified/analyzers/advanced_shredder.py`](src/cortex_unified/analyzers/advanced_shredder.py)** — **✓ PASS** (231 LOC)
+- [ ] **034. [`src/cortex_unified/analyzers/advanced_shredder.py`](src/cortex_unified/analyzers/advanced_shredder.py)** — **✓ PASS** (234 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (2)**: `ShredMethod` (0 methods), `AdvancedShredder` (4 methods)
 
@@ -287,7 +287,7 @@
   - **Classes (7)**: `Base` (0 methods), `ScanRun` (3 methods), `DeletedItem` (2 methods), `ScheduledJob` (1 methods)
   - **Functions (2)**: `get_database`, `db_session`
 
-- [ ] **072. [`src/cortex_unified/core/deleter.py`](src/cortex_unified/core/deleter.py)** — **✓ PASS** (237 LOC)
+- [ ] **072. [`src/cortex_unified/core/deleter.py`](src/cortex_unified/core/deleter.py)** — **✓ PASS** (241 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (1)**: `Deleter` (5 methods)
 
@@ -1636,9 +1636,9 @@
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Functions (9)**: `test_fingerprint_is_list_of_ints`, `test_identical_wavs_compare_high`, `test_different_tones_compare_low`, `test_audio_compare_empty`, `test_finder_groups_identical_audio`, `test_finder_excludes_non_audio`
 
-- [ ] **404. [`tests/test_audit_safety_hardening.py`](tests/test_audit_safety_hardening.py)** — **✓ PASS** (134 LOC)
+- [ ] **404. [`tests/test_audit_safety_hardening.py`](tests/test_audit_safety_hardening.py)** — **✓ PASS** (172 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
-  - **Functions (8)**: `test_deleter_refuses_protected_path`, `test_deleter_refuses_symlink_directory`, `test_deleter_refuses_mocked_symlink_directory`, `test_advanced_shredder_refuses_mocked_symlink_file`, `test_advanced_shredder_refuses_symlink_target`, `test_advanced_shredder_refuses_protected_path`
+  - **Functions (11)**: `test_deleter_refuses_protected_path`, `test_deleter_refuses_symlink_directory`, `test_deleter_refuses_mocked_symlink_directory`, `test_advanced_shredder_refuses_mocked_symlink_file`, `test_advanced_shredder_refuses_symlink_target`, `test_advanced_shredder_refuses_protected_path`
 
 - [ ] **405. [`tests/test_boot_performance.py`](tests/test_boot_performance.py)** — **✓ PASS** (91 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK

@@ -3,7 +3,7 @@
   "passed": 501,
   "failed": 0,
   "pass_rate_percent": 100.0,
-  "duration_seconds": 7.35,
+  "duration_seconds": 7.32,
   "python_runtime": "3.14.7",
   "files": [
     {
@@ -488,7 +488,7 @@
     {
       "path": "src/cortex_unified/analyzers/advanced_shredder.py",
       "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/analyzers/advanced_shredder.py",
-      "loc": 231,
+      "loc": 234,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -1391,7 +1391,7 @@
     {
       "path": "src/cortex_unified/core/deleter.py",
       "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/core/deleter.py",
-      "loc": 237,
+      "loc": 241,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -9814,7 +9814,7 @@
     {
       "path": "tests/test_audit_safety_hardening.py",
       "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_audit_safety_hardening.py",
-      "loc": 134,
+      "loc": 172,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -9828,7 +9828,10 @@
         "test_advanced_shredder_refuses_symlink_target",
         "test_advanced_shredder_refuses_protected_path",
         "test_registry_cleaner_blocks_protected_keys",
-        "test_registry_cleaner_fail_closed_on_backup_failure"
+        "test_registry_cleaner_fail_closed_on_backup_failure",
+        "test_deleter_fail_closed_when_send2trash_missing",
+        "test_advanced_shredder_rejects_unknown_method",
+        "test_unmocked_real_hardware_storage_detection"
       ]
     },
     {

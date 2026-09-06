@@ -132,3 +132,41 @@ def test_registry_cleaner_fail_closed_on_backup_failure(monkeypatch):
     }
     res = cleaner.remove_orphaned_entry(entry, auto_backup=True)
     assert res is False
+
+
+def test_deleter_fail_closed_when_send2trash_missing(monkeypatch):
+    """Deleter must fail closed with RuntimeError if use_trash=True but send2trash is unavailable."""
+    import cortex_unified.core.deleter as deleter_mod
+    monkeypatch.setattr(deleter_mod, "HAS_SEND2TRASH", False)
+
+    with pytest.raises(RuntimeError, match="send2trash.*unavailable.*irreversible"):
+        deleter_mod.Deleter(dry_run=False, use_trash=True)
+
+
+def test_advanced_shredder_rejects_unknown_method(tmp_path):
+    """AdvancedShredder must raise ValueError on unrecognized or invalid shred methods."""
+    dummy_file = tmp_path / "test_target.txt"
+    dummy_file.write_text("test data", encoding="utf-8")
+    shredder = AdvancedShredder()
+
+    with pytest.raises(ValueError, match="Unknown shred method 'bogus_algo'"):
+        shredder.shred_file(str(dummy_file), method="bogus_algo")
+
+    with pytest.raises(ValueError, match="Method must be a ShredMethod"):
+        shredder.shred_file(str(dummy_file), method=12345)
+
+
+def test_unmocked_real_hardware_storage_detection():
+    """Verify unmocked real hardware storage detection on the running operating system."""
+    from cortex_unified.engine.storage import StorageProbe
+    from cortex_unified.engine.models import StorageKind
+
+    probe = StorageProbe()
+    test_path = "C:/" if sys.platform == "win32" else "/"
+    info = probe.probe(test_path)
+
+    assert isinstance(info.kind, StorageKind)
+    assert isinstance(info.overwrite_effective, bool)
+    if sys.platform == "win32":
+        assert info.device.startswith("C:")
+        assert info.kind in (StorageKind.SSD, StorageKind.HDD, StorageKind.NVME, StorageKind.UNKNOWN)
