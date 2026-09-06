@@ -231,5 +231,5 @@ pytest tests/test_page_registry.py tests/test_icons.py -v
 python scripts/check_all_structure_files.py
 
 # 4. Verify launch and diagnostic health
-python -m cortex_unified.debug.runner
+python -m cortex_unified.debug
 ```
