@@ -3,7 +3,7 @@
   "passed": 501,
   "failed": 0,
   "pass_rate_percent": 100.0,
-  "duration_seconds": 6.69,
+  "duration_seconds": 6.75,
   "python_runtime": "3.14.7",
   "files": [
     {
