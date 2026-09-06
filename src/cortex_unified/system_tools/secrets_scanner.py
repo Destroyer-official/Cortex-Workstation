@@ -2043,6 +2043,37 @@ def generate_html_report(stats: ScanStats, output_path: str):
     categories = {}
     for f in stats.findings:
         categories[f.category] = categories.get(f.category, 0) + 1
+
+    sev_colors = ["red", "orange", "yellow", "green", "blue"]
+    sev_buttons_list = []
+    for i, s in enumerate(["CRITICAL", "HIGH", "MEDIUM", "LOW", "INFO"]):
+        color = sev_colors[i]
+        cnt = severity_counts.get(s, 0)
+        sev_buttons_list.append(
+            f'<button class="filter-btn" onclick="filterSeverity(\'{s}\', this)" style="color: var(--{color})">'
+            f'<span class="sev-dot" style="background:var(--{color})"></span>{s} '
+            f'<span class="filter-count">{cnt}</span></button>'
+        )
+    sev_buttons = "".join(sev_buttons_list)
+
+    cat_buttons_list = []
+    for cat, count in sorted(categories.items(), key=lambda x: -x[1]):
+        emoji = CATEGORY_EMOJI.get(cat, "📌")
+        cat_buttons_list.append(
+            f'<button class="filter-btn" onclick="filterCategory(\'{cat}\', this)">'
+            f'{emoji} {cat} <span class="filter-count">{count}</span></button>'
+        )
+    cat_buttons = "".join(cat_buttons_list)
+
+    comp_buttons_list = []
+    for fw in ["GDPR", "HIPAA", "PCI_DSS", "SOC2"]:
+        comp_buttons_list.append(
+            f'<button class="filter-btn" onclick="filterCompliance(\'{fw}\')">{fw}</button>'
+        )
+    compliance_section = (
+        f'<div class="sidebar-section"><div class="sidebar-title">Compliance Scope</div>{"".join(comp_buttons_list)}</div>'
+        if stats.findings else ""
+    )
     live_count = len(stats.live_credentials)
 
     html = f"""<!DOCTYPE html>
@@ -2212,13 +2243,13 @@ def generate_html_report(stats: ScanStats, output_path: str):
     <div class="sidebar-section">
       <div class="sidebar-title">Filter by Severity</div>
       <button class="filter-btn active" onclick="filterSeverity('ALL', this)">All Findings <span class="filter-count">{len(stats.findings)}</span></button>
-      {"".join(f'<button class="filter-btn" onclick="filterSeverity(\\"{s}\\", this)" style="color: var(--{["red","orange","yellow","green","blue"][i]})"><span class="sev-dot" style="background:var(--{["red","orange","yellow","green","blue"][i]})"></span>{s} <span class="filter-count">{severity_counts.get(s,0)}</span></button>' for i,s in enumerate(["CRITICAL","HIGH","MEDIUM","LOW","INFO"]))}
+      {sev_buttons}
     </div>
     <div class="sidebar-section">
       <div class="sidebar-title">Filter by Category</div>
-      {"".join(f'<button class="filter-btn" onclick="filterCategory(\\"{cat}\\", this)">{CATEGORY_EMOJI.get(cat,"📌")} {cat} <span class="filter-count">{count}</span></button>' for cat, count in sorted(categories.items(), key=lambda x: -x[1]))}
+      {cat_buttons}
     </div>
-    {"".join([f'<div class="sidebar-section"><div class="sidebar-title">Compliance Scope</div>{"".join(f"""<button class="filter-btn" onclick="filterCompliance(\\"{fw}\\")">{fw}</button>""" for fw in ["GDPR","HIPAA","PCI_DSS","SOC2"])}</div>']) if stats.findings else ""}
+    {compliance_section}
   </div>
   
   <div class="content">

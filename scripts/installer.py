@@ -92,6 +92,7 @@ class InstallerApp(tk.Tk):
     """Modern dark-themed Windows Setup Wizard."""
 
     def __init__(self):
+        """Initialize the InstallerApp window, style configuration, and UI components."""
         try:
             import ctypes
             ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("Destroyer.CortexWorkstation.Installer.1.2.0")
@@ -134,6 +135,7 @@ class InstallerApp(tk.Tk):
                     pass
 
     def _center_window(self):
+        """Center the installer dialog on the active primary display."""
         self.update_idletasks()
         w = self.winfo_width()
         h = self.winfo_height()
@@ -142,6 +144,7 @@ class InstallerApp(tk.Tk):
         self.geometry(f"{w}x{h}+{x}+{y}")
 
     def _build_ui(self):
+        """Construct the setup wizard header, options checklist, directory selector, and actions."""
         # Header banner
         header = tk.Frame(self, bg="#121722", height=80)
         header.pack(fill=tk.X)
@@ -215,11 +218,13 @@ class InstallerApp(tk.Tk):
         self.install_btn.pack(side=tk.RIGHT, padx=(0, 10), pady=12, ipadx=16, ipady=3)
 
     def _browse_dir(self):
+        """Open directory chooser dialog to specify custom installation target path."""
         chosen = filedialog.askdirectory(initialdir=self.install_dir_var.get(), title="Select Installation Directory")
         if chosen:
             self.install_dir_var.set(os.path.join(chosen, "CortexWorkstation"))
 
     def _start_install(self):
+        """Validate inputs and launch the asynchronous installation worker thread."""
         if self.is_installing:
             return
         self.is_installing = True
@@ -227,6 +232,7 @@ class InstallerApp(tk.Tk):
         threading.Thread(target=self._run_install, daemon=True).start()
 
     def _run_install(self):
+        """Worker routine extracting files, creating desktop/start menu shortcuts, and registering uninstaller."""
         target_dir = os.path.abspath(self.install_dir_var.get())
         try:
             self.status_lbl.config(text="Locating distribution archive…")
@@ -281,11 +287,13 @@ class InstallerApp(tk.Tk):
             messagebox.showerror("Installation Failed", f"An error occurred during installation:\n\n{err}", parent=self)
 
     def _install_success(self):
+        """Display completion notification and dismiss the installer wizard."""
         messagebox.showinfo("Installation Complete", f"{APP_NAME} v{APP_VERSION} has been installed successfully!", parent=self)
         self.destroy()
 
 
 def main():
+    """Main entrypoint executing the graphical Windows installation wizard."""
     app = InstallerApp()
     app.mainloop()
 

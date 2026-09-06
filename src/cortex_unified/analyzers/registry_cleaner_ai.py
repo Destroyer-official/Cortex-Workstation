@@ -72,6 +72,7 @@ except ImportError:
 
 if winreg is None:
     class _MockWinreg:
+        """Fallback mock implementation of winreg module for non-Windows platforms."""
         REG_NONE = 0
         REG_SZ = 1
         REG_EXPAND_SZ = 2

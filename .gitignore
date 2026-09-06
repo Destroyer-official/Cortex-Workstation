@@ -57,14 +57,5 @@ _archive/
 .tmp/
 .tmp*/
 
-# --- SEPARATE PROJECT: never ship with Cortex ---
-# NetStress is an unrelated offensive network tool that must NOT be committed,
-# packaged, or published as part of Cortex Cleaner. Keeping it ignored ensures
-# it can never be swept into the git repo, the sdist (setuptools_scm), or a
-# release. It should ideally live outside this workspace entirely.
-NetStress/
-Destroyer-DoS/
-attack.log
-
 # Release archives / stray downloads
 *.zip

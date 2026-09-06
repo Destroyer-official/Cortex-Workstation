@@ -70,6 +70,7 @@ References
 from __future__ import annotations
 
 import json
+import logging
 import os
 import re
 import shutil
@@ -82,6 +83,8 @@ try:
 except ImportError:
     winreg = None  # type: ignore
 from dataclasses import dataclass, field
+
+logger = logging.getLogger(__name__)
 from datetime import datetime
 from pathlib import Path
 from typing import Callable, Dict, List, Optional, Set, Tuple
@@ -498,25 +501,39 @@ class WindowsUpdateRepair:
         t0 = time.time()
         changes = []
         rollback = {}
+        errors = []
         reg_paths = [
-            r"HKCU:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate",
-            r"HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\WindowsUpdate",
-            r"HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate",
-            r"HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\WindowsUpdate",
+            r"HKCU\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate",
+            r"HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\WindowsUpdate",
+            r"HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate",
+            r"HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\WindowsUpdate",
         ]
         for path in reg_paths:
             if not self.dry_run:
+                sanitized_path = path.replace("\\", "_").replace(":", "")
+                export_path = self._backup_root / f"reg_{sanitized_path}.reg"
                 try:
-                    # Export before deletion
-                    export_path = self._backup_root / f"reg_{path.replace('\\','_').replace(':','')}.reg"
-                    self._run(["reg", "export", path, str(export_path), "/y"])
-                    rollback[path] = str(export_path)
-                    # Delete
-                    self._run(["reg", "delete", path, "/f"])
-                except Exception:
-                    pass
-            changes.append(f"Reset policies at {path}")
-        return PhaseResult("reset_registry_policies", True, changes, rollback, duration_seconds=time.time()-t0)
+                    # Export before deletion for rollback safety
+                    rc_exp, out_exp, err_exp = self._run(["reg", "export", path, str(export_path), "/y"])
+                    if rc_exp == 0 and export_path.exists():
+                        rollback[path] = str(export_path)
+                    else:
+                        logger.warning("Registry export returned %d for %s: %s", rc_exp, path, err_exp.strip())
+
+                    # Proceed to delete policy key
+                    rc_del, out_del, err_del = self._run(["reg", "delete", path, "/f"])
+                    if rc_del == 0:
+                        changes.append(f"Reset policies at {path}")
+                    else:
+                        logger.info("Registry key %s deletion returned %d: %s", path, rc_del, err_del.strip())
+                except Exception as ex:
+                    logger.error("Failed during registry policy reset for %s: %s", path, ex)
+                    errors.append(f"{path}: {ex}")
+            else:
+                changes.append(f"[DRY-RUN] Reset policies at {path}")
+        success = len(errors) == 0
+        err_msg = "; ".join(errors) if errors else None
+        return PhaseResult("reset_registry_policies", success, changes, rollback, error=err_msg, duration_seconds=time.time()-t0)
 
     def _phase_reset_security_descriptors(self) -> PhaseResult:
         """Reset BITS and wuauserv descriptors with `sc sdset`.

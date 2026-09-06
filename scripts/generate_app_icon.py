@@ -95,6 +95,7 @@ def create_cortex_icon(size: int = 256) -> Image.Image:
     return img
 
 def main():
+    """Generate multi-resolution PNG and Windows ICO assets for Cortex Workstation."""
     os.makedirs("assets/icons", exist_ok=True)
     sizes = [256, 128, 64, 48, 32, 16]
     images = [create_cortex_icon(s) for s in sizes]

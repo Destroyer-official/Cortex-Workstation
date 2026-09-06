@@ -27,9 +27,11 @@ class _SafeStream:
     """Safe stream fallback for Windows GUI executables where stdout/stderr are None."""
 
     def write(self, text: str) -> int:
+        """Discard or consume text output and return the written character count."""
         return len(text)
 
     def flush(self) -> None:
+        """No-op flush to satisfy the standard stream protocol."""
         pass
 
 

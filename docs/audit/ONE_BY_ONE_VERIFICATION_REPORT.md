@@ -1,11 +1,11 @@
 # Deep One-By-One Program File Verification Report
 
 > **Audited Files**: 501 | **Passed**: 501 | **Failed**: 0 | **Pass Rate**: 100.0%
-> **Verification Duration**: 7.32 seconds | **Python Runtime**: 3.14.7
+> **Verification Duration**: 7.08 seconds | **Python Runtime**: 3.14.7
 
 ## File-By-File Verification Results
 
-- [ ] **001. [`run_gui.py`](run_gui.py)** — **✓ PASS** (92 LOC)
+- [ ] **001. [`run_gui.py`](run_gui.py)** — **✓ PASS** (94 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (1)**: `_SafeStream` (2 methods)
   - **Functions (1)**: `main`
@@ -47,7 +47,7 @@
 - [ ] **011. [`scripts/deep_inspect_placeholders.py`](scripts/deep_inspect_placeholders.py)** — **✓ PASS** (56 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
 
-- [ ] **012. [`scripts/generate_app_icon.py`](scripts/generate_app_icon.py)** — **✓ PASS** (113 LOC)
+- [ ] **012. [`scripts/generate_app_icon.py`](scripts/generate_app_icon.py)** — **✓ PASS** (114 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Functions (2)**: `create_cortex_icon`, `main`
 
@@ -66,7 +66,7 @@
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Functions (1)**: `parse_file`
 
-- [ ] **017. [`scripts/installer.py`](scripts/installer.py)** — **✓ PASS** (294 LOC)
+- [ ] **017. [`scripts/installer.py`](scripts/installer.py)** — **✓ PASS** (302 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (1)**: `InstallerApp` (8 methods)
   - **Functions (4)**: `get_bundle_zip`, `create_shortcut`, `register_uninstaller`, `main`
@@ -234,7 +234,7 @@
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (1)**: `ProjectCacheScanner` (5 methods)
 
-- [ ] **058. [`src/cortex_unified/analyzers/registry_cleaner_ai.py`](src/cortex_unified/analyzers/registry_cleaner_ai.py)** — **✓ PASS** (1444 LOC)
+- [ ] **058. [`src/cortex_unified/analyzers/registry_cleaner_ai.py`](src/cortex_unified/analyzers/registry_cleaner_ai.py)** — **✓ PASS** (1445 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (5)**: `RegistryIssue` (1 methods), `ScanResult` (1 methods), `CleanResult` (0 methods), `_MLModel` (3 methods)
 
@@ -263,7 +263,7 @@
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Functions (25)**: `main`, `clean_empty`, `find_large_files`, `find_duplicates`, `clean_temp`, `analyze_disk`
 
-- [ ] **066. [`src/cortex_unified/compat_winreg.py`](src/cortex_unified/compat_winreg.py)** — **✓ PASS** (67 LOC)
+- [ ] **066. [`src/cortex_unified/compat_winreg.py`](src/cortex_unified/compat_winreg.py)** — **✓ PASS** (68 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
 
 - [ ] **067. [`src/cortex_unified/core/__init__.py`](src/cortex_unified/core/__init__.py)** — **✓ PASS** (1 LOC)
@@ -788,7 +788,7 @@
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (4)**: `PrefetchEntry` (0 methods), `PrefetchStatus` (0 methods), `PrefetchCleanResult` (1 methods), `PrefetchAnalyzer` (3 methods)
 
-- [ ] **198. [`src/cortex_unified/system_tools/privacy_blocker.py`](src/cortex_unified/system_tools/privacy_blocker.py)** — **✓ PASS** (965 LOC)
+- [ ] **198. [`src/cortex_unified/system_tools/privacy_blocker.py`](src/cortex_unified/system_tools/privacy_blocker.py)** — **✓ PASS** (967 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (2)**: `TweakDef` (1 methods), `PrivacyBlocker` (19 methods)
 
@@ -828,7 +828,7 @@
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (3)**: `SearchIndexStatus` (0 methods), `SearchIndexOperationResult` (1 methods), `SearchIndexOptimizer` (3 methods)
 
-- [ ] **208. [`src/cortex_unified/system_tools/secrets_scanner.py`](src/cortex_unified/system_tools/secrets_scanner.py)** — **✓ PASS** (2900 LOC)
+- [ ] **208. [`src/cortex_unified/system_tools/secrets_scanner.py`](src/cortex_unified/system_tools/secrets_scanner.py)** — **✓ PASS** (2931 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (5)**: `DetectionPattern` (0 methods), `Finding` (3 methods), `ScanStats` (7 methods), `VerificationResult` (1 methods)
   - **Functions (43)**: `compute_confidence`, `scan_file_bytes`, `scan_single_file`, `walk_files`, `compute_risk_score`, `run_scan`
@@ -953,7 +953,7 @@
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (2)**: `PendingUpdate` (1 methods), `WindowsUpdate` (8 methods)
 
-- [ ] **238. [`src/cortex_unified/system_tools/windows_update_repair.py`](src/cortex_unified/system_tools/windows_update_repair.py)** — **✓ PASS** (754 LOC)
+- [ ] **238. [`src/cortex_unified/system_tools/windows_update_repair.py`](src/cortex_unified/system_tools/windows_update_repair.py)** — **✓ PASS** (771 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (4)**: `PhaseResult` (0 methods), `DiagnosticReport` (1 methods), `RepairResult` (1 methods), `WindowsUpdateRepair` (22 methods)
 
@@ -1011,7 +1011,7 @@
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (2)**: `_UninstallWorker` (3 methods), `AdvancedUninstallerPage` (11 methods)
 
-- [ ] **253. [`src/cortex_unified/ui/premium/analysis_pages.py`](src/cortex_unified/ui/premium/analysis_pages.py)** — **✓ PASS** (2221 LOC)
+- [ ] **253. [`src/cortex_unified/ui/premium/analysis_pages.py`](src/cortex_unified/ui/premium/analysis_pages.py)** — **✓ PASS** (2222 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (22)**: `DiskAnalyzeWorker` (2 methods), `DiskHealthWorker` (1 methods), `ScheduledTasksWorker` (1 methods), `BootPerfWorker` (1 methods)
 

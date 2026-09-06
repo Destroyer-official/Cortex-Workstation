@@ -170,3 +170,80 @@ def test_unmocked_real_hardware_storage_detection():
     if sys.platform == "win32":
         assert info.device.startswith("C:")
         assert info.kind in (StorageKind.SSD, StorageKind.HDD, StorageKind.NVME, StorageKind.UNKNOWN)
+
+
+def test_windows_update_repair_registry_phase_handles_errors(monkeypatch, tmp_path):
+    """WindowsUpdateRepair registry reset must record failures and not swallow errors blindly."""
+    from cortex_unified.system_tools.windows_update_repair import WindowsUpdateRepair
+
+    repair = WindowsUpdateRepair(create_restore_point=False, dry_run=False)
+    repair._backup_root = tmp_path
+
+    # Simulate _run raising or returning error
+    def mock_run_fail(cmd, timeout=120, shell=False):
+        """Simulate subprocess failure during command execution."""
+        if "export" in cmd:
+            raise PermissionError("Access denied during export")
+        return (1, "", "Failed")
+
+    monkeypatch.setattr(repair, "_run", mock_run_fail)
+    res = repair._phase_reset_registry_policies()
+
+    assert res.phase == "reset_registry_policies"
+    assert res.success is False
+    assert res.error is not None
+    assert "Access denied" in res.error
+
+
+def test_zero_fstring_backslashes_for_python_310_compatibility():
+    """Verify zero backslashes exist inside f-string expressions across all repo python files."""
+    import ast
+
+    issues = []
+    root_dir = Path(__file__).resolve().parent.parent
+    for p in root_dir.rglob("*.py"):
+        rel = str(p.relative_to(root_dir))
+        if any(ign in rel for ign in [".git", ".venv", "venv", "__pycache__", "build", "dist"]):
+            continue
+        with open(p, "r", encoding="utf-8", errors="ignore") as fp:
+            src = fp.read()
+        try:
+            tree = ast.parse(src, filename=str(p))
+        except Exception as e:
+            issues.append(f"SyntaxError in {rel}: {e}")
+            continue
+        for node in ast.walk(tree):
+            if isinstance(node, ast.JoinedStr):
+                for val in node.values:
+                    if isinstance(val, ast.FormattedValue):
+                        seg = ast.get_source_segment(src, val.value)
+                        if seg and "\\" in seg:
+                            issues.append(f"{rel}:{val.lineno} -> {seg}")
+
+    assert issues == [], f"Found f-strings with backslashes incompatible with Python 3.10/3.11: {issues}"
+
+
+def test_docstring_coverage_100_percent():
+    """Verify all class and function definitions across the codebase have docstrings."""
+    import ast
+
+    missing = []
+    root_dir = Path(__file__).resolve().parent.parent
+    for p in root_dir.rglob("*.py"):
+        rel = str(p.relative_to(root_dir))
+        if any(ign in rel for ign in [".git", ".venv", "venv", "__pycache__", "build", "dist", "node_modules", "scratch", ".gemini"]):
+            continue
+        with open(p, "r", encoding="utf-8", errors="ignore") as fp:
+            src = fp.read()
+        try:
+            tree = ast.parse(src, filename=str(p))
+        except Exception:
+            continue
+        for node in ast.walk(tree):
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+                doc = ast.get_docstring(node)
+                if not doc or not doc.strip():
+                    missing.append(f"{rel}:{node.lineno} -> {type(node).__name__} {node.name}")
+
+    assert missing == [], f"Found definitions lacking docstrings: {missing}"
+

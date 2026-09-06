@@ -82,6 +82,7 @@ except ImportError:
 
 if winreg is None:
     class _MockWinreg:
+        """Fallback mock implementation of winreg module for non-Windows platforms."""
         REG_NONE = 0
         REG_SZ = 1
         REG_EXPAND_SZ = 2
@@ -588,8 +589,9 @@ class PrivacyBlocker:
         try:
             hive_str, subkey = path.split("\\", 1)
             hive = getattr(winreg, hive_str)
-            backup_file = self._backup_dir / f"reg_{hive_str}_{subkey.replace('\\','_')}_{int(time.time())}.reg"
-            subprocess.run(["reg", "export", f"{hive_str}\\{subkey}", str(backup_file), "/y"],
+            subkey_sanitized = subkey.replace("\\", "_")
+            backup_file = self._backup_dir / f"reg_{hive_str}_{subkey_sanitized}_{int(time.time())}.reg"
+            subprocess.run(["reg", "export", path, str(backup_file), "/y"],
                            check=True, capture_output=True)
             return str(backup_file)
         except Exception:

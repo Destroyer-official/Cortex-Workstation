@@ -51,6 +51,7 @@ if winreg is None or "winreg" not in sys.modules or sys.modules["winreg"] is Non
     _stub.KEY_WOW64_32KEY = 0x0200
 
     def _unsupported(*args, **kwargs):
+        """Raise OSError indicating winreg operations are unsupported on non-Windows platforms."""
         raise OSError("winreg operations are only supported on Windows")
 
     _stub.OpenKey = _unsupported

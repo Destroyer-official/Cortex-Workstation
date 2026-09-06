@@ -3,13 +3,13 @@
   "passed": 501,
   "failed": 0,
   "pass_rate_percent": 100.0,
-  "duration_seconds": 7.32,
+  "duration_seconds": 7.08,
   "python_runtime": "3.14.7",
   "files": [
     {
       "path": "run_gui.py",
       "abs_path": "D:/code/Main_projects/Cortex_Cleaner/run_gui.py",
-      "loc": 92,
+      "loc": 94,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -156,7 +156,7 @@
     {
       "path": "scripts/generate_app_icon.py",
       "abs_path": "D:/code/Main_projects/Cortex_Cleaner/scripts/generate_app_icon.py",
-      "loc": 113,
+      "loc": 114,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -226,7 +226,7 @@
     {
       "path": "scripts/installer.py",
       "abs_path": "D:/code/Main_projects/Cortex_Cleaner/scripts/installer.py",
-      "loc": 294,
+      "loc": 302,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -1100,7 +1100,7 @@
     {
       "path": "src/cortex_unified/analyzers/registry_cleaner_ai.py",
       "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/analyzers/registry_cleaner_ai.py",
-      "loc": 1444,
+      "loc": 1445,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -1248,7 +1248,7 @@
     {
       "path": "src/cortex_unified/compat_winreg.py",
       "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/compat_winreg.py",
-      "loc": 67,
+      "loc": 68,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -4176,7 +4176,7 @@
     {
       "path": "src/cortex_unified/system_tools/privacy_blocker.py",
       "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/privacy_blocker.py",
-      "loc": 965,
+      "loc": 967,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -4399,7 +4399,7 @@
     {
       "path": "src/cortex_unified/system_tools/secrets_scanner.py",
       "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/secrets_scanner.py",
-      "loc": 2900,
+      "loc": 2931,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -5180,7 +5180,7 @@
     {
       "path": "src/cortex_unified/system_tools/windows_update_repair.py",
       "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/windows_update_repair.py",
-      "loc": 754,
+      "loc": 771,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -5434,7 +5434,7 @@
     {
       "path": "src/cortex_unified/ui/premium/analysis_pages.py",
       "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/analysis_pages.py",
-      "loc": 2221,
+      "loc": 2222,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,

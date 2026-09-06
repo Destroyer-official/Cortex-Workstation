@@ -311,9 +311,10 @@ class DiskAnalyzerPage(_Page):
         """
         self.run_btn.setEnabled(True)
         usage = stats.get("disk_usage", {})
+        used_str = usage.get("used_human", "\u2014")
+        used_pct = usage.get("used_percent", 0)
         self.card_total.set_value(usage.get("total_human", "\u2014"))
-        self.card_used.set_value(
-            f"{usage.get('used_human', '\u2014')} ({usage.get('used_percent', 0):.0f}%)")
+        self.card_used.set_value(f"{used_str} ({used_pct:.0f}%)")
         self.card_free.set_value(usage.get("free_human", "\u2014"))
 
         types = stats.get("file_types", {})
