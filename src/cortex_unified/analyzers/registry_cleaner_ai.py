@@ -84,16 +84,14 @@ try:
 except ImportError:
     HAS_NUMPY = False
 
-
 # ---------------------------------------------------------------------------
 # Data structures
 # ---------------------------------------------------------------------------
 
 @dataclass(frozen=True, slots=True)
 class RegistryIssue:
-    """Registryissue.
+    """One registry finding: key/value, category, risk score, recommendation, and evidence.
 
-    Manages RegistryIssue operations and coordinates related state changes for the component.
     """
     key_path: str
     value_name: str
@@ -107,9 +105,7 @@ class RegistryIssue:
     backup_path: Optional[str] = None
 
     def to_dict(self) -> dict:
-        """to_dict.
-
-        Manages to dict operations and coordinates related state changes for the component.
+        """Serialize this issue to a plain dict.
 
         Returns:
             dict: Dictionary mapping identifiers to status or values.
@@ -117,12 +113,10 @@ class RegistryIssue:
         import dataclasses
         return dataclasses.asdict(self)
 
-
 @dataclass(frozen=True, slots=True)
 class ScanResult:
-    """ScanResult.
+    """Result of one registry scan: issues sorted by risk plus timing and model version.
 
-    Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
     """
     issues: List[RegistryIssue]
     scan_time: float
@@ -130,9 +124,7 @@ class ScanResult:
     model_version: str
 
     def to_json(self) -> str:
-        """to_json.
-
-        Manages to json operations and coordinates related state changes for the component.
+        """Serialize this scan result, including all issues, to indented JSON.
 
         Returns:
             str: Formatted string or path.
@@ -144,19 +136,16 @@ class ScanResult:
             "issues": [i.to_dict() for i in self.issues],
         }, indent=2)
 
-
 @dataclass
 class CleanResult:
-    """CleanResult.
+    """Outcome of one clean pass: cleaned and failed issues, restore flag, backup, and duration.
 
-    Permanently purges or removes specified target items, reclaiming storage space and logging actions taken.
     """
     cleaned: List[RegistryIssue]
     failed: List[Tuple[RegistryIssue, str]]
     restore_point_created: bool
     backup_path: str
     duration_seconds: float
-
 
 # ---------------------------------------------------------------------------
 # Feature extraction (pure Python, no ML deps required)
@@ -171,11 +160,8 @@ _HIVES = {
     "HKCU": (winreg.HKEY_CURRENT_USER, "HKEY_CURRENT_USER"),
 }
 
-
 def _split(path: str) -> Tuple[int, str, int]:
-    """Split.
-
-    Manages split operations and coordinates related state changes for the component.
+    """Split an HKLM/HKCU key path into hive handle, subkey, and 64-bit read access.
 
     Args:
         path (str): Filesystem path to the target file or directory.
@@ -190,11 +176,8 @@ def _split(path: str) -> Tuple[int, str, int]:
         access |= winreg.KEY_WOW64_64KEY
     return hive, rest, access
 
-
 def _split32(path: str) -> Optional[Tuple[int, str, int]]:
-    """Split32.
-
-    Manages split32 operations and coordinates related state changes for the component.
+    """Split an HKLM path into its 32-bit registry view, or None for non-HKLM paths.
 
     Args:
         path (str): Filesystem path to the target file or directory.
@@ -207,11 +190,8 @@ def _split32(path: str) -> Optional[Tuple[int, str, int]]:
     return (winreg.HKEY_LOCAL_MACHINE, path.partition("\\")[2],
             winreg.KEY_READ | winreg.KEY_WOW64_32KEY)
 
-
 def _expand(p: str) -> Optional[str]:
-    """Expand.
-
-    Manages expand operations and coordinates related state changes for the component.
+    """Expand env vars and registry ExpandEnvironmentStrings in a path value.
 
     Args:
         p (str): The p parameter.
@@ -223,7 +203,6 @@ def _expand(p: str) -> Optional[str]:
         return os.path.expandvars(winreg.ExpandEnvironmentStrings(p))
     except Exception:
         return os.path.expandvars(p) if p else p
-
 
 # Kernel services store ImagePath in NT device-path form, either absolute
 # ("\SystemRoot\...") or relative ("system32\drivers\..."). Relative paths are
@@ -243,11 +222,8 @@ _RELATIVE_ROOTS = (
     "%SystemRoot%\\SysWOW64",
 )
 
-
 def _resolve_target(raw: str) -> Optional[str]:
     """Resolve a registry path value to an on-disk path, or None if unresolvable.
-
-    Manages resolve target operations and coordinates related state changes for the component.
 
     Args:
         raw (str): The raw parameter.
@@ -274,7 +250,6 @@ def _resolve_target(raw: str) -> Optional[str]:
     # a.exe /x" still resolves without corrupting plain spaced paths.
     return _expand(s) or None
 
-
 def _target_candidates(raw: str) -> List[str]:
     """Every plausible absolute path a registry ImagePath/target could mean.
 
@@ -299,7 +274,6 @@ def _target_candidates(raw: str) -> List[str]:
         for root in _RELATIVE_ROOTS:
             candidates.append(str(Path(_expand(root)) / p))
     return candidates
-
 
 def _verifiable(path: str) -> bool:
     """True when absence of *path* can actually be proven.
@@ -339,7 +313,6 @@ def _verifiable(path: str) -> bool:
     except (PermissionError, OSError):
         return False
 
-
 def _target_exists(raw: str) -> bool:
     """True when *raw* resolves to an existing file under any known root.
 
@@ -348,11 +321,8 @@ def _target_exists(raw: str) -> bool:
     """
     return _target_exists_any(_target_candidates(raw))
 
-
 def _target_exists_any(candidates: List[str]) -> bool:
     """Same rule as :func:`_target_exists` for pre-resolved candidates.
-
-    Manages target exists any operations and coordinates related state changes for the component.
 
     Args:
         candidates (List[str]): The candidates parameter.
@@ -367,7 +337,6 @@ def _target_exists_any(candidates: List[str]) -> bool:
             return True  # cannot prove missing -> assume present
     return False
 
-
 # -- Per-category detectors --------------------------------------------------
 # Each detector receives (key_path, values, access) where values is the
 # {name: (data, type)} dict for the key, and returns True when the entry is
@@ -375,8 +344,6 @@ def _target_exists_any(candidates: List[str]) -> bool:
 
 def _exe_from_command(cmd: str) -> Optional[str]:
     """First absolute candidate for an executable named by a command line.
-
-    Manages exe from command operations and coordinates related state changes for the component.
 
     Args:
         cmd (str): The cmd parameter.
@@ -387,11 +354,8 @@ def _exe_from_command(cmd: str) -> Optional[str]:
     candidates = _target_candidates(cmd)
     return candidates[0] if candidates else None
 
-
 def _detect_missing_path(key_path: str, values: Dict, access: int) -> bool:
     r"""App Paths\<exe> whose (Default) target is gone.
-
-    Manages detect missing path operations and coordinates related state changes for the component.
 
     Args:
         key_path (str): Filesystem path to the target file or directory.
@@ -406,11 +370,8 @@ def _detect_missing_path(key_path: str, values: Dict, access: int) -> bool:
         return False
     return not _target_exists(target)
 
-
 def _detect_orphaned_uninstall(key_path: str, values: Dict, access: int) -> bool:
     r"""Uninstall\<app> entry whose InstallLocation / uninstaller is missing.
-
-    Manages detect orphaned uninstall operations and coordinates related state changes for the component.
 
     Args:
         key_path (str): Filesystem path to the target file or directory.
@@ -435,11 +396,8 @@ def _detect_orphaned_uninstall(key_path: str, values: Dict, access: int) -> bool
     # No location recorded: orphan only when no uninstaller target survives.
     return isinstance(uninst, str) and bool(uninst.strip()) and not _target_exists(uninst)
 
-
 def _detect_missing_path_value(key_path: str, values: Dict, access: int) -> bool:
     """Any REG_EXPAND_SZ/REG_SZ value that names a file that no longer exists.
-
-    Manages detect missing path value operations and coordinates related state changes for the component.
 
     Args:
         key_path (str): Filesystem path to the target file or directory.
@@ -462,11 +420,8 @@ def _detect_missing_path_value(key_path: str, values: Dict, access: int) -> bool
             return True
     return False
 
-
 def _detect_shared_dll_gone(key_path: str, values: Dict, access: int) -> bool:
     """SharedDLLs: every value name is a DLL path; flag the missing ones.
-
-    Manages detect shared dll gone operations and coordinates related state changes for the component.
 
     Args:
         key_path (str): Filesystem path to the target file or directory.
@@ -481,7 +436,6 @@ def _detect_shared_dll_gone(key_path: str, values: Dict, access: int) -> bool:
             return True
     return False
 
-
 def _font_candidates(data: str) -> List[str]:
     """Absolute candidates for a Fonts value.
 
@@ -494,11 +448,8 @@ def _font_candidates(data: str) -> List[str]:
     fonts_dir = _expand(r"%SystemRoot%\Fonts")
     return [str(Path(fonts_dir) / data)]
 
-
 def _detect_orphaned_font(key_path: str, values: Dict, access: int) -> bool:
     """Fonts: value data names font files under the Fonts directory.
-
-    Manages detect orphaned font operations and coordinates related state changes for the component.
 
     Args:
         key_path (str): Filesystem path to the target file or directory.
@@ -514,7 +465,6 @@ def _detect_orphaned_font(key_path: str, values: Dict, access: int) -> bool:
         if not _target_exists_any(_font_candidates(data)):
             return True
     return False
-
 
 def _detect_orphaned_service(key_path: str, values: Dict, access: int) -> bool:
     """Services\\<svc>: the driver or service binary is verifiably gone.
@@ -540,11 +490,8 @@ def _detect_orphaned_service(key_path: str, values: Dict, access: int) -> bool:
         return False  # nothing to verify; never guess
     return not _target_exists(image)
 
-
 def _key_age_days(key_path: str, access: Optional[int] = None) -> int:
     """Days since the key's last write, from the FILETIME QueryInfoKey returns.
-
-    Manages key age days operations and coordinates related state changes for the component.
 
     Args:
         key_path (str): Filesystem path to the target file or directory.
@@ -568,12 +515,10 @@ def _key_age_days(key_path: str, access: Optional[int] = None) -> int:
         return 0
     return max(0, int((time.time() - seconds) / 86_400))
 
-
 #: MRU entries older than this are considered stale. 180 days matches the
 #: retention window common to RunMRU / ComDlg32 "last visited" lists before
 #: Windows rotates them out.
 _MRU_STALE_DAYS = 180
-
 
 def _detect_stale_mru(key_path: str, values: Dict, access: int,
                       stale_days: int = _MRU_STALE_DAYS) -> bool:
@@ -586,7 +531,6 @@ def _detect_stale_mru(key_path: str, values: Dict, access: int,
     if not values:
         return False
     return _key_age_days(key_path, access or None) >= stale_days
-
 
 #: category -> (roots, detector, also_scan_32bit_view)
 _CATEGORY_DEFS: Dict[str, Tuple[List[str], Any, bool]] = {
@@ -659,17 +603,13 @@ _CATEGORY_PATTERNS = {
     "leftover_software_key": [r"HKLM\\Software\\[^\\]+$"],
 }
 
-
 def _log2(x: float) -> float:
     """math.log2 with the 0-limit handled, so entropy of a single-symbol
     string is 0 rather than a domain error."""
     return math.log2(x) if x > 0 else 0.0
 
-
 def _categorize_key(key_path: str) -> str:
     """Fast rule-based categorization.
-
-    Manages categorize key operations and coordinates related state changes for the component.
 
     Args:
         key_path (str): Filesystem path to the target file or directory.
@@ -683,14 +623,11 @@ def _categorize_key(key_path: str) -> str:
                 return cat
     return "unknown"
 
-
 def _extract_features(key_path: str, value_name: str, value_data: str,
                       value_type: int, parent_exists: bool,
                       uninstaller_exists: bool, is_signed: bool,
                       age_days: int) -> List[float]:
     """Extract numerical features for ML model.
-
-    Manages extract features operations and coordinates related state changes for the component.
 
     Args:
         key_path (str): Filesystem path to the target file or directory.
@@ -755,7 +692,6 @@ def _extract_features(key_path: str, value_name: str, value_data: str,
 
     return features
 
-
 # ---------------------------------------------------------------------------
 # Authenticode verification (WinVerifyTrust, no external tools)
 # ---------------------------------------------------------------------------
@@ -774,17 +710,15 @@ def _is_authenticode_signed(path: Path) -> bool:
         return False
 
     class GUID(ctypes.Structure):
-        """Guid.
+        """GUID struct for WinVerifyTrust Authenticode checks.
 
-        Manages GUID operations and coordinates related state changes for the component.
         """
         _fields_ = [("Data1", wintypes.DWORD), ("Data2", wintypes.WORD),
                     ("Data3", wintypes.WORD), ("Data4", ctypes.c_byte * 8)]
 
     class WINTRUST_FILE_INFO(ctypes.Structure):
-        """WINTRUST_FILE_INFO.
+        """WINTRUST_FILE_INFO struct naming the file WinVerifyTrust should verify.
 
-        Manages WINTRUST FILE INFO operations and coordinates related state changes for the component.
         """
         _fields_ = [("cbStruct", wintypes.DWORD),
                     ("pcwszFilePath", wintypes.LPCWSTR),
@@ -792,9 +726,8 @@ def _is_authenticode_signed(path: Path) -> bool:
                     ("pgKnownSubject", ctypes.c_void_p)]
 
     class WINTRUST_DATA(ctypes.Structure):
-        """WINTRUST_DATA.
+        """WINTRUST_DATA struct requesting UI-less, no-revocation Authenticode verification.
 
-        Manages WINTRUST DATA operations and coordinates related state changes for the component.
         """
         _fields_ = [("cbStruct", wintypes.DWORD),
                     ("pPolicyCallbackData", ctypes.c_void_p),
@@ -833,21 +766,17 @@ def _is_authenticode_signed(path: Path) -> bool:
     except Exception:
         return False
 
-
 # ---------------------------------------------------------------------------
 # ONNX Model wrapper
 # ---------------------------------------------------------------------------
 
 class _MLModel:
-    """Mlmodel.
+    """ONNX registry-risk model with a rule-based fallback when ONNX or NumPy is missing.
 
-    Manages MLModel operations and coordinates related state changes for the component.
     """
 
     def __init__(self, model_path: Optional[str] = None):
-        """__init__.
-
-        Initializes the instance and configures internal state.
+        """Load the ONNX session when a model path, runtime, and file are all available.
 
         Args:
             model_path (Optional[str]): Filesystem path to the target file or directory.
@@ -864,9 +793,7 @@ class _MLModel:
                 self.session = None
 
     def predict(self, features: List[float]) -> Tuple[float, float]:
-        """Predict.
-
-        Manages predict operations and coordinates related state changes for the component.
+        """Score a feature vector as (risk, confidence), falling back to heuristics when unavailable.
 
         Args:
             features (List[float]): The features parameter.
@@ -889,8 +816,6 @@ class _MLModel:
 
     def _heuristic_score(self, features: List[float]) -> Tuple[float, float]:
         """Rule-based fallback when ML unavailable.
-
-        Manages heuristic score operations and coordinates related state changes for the component.
 
         Args:
             features (List[float]): The features parameter.
@@ -916,7 +841,6 @@ class _MLModel:
         risk = max(0.0, min(1.0, risk))
         return risk, 0.7
 
-
 # ---------------------------------------------------------------------------
 # Core cleaner
 # ---------------------------------------------------------------------------
@@ -929,11 +853,9 @@ _KEY_LEVEL_CATEGORIES = frozenset({
     "stale_mru_cache",         # the whole MRU list is stale
 })
 
-
 class AIRegistryCleaner:
-    """Airegistrycleaner.
+    """Scans registry categories for provably-missing targets, scores risk, and cleans with backups.
 
-    Manages AIRegistryCleaner operations and coordinates related state changes for the component.
     """
 
     def __init__(
@@ -943,9 +865,7 @@ class AIRegistryCleaner:
         progress_callback: Optional[Callable[[str], None]] = None,
         cancel_event: Optional[threading.Event] = None,
     ):
-        """__init__.
-
-        Initializes the instance and configures internal state.
+        """Store model, restore-point flag, progress/cancel hooks, and prepare the backup dir.
 
         Args:
             model_path (Optional[str]): Filesystem path to the target file or directory.
@@ -964,9 +884,7 @@ class AIRegistryCleaner:
     # -- helpers
 
     def _run_ps(self, script: str, timeout: int = 60) -> Tuple[int, str, str]:
-        """_run_ps.
-
-        Manages run ps operations and coordinates related state changes for the component.
+        """Run one PowerShell command and return (returncode, stdout, stderr).
 
         Args:
             script (str): The script parameter.
@@ -988,9 +906,7 @@ class AIRegistryCleaner:
             return -1, "", str(exc)
 
     def _key_exists(self, path: str) -> bool:
-        """_key_exists.
-
-        Manages key exists operations and coordinates related state changes for the component.
+        """True when a registry key exists in either the native or 32-bit view.
 
         Args:
             path (str): Filesystem path to the target file or directory.
@@ -1014,9 +930,7 @@ class AIRegistryCleaner:
         return False
 
     def _get_parent(self, path: str) -> Optional[str]:
-        """_get_parent.
-
-        Manages get parent operations and coordinates related state changes for the component.
+        """Parent key path, or None when the path has no parent.
 
         Args:
             path (str): Filesystem path to the target file or directory.
@@ -1031,8 +945,6 @@ class AIRegistryCleaner:
 
     def _values_map(self, path: str, access: Optional[int] = None) -> Dict[str, Tuple[Any, int]]:
         """{name: (data, type)} for a key; empty dict when unreadable.
-
-        Manages values map operations and coordinates related state changes for the component.
 
         Args:
             path (str): Filesystem path to the target file or directory.
@@ -1060,9 +972,7 @@ class AIRegistryCleaner:
         return out
 
     def _enum_values(self, path: str) -> List[Tuple[str, Any, int]]:
-        """_enum_values.
-
-        Manages enum values operations and coordinates related state changes for the component.
+        """List (name, data, type) triples for one registry key.
 
         Args:
             path (str): Filesystem path to the target file or directory.
@@ -1074,8 +984,6 @@ class AIRegistryCleaner:
 
     def _check_uninstaller(self, path: str) -> bool:
         """True when this key names an uninstaller that still exists on disk.
-
-        Manages check uninstaller operations and coordinates related state changes for the component.
 
         Args:
             path (str): Filesystem path to the target file or directory.
@@ -1093,8 +1001,6 @@ class AIRegistryCleaner:
 
     def _check_signature(self, path: str) -> bool:
         """Authenticode check on the first referenced binary, via WinVerifyTrust.
-
-        Manages check signature operations and coordinates related state changes for the component.
 
         Args:
             path (str): Filesystem path to the target file or directory.
@@ -1118,8 +1024,6 @@ class AIRegistryCleaner:
 
     def _estimate_age(self, path: str) -> int:
         """Days since the key's last write, from the FILETIME QueryInfoKey returns.
-
-        Manages estimate age operations and coordinates related state changes for the component.
 
         Args:
             path (str): Filesystem path to the target file or directory.
@@ -1235,8 +1139,6 @@ class AIRegistryCleaner:
     def _iter_subkeys(self, root: str, access: Optional[int] = None) -> List[str]:
         """Immediate subkey paths of *root* (plus *root* itself for value-only keys).
 
-        Manages iter subkeys operations and coordinates related state changes for the component.
-
         Args:
             root (str): Filesystem path to the target file or directory.
             access (Optional[int]): The access parameter.
@@ -1264,8 +1166,6 @@ class AIRegistryCleaner:
     def _offending_value(self, key_path: str, values: Dict[str, Tuple[Any, int]],
                          category: str) -> Tuple[str, str, int]:
         """Pick the value whose target is missing, for display and removal.
-
-        Manages offending value operations and coordinates related state changes for the component.
 
         Args:
             key_path (str): Filesystem path to the target file or directory.
@@ -1408,8 +1308,6 @@ class AIRegistryCleaner:
     def _delete_value(self, key_path: str, value_name: str) -> None:
         """Delete one value, honouring the registry view the scan used.
 
-        Manages delete value operations and coordinates related state changes for the component.
-
         Args:
             key_path (str): Filesystem path to the target file or directory.
             value_name (str): The value name parameter.
@@ -1484,9 +1382,7 @@ class AIRegistryCleaner:
         return saved[0]
 
     def _create_restore_point(self) -> bool:
-        """_create_restore_point.
-
-        Manages create restore point operations and coordinates related state changes for the component.
+        """Create a System Restore point via Checkpoint-Computer; False on any failure.
 
         Returns:
             bool: True if the operation succeeded, False otherwise.
@@ -1500,7 +1396,6 @@ class AIRegistryCleaner:
             return True
         except Exception:
             return False
-
 
 __all__ = [
     "AIRegistryCleaner",

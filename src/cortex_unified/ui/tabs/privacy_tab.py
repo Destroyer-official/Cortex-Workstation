@@ -27,9 +27,9 @@ from cortex_unified.analyzers.czkawka_tools import ExifCleaner
 # ──────────────────────────────────────────────────────────────────────
 
 class BrowserScanWorker(QObject):
-    """Browserscanworker.
+    """QThread worker scanning browsers and system traces via PrivacyCleaner.
 
-    Manages BrowserScanWorker operations and coordinates related state changes for the component.
+        Emits finished with browser data and system traces.
     """
     finished = Signal(dict, dict)  # browser_data, system_traces
 
@@ -46,16 +46,16 @@ class BrowserScanWorker(QObject):
 
 
 class ExifScanWorker(QThread):
-    """Exifscanworker.
+    """QThread worker scanning and stripping photo EXIF metadata via ExifCleaner.
 
-    Manages ExifScanWorker operations and coordinates related state changes for the component.
+        Emits scan_finished or strip_finished on success and error on failure.
     """
     scan_finished = Signal(list)
     strip_finished = Signal(dict)
     error = Signal(str)
 
     def __init__(self, root: str, action: str = "scan", paths_to_strip: list | None = None):
-        """Init.
+        """Store the photo root path and the scan/strip action.
 
         Initializes the instance and configures internal state.
 
@@ -70,7 +70,7 @@ class ExifScanWorker(QThread):
         self.paths_to_strip = paths_to_strip or []
 
     def run(self):
-        """Run.
+        """Scan photos via ExifCleaner and emit scan_finished (or strip_finished), or error.
 
         Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
         """
@@ -91,9 +91,9 @@ class ExifScanWorker(QThread):
 # ──────────────────────────────────────────────────────────────────────
 
 class PrivacyTab(BaseTab):
-    """Privacytab.
+    """Privacy tab with telemetry controls, browser/system sweeper, and EXIF photo scanner/stripper.
 
-    Manages PrivacyTab operations and coordinates related state changes for the component.
+        Browser and EXIF actions run BrowserScanWorker and ExifScanWorker threads; telemetry buttons edit the registry.
     """
 
     def __init__(self, config, logger, safety_manager, parent=None):
@@ -240,8 +240,6 @@ class PrivacyTab(BaseTab):
 
     def setup_tooltips(self):
         """Set tooltips for the telemetry block/restore buttons.
-
-        Manages setup tooltips operations and coordinates related state changes for the component.
         """
         self.btn_block.setToolTip("Modify registry to disable Windows telemetry (Admin required)")
         self.btn_restore.setToolTip("Remove custom telemetry blocks and restore Windows defaults")
@@ -491,8 +489,6 @@ class PrivacyTab(BaseTab):
 
     def _pick_exif_folder(self):
         """Browse to select a photo folder for EXIF scanning.
-
-        Manages pick exif folder operations and coordinates related state changes for the component.
         """
         folder = QFileDialog.getExistingDirectory(self, "Select Photos Directory", self.exif_path_edit.text())
         if folder:
@@ -542,8 +538,6 @@ class PrivacyTab(BaseTab):
 
     def _strip_exif(self):
         """Strip EXIF metadata in-place from scanned photos.
-
-        Manages strip exif operations and coordinates related state changes for the component.
         """
         if not self._exif_findings:
             return
@@ -583,9 +577,8 @@ class PrivacyTab(BaseTab):
         self._scan_exif()
 
     def _on_exif_error(self, err: str):
-        """Handle EXIF worker error.
+        """Re-enable the EXIF buttons, update the status label, and report the EXIF error.
 
-        Manages on exif error operations and coordinates related state changes for the component.
 
         Args:
             err (str): Error message string or exception instance.
@@ -596,9 +589,8 @@ class PrivacyTab(BaseTab):
         QMessageBox.critical(self, "EXIF Processing Error", err)
 
     def _teardown_worker(self, worker):
-        """Teardown finished worker.
+        """Unregister the finished worker thread and schedule it for deletion.
 
-        Manages teardown worker operations and coordinates related state changes for the component.
 
         Args:
             worker: The worker parameter.

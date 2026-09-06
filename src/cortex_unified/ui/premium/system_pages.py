@@ -54,8 +54,6 @@ IS_WINDOWS = sys.platform == "win32"
 def _windows_only(page: _Page, feature: str) -> bool:
     """Return True (after showing a notice on *page*) unless on Windows.
 
-    Manages windows only operations and coordinates related state changes for the component.
-
     Args:
         page (_Page): The page parameter.
         feature (str): The feature parameter.
@@ -77,10 +75,7 @@ def _windows_only(page: _Page, feature: str) -> bool:
 # =====================================================================
 
 class PrivacyScanWorker(QObject):
-    """Privacyscanworker.
-
-    Manages PrivacyScanWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker that scans browsers and system traces via PrivacyCleaner."""
     finished = Signal(dict, dict)   # browsers, traces
     failed = Signal(str)
 
@@ -98,10 +93,7 @@ class PrivacyScanWorker(QObject):
 
 
 class PrivacyCleanWorker(QObject):
-    """Privacycleanworker.
-
-    Manages PrivacyCleanWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker that cleans selected browser items via PrivacyCleaner."""
     finished = Signal(bool)
     failed = Signal(str)
 
@@ -138,10 +130,7 @@ class PrivacyCleanWorker(QObject):
 
 
 class StartupListWorker(QObject):
-    """Startuplistworker.
-
-    Manages StartupListWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker that lists startup items via StartupManager."""
     finished = Signal(list)
     failed = Signal(str)
 
@@ -158,10 +147,7 @@ class StartupListWorker(QObject):
 
 
 class TaskSnapshotWorker(QObject):
-    """Tasksnapshotworker.
-
-    Manages TaskSnapshotWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker that takes a task-manager snapshot via TaskManager."""
 
     finished = Signal(dict)
     failed = Signal(str)
@@ -183,10 +169,7 @@ class TaskSnapshotWorker(QObject):
 
 
 class NetworkWorker(QObject):
-    """Networkworker.
-
-    Manages NetworkWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker that snapshots connections via NetworkMonitor."""
 
     finished = Signal(list, dict)   # (connections, summary)
     failed = Signal(str)
@@ -210,10 +193,7 @@ class NetworkWorker(QObject):
 # =====================================================================
 
 class PrivacyPage(_Page):
-    """Privacypage.
-
-    Manages PrivacyPage operations and coordinates related state changes for the component.
-    """
+    """Privacy Shield page with scan/sweep buttons, results tree and state panel."""
 
     def __init__(self, win):
         """Build the scan/sweep buttons, results tree and state panel.
@@ -275,8 +255,6 @@ class PrivacyPage(_Page):
     def _on_scan(self, browsers: dict, traces: dict):
         """Populate the checkable results tree from the scan results.
 
-        Manages on scan operations and coordinates related state changes for the component.
-
         Args:
             browsers (dict): The browsers parameter.
             traces (dict): The traces parameter.
@@ -319,10 +297,7 @@ class PrivacyPage(_Page):
             "No privacy traces found." if total == 0 else f"Found {fmt_bytes(total)} of traces", 5000)
 
     def _sweep(self):
-        """Sweep.
-
-        Manages sweep operations and coordinates related state changes for the component.
-        """
+        """Collect checked tree items and run PrivacyCleanWorker after confirmation."""
         to_clean: dict[str, list[str]] = {}
         clean_system = False
         for i in range(self.tree.topLevelItemCount()):
@@ -354,8 +329,6 @@ class PrivacyPage(_Page):
     def _on_swept(self, ok: bool):
         """Report the sweep result, then re-scan.
 
-        Manages on swept operations and coordinates related state changes for the component.
-
         Args:
             ok (bool): The ok parameter.
         """
@@ -378,10 +351,7 @@ class PrivacyPage(_Page):
 
 
 class StartupPage(_Page):
-    """Startuppage.
-
-    Manages StartupPage operations and coordinates related state changes for the component.
-    """
+    """Startup Manager page with refresh/disable controls, app table and state panel."""
 
     def __init__(self, win):
         """Build the startup table with refresh/disable controls.
@@ -445,8 +415,6 @@ class StartupPage(_Page):
     def _on_loaded(self, items: list):
         """Fill the table with the fetched startup items.
 
-        Manages on loaded operations and coordinates related state changes for the component.
-
         Args:
             items (list): Collection of items or entries to process.
         """
@@ -466,10 +434,7 @@ class StartupPage(_Page):
         self.win.statusBar().showMessage(f"{len(items)} startup items", 5000)
 
     def _disable(self):
-        """Disable.
-
-        Manages disable operations and coordinates related state changes for the component.
-        """
+        """Disable selected startup items via StartupManager after confirmation."""
         rows = sorted({idx.row() for idx in self.tbl.selectedIndexes()})
         if not rows:
             QMessageBox.information(self, "No selection", "Select startup items to disable.")
@@ -651,8 +616,6 @@ class ProcessesPage(_Page):
         def name_icon(p: dict):
             """Return the process's native exe icon, or a placeholder glyph.
 
-            Manages name icon operations and coordinates related state changes for the component.
-
             Args:
                 p (dict): The p parameter.
             """
@@ -678,10 +641,7 @@ class ProcessesPage(_Page):
 
     # -- live lifecycle --
     def _start_live(self):
-        """Load once and start the live timer if "Live" is checked.
-
-        Manages start live operations and coordinates related state changes for the component.
-        """
+        """Load once and start the live timer if "Live" is checked."""
         self._load()
         if self.auto_chk.isChecked():
             self._timer.start()
@@ -807,10 +767,7 @@ class ProcessesPage(_Page):
             self.breakdown.setText(self._breakdown_html)
 
     def _apply_filter(self):
-        """Forward the search box text to the model's proxy filter.
-
-        Manages apply filter operations and coordinates related state changes for the component.
-        """
+        """Forward the search box text to the model's proxy filter."""
         # Search is the proxy's job now. The model keeps the whole snapshot and
         # the view simply stops asking for rows that don't match, so a keystroke
         # costs no list copy and no cell rebuild - and the "Processes" card keeps
@@ -819,10 +776,7 @@ class ProcessesPage(_Page):
         self._restore_selection()
 
     def _on_select(self, *_):
-        """Enable End Task when a row is selected; remember its PID.
-
-        Manages on select operations and coordinates related state changes for the component.
-        """
+        """Enable End Task when a row is selected; remember its PID."""
         record = self.table.selected_record()
         self.kill_btn.setEnabled(record is not None)
         if record is not None:
@@ -831,19 +785,13 @@ class ProcessesPage(_Page):
             self._selected_pid = record["pid"]
 
     def _restore_selection(self):
-        """Reselect the previously selected PID after model/filter changes.
-
-        Manages restore selection operations and coordinates related state changes for the component.
-        """
+        """Reselect the previously selected PID after model/filter changes."""
         if self._selected_pid is None:
             return
         self.table.select_where(lambda p: p["pid"] == self._selected_pid)
 
     def _kill(self):
-        """Kill.
-
-        Manages kill operations and coordinates related state changes for the component.
-        """
+        """End the selected process via TaskManager after confirmation."""
         record = self.table.selected_record()
         if record is None:
             return
@@ -877,10 +825,7 @@ class ProcessesPage(_Page):
 
 
 class NetworkPage(_Page):
-    """Networkpage.
-
-    Manages NetworkPage operations and coordinates related state changes for the component.
-    """
+    """Network Monitor page with summary cards, search/live controls and connections table."""
 
     def __init__(self, win):
         """Build summary cards, search/live controls and the risk-coloured
@@ -972,10 +917,7 @@ class NetworkPage(_Page):
         self._loaded = False
 
     def _start_live(self):
-        """Load once and start the live timer if "Live" is checked.
-
-        Manages start live operations and coordinates related state changes for the component.
-        """
+        """Load once and start the live timer if "Live" is checked."""
         self._load()
         if self.auto_chk.isChecked():
             self._timer.start()
@@ -1017,8 +959,6 @@ class NetworkPage(_Page):
 
     def _on_loaded(self, conns: list, summary: dict):
         """Update the summary cards and hint, then reapply the filter.
-
-        Manages on loaded operations and coordinates related state changes for the component.
 
         Args:
             conns (list): The conns parameter.
@@ -1090,9 +1030,7 @@ class NetworkPage(_Page):
         return ""
 
     def _risk_colour(self, c: dict):
-        """Return the row colour for a process risk level.
-
-        Manages risk colour operations and coordinates related state changes for the component.
+        """Return the row colour for a connection risk level.
 
         Args:
             c (dict): The c parameter.
@@ -1100,9 +1038,7 @@ class NetworkPage(_Page):
         return self._RISK_COLOUR.get(self._risk(c))
 
     def _risk_tooltip(self, c: dict) -> str:
-        """Return the tooltip text explaining a process risk level.
-
-        Manages risk tooltip operations and coordinates related state changes for the component.
+        """Return the tooltip text explaining a connection risk level.
 
         Args:
             c (dict): The c parameter.
@@ -1119,9 +1055,7 @@ class NetworkPage(_Page):
         return icon if icon is not None else placeholder_icon(self.p)
 
     def _columns(self) -> list[Column]:
-        """Columns.
-
-        Manages columns operations and coordinates related state changes for the component.
+        """Declare the seven connection columns with risk colour and tooltips.
 
         Returns:
             list[Column]: List of processed items or identifiers.
@@ -1152,8 +1086,6 @@ class NetworkPage(_Page):
     def _local_text(self, c: dict) -> str:
         """Format the local endpoint address for the connections table.
 
-        Manages local text operations and coordinates related state changes for the component.
-
         Args:
             c (dict): The c parameter.
 
@@ -1166,8 +1098,6 @@ class NetworkPage(_Page):
 
     def _remote_text(self, c: dict) -> str:
         """Format the remote endpoint address for the connections table.
-
-        Manages remote text operations and coordinates related state changes for the component.
 
         Args:
             c (dict): The c parameter.
@@ -1202,8 +1132,6 @@ class NetworkPage(_Page):
     def _socket_key(c: dict) -> tuple:
         """Identity of a connection, stable across refreshes.
 
-        Manages socket key operations and coordinates related state changes for the component.
-
         Args:
             c (dict): The c parameter.
 
@@ -1213,10 +1141,7 @@ class NetworkPage(_Page):
         return (c.get("pid"), c.get("protocol"), c.get("local"), c.get("remote"))
 
     def _kill(self):
-        """Kill.
-
-        Manages kill operations and coordinates related state changes for the component.
-        """
+        """End the owning task of the selected connection after confirmation."""
         conn = self.table.selected_record()
         if conn is None:
             return
@@ -1263,10 +1188,7 @@ class NetworkPage(_Page):
 # =====================================================================
 
 class UninstallerListWorker(QObject):
-    """Uninstallerlistworker.
-
-    Manages UninstallerListWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker that lists installed apps via AppUninstaller."""
     finished = Signal(list)
     failed = Signal(str)
 
@@ -1283,10 +1205,7 @@ class UninstallerListWorker(QObject):
 
 
 class LeftoverScanWorker(QObject):
-    """Leftoverscanworker.
-
-    Manages LeftoverScanWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker that scans uninstall leftovers via LeftoverScanner."""
 
     finished = Signal(list)   # list[dict] findings
     failed = Signal(str)
@@ -1347,10 +1266,7 @@ class LeftoverScanWorker(QObject):
 
 
 class OrphanScanWorker(QObject):
-    """Orphanscanworker.
-
-    Manages OrphanScanWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker that scans Program Files orphans via LeftoverScanner."""
 
     finished = Signal(list)
     failed = Signal(str)
@@ -1394,10 +1310,7 @@ class OrphanScanWorker(QObject):
 
 
 class LeftoverCleanWorker(QObject):
-    """Leftovercleanworker.
-
-    Manages LeftoverCleanWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker that cleans leftover findings via LeftoverCleaner."""
 
     finished = Signal(list)   # list[dict] outcomes
     failed = Signal(str)
@@ -1450,10 +1363,7 @@ class LeftoverCleanWorker(QObject):
 
 
 class TelemetryStatusWorker(QObject):
-    """Telemetrystatusworker.
-
-    Manages TelemetryStatusWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker that reads telemetry status via TelemetryBlocker."""
     finished = Signal(dict)
     failed = Signal(str)
 
@@ -1470,10 +1380,7 @@ class TelemetryStatusWorker(QObject):
 
 
 class TelemetryApplyWorker(QObject):
-    """Telemetryapplyworker.
-
-    Manages TelemetryApplyWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker that blocks or restores telemetry via TelemetryBlocker."""
     finished = Signal(bool)
     failed = Signal(str)
 
@@ -1503,10 +1410,7 @@ class TelemetryApplyWorker(QObject):
 
 
 class RegistryScanWorker(QObject):
-    """Registryscanworker.
-
-    Manages RegistryScanWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker that scans orphaned registry entries via RegistryCleaner."""
     finished = Signal(list)
     failed = Signal(str)
 
@@ -1523,10 +1427,7 @@ class RegistryScanWorker(QObject):
 
 
 class RegistryCleanWorker(QObject):
-    """Registrycleanworker.
-
-    Manages RegistryCleanWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker that backs up then removes registry entries via RegistryCleaner."""
     finished = Signal(int, str)   # (removed_count, backup_path)
     failed = Signal(str)
 
@@ -1579,9 +1480,7 @@ _LEVEL_LABELS = {"VeryGood": "Very good", "Good": "Good",
 
 
 def _level_label(level: str) -> str:
-    """Return the display label for a registry/telemetry protection level.
-
-    Manages level label operations and coordinates related state changes for the component.
+    """Return the display label for a leftover confidence level.
 
     Args:
         level (str): The level parameter.
@@ -1595,8 +1494,6 @@ def _level_label(level: str) -> str:
 def _level_color(level: str):
     """Traffic-light the confidence tier so review is instant.
 
-    Manages level color operations and coordinates related state changes for the component.
-
     Args:
         level (str): The level parameter.
     """
@@ -1606,16 +1503,10 @@ def _level_color(level: str):
 
 
 class _LeftoverSection:
-    """Leftoversection.
-
-    Manages LeftoverSection operations and coordinates related state changes for the component.
-    """
+    """Leftover Scanner section mixin with scan/clean/keep controls and table."""
 
     def _build_leftover_section(self) -> None:
-        """Handle build leftover section for the page widgets and worker state.
-
-        Manages build leftover section operations and coordinates related state changes for the component.
-        """
+        """Build the leftover scan/clean/keep buttons, table and state panel."""
         self.v.addWidget(title_block(
             "Leftover Scanner",
             "Finds the files, folders, caches, shortcuts and registry keys "
@@ -1689,9 +1580,7 @@ class _LeftoverSection:
     # -- preferences / exclusions -------------------------------------------
 
     def _persist_restore_pref(self, checked: bool):
-        """Handle persist restore pref for the page widgets and worker state.
-
-        Manages persist restore pref operations and coordinates related state changes for the component.
+        """Persist the restore-point checkbox to SettingsStore.
 
         Args:
             checked (bool): The checked parameter.
@@ -1702,18 +1591,12 @@ class _LeftoverSection:
 
     @staticmethod
     def _exclusions_store():
-        """Compute and return the value for exclusions store used by the page.
-
-        Manages exclusions store operations and coordinates related state changes for the component.
-        """
+        """Return the ExclusionsStore for leftover paths."""
         from cortex_unified.system_tools.leftover_cleaner import ExclusionsStore
         return ExclusionsStore()
 
     def _keep_selected(self):
-        """Exclude the selected findings from every future scan.
-
-        Manages keep selected operations and coordinates related state changes for the component.
-        """
+        """Exclude the selected findings from every future scan."""
         selected = self._selected_findings()
         if not selected:
             return
@@ -1780,9 +1663,7 @@ class _LeftoverSection:
                             self._on_leftovers, self._leftover_fail)
 
     def _on_leftovers(self, findings: list):
-        """Handle worker results: refresh tables/trees, update the state panel, note status and clear the busy state.
-
-        Manages on leftovers operations and coordinates related state changes for the component.
+        """Show leftover findings in the table and update the status bar.
 
         Args:
             findings (list): The findings parameter.
@@ -1813,9 +1694,7 @@ class _LeftoverSection:
     # -- cleaning ---------------------------------------------------------
 
     def _selected_findings(self) -> list[dict]:
-        """Handle selected findings for the page widgets and worker state.
-
-        Manages selected findings operations and coordinates related state changes for the component.
+        """Return selected leftover records resolved through the proxy.
 
         Returns:
             list[dict]: List of processed items or identifiers.
@@ -1834,10 +1713,7 @@ class _LeftoverSection:
         return out
 
     def _on_leftover_select(self, *_):
-        """Handle worker results: re-enable buttons and clear the busy state.
-
-        Manages on leftover select operations and coordinates related state changes for the component.
-        """
+        """Enable clean/keep buttons when leftover rows are selected."""
         has = bool(self._selected_findings())
         self.clean_leftover_btn.setEnabled(has)
         self.keep_leftover_btn.setEnabled(has)
@@ -1877,9 +1753,7 @@ class _LeftoverSection:
             self._on_cleaned, self._leftover_fail)
 
     def _on_cleaned(self, outcomes: list):
-        """Handle worker results: refresh tables/trees, update the state panel and clear the busy state.
-
-        Manages on cleaned operations and coordinates related state changes for the component.
+        """Report cleanup outcomes and refresh the leftovers table.
 
         Args:
             outcomes (list): The outcomes parameter.
@@ -2021,9 +1895,7 @@ class UninstallerPage(_Page):
         self.win.run_worker(UninstallerListWorker(), self._on_loaded, self._fail)
 
     def _on_loaded(self, apps: list):
-        """Handle worker results: refresh tables/trees, update the state panel, note status and clear the busy state.
-
-        Manages on loaded operations and coordinates related state changes for the component.
+        """Show installed apps in the model and update the status bar.
 
         Args:
             apps (list): The apps parameter.
@@ -2040,9 +1912,7 @@ class UninstallerPage(_Page):
         self.win.statusBar().showMessage(f"{len(apps)} installed applications", 5000)
 
     def _filter(self, text: str):
-        """Filter.
-
-        Manages filter operations and coordinates related state changes for the component.
+        """Forward the search text to the proxy filter.
 
         Args:
             text (str): Display text string.
@@ -2074,17 +1944,11 @@ class UninstallerPage(_Page):
         return apps
 
     def _on_select(self, *_):
-        """Handle worker results: re-enable buttons and clear the busy state.
-
-        Manages on select operations and coordinates related state changes for the component.
-        """
+        """Enable Uninstall when app rows are selected."""
         self.uninstall_btn.setEnabled(bool(self._selected_apps()))
 
     def _uninstall(self):
-        """Uninstall.
-
-        Manages uninstall operations and coordinates related state changes for the component.
-        """
+        """Launch official uninstallers for selected apps after confirmation."""
         apps = self._selected_apps()
         if not apps:
             return
@@ -2160,10 +2024,7 @@ class LeftoverScannerPage(_Page, _LeftoverSection):
 
 
 class TelemetryPage(_Page):
-    """Telemetrypage.
-
-    Manages TelemetryPage operations and coordinates related state changes for the component.
-    """
+    """Telemetry Blocker page with block/restore buttons, feature tree and state panel."""
 
     def __init__(self, win):
         """Build the page layout (buttons, trees, title header, state panel) and connect button/worker actions.
@@ -2220,9 +2081,7 @@ class TelemetryPage(_Page):
         self.win.run_worker(TelemetryStatusWorker(), self._on_status, self._fail)
 
     def _on_status(self, status: dict):
-        """Handle worker results: refresh tables/trees, update cards/labels and clear the busy state.
-
-        Manages on status operations and coordinates related state changes for the component.
+        """Show telemetry feature states in the tree and update the label.
 
         Args:
             status (dict): The status parameter.
@@ -2236,9 +2095,7 @@ class TelemetryPage(_Page):
         self.status_lbl.setText(f"{blocked} of {total} telemetry features blocked.")
 
     def _apply(self, restore: bool):
-        """Apply.
-
-        Manages apply operations and coordinates related state changes for the component.
+        """Block telemetry or restore defaults via TelemetryApplyWorker after confirmation.
 
         Args:
             restore (bool): The restore parameter.
@@ -2260,9 +2117,7 @@ class TelemetryPage(_Page):
         self.win.run_worker(TelemetryApplyWorker(restore), self._on_applied, self._fail)
 
     def _on_applied(self, ok: bool):
-        """Handle worker results: re-enable buttons and clear the busy state.
-
-        Manages on applied operations and coordinates related state changes for the component.
+        """Re-enable buttons and refresh telemetry status.
 
         Args:
             ok (bool): The ok parameter.
@@ -2287,10 +2142,7 @@ class TelemetryPage(_Page):
 
 
 class RegistryPage(_Page):
-    """Registrypage.
-
-    Manages RegistryPage operations and coordinates related state changes for the component.
-    """
+    """Registry Cleaner page with scan/clean buttons, findings table and state panel."""
 
     def __init__(self, win):
         """Build the page layout (buttons, tables, title header, state panel) and connect button/worker actions.
@@ -2357,9 +2209,7 @@ class RegistryPage(_Page):
 
     # -- columns --
     def _columns(self) -> list[Column]:
-        """Columns.
-
-        Manages columns operations and coordinates related state changes for the component.
+        """Declare the three registry columns (subkey, hive, reason).
 
         Returns:
             list[Column]: List of processed items or identifiers.
@@ -2384,9 +2234,7 @@ class RegistryPage(_Page):
         self.win.run_worker(RegistryScanWorker(), self._on_scan, self._fail)
 
     def _on_scan(self, entries: list):
-        """Handle worker results: refresh tables/trees, update the state panel, note status and clear the busy state.
-
-        Manages on scan operations and coordinates related state changes for the component.
+        """Show orphaned registry entries in the model and update the status bar.
 
         Args:
             entries (list): Collection of items or entries to process.
@@ -2427,9 +2275,7 @@ class RegistryPage(_Page):
         self.win.run_worker(RegistryCleanWorker(list(self._entries)), self._on_clean, self._fail)
 
     def _on_clean(self, removed: int, backup: str):
-        """Handle worker results: note status and clear the busy state.
-
-        Manages on clean operations and coordinates related state changes for the component.
+        """Report removed entries and backup path, then re-scan.
 
         Args:
             removed (int): The removed parameter.

@@ -22,9 +22,7 @@ OLD_TS = time.time() - 45 * 86400
 
 
 def _backdate(path: Path, ts: float = OLD_TS) -> None:
-    """Backdate.
-
-    Manages backdate operations and coordinates related state changes for the component.
+    """Backdate using os.utime.
 
     Args:
         path (Path): Filesystem path to the target file or directory.
@@ -34,9 +32,7 @@ def _backdate(path: Path, ts: float = OLD_TS) -> None:
 
 
 def _make_old(path: Path, size: int = 32, ts: float = OLD_TS) -> Path:
-    """_make_old.
-
-    Manages make old operations and coordinates related state changes for the component.
+    """Make old using _backdate.
 
     Args:
         path (Path): Filesystem path to the target file or directory.
@@ -55,8 +51,6 @@ def _make_old(path: Path, size: int = 32, ts: float = OLD_TS) -> Path:
 @pytest.fixture
 def temp_roots(tmp_path, monkeypatch):
     """Two fake temp roots; TempCleaner.LOCATIONS is pointed at them.
-
-    Manages temp roots operations and coordinates related state changes for the component.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.
@@ -86,14 +80,9 @@ def _cleaner(**kwargs) -> TempCleaner:
 
 
 class TestScan:
-    """Testscan.
-
-    Manages TestScan operations and coordinates related state changes for the component.
-    """
+    """Group testscan tests covering finds old files with sizes and locations; skips fresh files; min age zero includes fresh files; exclude patterns honored; unreadable and missing roots are ignored; symlinked directory is never traversed."""
     def test_finds_old_files_with_sizes_and_locations(self, temp_roots):
-        """test_finds_old_files_with_sizes_and_locations.
-
-        Manages test finds old files with sizes and locations operations and coordinates related state changes for the component.
+        """Verify finds old files with sizes and locations via cleaner.scan, _make_old, _cleaner.
 
         Args:
             temp_roots: The temp roots parameter.
@@ -114,9 +103,7 @@ class TestScan:
         assert len(findings) == 2
 
     def test_skips_fresh_files(self, temp_roots):
-        """test_skips_fresh_files.
-
-        Manages test skips fresh files operations and coordinates related state changes for the component.
+        """Verify skips fresh files via cleaner.scan, _make_old, _cleaner.
 
         Args:
             temp_roots: The temp roots parameter.
@@ -132,9 +119,7 @@ class TestScan:
         assert fresh.exists()
 
     def test_min_age_zero_includes_fresh_files(self, temp_roots):
-        """test_min_age_zero_includes_fresh_files.
-
-        Manages test min age zero includes fresh files operations and coordinates related state changes for the component.
+        """Verify min age zero includes fresh files via scan, _cleaner.
 
         Args:
             temp_roots: The temp roots parameter.
@@ -148,9 +133,7 @@ class TestScan:
         assert findings[0].size_bytes == 7
 
     def test_exclude_patterns_honored(self, temp_roots):
-        """test_exclude_patterns_honored.
-
-        Manages test exclude patterns honored operations and coordinates related state changes for the component.
+        """Verify exclude patterns honored via cleaner.scan, _make_old, _cleaner.
 
         Args:
             temp_roots: The temp roots parameter.
@@ -167,9 +150,7 @@ class TestScan:
         assert drop.exists()
 
     def test_unreadable_and_missing_roots_are_ignored(self, tmp_path, monkeypatch):
-        """test_unreadable_and_missing_roots_are_ignored.
-
-        Manages test unreadable and missing roots are ignored operations and coordinates related state changes for the component.
+        """Verify unreadable and missing roots are ignored via monkeypatch.setattr, Path, scan.
 
         Args:
             tmp_path: Filesystem path to the target file or directory.
@@ -192,9 +173,7 @@ class TestScan:
         assert [Path(f.path).name for f in findings] == ["old.dat"]
 
     def test_symlinked_directory_is_never_traversed(self, temp_roots):
-        """test_symlinked_directory_is_never_traversed.
-
-        Manages test symlinked directory is never traversed operations and coordinates related state changes for the component.
+        """Verify symlinked directory is never traversed via link.symlink_to, pytest.skip, Path.
 
         Args:
             temp_roots: The temp roots parameter.
@@ -220,9 +199,7 @@ class TestScan:
         not sys.platform.startswith("win"), reason="junctions are Windows-only"
     )
     def test_junctioned_directory_is_never_traversed(self, temp_roots):
-        """test_junctioned_directory_is_never_traversed.
-
-        Manages test junctioned directory is never traversed operations and coordinates related state changes for the component.
+        """Verify junctioned directory is never traversed via pytest.mark.skipif, subprocess.run, pytest.skip.
 
         Args:
             temp_roots: The temp roots parameter.
@@ -251,21 +228,13 @@ class TestScan:
 
 
 class TestTotals:
-    """Testtotals.
-
-    Manages TestTotals operations and coordinates related state changes for the component.
-    """
+    """Group testtotals tests covering total reclaimable before scan is zero; total reclaimable sums scan results."""
     def test_total_reclaimable_before_scan_is_zero(self):
-        """test_total_reclaimable_before_scan_is_zero.
-
-        Manages test total reclaimable before scan is zero operations and coordinates related state changes for the component.
-        """
+        """Verify total reclaimable before scan is zero via total_reclaimable, _cleaner."""
         assert _cleaner().total_reclaimable() == 0
 
     def test_total_reclaimable_sums_scan_results(self, temp_roots):
-        """test_total_reclaimable_sums_scan_results.
-
-        Manages test total reclaimable sums scan results operations and coordinates related state changes for the component.
+        """Verify total reclaimable sums scan results via cleaner.scan, cleaner.total_reclaimable, _make_old.
 
         Args:
             temp_roots: The temp roots parameter.
@@ -280,14 +249,9 @@ class TestTotals:
 
 
 class TestClean:
-    """Testclean.
-
-    Manages TestClean operations and coordinates related state changes for the component.
-    """
+    """Group testclean tests covering dry run touches nothing; use trash removes files from scan results; without trash files are unlinked; refuses paths outside discovered roots; never deletes files modified within min age."""
     def test_dry_run_touches_nothing(self, temp_roots):
-        """test_dry_run_touches_nothing.
-
-        Manages test dry run touches nothing operations and coordinates related state changes for the component.
+        """Verify dry run touches nothing via cleaner.scan, cleaner.clean, _make_old.
 
         Args:
             temp_roots: The temp roots parameter.
@@ -306,9 +270,7 @@ class TestClean:
         assert a.exists() and b.exists()
 
     def test_use_trash_removes_files_from_scan_results(self, temp_roots, monkeypatch):
-        """test_use_trash_removes_files_from_scan_results.
-
-        Manages test use trash removes files from scan results operations and coordinates related state changes for the component.
+        """Verify use trash removes files from scan results via cleaner.scan, monkeypatch.setattr, cleaner.clean.
 
         Args:
             temp_roots: The temp roots parameter.
@@ -319,9 +281,7 @@ class TestClean:
         trashed = []
 
         def fake_send2trash(path):
-            """fake_send2trash.
-
-            Manages fake send2trash operations and coordinates related state changes for the component.
+            """Fake send2trash using trashed.append, os.unlink.
 
             Args:
                 path: Filesystem path to the target file or directory.
@@ -345,9 +305,7 @@ class TestClean:
         assert cleaner.scan() == []
 
     def test_without_trash_files_are_unlinked(self, temp_roots):
-        """test_without_trash_files_are_unlinked.
-
-        Manages test without trash files are unlinked operations and coordinates related state changes for the component.
+        """Verify without trash files are unlinked via cleaner.scan, cleaner.clean, _make_old.
 
         Args:
             temp_roots: The temp roots parameter.
@@ -362,9 +320,7 @@ class TestClean:
         assert not a.exists()
 
     def test_refuses_paths_outside_discovered_roots(self, temp_roots):
-        """test_refuses_paths_outside_discovered_roots.
-
-        Manages test refuses paths outside discovered roots operations and coordinates related state changes for the component.
+        """Verify refuses paths outside discovered roots via cleaner.scan, TempFinding, cleaner.clean.
 
         Args:
             temp_roots: The temp roots parameter.
@@ -386,9 +342,7 @@ class TestClean:
         assert outside.exists()
 
     def test_never_deletes_files_modified_within_min_age(self, temp_roots):
-        """test_never_deletes_files_modified_within_min_age.
-
-        Manages test never deletes files modified within min age operations and coordinates related state changes for the component.
+        """Verify never deletes files modified within min age via cleaner.scan, TempFinding, cleaner.clean.
 
         Args:
             temp_roots: The temp roots parameter.
@@ -411,23 +365,15 @@ class TestClean:
 
 
 class TestCleanTempCLI:
-    """Testcleantempcli.
-
-    Manages TestCleanTempCLI operations and coordinates related state changes for the component.
-    """
+    """Group testcleantempcli tests covering help lists command; dry run lists findings and deletes nothing; delete flag cleans after confirmation skip; trash flag routes through send2trash."""
     def test_help_lists_command(self):
-        """test_help_lists_command.
-
-        Manages test help lists command operations and coordinates related state changes for the component.
-        """
+        """Verify help lists command via result.output.lower, CliRunner, invoke."""
         result = CliRunner().invoke(main, ["clean-temp", "--help"])
         assert result.exit_code == 0
         assert "clean-temp" in result.output.lower()
 
     def test_dry_run_lists_findings_and_deletes_nothing(self, temp_roots):
-        """test_dry_run_lists_findings_and_deletes_nothing.
-
-        Manages test dry run lists findings and deletes nothing operations and coordinates related state changes for the component.
+        """Verify dry run lists findings and deletes nothing via CliRunner, runner.invoke, _make_old.
 
         Args:
             temp_roots: The temp roots parameter.
@@ -446,9 +392,7 @@ class TestCleanTempCLI:
         assert old.exists() and fresh.exists()
 
     def test_delete_flag_cleans_after_confirmation_skip(self, temp_roots):
-        """test_delete_flag_cleans_after_confirmation_skip.
-
-        Manages test delete flag cleans after confirmation skip operations and coordinates related state changes for the component.
+        """Verify delete flag cleans after confirmation skip via CliRunner, runner.invoke, _make_old.
 
         Args:
             temp_roots: The temp roots parameter.
@@ -464,9 +408,7 @@ class TestCleanTempCLI:
         assert "Deleted 1" in output
 
     def test_trash_flag_routes_through_send2trash(self, temp_roots, monkeypatch):
-        """test_trash_flag_routes_through_send2trash.
-
-        Manages test trash flag routes through send2trash operations and coordinates related state changes for the component.
+        """Verify trash flag routes through send2trash via monkeypatch.setattr, CliRunner, runner.invoke.
 
         Args:
             temp_roots: The temp roots parameter.
@@ -476,9 +418,7 @@ class TestCleanTempCLI:
         trashed = []
 
         def fake_send2trash(path):
-            """fake_send2trash.
-
-            Manages fake send2trash operations and coordinates related state changes for the component.
+            """Fake send2trash using trashed.append, os.unlink.
 
             Args:
                 path: Filesystem path to the target file or directory.

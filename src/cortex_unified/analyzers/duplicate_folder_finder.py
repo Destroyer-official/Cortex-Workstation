@@ -17,10 +17,7 @@ from cortex_unified.core.utils import normalize_path
 from cortex_unified.core.config import Config
 
 class DuplicateFolderFinder:
-    """Duplicatefolderfinder.
-
-    Manages DuplicateFolderFinder operations and coordinates related state changes for the component.
-    """
+    """Content-identical folder detector using order-independent content fingerprints."""
     
     def __init__(self, config: Config = None, root_path: str = "."):
         """
@@ -44,8 +41,6 @@ class DuplicateFolderFinder:
     
     def _should_exclude_path(self, path: Path) -> bool:
         """True when *path* hits an excluded directory name or pattern.
-
-        Manages should exclude path operations and coordinates related state changes for the component.
 
         Args:
             path (Path): Filesystem path to the target file or directory.
@@ -126,9 +121,7 @@ class DuplicateFolderFinder:
             threads = min(32, os.cpu_count() + 4)
 
         def _cancelled() -> bool:
-            """Cancelled.
-
-            Manages cancelled operations and coordinates related state changes for the component.
+            """Return True when the scan cancellation event is set.
 
             Returns:
                 bool: True if the operation succeeded, False otherwise.
@@ -136,9 +129,7 @@ class DuplicateFolderFinder:
             return cancel_event is not None and cancel_event.is_set()
 
         def _emit(text: str) -> None:
-            """Emit.
-
-            Manages emit operations and coordinates related state changes for the component.
+            """Forward status text to the progress callback, ignoring errors.
 
             Args:
                 text (str): Display text string.
@@ -211,9 +202,7 @@ class DuplicateFolderFinder:
         return self.duplicate_folders
     
     def get_stats(self) -> dict:
-        """Get statistics about the duplicate folder finding process.
-
-        Manages get stats operations and coordinates related state changes for the component.
+        """Summarize scanned folders, duplicate groups, and errors.
 
         Returns:
             dict: Dictionary mapping identifiers to status or values.

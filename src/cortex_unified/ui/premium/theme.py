@@ -76,10 +76,7 @@ def _shade(color: str, factor: float) -> str:
 
 @dataclass(frozen=True)
 class Palette:
-    """Palette.
-
-    Manages Palette operations and coordinates related state changes for the component.
-    """
+    """Palette (object) implementing Palette. Methods include accent_gradient(), glass()."""
 
     name: str
     is_dark: bool
@@ -122,9 +119,7 @@ class Palette:
     # convenience gradients
     @property
     def accent_gradient(self) -> str:
-        """accent_gradient.
-
-        Manages accent gradient operations and coordinates related state changes for the component.
+        """Build the accent gradient stylesheet string from the palette accent colors.
 
         Returns:
             str: Formatted string or path.
@@ -857,8 +852,6 @@ def load_fonts() -> None:
 
 def apply_theme(app: "QApplication", theme: str = "dark") -> Palette:
     """Apply a named theme ('dark'|'light') to the whole application.
-
-    Manages apply theme operations and coordinates related state changes for the component.
 
     Args:
         app ('QApplication'): The app parameter.

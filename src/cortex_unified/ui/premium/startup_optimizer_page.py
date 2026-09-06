@@ -40,10 +40,7 @@ _LOG = logging.getLogger("cortex.ui.premium.startup_optimizer")
 
 
 class _StartupScanWorker(QObject):
-    """Startupscanworker.
-
-    Manages StartupScanWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker (_StartupScanWorker) performing StartupScanWorker. Signals finished, progress, failed report status. Its run() step calls StartupOptimizer, opt.enumerate, emit, str."""
 
     finished = Signal(list)
     progress = Signal(str)
@@ -83,10 +80,7 @@ class _StartupScanWorker(QObject):
 
 
 class _DisableWorker(QObject):
-    """Disableworker.
-
-    Manages DisableWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker (_DisableWorker) performing DisableWorker. Signals finished, progress, failed report status. Configured with entries. Its run() step calls is_set, getattr, emit, loc.startswith."""
 
     finished = Signal(list)
     progress = Signal(str)
@@ -160,10 +154,7 @@ class _DisableWorker(QObject):
 
 
 class _EnableWorker(QObject):
-    """Enableworker.
-
-    Manages EnableWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker (_EnableWorker) performing EnableWorker. Signals finished, progress, failed report status. Configured with entries. Its run() step calls is_set, getattr, emit, loc.startswith."""
 
     finished = Signal(list)
     progress = Signal(str)
@@ -251,8 +242,6 @@ _IMPACT_ORDER = {"high": 0, "medium": 1, "low": 2, "unknown": 3}
 def _entry_type_label(entry) -> str:
     """Classify an entry as GUI, Network, Service, or Background from its flags/category.
 
-    Manages entry type label operations and coordinates related state changes for the component.
-
     Args:
         entry: The entry parameter.
 
@@ -274,8 +263,6 @@ def _entry_type_label(entry) -> str:
 def _entry_matches_filter(entry, type_filter: str) -> bool:
     """Return True when the entry's type label equals the filter (or filter is "All").
 
-    Manages entry matches filter operations and coordinates related state changes for the component.
-
     Args:
         entry: The entry parameter.
         type_filter (str): The type filter parameter.
@@ -290,8 +277,6 @@ def _entry_matches_filter(entry, type_filter: str) -> bool:
 
 def _sort_entries(entries: list, sort_key: str) -> list:
     """Sort entries by Name, Type, or Impact (high → low); unknown impact sorts last.
-
-    Manages sort entries operations and coordinates related state changes for the component.
 
     Args:
         entries (list): Collection of items or entries to process.
@@ -320,10 +305,7 @@ _COLUMNS = ("Name", "Type", "Path", "Command", "Impact", "Status")
 
 
 class StartupOptimizerPage(_Page):
-    """Startupoptimizerpage.
-
-    Manages StartupOptimizerPage operations and coordinates related state changes for the component.
-    """
+    """Startup Optimizer page: Enumerates registry, startup folders, and scheduled tasks."""
 
     def __init__(self, win):
         """Build the Startup Optimizer page: filter/sort bar, summary cards, and results table; auto-scans.
@@ -490,10 +472,7 @@ class StartupOptimizerPage(_Page):
     # -- scan ---------------------------------------------------------------
 
     def _run_scan(self):
-        """Disable buttons, clear the table, and start a _StartupScanWorker.
-
-        Manages run scan operations and coordinates related state changes for the component.
-        """
+        """Disable action buttons, show progress/status, and launch the background worker (setEnabled, setVisible, show_loading)."""
         self.refresh_btn.setEnabled(False)
         self.disable_btn.setEnabled(False)
         self.enable_btn.setEnabled(False)
@@ -561,10 +540,7 @@ class StartupOptimizerPage(_Page):
     # -- filtering / sorting ------------------------------------------------
 
     def _apply_filters(self, *_args):
-        """Filter entries by type combo, sort by sort combo, and repopulate the table.
-
-        Manages apply filters operations and coordinates related state changes for the component.
-        """
+        """Implement apply filters via currentText, _entry_matches_filter, _sort_entries."""
         type_filter = self.type_combo.currentText()
         sort_key = self.sort_combo.currentText()
         filtered = [
@@ -606,10 +582,7 @@ class StartupOptimizerPage(_Page):
     # -- summary cards ------------------------------------------------------
 
     def _update_summary(self):
-        """Refresh the Total / Enabled / Disabled / High Impact metric cards.
-
-        Manages update summary operations and coordinates related state changes for the component.
-        """
+        """Implement update summary via sum, setText."""
         total = len(self._all_entries)
         enabled = sum(1 for e in self._all_entries if getattr(e, "enabled", True))
         disabled = total - enabled
@@ -624,8 +597,6 @@ class StartupOptimizerPage(_Page):
     def _selected_entries(self) -> list:
         """Return the entries behind the currently selected table rows.
 
-        Manages selected entries operations and coordinates related state changes for the component.
-
         Returns:
             list: List of processed items or identifiers.
         """
@@ -635,10 +606,7 @@ class StartupOptimizerPage(_Page):
         ]
 
     def _update_buttons(self):
-        """Enable Disable/Enable buttons only when rows are selected.
-
-        Manages update buttons operations and coordinates related state changes for the component.
-        """
+        """Collect the rows currently selected in the results table and map them back to data objects."""
         has_sel = bool(self.tbl.selectedItems())
         self.disable_btn.setEnabled(has_sel)
         self.enable_btn.setEnabled(has_sel)
@@ -646,10 +614,7 @@ class StartupOptimizerPage(_Page):
     # -- disable ------------------------------------------------------------
 
     def _disable_selected(self):
-        """Run _DisableWorker on the selected startup entries.
-
-        Manages disable selected operations and coordinates related state changes for the component.
-        """
+        """Disable action buttons, show progress/status, and launch the background worker (self._selected_entries, setEnabled, setVisible)."""
         sel = self._selected_entries()
         if not sel:
             return
@@ -698,10 +663,7 @@ class StartupOptimizerPage(_Page):
     # -- enable -------------------------------------------------------------
 
     def _enable_selected(self):
-        """Run _EnableWorker on the selected startup entries.
-
-        Manages enable selected operations and coordinates related state changes for the component.
-        """
+        """Disable action buttons, show progress/status, and launch the background worker (self._selected_entries, setEnabled, setVisible)."""
         sel = self._selected_entries()
         if not sel:
             return

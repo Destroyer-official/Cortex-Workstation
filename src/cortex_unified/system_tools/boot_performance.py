@@ -43,9 +43,9 @@ _KIND = {
 
 @dataclass(slots=True)
 class BootRecord:
-    """Bootrecord.
+    """One Windows boot timing summary from Event ID 100.
 
-    Manages BootRecord operations and coordinates related state changes for the component.
+    Holds wall-clock boot and main-path times in milliseconds.
     """
     when: str
     boot_ms: int
@@ -53,9 +53,7 @@ class BootRecord:
 
     @property
     def boot_seconds(self) -> float:
-        """Boot seconds.
-
-        Manages boot seconds operations and coordinates related state changes for the component.
+        """Boot time in seconds derived from boot_ms.
 
         Returns:
             float: Result of the operation.
@@ -63,9 +61,7 @@ class BootRecord:
         return round(self.boot_ms / 1000.0, 1)
 
     def to_dict(self) -> dict[str, Any]:
-        """To dict.
-
-        Manages to dict operations and coordinates related state changes for the component.
+        """Serialize this boot record to a plain dict.
 
         Returns:
             dict[str, Any]: Dictionary mapping identifiers to status or values.
@@ -76,9 +72,9 @@ class BootRecord:
 
 @dataclass(slots=True)
 class BootIssue:
-    """Bootissue.
+    """One boot-degrading item from Events 101/102/103/109.
 
-    Manages BootIssue operations and coordinates related state changes for the component.
+    Records kind (app/driver/service/device), name, and time impact.
     """
     kind: str
     name: str
@@ -87,9 +83,7 @@ class BootIssue:
 
     @property
     def impact_seconds(self) -> float:
-        """Impact seconds.
-
-        Manages impact seconds operations and coordinates related state changes for the component.
+        """Degradation impact in seconds derived from impact_ms.
 
         Returns:
             float: Result of the operation.
@@ -97,9 +91,7 @@ class BootIssue:
         return round(self.impact_ms / 1000.0, 1)
 
     def to_dict(self) -> dict[str, Any]:
-        """To dict.
-
-        Manages to dict operations and coordinates related state changes for the component.
+        """Serialize this boot issue to a plain dict.
 
         Returns:
             dict[str, Any]: Dictionary mapping identifiers to status or values.
@@ -109,16 +101,15 @@ class BootIssue:
 
 
 class BootPerformanceMonitor:
-    """Bootperformancemonitor.
+    """Read-only analyzer of Windows boot performance event log.
 
-    Manages BootPerformanceMonitor operations and coordinates related state changes for the component.
+    Queries Diagnostics-Performance log via PowerShell; Windows-only, no
+    admin required for reads, no side effects.
     """
 
     @staticmethod
     def is_supported() -> bool:
-        """Is supported.
-
-        Manages is supported operations and coordinates related state changes for the component.
+        """True on Windows where the Diagnostics-Performance log exists.
 
         Returns:
             bool: True if the operation succeeded, False otherwise.
@@ -126,9 +117,9 @@ class BootPerformanceMonitor:
         return _IS_WINDOWS
 
     def analyze(self, max_boots: int = 10, max_issues: int = 40) -> dict[str, Any]:
-        """Analyze.
+        """Analyze recent boots and worst degraders from the event log.
 
-        Manages analyze operations and coordinates related state changes for the component.
+        Read-only PowerShell query; returns boots/issues plus averages.
 
         Args:
             max_boots (int): The max boots parameter.
@@ -152,9 +143,7 @@ class BootPerformanceMonitor:
 
     @staticmethod
     def _script(max_boots: int, max_issues: int) -> str:
-        """Script.
-
-        Manages script operations and coordinates related state changes for the component.
+        """Build the PowerShell script querying boot Events 100/101/102/103/109.
 
         Args:
             max_boots (int): The max boots parameter.
@@ -199,9 +188,7 @@ class BootPerformanceMonitor:
             return [], []
 
         def _int(v):
-            """Int.
-
-            Manages int operations and coordinates related state changes for the component.
+            """Coerce an event-log value to int, returning 0 when missing.
 
             Args:
                 v: The v parameter.
@@ -212,9 +199,7 @@ class BootPerformanceMonitor:
                 return 0
 
         def _as_list(v):
-            """_as_list.
-
-            Manages as list operations and coordinates related state changes for the component.
+            """Normalize a JSON value to a list for uniform iteration.
 
             Args:
                 v: The v parameter.
@@ -250,9 +235,9 @@ class BootPerformanceMonitor:
         return boots, issues
 
     def _run(self, script: str) -> str | None:
-        """Run.
+        """Run the boot-query PowerShell script with timeout, returning stdout.
 
-        Manages run operations and coordinates related state changes for the component.
+        Returns None on failure; read-only, no side effects.
 
         Args:
             script (str): The script parameter.

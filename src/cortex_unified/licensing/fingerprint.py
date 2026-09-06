@@ -33,9 +33,8 @@ _FINGERPRINT: str | None = None
 
 
 def _windows_ids() -> list[str]:
-    """_windows_ids.
+    """Collect Windows machine GUID and product ID identifiers.
 
-    Manages windows ids operations and coordinates related state changes for the component.
 
     Returns:
         list[str]: List of processed items or identifiers.
@@ -64,9 +63,8 @@ def _windows_ids() -> list[str]:
 
 
 def _macos_ids() -> list[str]:
-    """_macos_ids.
+    """Collect the macOS platform UUID via ioreg.
 
-    Manages macos ids operations and coordinates related state changes for the component.
 
     Returns:
         list[str]: List of processed items or identifiers.
@@ -92,9 +90,8 @@ def _macos_ids() -> list[str]:
 
 
 def _linux_ids() -> list[str]:
-    """_linux_ids.
+    """Collect the Linux machine ID from standard files.
 
-    Manages linux ids operations and coordinates related state changes for the component.
 
     Returns:
         list[str]: List of processed items or identifiers.
@@ -115,7 +112,6 @@ def _linux_ids() -> list[str]:
 def collect_identifiers() -> list[str]:
     """Return labelled platform identifiers (never persisted or logged).
 
-    Manages collect identifiers operations and coordinates related state changes for the component.
 
     Returns:
         list[str]: List of processed items or identifiers.
@@ -140,7 +136,6 @@ def collect_identifiers() -> list[str]:
 def compute_fingerprint() -> str:
     """Return the stable SHA-256 hex digest identifying this machine.
 
-    Manages compute fingerprint operations and coordinates related state changes for the component.
 
     Returns:
         str: Formatted string or path.
@@ -152,7 +147,6 @@ def compute_fingerprint() -> str:
 def get_fingerprint() -> str:
     """Memoised :func:`compute_fingerprint` (identifiers never change mid-run).
 
-    Manages get fingerprint operations and coordinates related state changes for the component.
 
     Returns:
         str: Formatted string or path.
@@ -166,7 +160,6 @@ def get_fingerprint() -> str:
 def reset_cache() -> None:
     """Forget the memoised digest (used by tests and diagnostics).
 
-    Manages reset cache operations and coordinates related state changes for the component.
     """
     global _FINGERPRINT
     _FINGERPRINT = None

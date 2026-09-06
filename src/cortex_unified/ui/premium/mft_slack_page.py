@@ -34,10 +34,7 @@ from .window import _Page, fmt_bytes
 
 
 class _MftScrubWorker(QObject):
-    """Mftscrubworker.
-
-    Manages MftScrubWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker (_MftScrubWorker) performing MftScrubWorker. Signals finished, scrub_finished report status. Configured with scrubber."""
     finished = Signal(object)
     scrub_finished = Signal(object)
 
@@ -53,27 +50,18 @@ class _MftScrubWorker(QObject):
         self.scrubber = scrubber
 
     def run_audit(self) -> None:
-        """run_audit.
-
-        Manages run audit operations and coordinates related state changes for the component.
-        """
+        """Execute the background run audit operation and emit the result for the page."""
         rep = self.scrubber.audit()
         self.finished.emit(rep)
 
     def run_scrub(self) -> None:
-        """run_scrub.
-
-        Manages run scrub operations and coordinates related state changes for the component.
-        """
+        """Execute the background run scrub operation and emit the result for the page."""
         rep = self.scrubber.scrub()
         self.scrub_finished.emit(rep)
 
 
 class MftSlackScrubberPage(_Page):
-    """Mftslackscrubberpage.
-
-    Manages MftSlackScrubberPage operations and coordinates related state changes for the component.
-    """
+    """NTFS Master File Table ($MFT) Slack Scrubber page: Detect and sanitize resident filename and data fragments lingering in deleted NTFS MFT records."""
 
     def __init__(self, win) -> None:
         """__init__.
@@ -167,9 +155,7 @@ class MftSlackScrubberPage(_Page):
         self.v.addWidget(self.note)
 
     def _on_volume_changed(self, vol: str) -> None:
-        """_on_volume_changed.
-
-        Manages on volume changed operations and coordinates related state changes for the component.
+        """Handle a selection change (on volume changed) by updating dependent labels and controls.
 
         Args:
             vol (str): The vol parameter.
@@ -182,10 +168,7 @@ class MftSlackScrubberPage(_Page):
         self.btn_scrub.setEnabled(False)
 
     def _start_audit(self) -> None:
-        """_start_audit.
-
-        Manages start audit operations and coordinates related state changes for the component.
-        """
+        """Disable action buttons, show progress/status, and launch the background worker (setEnabled, setVisible, setText)."""
         self.btn_audit.setEnabled(False)
         self.btn_scrub.setEnabled(False)
         self.progress_bar.setVisible(True)
@@ -199,9 +182,7 @@ class MftSlackScrubberPage(_Page):
         self._thread.start()
 
     def _on_audit_finished(self, report: MftScrubReport) -> None:
-        """_on_audit_finished.
-
-        Manages on audit finished operations and coordinates related state changes for the component.
+        """Finalize the finished worker (on audit finished): restore controls and display the reported values.
 
         Args:
             report (MftScrubReport): The generated report data object from the backend.
@@ -231,10 +212,7 @@ class MftSlackScrubberPage(_Page):
         self.lbl_status.setText(f"Audit complete for {self.current_volume}.")
 
     def _start_scrub(self) -> None:
-        """_start_scrub.
-
-        Manages start scrub operations and coordinates related state changes for the component.
-        """
+        """Validate the current selection and ask the user to confirm via a message box showing 'Confirm MFT Slack Sanitization'."""
         confirm = QMessageBox.question(
             self,
             "Confirm MFT Slack Sanitization",
@@ -258,9 +236,7 @@ class MftSlackScrubberPage(_Page):
         self._thread.start()
 
     def _on_scrub_finished(self, report: MftScrubReport) -> None:
-        """_on_scrub_finished.
-
-        Manages on scrub finished operations and coordinates related state changes for the component.
+        """Validate the current selection and ask the user to confirm via a message box showing 'MFT slack sanitized for'.
 
         Args:
             report (MftScrubReport): The generated report data object from the backend.

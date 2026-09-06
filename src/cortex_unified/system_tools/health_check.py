@@ -29,10 +29,7 @@ _DEDUCT = {"good": 0, "info": 0, "warning": 12, "critical": 30}
 
 @dataclass(slots=True)
 class HealthCheck:
-    """Healthcheck.
-
-    Manages HealthCheck operations and coordinates related state changes for the component.
-    """
+    """Single read-only health finding with severity and fix-page pointer."""
     id: str
     title: str
     severity: str          # good / warning / critical / info
@@ -40,9 +37,7 @@ class HealthCheck:
     action_page: str = ""  # page id to jump to, if any
 
     def to_dict(self) -> dict[str, Any]:
-        """To dict.
-
-        Manages to dict operations and coordinates related state changes for the component.
+        """Serialize this health check to a plain dict.
 
         Returns:
             dict[str, Any]: Dictionary mapping identifiers to status or values.
@@ -53,18 +48,13 @@ class HealthCheck:
 
 @dataclass(slots=True)
 class HealthReport:
-    """Healthreport.
-
-    Manages HealthReport operations and coordinates related state changes for the component.
-    """
+    """Aggregated health report with checks plus weighted score/grade."""
     checks: list[HealthCheck] = field(default_factory=list)
     score: int = 100
     grade: str = "A"
 
     def to_dict(self) -> dict[str, Any]:
-        """To dict.
-
-        Manages to dict operations and coordinates related state changes for the component.
+        """Serialize this health report (checks + score/grade) to a plain dict.
 
         Returns:
             dict[str, Any]: Dictionary mapping identifiers to status or values.
@@ -77,10 +67,7 @@ ProgressCB = Callable[[str], None]
 
 
 class HealthChecker:
-    """Healthchecker.
-
-    Manages HealthChecker operations and coordinates related state changes for the component.
-    """
+    """Run fast read-only diagnostics (disk, memory, SMART, boot, security) with no changes."""
 
     def run(self, progress: ProgressCB | None = None) -> HealthReport:
         """Run.
@@ -118,9 +105,7 @@ class HealthChecker:
 
     @staticmethod
     def _score(checks: list[HealthCheck]) -> tuple[int, str]:
-        """Score.
-
-        Manages score operations and coordinates related state changes for the component.
+        """Compute transparent 0-100 score and A-F grade from severity deductions.
 
         Args:
             checks (list[HealthCheck]): The checks parameter.
@@ -148,9 +133,7 @@ class HealthChecker:
 
     @staticmethod
     def _check_disk_space() -> HealthCheck:
-        """_check_disk_space.
-
-        Manages check disk space operations and coordinates related state changes for the component.
+        """Check free space on the system volume (read-only, via shutil.disk_usage).
 
         Returns:
             HealthCheck: Result of the operation.
@@ -172,9 +155,7 @@ class HealthChecker:
 
     @staticmethod
     def _check_memory() -> HealthCheck:
-        """_check_memory.
-
-        Manages check memory operations and coordinates related state changes for the component.
+        """Check current RAM pressure via psutil (read-only; info when unavailable).
 
         Returns:
             HealthCheck: Result of the operation.
@@ -193,9 +174,7 @@ class HealthChecker:
 
     @staticmethod
     def _check_disk_health() -> HealthCheck | None:
-        """_check_disk_health.
-
-        Manages check disk health operations and coordinates related state changes for the component.
+        """Check drive S.M.A.R.T. health (Windows-only, read-only; None off Windows).
 
         Returns:
             HealthCheck | None: Result of the operation.
@@ -219,9 +198,7 @@ class HealthChecker:
 
     @staticmethod
     def _check_boot() -> HealthCheck | None:
-        """_check_boot.
-
-        Manages check boot operations and coordinates related state changes for the component.
+        """Check recent boot time and top offender (Windows-only, read-only).
 
         Returns:
             HealthCheck | None: Result of the operation.
@@ -248,9 +225,7 @@ class HealthChecker:
 
     @staticmethod
     def _check_security() -> HealthCheck | None:
-        """_check_security.
-
-        Manages check security operations and coordinates related state changes for the component.
+        """Check Defender real-time protection and signature age (Windows-only, read-only).
 
         Returns:
             HealthCheck | None: Result of the operation.
@@ -275,9 +250,7 @@ class HealthChecker:
 
     @staticmethod
     def _check_updates() -> HealthCheck | None:
-        """_check_updates.
-
-        Manages check updates operations and coordinates related state changes for the component.
+        """Check age of last Windows Update install from registry (read-only).
 
         Returns:
             HealthCheck | None: Result of the operation.

@@ -6,9 +6,7 @@ from pathlib import Path
 
 
 def parse_file(p: Path):
-    """parse_file.
-
-    Manages parse file operations and coordinates related state changes for the component.
+    """Parse file using ast.parse, ast.get_docstring, content.splitlines.
 
     Args:
         p (Path): The p parameter.

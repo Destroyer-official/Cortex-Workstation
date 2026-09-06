@@ -15,30 +15,18 @@ IS_WINDOWS = platform.system() == "Windows"
 
 
 class TestParse:
-    """Testparse.
-
-    Manages TestParse operations and coordinates related state changes for the component.
-    """
+    """Group testparse tests covering empty returns empty list; invalid json returns empty; single object becomes one disk; array of disks; missing reliability counters stay none; garbage numeric fields coerce to none."""
     def test_empty_returns_empty_list(self):
-        """test_empty_returns_empty_list.
-
-        Manages test empty returns empty list operations and coordinates related state changes for the component.
-        """
+        """Verify empty returns empty list via DiskHealthMonitor._parse."""
         assert DiskHealthMonitor._parse(None) == []
         assert DiskHealthMonitor._parse("") == []
 
     def test_invalid_json_returns_empty(self):
-        """test_invalid_json_returns_empty.
-
-        Manages test invalid json returns empty operations and coordinates related state changes for the component.
-        """
+        """Verify invalid json returns empty via DiskHealthMonitor._parse."""
         assert DiskHealthMonitor._parse("not json {{{") == []
 
     def test_single_object_becomes_one_disk(self):
-        """test_single_object_becomes_one_disk.
-
-        Manages test single object becomes one disk operations and coordinates related state changes for the component.
-        """
+        """Verify single object becomes one disk via DiskHealthMonitor._parse."""
         payload = (
             '{"Name":"Samsung SSD 980","MediaType":"SSD","Health":"Healthy",'
             '"Op":"OK","Size":1000204886016,"Wear":3,"Temp":41,'
@@ -59,10 +47,7 @@ class TestParse:
         assert d.power_on_hours == 1200
 
     def test_array_of_disks(self):
-        """test_array_of_disks.
-
-        Manages test array of disks operations and coordinates related state changes for the component.
-        """
+        """Verify array of disks via DiskHealthMonitor._parse."""
         payload = (
             '[{"Name":"Disk A","MediaType":"HDD","Health":"Healthy","Op":"OK","Size":500},'
             '{"Name":"Disk B","MediaType":"SSD","Health":"Warning","Op":"Degraded","Size":250}]'
@@ -74,10 +59,7 @@ class TestParse:
         assert disks[1].is_healthy is False
 
     def test_missing_reliability_counters_stay_none(self):
-        """test_missing_reliability_counters_stay_none.
-
-        Manages test missing reliability counters stay none operations and coordinates related state changes for the component.
-        """
+        """Verify missing reliability counters stay none via DiskHealthMonitor._parse."""
         payload = (
             '{"Name":"Old Disk","MediaType":"HDD","Health":"Healthy","Op":"OK",'
             '"Size":320072933376,"Wear":null,"Temp":null,"Realloc":null,"Hours":null}'
@@ -89,10 +71,7 @@ class TestParse:
         assert d.power_on_hours is None
 
     def test_garbage_numeric_fields_coerce_to_none(self):
-        """test_garbage_numeric_fields_coerce_to_none.
-
-        Manages test garbage numeric fields coerce to none operations and coordinates related state changes for the component.
-        """
+        """Verify garbage numeric fields coerce to none via DiskHealthMonitor._parse."""
         payload = (
             '{"Name":"X","MediaType":"SSD","Health":"Healthy","Op":"OK",'
             '"Size":"notanumber","Wear":"n/a"}'
@@ -102,10 +81,7 @@ class TestParse:
         assert d.wear_percent is None
 
     def test_defaults_for_absent_keys(self):
-        """test_defaults_for_absent_keys.
-
-        Manages test defaults for absent keys operations and coordinates related state changes for the component.
-        """
+        """Verify defaults for absent keys via DiskHealthMonitor._parse."""
         d = DiskHealthMonitor._parse('{}')[0]
         assert d.name == "Unknown"
         assert d.media_type == "Unspecified"
@@ -114,15 +90,9 @@ class TestParse:
 
 
 class TestToDict:
-    """Testtodict.
-
-    Manages TestToDict operations and coordinates related state changes for the component.
-    """
+    """Group testtodict tests covering to dict roundtrip keys."""
     def test_to_dict_roundtrip_keys(self):
-        """test_to_dict_roundtrip_keys.
-
-        Manages test to dict roundtrip keys operations and coordinates related state changes for the component.
-        """
+        """Verify to dict roundtrip keys via DiskHealth, d.to_dict."""
         d = DiskHealth(
             name="N", media_type="SSD", health_status="Healthy",
             operational_status="OK", size_bytes=1024, wear_percent=1,
@@ -140,23 +110,14 @@ class TestToDict:
 
 
 class TestSupport:
-    """Testsupport.
-
-    Manages TestSupport operations and coordinates related state changes for the component.
-    """
+    """Group testsupport tests covering is supported matches platform; get health returns list."""
     def test_is_supported_matches_platform(self):
-        """test_is_supported_matches_platform.
-
-        Manages test is supported matches platform operations and coordinates related state changes for the component.
-        """
+        """Verify is supported matches platform via DiskHealthMonitor.is_supported."""
         assert DiskHealthMonitor.is_supported() == IS_WINDOWS
 
     def test_get_health_returns_list(self):
         # Never raises; returns [] off-Windows, a list of DiskHealth on Windows.
-        """test_get_health_returns_list.
-
-        Manages test get health returns list operations and coordinates related state changes for the component.
-        """
+        """Verify get health returns list via DiskHealthMonitor, get_health."""
         result = DiskHealthMonitor().get_health()
         assert isinstance(result, list)
         assert all(isinstance(d, DiskHealth) for d in result)

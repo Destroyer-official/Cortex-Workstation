@@ -16,9 +16,8 @@ from .manifest_system import ManifestSystem
 from .process_manager import ProcessManager
 
 class OperationType(Enum):
-    """Operationtype.
+    """File operation kinds gated by the safety pipeline.
 
-    Manages OperationType operations and coordinates related state changes for the component.
     """
     DELETE = "delete"
     MOVE = "move"
@@ -27,9 +26,8 @@ class OperationType(Enum):
     RESTORE = "restore"
 
 class ValidationResult(Enum):
-    """Validationresult.
+    """Safety-pipeline verdicts: approved, rejected, or needs confirmation.
 
-    Manages ValidationResult operations and coordinates related state changes for the component.
     """
     APPROVED = "approved"
     REJECTED = "rejected"
@@ -37,9 +35,8 @@ class ValidationResult(Enum):
 
 @dataclass
 class Operation:
-    """Operation.
+    """Pending file operation with dry-run, confirmation, and validation state.
 
-    Manages Operation operations and coordinates related state changes for the component.
     """
     id: str
     type: OperationType
@@ -54,9 +51,8 @@ class Operation:
 
 @dataclass
 class OperationResult:
-    """Operationresult.
+    """Validated operation outcome including manifest reference and timing.
 
-    Manages OperationResult operations and coordinates related state changes for the component.
     """
     success: bool
     operation_id: str
@@ -69,16 +65,14 @@ class OperationResult:
     dry_run_performed: bool = False
 
 class SafetyError(DeepCleanerError):
-    """Safetyerror.
+    """Safety refusal or guarded-execution failure.
 
-    Manages SafetyError operations and coordinates related state changes for the component.
     """
     pass
 
 class SafetyManager:
-    """Safetymanager.
+    """Dry-run-first safety gate coordinating validation, manifests, and execution.
 
-    Manages SafetyManager operations and coordinates related state changes for the component.
     """
     
     def __init__(self, config: Config = None, logger: Optional[logging.Logger] = None):
@@ -122,7 +116,6 @@ class SafetyManager:
     def _setup_system_blacklists(self) -> None:
         """Setup enhanced system directory blacklists.
 
-        Manages setup system blacklists operations and coordinates related state changes for the component.
         """
         # Add critical system paths to path validator
         import sys
@@ -236,7 +229,6 @@ class SafetyManager:
     def add_path_whitelist(self, path: Union[str, Path]) -> None:
         """Add path to safety whitelist.
 
-        Manages add path whitelist operations and coordinates related state changes for the component.
 
         Args:
             path (Union[str, Path]): Filesystem path to the target file or directory.
@@ -246,7 +238,6 @@ class SafetyManager:
     def add_path_blacklist(self, path: Union[str, Path]) -> None:
         """Add path to safety blacklist.
 
-        Manages add path blacklist operations and coordinates related state changes for the component.
 
         Args:
             path (Union[str, Path]): Filesystem path to the target file or directory.
@@ -350,7 +341,6 @@ class SafetyManager:
     def _validate_basic_requirements(self, operation: Operation) -> ValidationResult:
         """Phase 1: Basic validation requirements.
 
-        Manages validate basic requirements operations and coordinates related state changes for the component.
 
         Args:
             operation (Operation): The operation parameter.
@@ -372,7 +362,6 @@ class SafetyManager:
     def _requires_dry_run_enforcement(self, operation: Operation) -> bool:
         """Check if operation requires dry-run enforcement.
 
-        Manages requires dry run enforcement operations and coordinates related state changes for the component.
 
         Args:
             operation (Operation): The operation parameter.
@@ -388,7 +377,6 @@ class SafetyManager:
     def _enforce_dry_run_policy(self, operation: Operation) -> ValidationResult:
         """Phase 2: Enforce dry-run policy for destructive operations.
 
-        Manages enforce dry run policy operations and coordinates related state changes for the component.
 
         Args:
             operation (Operation): The operation parameter.
@@ -417,7 +405,6 @@ class SafetyManager:
     def _get_dry_run_key(self, operation: Operation) -> str:
         """Generate a key for tracking dry-run results.
 
-        Manages get dry run key operations and coordinates related state changes for the component.
 
         Args:
             operation (Operation): The operation parameter.
@@ -433,7 +420,6 @@ class SafetyManager:
     def _validate_path_safety(self, operation: Operation) -> ValidationResult:
         """Phase 3: Enhanced path safety validation.
 
-        Manages validate path safety operations and coordinates related state changes for the component.
 
         Args:
             operation (Operation): The operation parameter.
@@ -494,7 +480,6 @@ class SafetyManager:
     def _validate_resource_limits(self, operation: Operation) -> ValidationResult:
         """Phase 4: Validate resource limits and file sizes.
 
-        Manages validate resource limits operations and coordinates related state changes for the component.
 
         Args:
             operation (Operation): The operation parameter.
@@ -537,7 +522,6 @@ class SafetyManager:
     def _run_custom_validations(self, operation: Operation) -> ValidationResult:
         """Phase 5: Run custom validation callbacks.
 
-        Manages run custom validations operations and coordinates related state changes for the component.
 
         Args:
             operation (Operation): The operation parameter.
@@ -559,7 +543,6 @@ class SafetyManager:
     def _validate_operation_specific(self, operation: Operation) -> ValidationResult:
         """Phase 6: Operation-specific validation.
 
-        Manages validate operation specific operations and coordinates related state changes for the component.
 
         Args:
             operation (Operation): The operation parameter.
@@ -581,9 +564,8 @@ class SafetyManager:
         return ValidationResult.APPROVED
     
     def _validate_delete_operation(self, operation: Operation) -> ValidationResult:
-        """_validate_delete_operation.
+        """Require user confirmation for non-dry-run deletes when configured.
 
-        Manages validate delete operation operations and coordinates related state changes for the component.
 
         Args:
             operation (Operation): The operation parameter.
@@ -597,9 +579,8 @@ class SafetyManager:
     
     def _validate_clean_operation(self, operation: Operation) -> ValidationResult:
         # Clean and delete share safety requirements; clean just logs more
-        """_validate_clean_operation.
+        """Clean shares delete safety rules; delegate to delete validation.
 
-        Manages validate clean operation operations and coordinates related state changes for the component.
 
         Args:
             operation (Operation): The operation parameter.
@@ -610,9 +591,8 @@ class SafetyManager:
         return self._validate_delete_operation(operation)
     
     def _validate_move_operation(self, operation: Operation) -> ValidationResult:
-        """_validate_move_operation.
+        """Require an existing directory destination for move operations.
 
-        Manages validate move operation operations and coordinates related state changes for the component.
 
         Args:
             operation (Operation): The operation parameter.
@@ -635,9 +615,8 @@ class SafetyManager:
     
     def _validate_analyze_operation(self, operation: Operation) -> ValidationResult:
         # Analyze operations are generally safe (read-only)
-        """_validate_analyze_operation.
+        """Analyze is read-only; always approve.
 
-        Manages validate analyze operation operations and coordinates related state changes for the component.
 
         Args:
             operation (Operation): The operation parameter.
@@ -650,7 +629,6 @@ class SafetyManager:
     def _validate_restore_operation_enhanced(self, operation: Operation) -> ValidationResult:
         """Enhanced validation for restore operations.
 
-        Manages validate restore operation enhanced operations and coordinates related state changes for the component.
 
         Args:
             operation (Operation): The operation parameter.
@@ -790,7 +768,6 @@ class SafetyManager:
     def _should_enforce_dry_run(self, operation: Operation) -> bool:
         """Check if we should enforce a dry-run before actual execution.
 
-        Manages should enforce dry run operations and coordinates related state changes for the component.
 
         Args:
             operation (Operation): The operation parameter.
@@ -814,7 +791,6 @@ class SafetyManager:
     def _execute_mandatory_dry_run(self, operation: Operation) -> OperationResult:
         """Execute a mandatory dry-run before the actual operation.
 
-        Manages execute mandatory dry run operations and coordinates related state changes for the component.
 
         Args:
             operation (Operation): The operation parameter.
@@ -850,7 +826,6 @@ class SafetyManager:
     def _execute_operation_with_monitoring(self, operation: Operation, manifest_id: str) -> Dict[str, Any]:
         """Execute operation with enhanced monitoring and error handling.
 
-        Manages execute operation with monitoring operations and coordinates related state changes for the component.
 
         Args:
             operation (Operation): The operation parameter.
@@ -895,7 +870,6 @@ class SafetyManager:
                                    execution_result: Dict[str, Any], execution_start: datetime) -> OperationResult:
         """Finalize operation execution with comprehensive result generation.
 
-        Manages finalize operation execution operations and coordinates related state changes for the component.
 
         Args:
             operation (Operation): The operation parameter.
@@ -949,9 +923,8 @@ class SafetyManager:
         return result
     
     def _store_dry_run_result(self, operation: Operation, result: OperationResult) -> None:
-        """_store_dry_run_result.
+        """Cache a dry-run result keyed by operation type and paths.
 
-        Manages store dry run result operations and coordinates related state changes for the component.
 
         Args:
             operation (Operation): The operation parameter.
@@ -1403,9 +1376,8 @@ class SafetyManager:
             self.logger.error(f"Error during SafetyManager cleanup: {e}")
     
     def __del__(self):
-        """Del.
+        """Best-effort cleanup of pending operations and processes on teardown.
 
-        Manages del operations and coordinates related state changes for the component.
         """
         try:
             self.cleanup_resources()

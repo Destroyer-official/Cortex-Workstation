@@ -16,9 +16,9 @@ from typing import Dict, List, Optional, Tuple
 
 @dataclass
 class HexDiffChunk:
-    """Hexdiffchunk.
+    """Single 16-byte hex diff row.
 
-    Manages HexDiffChunk operations and coordinates related state changes for the component.
+    Holds offset, left/right raw bytes, preformatted hex/ASCII views, and match flag for one chunk.
     """
     offset: int
     left_bytes: bytes
@@ -32,9 +32,9 @@ class HexDiffChunk:
 
 @dataclass
 class BinaryDiffReport:
-    """Binarydiffreport.
+    """Aggregate result of comparing two binary files.
 
-    Manages BinaryDiffReport operations and coordinates related state changes for the component.
+    Stores sizes, identical flag, match percentage, differing byte count, first-difference offset, capped chunk list, and error.
     """
     file_a: str
     file_b: str
@@ -49,9 +49,9 @@ class BinaryDiffReport:
 
 
 class BinaryDiffer:
-    """Binarydiffer.
+    """Byte-by-byte binary comparison engine.
 
-    Manages BinaryDiffer operations and coordinates related state changes for the component.
+    Streams both files in CHUNK_SIZE (16-byte) rows without loading them fully into memory.
     """
 
     CHUNK_SIZE = 16  # Standard 16-byte hex viewer row
@@ -60,7 +60,7 @@ class BinaryDiffer:
     def _to_ascii(b_data: bytes) -> str:
         """Convert bytes to printable ASCII with dots for non-printables.
 
-        Manages to ascii operations and coordinates related state changes for the component.
+        Maps bytes 32-126 to characters and all others to '.' for hex-dump display.
 
         Args:
             b_data (bytes): The b data parameter.
@@ -79,7 +79,7 @@ class BinaryDiffer:
     ) -> BinaryDiffReport:
         """Perform byte-by-byte comparison and generate hex diff report.
 
-        Manages compare binary files operations and coordinates related state changes for the component.
+        Reads both files in 16-byte rows, counts matching bytes, records up to max_diff_chunks differing rows, and handles size mismatch.
 
         Args:
             file_a_path (str | Path): Filesystem path to the target file or directory.

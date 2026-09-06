@@ -25,9 +25,9 @@ _IS_WINDOWS = sys.platform == "win32"
 
 @dataclass(slots=True)
 class BrowserExtension:
-    """Browserextension.
+    """One installed browser extension with permissions.
 
-    Manages BrowserExtension operations and coordinates related state changes for the component.
+    Holds browser, name, version, id, and requested permission list.
     """
     browser: str
     name: str
@@ -39,7 +39,7 @@ class BrowserExtension:
     def broad_permissions(self) -> bool:
         """True if the extension requests notably powerful permissions.
 
-        Manages broad permissions operations and coordinates related state changes for the component.
+        Checks against a risky set (<all_urls>, history, debugger, etc.).
 
         Returns:
             bool: True if the operation succeeded, False otherwise.
@@ -50,9 +50,7 @@ class BrowserExtension:
         return any(p in risky for p in self.permissions)
 
     def to_dict(self) -> dict[str, Any]:
-        """To dict.
-
-        Manages to dict operations and coordinates related state changes for the component.
+        """Serialize this extension to a plain dict.
 
         Returns:
             dict[str, Any]: Dictionary mapping identifiers to status or values.
@@ -68,9 +66,9 @@ class BrowserExtension:
 
 
 class BrowserExtensionAuditor:
-    """Browserextensionauditor.
+    """Read-only inventory of installed Chromium/Firefox extensions.
 
-    Manages BrowserExtensionAuditor operations and coordinates related state changes for the component.
+    Parses on-disk manifests; never disables or removes anything.
     """
 
     # Chromium user-data roots, relative to LOCALAPPDATA on Windows.
@@ -92,9 +90,7 @@ class BrowserExtensionAuditor:
         self._home = home or Path.home()
 
     def _localappdata(self) -> Path:
-        """Localappdata.
-
-        Manages localappdata operations and coordinates related state changes for the component.
+        """Resolve the Chromium user-data base dir for this platform.
 
         Returns:
             Path: Result of the operation.

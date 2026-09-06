@@ -55,10 +55,10 @@ _SECS_PER_DAY = 86400
 
 @dataclass(slots=True)
 class TempFinding:
-    """Tempfinding.
+    """Temp Finding.
 
-    Manages TempFinding operations and coordinates related state changes for the component.
-    """
+ Dataclass holding one temp-file path, size, and source location label.
+ """
 
     path: str
     size_bytes: int
@@ -67,16 +67,16 @@ class TempFinding:
 
 
 def _normalize(path: os.PathLike[str] | str) -> str:
-    """Normalize.
+    """Normalize helper.
 
-    Manages normalize operations and coordinates related state changes for the component.
+ Returns normcase(abspath()) for reliable root-confinement comparison.
 
-    Args:
-        path (os.PathLike[str] | str): Filesystem path to the target file or directory.
+ Args:
+ path (os.PathLike[str] | str): Filesystem path to the target file or directory.
 
-    Returns:
-        str: Formatted string or path.
-    """
+ Returns:
+ str: Formatted string or path.
+ """
     return os.path.normcase(os.path.abspath(os.fspath(path)))
 
 
@@ -98,9 +98,9 @@ def _is_junction(entry: os.DirEntry) -> bool:
 
 
 class TempCleaner:
-    """Tempcleaner.
+    """Temp Cleaner.
 
-    Manages TempCleaner operations and coordinates related state changes for the component.
+    Never follows symlinks unless explicitly enabled, so a planted link cannot redirect the scan; routes deletions through the recycle bin/trash unless a permanent method is requested.
     """
 
     def __init__(
@@ -177,9 +177,9 @@ class TempCleaner:
         seen: set[str] = set()
 
         def _usable(label: str, path: Path) -> bool:
-            """Usable.
+            """Usable helper.
 
-            Manages usable operations and coordinates related state changes for the component.
+            Returns True when the condition holds, False otherwise.
 
             Args:
                 label (str): Display text string.
@@ -225,7 +225,7 @@ class TempCleaner:
     def _is_excluded(self, path: str, name: str) -> bool:
         """True when *path*/*name* hits a configured fnmatch pattern.
 
-        Manages is excluded operations and coordinates related state changes for the component.
+        Returns True when the condition holds, False otherwise.
 
         Args:
             path (str): Filesystem path to the target file or directory.
@@ -261,9 +261,9 @@ class TempCleaner:
         cutoff: float,
         findings: list[TempFinding],
     ) -> None:
-        """Walk.
+        """Walk helper.
 
-        Manages walk operations and coordinates related state changes for the component.
+        Never follows symlinks unless explicitly enabled, so a planted link cannot redirect the scan; enforces the min-age floor and treats unstatable files as too young to delete.
 
         Args:
             root (Path): Filesystem path to the target file or directory.
@@ -347,11 +347,11 @@ class TempCleaner:
     def total_reclaimable(self) -> int:
         """Total bytes across the most recent scan (0 before any scan).
 
-        Manages total reclaimable operations and coordinates related state changes for the component.
+ Sums size_bytes across the most recent scan findings.
 
-        Returns:
-            int: Result of the operation.
-        """
+ Returns:
+ int: Result of the operation.
+ """
         return sum(f.size_bytes for f in self.findings)
 
     def clean(

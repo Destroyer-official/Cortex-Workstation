@@ -34,19 +34,19 @@ class StorageKind(str, enum.Enum):
     def overwrite_effective(self) -> bool:
         """True only when physically overwriting bytes reliably destroys data.
 
-        Manages overwrite effective operations and coordinates related state changes for the component.
+ Handles overwrite effective for.
 
-        Returns:
-            bool: True if the operation succeeded, False otherwise.
-        """
+ Returns:
+ bool: True if the operation succeeded, False otherwise.
+ """
         return self is StorageKind.HDD
 
 
 class DeletionMethod(str, enum.Enum):
-    """Deletionmethod.
+    """Deletion Method.
 
-    Manages DeletionMethod operations and coordinates related state changes for the component.
-    """
+ Deletion method enum with safe defaults.
+ """
 
     DRY_RUN = "dry_run"      # report only, touch nothing
     RECYCLE = "recycle"      # move to OS trash/recycle bin (reversible)
@@ -55,10 +55,10 @@ class DeletionMethod(str, enum.Enum):
 
 
 class DeletionOutcome(str, enum.Enum):
-    """Deletionoutcome.
+    """Deletion Outcome.
 
-    Manages DeletionOutcome operations and coordinates related state changes for the component.
-    """
+ Outcome enum for deletion attempts.
+ """
 
     WOULD_DELETE = "would_delete"     # dry-run success
     RECYCLED = "recycled"
@@ -94,13 +94,13 @@ class FileEntry:
 
     @property
     def age_days(self) -> float:
-        """age_days.
+        """Age days.
 
-        Manages age days operations and coordinates related state changes for the component.
+ File age in days from mtime for min-age filtering.
 
-        Returns:
-            float: Result of the operation.
-        """
+ Returns:
+ float: Result of the operation.
+ """
         import time
         return max(0.0, (time.time() - self.mtime) / 86400.0)
 
@@ -120,11 +120,11 @@ class FileEntry:
     def is_cloud_placeholder(self) -> bool:
         """True when the content lives in the cloud, not on this disk.
 
-        Manages is cloud placeholder operations and coordinates related state changes for the component.
+ Detects OneDrive/iCloud-style cloud-only placeholders that must not count as reclaimable.
 
-        Returns:
-            bool: True if the operation succeeded, False otherwise.
-        """
+ Returns:
+ bool: True if the operation succeeded, False otherwise.
+ """
         from . import winattrs
         return winattrs.is_dehydrated(self.attrs)
 
@@ -132,11 +132,11 @@ class FileEntry:
     def is_junction(self) -> bool:
         """True for a junction / volume mount point (not a symlink to Python).
 
-        Manages is junction operations and coordinates related state changes for the component.
+ Detects junctions and volume mount points separately from symlinks.
 
-        Returns:
-            bool: True if the operation succeeded, False otherwise.
-        """
+ Returns:
+ bool: True if the operation succeeded, False otherwise.
+ """
         from . import winattrs
         return winattrs.is_junction(self.reparse_tag)
 
@@ -144,22 +144,22 @@ class FileEntry:
     def special_note(self) -> str:
         """Short human explanation of any special storage behaviour, or ``""``.
 
-        Manages special note operations and coordinates related state changes for the component.
+ Explains cloud, junction, or permission quirks for the UI.
 
-        Returns:
-            str: Formatted string or path.
-        """
+ Returns:
+ str: Formatted string or path.
+ """
         from . import winattrs
         return winattrs.describe(self.attrs, self.reparse_tag)
 
     def to_dict(self) -> dict[str, Any]:
-        """to_dict.
+        """To dict.
 
-        Manages to dict operations and coordinates related state changes for the component.
+ Serializes the model to plain JSON-safe types.
 
-        Returns:
-            dict[str, Any]: Dictionary mapping identifiers to status or values.
-        """
+ Returns:
+ dict[str, Any]: Dictionary mapping identifiers to status or values.
+ """
         return {
             "path": str(self.path),
             "size": self.size,
@@ -195,23 +195,23 @@ class ScanResult:
 
     @property
     def error_count(self) -> int:
-        """error_count.
+        """Error count.
 
-        Manages error count operations and coordinates related state changes for the component.
+ Number of errors encountered during the operation.
 
-        Returns:
-            int: Result of the operation.
-        """
+ Returns:
+ int: Result of the operation.
+ """
         return len(self.errors)
 
     def to_dict(self) -> dict[str, Any]:
-        """to_dict.
+        """To dict.
 
-        Manages to dict operations and coordinates related state changes for the component.
+ Serializes the model to plain JSON-safe types.
 
-        Returns:
-            dict[str, Any]: Dictionary mapping identifiers to status or values.
-        """
+ Returns:
+ dict[str, Any]: Dictionary mapping identifiers to status or values.
+ """
         return {
             "files": [f.to_dict() for f in self.files],
             "dirs": [d.to_dict() for d in self.dirs],
@@ -228,10 +228,10 @@ class ScanResult:
 
 @dataclass(slots=True)
 class DeletionResult:
-    """Deletionresult.
+    """Deletion Result.
 
-    Manages DeletionResult operations and coordinates related state changes for the component.
-    """
+ Per-file deletion result with success flag and details.
+ """
 
     path: Path
     outcome: DeletionOutcome
@@ -242,23 +242,23 @@ class DeletionResult:
 
     @property
     def succeeded(self) -> bool:
-        """Succeeded.
+        """Succeeded helper.
 
-        Manages succeeded operations and coordinates related state changes for the component.
+ True when the outcome indicates success.
 
-        Returns:
-            bool: True if the operation succeeded, False otherwise.
-        """
+ Returns:
+ bool: True if the operation succeeded, False otherwise.
+ """
         return self.outcome not in (DeletionOutcome.FAILED, DeletionOutcome.SKIPPED_UNSAFE)
 
     def to_dict(self) -> dict[str, Any]:
-        """to_dict.
+        """To dict.
 
-        Manages to dict operations and coordinates related state changes for the component.
+ Serializes the model to plain JSON-safe types.
 
-        Returns:
-            dict[str, Any]: Dictionary mapping identifiers to status or values.
-        """
+ Returns:
+ dict[str, Any]: Dictionary mapping identifiers to status or values.
+ """
         return {
             "path": str(self.path),
             "outcome": self.outcome.value,

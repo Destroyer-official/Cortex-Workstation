@@ -20,10 +20,7 @@ from PySide6.QtWidgets import QApplication, QMessageBox  # noqa: E402
 
 @pytest.fixture(scope="module")
 def app():
-    """App.
-
-    Manages app operations and coordinates related state changes for the component.
-    """
+    """Provide app fixture that provides a shared QApplication."""
     application = QApplication.instance() or QApplication([])
     yield application
 
@@ -31,8 +28,6 @@ def app():
 @pytest.fixture
 def isolated_license(monkeypatch, tmp_path):
     """Point the process-wide manager at a temp-path LicenseManager.
-
-    Manages isolated license operations and coordinates related state changes for the component.
 
     Args:
         monkeypatch: The monkeypatch parameter.
@@ -49,9 +44,7 @@ def isolated_license(monkeypatch, tmp_path):
 
 @pytest.fixture
 def window(app, isolated_license):
-    """Window.
-
-    Manages window operations and coordinates related state changes for the component.
+    """Provide window fixture via win.deleteLater, app.processEvents, PremiumMainWindow.
 
     Args:
         app: The app parameter.
@@ -91,9 +84,7 @@ def _click_trial_buttons(monkeypatch):
 # -- 1. page loads; Free tier when unlicensed ---------------------------------
 
 def test_license_page_shows_free_when_unlicensed(window):
-    """test_license_page_shows_free_when_unlicensed.
-
-    Manages test license page shows free when unlicensed operations and coordinates related state changes for the component.
+    """Verify license page shows free when unlicensed via page.trial_btn.isEnabled, page.deactivate_btn.isEnabled, page.table.rowCount.
 
     Args:
         window: Parent window or shell controller instance.
@@ -116,9 +107,7 @@ def test_license_page_shows_free_when_unlicensed(window):
 
 
 def test_activate_with_empty_key_warns_and_stays_free(window, monkeypatch):
-    """test_activate_with_empty_key_warns_and_stays_free.
-
-    Manages test activate with empty key warns and stays free operations and coordinates related state changes for the component.
+    """Verify activate with empty key warns and stays free via monkeypatch.setattr, page._activate, page.tier_label.text.
 
     Args:
         window: Parent window or shell controller instance.
@@ -136,9 +125,7 @@ def test_activate_with_empty_key_warns_and_stays_free(window, monkeypatch):
 # -- 2. activation flows into the UI ------------------------------------------
 
 def test_page_shows_pro_after_activation_and_refresh(window, isolated_license):
-    """test_page_shows_pro_after_activation_and_refresh.
-
-    Manages test page shows pro after activation and refresh operations and coordinates related state changes for the component.
+    """Verify page shows pro after activation and refresh via page.trial_btn.isEnabled, page.table.rowCount, isolated_license.activate.
 
     Args:
         window: Parent window or shell controller instance.
@@ -172,9 +159,7 @@ def test_page_shows_pro_after_activation_and_refresh(window, isolated_license):
 # -- 3. require_feature -------------------------------------------------------
 
 def test_require_feature_allows_licensed_feature(window, isolated_license):
-    """test_require_feature_allows_licensed_feature.
-
-    Manages test require feature allows licensed feature operations and coordinates related state changes for the component.
+    """Verify require feature allows licensed feature via isolated_license.activate, require_feature.
 
     Args:
         window: Parent window or shell controller instance.
@@ -219,10 +204,7 @@ def test_require_feature_reports_refused_trial(window, isolated_license,
                         staticmethod(lambda *a, **k: infos.append(a)))
 
     def refused():
-        """Refused.
-
-        Manages refused operations and coordinates related state changes for the component.
-        """
+        """Refused using RuntimeError."""
         raise RuntimeError("Trial already used.")
 
     monkeypatch.setattr(isolated_license, "start_trial", refused)
@@ -236,10 +218,7 @@ def test_require_feature_reports_refused_trial(window, isolated_license,
 # -- 4. registry --------------------------------------------------------------
 
 def test_registry_declares_the_license_page():
-    """Mirrors test_page_registry.py: one declaration wires everything.
-
-    Manages test registry declares the license page operations and coordinates related state changes for the component.
-    """
+    """Mirrors test_page_registry.py: one declaration wires everything."""
     from cortex_unified.ui.premium import registry
 
     spec = registry.BY_ID["license"]
@@ -252,9 +231,7 @@ def test_registry_declares_the_license_page():
 
 
 def test_window_nav_reaches_the_license_page(window):
-    """test_window_nav_reaches_the_license_page.
-
-    Manages test window nav reaches the license page operations and coordinates related state changes for the component.
+    """Verify window nav reaches the license page via window._stack.currentWidget, window._select, window._nav_sections_by_page.get.
 
     Args:
         window: Parent window or shell controller instance.

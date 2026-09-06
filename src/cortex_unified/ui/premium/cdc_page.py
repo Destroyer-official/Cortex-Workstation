@@ -23,10 +23,7 @@ from cortex_unified.analyzers.content_defined_chunker import ContentDefinedChunk
 
 
 class _CdcWorker(QObject):
-    """Cdcworker.
-
-    Manages CdcWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker (_CdcWorker) performing CdcWorker. Signals finished, progress, failed report status. Configured with root, threshold. Its run() step calls ContentDefinedChunker, finder.find_cdc_duplicates, emit, str."""
     finished = Signal(dict)
     progress = Signal(str)
     failed = Signal(str)
@@ -73,10 +70,7 @@ class _CdcWorker(QObject):
 
 
 class CdcPage(_Page):
-    """Cdcpage.
-
-    Manages CdcPage operations and coordinates related state changes for the component.
-    """
+    """CDC Dedup (FastCDC/VectorCDC) page: Content-Defined Chunking (Gear hash, normalized 2 KiB/8 KiB/64 KiB) +."""
 
     def __init__(self, win):
         """__init__.
@@ -154,10 +148,7 @@ class CdcPage(_Page):
             self.path_label.setText(folder)
 
     def _run(self):
-        """Run.
-
-        Manages run operations and coordinates related state changes for the component.
-        """
+        """Disable action buttons, show progress/status, and launch the background worker (setEnabled, setVisible, show_loading)."""
         self.run_btn.setEnabled(False)
         self.progress.setVisible(True)
         self.state.show_loading("CDC-chunking files (Gear)…")

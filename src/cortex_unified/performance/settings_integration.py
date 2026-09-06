@@ -18,15 +18,15 @@ from .optimization import OptimizationSettings, PerformanceOptimizer
 from .resource_throttler import ResourceThrottler
 
 class PerformanceSettingsWidget(QWidget):
-    """Performancesettingswidget.
+    """Performance Settings Widget.
 
-    Manages PerformanceSettingsWidget operations and coordinates related state changes for the component.
-    """
+ Handles performance settings widget for.
+ """
     
     settings_applied = Signal(dict)
     
     def __init__(self, parent=None):
-        """__init__.
+        """Initialize the instance.
 
         Initializes the instance and configures internal state.
 
@@ -43,8 +43,8 @@ class PerformanceSettingsWidget(QWidget):
     def setup_ui(self):
         """Build the UI structure mirroring old properties natively.
 
-        Manages setup ui operations and coordinates related state changes for the component.
-        """
+ Handles setup ui for.
+ """
         if not HAS_PYSIDE6:
             return
             
@@ -95,8 +95,8 @@ class PerformanceSettingsWidget(QWidget):
     def load_settings(self):
         """Restore properties from persistence.
 
-        Manages load settings operations and coordinates related state changes for the component.
-        """
+ Handles load settings for.
+ """
         if not HAS_PYSIDE6:
             return
             
@@ -116,8 +116,8 @@ class PerformanceSettingsWidget(QWidget):
     def save_settings(self):
         """Persist properties and sync natively into systems.
 
-        Manages save settings operations and coordinates related state changes for the component.
-        """
+ Handles save settings for.
+ """
         if not HAS_PYSIDE6:
             return
             
@@ -141,10 +141,10 @@ class PerformanceSettingsWidget(QWidget):
         self.logger.info("Synchronized and emitted core performance properties.")
 
 class PerformanceManager:
-    """Performancemanager.
+    """Performance Manager.
 
-    Manages PerformanceManager operations and coordinates related state changes for the component.
-    """
+ Handles performance manager for.
+ """
     
     def __init__(self):
         """Initialize the instance and configure internal state.
@@ -160,10 +160,10 @@ class PerformanceManager:
         self.load_saved_settings()
 
     def load_saved_settings(self):
-        """load_saved_settings.
+        """Load saved settings.
 
-        Manages load saved settings operations and coordinates related state changes for the component.
-        """
+ Handles load saved settings for.
+ """
         if not self.settings: return
         try:
             properties = {
@@ -182,11 +182,11 @@ class PerformanceManager:
     def apply_properties(self, properties: dict):
         """Translates basic dictionary states into core optimization classes natively.
 
-        Manages apply properties operations and coordinates related state changes for the component.
+ Handles apply properties for.
 
-        Args:
-            properties (dict): The properties parameter.
-        """
+ Args:
+ properties (dict): The properties parameter.
+ """
         # Setup Optimizer Limits
         opt_config = OptimizationSettings()
         opt_config.max_threads = properties["threads"]
@@ -210,26 +210,26 @@ class PerformanceManager:
             self.throttler.stop_monitoring()
 
     def create_settings_widget(self, parent=None):
-        """create_settings_widget.
+        """Create settings widget.
 
-        Manages create settings widget operations and coordinates related state changes for the component.
+ Handles create settings widget for.
 
-        Args:
-            parent: Parent window or shell controller instance.
-        """
+ Args:
+ parent: Parent window or shell controller instance.
+ """
         if HAS_PYSIDE6:
             return PerformanceSettingsWidget(parent)
         return None
 
 _perf_manager = None
 def get_performance_manager() -> PerformanceManager:
-    """get_performance_manager.
+    """Get performance manager.
 
-    Manages get performance manager operations and coordinates related state changes for the component.
+ Handles get performance manager for.
 
-    Returns:
-        PerformanceManager: Result of the operation.
-    """
+ Returns:
+ PerformanceManager: Result of the operation.
+ """
     global _perf_manager
     if _perf_manager is None:
         _perf_manager = PerformanceManager()

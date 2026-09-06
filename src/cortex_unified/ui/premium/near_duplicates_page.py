@@ -27,10 +27,7 @@ from cortex_unified.analyzers.near_duplicate_finder import NearDuplicateFinder
 
 
 class _NearDupWorker(QObject):
-    """Neardupworker.
-
-    Manages NearDupWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker (_NearDupWorker) performing NearDupWorker. Signals finished, progress, failed report status. Configured with root, threshold. Its run() step calls NearDuplicateFinder, finder.find_near_duplicates, emit, str."""
     finished = Signal(dict)
     progress = Signal(str)
     failed = Signal(str)
@@ -77,10 +74,7 @@ class _NearDupWorker(QObject):
 
 
 class NearDuplicatesPage(_Page):
-    """Nearduplicatespage.
-
-    Manages NearDuplicatesPage operations and coordinates related state changes for the component.
-    """
+    """Near Duplicates page: MinHash LSH + Bloom (SEDD/LSHBloom) – finds copy-pasted code with small edits,."""
 
     def __init__(self, win):
         """__init__.
@@ -153,10 +147,7 @@ class NearDuplicatesPage(_Page):
             self.path_label.setText(folder)
 
     def _run(self):
-        """Run.
-
-        Manages run operations and coordinates related state changes for the component.
-        """
+        """Disable action buttons, show progress/status, and launch the background worker (setEnabled, setVisible, show_loading)."""
         self.run_btn.setEnabled(False)
         self.progress.setVisible(True)
         self.state.show_loading("Finding near-duplicates (MinHash)…")

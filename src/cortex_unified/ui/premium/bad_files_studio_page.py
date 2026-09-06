@@ -34,10 +34,7 @@ from .window import _Page
 
 
 class _BadFilesScanWorker(QObject):
-    """Badfilesscanworker.
-
-    Manages BadFilesScanWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker (_BadFilesScanWorker) performing BadFilesScanWorker. Signals finished, failed report status. Configured with mode, folder. Its run() step calls Path, BadExtensionFinder, str, finder.find."""
     finished = Signal(list)
     failed = Signal(str)
 
@@ -101,10 +98,7 @@ class _BadFilesScanWorker(QObject):
 
 
 class BadFilesStudioPage(_Page):
-    """Badfilesstudiopage.
-
-    Manages BadFilesStudioPage operations and coordinates related state changes for the component.
-    """
+    """Bad Extensions, Names & EXIF Studio page: Multi-tool diagnostic suite: detect mismatched file extensions (magic header analysis),."""
 
     def __init__(self, win):
         """Init.
@@ -192,9 +186,7 @@ class BadFilesStudioPage(_Page):
         self._scan()
 
     def _on_tool_changed(self, idx):
-        """On tool changed.
-
-        Manages on tool changed operations and coordinates related state changes for the component.
+        """Handle a selection change (on tool changed) by updating dependent labels and controls.
 
         Args:
             idx: The idx parameter.
@@ -261,10 +253,7 @@ class BadFilesStudioPage(_Page):
             self.win.statusBar().showMessage(msg, 6000)
 
     def _strip_exif(self):
-        """Strip exif.
-
-        Manages strip exif operations and coordinates related state changes for the component.
-        """
+        """Validate the current selection and ask the user to confirm via a message box showing 'Select Photos'."""
         sel = self.tbl.selectionModel().selectedRows()
         if not sel:
             QMessageBox.information(self, "Select Photos", "Please select one or more photos to strip EXIF data from.")

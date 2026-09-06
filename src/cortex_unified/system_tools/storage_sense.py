@@ -29,43 +29,34 @@ _DAYS = {0: "Never", 1: "1 day", 14: "14 days", 30: "30 days", 60: "60 days"}
 
 
 class StorageSense:
-    """Storagesense.
-
-    Manages StorageSense operations and coordinates related state changes for the component.
-    """
+    """Groups related helpers: is supported, get status, read values, interpret, write, set enabled, set cadence, set recycle bin days. Windows-only; returns a safe default elsewhere."""
 
     @staticmethod
     def is_supported() -> bool:
-        """Is supported.
-
-        Manages is supported operations and coordinates related state changes for the component.
+        """Return True on Windows where the feature exists; False elsewhere. Windows-only; returns a safe default elsewhere.
 
         Returns:
-            bool: True if the operation succeeded, False otherwise.
+        bool: True if the operation succeeded, False otherwise.
         """
         return _IS_WINDOWS
 
     # -- read ---------------------------------------------------------------
 
     def get_status(self) -> dict[str, Any]:
-        """Get status.
-
-        Manages get status operations and coordinates related state changes for the component.
+        """Get status helper. Windows-only; returns a safe default elsewhere.
 
         Returns:
-            dict[str, Any]: Dictionary mapping identifiers to status or values.
+        dict[str, Any]: Dictionary mapping identifiers to status or values.
         """
         if not _IS_WINDOWS:
             return {"supported": False}
         return self._interpret(self._read_values())
 
     def _read_values(self) -> dict[str, int]:
-        """_read_values.
-
-        Manages read values operations and coordinates related state changes for the component.
+        """Read values helper (reads Windows registry). Returns values.
 
         Returns:
-            dict[str, int]: Dictionary mapping identifiers to status or values.
+        dict[str, int]: Dictionary mapping identifiers to status or values.
         """
         values: dict[str, int] = {}
         try:
@@ -88,15 +79,13 @@ class StorageSense:
 
     @staticmethod
     def _interpret(v: dict[str, int]) -> dict[str, Any]:
-        """Interpret.
-
-        Manages interpret operations and coordinates related state changes for the component.
+        """Interpret helper. Windows-only; returns a safe default elsewhere.
 
         Args:
-            v (dict[str, int]): The v parameter.
+        v (dict[str, int]): The v parameter.
 
         Returns:
-            dict[str, Any]: Dictionary mapping identifiers to status or values.
+        dict[str, Any]: Dictionary mapping identifiers to status or values.
         """
         enabled = bool(v.get("01", 0))
         cadence = int(v.get("2048", 0))
@@ -118,16 +107,14 @@ class StorageSense:
     # -- write --------------------------------------------------------------
 
     def _write(self, name: str, value: int) -> bool:
-        """Write.
-
-        Manages write operations and coordinates related state changes for the component.
+        """Write helper (reads Windows registry). Returns False. Windows-only; returns a safe default elsewhere.
 
         Args:
-            name (str): The name parameter.
-            value (int): The value parameter.
+        name (str): The name parameter.
+        value (int): The value parameter.
 
         Returns:
-            bool: True if the operation succeeded, False otherwise.
+        bool: True if the operation succeeded, False otherwise.
         """
         if not _IS_WINDOWS:
             return False
@@ -141,15 +128,13 @@ class StorageSense:
             return False
 
     def set_enabled(self, enabled: bool) -> tuple[bool, str]:
-        """Set enabled.
-
-        Manages set enabled operations and coordinates related state changes for the component.
+        """Set enabled helper. Returns False, "Could not update Storage Sense(...).
 
         Args:
-            enabled (bool): The enabled parameter.
+        enabled (bool): The enabled parameter.
 
         Returns:
-            tuple[bool, str]: True if the operation succeeded, False otherwise.
+        tuple[bool, str]: True if the operation succeeded, False otherwise.
         """
         ok = self._write("01", 1 if enabled else 0)
         if not ok:
@@ -159,15 +144,13 @@ class StorageSense:
         return True, "Storage Sense turned on." if enabled else "Storage Sense turned off."
 
     def set_cadence(self, days: int) -> tuple[bool, str]:
-        """Set cadence.
-
-        Manages set cadence operations and coordinates related state changes for the component.
+        """Set cadence helper. Returns False, "Invalid schedule.".
 
         Args:
-            days (int): The days parameter.
+        days (int): The days parameter.
 
         Returns:
-            tuple[bool, str]: True if the operation succeeded, False otherwise.
+        tuple[bool, str]: True if the operation succeeded, False otherwise.
         """
         if days not in _CADENCE:
             return False, "Invalid schedule."
@@ -178,13 +161,11 @@ class StorageSense:
     def set_recycle_bin_days(self, days: int) -> tuple[bool, str]:
         """Set recycle bin days.
 
-        Manages set recycle bin days operations and coordinates related state changes for the component.
-
         Args:
-            days (int): The days parameter.
+        days (int): The days parameter.
 
         Returns:
-            tuple[bool, str]: True if the operation succeeded, False otherwise.
+        tuple[bool, str]: True if the operation succeeded, False otherwise.
         """
         if days not in _DAYS:
             return False, "Invalid retention period."

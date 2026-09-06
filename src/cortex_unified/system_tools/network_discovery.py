@@ -175,9 +175,8 @@ _VENDOR_KIND_HINTS: tuple[tuple[tuple[str, ...], str], ...] = (
 
 @dataclass
 class Device:
-    """Device.
+    """Merged LAN device record with evidence of which methods saw it.
 
-    Manages Device operations and coordinates related state changes for the component.
     """
 
     ip: str
@@ -203,7 +202,6 @@ class Device:
     def randomized_mac(self) -> bool:
         """True when the device is using a privacy/randomized MAC.
 
-        Manages randomized mac operations and coordinates related state changes for the component.
 
         Returns:
             bool: True if the operation succeeded, False otherwise.
@@ -241,7 +239,6 @@ class Device:
     def _looks_like_uuid(text: str) -> bool:
         """True for machine-generated identifiers not worth showing as a name.
 
-        Manages looks like uuid operations and coordinates related state changes for the component.
 
         Args:
             text (str): Display text string.
@@ -308,9 +305,8 @@ class Device:
 
     @property
     def evidence(self) -> str:
-        """Evidence.
+        """Human-readable summary of which discovery methods observed this device.
 
-        Manages evidence operations and coordinates related state changes for the component.
 
         Returns:
             str: Formatted string or path.
@@ -329,9 +325,8 @@ class Device:
         return ", ".join(seen) if seen else "seen on the network"
 
     def merge(self, other: "Device") -> None:
-        """Merge.
+        """Merge new observations into the existing device record or collection.
 
-        Manages merge operations and coordinates related state changes for the component.
 
         Args:
             other ('Device'): The other parameter.
@@ -364,9 +359,8 @@ class Device:
             self.rtt_ms = other.rtt_ms
 
     def to_dict(self) -> dict[str, Any]:
-        """To dict.
+        """Serialize this record to a JSON-safe dict.
 
-        Manages to dict operations and coordinates related state changes for the component.
 
         Returns:
             dict[str, Any]: Dictionary mapping identifiers to status or values.
@@ -406,9 +400,8 @@ class Device:
 
 @dataclass(slots=True)
 class Interface:
-    """Interface.
+    """Local interface address with network computation.
 
-    Manages Interface operations and coordinates related state changes for the component.
     """
 
     name: str
@@ -417,9 +410,8 @@ class Interface:
 
     @property
     def network(self) -> ipaddress.IPv4Network | None:
-        """Network.
+        """IPv4 network for this interface, or None when address or netmask is invalid.
 
-        Manages network operations and coordinates related state changes for the component.
 
         Returns:
             ipaddress.IPv4Network | None: Result of the operation.
@@ -432,9 +424,8 @@ class Interface:
 
 @dataclass
 class DiscoveryResult:
-    """Discoveryresult.
+    """Aggregated LAN discovery outcome with devices, notes, and audit findings.
 
-    Manages DiscoveryResult operations and coordinates related state changes for the component.
     """
 
     devices: list[Device] = field(default_factory=list)
@@ -449,9 +440,8 @@ class DiscoveryResult:
     audit_profile: str = "targeted"
 
     def to_dict(self) -> dict[str, Any]:
-        """To dict.
+        """Serialize this record to a JSON-safe dict.
 
-        Manages to dict operations and coordinates related state changes for the component.
 
         Returns:
             dict[str, Any]: Dictionary mapping identifiers to status or values.
@@ -483,9 +473,8 @@ class DiscoveryResult:
 
 
 class NetworkDiscovery:
-    """Networkdiscovery.
+    """Active private-LAN discovery and defensive audit orchestrator.
 
-    Manages NetworkDiscovery operations and coordinates related state changes for the component.
     """
 
     def __init__(self, timeout_s: float = 4.0, workers: int = 128) -> None:
@@ -544,9 +533,8 @@ class NetworkDiscovery:
         oui.ensure_registry_loaded()
 
         def _say(msg: str) -> None:
-            """Say.
+            """Forward a progress message to the caller callback when provided.
 
-            Manages say operations and coordinates related state changes for the component.
 
             Args:
                 msg (str): Informational or progress status message.
@@ -555,9 +543,8 @@ class NetworkDiscovery:
                 progress(msg)
 
         def _cancelled() -> bool:
-            """Cancelled.
+            """Return True when the caller cancel event is set.
 
-            Manages cancelled operations and coordinates related state changes for the component.
 
             Returns:
                 bool: True if the operation succeeded, False otherwise.
@@ -735,7 +722,6 @@ class NetworkDiscovery:
     def local_interfaces() -> list[Interface]:
         """Return this PC's up, private IPv4 interfaces.
 
-        Manages local interfaces operations and coordinates related state changes for the component.
 
         Returns:
             list[Interface]: List of processed items or identifiers.
@@ -771,7 +757,6 @@ class NetworkDiscovery:
     def _local_devices(interfaces: list[Interface]) -> list[Device]:
         """Represent this PC itself, one entry per active interface.
 
-        Manages local devices operations and coordinates related state changes for the component.
 
         Args:
             interfaces (list[Interface]): The interfaces parameter.
@@ -813,7 +798,6 @@ class NetworkDiscovery:
     def default_gateways(self) -> set[str]:
         """Return default-gateway IPs (used to label the router).
 
-        Manages default gateways operations and coordinates related state changes for the component.
 
         Returns:
             set[str]: Formatted string or path.
@@ -846,7 +830,6 @@ class NetworkDiscovery:
     def _read_neighbors(self) -> list[Device]:
         """Read the OS neighbour cache (ARP for IPv4, NDP for IPv6).
 
-        Manages read neighbors operations and coordinates related state changes for the component.
 
         Returns:
             list[Device]: List of processed items or identifiers.
@@ -860,7 +843,6 @@ class NetworkDiscovery:
     def _read_neighbors_windows(self) -> list[Device]:
         """Use ``Get-NetNeighbor``, which exposes reachability state too.
 
-        Manages read neighbors windows operations and coordinates related state changes for the component.
 
         Returns:
             list[Device]: List of processed items or identifiers.
@@ -891,7 +873,6 @@ class NetworkDiscovery:
     def _read_arp_command(self) -> list[Device]:
         """Fallback: parse ``arp -a`` (works on every platform).
 
-        Manages read arp command operations and coordinates related state changes for the component.
 
         Returns:
             list[Device]: List of processed items or identifiers.
@@ -955,9 +936,8 @@ class NetworkDiscovery:
         payload = b"\x00"
 
         def _poke(ip: str) -> None:
-            """Poke.
+            """Send one UDP datagram to force ARP resolution; unreachable is ignored.
 
-            Manages poke operations and coordinates related state changes for the component.
 
             Args:
                 ip (str): The ip parameter.
@@ -985,9 +965,8 @@ class NetworkDiscovery:
 
     @staticmethod
     def _is_ipv4(value: str) -> bool:
-        """_is_ipv4.
+        """Return True when a string parses as an IPv4 address.
 
-        Manages is ipv4 operations and coordinates related state changes for the component.
 
         Args:
             value (str): The value parameter.
@@ -1026,9 +1005,8 @@ class NetworkDiscovery:
 
     @staticmethod
     def _ip_sort_key(ip: str) -> tuple:
-        """_ip_sort_key.
+        """Numeric IPv4 sort key, sorting unparseable strings last.
 
-        Manages ip sort key operations and coordinates related state changes for the component.
 
         Args:
             ip (str): The ip parameter.
@@ -1043,9 +1021,8 @@ class NetworkDiscovery:
 
     @staticmethod
     def _merge(into: dict[str, Device], found: Iterable[Device]) -> None:
-        """Merge.
+        """Merge new observations into the existing device record or collection.
 
-        Manages merge operations and coordinates related state changes for the component.
 
         Args:
             into (dict[str, Device]): The into parameter.
@@ -1059,9 +1036,8 @@ class NetworkDiscovery:
                 existing.merge(device)
 
     def _run_ps(self, script: str, timeout: int = 45) -> str | None:
-        """_run_ps.
+        """Run a PowerShell snippet and return stdout, or None on failure or cancel.
 
-        Manages run ps operations and coordinates related state changes for the component.
 
         Args:
             script (str): The script parameter.
@@ -1140,7 +1116,6 @@ class NetworkDiscovery:
     def _absorb_mdns(self, found: dict[str, Device], data: bytes, src_ip: str) -> None:
         """Parse an mDNS response and record names/services for the sender.
 
-        Manages absorb mdns operations and coordinates related state changes for the component.
 
         Args:
             found (dict[str, Device]): The found parameter.
@@ -1196,7 +1171,6 @@ class NetworkDiscovery:
     def _split_service_instance(value: str) -> tuple[str, str]:
         """Split ``Living Room._googlecast._tcp.local`` into (type, instance).
 
-        Manages split service instance operations and coordinates related state changes for the component.
 
         Args:
             value (str): The value parameter.
@@ -1218,7 +1192,6 @@ class NetworkDiscovery:
     def _build_dns_query(name: str, qtype: int = 12) -> bytes:
         """Build a minimal DNS query packet (PTR by default) for *name*.
 
-        Manages build dns query operations and coordinates related state changes for the component.
 
         Args:
             name (str): The name parameter.
@@ -1283,7 +1256,6 @@ class NetworkDiscovery:
     def _read_name(data: bytes, offset: int) -> tuple[str, int]:
         """Read a (possibly compressed) DNS name; returns (name, next_offset).
 
-        Manages read name operations and coordinates related state changes for the component.
 
         Args:
             data (bytes): The data parameter.
@@ -1385,7 +1357,6 @@ class NetworkDiscovery:
     def _discover_wsd(self, cancel_event: threading.Event | None) -> list[Device]:
         """Send a WS-Discovery Probe - the way Windows itself finds PCs/printers.
 
-        Manages discover wsd operations and coordinates related state changes for the component.
 
         Args:
             cancel_event (threading.Event | None): Threading event or callable to check for cancellation.
@@ -1456,9 +1427,8 @@ class NetworkDiscovery:
 
     @staticmethod
     def _pseudo_uuid() -> str:
-        """_pseudo_uuid.
+        """Return a random UUID string for a WS-Discovery MessageID.
 
-        Manages pseudo uuid operations and coordinates related state changes for the component.
 
         Returns:
             str: Formatted string or path.
@@ -1470,7 +1440,6 @@ class NetworkDiscovery:
     def _parse_http_headers(data: bytes) -> dict[str, str]:
         """Parse SSDP's HTTP-style headers into a lower-cased dict.
 
-        Manages parse http headers operations and coordinates related state changes for the component.
 
         Args:
             data (bytes): The data parameter.
@@ -1491,7 +1460,6 @@ class NetworkDiscovery:
                        cancel_event: threading.Event | None) -> None:
         """Fill in hostnames via reverse DNS and NetBIOS, in parallel.
 
-        Manages resolve names operations and coordinates related state changes for the component.
 
         Args:
             devices (dict[str, Device]): The devices parameter.
@@ -1502,9 +1470,8 @@ class NetworkDiscovery:
             return
 
         def _resolve(device: Device) -> None:
-            """Resolve.
+            """Resolve one device hostname via reverse DNS then NetBIOS query.
 
-            Manages resolve operations and coordinates related state changes for the component.
 
             Args:
                 device (Device): The device parameter.
@@ -1531,7 +1498,6 @@ class NetworkDiscovery:
     def _netbios_name(self, ip: str, timeout: float = 0.6) -> str:
         """Send a NetBIOS node-status query (UDP 137) and read the name.
 
-        Manages netbios name operations and coordinates related state changes for the component.
 
         Args:
             ip (str): The ip parameter.
@@ -1652,7 +1618,6 @@ class NetworkDiscovery:
                      gateways: set[str]) -> list[str]:
         """Explain the scan's limits, so gaps read as facts not failures.
 
-        Manages build notes operations and coordinates related state changes for the component.
 
         Args:
             devices (list[Device]): The devices parameter.

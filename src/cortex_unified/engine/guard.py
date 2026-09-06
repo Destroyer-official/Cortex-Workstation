@@ -24,33 +24,33 @@ from pathlib import Path
 
 @dataclass(frozen=True, slots=True)
 class GuardVerdict:
-    """Guardverdict.
+    """Guard Verdict.
 
-    Manages GuardVerdict operations and coordinates related state changes for the component.
-    """
+ Frozen verdict holding safe flag and human-readable reason.
+ """
 
     safe: bool
     reason: str = ""
 
     def __bool__(self) -> bool:  # allow ``if guard.check(p):``
-        """Bool.
+        """Boolean safety test.
 
-        Manages bool operations and coordinates related state changes for the component.
+ Returns the safe flag so verdicts work directly in if statements.
 
-        Returns:
-            bool: True if the operation succeeded, False otherwise.
-        """
+ Returns:
+ bool: True if the operation succeeded, False otherwise.
+ """
         return self.safe
 
 
 def _windows_protected() -> set[Path]:
-    """_windows_protected.
+    """Windows protected.
 
-    Manages windows protected operations and coordinates related state changes for the component.
+ Builds the Windows protected set from SystemDrive, SystemRoot, and well-known locations.
 
-    Returns:
-        set[Path]: Result of the operation.
-    """
+ Returns:
+ set[Path]: Result of the operation.
+ """
     system_drive = os.environ.get("SystemDrive", "C:") + "\\"
     roots = {
         Path(system_drive) / "Windows",
@@ -70,13 +70,13 @@ def _windows_protected() -> set[Path]:
 
 
 def _posix_protected() -> set[Path]:
-    """_posix_protected.
+    """Posix protected.
 
-    Manages posix protected operations and coordinates related state changes for the component.
+ Builds the POSIX protected set, adding macOS locations on Darwin.
 
-    Returns:
-        set[Path]: Result of the operation.
-    """
+ Returns:
+ set[Path]: Result of the operation.
+ """
     base = {
         "/", "/bin", "/sbin", "/usr", "/lib", "/lib64", "/etc", "/boot",
         "/dev", "/proc", "/sys", "/run", "/var", "/root",
@@ -87,14 +87,14 @@ def _posix_protected() -> set[Path]:
 
 
 class PathGuard:
-    """Pathguard.
+    """Path Guard.
 
-    Manages PathGuard operations and coordinates related state changes for the component.
+    Uses real path-relative checks instead of prefix matching so siblings like /usrdata never mismatch /usr; confines operations to the sandbox base when configured and refuses filesystem/drive roots and the home root.
     """
 
     def __init__(self, sandbox: os.PathLike[str] | str | None = None,
                  allow_system: bool = False) -> None:
-        """__init__.
+        """Initialize the instance.
 
         Initializes the instance and configures internal state.
 
@@ -116,9 +116,9 @@ class PathGuard:
             self._home = None
 
     def check(self, path: os.PathLike[str] | str) -> GuardVerdict:
-        """Check.
+        """Check helper.
 
-        Manages check operations and coordinates related state changes for the component.
+        Confines operations to the sandbox base when configured and refuses filesystem/drive roots and the home root.
 
         Args:
             path (os.PathLike[str] | str): Filesystem path to the target file or directory.
@@ -156,14 +156,14 @@ class PathGuard:
     def is_writable(self, path: os.PathLike[str] | str) -> bool:
         """True if *path* (or its parent, for not-yet-existing paths) is writable.
 
-        Manages is writable operations and coordinates related state changes for the component.
+ Checks os.access(W_OK) on the path or its parent, failing closed on errors.
 
-        Args:
-            path (os.PathLike[str] | str): Filesystem path to the target file or directory.
+ Args:
+ path (os.PathLike[str] | str): Filesystem path to the target file or directory.
 
-        Returns:
-            bool: True if the operation succeeded, False otherwise.
-        """
+ Returns:
+ bool: True if the operation succeeded, False otherwise.
+ """
         p = Path(path)
         try:
             if p.exists():
@@ -176,7 +176,7 @@ class PathGuard:
     def _is_within(child: Path, parent: Path) -> bool:
         """Robust replacement for prefix matching (handles sibling-name traps).
 
-        Manages is within operations and coordinates related state changes for the component.
+        Uses real path-relative checks instead of prefix matching so siblings like /usrdata never mismatch /usr.
 
         Args:
             child (Path): The child parameter.

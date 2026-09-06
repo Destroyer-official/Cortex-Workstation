@@ -10,9 +10,7 @@ from cortex_unified.system_tools import network_automation as automation
 
 
 def test_schedule_builds_only_fixed_private_scan_command(monkeypatch):
-    """test_schedule_builds_only_fixed_private_scan_command.
-
-    Manages test schedule builds only fixed private scan command operations and coordinates related state changes for the component.
+    """Verify schedule builds only fixed private scan command via automation.NetworkSchedule, automation.build_scan_command, monkeypatch.setattr.
 
     Args:
         monkeypatch: The monkeypatch parameter.
@@ -39,10 +37,7 @@ def test_schedule_builds_only_fixed_private_scan_command(monkeypatch):
 
 
 def test_schedule_rejects_public_scope_and_arbitrary_frequency():
-    """test_schedule_rejects_public_scope_and_arbitrary_frequency.
-
-    Manages test schedule rejects public scope and arbitrary frequency operations and coordinates related state changes for the component.
-    """
+    """Verify schedule rejects public scope and arbitrary frequency via automation.NetworkSchedule, automation.build_scan_command, pytest.raises."""
     with pytest.raises(ValueError, match="private LAN"):
         automation.build_scan_command(automation.NetworkSchedule(
             scopes=("8.8.8.0/24",)))
@@ -52,9 +47,7 @@ def test_schedule_rejects_public_scope_and_arbitrary_frequency():
 
 
 def test_scheduler_uses_process_runner_without_shell(monkeypatch):
-    """test_scheduler_uses_process_runner_without_shell.
-
-    Manages test scheduler uses process runner without shell operations and coordinates related state changes for the component.
+    """Verify scheduler uses process runner without shell via subprocess.CompletedProcess, automation.NetworkSchedule, automation.NetworkScanScheduler.
 
     Args:
         monkeypatch: The monkeypatch parameter.
@@ -63,9 +56,7 @@ def test_scheduler_uses_process_runner_without_shell(monkeypatch):
     monkeypatch.setattr(automation.platform, "system", lambda: "Windows")
 
     def fake_run(arguments, **kwargs):
-        """fake_run.
-
-        Manages fake run operations and coordinates related state changes for the component.
+        """Fake run using subprocess.CompletedProcess, calls.append.
 
         Args:
             arguments: The arguments parameter.

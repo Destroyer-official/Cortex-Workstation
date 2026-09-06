@@ -37,10 +37,7 @@ from cortex_unified.analyzers.registry_cleaner_ai import AIRegistryCleaner, Scan
 
 
 class _RegistryWorker(QObject):
-    """Registryworker.
-
-    Manages RegistryWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker (_RegistryWorker) performing RegistryWorker. Signals finished, progress, failed report status. Configured with root, categories, risk_threshold, create_restore_point. Its run() step calls AIRegistryCleaner, cleaner.scan, emit, str."""
     finished = Signal(object)
     progress = Signal(str)
     failed = Signal(str)
@@ -108,10 +105,7 @@ class _RegistryWorker(QObject):
 
 
 class RegistryAICleanerPage(_Page):
-    """Registryaicleanerpage.
-
-    Manages RegistryAICleanerPage operations and coordinates related state changes for the component.
-    """
+    """AI Registry Cleaner page: ML-powered risk scoring (ONNX + heuristic fallback) — scans."""
 
     _DEFAULT_ROOT = r"HKLM\Software\Microsoft\Windows\CurrentVersion"
 
@@ -216,10 +210,7 @@ class RegistryAICleanerPage(_Page):
             self.path_label.setText(folder)
 
     def _run(self):
-        """Run.
-
-        Manages run operations and coordinates related state changes for the component.
-        """
+        """Disable action buttons, show progress/status, and launch the background worker (setEnabled, setVisible, show_loading)."""
         self.run_btn.setEnabled(False)
         self.progress.setVisible(True)
         self.state.show_loading("Scanning registry (AI risk scoring)…")
@@ -247,10 +238,7 @@ class RegistryAICleanerPage(_Page):
         self.win.run_worker(w, self._on_done, self._fail, on_progress=self._on_progress)
 
     def _all_categories(self):
-        """_all_categories.
-
-        Manages all categories operations and coordinates related state changes for the component.
-        """
+        """Return all registry category definitions keyed by category id."""
         from cortex_unified.analyzers.registry_cleaner_ai import _CATEGORY_DEFS
 
         return _CATEGORY_DEFS.keys()

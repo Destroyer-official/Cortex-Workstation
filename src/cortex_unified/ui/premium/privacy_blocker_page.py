@@ -31,10 +31,7 @@ from .window import _Page
 
 
 class _PrivacyWorker(QObject):
-    """Privacyworker.
-
-    Manages PrivacyWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker (_PrivacyWorker) performing PrivacyWorker. Signals finished, progress, failed report status. Configured with mode, profile, tweak_ids. Its run() step calls PrivacyBlocker, pb.apply_profile, list, keys."""
 
     finished = Signal(list)
     progress = Signal(str)
@@ -121,10 +118,7 @@ _PROFILE_MAP = {
 
 
 class PrivacyBlockerPage(_Page):
-    """Privacyblockerpage.
-
-    Manages PrivacyBlockerPage operations and coordinates related state changes for the component.
-    """
+    """Privacy Blocker page: Profile-based telemetry control — blocks Windows data collection."""
 
     def __init__(self, win):
         """__init__.
@@ -242,8 +236,6 @@ class PrivacyBlockerPage(_Page):
     def _discover_categories() -> list[str]:
         """Extract unique categories from the tweak catalog.
 
-        Manages discover categories operations and coordinates related state changes for the component.
-
         Returns:
             list[str]: List of processed items or identifiers.
         """
@@ -253,8 +245,6 @@ class PrivacyBlockerPage(_Page):
 
     def _selected_tweak_ids(self) -> list[str]:
         """Return tweak IDs matching the chosen profile and checked categories.
-
-        Manages selected tweak ids operations and coordinates related state changes for the component.
 
         Returns:
             list[str]: List of processed items or identifiers.
@@ -272,10 +262,7 @@ class PrivacyBlockerPage(_Page):
     # -- apply / revert ----------------------------------------------------
 
     def _apply(self):
-        """Apply.
-
-        Manages apply operations and coordinates related state changes for the component.
-        """
+        """Disable action buttons, show progress/status, and launch the background worker (currentText, self._selected_tweak_ids, show_empty)."""
         profile = self.profile_combo.currentText()
         ids = self._selected_tweak_ids()
         if not ids:
@@ -293,10 +280,7 @@ class PrivacyBlockerPage(_Page):
         self.win.run_worker(w, self._on_done, self._fail, on_progress=self._on_progress)
 
     def _revert(self):
-        """Revert.
-
-        Manages revert operations and coordinates related state changes for the component.
-        """
+        """Disable action buttons, show progress/status, and launch the background worker (self._set_busy, show_loading, setText)."""
         self._set_busy(True)
         self.state.show_loading("Reverting all tweaks…")
         self.status.setText("Reverting all applied tweaks…")
@@ -306,9 +290,7 @@ class PrivacyBlockerPage(_Page):
         self.win.run_worker(w, self._on_done, self._fail, on_progress=self._on_progress)
 
     def _set_busy(self, busy: bool):
-        """_set_busy.
-
-        Manages set busy operations and coordinates related state changes for the component.
+        """Enable or disable action controls and show the busy indicator.
 
         Args:
             busy (bool): The busy parameter.

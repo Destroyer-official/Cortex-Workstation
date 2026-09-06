@@ -102,10 +102,7 @@ def scan_file(filepath: Path) -> dict:
     return results
 
 def main():
-    """Main.
-
-    Manages main operations and coordinates related state changes for the component.
-    """
+    """Main using os.walk, json.dump, fn.endswith."""
     print("=" * 80)
     print("  DEEP EXHAUSTIVE CODEBASE INSPECTION & AUDIT")
     print("=" * 80)

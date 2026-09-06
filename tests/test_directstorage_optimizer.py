@@ -10,10 +10,7 @@ from cortex_unified.system_tools.directstorage_optimizer import (
 
 
 def test_parse_bypassio_supported():
-    """test_parse_bypassio_supported.
-
-    Manages test parse bypassio supported operations and coordinates related state changes for the component.
-    """
+    """Verify parse bypassio supported via DirectStorageOptimizer.parse_bypassio_output."""
     sample_out = """
 BypassIo is supported on C:
 Storage Type: NVMe
@@ -28,10 +25,7 @@ Volume Driver: stornvme.sys
 
 
 def test_parse_bypassio_blocked():
-    """test_parse_bypassio_blocked.
-
-    Manages test parse bypassio blocked operations and coordinates related state changes for the component.
-    """
+    """Verify parse bypassio blocked via DirectStorageOptimizer.parse_bypassio_output."""
     sample_out = """
 BypassIo is not supported on D:
 Reason: Incompatible driver detected
@@ -46,10 +40,7 @@ Storage Type: SATA
 
 
 def test_audit_structure():
-    """test_audit_structure.
-
-    Manages test audit structure operations and coordinates related state changes for the component.
-    """
+    """Verify audit structure via DirectStorageOptimizer, opt.audit, report.to_dict."""
     opt = DirectStorageOptimizer()
     report = opt.audit()
     assert isinstance(report, DirectStorageAuditReport)

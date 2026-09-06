@@ -54,9 +54,8 @@ _SECRET = b"cortex-cleaner::license::v1::signing"
 
 
 def _today() -> date:
-    """Today.
+    """Return today's local date.
 
-    Manages today operations and coordinates related state changes for the component.
 
     Returns:
         date: Result of the operation.
@@ -65,9 +64,8 @@ def _today() -> date:
 
 
 def _parse_date(value: str) -> date | None:
-    """_parse_date.
+    """Parse an ISO date string, returning None when unparsable.
 
-    Manages parse date operations and coordinates related state changes for the component.
 
     Args:
         value (str): The value parameter.
@@ -83,9 +81,8 @@ def _parse_date(value: str) -> date | None:
 
 @dataclass(slots=True)
 class LicensePayload:
-    """Licensepayload.
+    """License payload bound to a key, tier, and machine fingerprint.
 
-    Manages LicensePayload operations and coordinates related state changes for the component.
     """
 
     key: str
@@ -99,9 +96,8 @@ class LicensePayload:
     fingerprint: str = ""
 
     def canonical(self) -> bytes:
-        """Canonical.
+        """Serialize the payload to canonical JSON bytes for signing.
 
-        Manages canonical operations and coordinates related state changes for the component.
 
         Returns:
             bytes: Result of the operation.
@@ -118,9 +114,8 @@ class LicensePayload:
         return json.dumps(data, sort_keys=True, separators=(",", ":")).encode("utf-8")
 
     def sign(self) -> str:
-        """Sign.
+        """Compute the HMAC-SHA256 signature over the canonical payload.
 
-        Manages sign operations and coordinates related state changes for the component.
 
         Returns:
             str: Formatted string or path.
@@ -128,9 +123,8 @@ class LicensePayload:
         return hmac.new(_SECRET, self.canonical(), hashlib.sha256).hexdigest()
 
     def verify_signature(self, signature: str) -> bool:
-        """verify_signature.
+        """Check whether a signature matches this payload.
 
-        Manages verify signature operations and coordinates related state changes for the component.
 
         Args:
             signature (str): The signature parameter.
@@ -142,9 +136,8 @@ class LicensePayload:
 
     @classmethod
     def from_dict(cls, raw: dict[str, Any]) -> "LicensePayload | None":
-        """from_dict.
+        """Build a payload from a raw dict, returning None when malformed.
 
-        Manages from dict operations and coordinates related state changes for the component.
 
         Args:
             raw (dict[str, Any]): The raw parameter.
@@ -170,9 +163,8 @@ class LicensePayload:
 
 @dataclass(slots=True)
 class LicenseState:
-    """Licensestate.
+    """Evaluated license outcome with tier, flags, and reason.
 
-    Manages LicenseState operations and coordinates related state changes for the component.
     """
 
     tier: Tier = Tier.FREE
@@ -188,9 +180,8 @@ class LicenseState:
 
     @property
     def features(self) -> set[Feature]:
-        """Features.
+        """Features unlocked by this state's tier.
 
-        Manages features operations and coordinates related state changes for the component.
 
         Returns:
             set[Feature]: Result of the operation.
@@ -198,9 +189,8 @@ class LicenseState:
         return features_for_tier(self.tier)
 
     def allows(self, feature: Feature) -> bool:
-        """Allows.
+        """Whether this state permits a given feature.
 
-        Manages allows operations and coordinates related state changes for the component.
 
         Args:
             feature (Feature): The feature parameter.
@@ -211,9 +201,8 @@ class LicenseState:
         return feature in self.features
 
     def to_dict(self) -> dict[str, Any]:
-        """to_dict.
+        """Serialize the state to a JSON-safe dict with masked key.
 
-        Manages to dict operations and coordinates related state changes for the component.
 
         Returns:
             dict[str, Any]: Dictionary mapping identifiers to status or values.
@@ -232,9 +221,8 @@ class LicenseState:
         }
 
     def _masked_key(self) -> str:
-        """_masked_key.
+        """Mask the license key for safe display.
 
-        Manages masked key operations and coordinates related state changes for the component.
 
         Returns:
             str: Formatted string or path.
@@ -249,7 +237,6 @@ class LicenseState:
 def license_path() -> Path:
     """Where this machine's license lives (per-user, no admin rights).
 
-    Manages license path operations and coordinates related state changes for the component.
 
     Returns:
         Path: Result of the operation.
@@ -267,7 +254,7 @@ class LicenseManager:
     """
 
     def __init__(self, path: Path | None = None):
-        """__init__.
+        """Initialize with an optional license file path.
 
         Initializes the instance and configures internal state.
 
@@ -286,7 +273,6 @@ class LicenseManager:
     def _file_signature(path: Path) -> tuple[int, int] | None:
         """Cheap identity of the on-disk license (None when absent).
 
-        Manages file signature operations and coordinates related state changes for the component.
 
         Args:
             path (Path): Filesystem path to the target file or directory.
@@ -301,9 +287,8 @@ class LicenseManager:
             return None
 
     def invalidate(self) -> None:
-        """Invalidate.
+        """Drop the cached validation state.
 
-        Manages invalidate operations and coordinates related state changes for the component.
         """
         with self._lock:
             self._cache = None
@@ -329,9 +314,8 @@ class LicenseManager:
         self.invalidate()
 
     def _load_document(self) -> tuple[LicensePayload | None, str]:
-        """_load_document.
+        """Load and minimally validate the on-disk license document.
 
-        Manages load document operations and coordinates related state changes for the component.
 
         Returns:
             tuple[LicensePayload | None, str]: Formatted string or path.
@@ -388,7 +372,6 @@ class LicenseManager:
     def start_trial(self) -> LicenseState:
         """Start the once-per-machine PRO trial.
 
-        Manages start trial operations and coordinates related state changes for the component.
 
         Returns:
             LicenseState: Result of the operation.
@@ -404,9 +387,8 @@ class LicenseManager:
         )
 
     def deactivate(self) -> None:
-        """Deactivate.
+        """Remove the stored license file and clear the cache.
 
-        Manages deactivate operations and coordinates related state changes for the component.
         """
         with self._lock:
             try:
@@ -434,9 +416,8 @@ class LicenseManager:
             return state
 
     def _validate_uncached(self) -> LicenseState:
-        """_validate_uncached.
+        """Validate the license without using the cache.
 
-        Manages validate uncached operations and coordinates related state changes for the component.
 
         Returns:
             LicenseState: Result of the operation.
@@ -485,9 +466,8 @@ class LicenseManager:
         )
 
     def status(self) -> dict[str, Any]:
-        """Status.
+        """Return the current license status as a dict.
 
-        Manages status operations and coordinates related state changes for the component.
 
         Returns:
             dict[str, Any]: Dictionary mapping identifiers to status or values.
@@ -502,7 +482,6 @@ _MANAGER_LOCK = threading.Lock()
 def get_license_manager() -> LicenseManager:
     """Process-wide singleton (tests may construct their own instances).
 
-    Manages get license manager operations and coordinates related state changes for the component.
 
     Returns:
         LicenseManager: Result of the operation.
@@ -517,7 +496,6 @@ def get_license_manager() -> LicenseManager:
 def reset_singleton() -> None:
     """Forget the singleton (test isolation).
 
-    Manages reset singleton operations and coordinates related state changes for the component.
     """
     global _MANAGER
     with _MANAGER_LOCK:

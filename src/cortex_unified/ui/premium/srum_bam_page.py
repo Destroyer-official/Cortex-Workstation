@@ -33,10 +33,7 @@ from .window import _Page, fmt_bytes
 
 
 class _SrumBamWorker(QObject):
-    """Srumbamworker.
-
-    Manages SrumBamWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker (_SrumBamWorker) performing SrumBamWorker. Signals finished, clean_finished report status. Configured with cleaner, entries."""
     finished = Signal(object)
     clean_finished = Signal(int)
 
@@ -54,27 +51,18 @@ class _SrumBamWorker(QObject):
         self.entries = entries
 
     def run_scan(self) -> None:
-        """run_scan.
-
-        Manages run scan operations and coordinates related state changes for the component.
-        """
+        """Execute the background run scan operation and emit the result for the page."""
         report = self.cleaner.scan()
         self.finished.emit(report)
 
     def run_clean(self) -> None:
-        """run_clean.
-
-        Manages run clean operations and coordinates related state changes for the component.
-        """
+        """Execute the background run clean operation and emit the result for the page."""
         count = self.cleaner.clean_bam_entries(self.entries)
         self.clean_finished.emit(count)
 
 
 class SrumBamCleanerPage(_Page):
-    """Srumbamcleanerpage.
-
-    Manages SrumBamCleanerPage operations and coordinates related state changes for the component.
-    """
+    """Windows Execution & SRUM Forensics page: Audit and sanitize Windows BAM/DAM execution timestamps and SRUDB resource database metrics."""
 
     def __init__(self, win) -> None:
         """__init__.
@@ -140,10 +128,7 @@ class SrumBamCleanerPage(_Page):
         self.add_scrolling_list(self.table, stretch=1)
 
     def _start_scan(self) -> None:
-        """_start_scan.
-
-        Manages start scan operations and coordinates related state changes for the component.
-        """
+        """Disable action buttons, show progress/status, and launch the background worker (setEnabled, setVisible, setText)."""
         self.btn_scan.setEnabled(False)
         self.btn_clean.setEnabled(False)
         self.progress_bar.setVisible(True)
@@ -157,9 +142,7 @@ class SrumBamCleanerPage(_Page):
         self._thread.start()
 
     def _on_scan_finished(self, report: SrumBamReport) -> None:
-        """_on_scan_finished.
-
-        Manages on scan finished operations and coordinates related state changes for the component.
+        """Populate the results table (quit, wait, setVisible) with the latest data.
 
         Args:
             report (SrumBamReport): The generated report data object from the backend.
@@ -189,10 +172,7 @@ class SrumBamCleanerPage(_Page):
             self.table.setItem(row, 3, QTableWidgetItem(entry.source.upper()))
 
     def _start_clean(self) -> None:
-        """_start_clean.
-
-        Manages start clean operations and coordinates related state changes for the component.
-        """
+        """Validate the current selection and ask the user to confirm via a message box showing 'Confirm BAM Sanitization'."""
         if not self.current_report or not self.current_report.bam_entries:
             return
 
@@ -219,9 +199,7 @@ class SrumBamCleanerPage(_Page):
         self._thread.start()
 
     def _on_clean_finished(self, cleaned_count: int) -> None:
-        """_on_clean_finished.
-
-        Manages on clean finished operations and coordinates related state changes for the component.
+        """Validate the current selection and ask the user to confirm via a message box showing 'Successfully sanitized'.
 
         Args:
             cleaned_count (int): The cleaned count parameter.

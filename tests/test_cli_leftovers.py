@@ -19,26 +19,19 @@ from cortex_unified.system_tools.leftover_cleaner import LeftoverFinding
 def fake_scan(monkeypatch):
     """Patch LeftoverScanner inside the engine CLI's lazy import target.
 
-    Manages fake scan operations and coordinates related state changes for the component.
-
     Args:
         monkeypatch: The monkeypatch parameter.
     """
     from cortex_unified.system_tools import leftover_cleaner as lc
 
     def _make(findings):
-        """Make.
-
-        Manages make operations and coordinates related state changes for the component.
+        """Make using monkeypatch.setattr.
 
         Args:
             findings: The findings parameter.
         """
         class FakeScanner:
-            """Fakescanner.
-
-            Manages FakeScanner operations and coordinates related state changes for the component.
-            """
+            """Helper fakescanner."""
             def __init__(self, *a, **k):
                 """Initialize the instance and configure internal state.
 
@@ -71,14 +64,9 @@ def fake_scan(monkeypatch):
 
 
 class TestLeftoversScan:
-    """Testleftoversscan.
-
-    Manages TestLeftoversScan operations and coordinates related state changes for the component.
-    """
+    """Group testleftoversscan tests covering scan json emits dicts; scan human output shows confidence; scan clean system reports nothing."""
     def test_scan_json_emits_dicts(self, fake_scan):
-        """test_scan_json_emits_dicts.
-
-        Manages test scan json emits dicts operations and coordinates related state changes for the component.
+        """Verify scan json emits dicts via json.loads, LeftoverFinding, CliRunner.
 
         Args:
             fake_scan: The fake scan parameter.
@@ -96,9 +84,7 @@ class TestLeftoversScan:
         assert payload[0]["level"] == "VeryGood"
 
     def test_scan_human_output_shows_confidence(self, fake_scan):
-        """test_scan_human_output_shows_confidence.
-
-        Manages test scan human output shows confidence operations and coordinates related state changes for the component.
+        """Verify scan human output shows confidence via result.output.count, LeftoverFinding, CliRunner.
 
         Args:
             fake_scan: The fake scan parameter.
@@ -113,9 +99,7 @@ class TestLeftoversScan:
         assert result.output.count("C:\\x\\Zeta") == 1
 
     def test_scan_clean_system_reports_nothing(self, fake_scan):
-        """test_scan_clean_system_reports_nothing.
-
-        Manages test scan clean system reports nothing operations and coordinates related state changes for the component.
+        """Verify scan clean system reports nothing via CliRunner, fake_scan, invoke.
 
         Args:
             fake_scan: The fake scan parameter.
@@ -127,15 +111,10 @@ class TestLeftoversScan:
 
 
 class TestLeftoversClean:
-    """Testleftoversclean.
-
-    Manages TestLeftoversClean operations and coordinates related state changes for the component.
-    """
+    """Group testleftoversclean tests covering dry run is default and deletes nothing; min level filters questionable by default; apply recycles and reports freed bytes; apply failure exits nonzero."""
     def test_dry_run_is_default_and_deletes_nothing(self, fake_scan,
                                                     tmp_path):
-        """test_dry_run_is_default_and_deletes_nothing.
-
-        Manages test dry run is default and deletes nothing operations and coordinates related state changes for the component.
+        """Verify dry run is default and deletes nothing via LeftoverFinding, CliRunner, fake_scan.
 
         Args:
             fake_scan: The fake scan parameter.
@@ -152,9 +131,7 @@ class TestLeftoversClean:
 
     def test_min_level_filters_questionable_by_default(self, fake_scan,
                                                        tmp_path):
-        """test_min_level_filters_questionable_by_default.
-
-        Manages test min level filters questionable by default operations and coordinates related state changes for the component.
+        """Verify min level filters questionable by default via json.loads, LeftoverFinding, CliRunner.
 
         Args:
             fake_scan: The fake scan parameter.
@@ -180,9 +157,7 @@ class TestLeftoversClean:
 
     def test_apply_recycles_and_reports_freed_bytes(self, fake_scan,
                                                     tmp_path, monkeypatch):
-        """test_apply_recycles_and_reports_freed_bytes.
-
-        Manages test apply recycles and reports freed bytes operations and coordinates related state changes for the component.
+        """Verify apply recycles and reports freed bytes via lc.CleanOutcome, monkeypatch.setattr, json.loads.
 
         Args:
             fake_scan: The fake scan parameter.
@@ -198,10 +173,7 @@ class TestLeftoversClean:
         from cortex_unified.system_tools import leftover_cleaner as lc
 
         class FakeCleaner:
-            """Fakecleaner.
-
-            Manages FakeCleaner operations and coordinates related state changes for the component.
-            """
+            """Helper fakecleaner using lc.CleanOutcome."""
             def clean(self, models, create_restore_point=False):
                 """clean.
 
@@ -224,9 +196,7 @@ class TestLeftoversClean:
 
     def test_apply_failure_exits_nonzero(self, fake_scan, tmp_path,
                                          monkeypatch):
-        """test_apply_failure_exits_nonzero.
-
-        Manages test apply failure exits nonzero operations and coordinates related state changes for the component.
+        """Verify apply failure exits nonzero via lc.CleanOutcome, monkeypatch.setattr, json.loads.
 
         Args:
             fake_scan: The fake scan parameter.
@@ -240,10 +210,7 @@ class TestLeftoversClean:
         from cortex_unified.system_tools import leftover_cleaner as lc
 
         class FailingCleaner:
-            """Failingcleaner.
-
-            Manages FailingCleaner operations and coordinates related state changes for the component.
-            """
+            """Helper failingcleaner using lc.CleanOutcome."""
             def clean(self, models, create_restore_point=False):
                 """clean.
 
@@ -265,14 +232,9 @@ class TestLeftoversClean:
 
 
 class TestLeftoversOrphans:
-    """Testleftoversorphans.
-
-    Manages TestLeftoversOrphans operations and coordinates related state changes for the component.
-    """
+    """Group testleftoversorphans tests covering orphans lists findings."""
     def test_orphans_lists_findings(self, fake_scan):
-        """test_orphans_lists_findings.
-
-        Manages test orphans lists findings operations and coordinates related state changes for the component.
+        """Verify orphans lists findings via LeftoverFinding, CliRunner, fake_scan.
 
         Args:
             fake_scan: The fake scan parameter.

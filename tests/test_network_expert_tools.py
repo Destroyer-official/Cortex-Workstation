@@ -21,9 +21,7 @@ version='2.7' tunnel='ssl' conf='10'/></port></ports><os>
 
 
 def _available(monkeypatch: pytest.MonkeyPatch) -> nmap_adapter.NmapAdapter:
-    """Available.
-
-    Manages available operations and coordinates related state changes for the component.
+    """Available using nmap_adapter.NmapAdapter, monkeypatch.setattr.
 
     Args:
         monkeypatch (pytest.MonkeyPatch): The monkeypatch parameter.
@@ -38,9 +36,7 @@ def _available(monkeypatch: pytest.MonkeyPatch) -> nmap_adapter.NmapAdapter:
 
 
 def test_nmap_status_does_not_execute(monkeypatch: pytest.MonkeyPatch) -> None:
-    """test_nmap_status_does_not_execute.
-
-    Manages test nmap status does not execute operations and coordinates related state changes for the component.
+    """Verify nmap status does not execute via monkeypatch.setattr, adapter.status, pytest.fail.
 
     Args:
         monkeypatch (pytest.MonkeyPatch): The monkeypatch parameter.
@@ -58,9 +54,7 @@ def test_nmap_status_does_not_execute(monkeypatch: pytest.MonkeyPatch) -> None:
 def test_nmap_missing_executable_has_clear_error(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """test_nmap_missing_executable_has_clear_error.
-
-    Manages test nmap missing executable has clear error operations and coordinates related state changes for the component.
+    """Verify nmap missing executable has clear error via nmap_adapter.NmapAdapter, adapter.scan, monkeypatch.setattr.
 
     Args:
         monkeypatch (pytest.MonkeyPatch): The monkeypatch parameter.
@@ -79,9 +73,7 @@ def test_nmap_missing_executable_has_clear_error(
 def test_nmap_builds_safe_deterministic_argument_list(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """test_nmap_builds_safe_deterministic_argument_list.
-
-    Manages test nmap builds safe deterministic argument list operations and coordinates related state changes for the component.
+    """Verify nmap builds safe deterministic argument list via adapter.build_arguments, _available.
 
     Args:
         monkeypatch (pytest.MonkeyPatch): The monkeypatch parameter.
@@ -104,9 +96,7 @@ def test_nmap_builds_safe_deterministic_argument_list(
 def test_nmap_rejects_every_unauthorized_target(
     monkeypatch: pytest.MonkeyPatch, target: str,
 ) -> None:
-    """test_nmap_rejects_every_unauthorized_target.
-
-    Manages test nmap rejects every unauthorized target operations and coordinates related state changes for the component.
+    """Verify nmap rejects every unauthorized target via pytest.mark.parametrize, pytest.raises, adapter.build_arguments.
 
     Args:
         monkeypatch (pytest.MonkeyPatch): The monkeypatch parameter.
@@ -120,9 +110,7 @@ def test_nmap_rejects_every_unauthorized_target(
 def test_nmap_expert_modes_require_windows_admin(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """test_nmap_expert_modes_require_windows_admin.
-
-    Manages test nmap expert modes require windows admin operations and coordinates related state changes for the component.
+    """Verify nmap expert modes require windows admin via monkeypatch.setattr, adapter.build_arguments, pytest.raises.
 
     Args:
         monkeypatch (pytest.MonkeyPatch): The monkeypatch parameter.
@@ -141,9 +129,7 @@ def test_nmap_expert_modes_require_windows_admin(
 def test_nmap_scan_uses_proc_and_parses_observation(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """test_nmap_scan_uses_proc_and_parses_observation.
-
-    Manages test nmap scan uses proc and parses observation operations and coordinates related state changes for the component.
+    """Verify nmap scan uses proc and parses observation via threading.Event, subprocess.CompletedProcess, adapter.scan.
 
     Args:
         monkeypatch (pytest.MonkeyPatch): The monkeypatch parameter.
@@ -152,9 +138,7 @@ def test_nmap_scan_uses_proc_and_parses_observation(
     calls = []
 
     def fake_run(arguments, **kwargs):
-        """fake_run.
-
-        Manages fake run operations and coordinates related state changes for the component.
+        """Fake run using subprocess.CompletedProcess, calls.append.
 
         Args:
             arguments: The arguments parameter.
@@ -183,9 +167,7 @@ def test_nmap_scan_uses_proc_and_parses_observation(
 def test_nmap_cancellation_before_launch_skips_proc(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """test_nmap_cancellation_before_launch_skips_proc.
-
-    Manages test nmap cancellation before launch skips proc operations and coordinates related state changes for the component.
+    """Verify nmap cancellation before launch skips proc via threading.Event, adapter.scan, monkeypatch.setattr.
 
     Args:
         monkeypatch (pytest.MonkeyPatch): The monkeypatch parameter.
@@ -205,9 +187,7 @@ def test_nmap_cancellation_before_launch_skips_proc(
 
 @pytest.mark.parametrize("declaration", [b"<!DOCTYPE x>", b"<!ENTITY x 'y'>"])
 def test_nmap_xml_rejects_dtd_and_entities(declaration: bytes) -> None:
-    """test_nmap_xml_rejects_dtd_and_entities.
-
-    Manages test nmap xml rejects dtd and entities operations and coordinates related state changes for the component.
+    """Verify nmap xml rejects dtd and entities via nmap_adapter.parse_nmap_xml, pytest.mark.parametrize, pytest.raises.
 
     Args:
         declaration (bytes): The declaration parameter.
@@ -218,20 +198,14 @@ def test_nmap_xml_rejects_dtd_and_entities(declaration: bytes) -> None:
 
 
 def test_nmap_xml_enforces_depth_limit() -> None:
-    """test_nmap_xml_enforces_depth_limit.
-
-    Manages test nmap xml enforces depth limit operations and coordinates related state changes for the component.
-    """
+    """Verify nmap xml enforces depth limit via nmap_adapter.parse_nmap_xml, pytest.raises."""
     payload = b"<nmaprun>" + b"<x>" * 40 + b"</x>" * 40 + b"</nmaprun>"
     with pytest.raises(nmap_adapter.NmapOutputError, match="depth"):
         nmap_adapter.parse_nmap_xml(payload, SCOPES)
 
 
 def test_nmap_xml_rejects_public_result() -> None:
-    """test_nmap_xml_rejects_public_result.
-
-    Manages test nmap xml rejects public result operations and coordinates related state changes for the component.
-    """
+    """Verify nmap xml rejects public result via NMAP_XML.replace, nmap_adapter.parse_nmap_xml, pytest.raises."""
     payload = NMAP_XML.replace(b"192.168.50.10", b"8.8.8.8")
     with pytest.raises(nmap_adapter.NmapOutputError, match="unauthorized"):
         nmap_adapter.parse_nmap_xml(payload, SCOPES)
@@ -242,9 +216,7 @@ def test_nmap_xml_rejects_public_result() -> None:
     "02:11:22:33:44:55", "00-11-22-33-44-55", "001122334455",
 ])
 def test_wol_rejects_invalid_or_non_unicast_mac(mac: str) -> None:
-    """test_wol_rejects_invalid_or_non_unicast_mac.
-
-    Manages test wol rejects invalid or non unicast mac operations and coordinates related state changes for the component.
+    """Verify wol rejects invalid or non unicast mac via pytest.mark.parametrize, pytest.raises, wake_on_lan.validate_mac.
 
     Args:
         mac (str): The mac parameter.
@@ -254,10 +226,7 @@ def test_wol_rejects_invalid_or_non_unicast_mac(mac: str) -> None:
 
 
 def test_wol_builds_standard_magic_packet() -> None:
-    """test_wol_builds_standard_magic_packet.
-
-    Manages test wol builds standard magic packet operations and coordinates related state changes for the component.
-    """
+    """Verify wol builds standard magic packet via bytes.fromhex, wake_on_lan.build_magic_packet."""
     raw = bytes.fromhex("001122334455")
     packet = wake_on_lan.build_magic_packet("00:11:22:33:44:55")
     assert packet == b"\xff" * 6 + raw * 16
@@ -274,9 +243,7 @@ def test_wol_builds_standard_magic_packet() -> None:
 def test_wol_rejects_broadcast_outside_active_private_lan(
     broadcast: str, networks: tuple[str, ...],
 ) -> None:
-    """test_wol_rejects_broadcast_outside_active_private_lan.
-
-    Manages test wol rejects broadcast outside active private lan operations and coordinates related state changes for the component.
+    """Verify wol rejects broadcast outside active private lan via pytest.mark.parametrize, pytest.raises, wake_on_lan.validate_broadcast.
 
     Args:
         broadcast (str): The broadcast parameter.
@@ -287,10 +254,7 @@ def test_wol_rejects_broadcast_outside_active_private_lan(
 
 
 class _Socket:
-    """Socket.
-
-    Manages Socket operations and coordinates related state changes for the component.
-    """
+    """Helper socket using self.options.append, self.sent.append."""
     def __init__(self) -> None:
         """Initialize the instance and configure internal state.
 
@@ -304,24 +268,17 @@ class _Socket:
     def settimeout(self, value: float) -> None:
         """Settimeout.
 
-        Manages settimeout operations and coordinates related state changes for the component.
-
         Args:
             value (float): The value parameter.
         """
         self.timeout = value
 
     def setsockopt(self, *value) -> None:
-        """Setsockopt.
-
-        Manages setsockopt operations and coordinates related state changes for the component.
-        """
+        """Setsockopt using self.options.append."""
         self.options.append(value)
 
     def sendto(self, payload: bytes, destination: tuple[str, int]) -> int:
-        """Sendto.
-
-        Manages sendto operations and coordinates related state changes for the component.
+        """Sendto using self.sent.append.
 
         Args:
             payload (bytes): The payload parameter.
@@ -334,19 +291,14 @@ class _Socket:
         return len(payload)
 
     def close(self) -> None:
-        """Close.
-
-        Manages close operations and coordinates related state changes for the component.
-        """
+        """Close."""
         self.closed = True
 
 
 def test_wol_sends_one_bounded_udp_broadcast(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """test_wol_sends_one_bounded_udp_broadcast.
-
-    Manages test wol sends one bounded udp broadcast operations and coordinates related state changes for the component.
+    """Verify wol sends one bounded udp broadcast via _Socket, monkeypatch.setattr, wake_on_lan.send_magic_packet.
 
     Args:
         monkeypatch (pytest.MonkeyPatch): The monkeypatch parameter.
@@ -367,10 +319,7 @@ def test_wol_sends_one_bounded_udp_broadcast(
 
 
 def test_wol_rejects_nonpositive_or_nonfinite_timeout() -> None:
-    """test_wol_rejects_nonpositive_or_nonfinite_timeout.
-
-    Manages test wol rejects nonpositive or nonfinite timeout operations and coordinates related state changes for the component.
-    """
+    """Verify wol rejects nonpositive or nonfinite timeout via pytest.raises, wake_on_lan.send_magic_packet, float."""
     for timeout in (0, -1, float("nan"), float("inf")):
         with pytest.raises(ValueError, match="finite positive"):
             wake_on_lan.send_magic_packet(
@@ -382,9 +331,7 @@ def test_wol_rejects_nonpositive_or_nonfinite_timeout() -> None:
 def test_wol_wraps_socket_error_and_closes(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """test_wol_wraps_socket_error_and_closes.
-
-    Manages test wol wraps socket error and closes operations and coordinates related state changes for the component.
+    """Verify wol wraps socket error and closes via _Socket, monkeypatch.setattr, OSError.
 
     Args:
         monkeypatch (pytest.MonkeyPatch): The monkeypatch parameter.
@@ -392,9 +339,7 @@ def test_wol_wraps_socket_error_and_closes(
     fake = _Socket()
 
     def fail_send(_payload, _destination):
-        """fail_send.
-
-        Manages fail send operations and coordinates related state changes for the component.
+        """Fail send using OSError.
 
         Args:
             _payload: The  payload parameter.

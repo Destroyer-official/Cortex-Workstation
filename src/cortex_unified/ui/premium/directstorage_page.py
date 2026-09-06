@@ -32,10 +32,7 @@ from .window import _Page
 
 
 class _DirectStorageWorker(QObject):
-    """Directstorageworker.
-
-    Manages DirectStorageWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker (_DirectStorageWorker) performing DirectStorageWorker. Signals finished report status. Configured with optimizer."""
     finished = Signal(object)
 
     def __init__(self, optimizer: DirectStorageOptimizer) -> None:
@@ -50,19 +47,13 @@ class _DirectStorageWorker(QObject):
         self.optimizer = optimizer
 
     def run_audit(self) -> None:
-        """run_audit.
-
-        Manages run audit operations and coordinates related state changes for the component.
-        """
+        """Execute the background run audit operation and emit the result for the page."""
         report = self.optimizer.audit()
         self.finished.emit(report)
 
 
 class DirectStorageOptimizerPage(_Page):
-    """Directstorageoptimizerpage.
-
-    Manages DirectStorageOptimizerPage operations and coordinates related state changes for the component.
-    """
+    """DirectStorage & BypassIO Diagnostics page: Audit Windows 11 high-throughput BypassIO NVMe-to-GPU memory acceleration and filter drivers."""
 
     def __init__(self, win) -> None:
         """__init__.
@@ -136,10 +127,7 @@ class DirectStorageOptimizerPage(_Page):
         self.v.addWidget(rec_card)
 
     def _start_audit(self) -> None:
-        """_start_audit.
-
-        Manages start audit operations and coordinates related state changes for the component.
-        """
+        """Disable action buttons, show progress/status, and launch the background worker (setEnabled, setVisible, setText)."""
         self.btn_audit.setEnabled(False)
         self.progress_bar.setVisible(True)
         self.lbl_status.setText("Querying volume BypassIO states via fsutil...")
@@ -152,9 +140,7 @@ class DirectStorageOptimizerPage(_Page):
         self._thread.start()
 
     def _on_audit_finished(self, report: DirectStorageAuditReport) -> None:
-        """_on_audit_finished.
-
-        Manages on audit finished operations and coordinates related state changes for the component.
+        """Populate the results table (quit, wait, setVisible) with the latest data.
 
         Args:
             report (DirectStorageAuditReport): The generated report data object from the backend.

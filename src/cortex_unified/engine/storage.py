@@ -52,10 +52,10 @@ _SYSTEM_NAME = (
 
 @dataclass(frozen=True, slots=True)
 class StorageInfo:
-    """Storageinfo.
+    """Storage Info.
 
-    Manages StorageInfo operations and coordinates related state changes for the component.
-    """
+ Snapshot of storage kind, filesystem, and sizes.
+ """
 
     kind: StorageKind
     device: str = ""
@@ -63,21 +63,21 @@ class StorageInfo:
 
     @property
     def overwrite_effective(self) -> bool:
-        """overwrite_effective.
+        """Overwrite effective.
 
-        Manages overwrite effective operations and coordinates related state changes for the component.
+ Whether physical overwrite reliably destroys data on this storage.
 
-        Returns:
-            bool: True if the operation succeeded, False otherwise.
-        """
+ Returns:
+ bool: True if the operation succeeded, False otherwise.
+ """
         return self.kind.overwrite_effective
 
 
 class StorageProbe:
-    """Storageprobe.
+    """Storage Probe.
 
-    Manages StorageProbe operations and coordinates related state changes for the component.
-    """
+ Per-OS storage detector with shared cache.
+ """
 
     def __init__(self) -> None:
         """Initialize the instance and configure internal state.
@@ -88,16 +88,16 @@ class StorageProbe:
         self._cache: dict[str, StorageInfo] = {}
 
     def probe(self, path: os.PathLike[str] | str) -> StorageInfo:
-        """Probe.
+        """Probe helper.
 
-        Manages probe operations and coordinates related state changes for the component.
+ Detects storage kind with caching.
 
-        Args:
-            path (os.PathLike[str] | str): Filesystem path to the target file or directory.
+ Args:
+ path (os.PathLike[str] | str): Filesystem path to the target file or directory.
 
-        Returns:
-            StorageInfo: Result of the operation.
-        """
+ Returns:
+ StorageInfo: Result of the operation.
+ """
         anchor = self._mount_key(Path(path))
         if anchor in self._cache:
             return self._cache[anchor]
@@ -112,16 +112,16 @@ class StorageProbe:
     # -- platform key -------------------------------------------------------
 
     def _mount_key(self, path: Path) -> str:
-        """_mount_key.
+        """Mount key.
 
-        Manages mount key operations and coordinates related state changes for the component.
+ Normalizes a path to its mount key for cache lookup.
 
-        Args:
-            path (Path): Filesystem path to the target file or directory.
+ Args:
+ path (Path): Filesystem path to the target file or directory.
 
-        Returns:
-            str: Formatted string or path.
-        """
+ Returns:
+ str: Formatted string or path.
+ """
         try:
             resolved = path.resolve()
         except OSError:
@@ -133,17 +133,17 @@ class StorageProbe:
     # -- dispatch -----------------------------------------------------------
 
     def _probe_uncached(self, path: Path, anchor: str) -> StorageInfo:
-        """_probe_uncached.
+        """Probe uncached.
 
-        Manages probe uncached operations and coordinates related state changes for the component.
+ Probes without consulting the cache.
 
-        Args:
-            path (Path): Filesystem path to the target file or directory.
-            anchor (str): The anchor parameter.
+ Args:
+ path (Path): Filesystem path to the target file or directory.
+ anchor (str): The anchor parameter.
 
-        Returns:
-            StorageInfo: Result of the operation.
-        """
+ Returns:
+ StorageInfo: Result of the operation.
+ """
         if self._system == "Windows":
             return self._probe_windows(anchor)
         if self._system == "Linux":
@@ -155,16 +155,16 @@ class StorageProbe:
     # -- Windows ------------------------------------------------------------
 
     def _probe_windows(self, drive_letter: str) -> StorageInfo:
-        """_probe_windows.
+        """Probe windows.
 
-        Manages probe windows operations and coordinates related state changes for the component.
+ Probes via Windows APIs and drive-type heuristics.
 
-        Args:
-            drive_letter (str): The drive letter parameter.
+ Args:
+ drive_letter (str): The drive letter parameter.
 
-        Returns:
-            StorageInfo: Result of the operation.
-        """
+ Returns:
+ StorageInfo: Result of the operation.
+ """
         letter = drive_letter.rstrip(":")
         # Map partition -> physical disk -> MediaType/BusType via PowerShell.
         ps = (
@@ -192,16 +192,16 @@ class StorageProbe:
     # -- Linux --------------------------------------------------------------
 
     def _probe_linux(self, path: Path) -> StorageInfo:
-        """_probe_linux.
+        """Probe linux.
 
-        Manages probe linux operations and coordinates related state changes for the component.
+ Probes via sysfs and mount-table heuristics.
 
-        Args:
-            path (Path): Filesystem path to the target file or directory.
+ Args:
+ path (Path): Filesystem path to the target file or directory.
 
-        Returns:
-            StorageInfo: Result of the operation.
-        """
+ Returns:
+ StorageInfo: Result of the operation.
+ """
         try:
             src = self._run(["findmnt", "-n", "-o", "SOURCE", "--target", str(path)])
         except Exception:
@@ -226,16 +226,16 @@ class StorageProbe:
     # -- macOS --------------------------------------------------------------
 
     def _probe_macos(self, path: Path) -> StorageInfo:
-        """_probe_macos.
+        """Probe macos.
 
-        Manages probe macos operations and coordinates related state changes for the component.
+ Probes via macOS diskutil and mount info.
 
-        Args:
-            path (Path): Filesystem path to the target file or directory.
+ Args:
+ path (Path): Filesystem path to the target file or directory.
 
-        Returns:
-            StorageInfo: Result of the operation.
-        """
+ Returns:
+ StorageInfo: Result of the operation.
+ """
         out = self._run(["diskutil", "info", str(path)])
         low = out.lower()
         if "solid state: yes" in low:
@@ -248,16 +248,16 @@ class StorageProbe:
 
     @staticmethod
     def _run(cmd: list[str]) -> str:
-        """Run.
+        """Run helper.
 
-        Manages run operations and coordinates related state changes for the component.
+ Runs the probe subprocess with timeout and tree-kill cleanup.
 
-        Args:
-            cmd (list[str]): The cmd parameter.
+ Args:
+ cmd (list[str]): The cmd parameter.
 
-        Returns:
-            str: Formatted string or path.
-        """
+ Returns:
+ str: Formatted string or path.
+ """
         try:
             proc = subprocess.run(
                 cmd,
@@ -273,25 +273,25 @@ class StorageProbe:
 
 @functools.lru_cache(maxsize=1)
 def _shared_probe() -> StorageProbe:
-    """_shared_probe.
+    """Shared probe.
 
-    Manages shared probe operations and coordinates related state changes for the component.
+ Process-wide cached probe instance.
 
-    Returns:
-        StorageProbe: Result of the operation.
-    """
+ Returns:
+ StorageProbe: Result of the operation.
+ """
     return StorageProbe()
 
 
 def detect_storage(path: os.PathLike[str] | str) -> StorageInfo:
     """Convenience wrapper using a process-wide cached probe.
 
-    Manages detect storage operations and coordinates related state changes for the component.
+ Detects storage for a path using the shared probe.
 
-    Args:
-        path (os.PathLike[str] | str): Filesystem path to the target file or directory.
+ Args:
+ path (os.PathLike[str] | str): Filesystem path to the target file or directory.
 
-    Returns:
-        StorageInfo: Result of the operation.
-    """
+ Returns:
+ StorageInfo: Result of the operation.
+ """
     return _shared_probe().probe(path)

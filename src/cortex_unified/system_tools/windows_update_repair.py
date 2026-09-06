@@ -93,9 +93,8 @@ from cortex_unified.system_tools.component_store_cleaner import ComponentStoreCl
 
 @dataclass(frozen=True, slots=True)
 class PhaseResult:
-    """Phaseresult.
+    """Outcome of one repair phase with changes and rollback info.
 
-    Manages PhaseResult operations and coordinates related state changes for the component.
     """
     phase: str
     success: bool
@@ -107,9 +106,8 @@ class PhaseResult:
 
 @dataclass(frozen=True, slots=True)
 class DiagnosticReport:
-    """Diagnosticreport.
+    """Whole-run diagnostics with per-section breakdown and readiness flag.
 
-    Manages DiagnosticReport operations and coordinates related state changes for the component.
     """
     timestamp: str
     os_version: str
@@ -122,9 +120,8 @@ class DiagnosticReport:
     issues: List[str]
 
     def to_json(self) -> str:
-        """To json.
+        """Serialize this diagnostic report to indented JSON.
 
-        Manages to json operations and coordinates related state changes for the component.
 
         Returns:
             str: Formatted string or path.
@@ -135,9 +132,8 @@ class DiagnosticReport:
 
 @dataclass(frozen=True, slots=True)
 class RepairResult:
-    """Repairresult.
+    """Aggregated repair outcome across the selected phases.
 
-    Manages RepairResult operations and coordinates related state changes for the component.
     """
     timestamp: str
     phases: List[PhaseResult]
@@ -146,9 +142,8 @@ class RepairResult:
     cancelled: bool = False
 
     def summary(self) -> str:
-        """Summary.
+        """One-line count of successful repair phases.
 
-        Manages summary operations and coordinates related state changes for the component.
 
         Returns:
             str: Formatted string or path.
@@ -204,9 +199,8 @@ MICROSOFT_TELEMETRY_DOMAINS = [
 # ---------------------------------------------------------------------------
 
 class WindowsUpdateRepair:
-    """Windowsupdaterepair.
+    """Phase-based Windows Update repair orchestrator with rollback backups.
 
-    Manages WindowsUpdateRepair operations and coordinates related state changes for the component.
     """
 
     def __init__(
@@ -242,9 +236,8 @@ class WindowsUpdateRepair:
     # -- helpers
 
     def _run(self, cmd: List[str], timeout: int = 120, shell: bool = False) -> Tuple[int, str, str]:
-        """Run.
+        """Run a subprocess honoring cancel and dry-run; return (returncode, stdout, stderr).
 
-        Manages run operations and coordinates related state changes for the component.
 
         Args:
             cmd (List[str]): The cmd parameter.
@@ -271,9 +264,8 @@ class WindowsUpdateRepair:
             return -1, "", str(exc)
 
     def _run_ps(self, script: str, timeout: int = 180) -> Tuple[int, str, str]:
-        """_run_ps.
+        """Run a PowerShell snippet and return stdout, or None on failure or cancel.
 
-        Manages run ps operations and coordinates related state changes for the component.
 
         Args:
             script (str): The script parameter.
@@ -285,9 +277,8 @@ class WindowsUpdateRepair:
         return self._run(["powershell", "-NoProfile", "-Command", script], timeout=timeout)
 
     def _sc_query(self, name: str) -> str:
-        """_sc_query.
+        """Query a service with `sc query`; return output or empty string.
 
-        Manages sc query operations and coordinates related state changes for the component.
 
         Args:
             name (str): The name parameter.
@@ -299,9 +290,8 @@ class WindowsUpdateRepair:
         return out.strip() if rc == 0 else ""
 
     def _service_status(self, name: str) -> str:
-        """_service_status.
+        """Parse the STATE token from `sc query` output, else UNKNOWN.
 
-        Manages service status operations and coordinates related state changes for the component.
 
         Args:
             name (str): The name parameter.
@@ -316,9 +306,8 @@ class WindowsUpdateRepair:
         return "UNKNOWN"
 
     def _stop_service(self, name: str, retries: int = 3) -> bool:
-        """_stop_service.
+        """Stop a service with `net stop`, retrying until STOPPED.
 
-        Manages stop service operations and coordinates related state changes for the component.
 
         Args:
             name (str): The name parameter.
@@ -337,9 +326,8 @@ class WindowsUpdateRepair:
         return False
 
     def _start_service(self, name: str) -> bool:
-        """_start_service.
+        """Start a service with `net start`; return True on exit code 0.
 
-        Manages start service operations and coordinates related state changes for the component.
 
         Args:
             name (str): The name parameter.
@@ -353,9 +341,8 @@ class WindowsUpdateRepair:
     # -- preflight
 
     def preflight(self) -> DiagnosticReport:
-        """Preflight.
+        """Collect service states, disk, connectivity, DISM health, reboot, and event-log errors.
 
-        Manages preflight operations and coordinates related state changes for the component.
 
         Returns:
             DiagnosticReport: Result of the operation.
@@ -437,9 +424,8 @@ class WindowsUpdateRepair:
     # -- phase implementations
 
     def _phase_stop_services(self) -> PhaseResult:
-        """_phase_stop_services.
+        """Stop update services before cache and registry work.
 
-        Manages phase stop services operations and coordinates related state changes for the component.
 
         Returns:
             PhaseResult: Result of the operation.
@@ -457,9 +443,8 @@ class WindowsUpdateRepair:
         return PhaseResult("stop_services", True, changes, duration_seconds=time.time()-t0)
 
     def _phase_clear_caches(self) -> PhaseResult:
-        """_phase_clear_caches.
+        """Timestamp-rename SoftwareDistribution, catroot2, and BITS queues for rollback.
 
-        Manages phase clear caches operations and coordinates related state changes for the component.
 
         Returns:
             PhaseResult: Result of the operation.
@@ -501,9 +486,8 @@ class WindowsUpdateRepair:
         return PhaseResult("clear_caches", True, changes, rollback, duration_seconds=time.time()-t0)
 
     def _phase_reset_registry_policies(self) -> PhaseResult:
-        """_phase_reset_registry_policies.
+        """Export then clear WindowsUpdate policy keys.
 
-        Manages phase reset registry policies operations and coordinates related state changes for the component.
 
         Returns:
             PhaseResult: Result of the operation.
@@ -532,9 +516,8 @@ class WindowsUpdateRepair:
         return PhaseResult("reset_registry_policies", True, changes, rollback, duration_seconds=time.time()-t0)
 
     def _phase_reset_security_descriptors(self) -> PhaseResult:
-        """_phase_reset_security_descriptors.
+        """Reset BITS and wuauserv descriptors with `sc sdset`.
 
-        Manages phase reset security descriptors operations and coordinates related state changes for the component.
 
         Returns:
             PhaseResult: Result of the operation.
@@ -551,9 +534,8 @@ class WindowsUpdateRepair:
         return PhaseResult("reset_security_descriptors", True, changes, duration_seconds=time.time()-t0)
 
     def _phase_reregister_dlls(self) -> PhaseResult:
-        """_phase_reregister_dlls.
+        """Re-register update DLLs with regsvr32.
 
-        Manages phase reregister dlls operations and coordinates related state changes for the component.
 
         Returns:
             PhaseResult: Result of the operation.
@@ -570,9 +552,8 @@ class WindowsUpdateRepair:
         return PhaseResult("reregister_dlls", True, changes, duration_seconds=time.time()-t0)
 
     def _phase_reset_network(self) -> PhaseResult:
-        """_phase_reset_network.
+        """Reset Winsock and proxy, flush DNS, and strip telemetry blocks from hosts.
 
-        Manages phase reset network operations and coordinates related state changes for the component.
 
         Returns:
             PhaseResult: Result of the operation.
@@ -600,9 +581,8 @@ class WindowsUpdateRepair:
         return PhaseResult("reset_network", True, changes, duration_seconds=time.time()-t0)
 
     def _phase_dism_repair(self) -> PhaseResult:
-        """_phase_dism_repair.
+        """Run DISM ScanHealth, then RestoreHealth when degraded.
 
-        Manages phase dism repair operations and coordinates related state changes for the component.
 
         Returns:
             PhaseResult: Result of the operation.
@@ -619,9 +599,8 @@ class WindowsUpdateRepair:
         return PhaseResult("dism_repair", rc==0, changes, duration_seconds=time.time()-t0)
 
     def _phase_sfc(self) -> PhaseResult:
-        """_phase_sfc.
+        """Run `sfc /scannow` with an extended timeout.
 
-        Manages phase sfc operations and coordinates related state changes for the component.
 
         Returns:
             PhaseResult: Result of the operation.
@@ -634,7 +613,6 @@ class WindowsUpdateRepair:
     def _phase_component_store(self) -> PhaseResult:
         """Analyze and optionally cleanup component store.
 
-        Manages phase component store operations and coordinates related state changes for the component.
 
         Returns:
             PhaseResult: Result of the operation.
@@ -649,9 +627,8 @@ class WindowsUpdateRepair:
         return PhaseResult("component_store", True, changes, duration_seconds=time.time()-t0)
 
     def _phase_start_services(self) -> PhaseResult:
-        """_phase_start_services.
+        """Restart update services and set auto start.
 
-        Manages phase start services operations and coordinates related state changes for the component.
 
         Returns:
             PhaseResult: Result of the operation.
@@ -669,9 +646,8 @@ class WindowsUpdateRepair:
         return PhaseResult("start_services", True, changes, duration_seconds=time.time()-t0)
 
     def _phase_verify(self) -> PhaseResult:
-        """_phase_verify.
+        """Verify Microsoft reachability and trigger update detection.
 
-        Manages phase verify operations and coordinates related state changes for the component.
 
         Returns:
             PhaseResult: Result of the operation.
@@ -695,7 +671,6 @@ class WindowsUpdateRepair:
     def repair_all(self, phases: Optional[List[str]] = None) -> RepairResult:
         """Run all repair phases (or specified subset).
 
-        Manages repair all operations and coordinates related state changes for the component.
 
         Args:
             phases (Optional[List[str]]): The phases parameter.
@@ -746,7 +721,6 @@ class WindowsUpdateRepair:
     def repair_selective(self, phase_names: List[str]) -> RepairResult:
         """Run only specified phases.
 
-        Manages repair selective operations and coordinates related state changes for the component.
 
         Args:
             phase_names (List[str]): The phase names parameter.
@@ -759,7 +733,6 @@ class WindowsUpdateRepair:
     def quick_reset(self) -> RepairResult:
         """Minimal reset: services, caches, DLLs, network, restart.
 
-        Manages quick reset operations and coordinates related state changes for the component.
 
         Returns:
             RepairResult: Result of the operation.

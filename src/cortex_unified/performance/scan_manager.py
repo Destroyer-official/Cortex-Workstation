@@ -29,27 +29,27 @@ class ScanCheckpoint:
     def to_dict(self) -> Dict[str, Any]:
         """Convert checkpoint to dictionary for serialization.
 
-        Manages to dict operations and coordinates related state changes for the component.
+ Handles to dict for.
 
-        Returns:
-            Dict[str, Any]: Dictionary mapping identifiers to status or values.
-        """
+ Returns:
+ Dict[str, Any]: Dictionary mapping identifiers to status or values.
+ """
         data = asdict(self)
         data['timestamp'] = self.timestamp.isoformat()
         return data
     
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'ScanCheckpoint':
-        """from_dict.
+        """From dict.
 
-        Manages from dict operations and coordinates related state changes for the component.
+ Handles from dict for.
 
-        Args:
-            data (Dict[str, Any]): The data parameter.
+ Args:
+ data (Dict[str, Any]): The data parameter.
 
-        Returns:
-            'ScanCheckpoint': Result of the operation.
-        """
+ Returns:
+ 'ScanCheckpoint': Result of the operation.
+ """
         data['timestamp'] = datetime.fromisoformat(data['timestamp'])
         return cls(**data)
 
@@ -102,14 +102,14 @@ class ScanManager:
     def create_checkpoint(self, scan_state: Dict[str, Any]) -> str:
         """Create a checkpoint of current scan state.
 
-        Manages create checkpoint operations and coordinates related state changes for the component.
+ Handles create checkpoint for.
 
-        Args:
-            scan_state (Dict[str, Any]): The scan state parameter.
+ Args:
+ scan_state (Dict[str, Any]): The scan state parameter.
 
-        Returns:
-            str: Formatted string or path.
-        """
+ Returns:
+ str: Formatted string or path.
+ """
         checkpoint_id = str(uuid.uuid4())
         
         with self._progress_lock:
@@ -149,14 +149,14 @@ class ScanManager:
     def load_checkpoint(self, checkpoint_id: str) -> Dict[str, Any]:
         """Load scan state from checkpoint.
 
-        Manages load checkpoint operations and coordinates related state changes for the component.
+ Handles load checkpoint for.
 
-        Args:
-            checkpoint_id (str): The checkpoint id parameter.
+ Args:
+ checkpoint_id (str): The checkpoint id parameter.
 
-        Returns:
-            Dict[str, Any]: Dictionary mapping identifiers to status or values.
-        """
+ Returns:
+ Dict[str, Any]: Dictionary mapping identifiers to status or values.
+ """
         checkpoint_file = self._checkpoint_dir / f"{checkpoint_id}.json"
         state_file = self._checkpoint_dir / f"{checkpoint_id}_state.json"
         
@@ -192,19 +192,19 @@ class ScanManager:
     def pause_scan(self) -> None:
         """Pause current scan operation.
 
-        Manages pause scan operations and coordinates related state changes for the component.
-        """
+ Handles pause scan for.
+ """
         with self._pause_lock:
             self._is_paused = True
     
     def resume_scan(self, checkpoint_id: Optional[str] = None) -> None:
         """Resume scan from checkpoint or current state.
 
-        Manages resume scan operations and coordinates related state changes for the component.
+ Handles resume scan for.
 
-        Args:
-            checkpoint_id (Optional[str]): The checkpoint id parameter.
-        """
+ Args:
+ checkpoint_id (Optional[str]): The checkpoint id parameter.
+ """
         with self._pause_lock:
             if checkpoint_id:
                 # Load from specific checkpoint
@@ -214,18 +214,18 @@ class ScanManager:
     def is_paused(self) -> bool:
         """Check if scan is currently paused.
 
-        Manages is paused operations and coordinates related state changes for the component.
+ Handles is paused for.
 
-        Returns:
-            bool: True if the operation succeeded, False otherwise.
-        """
+ Returns:
+ bool: True if the operation succeeded, False otherwise.
+ """
         with self._pause_lock:
             return self._is_paused
     
     def wait_if_paused(self) -> None:
         """Wait while scan is paused.
 
-        Manages wait if paused operations and coordinates related state changes for the component.
+        Blocks while paused and records progress for resume.
         """
         while self.is_paused():
             time.sleep(0.1)
@@ -233,11 +233,11 @@ class ScanManager:
     def start_scan(self, total_items: int = 0) -> None:
         """Start a new scan operation.
 
-        Manages start scan operations and coordinates related state changes for the component.
+ Handles start scan for.
 
-        Args:
-            total_items (int): The total items parameter.
-        """
+ Args:
+ total_items (int): The total items parameter.
+ """
         with self._progress_lock:
             self._is_running = True
             self._is_paused = False
@@ -250,8 +250,8 @@ class ScanManager:
     def stop_scan(self) -> None:
         """Stop the current scan operation.
 
-        Manages stop scan operations and coordinates related state changes for the component.
-        """
+ Handles stop scan for.
+ """
         with self._progress_lock:
             self._is_running = False
             self._is_paused = False
@@ -299,11 +299,11 @@ class ScanManager:
     def list_checkpoints(self) -> List[ScanCheckpoint]:
         """List all available checkpoints.
 
-        Manages list checkpoints operations and coordinates related state changes for the component.
+ Handles list checkpoints for.
 
-        Returns:
-            List[ScanCheckpoint]: List of processed items or identifiers.
-        """
+ Returns:
+ List[ScanCheckpoint]: List of processed items or identifiers.
+ """
         checkpoints = []
         
         for checkpoint_file in self._checkpoint_dir.glob("*.json"):
@@ -323,14 +323,14 @@ class ScanManager:
     def delete_checkpoint(self, checkpoint_id: str) -> bool:
         """Delete a specific checkpoint.
 
-        Manages delete checkpoint operations and coordinates related state changes for the component.
+ Handles delete checkpoint for.
 
-        Args:
-            checkpoint_id (str): The checkpoint id parameter.
+ Args:
+ checkpoint_id (str): The checkpoint id parameter.
 
-        Returns:
-            bool: True if the operation succeeded, False otherwise.
-        """
+ Returns:
+ bool: True if the operation succeeded, False otherwise.
+ """
         checkpoint_file = self._checkpoint_dir / f"{checkpoint_id}.json"
         state_file = self._checkpoint_dir / f"{checkpoint_id}_state.json"
         

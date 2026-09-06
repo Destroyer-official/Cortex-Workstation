@@ -62,9 +62,10 @@ _DEFAULT_SUSPEND_CANDIDATES: tuple[str, ...] = (
 
 @dataclass(slots=True)
 class BoostReport:
-    """Boostreport.
+    """Outcome of a game-mode boost phase (start/stop).
 
-    Manages BoostReport operations and coordinates related state changes for the component.
+    Records power-plan switch (from/to), suspended/resumed process names,
+    skipped items, and errors. No side effects; pure result container.
     """
 
     ok: bool
@@ -78,9 +79,7 @@ class BoostReport:
     message: str = ""
 
     def to_dict(self) -> dict[str, Any]:
-        """To dict.
-
-        Manages to dict operations and coordinates related state changes for the component.
+        """Serialize this boost report to a plain dict for UI and logging.
 
         Returns:
             dict[str, Any]: Dictionary mapping identifiers to status or values.
@@ -99,9 +98,11 @@ class BoostReport:
 
 
 class GameMode:
-    """Gamemode.
+    """Reversible gaming boost: high-performance power plan plus background quieting.
 
-    Manages GameMode operations and coordinates related state changes for the component.
+    Suspends allowlisted noise processes on start() and restores the original
+    power plan plus resumes processes on stop()/__exit__. Requires Windows +
+    psutil; power-plan switch needs admin rights.
     """
 
     def __init__(
@@ -129,9 +130,7 @@ class GameMode:
 
     @staticmethod
     def is_supported() -> bool:
-        """Boost needs Windows power plans + psutil.
-
-        Manages is supported operations and coordinates related state changes for the component.
+        """Check whether gaming boost can run here (Windows power plans + psutil).
 
         Returns:
             bool: True if the operation succeeded, False otherwise.
@@ -139,9 +138,7 @@ class GameMode:
         return _IS_WINDOWS and psutil is not None
 
     def _candidates(self) -> list[tuple[int, str]]:
-        """Candidates.
-
-        Manages candidates operations and coordinates related state changes for the component.
+        """Find live suspend candidates (pid, name), excluding protected processes.
 
         Returns:
             list[tuple[int, str]]: List of processed items or identifiers.
@@ -162,9 +159,7 @@ class GameMode:
         return sorted(found, key=lambda item: item[1].lower())
 
     def preview(self) -> dict[str, Any]:
-        """Preview.
-
-        Manages preview operations and coordinates related state changes for the component.
+        """Preview boost effects without changing anything (read-only).
 
         Returns:
             dict[str, Any]: Dictionary mapping identifiers to status or values.
@@ -299,8 +294,6 @@ class GameMode:
     def _pick_boost_plan(self, plans):
         """Choose the highest-performance scheme available, else None.
 
-        Manages pick boost plan operations and coordinates related state changes for the component.
-
         Args:
             plans: The plans parameter.
         """
@@ -315,9 +308,7 @@ class GameMode:
 
 
 def run_proc_checked(args: list[str]) -> bool:  # pragma: no cover - thin helper
-    """Convenience wrapper used by diagnostics; True when exit code is 0.
-
-    Manages run proc checked operations and coordinates related state changes for the component.
+    """Run a diagnostic subprocess; True when exit code is 0.
 
     Args:
         args (list[str]): The args parameter.

@@ -6,10 +6,7 @@ from PySide6.QtGui import QCursor, QFont
 from PySide6.QtCore import Qt, QPoint
 
 class TooltipManager:
-    """Tooltipmanager.
-
-    Manages TooltipManager operations and coordinates related state changes for the component.
-    """
+    """Central registry for widget tooltips, accessible descriptions, and help dialogs."""
     
     # Comprehensive tooltip definitions
     TOOLTIPS = {
@@ -549,10 +546,7 @@ def create_help_button(parent, help_text: str) -> 'QPushButton':
     help_button.setToolTip("Click for help")
     
     def show_help():
-        """show_help.
-
-        Manages show help operations and coordinates related state changes for the component.
-        """
+        """Display the contextual help text in an information message box."""
         QMessageBox.information(parent, "Help", help_text)
     
     help_button.clicked.connect(show_help)

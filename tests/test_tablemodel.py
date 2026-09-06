@@ -35,17 +35,12 @@ from cortex_unified.ui.premium.tablemodel import (  # noqa: E402
 
 @pytest.fixture(scope="module")
 def app():
-    """App.
-
-    Manages app operations and coordinates related state changes for the component.
-    """
+    """Provide app fixture that provides a shared QApplication."""
     return QApplication.instance() or QApplication([])
 
 
 def _records(count=6):
     """Records.
-
-    Manages records operations and coordinates related state changes for the component.
 
     Args:
         count: The count parameter.
@@ -57,10 +52,7 @@ def _records(count=6):
 
 
 def _columns():
-    """Columns.
-
-    Manages columns operations and coordinates related state changes for the component.
-    """
+    """Columns using Column."""
     return [
         Column("PID", "pid", sort_key=lambda r: r["pid"]),
         Column("Name", "name", stretch=True),
@@ -75,9 +67,7 @@ def _columns():
 
 @pytest.fixture
 def binding(app):
-    """Binding.
-
-    Manages binding operations and coordinates related state changes for the component.
+    """Provide binding fixture via QTableView, bound.set_records, bind_table.
 
     Args:
         app: The app parameter.
@@ -94,9 +84,7 @@ def binding(app):
 
 
 def test_model_reports_shape_from_records_and_columns(binding):
-    """test_model_reports_shape_from_records_and_columns.
-
-    Manages test model reports shape from records and columns operations and coordinates related state changes for the component.
+    """Verify model reports shape from records and columns via binding.proxy.rowCount, binding.proxy.columnCount, model.headerData.
 
     Args:
         binding: The binding parameter.
@@ -111,9 +99,7 @@ def test_model_reports_shape_from_records_and_columns(binding):
 
 
 def test_display_supports_field_names_and_callables(binding):
-    """test_display_supports_field_names_and_callables.
-
-    Manages test display supports field names and callables operations and coordinates related state changes for the component.
+    """Verify display supports field names and callables via model.data, model.index.
 
     Args:
         binding: The binding parameter.
@@ -126,9 +112,7 @@ def test_display_supports_field_names_and_callables(binding):
 
 
 def test_missing_field_renders_empty_not_none(app):
-    """test_missing_field_renders_empty_not_none.
-
-    Manages test missing field renders empty not none operations and coordinates related state changes for the component.
+    """Verify missing field renders empty not none via RecordTableModel, model.set_records, model.data.
 
     Args:
         app: The app parameter.
@@ -139,9 +123,7 @@ def test_missing_field_renders_empty_not_none(app):
 
 
 def test_cells_are_read_only(binding):
-    """test_cells_are_read_only.
-
-    Manages test cells are read only operations and coordinates related state changes for the component.
+    """Verify cells are read only via binding.model.flags, binding.model.index.
 
     Args:
         binding: The binding parameter.
@@ -157,8 +139,6 @@ def test_cells_are_read_only(binding):
 def test_sorting_uses_the_typed_key_not_the_display_string(binding):
     """``"9.0 MB"`` must not sort above ``"100.0 MB"``.
 
-    Manages test sorting uses the typed key not the display string operations and coordinates related state changes for the component.
-
     Args:
         binding: The binding parameter.
     """
@@ -171,9 +151,7 @@ def test_sorting_uses_the_typed_key_not_the_display_string(binding):
 
 
 def test_sort_role_exposes_the_raw_value(binding):
-    """test_sort_role_exposes_the_raw_value.
-
-    Manages test sort role exposes the raw value operations and coordinates related state changes for the component.
+    """Verify sort role exposes the raw value via model.data, model.index.
 
     Args:
         binding: The binding parameter.
@@ -187,9 +165,7 @@ def test_sort_role_exposes_the_raw_value(binding):
 
 
 def test_filter_matches_searchable_columns_only(binding):
-    """test_filter_matches_searchable_columns_only.
-
-    Manages test filter matches searchable columns only operations and coordinates related state changes for the component.
+    """Verify filter matches searchable columns only via binding.proxy.rowCount, binding.set_filter_text, binding.proxy.data.
 
     Args:
         binding: The binding parameter.
@@ -206,9 +182,7 @@ def test_filter_matches_searchable_columns_only(binding):
 
 
 def test_filter_is_case_insensitive_and_clearable(binding):
-    """test_filter_is_case_insensitive_and_clearable.
-
-    Manages test filter is case insensitive and clearable operations and coordinates related state changes for the component.
+    """Verify filter is case insensitive and clearable via binding.proxy.rowCount, binding.set_filter_text.
 
     Args:
         binding: The binding parameter.
@@ -220,9 +194,7 @@ def test_filter_is_case_insensitive_and_clearable(binding):
 
 
 def test_filtering_does_not_discard_the_records(binding):
-    """test_filtering_does_not_discard_the_records.
-
-    Manages test filtering does not discard the records operations and coordinates related state changes for the component.
+    """Verify filtering does not discard the records via binding.proxy.rowCount, binding.set_filter_text.
 
     Args:
         binding: The binding parameter.
@@ -238,8 +210,6 @@ def test_filtering_does_not_discard_the_records(binding):
 def test_selected_record_is_correct_under_sorting(binding):
     """The bug this design prevents: indexing a list by the view's row.
 
-    Manages test selected record is correct under sorting operations and coordinates related state changes for the component.
-
     Args:
         binding: The binding parameter.
     """
@@ -253,9 +223,7 @@ def test_selected_record_is_correct_under_sorting(binding):
 
 
 def test_selected_record_is_none_without_selection(binding):
-    """test_selected_record_is_none_without_selection.
-
-    Manages test selected record is none without selection operations and coordinates related state changes for the component.
+    """Verify selected record is none without selection via binding.view.clearSelection, binding.selected_record.
 
     Args:
         binding: The binding parameter.
@@ -265,9 +233,7 @@ def test_selected_record_is_none_without_selection(binding):
 
 
 def test_select_where_reselects_by_identity(binding):
-    """test_select_where_reselects_by_identity.
-
-    Manages test select where reselects by identity operations and coordinates related state changes for the component.
+    """Verify select where reselects by identity via binding.select_where, binding.set_records, binding.selected_record.
 
     Args:
         binding: The binding parameter.
@@ -281,9 +247,7 @@ def test_select_where_reselects_by_identity(binding):
 
 
 def test_select_where_returns_false_when_absent(binding):
-    """test_select_where_returns_false_when_absent.
-
-    Manages test select where returns false when absent operations and coordinates related state changes for the component.
+    """Verify select where returns false when absent via binding.select_where.
 
     Args:
         binding: The binding parameter.
@@ -292,9 +256,7 @@ def test_select_where_returns_false_when_absent(binding):
 
 
 def test_record_role_returns_the_object_itself(binding):
-    """test_record_role_returns_the_object_itself.
-
-    Manages test record role returns the object itself operations and coordinates related state changes for the component.
+    """Verify record role returns the object itself via model.data, model.index.
 
     Args:
         binding: The binding parameter.
@@ -308,9 +270,7 @@ def test_record_role_returns_the_object_itself(binding):
 
 
 def test_set_records_replaces_everything(binding):
-    """test_set_records_replaces_everything.
-
-    Manages test set records replaces everything operations and coordinates related state changes for the component.
+    """Verify set records replaces everything via binding.proxy.rowCount, binding.set_records, binding.proxy.data.
 
     Args:
         binding: The binding parameter.
@@ -321,9 +281,7 @@ def test_set_records_replaces_everything(binding):
 
 
 def test_clear_empties_the_model(binding):
-    """test_clear_empties_the_model.
-
-    Manages test clear empties the model operations and coordinates related state changes for the component.
+    """Verify clear empties the model via binding.proxy.rowCount, binding.model.clear, binding.selected_record.
 
     Args:
         binding: The binding parameter.
@@ -334,9 +292,7 @@ def test_clear_empties_the_model(binding):
 
 
 def test_record_at_is_bounds_safe(binding):
-    """test_record_at_is_bounds_safe.
-
-    Manages test record at is bounds safe operations and coordinates related state changes for the component.
+    """Verify record at is bounds safe via binding.model.record_at.
 
     Args:
         binding: The binding parameter.
@@ -347,18 +303,13 @@ def test_record_at_is_bounds_safe(binding):
 
 
 def test_works_with_attribute_records_not_just_dicts(app):
-    """test_works_with_attribute_records_not_just_dicts.
-
-    Manages test works with attribute records not just dicts operations and coordinates related state changes for the component.
+    """Verify works with attribute records not just dicts via RecordTableModel, model.set_records, model.data.
 
     Args:
         app: The app parameter.
     """
     class Device:
-        """Device.
-
-        Manages Device operations and coordinates related state changes for the component.
-        """
+        """Helper device."""
         def __init__(self, ip):
             """__init__.
 
@@ -379,8 +330,6 @@ def test_works_with_attribute_records_not_just_dicts(app):
 
 def test_large_result_set_costs_no_per_cell_objects(binding):
     """10,000 rows must be accepted without building 30,000 cell objects.
-
-    Manages test large result set costs no per cell objects operations and coordinates related state changes for the component.
 
     Args:
         binding: The binding parameter.

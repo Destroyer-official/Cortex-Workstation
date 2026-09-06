@@ -13,17 +13,11 @@ import os
 from cortex_unified.core.utils import DeepCleanerError, ensure_directory
 
 class ManifestError(DeepCleanerError):
-    """Manifesterror.
-
-    Manages ManifestError operations and coordinates related state changes for the component.
-    """
+    """Raised when manifest creation, writing, or parsing fails."""
     pass
 
 class ManifestSystem:
-    """Manifestsystem.
-
-    Manages ManifestSystem operations and coordinates related state changes for the component.
-    """
+    """Create, log to, and atomically finalize JSON operation manifests for audit and restore."""
     
     def __init__(self, manifest_dir: Optional[str] = None, logger: Optional[logging.Logger] = None):
         """Initialize manifest system.
@@ -44,9 +38,7 @@ class ManifestSystem:
         self._current_operations: Dict[str, Dict] = {}
     
     def _get_default_manifest_dir(self) -> Path:
-        """_get_default_manifest_dir.
-
-        Manages get default manifest dir operations and coordinates related state changes for the component.
+        """Return the default per-user manifest storage directory.
 
         Returns:
             Path: Result of the operation.
@@ -104,9 +96,7 @@ class ManifestSystem:
             raise ManifestError(f"Failed to create operation manifest: {e}")
     
     def _get_user_info(self) -> Dict[str, Any]:
-        """Get current user information.
-
-        Manages get user info operations and coordinates related state changes for the component.
+        """Collect the current username and UID (POSIX only) for manifest attribution.
 
         Returns:
             Dict[str, Any]: Dictionary mapping identifiers to status or values.
@@ -127,9 +117,7 @@ class ManifestSystem:
             return {"username": "unknown"}
     
     def _get_os_info(self) -> str:
-        """_get_os_info.
-
-        Manages get os info operations and coordinates related state changes for the component.
+        """Return a short OS name and release string for manifest metadata.
 
         Returns:
             str: Formatted string or path.
@@ -207,9 +195,7 @@ class ManifestSystem:
             # Don't raise exception to avoid breaking the main operation
     
     def _calculate_file_hash(self, file_path: Path) -> str:
-        """Calculate SHA256 hash of a file.
-
-        Manages calculate file hash operations and coordinates related state changes for the component.
+        """Calculate the SHA256 hash of a file in 4 KiB chunks.
 
         Args:
             file_path (Path): Filesystem path to the target file or directory.

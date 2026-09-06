@@ -21,15 +21,15 @@ from cortex_unified.analyzers.deep_cleaner import DeepCleaner
 
 
 class VideoOptimizeWorker(QThread):
-    """Videooptimizeworker.
+    """QThread worker optimizing a video via czkawka VideoOptimizer.
 
-    Manages VideoOptimizeWorker operations and coordinates related state changes for the component.
+        Emits status text while analyzing and finished with the (success, message) outcome.
     """
     finished = Signal(bool, str)
     status = Signal(str)
 
     def __init__(self, video_path: str):
-        """Init.
+        """Store the video path for the VideoOptimizer run.
 
         Initializes the instance and configures internal state.
 
@@ -40,7 +40,7 @@ class VideoOptimizeWorker(QThread):
         self.video_path = video_path
 
     def run(self):
-        """Run.
+        """Analyze and re-encode the video via VideoOptimizer, emitting status and finished.
 
         Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
         """
@@ -57,9 +57,9 @@ class VideoOptimizeWorker(QThread):
 
 
 class DeepCleanerWorker(QThread):
-    """Deepcleanerworker.
+    """QThread worker finding junk via DeepCleaner with czkawka TempFileFinder coverage.
 
-    Manages DeepCleanerWorker operations and coordinates related state changes for the component.
+        Emits status_updated and progress_updated during the scan, then finished_scan or error_occurred.
     """
     finished_scan = Signal(list)
     error_occurred = Signal(str)
@@ -104,7 +104,6 @@ class DeepCleanerWorker(QThread):
             def update_status(msg):
                 """Relay the cleaner's status text via status_updated.
 
-                Manages update status operations and coordinates related state changes for the component.
 
                 Args:
                     msg: Informational or progress status message.
@@ -143,9 +142,9 @@ class DeepCleanerWorker(QThread):
             self.error_occurred.emit(str(e))
 
 class DeepCleanerTab(BaseTab):
-    """Deepcleanertab.
+    """Deep-cleaner tab with target-area options, junk tree, progress bar, and status label.
 
-    Manages DeepCleanerTab operations and coordinates related state changes for the component.
+        Scan, clean, select-all, and video-optimize actions run DeepCleanerWorker and VideoOptimizeWorker threads.
     """
 
     def __init__(self, config, logger, safety_manager):
@@ -162,8 +161,6 @@ class DeepCleanerTab(BaseTab):
 
     def setup_ui(self):
         """Build the tab: action buttons, progress bar, and the 4-column junk tree.
-
-        Manages setup ui operations and coordinates related state changes for the component.
         """
         layout = QVBoxLayout(self)
         
@@ -243,8 +240,6 @@ class DeepCleanerTab(BaseTab):
 
     def start_scan(self):
         """Disable actions and launch the DeepCleanerWorker.
-
-        Manages start scan operations and coordinates related state changes for the component.
         """
         self.scan_btn.setEnabled(False)
         self.clean_btn.setEnabled(False)
@@ -337,7 +332,6 @@ class DeepCleanerTab(BaseTab):
     def _on_item_changed(self, item, column):
         """Handle cascade checking/unchecking logic.
 
-        Manages on item changed operations and coordinates related state changes for the component.
 
         Args:
             item: The item parameter.
@@ -375,8 +369,6 @@ class DeepCleanerTab(BaseTab):
 
     def update_selection_summary(self):
         """Update the Clean button label with the checked item count.
-
-        Manages update selection summary operations and coordinates related state changes for the component.
         """
         checked_count = 0
         total_size = 0
@@ -404,8 +396,6 @@ class DeepCleanerTab(BaseTab):
 
     def start_clean(self):
         """Confirm, then recycle the checked items via Deleter and rescan.
-
-        Manages start clean operations and coordinates related state changes for the component.
         """
         selected_paths = []
         
@@ -462,15 +452,11 @@ class DeepCleanerTab(BaseTab):
 
     def select_all(self):
         """Check every item in the tree.
-
-        Manages select all operations and coordinates related state changes for the component.
         """
         self._toggle_checkboxes(Qt.CheckState.Checked)
 
     def deselect_all(self):
         """Uncheck every item in the tree.
-
-        Manages deselect all operations and coordinates related state changes for the component.
         """
         self._toggle_checkboxes(Qt.CheckState.Unchecked)
 
@@ -495,7 +481,6 @@ class DeepCleanerTab(BaseTab):
     def operation_finished(self, worker):
         """Hide progress, re-enable scanning, and reap the finished worker.
 
-        Manages operation finished operations and coordinates related state changes for the component.
 
         Args:
             worker: The worker parameter.
@@ -507,8 +492,6 @@ class DeepCleanerTab(BaseTab):
 
     def optimize_video(self):
         """Open file dialog and optimize chosen video via Czkawka VideoOptimizer.
-
-        Manages optimize video operations and coordinates related state changes for the component.
         """
         vpath, _ = QFileDialog.getOpenFileName(
             self, "Select Video to Optimize (Crop & Re-Encode)",
@@ -527,9 +510,8 @@ class DeepCleanerTab(BaseTab):
         worker.start()
 
     def _on_video_optimized(self, success: bool, msg: str):
-        """On video optimized.
+        """Report the video-optimize outcome in the status label and a message box.
 
-        Manages on video optimized operations and coordinates related state changes for the component.
 
         Args:
             success (bool): The success parameter.
@@ -545,9 +527,8 @@ class DeepCleanerTab(BaseTab):
             QMessageBox.warning(self, "Optimization Failed", f"Could not optimize video:\n{msg}")
 
     def _teardown_video_worker(self, worker):
-        """Teardown video worker.
+        """Unregister the finished video worker thread and schedule it for deletion.
 
-        Manages teardown video worker operations and coordinates related state changes for the component.
 
         Args:
             worker: The worker parameter.

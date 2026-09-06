@@ -31,10 +31,7 @@ from .window import _Page, fmt_bytes
 
 
 class _ResidualScanWorker(QObject):
-    """Residualscanworker.
-
-    Manages ResidualScanWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker (_ResidualScanWorker) performing ResidualScanWorker. Signals finished, failed report status. Configured with query. Its run() step calls ResidualCleaner, strip, cleaner.scan_for_app, any."""
     finished = Signal(list)  # list of dicts
     failed = Signal(str)
 
@@ -79,10 +76,7 @@ class _ResidualScanWorker(QObject):
 
 
 class ResidualCleanerPage(_Page):
-    """Residualcleanerpage.
-
-    Manages ResidualCleanerPage operations and coordinates related state changes for the component.
-    """
+    """Uninstalled Software Residual Hunter page: When software is uninstalled, Windows standard uninstallers routinely leave behind."""
 
     def __init__(self, win):
         """Init.

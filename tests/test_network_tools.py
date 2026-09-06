@@ -45,15 +45,9 @@ Trace complete.
 
 
 class TestPingParse:
-    """Testpingparse.
-
-    Manages TestPingParse operations and coordinates related state changes for the component.
-    """
+    """Group testpingparse tests covering windows success; nix success; loss; unreachable."""
     def test_windows_success(self):
-        """test_windows_success.
-
-        Manages test windows success operations and coordinates related state changes for the component.
-        """
+        """Verify windows success via NetworkTools._parse_ping."""
         r = NetworkTools._parse_ping("google.com", WIN_PING)
         assert isinstance(r, PingResult)
         assert r.reachable is True
@@ -62,121 +56,76 @@ class TestPingParse:
         assert r.min_ms == 11.0 and r.max_ms == 14.0 and r.avg_ms == 12.0
 
     def test_nix_success(self):
-        """test_nix_success.
-
-        Manages test nix success operations and coordinates related state changes for the component.
-        """
+        """Verify nix success via NetworkTools._parse_ping."""
         r = NetworkTools._parse_ping("google.com", NIX_PING)
         assert r.reachable is True
         assert r.received == 4
         assert r.avg_ms == 12.2
 
     def test_loss(self):
-        """test_loss.
-
-        Manages test loss operations and coordinates related state changes for the component.
-        """
+        """Verify loss via NetworkTools._parse_ping."""
         r = NetworkTools._parse_ping("10.0.0.9", WIN_PING_LOSS)
         assert r.loss_percent == 75.0
         assert r.received == 1 and r.reachable is True
 
     def test_unreachable(self):
-        """test_unreachable.
-
-        Manages test unreachable operations and coordinates related state changes for the component.
-        """
+        """Verify unreachable via NetworkTools._parse_ping."""
         r = NetworkTools._parse_ping("x", "Ping request could not find host x.")
         assert r.reachable is False
 
 
 class TestTracerouteParse:
-    """Testtracerouteparse.
-
-    Manages TestTracerouteParse operations and coordinates related state changes for the component.
-    """
+    """Group testtracerouteparse tests covering parses hops; timeout hop; hop to dict avg."""
     def test_parses_hops(self):
-        """test_parses_hops.
-
-        Manages test parses hops operations and coordinates related state changes for the component.
-        """
+        """Verify parses hops via NetworkTools._parse_traceroute."""
         hops = NetworkTools._parse_traceroute(WIN_TRACERT)
         assert len(hops) == 3
         assert hops[0].number == 1 and hops[0].host == "192.168.1.1"
         assert hops[0].times_ms == [1.0, 1.0, 1.0]
 
     def test_timeout_hop(self):
-        """test_timeout_hop.
-
-        Manages test timeout hop operations and coordinates related state changes for the component.
-        """
+        """Verify timeout hop via NetworkTools._parse_traceroute."""
         hops = NetworkTools._parse_traceroute(WIN_TRACERT)
         assert hops[1].host == "*"
         assert hops[1].times_ms == []
 
     def test_hop_to_dict_avg(self):
-        """test_hop_to_dict_avg.
-
-        Manages test hop to dict avg operations and coordinates related state changes for the component.
-        """
+        """Verify hop to dict avg via NetworkTools._parse_traceroute, to_dict."""
         hops = NetworkTools._parse_traceroute(WIN_TRACERT)
         d = hops[2].to_dict()
         assert d["avg_ms"] == 12.0
 
 
 class TestDNS:
-    """Testdns.
-
-    Manages TestDNS operations and coordinates related state changes for the component.
-    """
+    """Group testdns tests covering localhost resolves; bad host empty; reverse loopback."""
     def test_localhost_resolves(self):
-        """test_localhost_resolves.
-
-        Manages test localhost resolves operations and coordinates related state changes for the component.
-        """
+        """Verify localhost resolves via NetworkTools.dns_lookup, ip.startswith."""
         ips = NetworkTools.dns_lookup("localhost")
         assert any(ip.startswith("127.") or ip == "::1" for ip in ips)
 
     def test_bad_host_empty(self):
-        """test_bad_host_empty.
-
-        Manages test bad host empty operations and coordinates related state changes for the component.
-        """
+        """Verify bad host empty via NetworkTools.dns_lookup."""
         assert NetworkTools.dns_lookup("no_such_host_zzz.invalid") == []
 
     def test_reverse_loopback(self):
         # Reverse of 127.0.0.1 may or may not resolve; must not raise.
-        """test_reverse_loopback.
-
-        Manages test reverse loopback operations and coordinates related state changes for the component.
-        """
+        """Verify reverse loopback via NetworkTools.reverse_dns."""
         assert isinstance(NetworkTools.reverse_dns("127.0.0.1"), str)
 
 
 class TestPorts:
-    """Testports.
-
-    Manages TestPorts operations and coordinates related state changes for the component.
-    """
+    """Group testports tests covering closed high port false; invalid port; scan returns all common ports."""
     def test_closed_high_port_false(self):
         # A very high port on localhost is almost certainly closed.
-        """test_closed_high_port_false.
-
-        Manages test closed high port false operations and coordinates related state changes for the component.
-        """
+        """Verify closed high port false via NetworkTools.check_port."""
         assert NetworkTools.check_port("127.0.0.1", 59999, timeout=0.3) is False
 
     def test_invalid_port(self):
-        """test_invalid_port.
-
-        Manages test invalid port operations and coordinates related state changes for the component.
-        """
+        """Verify invalid port via NetworkTools.check_port."""
         assert NetworkTools.check_port("127.0.0.1", 999999, timeout=0.3) is False
 
     def test_scan_returns_all_common_ports(self):
-        """test_scan_returns_all_common_ports.
-
-        Manages test scan returns all common ports operations and coordinates related state changes for the component.
-        """
+        """Verify scan returns all common ports via COMMON_PORTS.keys, NetworkTools, res.keys."""
         from cortex_unified.system_tools.network_tools import COMMON_PORTS
         res = NetworkTools().scan_common_ports("127.0.0.1", timeout=0.1)
         assert set(res.keys()) == set(COMMON_PORTS.keys())
@@ -184,45 +133,27 @@ class TestPorts:
 
 
 class TestIpInfo:
-    """Testipinfo.
-
-    Manages TestIpInfo operations and coordinates related state changes for the component.
-    """
+    """Group testipinfo tests covering public; private; loopback; ipv6; invalid."""
     def test_public(self):
-        """test_public.
-
-        Manages test public operations and coordinates related state changes for the component.
-        """
+        """Verify public via NetworkTools.ip_info."""
         info = NetworkTools.ip_info("8.8.8.8")
         assert info["valid"] and info["global"]
         assert info["category"] == "Public (internet)"
 
     def test_private(self):
-        """test_private.
-
-        Manages test private operations and coordinates related state changes for the component.
-        """
+        """Verify private via NetworkTools.ip_info."""
         info = NetworkTools.ip_info("192.168.1.1")
         assert info["private"] and info["category"] == "Private / LAN"
 
     def test_loopback(self):
-        """test_loopback.
-
-        Manages test loopback operations and coordinates related state changes for the component.
-        """
+        """Verify loopback via NetworkTools.ip_info."""
         assert NetworkTools.ip_info("127.0.0.1")["category"] == "Loopback (this machine)"
 
     def test_ipv6(self):
-        """test_ipv6.
-
-        Manages test ipv6 operations and coordinates related state changes for the component.
-        """
+        """Verify ipv6 via NetworkTools.ip_info."""
         info = NetworkTools.ip_info("2001:4860:4860::8888")
         assert info["valid"] and info["version"] == 6
 
     def test_invalid(self):
-        """test_invalid.
-
-        Manages test invalid operations and coordinates related state changes for the component.
-        """
+        """Verify invalid via NetworkTools.ip_info."""
         assert NetworkTools.ip_info("not-an-ip")["valid"] is False

@@ -15,22 +15,13 @@ IS_WINDOWS = platform.system() == "Windows"
 
 
 class TestGating:
-    """Testgating.
-
-    Manages TestGating operations and coordinates related state changes for the component.
-    """
+    """Group testgating tests covering is supported matches platform; non windows refuses."""
     def test_is_supported_matches_platform(self):
-        """test_is_supported_matches_platform.
-
-        Manages test is supported matches platform operations and coordinates related state changes for the component.
-        """
+        """Verify is supported matches platform via FreeSpaceWiper.is_supported."""
         assert FreeSpaceWiper.is_supported() == IS_WINDOWS
 
     def test_non_windows_refuses(self):
-        """test_non_windows_refuses.
-
-        Manages test non windows refuses operations and coordinates related state changes for the component.
-        """
+        """Verify non windows refuses via pytest.skip, FreeSpaceWiper, wipe."""
         if IS_WINDOWS:
             import pytest
             pytest.skip("covered by validation tests on Windows")
@@ -40,15 +31,9 @@ class TestGating:
 
 
 class TestValidation:
-    """Testvalidation.
-
-    Manages TestValidation operations and coordinates related state changes for the component.
-    """
+    """Group testvalidation tests covering rejects bad letter; rejects empty."""
     def test_rejects_bad_letter(self):
-        """test_rejects_bad_letter.
-
-        Manages test rejects bad letter operations and coordinates related state changes for the component.
-        """
+        """Verify rejects bad letter via pytest.skip, r.message.lower, FreeSpaceWiper."""
         if not IS_WINDOWS:
             import pytest
             pytest.skip("Windows-only validation path")
@@ -57,10 +42,7 @@ class TestValidation:
         assert "invalid" in r.message.lower()
 
     def test_rejects_empty(self):
-        """test_rejects_empty.
-
-        Manages test rejects empty operations and coordinates related state changes for the component.
-        """
+        """Verify rejects empty via pytest.skip, FreeSpaceWiper, wipe."""
         if not IS_WINDOWS:
             import pytest
             pytest.skip("Windows-only validation path")
@@ -68,14 +50,9 @@ class TestValidation:
 
 
 class TestMediumHonesty:
-    """Testmediumhonesty.
-
-    Manages TestMediumHonesty operations and coordinates related state changes for the component.
-    """
+    """Group testmediumhonesty tests covering medium for reports effectiveness."""
     def test_medium_for_reports_effectiveness(self, monkeypatch):
-        """test_medium_for_reports_effectiveness.
-
-        Manages test medium for reports effectiveness operations and coordinates related state changes for the component.
+        """Verify medium for reports effectiveness via monkeypatch.setattr, StorageInfo, FreeSpaceWiper.
 
         Args:
             monkeypatch: The monkeypatch parameter.

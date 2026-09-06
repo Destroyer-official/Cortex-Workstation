@@ -27,10 +27,7 @@ from NexusExplorer.native.nexus_explorer import (
 
 @pytest.fixture(scope="session")
 def qapp():
-    """Qapp.
-
-    Manages qapp operations and coordinates related state changes for the component.
-    """
+    """Provide qapp fixture that provides a shared QApplication."""
     app = QApplication.instance()
     if app is None:
         app = QApplication([])
@@ -40,8 +37,6 @@ def qapp():
 def test_audit_in_place_copy_protection(qapp):
     """Test copying a file into the same directory generates a duplicate safely without data loss.
 
-    Manages test audit in place copy protection operations and coordinates related state changes for the component.
-
     Args:
         qapp: The qapp parameter.
     """
@@ -50,10 +45,7 @@ def test_audit_in_place_copy_protection(qapp):
         src.write_text("critical document contents", encoding="utf-8")
 
         class _DummyEngine:
-            """Dummyengine.
-
-            Manages DummyEngine operations and coordinates related state changes for the component.
-            """
+            """Helper dummyengine."""
             ffi = None
             cli = ""
 
@@ -83,8 +75,6 @@ def test_audit_in_place_copy_protection(qapp):
 def test_audit_circular_directory_protection(qapp):
     """Test that copying a folder into its own subfolder is prevented safely.
 
-    Manages test audit circular directory protection operations and coordinates related state changes for the component.
-
     Args:
         qapp: The qapp parameter.
     """
@@ -96,10 +86,7 @@ def test_audit_circular_directory_protection(qapp):
         f.write_text("data", encoding="utf-8")
 
         class _DummyEngine:
-            """Dummyengine.
-
-            Manages DummyEngine operations and coordinates related state changes for the component.
-            """
+            """Helper dummyengine."""
             ffi = None
             cli = ""
 
@@ -124,8 +111,6 @@ def test_audit_circular_directory_protection(qapp):
 def test_audit_empty_directory_preservation_on_copy(qapp):
     """Test copying nested directory tree preserves empty subdirectories.
 
-    Manages test audit empty directory preservation on copy operations and coordinates related state changes for the component.
-
     Args:
         qapp: The qapp parameter.
     """
@@ -137,10 +122,7 @@ def test_audit_empty_directory_preservation_on_copy(qapp):
         (Path(src_dir) / "Tree" / "file.txt").write_text("content", encoding="utf-8")
 
         class _DummyEngine:
-            """Dummyengine.
-
-            Manages DummyEngine operations and coordinates related state changes for the component.
-            """
+            """Helper dummyengine."""
             ffi = None
             cli = ""
 
@@ -165,8 +147,6 @@ def test_audit_empty_directory_preservation_on_copy(qapp):
 
 def test_audit_tab_management_and_closing(qapp):
     """Test creating multiple tabs and closing specific tabs without index corruption.
-
-    Manages test audit tab management and closing operations and coordinates related state changes for the component.
 
     Args:
         qapp: The qapp parameter.
@@ -203,8 +183,6 @@ def test_audit_tab_management_and_closing(qapp):
 
 def test_audit_engine_python_simple_and_delete(qapp):
     """Test Python fallback implementations for rename, delete, mkdir, and hash.
-
-    Manages test audit engine python simple and delete operations and coordinates related state changes for the component.
 
     Args:
         qapp: The qapp parameter.
@@ -243,8 +221,6 @@ def test_audit_engine_python_simple_and_delete(qapp):
 
 def test_audit_bulk_rename_modes(qapp):
     """Test BulkRenameDialog rename transformations.
-
-    Manages test audit bulk rename modes operations and coordinates related state changes for the component.
 
     Args:
         qapp: The qapp parameter.

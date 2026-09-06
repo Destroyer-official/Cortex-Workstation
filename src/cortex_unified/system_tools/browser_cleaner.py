@@ -90,9 +90,7 @@ class Cleanable:
 # ---------------------------------------------------------------------------
 
 def _discover_chromium_profiles(base_names: List[str]) -> List[Path]:
-    """_discover_chromium_profiles.
-
-    Manages discover chromium profiles operations and coordinates related state changes for the component.
+    """Discover Chromium profile dirs for the given browser base names.
 
     Args:
         base_names (List[str]): The base names parameter.
@@ -133,9 +131,7 @@ _CHROMIUM_MAP = {
 }
 
 def _discover_firefox_profiles() -> List[Path]:
-    """_discover_firefox_profiles.
-
-    Manages discover firefox profiles operations and coordinates related state changes for the component.
+    """Discover Firefox profile dirs via default locations plus profiles.ini.
 
     Returns:
         List[Path]: List of processed items or identifiers.
@@ -168,9 +164,11 @@ def _discover_firefox_profiles() -> List[Path]:
 # ---------------------------------------------------------------------------
 
 class DeepBrowserCleaner:
-    """Deepbrowsercleaner.
+    """Deep cleaner for Chromium/Firefox caches, IndexedDB, and cookies.
 
-    Manages DeepBrowserCleaner operations and coordinates related state changes for the component.
+    Scans profiles for cache/DB targets; clean() deletes files/dirs and
+    vacuum compacts SQLite. Deletions are permanent; passwords gated by
+    expert_mode.
     """
     def __init__(self, keep_cookies: List[str] | None = None,
                  progress: Callable[[str], None] | None = None,
@@ -190,7 +188,7 @@ class DeepBrowserCleaner:
         self.expert_mode = False
 
     def scan(self) -> List[Cleanable]:
-        """Scan.
+        """Scan all Chromium and Firefox profiles for cleanable cache/DB items.
 
         Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
 
@@ -212,7 +210,7 @@ class DeepBrowserCleaner:
         return results
 
     def _scan_chromium_profile(self, profile: Path, browser: str) -> List[Cleanable]:
-        """_scan_chromium_profile.
+        """Scan one Chromium profile for cache, GPU, IndexedDB, and DB targets.
 
         Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
 
@@ -262,7 +260,7 @@ class DeepBrowserCleaner:
         return out
 
     def _scan_firefox_profile(self, profile: Path) -> List[Cleanable]:
-        """_scan_firefox_profile.
+        """Scan one Firefox profile for storage, SQLite, and cache targets.
 
         Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
 
@@ -301,7 +299,7 @@ class DeepBrowserCleaner:
         return out
 
     def clean(self, paths: List[Path], shred: bool = False) -> Dict[Path, bool]:
-        """Clean.
+        """Delete the given browser cache paths, optionally shredding files.
 
         Permanently purges or removes specified target items, reclaiming storage space and logging actions taken.
 
@@ -374,7 +372,7 @@ class DeepBrowserCleaner:
     def vacuum_databases(self, dbs: List[Path]) -> Dict[Path, int]:
         """VACUUM SQLite DBs, return saved bytes per DB.
 
-        Manages vacuum databases operations and coordinates related state changes for the component.
+        Compacts each database in place; reports before-after delta.
 
         Args:
             dbs (List[Path]): The dbs parameter.

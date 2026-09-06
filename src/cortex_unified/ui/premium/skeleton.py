@@ -58,9 +58,7 @@ class ShimmerSkeleton(QWidget):
 
     # animatable sweep phase ------------------------------------------------
     def _get_phase(self) -> float:
-        """_get_phase.
-
-        Manages get phase operations and coordinates related state changes for the component.
+        """Return the current shimmer phase used to paint the skeleton placeholder.
 
         Returns:
             float: Result of the operation.
@@ -68,9 +66,7 @@ class ShimmerSkeleton(QWidget):
         return self._phase
 
     def _set_phase(self, v: float) -> None:
-        """_set_phase.
-
-        Manages set phase operations and coordinates related state changes for the component.
+        """Update the shimmer phase and repaint the skeleton placeholder.
 
         Args:
             v (float): The v parameter.
@@ -100,9 +96,7 @@ class ShimmerSkeleton(QWidget):
         self._anim.stop()
 
     def set_palette(self, palette: Palette) -> None:
-        """set_palette.
-
-        Manages set palette operations and coordinates related state changes for the component.
+        """Replace the skeleton palette and trigger a repaint.
 
         Args:
             palette (Palette): The palette parameter.

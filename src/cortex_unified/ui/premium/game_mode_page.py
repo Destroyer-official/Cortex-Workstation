@@ -29,10 +29,7 @@ IS_WINDOWS = sys.platform == "win32"
 
 
 class _GameModeQueryWorker(QObject):
-    """Gamemodequeryworker.
-
-    Manages GameModeQueryWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker (_GameModeQueryWorker) performing GameModeQueryWorker. Signals finished, failed report status. Its run() step calls GameMode, gm.preview, emit, str."""
     finished = Signal(dict)
     failed = Signal(str)
 
@@ -51,10 +48,7 @@ class _GameModeQueryWorker(QObject):
 
 
 class _GameModeActionWorker(QObject):
-    """Gamemodeactionworker.
-
-    Manages GameModeActionWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker (_GameModeActionWorker) performing GameModeActionWorker. Signals finished, failed report status. Configured with action, game_mode_instance. Its run() step calls GameMode, gm.start, emit, gm.stop."""
     finished = Signal(object)  # BoostReport
     failed = Signal(str)
 
@@ -90,10 +84,7 @@ class _GameModeActionWorker(QObject):
 
 
 class GameModePage(_Page):
-    """Gamemodepage.
-
-    Manages GameModePage operations and coordinates related state changes for the component.
-    """
+    """Gaming Session & FPS Booster page: One-click, safe and fully reversible PC boost for game sessions."""
 
     def __init__(self, win):
         """Init.
@@ -179,10 +170,7 @@ class GameModePage(_Page):
         self._query()
 
     def _query(self):
-        """Query.
-
-        Manages query operations and coordinates related state changes for the component.
-        """
+        """Disable action buttons, show progress/status, and launch the background worker (setEnabled, show_loading, _GameModeQueryWorker)."""
         self._refresh_btn.setEnabled(False)
         self.state.show_loading("Inspecting active processes and power schemes...")
         w = _GameModeQueryWorker()
@@ -228,10 +216,7 @@ class GameModePage(_Page):
             self._stop_boost()
 
     def _start_boost(self):
-        """Start boost.
-
-        Manages start boost operations and coordinates related state changes for the component.
-        """
+        """Disable action buttons, show progress/status, and launch the background worker (setEnabled, setText, GameMode)."""
         self._toggle_btn.setEnabled(False)
         self._status_label.setText("Status: Activating Boost Mode...")
         from cortex_unified.system_tools.game_mode import GameMode
@@ -240,9 +225,7 @@ class GameModePage(_Page):
         self.win.run_worker(w, self._on_boost_started, self._fail)
 
     def _on_boost_started(self, result):
-        """On boost started.
-
-        Manages on boost started operations and coordinates related state changes for the component.
+        """Reflect the boost state change (on boost started) in buttons, labels, and styling.
 
         Args:
             result: Collection or dictionary holding operation results.
@@ -265,19 +248,14 @@ class GameModePage(_Page):
             self._fail(report.message or "Failed to start boost mode")
 
     def _stop_boost(self):
-        """Stop boost.
-
-        Manages stop boost operations and coordinates related state changes for the component.
-        """
+        """Disable action buttons, show progress/status, and launch the background worker (setEnabled, setText, _GameModeActionWorker)."""
         self._toggle_btn.setEnabled(False)
         self._status_label.setText("Status: Restoring Normal Mode...")
         w = _GameModeActionWorker("stop", self._game_mode)
         self.win.run_worker(w, self._on_boost_stopped, self._fail)
 
     def _on_boost_stopped(self, result):
-        """On boost stopped.
-
-        Manages on boost stopped operations and coordinates related state changes for the component.
+        """Reflect the boost state change (on boost stopped) in buttons, labels, and styling.
 
         Args:
             result: Collection or dictionary holding operation results.

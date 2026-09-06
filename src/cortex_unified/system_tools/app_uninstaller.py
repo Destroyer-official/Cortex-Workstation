@@ -10,9 +10,10 @@ from typing import List, Dict, Any, Optional
 
 
 class AppUninstaller:
-    """Appuninstaller.
+    """Lists and uninstalls Windows apps via Uninstall registry keys.
 
-    Manages AppUninstaller operations and coordinates related state changes for the component.
+    Read-only enumeration from HKLM/HKCU Uninstall hives; uninstall launches
+    the registered uninstall string (no shell) with optional MSI quiet flags.
     """
 
     # The three standard registry locations where Windows stores uninstall info.
@@ -36,7 +37,7 @@ class AppUninstaller:
     def get_installed_apps(self) -> List[Dict[str, Any]]:
         """Return a deduplicated, sorted list of installed applications.
 
-        Manages get installed apps operations and coordinates related state changes for the component.
+        Reads HKLM/HKCU Uninstall keys via winreg; returns [] off-Windows.
 
         Returns:
             List[Dict[str, Any]]: List of processed items or identifiers.
@@ -131,7 +132,7 @@ class AppUninstaller:
     def get_app_size_mb(self, app_info: Dict[str, Any]) -> float:
         """Return estimated size in MB from the registry's EstimatedSize (KB) value.
 
-        Manages get app size mb operations and coordinates related state changes for the component.
+        Pure conversion helper; no disk access or side effects.
 
         Args:
             app_info (Dict[str, Any]): The app info parameter.
@@ -152,7 +153,8 @@ class AppUninstaller:
     def _read_app_entry(winreg, hive, parent_path: str, subkey_name: str) -> Optional[Dict[str, Any]]:
         """Read a single Uninstall subkey and return an app dict, or None.
 
-        Manages read app entry operations and coordinates related state changes for the component.
+        Skips entries without DisplayName, hidden SystemComponent entries, and
+        entries with no uninstall command. Read-only registry access.
 
         Args:
             winreg: The winreg parameter.
@@ -170,9 +172,7 @@ class AppUninstaller:
             return None
 
         def _val(name: str, default=""):
-            """Val.
-
-            Manages val operations and coordinates related state changes for the component.
+            """Read one registry value, returning default when missing.
 
             Args:
                 name (str): The name parameter.

@@ -12,10 +12,10 @@ from typing import Optional
 
 @dataclass
 class SystemLoad:
-    """Systemload.
+    """System Load.
 
-    Manages SystemLoad operations and coordinates related state changes for the component.
-    """
+ Snapshot of CPU, memory, and disk pressure.
+ """
     cpu_percent: float
     memory_percent: float
     disk_io_percent: float
@@ -25,22 +25,22 @@ class SystemLoad:
     def is_high_load(self, cpu_threshold: float = 80.0, memory_threshold: float = 85.0) -> bool:
         """Check if system is under high load.
 
-        Manages is high load operations and coordinates related state changes for the component.
+ True when CPU or memory exceeds the given thresholds.
 
-        Args:
-            cpu_threshold (float): The cpu threshold parameter.
-            memory_threshold (float): The memory threshold parameter.
+ Args:
+ cpu_threshold (float): The cpu threshold parameter.
+ memory_threshold (float): The memory threshold parameter.
 
-        Returns:
-            bool: True if the operation succeeded, False otherwise.
-        """
+ Returns:
+ bool: True if the operation succeeded, False otherwise.
+ """
         return (self.cpu_percent > cpu_threshold or 
                 self.memory_percent > memory_threshold)
 
 class ResourceThrottler:
-    """Resourcethrottler.
+    """Resource Throttler.
 
-    Manages ResourceThrottler operations and coordinates related state changes for the component.
+    Samples CPU/RAM/disk via psutil and emits Qt signals with per-metric cooldowns to avoid alert spam; inserts a backoff delay when system load is high.
     """
     
     def __init__(self, cpu_limit: float = 0.8, io_priority: str = "low", memory_limit: float = 0.85):
@@ -74,11 +74,11 @@ class ResourceThrottler:
     def set_process_priority(self, priority: str) -> None:
         """Set process priority for CPU and I/O operations.
 
-        Manages set process priority operations and coordinates related state changes for the component.
+ Lowers CPU and I/O priority to keep the UI responsive.
 
-        Args:
-            priority (str): The priority parameter.
-        """
+ Args:
+ priority (str): The priority parameter.
+ """
         try:
             system = platform.system().lower()
             
@@ -130,10 +130,10 @@ class ResourceThrottler:
             from ctypes import wintypes
 
             class PROCESS_POWER_THROTTLING_STATE(ctypes.Structure):
-                """PROCESS_POWER_THROTTLING_STATE.
+                """PROCESS POWER THROTTLING STATE in.
 
-                Manages PROCESS POWER THROTTLING STATE operations and coordinates related state changes for the component.
-                """
+ ctypes mirror of the Windows power-throttling struct.
+ """
                 _fields_ = [
                     ("Version", wintypes.ULONG),
                     ("ControlMask", wintypes.ULONG),
@@ -169,7 +169,7 @@ class ResourceThrottler:
     def get_system_load(self) -> SystemLoad:
         """Get current system load information.
 
-        Manages get system load operations and coordinates related state changes for the component.
+        Samples CPU/RAM/disk via psutil and emits Qt signals with per-metric cooldowns to avoid alert spam.
 
         Returns:
             SystemLoad: Result of the operation.
@@ -227,7 +227,7 @@ class ResourceThrottler:
     def throttle_if_needed(self) -> None:
         """Apply throttling if system resources are constrained.
 
-        Manages throttle if needed operations and coordinates related state changes for the component.
+        Inserts a backoff delay when system load is high.
         """
         load = self.get_system_load()
         
@@ -255,7 +255,7 @@ class ResourceThrottler:
     def adjust_thread_count(self, current_threads: int) -> int:
         """Adjust thread count based on system load.
 
-        Manages adjust thread count operations and coordinates related state changes for the component.
+        Scales worker threads down under high CPU/memory pressure.
 
         Args:
             current_threads (int): The current threads parameter.
@@ -288,21 +288,21 @@ class ResourceThrottler:
     def start_monitoring(self, interval: float = 1.0) -> None:
         """Start continuous system monitoring.
 
-        Manages start monitoring operations and coordinates related state changes for the component.
+ Spawns the load-sampling thread.
 
-        Args:
-            interval (float): The interval parameter.
-        """
+ Args:
+ interval (float): The interval parameter.
+ """
         if self._monitoring:
             return
         
         self._monitoring = True
         
         def monitor_loop():
-            """monitor_loop.
+            """Monitor loop.
 
-            Manages monitor loop operations and coordinates related state changes for the component.
-            """
+ Sampling loop updating cached load until stopped.
+ """
             while self._monitoring:
                 try:
                     self.get_system_load()
@@ -317,8 +317,8 @@ class ResourceThrottler:
     def stop_monitoring(self) -> None:
         """Stop continuous system monitoring.
 
-        Manages stop monitoring operations and coordinates related state changes for the component.
-        """
+ Stops the sampling thread and joins it.
+ """
         self._monitoring = False
         if self._monitor_thread and self._monitor_thread.is_alive():
             self._monitor_thread.join(timeout=2.0)
@@ -326,38 +326,38 @@ class ResourceThrottler:
     def get_cached_load(self) -> Optional[SystemLoad]:
         """Get the last cached system load without new measurement.
 
-        Manages get cached load operations and coordinates related state changes for the component.
+ Returns the last sampled load without probing again.
 
-        Returns:
-            Optional[SystemLoad]: Result of the operation.
-        """
+ Returns:
+ Optional[SystemLoad]: Result of the operation.
+ """
         with self._load_lock:
             return self._last_load
     
     def is_throttling_active(self) -> bool:
         """Check if throttling is currently active.
 
-        Manages is throttling active operations and coordinates related state changes for the component.
+ Whether a backoff delay is currently applied.
 
-        Returns:
-            bool: True if the operation succeeded, False otherwise.
-        """
+ Returns:
+ bool: True if the operation succeeded, False otherwise.
+ """
         return self._throttle_active
     
     def get_throttle_delay(self) -> float:
         """Get current throttling delay.
 
-        Manages get throttle delay operations and coordinates related state changes for the component.
+ Current sleep seconds inserted between work items.
 
-        Returns:
-            float: Result of the operation.
-        """
+ Returns:
+ float: Result of the operation.
+ """
         return self._throttle_delay
     
     def reset_throttling(self) -> None:
         """Reset throttling state.
 
-        Manages reset throttling operations and coordinates related state changes for the component.
-        """
+ Clears the active flag and delay.
+ """
         self._throttle_active = False
         self._throttle_delay = 0.0

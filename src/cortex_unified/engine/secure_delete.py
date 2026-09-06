@@ -45,7 +45,7 @@ _trash_probed: bool = False    # True once we've attempted the import
 def _resolve_send2trash() -> Any:
     """Import ``send2trash`` once and cache the result (``None`` if absent).
 
-    Manages resolve send2trash operations and coordinates related state changes for the component.
+    Routes deletions through the recycle bin/trash unless a permanent method is requested.
 
     Returns:
         Any: Result of the operation.
@@ -67,7 +67,7 @@ def _resolve_send2trash() -> Any:
 def _has_trash() -> bool:
     """True when reversible recycle-to-trash is actually available.
 
-    Manages has trash operations and coordinates related state changes for the component.
+    Routes deletions through the recycle bin/trash unless a permanent method is requested.
 
     Returns:
         bool: True if the operation succeeded, False otherwise.
@@ -102,7 +102,7 @@ class OverwriteNotEffective(RuntimeError):
     """
 
     def __init__(self, kind: StorageKind, path: Path) -> None:
-        """__init__.
+        """Initialize the instance.
 
         Initializes the instance and configures internal state.
 
@@ -120,9 +120,9 @@ class OverwriteNotEffective(RuntimeError):
 
 
 class SecureDeleter:
-    """Securedeleter.
+    """Secure Deleter.
 
-    Manages SecureDeleter operations and coordinates related state changes for the component.
+    Overwrites file contents for the configured passes before unlinking; routes deletions through the recycle bin/trash unless a permanent method is requested.
     """
 
     def __init__(
@@ -131,7 +131,7 @@ class SecureDeleter:
         probe: StorageProbe | None = None,
         overwrite_passes: int = 3,
     ) -> None:
-        """__init__.
+        """Initialize the instance.
 
         Initializes the instance and configures internal state.
 
@@ -277,16 +277,16 @@ class SecureDeleter:
         dry = method is DeletionMethod.DRY_RUN
 
         def _size(p: Path) -> int:
-            """Size.
+            """Size helper.
 
-            Manages size operations and coordinates related state changes for the component.
+ Cached size accessor used by summary and progress.
 
-            Args:
-                p (Path): The p parameter.
+ Args:
+ p (Path): The p parameter.
 
-            Returns:
-                int: Result of the operation.
-            """
+ Returns:
+ int: Result of the operation.
+ """
             if sizes is not None:
                 s = sizes.get(str(p))
                 if s is not None:
@@ -344,16 +344,16 @@ class SecureDeleter:
             return [self._recycle(p, self._size_of(p)) for p in items]
 
         def _size(p: Path) -> int:
-            """Size.
+            """Size helper.
 
-            Manages size operations and coordinates related state changes for the component.
+ Cached size accessor used by summary and progress.
 
-            Args:
-                p (Path): The p parameter.
+ Args:
+ p (Path): The p parameter.
 
-            Returns:
-                int: Result of the operation.
-            """
+ Returns:
+ int: Result of the operation.
+ """
             if sizes is not None:
                 s = sizes.get(str(p))
                 if s is not None:
@@ -404,9 +404,9 @@ class SecureDeleter:
     # -- method implementations --------------------------------------------
 
     def _recycle(self, p: Path, size: int) -> DeletionResult:
-        """Recycle.
+        """Recycle helper.
 
-        Manages recycle operations and coordinates related state changes for the component.
+        Routes deletions through the recycle bin/trash unless a permanent method is requested.
 
         Args:
             p (Path): The p parameter.
@@ -428,17 +428,17 @@ class SecureDeleter:
         return self._record(p, DeletionOutcome.RECYCLED, DeletionMethod.RECYCLE, size)
 
     def _plain_delete(self, p: Path, size: int) -> DeletionResult:
-        """_plain_delete.
+        """Plain delete.
 
-        Manages plain delete operations and coordinates related state changes for the component.
+ Unlinks without overwriting for non-sensitive removals.
 
-        Args:
-            p (Path): The p parameter.
-            size (int): Integer number of bytes to format or process.
+ Args:
+ p (Path): The p parameter.
+ size (int): Integer number of bytes to format or process.
 
-        Returns:
-            DeletionResult: Result of the operation.
-        """
+ Returns:
+ DeletionResult: Result of the operation.
+ """
         if p.is_dir() and not p.is_symlink():
             shutil.rmtree(p)
         else:
@@ -460,9 +460,9 @@ class SecureDeleter:
             return False
 
     def _overwrite_delete(self, p: Path, size: int, force: bool) -> DeletionResult:
-        """_overwrite_delete.
+        """Overwrite delete.
 
-        Manages overwrite delete operations and coordinates related state changes for the component.
+        Overwrites file contents for the configured passes before unlinking.
 
         Args:
             p (Path): The p parameter.
@@ -530,20 +530,20 @@ class SecureDeleter:
 
     def _record(self, p: Path, outcome: DeletionOutcome, method: DeletionMethod,
                 size: int, reason: str = "") -> DeletionResult:
-        """Record.
+        """Record helper.
 
-        Manages record operations and coordinates related state changes for the component.
+ Appends the outcome to the in-memory deletion log.
 
-        Args:
-            p (Path): The p parameter.
-            outcome (DeletionOutcome): The outcome parameter.
-            method (DeletionMethod): The method parameter.
-            size (int): Integer number of bytes to format or process.
-            reason (str): The reason parameter.
+ Args:
+ p (Path): The p parameter.
+ outcome (DeletionOutcome): The outcome parameter.
+ method (DeletionMethod): The method parameter.
+ size (int): Integer number of bytes to format or process.
+ reason (str): The reason parameter.
 
-        Returns:
-            DeletionResult: Result of the operation.
-        """
+ Returns:
+ DeletionResult: Result of the operation.
+ """
         res = DeletionResult(p, outcome, method, size=size, reason=reason)
         self.results.append(res)
         return res
@@ -568,16 +568,16 @@ class SecureDeleter:
 
     @staticmethod
     def _size_of(p: Path) -> int:
-        """_size_of.
+        """Size of.
 
-        Manages size of operations and coordinates related state changes for the component.
+ Best-effort byte size for files and directory trees.
 
-        Args:
-            p (Path): The p parameter.
+ Args:
+ p (Path): The p parameter.
 
-        Returns:
-            int: Result of the operation.
-        """
+ Returns:
+ int: Result of the operation.
+ """
         try:
             if p.is_file():
                 return p.stat().st_size
@@ -625,13 +625,13 @@ class SecureDeleter:
                                 self._size_of(p), reason=str(exc))
 
     def summary(self) -> dict[str, int]:
-        """Summary.
+        """Summary helper.
 
-        Manages summary operations and coordinates related state changes for the component.
+ Totals of deleted, failed, and bytes freed.
 
-        Returns:
-            dict[str, int]: Dictionary mapping identifiers to status or values.
-        """
+ Returns:
+ dict[str, int]: Dictionary mapping identifiers to status or values.
+ """
         agg: dict[str, int] = {"total": len(self.results), "bytes": 0}
         for r in self.results:
             agg[r.outcome.value] = agg.get(r.outcome.value, 0) + 1
@@ -643,14 +643,14 @@ class SecureDeleter:
 def recycle_path(path: os.PathLike[str] | str) -> bool:
     """Safely move a file or directory to the system Recycle Bin/Trash.
 
-    Manages recycle path operations and coordinates related state changes for the component.
+ Moves a file or directory to the OS Recycle Bin/Trash.
 
-    Args:
-        path (os.PathLike[str] | str): Filesystem path to the target file or directory.
+ Args:
+ path (os.PathLike[str] | str): Filesystem path to the target file or directory.
 
-    Returns:
-        bool: True if the operation succeeded, False otherwise.
-    """
+ Returns:
+ bool: True if the operation succeeded, False otherwise.
+ """
     deleter = SecureDeleter()
     res = deleter.delete(path, method=DeletionMethod.RECYCLE)
     return res.succeeded

@@ -20,10 +20,7 @@ from typing import List, Tuple
 
 @dataclass
 class CacheRebuildReport:
-    """Cacherebuildreport.
-
-    Manages CacheRebuildReport operations and coordinates related state changes for the component.
-    """
+    """Record holding icon_cache_rebuilt, thumb_cache_rebuilt, font_cache_rebuilt, shell_notified, files_deleted, bytes_freed, errors."""
     icon_cache_rebuilt: bool = False
     thumb_cache_rebuilt: bool = False
     font_cache_rebuilt: bool = False
@@ -33,28 +30,20 @@ class CacheRebuildReport:
     errors: List[str] = None
 
     def __post_init__(self):
-        """__post_init__.
-
-        Manages post init operations and coordinates related state changes for the component.
-        """
+        """Validate and normalize fields after init; initializes empty collections."""
         if self.errors is None:
             self.errors = []
 
 
 class SystemCacheRebuilder:
-    """Systemcacherebuilder.
-
-    Manages SystemCacheRebuilder operations and coordinates related state changes for the component.
-    """
+    """Groups related helpers: rebuild font cache, rebuild icon thumbnail cache, notify shell refresh, restart explorer, execute full cache rebuild. Windows-only; returns a safe default elsewhere."""
 
     @classmethod
     def rebuild_font_cache(cls) -> Tuple[bool, int, int, List[str]]:
         """Stop FontCache service, delete cached .dat files, and restart service.
 
-        Manages rebuild font cache operations and coordinates related state changes for the component.
-
         Returns:
-            Tuple[bool, int, int, List[str]]: List of processed items or identifiers.
+        Tuple[bool, int, int, List[str]]: List of processed items or identifiers.
         """
         if platform.system() != "Windows":
             return False, 0, 0, ["Windows only"]
@@ -104,10 +93,8 @@ class SystemCacheRebuilder:
     def rebuild_icon_thumbnail_cache(cls) -> Tuple[bool, int, int, List[str]]:
         """Purge IconCache.db, iconcache_*.db, and thumbcache_*.db files.
 
-        Manages rebuild icon thumbnail cache operations and coordinates related state changes for the component.
-
         Returns:
-            Tuple[bool, int, int, List[str]]: List of processed items or identifiers.
+        Tuple[bool, int, int, List[str]]: List of processed items or identifiers.
         """
         if platform.system() != "Windows":
             return False, 0, 0, ["Windows only"]
@@ -141,10 +128,8 @@ class SystemCacheRebuilder:
     def notify_shell_refresh(cls) -> bool:
         """Issue Windows Shell change notification to reload icons without killing explorer.
 
-        Manages notify shell refresh operations and coordinates related state changes for the component.
-
         Returns:
-            bool: True if the operation succeeded, False otherwise.
+        bool: True if the operation succeeded, False otherwise.
         """
         if platform.system() != "Windows":
             return False
@@ -230,13 +215,11 @@ class SystemCacheRebuilder:
     def execute_full_cache_rebuild(cls, restart_shell: bool = False) -> CacheRebuildReport:
         """Run a full system cache rebuild across fonts, icons, thumbnails, and shell.
 
-        Manages execute full cache rebuild operations and coordinates related state changes for the component.
-
         Args:
-            restart_shell (bool): The restart shell parameter.
+        restart_shell (bool): The restart shell parameter.
 
         Returns:
-            CacheRebuildReport: Result of the operation.
+        CacheRebuildReport: Result of the operation.
         """
         report = CacheRebuildReport()
 

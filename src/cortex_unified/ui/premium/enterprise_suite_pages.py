@@ -108,13 +108,14 @@ def _SecondaryButton(text: str, parent=None) -> QPushButton:
 def _run_task(win: PremiumMainWindow, work_fn, done_fn, err_fn=None):
     """Run work_fn on the window's worker runtime, or inline as a fallback, dispatching to done_fn / err_fn.
 
-    Manages run task operations and coordinates related state changes for the component.
+        Operates on this page widgets as implemented in the method body below.
 
-    Args:
-        win (PremiumMainWindow): Parent window or shell controller instance.
-        work_fn: The work fn parameter.
-        done_fn: The done fn parameter.
-        err_fn: Error message string or exception instance.
+            Args:
+                win (PremiumMainWindow): Parent window or shell controller instance.
+                work_fn: The work fn parameter.
+                done_fn: The done fn parameter.
+                err_fn: Error message string or exception instance.
+
     """
     if hasattr(win, "worker_runtime") and getattr(win, "worker_runtime", None) is not None:
         win.worker_runtime.run(work_fn, on_result=done_fn, on_error=err_fn)
@@ -132,9 +133,9 @@ def _run_task(win: PremiumMainWindow, work_fn, done_fn, err_fn=None):
 # ===========================================================================
 
 class VssManagerPage(_Page):
-    """Vssmanagerpage.
+    """VSS page with audit/create/purge buttons, summary label, and shadows table.
 
-    Manages VssManagerPage operations and coordinates related state changes for the component.
+        Backed by VssManager; builds tables, buttons, and dialogs for the actions below.
     """
     def __init__(self, win: PremiumMainWindow):
         """Build the VSS page with audit/create/purge buttons, summary label, and shadows table.
@@ -185,7 +186,7 @@ class VssManagerPage(_Page):
     def _on_audit(self):
         """Start an asynchronous VSS audit and show a busy message in the summary label.
 
-        Manages on audit operations and coordinates related state changes for the component.
+            Updates self.summary_label, self.win, self._mgr.
         """
         self.summary_label.setText("Querying vssadmin and WMI shadow copies…")
         _run_task(self.win, self._mgr.audit, self._on_audit_done, self._on_err)
@@ -215,7 +216,7 @@ class VssManagerPage(_Page):
     def _on_create(self):
         """Kick off creation of a recovery shadow copy on C: in the background.
 
-        Manages on create operations and coordinates related state changes for the component.
+            Updates self.summary_label, self.win, self._mgr.
         """
         self.summary_label.setText("Creating recovery snapshot on C:…")
         _run_task(self.win, lambda: self._mgr.create_shadow_copy("C:"), self._on_action_done, self._on_err)
@@ -223,7 +224,7 @@ class VssManagerPage(_Page):
     def _on_purge(self):
         """Kick off deletion of the oldest shadow copy on C: in the background.
 
-        Manages on purge operations and coordinates related state changes for the component.
+            Updates self.summary_label, self.win, self._mgr.
         """
         self.summary_label.setText("Purging oldest shadow on C:…")
         _run_task(self.win, lambda: self._mgr.delete_oldest_shadow("C:"), self._on_action_done, self._on_err)
@@ -256,9 +257,9 @@ class VssManagerPage(_Page):
 # ===========================================================================
 
 class DevDriveOptimizerPage(_Page):
-    """Devdriveoptimizerpage.
+    """Dev Drive page with an audit button, summary label, and drives table.
 
-    Manages DevDriveOptimizerPage operations and coordinates related state changes for the component.
+        Backed by DevDriveOptimizer; builds tables, buttons, and dialogs for the actions below.
     """
     def __init__(self, win: PremiumMainWindow):
         """Build the Dev Drive page with an audit button, summary label, and drives table.
@@ -303,7 +304,7 @@ class DevDriveOptimizerPage(_Page):
     def _on_audit(self):
         """Start an asynchronous storage-drive audit and update the summary label.
 
-        Manages on audit operations and coordinates related state changes for the component.
+            Updates self.summary_label, self.win, self._opt.
         """
         self.summary_label.setText("Querying volume geometry and fsutil devdrv status…")
         _run_task(self.win, self._opt.audit, self._on_audit_done, self._on_err)
@@ -349,9 +350,9 @@ class DevDriveOptimizerPage(_Page):
 # ===========================================================================
 
 class BitLockerAuditorPage(_Page):
-    """Bitlockerauditorpage.
+    """BitLocker page with an audit button, summary label, and volumes table.
 
-    Manages BitLockerAuditorPage operations and coordinates related state changes for the component.
+        Backed by BitLockerAuditor; builds tables, buttons, and dialogs for the actions below.
     """
     def __init__(self, win: PremiumMainWindow):
         """Build the BitLocker page with an audit button, summary label, and volumes table.
@@ -396,7 +397,7 @@ class BitLockerAuditorPage(_Page):
     def _on_audit(self):
         """Start an asynchronous BitLocker audit and update the summary label.
 
-        Manages on audit operations and coordinates related state changes for the component.
+            Updates self.summary_label, self.win, self._aud.
         """
         self.summary_label.setText("Querying manage-bde and Win32_EncryptableVolume…")
         _run_task(self.win, self._aud.audit, self._on_audit_done, self._on_err)
@@ -441,9 +442,9 @@ class BitLockerAuditorPage(_Page):
 # ===========================================================================
 
 class JunctionAuditorPage(_Page):
-    """Junctionauditorpage.
+    """Junction Auditor page with scan/custom/unlink buttons and a links table.
 
-    Manages JunctionAuditorPage operations and coordinates related state changes for the component.
+        Backed by JunctionAuditor, QMessageBox, QFileDialog; builds tables, buttons, and dialogs for the actions below.
     """
     def __init__(self, win: PremiumMainWindow):
         """Build the Junction Auditor page with scan/custom/unlink buttons and a links table.
@@ -495,7 +496,7 @@ class JunctionAuditorPage(_Page):
     def _on_scan(self):
         """Scan reparse points across the user profile in the background.
 
-        Manages on scan operations and coordinates related state changes for the component.
+            Updates self.summary_label, self.win, self._aud.
         """
         self.summary_label.setText("Scanning reparse points across user profile…")
         _run_task(self.win, lambda: self._aud.audit(), self._on_scan_done, self._on_err)
@@ -503,7 +504,7 @@ class JunctionAuditorPage(_Page):
     def _on_custom(self):
         """Prompt for a folder and scan its reparse points in the background.
 
-        Manages on custom operations and coordinates related state changes for the component.
+            Uses QFileDialog; updates self.p, self.summary_label, self.win.
         """
         d = QFileDialog.getExistingDirectory(self.p, "Select Folder to Audit Junctions")
         if d:
@@ -537,7 +538,7 @@ class JunctionAuditorPage(_Page):
     def _on_clean_dead(self):
         """Unlink the dead junction selected in the table, then rescan.
 
-        Manages on clean dead operations and coordinates related state changes for the component.
+            Uses QMessageBox; updates self.table, self.p, self._aud.
         """
         row = self.table.currentRow()
         if row < 0:
@@ -564,9 +565,9 @@ class JunctionAuditorPage(_Page):
 # ===========================================================================
 
 class BitRotScrubberPage(_Page):
-    """Bitrotscrubberpage.
+    """BitRot page with a target picker, scrub button, and corrupted-files table.
 
-    Manages BitRotScrubberPage operations and coordinates related state changes for the component.
+        Backed by BitRotScrubber, QFileDialog; builds tables, buttons, and dialogs for the actions below.
     """
     def __init__(self, win: PremiumMainWindow):
         """Build the BitRot page with a target picker, scrub button, and corrupted-files table.
@@ -615,7 +616,7 @@ class BitRotScrubberPage(_Page):
     def _on_browse(self):
         """Open a directory picker and set it as the scrub target.
 
-        Manages on browse operations and coordinates related state changes for the component.
+            Uses QFileDialog; updates self.p, self.target_edit.
         """
         d = QFileDialog.getExistingDirectory(self.p, "Select Folder to Scrub", self.target_edit.text())
         if d:
@@ -624,7 +625,7 @@ class BitRotScrubberPage(_Page):
     def _on_scrub(self):
         """Hash and scrub the chosen folder in the background.
 
-        Manages on scrub operations and coordinates related state changes for the component.
+            Updates self.target_edit, self.summary_label, self.win.
         """
         d = self.target_edit.text().strip()
         if not d:
@@ -670,9 +671,9 @@ class BitRotScrubberPage(_Page):
 # ===========================================================================
 
 class MemoryCompressionPage(_Page):
-    """Memorycompressionpage.
+    """Memory Compression page with audit/toggle buttons and a metrics table.
 
-    Manages MemoryCompressionPage operations and coordinates related state changes for the component.
+        Backed by MemoryCompressionTuner, QMessageBox; builds tables, buttons, and dialogs for the actions below.
     """
     def __init__(self, win: PremiumMainWindow):
         """Build the Memory Compression page with audit/toggle buttons and a metrics table.
@@ -718,7 +719,7 @@ class MemoryCompressionPage(_Page):
     def _on_audit(self):
         """Query MMAgent memory status in the background.
 
-        Manages on audit operations and coordinates related state changes for the component.
+            Updates self.summary_label, self.win, self._tuner.
         """
         self.summary_label.setText("Querying Get-MMAgent and memory working sets…")
         _run_task(self.win, self._tuner.audit, self._on_audit_done, self._on_err)
@@ -758,7 +759,7 @@ class MemoryCompressionPage(_Page):
     def _on_toggle(self):
         """Flip the memory-compression state to the opposite of the audited status.
 
-        Manages on toggle operations and coordinates related state changes for the component.
+            Updates self._curr_status, self.summary_label, self.win.
         """
         if not self._curr_status:
             return
@@ -794,9 +795,9 @@ class MemoryCompressionPage(_Page):
 # ===========================================================================
 
 class SandboxCleanerPage(_Page):
-    """Sandboxcleanerpage.
+    """Sandbox Cleaner page with scan/clean buttons and an artifacts table.
 
-    Manages SandboxCleanerPage operations and coordinates related state changes for the component.
+        Backed by SandboxCleaner, QMessageBox; builds tables, buttons, and dialogs for the actions below.
     """
     def __init__(self, win: PremiumMainWindow):
         """Build the Sandbox Cleaner page with scan/clean buttons and an artifacts table.
@@ -845,7 +846,7 @@ class SandboxCleanerPage(_Page):
     def _on_scan(self):
         """Scan for discarded virtualization artifacts in the background.
 
-        Manages on scan operations and coordinates related state changes for the component.
+            Updates self.summary_label, self.win, self._cleaner.
         """
         self.summary_label.setText("Scanning Windows Sandbox, Hyper-V, and WSL artifacts…")
         _run_task(self.win, self._cleaner.scan, self._on_scan_done, self._on_err)
@@ -873,7 +874,7 @@ class SandboxCleanerPage(_Page):
     def _on_clean(self):
         """Purge every artifact flagged safe to clean; warn when none exist.
 
-        Manages on clean operations and coordinates related state changes for the component.
+            Uses QMessageBox; updates self._artifacts, self.p, self.summary_label.
         """
         targets = [a.path for a in self._artifacts if a.is_safe_to_clean]
         if not targets:
@@ -911,9 +912,9 @@ class SandboxCleanerPage(_Page):
 # ===========================================================================
 
 class SmbShareAuditorPage(_Page):
-    """Smbshareauditorpage.
+    """SMB Auditor page with an audit button, summary label, and shares table.
 
-    Manages SmbShareAuditorPage operations and coordinates related state changes for the component.
+        Backed by SmbShareAuditor; builds tables, buttons, and dialogs for the actions below.
     """
     def __init__(self, win: PremiumMainWindow):
         """Build the SMB Auditor page with an audit button, summary label, and shares table.
@@ -957,7 +958,7 @@ class SmbShareAuditorPage(_Page):
     def _on_audit(self):
         """Start an asynchronous SMB share audit and update the summary label.
 
-        Manages on audit operations and coordinates related state changes for the component.
+            Updates self.summary_label, self.win, self._aud.
         """
         self.summary_label.setText("Querying Get-SmbShare and SMB security configuration…")
         _run_task(self.win, self._aud.audit, self._on_audit_done, self._on_err)
@@ -1002,9 +1003,9 @@ class SmbShareAuditorPage(_Page):
 # ===========================================================================
 
 class ProcessTokenPage(_Page):
-    """Processtokenpage.
+    """Process Token page with an audit button, summary label, and processes table.
 
-    Manages ProcessTokenPage operations and coordinates related state changes for the component.
+        Backed by ProcessTokenAuditor; builds tables, buttons, and dialogs for the actions below.
     """
     def __init__(self, win: PremiumMainWindow):
         """Build the Process Token page with an audit button, summary label, and processes table.
@@ -1049,7 +1050,7 @@ class ProcessTokenPage(_Page):
     def _on_audit(self):
         """Start an asynchronous process token audit and update the summary label.
 
-        Manages on audit operations and coordinates related state changes for the component.
+            Updates self.summary_label, self.win, self._aud.
         """
         self.summary_label.setText("Querying OpenProcessToken and GetTokenInformation…")
         _run_task(self.win, self._aud.audit, self._on_audit_done, self._on_err)
@@ -1094,9 +1095,9 @@ class ProcessTokenPage(_Page):
 # ===========================================================================
 
 class StorageGrowthTrackerPage(_Page):
-    """Storagegrowthtrackerpage.
+    """Growth Tracker page with path picker, snapshot/diff buttons, and a growth table.
 
-    Manages StorageGrowthTrackerPage operations and coordinates related state changes for the component.
+        Backed by StorageGrowthTracker, QMessageBox, QFileDialog; builds tables, buttons, and dialogs for the actions below.
     """
     def __init__(self, win: PremiumMainWindow):
         """Build the Growth Tracker page with path picker, snapshot/diff buttons, and a growth table.
@@ -1150,7 +1151,7 @@ class StorageGrowthTrackerPage(_Page):
     def _on_browse(self):
         """Open a directory picker and set it as the snapshot target.
 
-        Manages on browse operations and coordinates related state changes for the component.
+            Uses QFileDialog; updates self.p, self.path_edit.
         """
         d = QFileDialog.getExistingDirectory(self.p, "Select Directory to Snapshot", self.path_edit.text())
         if d:
@@ -1159,7 +1160,7 @@ class StorageGrowthTrackerPage(_Page):
     def _on_snapshot(self):
         """Capture a storage snapshot of the entered path in the background.
 
-        Manages on snapshot operations and coordinates related state changes for the component.
+            Updates self.path_edit, self.summary_label, self.win.
         """
         p = self.path_edit.text().strip()
         if not p:
@@ -1182,7 +1183,7 @@ class StorageGrowthTrackerPage(_Page):
     def _on_diff(self):
         """Compare the two most recent snapshots, or prompt if fewer exist.
 
-        Manages on diff operations and coordinates related state changes for the component.
+            Uses QMessageBox; updates self._tracker, self.p, self.summary_label.
         """
         snaps = self._tracker.list_snapshots()
         if len(snaps) < 2:

@@ -6,9 +6,7 @@ import builtins
 import sys
 
 def check_undefined_names_in_file(filepath):
-    """check_undefined_names_in_file.
-
-    Manages check undefined names in file operations and coordinates related state changes for the component.
+    """Check undefined names in file using ast.parse, f.read.
 
     Args:
         filepath: Filesystem path to the target file or directory.
@@ -30,10 +28,7 @@ try:
     import io
 
     class Reporter:
-        """Reporter.
-
-        Manages Reporter operations and coordinates related state changes for the component.
-        """
+        """Collect pyflakes errors for the lint scan."""
         def __init__(self):
             """Initialize the instance and configure internal state.
 
@@ -41,9 +36,7 @@ try:
             """
             self.errors = []
         def unexpectedError(self, filename, msg):
-            """Unexpectederror.
-
-            Manages unexpectedError operations and coordinates related state changes for the component.
+            """UnexpectedError using self.errors.append.
 
             Args:
                 filename: The filename parameter.
@@ -51,9 +44,7 @@ try:
             """
             self.errors.append(f"{filename}: unexpected error: {msg}")
         def syntaxError(self, filename, msg, lineno, offset, text):
-            """Syntaxerror.
-
-            Manages syntaxError operations and coordinates related state changes for the component.
+            """SyntaxError using self.errors.append.
 
             Args:
                 filename: The filename parameter.
@@ -64,9 +55,7 @@ try:
             """
             self.errors.append(f"{filename}:{lineno}: syntax error: {msg}")
         def flake(self, msg):
-            """Flake.
-
-            Manages flake operations and coordinates related state changes for the component.
+            """Flake using self.errors.append.
 
             Args:
                 msg: Informational or progress status message.

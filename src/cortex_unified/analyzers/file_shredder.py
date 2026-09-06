@@ -16,10 +16,7 @@ from cortex_unified.core.config import Config
 from cortex_unified.core.security import check_deletion_safety
 
 class FileShredder:
-    """Fileshredder.
-
-    Manages FileShredder operations and coordinates related state changes for the component.
-    """
+    """Legacy multi-pass file shredder with safety checks and deletion tracking."""
     
     def __init__(self, config: Config = None):
         """
@@ -35,9 +32,7 @@ class FileShredder:
         self.errors: List[Dict[str, str]] = []
     
     def _generate_random_data(self, size: int) -> bytes:
-        """_generate_random_data.
-
-        Manages generate random data operations and coordinates related state changes for the component.
+        """Generate cryptographically random bytes for an overwrite pass.
 
         Args:
             size (int): Integer number of bytes to format or process.
@@ -48,9 +43,7 @@ class FileShredder:
         return os.urandom(size)
     
     def _generate_pattern_data(self, size: int, pattern: int) -> bytes:
-        """_generate_pattern_data.
-
-        Manages generate pattern data operations and coordinates related state changes for the component.
+        """Generate repeated-byte pattern data for an overwrite pass.
 
         Args:
             size (int): Integer number of bytes to format or process.
@@ -166,9 +159,7 @@ class FileShredder:
         }
     
     def get_stats(self) -> dict:
-        """Get statistics about the shredding process.
-
-        Manages get stats operations and coordinates related state changes for the component.
+        """Return counts of shredded files, errors, and configured passes.
 
         Returns:
             dict: Dictionary mapping identifiers to status or values.
@@ -180,9 +171,7 @@ class FileShredder:
         }
     
     def set_passes(self, passes: int):
-        """Set the number of overwrite passes.
-
-        Manages set passes operations and coordinates related state changes for the component.
+        """Update the number of overwrite passes per file.
 
         Args:
             passes (int): The passes parameter.
@@ -192,9 +181,7 @@ class FileShredder:
         self.passes = passes
     
     def verify_deletion(self, verify: bool):
-        """Set whether to verify file deletion.
-
-        Manages verify deletion operations and coordinates related state changes for the component.
+        """Enable or disable post-deletion existence verification.
 
         Args:
             verify (bool): The verify parameter.

@@ -24,9 +24,9 @@ from cortex_unified.analyzers.broken_link_detector import BrokenLinkDetector, re
 from cortex_unified.analyzers.czkawka_tools import BrokenFileFinder
 
 class BrokenLinksWorker(QThread):
-    """Brokenlinksworker.
+    """QThread worker scanning symlinks, Windows shortcuts, and registry references via BrokenLinkDetector.
 
-    Manages BrokenLinksWorker operations and coordinates related state changes for the component.
+        Emits finished with the broken-link list and error on failure.
     """
     finished = Signal(list)
     error = Signal(str)
@@ -70,9 +70,9 @@ class BrokenLinksWorker(QThread):
             self.error.emit(str(e))
 
 class LinkRepairWorker(QThread):
-    """Linkrepairworker.
+    """QThread worker repairing broken links via repair() with trash, dry-run, and backup options.
 
-    Manages LinkRepairWorker operations and coordinates related state changes for the component.
+        Backs up shortcut targets when requested, then emits finished with per-item outcomes and error on failure.
     """
     finished = Signal(list)
     error = Signal(str)
@@ -115,15 +115,15 @@ class LinkRepairWorker(QThread):
             self.error.emit(str(e))
 
 class BrokenFilesWorker(QThread):
-    """Brokenfilesworker.
+    """QThread worker finding broken files via czkawka BrokenFileFinder.
 
-    Manages BrokenFilesWorker operations and coordinates related state changes for the component.
+        Emits finished with path strings and error on failure.
     """
     finished = Signal(list)
     error = Signal(str)
 
     def __init__(self, scan_path):
-        """Init.
+        """Store the scan path for the BrokenFileFinder scan.
 
         Initializes the instance and configures internal state.
 
@@ -134,7 +134,7 @@ class BrokenFilesWorker(QThread):
         self.scan_path = scan_path
 
     def run(self):
-        """Run.
+        """Find broken files via BrokenFileFinder and emit finished with path strings, or error.
 
         Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
         """
@@ -146,9 +146,9 @@ class BrokenFilesWorker(QThread):
             self.error.emit(str(e))
 
 class BrokenLinksTab(BaseTab):
-    """Brokenlinkstab.
+    """Broken-links tab with scan/repair option checkboxes, path picker, results table, and progress bar.
 
-    Manages BrokenLinksTab operations and coordinates related state changes for the component.
+        Scan, repair, and export actions run BrokenLinksWorker, BrokenFilesWorker, and LinkRepairWorker threads.
     """
 
     def __init__(self, config, logger, safety_manager):
@@ -164,9 +164,7 @@ class BrokenLinksTab(BaseTab):
         super().__init__(config, logger, safety_manager)
 
     def setup_ui(self):
-        """Set up the user interface.
-
-        Manages setup ui operations and coordinates related state changes for the component.
+        """Build scan/repair option checkboxes, path picker, results table, and scan/repair/export buttons.
         """
         layout = QVBoxLayout(self)
         
@@ -279,22 +277,16 @@ class BrokenLinksTab(BaseTab):
 
     def select_all(self):
         """Select every row in the broken-links table.
-
-        Manages select all operations and coordinates related state changes for the component.
         """
         self.broken_links_table.selectAll()
         
     def deselect_all(self):
         """Clear the table's selection.
-
-        Manages deselect all operations and coordinates related state changes for the component.
         """
         self.broken_links_table.clearSelection()
 
     def browse_broken_links_path(self):
         """Browse for broken links scan path.
-
-        Manages browse broken links path operations and coordinates related state changes for the component.
         """
         path = QFileDialog.getExistingDirectory(self, 'Select Directory to Scan for Broken Links', self.broken_links_path_edit.text())
         if path:
@@ -302,16 +294,12 @@ class BrokenLinksTab(BaseTab):
 
     def on_broken_links_selection_changed(self):
         """Handle broken links table selection changes.
-
-        Manages on broken links selection changed operations and coordinates related state changes for the component.
         """
         has_sel = len(self.broken_links_table.selectedItems()) > 0
         self.repair_selected_button.setEnabled(has_sel)
 
     def start_broken_links_scan(self):
         """Start broken links scan via worker thread.
-
-        Manages start broken links scan operations and coordinates related state changes for the component.
         """
         scan_path = self.broken_links_path_edit.text().strip()
         if not scan_path or not Path(scan_path).exists():
@@ -342,8 +330,6 @@ class BrokenLinksTab(BaseTab):
 
     def start_broken_files_scan(self):
         """Start broken files scan via czkawka BrokenFileFinder worker.
-
-        Manages start broken files scan operations and coordinates related state changes for the component.
         """
         scan_path = self.broken_links_path_edit.text().strip()
         if not scan_path or not Path(scan_path).exists():
@@ -371,7 +357,6 @@ class BrokenLinksTab(BaseTab):
     def _on_worker_finished(self, worker):
         """Unregister a finished worker thread and delete it.
 
-        Manages on worker finished operations and coordinates related state changes for the component.
 
         Args:
             worker: The worker parameter.
@@ -382,7 +367,6 @@ class BrokenLinksTab(BaseTab):
     def on_broken_links_scan_finished(self, results):
         """Handle broken links scan completion.
 
-        Manages on broken links scan finished operations and coordinates related state changes for the component.
 
         Args:
             results: Collection or dictionary holding operation results.
@@ -431,7 +415,6 @@ class BrokenLinksTab(BaseTab):
     def on_broken_links_scan_error(self, error_message):
         """Reset the scan controls and report the scan error.
 
-        Manages on broken links scan error operations and coordinates related state changes for the component.
 
         Args:
             error_message: Informational or progress status message.
@@ -442,8 +425,6 @@ class BrokenLinksTab(BaseTab):
 
     def repair_selected_links(self):
         """Repair the selected broken links (safe actions only).
-
-        Manages repair selected links operations and coordinates related state changes for the component.
         """
         results = getattr(self, 'broken_links_results', None) or []
         rows = sorted({index.row() for index in self.broken_links_table.selectedItems()})
@@ -511,7 +492,6 @@ class BrokenLinksTab(BaseTab):
     def on_repair_finished(self, outcomes):
         """Handle repair completion and report per-item outcomes.
 
-        Manages on repair finished operations and coordinates related state changes for the component.
 
         Args:
             outcomes: The outcomes parameter.
@@ -534,7 +514,6 @@ class BrokenLinksTab(BaseTab):
     def on_repair_error(self, error_message):
         """Reset the repair controls and report the repair error.
 
-        Manages on repair error operations and coordinates related state changes for the component.
 
         Args:
             error_message: Informational or progress status message.
@@ -545,8 +524,6 @@ class BrokenLinksTab(BaseTab):
 
     def export_broken_links_results(self):
         """Export the last scan's broken links to a JSON file.
-
-        Manages export broken links results operations and coordinates related state changes for the component.
         """
         if not hasattr(self, 'broken_links_results') or not self.broken_links_results:
             QMessageBox.warning(self, 'No Results', 'No broken links results to export.')
@@ -579,6 +556,63 @@ class BrokenLinksTab(BaseTab):
                 }
                 export_data['broken_links'].append(link_data)
             
+            with open(file_path, 'w') as f:
+                json.dump(export_data, f, indent=2)
+            QMessageBox.information(self, 'Export Complete', f'Results exported to:\n{file_path}')
+        except Exception as e:
+            QMessageBox.critical(self, 'Export Error', f'Error exporting results:\n{str(e)}')
+
+    def on_broken_files_scan_finished(self, results):
+        """Populate the table with czkawka broken-file paths.
+
+        Results are plain path strings (not link objects), so only the
+        Type and Path columns are filled; the remaining columns stay blank.
+        """
+        self.broken_files_scan_button.setEnabled(True)
+        self.broken_links_scan_button.setEnabled(True)
+        self.broken_links_progress_bar.setVisible(False)
+
+        self.broken_files_results = list(results)
+        total_files = len(self.broken_files_results)
+
+        if total_files > 0:
+            self.broken_files_export_button.setEnabled(True)
+            self.select_all_btn.setEnabled(True)
+            self.deselect_all_btn.setEnabled(True)
+            self.broken_links_summary_label.setText(
+                f'Found {total_files} broken/corrupt files')
+        else:
+            self.broken_links_summary_label.setText('No broken files found.')
+
+        self.broken_links_table.setRowCount(total_files)
+        for row, path in enumerate(self.broken_files_results):
+            self.broken_links_table.setItem(row, 0, QTableWidgetItem('Broken File'))
+            self.broken_links_table.setItem(row, 1, QTableWidgetItem(str(path)))
+            for col in range(2, 7):
+                self.broken_links_table.setItem(row, col, QTableWidgetItem(''))
+
+        self.broken_links_table.resizeColumnsToContents()
+
+    def export_broken_files_results(self):
+        """Export the last broken-files scan to a JSON file."""
+        if not hasattr(self, 'broken_files_results') or not self.broken_files_results:
+            QMessageBox.warning(self, 'No Results', 'No broken files results to export.')
+            return
+
+        file_path, _ = QFileDialog.getSaveFileName(self, 'Export Broken Files Results', 'broken_files_results.json', 'JSON Files (*.json)')
+        if not file_path:
+            return
+
+        try:
+            import json
+            from datetime import datetime
+            export_data = {
+                'scan_date': datetime.now().isoformat(),
+                'scan_path': self.broken_links_path_edit.text(),
+                'total_files': len(self.broken_files_results),
+                'broken_files': [str(p) for p in self.broken_files_results],
+            }
+
             with open(file_path, 'w') as f:
                 json.dump(export_data, f, indent=2)
             QMessageBox.information(self, 'Export Complete', f'Results exported to:\n{file_path}')

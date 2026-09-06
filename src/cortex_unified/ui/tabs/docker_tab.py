@@ -25,21 +25,19 @@ try:
     from cortex_unified.analyzers.docker_cleaner import DockerCleaner
 except ImportError:
     class DockerCleaner:
-        """Dockercleaner.
+        """Fallback DockerCleaner stub used when the real analyzer import is unavailable.
 
-        Manages DockerCleaner operations and coordinates related state changes for the component.
+            Reports Docker as unavailable via is_docker_available().
         """
         def is_docker_available(self):
-            """Check if Docker is available.
-
-            Manages is docker available operations and coordinates related state changes for the component.
+            """Report whether Docker is available (fallback stub always returns False).
             """
             return False
 
 class DockerScanWorker(QThread):
-    """Dockerscanworker.
+    """QThread worker scanning unused images, stopped containers, volumes, and networks via DockerCleaner.
 
-    Manages DockerScanWorker operations and coordinates related state changes for the component.
+        Emits finished with the resources/stats payload and error on failure.
     """
     finished = Signal(dict)
     error = Signal(str)
@@ -90,9 +88,9 @@ class DockerScanWorker(QThread):
             self.error.emit(str(e))
 
 class DockerCleanupWorker(QThread):
-    """Dockercleanupworker.
+    """QThread worker cleaning Docker resources via DockerCleaner.cleanup_resources().
 
-    Manages DockerCleanupWorker operations and coordinates related state changes for the component.
+        Emits finished with the cleanup result and error on failure.
     """
     finished = Signal(object)
     error = Signal(str)
@@ -126,9 +124,9 @@ class DockerCleanupWorker(QThread):
             self.error.emit(str(e))
 
 class DockerTab(BaseTab):
-    """Dockertab.
+    """Docker tab with resource-type checkboxes, options, status label, progress bar, and resources table.
 
-    Manages DockerTab operations and coordinates related state changes for the component.
+        Scan and cleanup actions run DockerScanWorker and DockerCleanupWorker threads via DockerCleaner.
     """
 
     def __init__(self, config, logger, safety_manager):
@@ -144,9 +142,7 @@ class DockerTab(BaseTab):
         super().__init__(config, logger, safety_manager)
 
     def setup_ui(self):
-        """Set up the user interface.
-
-        Manages setup ui operations and coordinates related state changes for the component.
+        """Build the Docker status label, resource-type checkboxes, options, resources table, and scan/cleanup buttons.
         """
         layout = QVBoxLayout(self)
         self.docker_status_label = QLabel('Checking Docker availability...')
@@ -210,8 +206,6 @@ class DockerTab(BaseTab):
 
     def check_docker_availability(self):
         """Check if Docker is available.
-
-        Manages check docker availability operations and coordinates related state changes for the component.
         """
         try:
             cleaner = DockerCleaner()
@@ -230,8 +224,6 @@ class DockerTab(BaseTab):
 
     def start_docker_scan(self):
         """Start Docker resource scan dynamically linked to worker threads.
-
-        Manages start docker scan operations and coordinates related state changes for the component.
         """
         self.docker_scan_button.setEnabled(False)
         self.docker_cleanup_button.setEnabled(False)
@@ -258,7 +250,6 @@ class DockerTab(BaseTab):
     def _on_worker_finished(self, worker):
         """Unregister a finished worker thread and delete it.
 
-        Manages on worker finished operations and coordinates related state changes for the component.
 
         Args:
             worker: The worker parameter.
@@ -269,7 +260,6 @@ class DockerTab(BaseTab):
     def docker_scan_finished(self, result: dict):
         """Handle Docker scan completion.
 
-        Manages docker scan finished operations and coordinates related state changes for the component.
 
         Args:
             result (dict): Collection or dictionary holding operation results.
@@ -315,7 +305,6 @@ class DockerTab(BaseTab):
     def docker_scan_error(self, error: str):
         """Reset the scan controls and report the Docker scan error.
 
-        Manages docker scan error operations and coordinates related state changes for the component.
 
         Args:
             error (str): Error message string or exception instance.
@@ -329,8 +318,6 @@ class DockerTab(BaseTab):
 
     def start_docker_cleanup(self):
         """Start Docker resource cleanup.
-
-        Manages start docker cleanup operations and coordinates related state changes for the component.
         """
         if not hasattr(self, 'docker_resources') or not self.docker_resources:
             QMessageBox.information(self, 'Info', 'No Docker resources to clean up.')
@@ -369,7 +356,6 @@ class DockerTab(BaseTab):
     def docker_cleanup_finished(self, result):
         """Handle Docker cleanup completion.
 
-        Manages docker cleanup finished operations and coordinates related state changes for the component.
 
         Args:
             result: Collection or dictionary holding operation results.
@@ -402,7 +388,6 @@ class DockerTab(BaseTab):
     def docker_cleanup_error(self, error: str):
         """Reset the cleanup controls and report the Docker cleanup error.
 
-        Manages docker cleanup error operations and coordinates related state changes for the component.
 
         Args:
             error (str): Error message string or exception instance.

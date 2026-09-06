@@ -40,7 +40,7 @@ def get_system_excludes() -> Set[str]:
 def is_system_directory(path: Path) -> bool:
     """True if *path* names one of the platform's protected directories.
 
-    Manages is system directory operations and coordinates related state changes for the component.
+    Treats platform system directories as always excluded so cleanup can never enter them.
 
     Args:
         path (Path): Filesystem path to the target file or directory.
@@ -86,12 +86,12 @@ def setup_logging(verbose: bool = False, log_file: str = None, json_logging: boo
     if json_logging:
         import json
         class JSONFormatter(logging.Formatter):
-            """JSONFormatter.
+            """JSONFormatter state.
 
             Converts raw numeric values into formatted, localized, and human-readable string representations.
             """
             def format(self, record):
-                """format.
+                """Format helper.
 
                 Converts raw numeric values into formatted, localized, and human-readable string representations.
 
@@ -179,18 +179,18 @@ def setup_logging(verbose: bool = False, log_file: str = None, json_logging: boo
 
     if verbose:
         class PerformanceFilter(logging.Filter):
-            """Performancefilter.
+            """Performance Filter.
 
-            Manages PerformanceFilter operations and coordinates related state changes for the component.
-            """
+ Verbose-only filter stamping start_time on records.
+ """
             def filter(self, record):
-                """Filter.
+                """Filter helper.
 
-                Manages filter operations and coordinates related state changes for the component.
+ Stamps start_time when missing and always keeps the record.
 
-                Args:
-                    record: The record parameter.
-                """
+ Args:
+ record: The record parameter.
+ """
                 if not hasattr(record, 'start_time'):
                     record.start_time = datetime.now()
                 return True
@@ -280,38 +280,38 @@ def log_performance_metrics(logger: logging.Logger, operation: str, metrics: dic
 def generate_manifest_filename() -> str:
     """Generate a timestamped filename for the manifest file.
 
-    Manages generate manifest filename operations and coordinates related state changes for the component.
+ Builds a timestamped cortex_cleaner_manifest_*.json name.
 
-    Returns:
-        str: Formatted string or path.
-    """
+ Returns:
+ str: Formatted string or path.
+ """
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     return f"cortex_cleaner_manifest_{timestamp}.json"
 
 def normalize_path(path: str) -> Path:
     """Normalize a path string to a Path object.
 
-    Manages normalize path operations and coordinates related state changes for the component.
+ Expands ~ and resolves to an absolute Path.
 
-    Args:
-        path (str): Filesystem path to the target file or directory.
+ Args:
+ path (str): Filesystem path to the target file or directory.
 
-    Returns:
-        Path: Result of the operation.
-    """
+ Returns:
+ Path: Result of the operation.
+ """
     return Path(os.path.expanduser(path)).resolve()
 
 def get_file_age_days(filepath: Path) -> int:
     """Get the age of a file in days.
 
-    Manages get file age days operations and coordinates related state changes for the component.
+ Whole days since mtime, or 0 when the file cannot be stated.
 
-    Args:
-        filepath (Path): Filesystem path to the target file or directory.
+ Args:
+ filepath (Path): Filesystem path to the target file or directory.
 
-    Returns:
-        int: Result of the operation.
-    """
+ Returns:
+ int: Result of the operation.
+ """
     try:
         mtime = filepath.stat().st_mtime
         mtime_dt = datetime.fromtimestamp(mtime)
@@ -330,7 +330,7 @@ class DeepCleanerError(Exception):
 
     def __init__(self, message: str, operation: str = None, component: str = None, 
                  error_code: str = None, details: dict = None):
-        """__init__.
+        """Initialize the instance.
 
         Initializes the instance and configures internal state.
 
@@ -349,45 +349,45 @@ class DeepCleanerError(Exception):
         self.timestamp = datetime.now()
 
 class DockerError(DeepCleanerError):
-    """Dockererror.
+    """Docker Error.
 
-    Manages DockerError operations and coordinates related state changes for the component.
-    """
+ Handles docker error for.
+ """
     pass
 
 class VisualizationError(DeepCleanerError):
-    """Visualizationerror.
+    """Visualization Error.
 
-    Manages VisualizationError operations and coordinates related state changes for the component.
-    """
+ Handles visualization error for.
+ """
     pass
 
 class HeuristicsError(DeepCleanerError):
-    """Heuristicserror.
+    """Heuristics Error.
 
-    Manages HeuristicsError operations and coordinates related state changes for the component.
-    """
+ Handles heuristics error for.
+ """
     pass
 
 class PackageManagerError(DeepCleanerError):
-    """Packagemanagererror.
+    """Package Manager Error.
 
-    Manages PackageManagerError operations and coordinates related state changes for the component.
-    """
+ Handles package manager error for.
+ """
     pass
 
 class PerformanceError(DeepCleanerError):
-    """Performanceerror.
+    """Performance Error.
 
-    Manages PerformanceError operations and coordinates related state changes for the component.
-    """
+ Handles performance error for.
+ """
     pass
 
 class AccessibilityError(DeepCleanerError):
-    """Accessibilityerror.
+    """Accessibility Error.
 
-    Manages AccessibilityError operations and coordinates related state changes for the component.
-    """
+ Handles accessibility error for.
+ """
     pass
 
 def handle_error(logger: logging.Logger, error: Exception, operation: str = None, 
@@ -445,13 +445,13 @@ def safe_execute(func, logger: logging.Logger, operation: str = None,
         return default_return
 
 class ResourceManager:
-    """Resourcemanager.
+    """Resource Manager.
 
-    Manages ResourceManager operations and coordinates related state changes for the component.
-    """
+ Context manager timing an operation and releasing resources in reverse order without suppressing errors.
+ """
     
     def __init__(self, logger: logging.Logger, operation: str = None):
-        """__init__.
+        """Initialize the instance.
 
         Initializes the instance and configures internal state.
 
@@ -505,21 +505,21 @@ class ResourceManager:
     def add_resource(self, resource):
         """Add a resource to be cleaned up.
 
-        Manages add resource operations and coordinates related state changes for the component.
+ Registers a close()/cleanup()/callable resource for reverse-order release.
 
-        Args:
-            resource: The resource parameter.
-        """
+ Args:
+ resource: The resource parameter.
+ """
         self.resources.append(resource)
     
     def add_cleanup_function(self, func, *args, **kwargs):
-        """add_cleanup_function.
+        """Add cleanup function.
 
-        Manages add cleanup function operations and coordinates related state changes for the component.
+ Wraps func(*args, **kwargs) as a cleanup lambda.
 
-        Args:
-            func: The func parameter.
-        """
+ Args:
+ func: The func parameter.
+ """
         self.resources.append(lambda: func(*args, **kwargs))
 
 def format_bytes(bytes_value: int) -> str:
@@ -632,7 +632,7 @@ def ensure_directory(path: Path, create: bool = True) -> Path:
 def get_system_info() -> dict:
     """Get comprehensive system information for diagnostics.
 
-    Manages get system info operations and coordinates related state changes for the component.
+    Samples CPU/RAM/disk via psutil and emits Qt signals with per-metric cooldowns to avoid alert spam.
 
     Returns:
         dict: Dictionary mapping identifiers to status or values.

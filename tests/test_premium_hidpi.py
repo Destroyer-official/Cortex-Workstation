@@ -30,19 +30,14 @@ from PySide6.QtWidgets import QApplication  # noqa: E402
 
 @pytest.fixture(scope="module")
 def app():
-    """App.
-
-    Manages app operations and coordinates related state changes for the component.
-    """
+    """Provide app fixture that provides a shared QApplication."""
     application = QApplication.instance() or QApplication([])
     yield application
 
 
 @pytest.fixture
 def window(app):
-    """Window.
-
-    Manages window operations and coordinates related state changes for the component.
+    """Provide window fixture via PremiumMainWindow, win.resize, win.close.
 
     Args:
         app: The app parameter.
@@ -58,8 +53,6 @@ def window(app):
 
 def test_card_has_no_persistent_graphics_effect(app):
     """A Card must render its surface via QSS, not a blur-prone effect.
-
-    Manages test card has no persistent graphics effect operations and coordinates related state changes for the component.
 
     Args:
         app: The app parameter.
@@ -81,8 +74,6 @@ def test_card_has_no_persistent_graphics_effect(app):
 def test_hero_buttons_and_gauge_have_no_persistent_effect(window):
     """The Scan/Clean CTAs and the dashboard gauge must stay crisp: no effect.
 
-    Manages test hero buttons and gauge have no persistent effect operations and coordinates related state changes for the component.
-
     Args:
         window: Parent window or shell controller instance.
     """
@@ -94,8 +85,6 @@ def test_hero_buttons_and_gauge_have_no_persistent_effect(window):
 
 def test_attach_glow_does_not_attach_blurring_effect(app):
     """attach_glow must never install a QGraphicsEffect (which would blur).
-
-    Manages test attach glow does not attach blurring effect operations and coordinates related state changes for the component.
 
     Args:
         app: The app parameter.
@@ -118,8 +107,6 @@ def test_attach_glow_does_not_attach_blurring_effect(app):
 
 def test_gauge_paints_with_glow_enabled(app):
     """With a glow set, the gauge must still paint without error at any value.
-
-    Manages test gauge paints with glow enabled operations and coordinates related state changes for the component.
 
     Args:
         app: The app parameter.

@@ -23,9 +23,7 @@ except FileNotFoundError:
 
 @pytest.fixture
 def data_dir(tmp_path, monkeypatch):
-    """data_dir.
-
-    Manages data dir operations and coordinates related state changes for the component.
+    """Provide data dir fixture that creates an isolated directory and sets NEXUS_DATA_DIR.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.
@@ -39,19 +37,14 @@ def data_dir(tmp_path, monkeypatch):
 
 @pytest.fixture
 def ffi():
-    """Ffi.
-
-    Manages ffi operations and coordinates related state changes for the component.
-    """
+    """Provide ffi fixture that yields a NexusFfi handle."""
     f = nexus_ffi.NexusFfi()
     yield f
     f.close()
 
 
 def _journal_lines(data_dir: Path) -> list[dict]:
-    """_journal_lines.
-
-    Manages journal lines operations and coordinates related state changes for the component.
+    """Journal lines using json.loads, l.strip, splitlines.
 
     Args:
         data_dir (Path): The data dir parameter.
@@ -65,9 +58,7 @@ def _journal_lines(data_dir: Path) -> list[dict]:
 
 
 def test_journal_records_lifecycle(data_dir, ffi, tmp_path):
-    """test_journal_records_lifecycle.
-
-    Manages test journal records lifecycle operations and coordinates related state changes for the component.
+    """Verify journal records lifecycle via ffi.copy, _journal_lines.
 
     Args:
         data_dir: The data dir parameter.
@@ -94,9 +85,7 @@ def test_journal_records_lifecycle(data_dir, ffi, tmp_path):
 
 def test_orphans_detects_interrupted_and_ignores_completed(data_dir, ffi, tmp_path):
     # a real completed copy must NOT appear as orphan
-    """test_orphans_detects_interrupted_and_ignores_completed.
-
-    Manages test orphans detects interrupted and ignores completed operations and coordinates related state changes for the component.
+    """Verify orphans detects interrupted and ignores completed via ffi.orphans, ffi.copy, fh.write.
 
     Args:
         data_dir: The data dir parameter.
@@ -141,9 +130,7 @@ def test_orphans_detects_interrupted_and_ignores_completed(data_dir, ffi, tmp_pa
 
 def test_orphan_scan_tolerates_missing_journal(ffi):
     # default LOCALAPPDATA may or may not have a journal; call must not raise
-    """test_orphan_scan_tolerates_missing_journal.
-
-    Manages test orphan scan tolerates missing journal operations and coordinates related state changes for the component.
+    """Verify orphan scan tolerates missing journal via ffi.orphans.
 
     Args:
         ffi: The ffi parameter.

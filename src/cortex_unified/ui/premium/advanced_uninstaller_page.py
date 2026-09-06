@@ -38,10 +38,7 @@ from cortex_unified.analyzers.advanced_uninstaller import (
 
 
 class _UninstallWorker(QObject):
-    """Uninstallworker.
-
-    Manages UninstallWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker (_UninstallWorker) performing UninstallWorker. Signals finished, progress, failed report status. Configured with app_ids, force, scan_leftovers, max_leftovers_mb, sources. Its run() step calls AdvancedUninstaller, uninstaller.enumerate_all, uninstaller.uninstall_batch, filtered.append."""
     finished = Signal(list)
     progress = Signal(str)
     failed = Signal(str)
@@ -128,10 +125,7 @@ class _UninstallWorker(QObject):
 
 
 class AdvancedUninstallerPage(_Page):
-    """Advanceduninstallerpage.
-
-    Manages AdvancedUninstallerPage operations and coordinates related state changes for the component.
-    """
+    """Advanced Uninstaller page: Enumerate apps from Registry, Steam, Chocolatey, Winget, Scoop, Store,."""
 
     def __init__(self, win):
         """__init__.
@@ -269,10 +263,7 @@ class AdvancedUninstallerPage(_Page):
         self._results: list[UninstallResult] = []
 
     def _pick_root(self):
-        """_pick_root.
-
-        Manages pick root operations and coordinates related state changes for the component.
-        """
+        """Prompt the user with a file dialog (QFileDialog.getExistingDirectory) and apply the chosen path to the page state."""
         folder = QFileDialog.getExistingDirectory(
             self, "Select root folder", self._root
         )
@@ -352,10 +343,7 @@ class AdvancedUninstallerPage(_Page):
         self.win.statusBar().showMessage(f"Found {len(apps)} applications", 5000)
 
     def _confirm_uninstall(self):
-        """_confirm_uninstall.
-
-        Manages confirm uninstall operations and coordinates related state changes for the component.
-        """
+        """Validate the current selection and ask the user to confirm via a message box showing 'No selection'."""
         selected = self._selected_apps()
         if not selected:
             QMessageBox.information(
@@ -417,9 +405,7 @@ class AdvancedUninstallerPage(_Page):
         self._run_uninstall(selected)
 
     def _run_uninstall(self, apps: list[AppInfo]):
-        """_run_uninstall.
-
-        Manages run uninstall operations and coordinates related state changes for the component.
+        """Disable action buttons, show progress/status, and launch the background worker (setEnabled, setVisible, show_loading).
 
         Args:
             apps (list[AppInfo]): The apps parameter.
@@ -517,9 +503,7 @@ class AdvancedUninstallerPage(_Page):
         self.win._default_fail(msg)
 
     def _selected_apps(self) -> list[AppInfo]:
-        """_selected_apps.
-
-        Manages selected apps operations and coordinates related state changes for the component.
+        """Collect the rows currently selected in the results table and map them back to data objects.
 
         Returns:
             list[AppInfo]: List of processed items or identifiers.

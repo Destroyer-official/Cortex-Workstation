@@ -34,9 +34,9 @@ class CaseTransformation(Enum):
 
 @dataclass
 class RenamePlanItem:
-    """Renameplanitem.
+    """Preview entry for one rename.
 
-    Manages RenamePlanItem operations and coordinates related state changes for the component.
+    Holds original/new paths and names plus validity, error, and changed flags from collision checks.
     """
     original_path: str
     original_name: str
@@ -49,18 +49,18 @@ class RenamePlanItem:
 
 @dataclass
 class RenameTransaction:
-    """Renametransaction.
+    """Undo record for one executed batch.
 
-    Manages RenameTransaction operations and coordinates related state changes for the component.
+    Stores timestamp and (old_path, new_path) pairs for reverse-order revert.
     """
     timestamp: float
     items: List[Tuple[str, str]]  # (old_path, new_path)
 
 
 class BatchRenamer:
-    """Batchrenamer.
+    """Regex/token batch rename engine with undo history.
 
-    Manages BatchRenamer operations and coordinates related state changes for the component.
+    Keeps _history of RenameTransaction; preview is side-effect free, execute performs renames.
     """
 
     def __init__(self):
@@ -72,9 +72,9 @@ class BatchRenamer:
 
     @staticmethod
     def _apply_case(text: str, transformation: CaseTransformation) -> str:
-        """_apply_case.
+        """Apply case transformation to a stem.
 
-        Manages apply case operations and coordinates related state changes for the component.
+        Handles UPPERCASE/LOWERCASE/TITLE/SNAKE/KEBAB/CAMEL via regex splits; NONE returns input.
 
         Args:
             text (str): Display text string.
@@ -106,9 +106,9 @@ class BatchRenamer:
 
     @staticmethod
     def _extract_exif_metadata(file_path: Path) -> Dict[str, str]:
-        """_extract_exif_metadata.
+        """Extract EXIF metadata via Pillow.
 
-        Manages extract exif metadata operations and coordinates related state changes for the component.
+        Returns camera model, YYYY-MM-DD date, and WxH dimensions for image extensions; blanks otherwise or on failure.
 
         Args:
             file_path (Path): Filesystem path to the target file or directory.
@@ -140,9 +140,9 @@ class BatchRenamer:
 
     @staticmethod
     def _extract_id3_metadata(file_path: Path) -> Dict[str, str]:
-        """_extract_id3_metadata.
+        """Extract audio tags via mutagen.
 
-        Manages extract id3 metadata operations and coordinates related state changes for the component.
+        Returns artist/title/album/track for MP3/FLAC/OGG/M4A; blanks when mutagen missing or tags absent.
 
         Args:
             file_path (Path): Filesystem path to the target file or directory.
@@ -185,7 +185,7 @@ class BatchRenamer:
     ) -> List[RenamePlanItem]:
         """Generate a live preview plan for renaming a batch of files.
 
-        Manages preview rename operations and coordinates related state changes for the component.
+        Applies regex/plain replacement, token interpolation, case transform, and Windows-invalid-char plus collision validation.
 
         Args:
             file_paths (List[str | Path]): Filesystem path to the target file or directory.
@@ -253,9 +253,9 @@ class BatchRenamer:
             id3_meta = self._extract_id3_metadata(path_obj)
 
             def _replace_tokens(text: str) -> str:
-                """_replace_tokens.
+                """Interpolate <name>/<counter>/<date>/metadata tokens.
 
-                Manages replace tokens operations and coordinates related state changes for the component.
+                Expands name/ext/folder/date/time/guid, zero-padded counters, and EXIF/ID3 aliases using the shared counter.
 
                 Args:
                     text (str): Display text string.
@@ -353,7 +353,7 @@ class BatchRenamer:
     ) -> Tuple[int, int, List[str]]:
         """Execute the renaming plan atomically with rollback recording.
 
-        Manages execute rename operations and coordinates related state changes for the component.
+        Renames valid changed items (temp-name indirection for case-only Windows renames), records a RenameTransaction, and returns counts/errors.
 
         Args:
             plan (List[RenamePlanItem]): The plan parameter.
@@ -396,7 +396,7 @@ class BatchRenamer:
     def undo_last(self) -> Tuple[int, List[str]]:
         """Undo the most recent batch rename operation.
 
-        Manages undo last operations and coordinates related state changes for the component.
+        Pops the last RenameTransaction and reverts pairs in reverse order, handling case-only renames safely.
 
         Returns:
             Tuple[int, List[str]]: List of processed items or identifiers.

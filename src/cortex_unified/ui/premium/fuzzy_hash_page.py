@@ -24,10 +24,7 @@ from cortex_unified.analyzers.fuzzy_finder import FuzzyDuplicateFinder
 
 
 class _FuzzyWorker(QObject):
-    """Fuzzyworker.
-
-    Manages FuzzyWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker (_FuzzyWorker) performing FuzzyWorker. Signals finished, progress, failed report status. Configured with root, threshold. Its run() step calls FuzzyDuplicateFinder, finder.find_fuzzy_duplicates, emit, str."""
     finished = Signal(dict)
     progress = Signal(str)
     failed = Signal(str)
@@ -74,10 +71,7 @@ class _FuzzyWorker(QObject):
 
 
 class FuzzyHashPage(_Page):
-    """Fuzzyhashpage.
-
-    Manages FuzzyHashPage operations and coordinates related state changes for the component.
-    """
+    """Fuzzy Duplicates (ssdeep/TLSH) page: Context-triggered piecewise hashing (DFRWS 2006) + TLSH locality-."""
 
     def __init__(self, win):
         """__init__.
@@ -154,10 +148,7 @@ class FuzzyHashPage(_Page):
             self.path_label.setText(folder)
 
     def _run(self):
-        """Run.
-
-        Manages run operations and coordinates related state changes for the component.
-        """
+        """Disable action buttons, show progress/status, and launch the background worker (setEnabled, setVisible, show_loading)."""
         self.run_btn.setEnabled(False)
         self.progress.setVisible(True)
         self.state.show_loading("Fuzzy-hashing files (CTPH)…")

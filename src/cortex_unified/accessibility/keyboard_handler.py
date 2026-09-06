@@ -45,7 +45,6 @@ class KeyboardHandler(QObject):
     def setup_keyboard_navigation(self) -> None:
         """Discover focusable children, fix tab order, install the filter.
 
-        Manages setup keyboard navigation operations and coordinates related state changes for the component.
         """
         if not HAS_PYSIDE6 or not self.widget:
             return
@@ -78,9 +77,8 @@ class KeyboardHandler(QObject):
         self.focusable_widgets = []
         
         def find_widgets(parent):
-            """find_widgets.
+            """Collect visible and enabled focusable child widgets.
 
-            Manages find widgets operations and coordinates related state changes for the component.
 
             Args:
                 parent: Parent window or shell controller instance.
@@ -99,7 +97,6 @@ class KeyboardHandler(QObject):
     def _setup_tab_order(self) -> None:
         """Chain consecutive widgets so Qt Tab matches the visual order.
 
-        Manages setup tab order operations and coordinates related state changes for the component.
         """
         if len(self.focusable_widgets) < 2:
             return
@@ -116,7 +113,6 @@ class KeyboardHandler(QObject):
     def handle_tab_navigation(self, event: QKeyEvent) -> bool:
         """Advance/wrap focus on Tab and Shift+Tab; True when consumed.
 
-        Manages handle tab navigation operations and coordinates related state changes for the component.
 
         Args:
             event (QKeyEvent): The Qt event object.
@@ -146,7 +142,6 @@ class KeyboardHandler(QObject):
     def setup_shortcuts(self, shortcuts: Dict[str, Callable]) -> None:
         """Register a QShortcut for each key sequence -> callback pair.
 
-        Manages setup shortcuts operations and coordinates related state changes for the component.
 
         Args:
             shortcuts (Dict[str, Callable]): The shortcuts parameter.
@@ -168,7 +163,6 @@ class KeyboardHandler(QObject):
     def setup_default_shortcuts(self) -> None:
         """Install the app-wide scheme (scan, clean, settings, quit...).
 
-        Manages setup default shortcuts operations and coordinates related state changes for the component.
         """
         if not HAS_PYSIDE6:
             return
@@ -191,7 +185,6 @@ class KeyboardHandler(QObject):
     def _trigger_scan(self):
         """Dispatch scan trigger to active window or page.
 
-        Manages trigger scan operations and coordinates related state changes for the component.
         """
         self.logger.info("Scan shortcut triggered")
         if self.widget:
@@ -204,7 +197,6 @@ class KeyboardHandler(QObject):
     def _trigger_clean(self):
         """Dispatch clean trigger to active window or page.
 
-        Manages trigger clean operations and coordinates related state changes for the component.
         """
         self.logger.info("Clean shortcut triggered")
         if self.widget:
@@ -217,7 +209,6 @@ class KeyboardHandler(QObject):
     def _open_settings(self):
         """Dispatch settings navigation to active window.
 
-        Manages open settings operations and coordinates related state changes for the component.
         """
         self.logger.info("Settings shortcut triggered")
         if self.widget and hasattr(self.widget, "_select"):
@@ -239,7 +230,6 @@ class KeyboardHandler(QObject):
     def _select_all(self):
         """SelectAll on the focused item view, when applicable.
 
-        Manages select all operations and coordinates related state changes for the component.
         """
         focused_widget = QApplication.focusWidget()
         if isinstance(focused_widget, (QTableWidget, QTreeWidget, QListWidget)):
@@ -247,9 +237,8 @@ class KeyboardHandler(QObject):
         self.logger.info("Select all shortcut triggered")
 
     def _show_help(self):
-        """_show_help.
+        """Show help by navigating to the report page.
 
-        Manages show help operations and coordinates related state changes for the component.
         """
         self.logger.info("Help shortcut triggered")
         if self.widget and hasattr(self.widget, "_select"):
@@ -258,7 +247,6 @@ class KeyboardHandler(QObject):
     def _quit_application(self):
         """Close the host widget's window.
 
-        Manages quit application operations and coordinates related state changes for the component.
         """
         if self.widget:
             self.widget.close()
@@ -266,7 +254,6 @@ class KeyboardHandler(QObject):
     def _cancel_operation(self):
         """Cancel any running operation in the host widget.
 
-        Manages cancel operation operations and coordinates related state changes for the component.
         """
         self.logger.info("Cancel shortcut triggered")
         if self.widget:
@@ -279,7 +266,6 @@ class KeyboardHandler(QObject):
     def _activate_focused(self):
         """Click the focused widget if it supports click().
 
-        Manages activate focused operations and coordinates related state changes for the component.
         """
         focused_widget = QApplication.focusWidget()
         if focused_widget and hasattr(focused_widget, 'click'):
@@ -322,7 +308,6 @@ class KeyboardHandler(QObject):
     def _handle_arrow_navigation(self, event: QKeyEvent) -> bool:
         """Route arrows to custom traversal unless an item view owns them.
 
-        Manages handle arrow navigation operations and coordinates related state changes for the component.
 
         Args:
             event (QKeyEvent): The Qt event object.
@@ -344,7 +329,6 @@ class KeyboardHandler(QObject):
     def _navigate_with_arrows(self, key: int) -> bool:
         """Step focus forward/backward through focusable_widgets.
 
-        Manages navigate with arrows operations and coordinates related state changes for the component.
 
         Args:
             key (int): The key parameter.
@@ -373,7 +357,6 @@ class KeyboardHandler(QObject):
     def add_widget_to_navigation(self, widget: Any) -> None:
         """Append to the traversal order and rechain tab order.
 
-        Manages add widget to navigation operations and coordinates related state changes for the component.
 
         Args:
             widget (Any): The widget parameter.
@@ -383,9 +366,8 @@ class KeyboardHandler(QObject):
             self._setup_tab_order()
     
     def remove_widget_from_navigation(self, widget: Any) -> None:
-        """remove_widget_from_navigation.
+        """Remove a widget from traversal order and rechain tab order.
 
-        Manages remove widget from navigation operations and coordinates related state changes for the component.
 
         Args:
             widget (Any): The widget parameter.
@@ -397,7 +379,6 @@ class KeyboardHandler(QObject):
     def get_shortcut_info(self) -> Dict[str, str]:
         """Human-readable shortcut cheat sheet for help displays.
 
-        Manages get shortcut info operations and coordinates related state changes for the component.
 
         Returns:
             Dict[str, str]: Dictionary mapping identifiers to status or values.

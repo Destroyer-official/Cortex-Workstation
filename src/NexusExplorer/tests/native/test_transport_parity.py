@@ -46,9 +46,7 @@ MTIME_TOLERANCE_MS = 2500
 
 
 def _norm(path: str) -> str:
-    """Norm.
-
-    Manages norm operations and coordinates related state changes for the component.
+    """Norm using Path.
 
     Args:
         path (str): Filesystem path to the target file or directory.
@@ -60,9 +58,7 @@ def _norm(path: str) -> str:
 
 
 def _cli_run(cli: Path, args: list[str]) -> str:
-    """_cli_run.
-
-    Manages cli run operations and coordinates related state changes for the component.
+    """Cli run using subprocess.run.
 
     Args:
         cli (Path): The cli parameter.
@@ -83,9 +79,7 @@ def _cli_run(cli: Path, args: list[str]) -> str:
 
 
 def _cli_list(cli: Path, path: Path) -> list[dict]:
-    """_cli_list.
-
-    Manages cli list operations and coordinates related state changes for the component.
+    """Cli list using json.loads, _cli_run.
 
     Args:
         cli (Path): The cli parameter.
@@ -109,9 +103,7 @@ def _cli_search(cli: Path, root: Path, query: str, limit: int = 5000) -> list[st
 
 
 def _cli_drives(cli: Path) -> list[dict]:
-    """_cli_drives.
-
-    Manages cli drives operations and coordinates related state changes for the component.
+    """Cli drives using json.loads, _cli_run.
 
     Args:
         cli (Path): The cli parameter.
@@ -142,10 +134,7 @@ def _make_tree(root: Path) -> None:
 
 @pytest.fixture(scope="module")
 def ffi():
-    """Ffi.
-
-    Manages ffi operations and coordinates related state changes for the component.
-    """
+    """Provide ffi fixture that yields a NexusFfi handle."""
     try:
         from nexus_ffi import NexusFfi
     except Exception as e:  # noqa: BLE001 - any import failure means unusable bridge
@@ -163,10 +152,7 @@ def ffi():
 
 @pytest.fixture(scope="module")
 def parity_tree():
-    """parity_tree.
-
-    Manages parity tree operations and coordinates related state changes for the component.
-    """
+    """Provide parity tree fixture via tempfile.TemporaryDirectory, pytest.fixture, Path."""
     with tempfile.TemporaryDirectory(prefix="nexus_parity_") as tmp:
         root = Path(tmp)
         _make_tree(root)
@@ -175,10 +161,7 @@ def parity_tree():
 
 @pytest.fixture(scope="module")
 def cli():
-    """Cli.
-
-    Manages cli operations and coordinates related state changes for the component.
-    """
+    """Provide cli fixture via pytest.fixture, pytest.skip, find_cli."""
     try:
         return find_cli()
     except FileNotFoundError as e:
@@ -186,14 +169,9 @@ def cli():
 
 
 class TestTransportParity:
-    """Testtransportparity.
-
-    Manages TestTransportParity operations and coordinates related state changes for the component.
-    """
+    """Group testtransportparity tests covering parity list names and meta; parity search; parity drives."""
     def test_parity_list_names_and_meta(self, cli, ffi, parity_tree):
-        """test_parity_list_names_and_meta.
-
-        Manages test parity list names and meta operations and coordinates related state changes for the component.
+        """Verify parity list names and meta via ffi.read_dir_sync, pytest.skip, diffs.append.
 
         Args:
             cli: The cli parameter.
@@ -237,9 +215,7 @@ class TestTransportParity:
         )
 
     def test_parity_search(self, cli, ffi, parity_tree):
-        """test_parity_search.
-
-        Manages test parity search operations and coordinates related state changes for the component.
+        """Verify parity search via ffi.search, pytest.skip, _cli_search.
 
         Args:
             cli: The cli parameter.
@@ -265,9 +241,7 @@ class TestTransportParity:
         )
 
     def test_parity_drives(self, cli, ffi):
-        """test_parity_drives.
-
-        Manages test parity drives operations and coordinates related state changes for the component.
+        """Verify parity drives via ffi.get_drives, pytest.skip, drive.upper.
 
         Args:
             cli: The cli parameter.
@@ -286,9 +260,7 @@ class TestTransportParity:
         assert len(ffi_rows) >= 1, "ffi reported no drives"
 
         def letters(rows):
-            """Letters.
-
-            Manages letters operations and coordinates related state changes for the component.
+            """Letters using drive.upper, Path.
 
             Args:
                 rows: Table row index or list of row indices.

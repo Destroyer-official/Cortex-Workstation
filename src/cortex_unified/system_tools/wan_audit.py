@@ -40,9 +40,8 @@ ProgressFn = Callable[[str], None]
 
 @dataclass(slots=True, frozen=True)
 class InterfaceStatus:
-    """Interfacestatus.
+    """Private IPv4 interface snapshot scoping local LAN trust.
 
-    Manages InterfaceStatus operations and coordinates related state changes for the component.
     """
 
     name: str
@@ -51,9 +50,8 @@ class InterfaceStatus:
     network: str
 
     def to_dict(self) -> dict[str, str]:
-        """To dict.
+        """Serialize this record to a JSON-safe dict.
 
-        Manages to dict operations and coordinates related state changes for the component.
 
         Returns:
             dict[str, str]: Dictionary mapping identifiers to status or values.
@@ -63,9 +61,8 @@ class InterfaceStatus:
 
 @dataclass(slots=True, frozen=True)
 class PortMapping:
-    """Portmapping.
+    """Single read-only IGD port-mapping entry.
 
-    Manages PortMapping operations and coordinates related state changes for the component.
     """
 
     index: int
@@ -79,9 +76,8 @@ class PortMapping:
     lease_duration: int
 
     def to_dict(self) -> dict[str, Any]:
-        """To dict.
+        """Serialize this record to a JSON-safe dict.
 
-        Manages to dict operations and coordinates related state changes for the component.
 
         Returns:
             dict[str, Any]: Dictionary mapping identifiers to status or values.
@@ -91,9 +87,8 @@ class PortMapping:
 
 @dataclass(slots=True)
 class WanStatus:
-    """Wanstatus.
+    """Local-only WAN and IGD audit outcome; never contacts the internet.
 
-    Manages WanStatus operations and coordinates related state changes for the component.
     """
 
     external_ip: str = ""
@@ -104,7 +99,6 @@ class WanStatus:
     def public_ip_classification(self) -> str:
         """Compatibility classification used by the earlier WAN UI.
 
-        Manages public ip classification operations and coordinates related state changes for the component.
 
         Returns:
             str: Formatted string or path.
@@ -126,9 +120,8 @@ class WanStatus:
     duration_seconds: float = 0.0
 
     def to_dict(self) -> dict[str, Any]:
-        """To dict.
+        """Serialize this record to a JSON-safe dict.
 
-        Manages to dict operations and coordinates related state changes for the component.
 
         Returns:
             dict[str, Any]: Dictionary mapping identifiers to status or values.
@@ -155,7 +148,6 @@ class WanStatus:
 def classify_external_ip(value: str | None) -> str:
     """Classify an IGD-reported address without making an external request.
 
-    Manages classify external ip operations and coordinates related state changes for the component.
 
     Args:
         value (str | None): The value parameter.
@@ -183,7 +175,6 @@ def classify_external_ip(value: str | None) -> str:
 def classify_public_ip(value: str | None) -> str:
     """Compatibility wrapper using the previous labels.
 
-    Manages classify public ip operations and coordinates related state changes for the component.
 
     Args:
         value (str | None): The value parameter.
@@ -199,9 +190,8 @@ def classify_public_ip(value: str | None) -> str:
 
 
 def _local_name(tag: str) -> str:
-    """_local_name.
+    """Strip an XML namespace and return the local tag name.
 
-    Manages local name operations and coordinates related state changes for the component.
 
     Args:
         tag (str): The tag parameter.
@@ -215,7 +205,6 @@ def _local_name(tag: str) -> str:
 def _safe_xml(data: bytes) -> ET.Element:
     """Parse size-capped XML after rejecting DTD/entity declarations.
 
-    Manages safe xml operations and coordinates related state changes for the component.
 
     Args:
         data (bytes): The data parameter.
@@ -244,9 +233,8 @@ def _safe_xml(data: bytes) -> ET.Element:
 
 
 def _child_text(root: ET.Element, name: str) -> str:
-    """_child_text.
+    """Return stripped text of the first matching child element, else empty string.
 
-    Manages child text operations and coordinates related state changes for the component.
 
     Args:
         root (ET.Element): Filesystem path to the target file or directory.
@@ -265,7 +253,6 @@ def _is_trusted_url(
         url: str, networks: Iterable[ipaddress.IPv4Network]) -> bool:
     """Return whether *url* is an HTTP(S) IPv4 literal on a local LAN.
 
-    Manages is trusted url operations and coordinates related state changes for the component.
 
     Args:
         url (str): The url parameter.
@@ -297,9 +284,8 @@ def _is_trusted_url(
 
 
 def _parse_headers(payload: bytes) -> dict[str, str]:
-    """_parse_headers.
+    """Parse SSDP response bytes into a lower-cased header dict.
 
-    Manages parse headers operations and coordinates related state changes for the component.
 
     Args:
         payload (bytes): The payload parameter.
@@ -317,9 +303,8 @@ def _parse_headers(payload: bytes) -> dict[str, str]:
 
 
 def _bounded_int(value: str, minimum: int, maximum: int) -> int:
-    """_bounded_int.
+    """Parse an int clamped to the given bounds, defaulting to minimum.
 
-    Manages bounded int operations and coordinates related state changes for the component.
 
     Args:
         value (str): The value parameter.
@@ -337,9 +322,8 @@ def _bounded_int(value: str, minimum: int, maximum: int) -> int:
 
 
 class WanAuditor:
-    """Wanauditor.
+    """Read-only local WAN and UPnP IGD auditor bounded to private LANs.
 
-    Manages WanAuditor operations and coordinates related state changes for the component.
     """
 
     def __init__(
@@ -370,9 +354,8 @@ class WanAuditor:
         progress: ProgressFn | None = None,
         cancel_event: threading.Event | None = None,
     ) -> WanStatus:
-        """Audit.
+        """Audit local gateways, optionally reading IGD state through read-only UPnP.
 
-        Manages audit operations and coordinates related state changes for the component.
 
         Args:
             gateway_ips (Iterable[str]): The gateway ips parameter.
@@ -454,9 +437,8 @@ class WanAuditor:
 
     @staticmethod
     def _cancelled(cancel_event: threading.Event | None) -> bool:
-        """Cancelled.
+        """Return True when the caller cancel event is set.
 
-        Manages cancelled operations and coordinates related state changes for the component.
 
         Args:
             cancel_event (threading.Event | None): Threading event or callable to check for cancellation.
@@ -468,7 +450,7 @@ class WanAuditor:
 
     @staticmethod
     def _progress(progress: ProgressFn | None, message: str) -> None:
-        """_progress.
+        """Forward a status message to the progress callback when provided.
 
         Updates progress bar widgets, percentage counters, and status indicators with streaming status updates from the running worker.
 
@@ -520,7 +502,6 @@ class WanAuditor:
     ) -> list[str]:
         """Issue bounded SSDP searches; return trusted LOCATION URLs.
 
-        Manages discover locations operations and coordinates related state changes for the component.
 
         Args:
             networks (Iterable[ipaddress.IPv4Network]): The networks parameter.
@@ -566,9 +547,8 @@ class WanAuditor:
         location: str,
         networks: Iterable[ipaddress.IPv4Network],
     ) -> tuple[str, str]:
-        """_load_igd.
+        """Fetch and parse the IGD descriptor, returning service type and control URL.
 
-        Manages load igd operations and coordinates related state changes for the component.
 
         Args:
             location (str): The location parameter.
@@ -613,9 +593,8 @@ class WanAuditor:
         cancel_event: threading.Event | None,
         progress: ProgressFn | None,
     ) -> None:
-        """_read_soap_status.
+        """Read IGD external IP and port mappings using read-only SOAP actions.
 
-        Manages read soap status operations and coordinates related state changes for the component.
 
         Args:
             status (WanStatus): The status parameter.
@@ -677,9 +656,8 @@ class WanAuditor:
         arguments: Mapping[str, str] | None = None,
     ) -> ET.Element:
         # Only these two read-only actions are intentionally reachable.
-        """Soap.
+        """Send one of the two read-only SOAP actions and parse the reply.
 
-        Manages soap operations and coordinates related state changes for the component.
 
         Args:
             url (str): The url parameter.
@@ -728,9 +706,8 @@ class WanAuditor:
 
     @staticmethod
     def _mapping_from_xml(index: int, root: ET.Element) -> PortMapping:
-        """_mapping_from_xml.
+        """Build a PortMapping from a GetGenericPortMappingEntry reply.
 
-        Manages mapping from xml operations and coordinates related state changes for the component.
 
         Args:
             index (int): The index parameter.
@@ -768,7 +745,6 @@ class WanAuditor:
     ) -> tuple[int, dict[str, str], bytes]:
         """Perform one no-redirect request with a hard response-size cap.
 
-        Manages http request operations and coordinates related state changes for the component.
 
         Args:
             method (str): The method parameter.
@@ -827,7 +803,6 @@ class WanAuditor:
     def default_gateway() -> str:
         """Read the local default IPv4 route without network traffic.
 
-        Manages default gateway operations and coordinates related state changes for the component.
 
         Returns:
             str: Formatted string or path.
@@ -864,7 +839,6 @@ class WanAuditor:
     def dns_servers() -> list[str]:
         """Read locally configured DNS server addresses.
 
-        Manages dns servers operations and coordinates related state changes for the component.
 
         Returns:
             list[str]: List of processed items or identifiers.
@@ -902,16 +876,14 @@ class WanAuditor:
 
 
 class _NoMoreMappings(Exception):
-    """Nomoremappings.
+    """Internal signal that IGD port-mapping enumeration is exhausted.
 
-    Manages NoMoreMappings operations and coordinates related state changes for the component.
     """
 
 
 def _xml_escape(value: str) -> str:
-    """_xml_escape.
+    """Escape text for inclusion in SOAP XML.
 
-    Manages xml escape operations and coordinates related state changes for the component.
 
     Args:
         value (str): The value parameter.
@@ -932,7 +904,6 @@ def audit_wan(
 ) -> WanStatus:
     """Return route-only status unless optional local UPnP reads are authorized.
 
-    Manages audit wan operations and coordinates related state changes for the component.
 
     Args:
         gateway_ips (Iterable[str]): The gateway ips parameter.

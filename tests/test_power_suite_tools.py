@@ -16,10 +16,7 @@ from cortex_unified.system_tools.event_log_monitor import EventLogMonitor, Anoma
 
 
 def test_env_variable_manager():
-    """test_env_variable_manager.
-
-    Manages test env variable manager operations and coordinates related state changes for the component.
-    """
+    """Verify env variable manager via EnvironmentVariableManager.analyze_path."""
     rep = EnvironmentVariableManager.analyze_path()
     assert isinstance(rep, PathAnalysisReport)
     assert rep.total_entries >= 0
@@ -27,10 +24,7 @@ def test_env_variable_manager():
 
 
 def test_service_manager():
-    """test_service_manager.
-
-    Manages test service manager operations and coordinates related state changes for the component.
-    """
+    """Verify service manager via WindowsServiceManager.enumerate_services, bool."""
     services = WindowsServiceManager.enumerate_services()
     assert isinstance(services, list)
     if services:
@@ -40,10 +34,7 @@ def test_service_manager():
 
 
 def test_font_cache_manager():
-    """test_font_cache_manager.
-
-    Manages test font cache manager operations and coordinates related state changes for the component.
-    """
+    """Verify font cache manager via FontCacheManager.analyze."""
     rep = FontCacheManager.analyze()
     assert isinstance(rep, FontAnalysisReport)
     assert rep.total_fonts >= 0
@@ -51,10 +42,7 @@ def test_font_cache_manager():
 
 
 def test_temp_folder_cleaner():
-    """test_temp_folder_cleaner.
-
-    Manages test temp folder cleaner operations and coordinates related state changes for the component.
-    """
+    """Verify temp folder cleaner via TempFolderCleaner.scan."""
     rep = TempFolderCleaner.scan(stale_hours=48)
     assert isinstance(rep, TempScanReport)
     assert len(rep.locations) > 0
@@ -62,20 +50,14 @@ def test_temp_folder_cleaner():
 
 
 def test_context_menu_manager():
-    """test_context_menu_manager.
-
-    Manages test context menu manager operations and coordinates related state changes for the component.
-    """
+    """Verify context menu manager via ContextMenuManager.analyze."""
     rep = ContextMenuManager.analyze()
     assert isinstance(rep, ContextMenuReport)
     assert rep.total_entries >= 0
 
 
 def test_pagefile_optimizer():
-    """test_pagefile_optimizer.
-
-    Manages test pagefile optimizer operations and coordinates related state changes for the component.
-    """
+    """Verify pagefile optimizer via PagefileOptimizer.get_status."""
     st = PagefileOptimizer.get_status()
     assert isinstance(st, VirtualMemoryStatus)
     assert st.total_physical_bytes > 0
@@ -84,10 +66,7 @@ def test_pagefile_optimizer():
 
 
 def test_diagnostic_data_manager():
-    """test_diagnostic_data_manager.
-
-    Manages test diagnostic data manager operations and coordinates related state changes for the component.
-    """
+    """Verify diagnostic data manager via DiagnosticDataManager.audit_telemetry."""
     rep = DiagnosticDataManager.audit_telemetry()
     assert isinstance(rep, TelemetryAuditReport)
     assert rep.total_settings > 0
@@ -95,10 +74,7 @@ def test_diagnostic_data_manager():
 
 
 def test_startup_impact_analyzer():
-    """test_startup_impact_analyzer.
-
-    Manages test startup impact analyzer operations and coordinates related state changes for the component.
-    """
+    """Verify startup impact analyzer via StartupImpactAnalyzer.analyze_startup."""
     rep = StartupImpactAnalyzer.analyze_startup()
     assert isinstance(rep, StartupImpactReport)
     assert rep.total_startup_items >= 0
@@ -107,9 +83,7 @@ def test_startup_impact_analyzer():
 
 def test_slack_space_analyzer(tmp_path):
     # Create test files with distinct sizes
-    """test_slack_space_analyzer.
-
-    Manages test slack space analyzer operations and coordinates related state changes for the component.
+    """Verify slack space analyzer via SlackSpaceAnalyzer.analyze_directory.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.
@@ -128,10 +102,7 @@ def test_slack_space_analyzer(tmp_path):
 
 
 def test_event_log_monitor():
-    """test_event_log_monitor.
-
-    Manages test event log monitor operations and coordinates related state changes for the component.
-    """
+    """Verify event log monitor via EventLogMonitor.query_anomalies."""
     rep = EventLogMonitor.query_anomalies(max_events_per_category=2)
     assert isinstance(rep, AnomalyScanReport)
     assert rep.total_anomalies >= 0

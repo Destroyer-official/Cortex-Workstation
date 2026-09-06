@@ -15,17 +15,12 @@ from cortex_unified.ui.premium.window import PremiumMainWindow
 
 @pytest.fixture(scope="module")
 def app():
-    """App.
-
-    Manages app operations and coordinates related state changes for the component.
-    """
+    """Provide app fixture that provides a shared QApplication."""
     return QApplication.instance() or QApplication([])
 
 
 def test_sidebar_group_headers_have_valid_chevrons_and_escaped_titles(app):
     """Every group header must have a valid SVG chevron and no raw underscore mnemonics.
-
-    Manages test sidebar group headers have valid chevrons and escaped titles operations and coordinates related state changes for the component.
 
     Args:
         app: The app parameter.
@@ -58,8 +53,6 @@ def test_sidebar_group_headers_have_valid_chevrons_and_escaped_titles(app):
 def test_sidebar_expand_collapse_preserves_chevrons(app):
     """Expanding and collapsing the sidebar must never erase header chevrons or text.
 
-    Manages test sidebar expand collapse preserves chevrons operations and coordinates related state changes for the component.
-
     Args:
         app: The app parameter.
     """
@@ -88,8 +81,6 @@ def test_sidebar_expand_collapse_preserves_chevrons(app):
 
 def test_all_pages_have_unique_icons_with_uniform_palette_tint(app):
     """All page icons must be distinct and uniformly tinted to the theme color.
-
-    Manages test all pages have unique icons with uniform palette tint operations and coordinates related state changes for the component.
 
     Args:
         app: The app parameter.

@@ -8,9 +8,9 @@
     <a href="https://www.microsoft.com/windows"><img src="https://img.shields.io/badge/Platform-Windows%2010%20%2F%2011%20(x64)-0078D6.svg?style=for-the-badge" alt="Platform"></a>
     <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge" alt="License"></a>
     <a href="docs/FEATURE_DIRECTORY.md"><img src="https://img.shields.io/badge/Interactive%20Pages-139%20Pages-00D2FF.svg?style=for-the-badge" alt="Interactive Pages"></a>
-    <a href="ONE_BY_ONE_VERIFICATION_REPORT.md"><img src="https://img.shields.io/badge/Program%20Files-484%20Verified%20(100%25)-success.svg?style=for-the-badge" alt="Program Files"></a>
+    <a href="ONE_BY_ONE_VERIFICATION_REPORT.md"><img src="https://img.shields.io/badge/Program%20Files-499%20Verified%20(100%25)-success.svg?style=for-the-badge" alt="Program Files"></a>
     <a href="tests/"><img src="https://img.shields.io/badge/Unit%20Tests-1569%20Passed%20(100%25)-success.svg?style=for-the-badge" alt="Unit Tests"></a>
-    <a href="tests/"><img src="https://img.shields.io/badge/Diagnostics-297%20Passed%20(100%25)-success.svg?style=for-the-badge" alt="Diagnostics"></a>
+    <a href="tests/"><img src="https://img.shields.io/badge/Diagnostics-304%20Passed%20(100%25)-success.svg?style=for-the-badge" alt="Diagnostics"></a>
     <a href="docs/"><img src="https://img.shields.io/badge/Docstring%20Coverage-100%25%20(9287%2F9287)-brightgreen.svg?style=for-the-badge" alt="Docstring Coverage"></a>
   </p>
 </div>
@@ -253,7 +253,7 @@ cortex clean --dry-run
 # 3. Production Readiness Diagnostics
 cortex-debug
 # or via module:
-python -m cortex_unified.debug.runner
+python -m cortex_unified.debug
 ```
 
 ---
@@ -267,7 +267,7 @@ Every program file, tool, and page in the repository is backed by automated test
 | **Complete Unit Test Suite** (`pytest`) | Backend tools, VFS, hashing, and OS modules | **1569 / 1569** | **0** | **100%** |
 | **Page Registry & Factory Verification** | All 139 page factories dynamically resolve | **139 / 139** | **0** | **100%** |
 | **Vector SVG Icon Pipeline** | Crisp vector assets (no glyphs, no duplicates) | **139 / 139** | **0** | **100%** |
-| **One-by-One Program File Audit** | AST syntax, compilation, and package imports | **484 / 484** | **0** | **100%** |
+| **One-by-One Program File Audit** | AST syntax, compilation, and package imports | **499 / 499** | **0** | **100%** |
 | **Docstring Coverage** | Public defs across `src + tests + scripts` | **9287 / 9287** | **0** | **100%** |
 
 ```powershell

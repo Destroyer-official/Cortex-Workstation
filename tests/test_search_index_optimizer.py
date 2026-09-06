@@ -10,20 +10,14 @@ from cortex_unified.system_tools.search_index_optimizer import (
 
 
 def test_search_index_get_status():
-    """test_search_index_get_status.
-
-    Manages test search index get status operations and coordinates related state changes for the component.
-    """
+    """Verify search index get status via SearchIndexOptimizer.get_status."""
     status = SearchIndexOptimizer.get_status()
     assert isinstance(status, SearchIndexStatus)
     assert status.service_status in ("Running", "Stopped", "Disabled", "Unknown", "Non-Windows")
 
 
 def test_operation_result_structure():
-    """test_operation_result_structure.
-
-    Manages test operation result structure operations and coordinates related state changes for the component.
-    """
+    """Verify operation result structure via SearchIndexOperationResult."""
     res = SearchIndexOperationResult(
         success=True,
         message="Compacted successfully",

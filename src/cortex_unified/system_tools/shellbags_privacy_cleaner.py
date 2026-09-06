@@ -24,10 +24,7 @@ else:
 
 @dataclass
 class ShellbagsTarget:
-    """Shellbagstarget.
-
-    Manages ShellbagsTarget operations and coordinates related state changes for the component.
-    """
+    """Record holding category, target_type, path, items_count, size_bytes."""
     category: str
     target_type: str  # "Registry", "File Directory"
     path: str
@@ -37,29 +34,20 @@ class ShellbagsTarget:
 
 @dataclass
 class ShellbagsCleanResult:
-    """Shellbagscleanresult.
-
-    Manages ShellbagsCleanResult operations and coordinates related state changes for the component.
-    """
+    """Record holding registry_keys_cleared, files_deleted, bytes_freed, errors."""
     registry_keys_cleared: int
     files_deleted: int
     bytes_freed: int
     errors: List[str] = None
 
     def __post_init__(self):
-        """__post_init__.
-
-        Manages post init operations and coordinates related state changes for the component.
-        """
+        """Validate and normalize fields after init; initializes empty collections."""
         if self.errors is None:
             self.errors = []
 
 
 class ShellbagsPrivacyCleaner:
-    """Shellbagsprivacycleaner.
-
-    Manages ShellbagsPrivacyCleaner operations and coordinates related state changes for the component.
-    """
+    """Groups related helpers: count reg keys, delete reg tree, scan shell activity, clean shell activity."""
 
     SHELL_REG_PATHS = [
         r"Software\Classes\Local Settings\Software\Microsoft\Windows\Shell\BagMRU",
@@ -74,13 +62,11 @@ class ShellbagsPrivacyCleaner:
     def _count_reg_keys(cls, subkey: str) -> int:
         """Count subkeys and values in a registry key.
 
-        Manages count reg keys operations and coordinates related state changes for the component.
-
         Args:
-            subkey (str): The subkey parameter.
+        subkey (str): The subkey parameter.
 
         Returns:
-            int: Result of the operation.
+        int: Result of the operation.
         """
         if winreg is None:
             return 0
@@ -95,13 +81,11 @@ class ShellbagsPrivacyCleaner:
     def _delete_reg_tree(cls, subkey: str) -> int:
         """Recursively delete a registry key tree.
 
-        Manages delete reg tree operations and coordinates related state changes for the component.
-
         Args:
-            subkey (str): The subkey parameter.
+        subkey (str): The subkey parameter.
 
         Returns:
-            int: Result of the operation.
+        int: Result of the operation.
         """
         if winreg is None:
             return 0

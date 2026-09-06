@@ -23,9 +23,9 @@ except ImportError:
 
 
 class SmartScanReport:
-    """Smartscanreport.
+    """Smart Scan Report.
 
-    Manages SmartScanReport operations and coordinates related state changes for the component.
+    Derives a 0-100 health score from junk volume, registry, startup, and privacy findings.
     """
 
     def __init__(self):
@@ -49,13 +49,13 @@ class SmartScanReport:
 
     @property
     def total_cleanable_mb(self) -> float:
-        """total_cleanable_mb.
+        """Total cleanable mb.
 
-        Manages total cleanable mb operations and coordinates related state changes for the component.
+ Handles total cleanable mb for.
 
-        Returns:
-            float: Result of the operation.
-        """
+ Returns:
+ float: Result of the operation.
+ """
         return (self.total_junk_mb + self.browser_cache_mb +
                 self.win_update_cache_mb + self.recycle_bin_mb +
                 self.prefetch_mb + self.thumbnail_cache_mb)
@@ -63,7 +63,7 @@ class SmartScanReport:
     def calculate_score(self):
         """Calculate 0-100 health score from real metrics.
 
-        Manages calculate score operations and coordinates related state changes for the component.
+        Derives a 0-100 health score from junk volume, registry, startup, and privacy findings.
         """
         deductions = 0
 
@@ -84,9 +84,9 @@ class SmartScanReport:
 
 
 class SmartScannerWorker(QObject):
-    """Smartscannerworker.
+    """Smart Scanner Worker.
 
-    Manages SmartScannerWorker operations and coordinates related state changes for the component.
+    Precedence is explicit kwargs, then CORTEX_ environment variables, then YAML, then field defaults.
     """
 
     finished = Signal(object)   # SmartScanReport
@@ -94,7 +94,7 @@ class SmartScannerWorker(QObject):
     progress_updated = Signal(str, int)  # (status_msg, percentage)
 
     def __init__(self, config: Config):
-        """__init__.
+        """Initialize the instance.
 
         Initializes the instance and configures internal state.
 
@@ -107,7 +107,7 @@ class SmartScannerWorker(QObject):
         self._should_stop = False
 
     def run(self):
-        """run.
+        """Run helper.
 
         Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
         """

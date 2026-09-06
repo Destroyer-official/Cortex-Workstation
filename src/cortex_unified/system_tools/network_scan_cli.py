@@ -15,12 +15,10 @@ from cortex_unified.system_tools.network_service_scanner import (
 
 
 def _parser() -> argparse.ArgumentParser:
-    """Parser.
-
-    Manages parser operations and coordinates related state changes for the component.
+    """Build the argparse parser for the scheduled scan CLI.
 
     Returns:
-        argparse.ArgumentParser: Result of the operation.
+    argparse.ArgumentParser: Result of the operation.
     """
     parser = argparse.ArgumentParser(
         description="Run a bounded Cortex private-LAN inventory scan")
@@ -33,13 +31,11 @@ def _parser() -> argparse.ArgumentParser:
 
 
 def _write_atomic(path: str, payload: dict) -> None:
-    """_write_atomic.
-
-    Manages write atomic operations and coordinates related state changes for the component.
+    """Write JSON payload atomically via temp file plus rename.
 
     Args:
-        path (str): Filesystem path to the target file or directory.
-        payload (dict): The payload parameter.
+    path (str): Filesystem path to the target file or directory.
+    payload (dict): The payload parameter.
     """
     target = Path(path).expanduser()
     target.parent.mkdir(parents=True, exist_ok=True)
@@ -57,15 +53,13 @@ def _write_atomic(path: str, payload: dict) -> None:
 
 
 def main(argv: list[str] | None = None) -> int:
-    """Main.
-
-    Manages main operations and coordinates related state changes for the component.
+    """Run the bounded LAN inventory scan and optionally write JSON output.
 
     Args:
-        argv (list[str] | None): The argv parameter.
+    argv (list[str] | None): The argv parameter.
 
     Returns:
-        int: Result of the operation.
+    int: Result of the operation.
     """
     args = _parser().parse_args(argv)
     try:

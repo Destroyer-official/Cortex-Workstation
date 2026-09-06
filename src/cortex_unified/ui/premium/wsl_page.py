@@ -33,10 +33,7 @@ IS_WINDOWS = sys.platform == "win32"
 
 
 class _WslListWorker(QObject):
-    """Wsllistworker.
-
-    Manages WslListWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker (_WslListWorker) performing WslListWorker. Signals finished, failed report status. Its run() step calls emit, list_distros, WslCleaner, str."""
     finished = Signal(list)
     failed = Signal(str)
     def run(self):
@@ -52,10 +49,7 @@ class _WslListWorker(QObject):
 
 
 class _WslShutdownWorker(QObject):
-    """Wslshutdownworker.
-
-    Manages WslShutdownWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker (_WslShutdownWorker) performing WslShutdownWorker. Signals finished, failed report status. Its run() step calls shutdown, WslCleaner, emit, str."""
     finished = Signal(bool, str)
     failed = Signal(str)
     def run(self):
@@ -72,10 +66,7 @@ class _WslShutdownWorker(QObject):
 
 
 class WslPage(_Page):
-    """Wslpage.
-
-    Manages WslPage operations and coordinates related state changes for the component.
-    """
+    """WSL Cleaner page: WSL2 distros keep an ext4.vhdx that never shrinks on its own."""
 
     def __init__(self, win):
         """__init__.
@@ -158,9 +149,7 @@ class WslPage(_Page):
         self.win.run_worker(_WslListWorker(), self._on_list, self._fail)
 
     def _on_list(self, distros):
-        """_on_list.
-
-        Manages on list operations and coordinates related state changes for the component.
+        """Populate the results table (setEnabled, show_empty, setText) with the latest data.
 
         Args:
             distros: The distros parameter.
@@ -199,10 +188,7 @@ class WslPage(_Page):
             self.tbl.setItem(r, 4, QTableWidgetItem(fmt_bytes(logical) if logical else "—"))
 
     def _shutdown(self):
-        """Shutdown.
-
-        Manages shutdown operations and coordinates related state changes for the component.
-        """
+        """Validate the current selection and ask the user to confirm via a message box showing 'Stop WSL?'."""
         confirm = QMessageBox.question(
             self, "Stop WSL?",
             "This stops ALL WSL distros and Docker Desktop's WSL backend.\n\n"
@@ -218,9 +204,7 @@ class WslPage(_Page):
         self.win.run_worker(_WslShutdownWorker(), self._on_shutdown, self._fail)
 
     def _on_shutdown(self, ok: bool, msg: str):
-        """_on_shutdown.
-
-        Manages on shutdown operations and coordinates related state changes for the component.
+        """Validate the current selection and ask the user to confirm via a message box showing 'WSL stopped'.
 
         Args:
             ok (bool): The ok parameter.
@@ -236,10 +220,7 @@ class WslPage(_Page):
         self._load()
 
     def _compact(self):
-        """Compact.
-
-        Manages compact operations and coordinates related state changes for the component.
-        """
+        """Validate the current selection and ask the user to confirm via a message box showing 'Selected distro has no ext4.vhdx file.'."""
         sel = self.tbl.selectedIndexes()
         if not sel:
             return
@@ -272,10 +253,7 @@ class WslPage(_Page):
         from PySide6.QtCore import QObject as _QO, Signal as _Sig
 
         class _Compact(QObject):
-            """Compact.
-
-            Manages Compact operations and coordinates related state changes for the component.
-            """
+            """Background worker (_Compact) performing Compact. Signals finished, failed report status. Configured with paths. Its run() step calls results.append, compact_vhdx, WslCleaner, emit."""
             finished = Signal(list)
             failed = Signal(str)
             def __init__(self, paths):
@@ -305,9 +283,7 @@ class WslPage(_Page):
         self.win.run_worker(w, self._on_compact, self._fail)
 
     def _on_compact(self, results):
-        """_on_compact.
-
-        Manages on compact operations and coordinates related state changes for the component.
+        """Validate the current selection and ask the user to confirm via a message box showing 'freed_bytes'.
 
         Args:
             results: Collection or dictionary holding operation results.

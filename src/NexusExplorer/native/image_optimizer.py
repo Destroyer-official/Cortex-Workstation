@@ -19,9 +19,9 @@ from PySide6.QtGui import QImage, QImageReader, QImageWriter
 
 @dataclass
 class ImageOptimizeResult:
-    """Imageoptimizeresult.
+    """Result of optimizing a single image.
 
-    Manages ImageOptimizeResult operations and coordinates related state changes for the component.
+    Records source/output paths, original/compressed sizes, bytes saved, ratio, success, and error.
     """
     source_path: str
     output_path: str
@@ -35,9 +35,9 @@ class ImageOptimizeResult:
 
 @dataclass
 class BatchOptimizeSummary:
-    """Batchoptimizesummary.
+    """Aggregate result of a batch image optimization.
 
-    Manages BatchOptimizeSummary operations and coordinates related state changes for the component.
+    Tallies total/successful counts, byte totals, freed bytes, and per-image results.
     """
     total_images: int
     successful_count: int
@@ -48,9 +48,9 @@ class BatchOptimizeSummary:
 
 
 class ImageOptimizer:
-    """Imageoptimizer.
+    """Batch image compressor and WebP transcoder via QImage.
 
-    Manages ImageOptimizer operations and coordinates related state changes for the component.
+    Re-encodes PNG/JPEG/BMP/TIFF/WebP with QImageWriter quality 1-100; re-encode drops metadata implicitly.
     """
 
     SUPPORTED_EXTENSIONS = {".png", ".jpg", ".jpeg", ".bmp", ".tiff", ".tif", ".webp"}
@@ -129,7 +129,7 @@ class ImageOptimizer:
     ) -> BatchOptimizeSummary:
         """Batch optimize multiple images.
 
-        Manages optimize batch operations and coordinates related state changes for the component.
+        Iterates image paths, derives output names in output_directory, calls optimize_image per file, honors cancel_check, and emits progress_cb.
 
         Args:
             image_paths (List[str | Path]): Filesystem path to the target file or directory.

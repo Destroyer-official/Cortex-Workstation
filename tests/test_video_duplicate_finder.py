@@ -16,9 +16,7 @@ from cortex_unified.analyzers.video_duplicate_finder import (
 def _make_fake_video(path: Path, payload: bytes, size_kb: int = 128):
     # Create a raw byte payload that the fallback chunker will hash.
     # Repeat payload to reach size_kb
-    """_make_fake_video.
-
-    Manages make fake video operations and coordinates related state changes for the component.
+    """Make fake video using max.
 
     Args:
         path (Path): Filesystem path to the target file or directory.
@@ -32,9 +30,7 @@ def _make_fake_video(path: Path, payload: bytes, size_kb: int = 128):
 # --- primitives ---
 
 def test_fingerprint_is_list(tmp_path: Path):
-    """test_fingerprint_is_list.
-
-    Manages test fingerprint is list operations and coordinates related state changes for the component.
+    """Verify fingerprint is list via _make_fake_video, compute_video_fingerprint.
 
     Args:
         tmp_path (Path): Filesystem path to the target file or directory.
@@ -47,9 +43,7 @@ def test_fingerprint_is_list(tmp_path: Path):
 
 
 def test_identical_videos_compare_high(tmp_path: Path):
-    """test_identical_videos_compare_high.
-
-    Manages test identical videos compare high operations and coordinates related state changes for the component.
+    """Verify identical videos compare high via _make_fake_video, compute_video_fingerprint, video_compare.
 
     Args:
         tmp_path (Path): Filesystem path to the target file or directory.
@@ -64,9 +58,7 @@ def test_identical_videos_compare_high(tmp_path: Path):
 
 
 def test_different_videos_compare_low(tmp_path: Path):
-    """test_different_videos_compare_low.
-
-    Manages test different videos compare low operations and coordinates related state changes for the component.
+    """Verify different videos compare low via _make_fake_video, compute_video_fingerprint, video_compare.
 
     Args:
         tmp_path (Path): Filesystem path to the target file or directory.
@@ -85,19 +77,13 @@ def test_different_videos_compare_low(tmp_path: Path):
 
 
 def test_video_compare_empty():
-    """test_video_compare_empty.
-
-    Manages test video compare empty operations and coordinates related state changes for the component.
-    """
+    """Verify video compare empty via video_compare."""
     assert video_compare([], []) == 0.0
     assert video_compare([1, 2], []) == 0.0
 
 
 def test_video_compare_identity():
-    """test_video_compare_identity.
-
-    Manages test video compare identity operations and coordinates related state changes for the component.
-    """
+    """Verify video compare identity via video_compare."""
     fp = [0x12345678, 0x9ABCDEF0, 0x11111111]
     assert video_compare(fp, fp) == 1.0
 
@@ -105,9 +91,7 @@ def test_video_compare_identity():
 # --- finder ---
 
 def test_finder_groups_identical_videos(tmp_path: Path):
-    """test_finder_groups_identical_videos.
-
-    Manages test finder groups identical videos operations and coordinates related state changes for the component.
+    """Verify finder groups identical videos via VideoDuplicateFinder, finder.find_video_duplicates, groups.values.
 
     Args:
         tmp_path (Path): Filesystem path to the target file or directory.
@@ -126,9 +110,7 @@ def test_finder_groups_identical_videos(tmp_path: Path):
 
 
 def test_finder_excludes_non_video(tmp_path: Path):
-    """test_finder_excludes_non_video.
-
-    Manages test finder excludes non video operations and coordinates related state changes for the component.
+    """Verify finder excludes non video via VideoDuplicateFinder, finder.find_video_duplicates, _make_fake_video.
 
     Args:
         tmp_path (Path): Filesystem path to the target file or directory.
@@ -140,9 +122,7 @@ def test_finder_excludes_non_video(tmp_path: Path):
 
 
 def test_finder_respects_exclude_dirs(tmp_path: Path):
-    """test_finder_respects_exclude_dirs.
-
-    Manages test finder respects exclude dirs operations and coordinates related state changes for the component.
+    """Verify finder respects exclude dirs via VideoDuplicateFinder, finder.find_video_duplicates, Config.
 
     Args:
         tmp_path (Path): Filesystem path to the target file or directory.
@@ -164,9 +144,7 @@ def test_finder_respects_exclude_dirs(tmp_path: Path):
 
 
 def test_finder_stats(tmp_path: Path):
-    """test_finder_stats.
-
-    Manages test finder stats operations and coordinates related state changes for the component.
+    """Verify finder stats via VideoDuplicateFinder, finder.find_video_duplicates, finder.get_stats.
 
     Args:
         tmp_path (Path): Filesystem path to the target file or directory.

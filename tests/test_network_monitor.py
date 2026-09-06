@@ -14,89 +14,56 @@ from cortex_unified.system_tools.network_monitor import (
 
 
 class TestClassification:
-    """Testclassification.
-
-    Manages TestClassification operations and coordinates related state changes for the component.
-    """
+    """Group testclassification tests covering loopback is private; lan is private; public is not private; unparseable defaults private."""
     def test_loopback_is_private(self):
-        """test_loopback_is_private.
-
-        Manages test loopback is private operations and coordinates related state changes for the component.
-        """
+        """Verify loopback is private via _is_private."""
         assert _is_private("127.0.0.1") is True
         assert _is_private("::1") is True
 
     def test_lan_is_private(self):
-        """test_lan_is_private.
-
-        Manages test lan is private operations and coordinates related state changes for the component.
-        """
+        """Verify lan is private via _is_private."""
         assert _is_private("192.168.1.10") is True
         assert _is_private("10.0.0.5") is True
         assert _is_private("172.16.3.4") is True
 
     def test_public_is_not_private(self):
-        """test_public_is_not_private.
-
-        Manages test public is not private operations and coordinates related state changes for the component.
-        """
+        """Verify public is not private via _is_private."""
         assert _is_private("8.8.8.8") is False
         assert _is_private("140.82.112.3") is False
 
     def test_unparseable_defaults_private(self):
         # Can't classify -> must not falsely flag as external.
-        """test_unparseable_defaults_private.
-
-        Manages test unparseable defaults private operations and coordinates related state changes for the component.
-        """
+        """Verify unparseable defaults private via _is_private."""
         assert _is_private("not-an-ip") is True
 
 
 class TestConnectionFlags:
-    """Testconnectionflags.
-
-    Manages TestConnectionFlags operations and coordinates related state changes for the component.
-    """
+    """Group testconnectionflags tests covering public listener flagged; localhost listener not public; external established flagged; internal established not external; to dict shape."""
     def test_public_listener_flagged(self):
-        """test_public_listener_flagged.
-
-        Manages test public listener flagged operations and coordinates related state changes for the component.
-        """
+        """Verify public listener flagged via Connection."""
         c = Connection("TCP", "0.0.0.0", 445, "", 0, "LISTEN", 4, "System")
         assert c.listening_public is True
         assert c.remote_external is False
 
     def test_localhost_listener_not_public(self):
-        """test_localhost_listener_not_public.
-
-        Manages test localhost listener not public operations and coordinates related state changes for the component.
-        """
+        """Verify localhost listener not public via Connection."""
         c = Connection("TCP", "127.0.0.1", 5432, "", 0, "LISTEN", 100, "postgres")
         assert c.listening_public is False
 
     def test_external_established_flagged(self):
-        """test_external_established_flagged.
-
-        Manages test external established flagged operations and coordinates related state changes for the component.
-        """
+        """Verify external established flagged via Connection."""
         c = Connection("TCP", "192.168.1.5", 55000, "8.8.8.8", 443,
                        "ESTABLISHED", 200, "chrome.exe")
         assert c.remote_external is True
 
     def test_internal_established_not_external(self):
-        """test_internal_established_not_external.
-
-        Manages test internal established not external operations and coordinates related state changes for the component.
-        """
+        """Verify internal established not external via Connection."""
         c = Connection("TCP", "192.168.1.5", 55000, "192.168.1.1", 443,
                        "ESTABLISHED", 200, "chrome.exe")
         assert c.remote_external is False
 
     def test_to_dict_shape(self):
-        """test_to_dict_shape.
-
-        Manages test to dict shape operations and coordinates related state changes for the component.
-        """
+        """Verify to dict shape via Connection, c.to_dict."""
         c = Connection("TCP", "0.0.0.0", 80, "", 0, "LISTEN", 4, "svc", "HTTP")
         d = c.to_dict()
         assert d["protocol"] == "TCP"
@@ -108,24 +75,15 @@ class TestConnectionFlags:
 
 
 class TestMonitor:
-    """Testmonitor.
-
-    Manages TestMonitor operations and coordinates related state changes for the component.
-    """
+    """Group testmonitor tests covering connections returns list; summarize counts."""
     def test_connections_returns_list(self):
-        """test_connections_returns_list.
-
-        Manages test connections returns list operations and coordinates related state changes for the component.
-        """
+        """Verify connections returns list via NetworkMonitor, connections."""
         conns = NetworkMonitor().connections()
         assert isinstance(conns, list)
         assert all(isinstance(c, Connection) for c in conns)
 
     def test_summarize_counts(self):
-        """test_summarize_counts.
-
-        Manages test summarize counts operations and coordinates related state changes for the component.
-        """
+        """Verify summarize counts via NetworkMonitor.summarize, Connection."""
         conns = [
             Connection("TCP", "0.0.0.0", 445, "", 0, "LISTEN", 4, "System"),
             Connection("TCP", "192.168.1.5", 5000, "8.8.8.8", 443,

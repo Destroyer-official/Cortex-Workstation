@@ -15,34 +15,22 @@ IS_WINDOWS = platform.system() == "Windows"
 
 
 class TestSfcParse:
-    """Testsfcparse.
-
-    Manages TestSfcParse operations and coordinates related state changes for the component.
-    """
+    """Group testsfcparse tests covering clean; repaired; partial; error when none."""
     def test_clean(self):
-        """test_clean.
-
-        Manages test clean operations and coordinates related state changes for the component.
-        """
+        """Verify clean via SystemRepair._parse_sfc."""
         r = SystemRepair._parse_sfc(
             "Windows Resource Protection did not find any integrity violations.")
         assert r.success and r.status == "clean"
 
     def test_repaired(self):
-        """test_repaired.
-
-        Manages test repaired operations and coordinates related state changes for the component.
-        """
+        """Verify repaired via SystemRepair._parse_sfc."""
         r = SystemRepair._parse_sfc(
             "Windows Resource Protection found corrupt files and successfully "
             "repaired them.")
         assert r.success and r.status == "repaired" and r.needs_reboot
 
     def test_partial(self):
-        """test_partial.
-
-        Manages test partial operations and coordinates related state changes for the component.
-        """
+        """Verify partial via SystemRepair._parse_sfc, r.message.lower."""
         r = SystemRepair._parse_sfc(
             "Windows Resource Protection found corrupt files but was unable to fix "
             "some of them.")
@@ -50,142 +38,88 @@ class TestSfcParse:
         assert "dism" in r.message.lower()
 
     def test_error_when_none(self):
-        """test_error_when_none.
-
-        Manages test error when none operations and coordinates related state changes for the component.
-        """
+        """Verify error when none via SystemRepair._parse_sfc, r.message.lower."""
         r = SystemRepair._parse_sfc(None)
         assert r.success is False and "administrator" in r.message.lower()
 
 
 class TestDismParse:
-    """Testdismparse.
-
-    Manages TestDismParse operations and coordinates related state changes for the component.
-    """
+    """Group testdismparse tests covering clean; repairable; repaired; error code."""
     def test_clean(self):
-        """test_clean.
-
-        Manages test clean operations and coordinates related state changes for the component.
-        """
+        """Verify clean via SystemRepair._parse_dism."""
         r = SystemRepair._parse_dism("No component store corruption detected.", "CheckHealth")
         assert r.success and r.status == "clean"
 
     def test_repairable(self):
-        """test_repairable.
-
-        Manages test repairable operations and coordinates related state changes for the component.
-        """
+        """Verify repairable via SystemRepair._parse_dism, r.message.lower."""
         r = SystemRepair._parse_dism("The component store is repairable.", "ScanHealth")
         assert r.success and r.status == "repairable"
         assert "restorehealth" in r.message.lower()
 
     def test_repaired(self):
-        """test_repaired.
-
-        Manages test repaired operations and coordinates related state changes for the component.
-        """
+        """Verify repaired via SystemRepair._parse_dism."""
         r = SystemRepair._parse_dism(
             "The restore operation completed successfully.", "RestoreHealth")
         assert r.success and r.status == "repaired" and r.needs_reboot
 
     def test_error_code(self):
-        """test_error_code.
-
-        Manages test error code operations and coordinates related state changes for the component.
-        """
+        """Verify error code via SystemRepair._parse_dism."""
         r = SystemRepair._parse_dism("Error: 0x800f081f\nThe source files could not be found.",
                                     "RestoreHealth")
         assert r.success is False and "0x800f081f" in r.message
 
 
 class TestChkdskParse:
-    """Testchkdskparse.
-
-    Manages TestChkdskParse operations and coordinates related state changes for the component.
-    """
+    """Group testchkdskparse tests covering clean; errors; invalid drive."""
     def test_clean(self):
-        """test_clean.
-
-        Manages test clean operations and coordinates related state changes for the component.
-        """
+        """Verify clean via SystemRepair._parse_chkdsk."""
         r = SystemRepair._parse_chkdsk(
             "Windows has scanned the file system and found no problems.", "C")
         assert r.success and r.status == "clean"
 
     def test_errors(self):
-        """test_errors.
-
-        Manages test errors operations and coordinates related state changes for the component.
-        """
+        """Verify errors via SystemRepair._parse_chkdsk."""
         r = SystemRepair._parse_chkdsk(
             "Errors found. CHKDSK cannot continue in read-only mode.", "C")
         assert r.status == "errors" and r.needs_reboot
 
     def test_invalid_drive(self):
-        """test_invalid_drive.
-
-        Manages test invalid drive operations and coordinates related state changes for the component.
-        """
+        """Verify invalid drive via SystemRepair, run_chkdsk_scan."""
         r = SystemRepair().run_chkdsk_scan("not-a-drive")
         assert r.success is False
 
 
 class TestGating:
-    """Testgating.
-
-    Manages TestGating operations and coordinates related state changes for the component.
-    """
+    """Group testgating tests covering is supported; is elevated bool; dism invalid action defaults."""
     def test_is_supported(self):
-        """test_is_supported.
-
-        Manages test is supported operations and coordinates related state changes for the component.
-        """
+        """Verify is supported via SystemRepair.is_supported."""
         assert SystemRepair.is_supported() == IS_WINDOWS
 
     def test_is_elevated_bool(self):
-        """test_is_elevated_bool.
-
-        Manages test is elevated bool operations and coordinates related state changes for the component.
-        """
+        """Verify is elevated bool via SystemRepair.is_elevated."""
         assert isinstance(SystemRepair.is_elevated(), bool)
 
     def test_dism_invalid_action_defaults(self):
         # An unknown action must not crash; it falls back to CheckHealth path.
         # We only verify it returns a RepairResult (may be error off-Windows).
-        """test_dism_invalid_action_defaults.
-
-        Manages test dism invalid action defaults operations and coordinates related state changes for the component.
-        """
+        """Verify dism invalid action defaults via SystemRepair._parse_dism, SystemRepair, run_dism."""
         r = SystemRepair().run_dism("BogusAction") if IS_WINDOWS else \
             SystemRepair._parse_dism("No component store corruption detected.", "CheckHealth")
         assert isinstance(r, RepairResult)
 
 
 class TestDecode:
-    """Testdecode.
-
-    Manages TestDecode operations and coordinates related state changes for the component.
-    """
+    """Group testdecode tests covering utf16 with nuls; plain utf8; empty."""
     def test_utf16_with_nuls(self):
-        """test_utf16_with_nuls.
-
-        Manages test utf16 with nuls operations and coordinates related state changes for the component.
-        """
+        """Verify utf16 with nuls via SystemRepair._decode, encode."""
         raw = "No component store corruption detected.".encode("utf-16-le")
         text = SystemRepair._decode(raw)
         assert "No component store corruption detected." in text
 
     def test_plain_utf8(self):
-        """test_plain_utf8.
-
-        Manages test plain utf8 operations and coordinates related state changes for the component.
-        """
+        """Verify plain utf8 via SystemRepair._decode."""
         assert "hello" in SystemRepair._decode(b"hello")
 
     def test_empty(self):
-        """test_empty.
-
-        Manages test empty operations and coordinates related state changes for the component.
-        """
+        """Verify empty via SystemRepair._decode."""
         assert SystemRepair._decode(b"") == ""

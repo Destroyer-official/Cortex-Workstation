@@ -14,10 +14,7 @@ from cortex_unified.system_tools.winapp2_cleaner import (
 
 
 def test_winapp2_cleaner_initialization():
-    """test_winapp2_cleaner_initialization.
-
-    Manages test winapp2 cleaner initialization operations and coordinates related state changes for the component.
-    """
+    """Verify winapp2 cleaner initialization via Winapp2Cleaner."""
     cleaner = Winapp2Cleaner()
     assert len(cleaner.rules) >= 10
     names = [r.name for r in cleaner.rules]
@@ -26,9 +23,7 @@ def test_winapp2_cleaner_initialization():
 
 
 def test_winapp2_expand_vars(monkeypatch):
-    """test_winapp2_expand_vars.
-
-    Manages test winapp2 expand vars operations and coordinates related state changes for the component.
+    """Verify winapp2 expand vars via Winapp2Cleaner.expand_vars, monkeypatch.setenv.
 
     Args:
         monkeypatch: The monkeypatch parameter.
@@ -44,10 +39,7 @@ def test_winapp2_expand_vars(monkeypatch):
 
 
 def test_winapp2_path_safety():
-    """test_winapp2_path_safety.
-
-    Manages test winapp2 path safety operations and coordinates related state changes for the component.
-    """
+    """Verify winapp2 path safety via Winapp2Cleaner, cleaner.is_safe_path, Path."""
     cleaner = Winapp2Cleaner()
     # Critical roots must not be considered safe
     assert not cleaner.is_safe_path(Path("C:/Windows"))
@@ -60,9 +52,7 @@ def test_winapp2_path_safety():
 
 def test_winapp2_scan_and_clean(tmp_path, monkeypatch):
     # Setup simulated app tree
-    """test_winapp2_scan_and_clean.
-
-    Manages test winapp2 scan and clean operations and coordinates related state changes for the component.
+    """Verify winapp2 scan and clean via cleaner.scan, Winapp2Cleaner, cleaner.clean.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.

@@ -118,9 +118,9 @@ def _SecondaryButton(text: str, parent=None) -> QPushButton:
 # ===========================================================================
 
 class DriverStoreCleanerPage(_Page):
-    """Driverstorecleanerpage.
+    """Driver Store page with enumerate/export/delete buttons and a drivers table.
 
-    Manages DriverStoreCleanerPage operations and coordinates related state changes for the component.
+        Backed by DriverStoreCleaner, QMessageBox, QFileDialog; builds tables, buttons, and dialogs for the actions below.
     """
     def __init__(self, win: PremiumMainWindow):
         """Build the Driver Store page with enumerate/export/delete buttons and a drivers table.
@@ -173,7 +173,7 @@ class DriverStoreCleanerPage(_Page):
     def _on_scan(self):
         """Enumerate driver packages on the worker runtime.
 
-        Manages on scan operations and coordinates related state changes for the component.
+            Uses DriverStoreCleaner; updates self.scan_btn, self.table, self._drivers.
         """
         self.scan_btn.setEnabled(False)
         self.table.setRowCount(0)
@@ -212,7 +212,7 @@ class DriverStoreCleanerPage(_Page):
     def _on_export(self):
         """Pick a folder and export all drivers into it.
 
-        Manages on export operations and coordinates related state changes for the component.
+            Uses DriverStoreCleaner, QMessageBox.
         """
         folder = QFileDialog.getExistingDirectory(self, "Select Driver Backup Folder")
         if folder:
@@ -225,7 +225,7 @@ class DriverStoreCleanerPage(_Page):
     def _on_delete_superseded(self):
         """Confirm and force-delete all superseded driver packages, then rescan.
 
-        Manages on delete superseded operations and coordinates related state changes for the component.
+            Uses DriverStoreCleaner, QMessageBox; updates self._drivers, self._on_scan.
         """
         superseded = [d for d in self._drivers if d.is_superseded]
         if not superseded:
@@ -252,9 +252,9 @@ class DriverStoreCleanerPage(_Page):
 # ===========================================================================
 
 class ShellbagsCleanerPage(_Page):
-    """Shellbagscleanerpage.
+    """Shellbags page with scan/clean buttons and a traces table.
 
-    Manages ShellbagsCleanerPage operations and coordinates related state changes for the component.
+        Backed by ShellbagsPrivacyCleaner, QMessageBox; builds tables, buttons, and dialogs for the actions below.
     """
     def __init__(self, win: PremiumMainWindow):
         """Build the Shellbags page with scan/clean buttons and a traces table.
@@ -301,7 +301,7 @@ class ShellbagsCleanerPage(_Page):
     def _on_scan(self):
         """Scan shell activity traces on the worker runtime.
 
-        Manages on scan operations and coordinates related state changes for the component.
+            Uses ShellbagsPrivacyCleaner; updates self.scan_btn, self.table, self._targets.
         """
         self.scan_btn.setEnabled(False)
         self.table.setRowCount(0)
@@ -335,7 +335,7 @@ class ShellbagsCleanerPage(_Page):
     def _on_clean(self):
         """Confirm and purge all discovered activity traces, then rescan.
 
-        Manages on clean operations and coordinates related state changes for the component.
+            Uses ShellbagsPrivacyCleaner, QMessageBox; updates self._targets, self._on_scan.
         """
         if not self._targets:
             QMessageBox.information(self, "Activity Purger", "Please scan for activity traces first.")
@@ -357,9 +357,9 @@ class ShellbagsCleanerPage(_Page):
 # ===========================================================================
 
 class PowerPlanOptimizerPage(_Page):
-    """Powerplanoptimizerpage.
+    """Power Plan page with status line, refresh/unlock/hibernate buttons, and a schemes table.
 
-    Manages PowerPlanOptimizerPage operations and coordinates related state changes for the component.
+        Backed by PowerPlanOptimizer, QMessageBox; builds tables, buttons, and dialogs for the actions below.
     """
     def __init__(self, win: PremiumMainWindow):
         """Build the Power Plan page with status line, refresh/unlock/hibernate buttons, and a schemes table.
@@ -432,7 +432,7 @@ class PowerPlanOptimizerPage(_Page):
     def _on_unlock_ultimate(self):
         """Unlock the hidden Ultimate Performance power plan, then refresh.
 
-        Manages on unlock ultimate operations and coordinates related state changes for the component.
+            Uses PowerPlanOptimizer, QMessageBox; updates self._refresh.
         """
         ok, msg = PowerPlanOptimizer.unlock_ultimate_performance_plan()
         if ok:
@@ -444,7 +444,7 @@ class PowerPlanOptimizerPage(_Page):
     def _on_reduce_hiber(self):
         """Shrink the hibernation file to 40% of RAM, then refresh.
 
-        Manages on reduce hiber operations and coordinates related state changes for the component.
+            Uses PowerPlanOptimizer, QMessageBox; updates self._refresh.
         """
         ok, msg = PowerPlanOptimizer.set_reduced_hibernation()
         if ok:
@@ -459,9 +459,9 @@ class PowerPlanOptimizerPage(_Page):
 # ===========================================================================
 
 class HostsFileManagerPage(_Page):
-    """Hostsfilemanagerpage.
+    """Hosts page with reload/shield buttons and an entries table.
 
-    Manages HostsFileManagerPage operations and coordinates related state changes for the component.
+        Backed by HostsFileManager, QMessageBox; builds tables, buttons, and dialogs for the actions below.
     """
     def __init__(self, win: PremiumMainWindow):
         """Build the Hosts page with reload/shield buttons and an entries table.
@@ -507,7 +507,7 @@ class HostsFileManagerPage(_Page):
     def _on_load(self):
         """Parse the hosts file and list its entries.
 
-        Manages on load operations and coordinates related state changes for the component.
+            Uses HostsFileManager; updates self.table.
         """
         entries = HostsFileManager.parse_hosts_file()
         self.table.setRowCount(len(entries))
@@ -520,7 +520,7 @@ class HostsFileManagerPage(_Page):
     def _on_apply_shield(self):
         """Confirm and add telemetry blocking entries to the hosts file, then reload.
 
-        Manages on apply shield operations and coordinates related state changes for the component.
+            Uses HostsFileManager, QMessageBox; updates self._on_load.
         """
         confirm = QMessageBox.question(
             self, "Confirm Shield",
@@ -541,9 +541,9 @@ class HostsFileManagerPage(_Page):
 # ===========================================================================
 
 class NotificationCleanerPage(_Page):
-    """Notificationcleanerpage.
+    """Notification Cleaner page with status line and refresh/clean buttons.
 
-    Manages NotificationCleanerPage operations and coordinates related state changes for the component.
+        Backed by NotificationCleaner, QMessageBox; builds tables, buttons, and dialogs for the actions below.
     """
     def __init__(self, win: PremiumMainWindow):
         """Build the Notification Cleaner page with status line and refresh/clean buttons.
@@ -596,7 +596,7 @@ class NotificationCleanerPage(_Page):
     def _on_clean(self):
         """Confirm and purge notification history and badges, then refresh.
 
-        Manages on clean operations and coordinates related state changes for the component.
+            Uses NotificationCleaner, QMessageBox; updates self._refresh.
         """
         confirm = QMessageBox.question(
             self, "Confirm Notification Purge",
@@ -617,9 +617,9 @@ class NotificationCleanerPage(_Page):
 # ===========================================================================
 
 class FileSignatureSnifferPage(_Page):
-    """Filesignaturesnifferpage.
+    """Signature Sniffer page with folder picker, spoof filter, and results table.
 
-    Manages FileSignatureSnifferPage operations and coordinates related state changes for the component.
+        Backed by FileSignatureSniffer, QFileDialog; builds tables, buttons, and dialogs for the actions below.
     """
     def __init__(self, win: PremiumMainWindow):
         """Build the Signature Sniffer page with folder picker, spoof filter, and results table.
@@ -670,7 +670,7 @@ class FileSignatureSnifferPage(_Page):
     def _on_choose_folder(self):
         """Pick the directory to sniff.
 
-        Manages on choose folder operations and coordinates related state changes for the component.
+            Uses QFileDialog; updates self._scan_path.
         """
         folder = QFileDialog.getExistingDirectory(self, "Select Folder to Scan")
         if folder:
@@ -679,7 +679,7 @@ class FileSignatureSnifferPage(_Page):
     def _on_scan(self):
         """Scan the chosen folder recursively for spoofed files.
 
-        Manages on scan operations and coordinates related state changes for the component.
+            Uses FileSignatureSniffer; updates self.scan_btn, self.table, self._scan_path.
         """
         self.scan_btn.setEnabled(False)
         self.table.setRowCount(0)
@@ -723,9 +723,9 @@ class FileSignatureSnifferPage(_Page):
 # ===========================================================================
 
 class BinaryDifferPage(_Page):
-    """Binarydifferpage.
+    """Binary Differ page with File A/B pickers, compare button, and a hex diff table.
 
-    Manages BinaryDifferPage operations and coordinates related state changes for the component.
+        Backed by BinaryDiffer, QMessageBox, QFileDialog; builds tables, buttons, and dialogs for the actions below.
     """
     def __init__(self, win: PremiumMainWindow):
         """Build the Binary Differ page with File A/B pickers, compare button, and a hex diff table.
@@ -789,7 +789,7 @@ class BinaryDifferPage(_Page):
     def _on_select_a(self):
         """Pick the first file to compare.
 
-        Manages on select a operations and coordinates related state changes for the component.
+            Uses QFileDialog; updates self._path_a, self.file_a_label.
         """
         f, _ = QFileDialog.getOpenFileName(self, "Select First File (A)")
         if f:
@@ -799,7 +799,7 @@ class BinaryDifferPage(_Page):
     def _on_select_b(self):
         """Pick the second file to compare.
 
-        Manages on select b operations and coordinates related state changes for the component.
+            Uses QFileDialog; updates self._path_b, self.file_b_label.
         """
         f, _ = QFileDialog.getOpenFileName(self, "Select Second File (B)")
         if f:
@@ -809,7 +809,7 @@ class BinaryDifferPage(_Page):
     def _on_diff(self):
         """Compare the two chosen files in the background.
 
-        Manages on diff operations and coordinates related state changes for the component.
+            Uses BinaryDiffer, QMessageBox; updates self._path_a, self._path_b, self.diff_btn.
         """
         if not self._path_a or not self._path_b:
             QMessageBox.information(self, "Binary Differ", "Please select both File A and File B.")
@@ -860,9 +860,9 @@ class BinaryDifferPage(_Page):
 # ===========================================================================
 
 class UsnJournalPage(_Page):
-    """Usnjournalpage.
+    """USN Journal page with volume combo, query button, and an info label.
 
-    Manages UsnJournalPage operations and coordinates related state changes for the component.
+        Backed by UsnJournalScanner; builds tables, buttons, and dialogs for the actions below.
     """
     def __init__(self, win: PremiumMainWindow):
         """Build the USN Journal page with volume combo, query button, and an info label.
@@ -904,7 +904,7 @@ class UsnJournalPage(_Page):
     def _on_query(self):
         """Query the selected volume's USN journal and show its state.
 
-        Manages on query operations and coordinates related state changes for the component.
+            Uses UsnJournalScanner; updates self.drive_combo, self.info_label.
         """
         drive = self.drive_combo.currentText()
         st = UsnJournalScanner.query_volume_journal(drive)
@@ -926,9 +926,9 @@ class UsnJournalPage(_Page):
 # ===========================================================================
 
 class Par2RecoveryPage(_Page):
-    """Par2recoverypage.
+    """PAR2 page with an open button, summary label, and protected-files table.
 
-    Manages Par2RecoveryPage operations and coordinates related state changes for the component.
+        Backed by Par2RecoveryEngine, QMessageBox, QFileDialog; builds tables, buttons, and dialogs for the actions below.
     """
     def __init__(self, win: PremiumMainWindow):
         """Build the PAR2 page with an open button, summary label, and protected-files table.
@@ -972,7 +972,7 @@ class Par2RecoveryPage(_Page):
     def _on_open_par2(self):
         """Open and parse a .par2 file, listing its recovery set and protected files.
 
-        Manages on open par2 operations and coordinates related state changes for the component.
+            Uses Par2RecoveryEngine, QMessageBox; updates self.summary_label, self.table.
         """
         f, _ = QFileDialog.getOpenFileName(self, "Open PAR2 File", "", "PAR2 Files (*.par2 *.PAR2)")
         if f:
@@ -1001,9 +1001,9 @@ class Par2RecoveryPage(_Page):
 # ===========================================================================
 
 class ImageOptimizerPage(_Page):
-    """Imageoptimizerpage.
+    """Image Optimizer page with picker, format/quality controls, and results table.
 
-    Manages ImageOptimizerPage operations and coordinates related state changes for the component.
+        Backed by ImageOptimizer, QMessageBox, QFileDialog; builds tables, buttons, and dialogs for the actions below.
     """
     def __init__(self, win: PremiumMainWindow):
         """Build the Image Optimizer page with picker, format/quality controls, and results table.
@@ -1070,7 +1070,7 @@ class ImageOptimizerPage(_Page):
     def _on_add_images(self):
         """Pick images to optimize and show the selection count.
 
-        Manages on add images operations and coordinates related state changes for the component.
+            Uses QFileDialog; updates self._images, self.images_label.
         """
         files, _ = QFileDialog.getOpenFileNames(self, "Select Images to Optimize", "", "Images (*.png *.jpg *.jpeg *.bmp *.tiff *.webp)")
         if files:
@@ -1080,7 +1080,7 @@ class ImageOptimizerPage(_Page):
     def _on_start(self):
         """Run batch optimization with the chosen format and quality.
 
-        Manages on start operations and coordinates related state changes for the component.
+            Uses ImageOptimizer, QMessageBox; updates self._images, self.start_btn, self.table.
         """
         if not self._images:
             QMessageBox.information(self, "Image Optimizer", "Please select images first.")

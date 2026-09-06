@@ -86,9 +86,7 @@ IS_WINDOWS = platform.system() == "Windows"
 # ===========================================================================
 
 def test_hash_computation(tmp_path: Path):
-    """test_hash_computation.
-
-    Manages test hash computation operations and coordinates related state changes for the component.
+    """Verify hash computation via HashTool.compute_all_hashes.
 
     Args:
         tmp_path (Path): Filesystem path to the target file or directory.
@@ -109,9 +107,7 @@ def test_hash_computation(tmp_path: Path):
 
 
 def test_checksum_manifest_creation_and_verify(tmp_path: Path):
-    """test_checksum_manifest_creation_and_verify.
-
-    Manages test checksum manifest creation and verify operations and coordinates related state changes for the component.
+    """Verify checksum manifest creation and verify via HashTool.create_manifest, HashTool.verify_manifest, f1.resolve.
 
     Args:
         tmp_path (Path): Filesystem path to the target file or directory.
@@ -152,9 +148,7 @@ def test_checksum_manifest_creation_and_verify(tmp_path: Path):
 # ===========================================================================
 
 def test_batch_renamer_tokens_and_case(tmp_path: Path):
-    """test_batch_renamer_tokens_and_case.
-
-    Manages test batch renamer tokens and case operations and coordinates related state changes for the component.
+    """Verify batch renamer tokens and case via BatchRenamer, renamer.preview_rename, renamer.execute_rename.
 
     Args:
         tmp_path (Path): Filesystem path to the target file or directory.
@@ -199,9 +193,7 @@ def test_batch_renamer_tokens_and_case(tmp_path: Path):
 # ===========================================================================
 
 def test_directory_diff_and_sync(tmp_path: Path):
-    """test_directory_diff_and_sync.
-
-    Manages test directory diff and sync operations and coordinates related state changes for the component.
+    """Verify directory diff and sync via DirectoryDiffEngine.compare_directories, DirectoryDiffEngine.execute_sync, statuses.get.
 
     Args:
         tmp_path (Path): Filesystem path to the target file or directory.
@@ -253,9 +245,7 @@ def test_directory_diff_and_sync(tmp_path: Path):
 # ===========================================================================
 
 def test_file_splitter_and_joiner(tmp_path: Path):
-    """test_file_splitter_and_joiner.
-
-    Manages test file splitter and joiner operations and coordinates related state changes for the component.
+    """Verify file splitter and joiner via FileSplitterJoiner.split_file, FileSplitterJoiner.join_files, reconstructed.read_bytes.
 
     Args:
         tmp_path (Path): Filesystem path to the target file or directory.
@@ -295,9 +285,7 @@ def test_file_splitter_and_joiner(tmp_path: Path):
 # ===========================================================================
 
 def test_file_unlocker_inspect(tmp_path: Path):
-    """test_file_unlocker_inspect.
-
-    Manages test file unlocker inspect operations and coordinates related state changes for the component.
+    """Verify file unlocker inspect via FileUnlocker.get_locking_processes.
 
     Args:
         tmp_path (Path): Filesystem path to the target file or directory.
@@ -314,9 +302,7 @@ def test_file_unlocker_inspect(tmp_path: Path):
 # ===========================================================================
 
 def test_alternate_data_streams_list(tmp_path: Path):
-    """test_alternate_data_streams_list.
-
-    Manages test alternate data streams list operations and coordinates related state changes for the component.
+    """Verify alternate data streams list via AlternateDataStreamsManager.list_streams, AlternateDataStreamsManager.unblock_file.
 
     Args:
         tmp_path (Path): Filesystem path to the target file or directory.
@@ -337,10 +323,7 @@ def test_alternate_data_streams_list(tmp_path: Path):
 # ===========================================================================
 
 def test_event_log_cleaner_scan():
-    """test_event_log_cleaner_scan.
-
-    Manages test event log cleaner scan operations and coordinates related state changes for the component.
-    """
+    """Verify event log cleaner scan via EventLogCleaner.list_all_logs."""
     channels = EventLogCleaner.list_all_logs()
     assert isinstance(channels, list)
     if IS_WINDOWS:
@@ -353,10 +336,7 @@ def test_event_log_cleaner_scan():
 # ===========================================================================
 
 def test_system_cache_rebuilder_scan():
-    """test_system_cache_rebuilder_scan.
-
-    Manages test system cache rebuilder scan operations and coordinates related state changes for the component.
-    """
+    """Verify system cache rebuilder scan via SystemCacheRebuilder.notify_shell_refresh."""
     ok = SystemCacheRebuilder.notify_shell_refresh()
     assert isinstance(ok, bool)
 
@@ -366,10 +346,7 @@ def test_system_cache_rebuilder_scan():
 # ===========================================================================
 
 def test_network_stack_optimizer_status():
-    """test_network_stack_optimizer_status.
-
-    Manages test network stack optimizer status operations and coordinates related state changes for the component.
-    """
+    """Verify network stack optimizer status via NetworkStackOptimizer.get_tcp_settings, hasattr."""
     settings = NetworkStackOptimizer.get_tcp_settings()
     assert hasattr(settings, "autotuning_level")
     assert hasattr(settings, "receive_side_scaling")
@@ -381,10 +358,7 @@ def test_network_stack_optimizer_status():
 # ===========================================================================
 
 def test_crash_dump_cleaner_scan():
-    """test_crash_dump_cleaner_scan.
-
-    Manages test crash dump cleaner scan operations and coordinates related state changes for the component.
-    """
+    """Verify crash dump cleaner scan via CrashDumpCleaner.scan_dumps."""
     items = CrashDumpCleaner.scan_dumps()
     assert isinstance(items, list)
 
@@ -394,10 +368,7 @@ def test_crash_dump_cleaner_scan():
 # ===========================================================================
 
 def test_delivery_optimization_cleaner_scan():
-    """test_delivery_optimization_cleaner_scan.
-
-    Manages test delivery optimization cleaner scan operations and coordinates related state changes for the component.
-    """
+    """Verify delivery optimization cleaner scan via DeliveryOptimizationCleaner.get_status."""
     status = DeliveryOptimizationCleaner.get_status()
     assert isinstance(status, DeliveryOptimizationStatus)
     assert isinstance(status.file_count, int)

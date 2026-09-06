@@ -20,8 +20,6 @@ _LOG = logging.getLogger("cortex")
 def log_dir() -> Path:
     """Return application log directory.
 
-    Manages log dir operations and coordinates related state changes for the component.
-
     Returns:
         Path: Result of the operation.
     """
@@ -32,8 +30,6 @@ def log_dir() -> Path:
 
 def setup_logging(debug: bool = False) -> Path:
     """Configure root logging: console + rotating file. Returns the log path.
-
-    Manages setup logging operations and coordinates related state changes for the component.
 
     Args:
         debug (bool): The debug parameter.
@@ -93,9 +89,7 @@ def _install_qt_message_handler() -> None:
     }
 
     def handler(mode, context, message):  # noqa: ANN001
-        """Handler.
-
-        Manages handler operations and coordinates related state changes for the component.
+        """Forward a Qt log message to the Python logging backend at the mapped level.
 
         Args:
             mode: The mode parameter.
@@ -113,9 +107,7 @@ def _install_excepthook() -> None:
     Initiates the package or update installation workflow in the background, monitoring execution progress.
     """
     def hook(exc_type, exc_value, exc_tb):
-        """Hook.
-
-        Manages hook operations and coordinates related state changes for the component.
+        """Record an uncaught exception (log plus crash report file) then delegate to the default hook.
 
         Args:
             exc_type: Error message string or exception instance.
@@ -156,9 +148,7 @@ def _install_threading_excepthook() -> None:
     import threading
 
     def hook(args: threading.ExceptHookArgs) -> None:
-        """Hook.
-
-        Manages hook operations and coordinates related state changes for the component.
+        """Log an uncaught worker-thread exception and ignore SystemExit.
 
         Args:
             args (threading.ExceptHookArgs): The args parameter.
@@ -308,9 +298,7 @@ def _configure_high_dpi() -> None:
 
 
 def main() -> int:
-    """Main.
-
-    Manages main operations and coordinates related state changes for the component.
+    """Bootstrap the premium GUI: logging, DPI, theme/settings, main window, and event loop.
 
     Returns:
         int: Result of the operation.

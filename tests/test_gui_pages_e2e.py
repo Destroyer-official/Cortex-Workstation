@@ -29,18 +29,13 @@ IS_WINDOWS = platform.system() == "Windows"
 
 @pytest.fixture(scope="module")
 def app():
-    """App.
-
-    Manages app operations and coordinates related state changes for the component.
-    """
+    """Provide app fixture that provides a shared QApplication."""
     return QApplication.instance() or QApplication([])
 
 
 @pytest.fixture
 def window(app):
-    """Window.
-
-    Manages window operations and coordinates related state changes for the component.
+    """Provide window fixture via PremiumMainWindow, win.show, win.close.
 
     Args:
         app: The app parameter.
@@ -77,8 +72,6 @@ def pro_license(monkeypatch, tmp_path):
 def pump_until(app, predicate, timeout_ms=45000, interval=25) -> bool:
     """Spin the event loop until predicate() is true or timeout. Returns final.
 
-    Manages pump until operations and coordinates related state changes for the component.
-
     Args:
         app: The app parameter.
         predicate: The predicate parameter.
@@ -105,8 +98,6 @@ def pump_until(app, predicate, timeout_ms=45000, interval=25) -> bool:
 def data_tree(tmp_path):
     """Folder with duplicates, a >50MB file, and empty items for scan pages.
 
-    Manages data tree operations and coordinates related state changes for the component.
-
     Args:
         tmp_path: Filesystem path to the target file or directory.
     """
@@ -125,9 +116,7 @@ def data_tree(tmp_path):
 # ---------------------------------------------------------------------------
 
 def test_page_dashboard_scan(app, window):
-    """test_page_dashboard_scan.
-
-    Manages test page dashboard scan operations and coordinates related state changes for the component.
+    """Verify page dashboard scan via dash.tree.topLevelItemCount, dash._scan, dash.scan_btn.text.
 
     Args:
         app: The app parameter.
@@ -147,9 +136,7 @@ def test_page_dashboard_scan(app, window):
 # ---------------------------------------------------------------------------
 
 def _drive_folder_page(app, window, page_id, data_tree):
-    """_drive_folder_page.
-
-    Manages drive folder page operations and coordinates related state changes for the component.
+    """Drive folder page using page.run_btn.setEnabled, window._select, page._run.
 
     Args:
         app: The app parameter.
@@ -167,9 +154,7 @@ def _drive_folder_page(app, window, page_id, data_tree):
 
 
 def test_page_duplicates(app, window, data_tree):
-    """test_page_duplicates.
-
-    Manages test page duplicates operations and coordinates related state changes for the component.
+    """Verify page duplicates via page.tree.rowCount, page.tree.item, _drive_folder_page.
 
     Args:
         app: The app parameter.
@@ -182,9 +167,7 @@ def test_page_duplicates(app, window, data_tree):
 
 
 def test_page_large_files(app, window, data_tree):
-    """test_page_large_files.
-
-    Manages test page large files operations and coordinates related state changes for the component.
+    """Verify page large files via page.tbl.rowCount, page.tbl.item, _drive_folder_page.
 
     Args:
         app: The app parameter.
@@ -197,9 +180,7 @@ def test_page_large_files(app, window, data_tree):
 
 
 def test_page_empty_items(app, window, data_tree):
-    """test_page_empty_items.
-
-    Manages test page empty items operations and coordinates related state changes for the component.
+    """Verify page empty items via page.tbl.rowCount, page.tbl.item, _drive_folder_page.
 
     Args:
         app: The app parameter.
@@ -217,9 +198,7 @@ def test_page_empty_items(app, window, data_tree):
 # ---------------------------------------------------------------------------
 
 def test_page_privacy_scan(app, window):
-    """test_page_privacy_scan.
-
-    Manages test page privacy scan operations and coordinates related state changes for the component.
+    """Verify page privacy scan via page.scan_btn.isEnabled, page.progress.isVisible, page._scan.
 
     Args:
         app: The app parameter.
@@ -242,9 +221,7 @@ def test_page_privacy_scan(app, window):
 # ---------------------------------------------------------------------------
 
 def test_page_startup_list(app, window):
-    """test_page_startup_list.
-
-    Manages test page startup list operations and coordinates related state changes for the component.
+    """Verify page startup list via page.tbl.rowCount, page.refresh_btn.isEnabled, page.progress.isVisible.
 
     Args:
         app: The app parameter.
@@ -262,9 +239,7 @@ def test_page_startup_list(app, window):
 # ---------------------------------------------------------------------------
 
 def test_page_traffic_monitor(app, window):
-    """test_page_traffic_monitor.
-
-    Manages test page traffic monitor operations and coordinates related state changes for the component.
+    """Verify page traffic monitor via page.nic_tbl.rowCount, window._select, page._timer.stop.
 
     Args:
         app: The app parameter.
@@ -282,9 +257,7 @@ def test_page_traffic_monitor(app, window):
 
 @pytest.mark.skipif(not IS_WINDOWS, reason="Windows Update is Windows-only")
 def test_page_windows_update(app, window):
-    """test_page_windows_update.
-
-    Manages test page windows update operations and coordinates related state changes for the component.
+    """Verify page windows update via page.check_btn.isEnabled, page.hist_tbl.rowCount, pytest.mark.skipif.
 
     Args:
         app: The app parameter.
@@ -300,9 +273,7 @@ def test_page_windows_update(app, window):
 
 
 def test_page_health_check(app, window):
-    """test_page_health_check.
-
-    Manages test page health check operations and coordinates related state changes for the component.
+    """Verify page health check via page.tbl.rowCount, page.run_btn.isEnabled, page.progress.isVisible.
 
     Args:
         app: The app parameter.
@@ -319,9 +290,7 @@ def test_page_health_check(app, window):
 
 @pytest.mark.skipif(not IS_WINDOWS, reason="Defender is Windows-only")
 def test_page_security_status(app, window):
-    """test_page_security_status.
-
-    Manages test page security status operations and coordinates related state changes for the component.
+    """Verify page security status via page.refresh_btn.isEnabled, page.progress.isVisible, pytest.mark.skipif.
 
     Args:
         app: The app parameter.
@@ -336,9 +305,7 @@ def test_page_security_status(app, window):
 
 @pytest.mark.skipif(not IS_WINDOWS, reason="Storage Sense is Windows-only")
 def test_page_storage_sense(app, window):
-    """test_page_storage_sense.
-
-    Manages test page storage sense operations and coordinates related state changes for the component.
+    """Verify page storage sense via pytest.mark.skipif, window._select, page.enable_chk.text.
 
     Args:
         app: The app parameter.
@@ -354,9 +321,7 @@ def test_page_storage_sense(app, window):
 
 @pytest.mark.skipif(not IS_WINDOWS, reason="boot diagnostics are Windows-only")
 def test_page_boot_performance(app, window):
-    """test_page_boot_performance.
-
-    Manages test page boot performance operations and coordinates related state changes for the component.
+    """Verify page boot performance via page.tbl.rowCount, page.refresh_btn.isEnabled, page.progress.isVisible.
 
     Args:
         app: The app parameter.
@@ -374,9 +339,7 @@ def test_page_boot_performance(app, window):
 def test_page_system_repair_constructs(app, window):
     # Do NOT run sfc/dism here (minutes-long, system-modifying). Just verify the
     # page builds and exposes its tool buttons.
-    """test_page_system_repair_constructs.
-
-    Manages test page system repair constructs operations and coordinates related state changes for the component.
+    """Verify page system repair constructs via pytest.mark.skipif, window._select, hasattr.
 
     Args:
         app: The app parameter.
@@ -388,9 +351,7 @@ def test_page_system_repair_constructs(app, window):
 
 
 def test_page_load_tester_authorization(app, window):
-    """test_page_load_tester_authorization.
-
-    Manages test page load tester authorization operations and coordinates related state changes for the component.
+    """Verify page load tester authorization via page.target.setText, page.run_btn.isEnabled, window._select.
 
     Args:
         app: The app parameter.
@@ -410,8 +371,6 @@ def test_page_load_tester_authorization(app, window):
 def test_load_tester_refuses_public_in_ui(app, window):
     """A public target must NOT enable the run button (safety gate in the UI).
 
-    Manages test load tester refuses public in ui operations and coordinates related state changes for the component.
-
     Args:
         app: The app parameter.
         window: Parent window or shell controller instance.
@@ -430,9 +389,7 @@ def test_load_tester_refuses_public_in_ui(app, window):
 
 
 def test_page_network_tools(app, window):
-    """test_page_network_tools.
-
-    Manages test page network tools operations and coordinates related state changes for the component.
+    """Verify page network tools via page.target.setText, window._select, page._run.
 
     Args:
         app: The app parameter.
@@ -452,9 +409,7 @@ def test_page_network_tools(app, window):
 
 
 def test_page_network_map(app, window):
-    """test_page_network_map.
-
-    Manages test page network map operations and coordinates related state changes for the component.
+    """Verify page network map via page.external_only.setChecked, page.refresh_btn.isEnabled, window._select.
 
     Args:
         app: The app parameter.
@@ -469,9 +424,7 @@ def test_page_network_map(app, window):
 
 
 def test_page_lan_devices(app, window, monkeypatch):
-    """test_page_lan_devices.
-
-    Manages test page lan devices operations and coordinates related state changes for the component.
+    """Verify page lan devices via page.refresh_btn.isEnabled, page.progress.isVisible, DiscoveryResult.
 
     Args:
         app: The app parameter.
@@ -503,9 +456,7 @@ def test_page_lan_devices(app, window, monkeypatch):
 
 @pytest.mark.skipif(not IS_WINDOWS, reason="Windows Firewall only")
 def test_page_firewall_list(app, window):
-    """test_page_firewall_list.
-
-    Manages test page firewall list operations and coordinates related state changes for the component.
+    """Verify page firewall list via FirewallManager._valid_address, page.refresh_btn.isEnabled, page.progress.isVisible.
 
     Args:
         app: The app parameter.
@@ -521,9 +472,7 @@ def test_page_firewall_list(app, window):
 
 
 def test_page_network_monitor(app, window):
-    """test_page_network_monitor.
-
-    Manages test page network monitor operations and coordinates related state changes for the component.
+    """Verify page network monitor via page.auto_chk.setChecked, page.search.setText, page.refresh_btn.isEnabled.
 
     Args:
         app: The app parameter.
@@ -542,9 +491,7 @@ def test_page_network_monitor(app, window):
 
 
 def test_page_processes_list(app, window):
-    """test_page_processes_list.
-
-    Manages test page processes list operations and coordinates related state changes for the component.
+    """Verify page processes list via page.auto_chk.setChecked, page.why_btn.setChecked, page.breakdown.isVisible.
 
     Args:
         app: The app parameter.
@@ -607,9 +554,7 @@ def test_page_processes_list(app, window):
 
 @pytest.mark.skipif(not IS_WINDOWS, reason="Windows-only feature")
 def test_page_uninstaller_list(app, window):
-    """test_page_uninstaller_list.
-
-    Manages test page uninstaller list operations and coordinates related state changes for the component.
+    """Verify page uninstaller list via page.refresh_btn.isEnabled, page.progress.isVisible, pytest.mark.skipif.
 
     Args:
         app: The app parameter.
@@ -625,9 +570,7 @@ def test_page_uninstaller_list(app, window):
 
 @pytest.mark.skipif(not IS_WINDOWS, reason="Windows-only feature")
 def test_page_telemetry_status(app, window):
-    """test_page_telemetry_status.
-
-    Manages test page telemetry status operations and coordinates related state changes for the component.
+    """Verify page telemetry status via page.tree.topLevelItemCount, pytest.mark.skipif, window._select.
 
     Args:
         app: The app parameter.
@@ -641,9 +584,7 @@ def test_page_telemetry_status(app, window):
 
 @pytest.mark.skipif(not IS_WINDOWS, reason="Windows-only feature")
 def test_page_registry_scan(app, window, pro_license):
-    """test_page_registry_scan.
-
-    Manages test page registry scan operations and coordinates related state changes for the component.
+    """Verify page registry scan via page.scan_btn.isEnabled, page.progress.isVisible, page._scan.
 
     Args:
         app: The app parameter.
@@ -665,9 +606,7 @@ def test_page_registry_scan(app, window, pro_license):
 
 @pytest.mark.skipif(not IS_WINDOWS, reason="Windows-only feature")
 def test_page_software_updater_list(app, window):
-    """test_page_software_updater_list.
-
-    Manages test page software updater list operations and coordinates related state changes for the component.
+    """Verify page software updater list via AppUpdater.is_available, page.tbl.rowCount, page.refresh_btn.isEnabled.
 
     Args:
         app: The app parameter.
@@ -686,9 +625,7 @@ def test_page_software_updater_list(app, window):
 
 @pytest.mark.skipif(not IS_WINDOWS, reason="Windows-only feature")
 def test_page_drive_optimizer_list(app, window):
-    """test_page_drive_optimizer_list.
-
-    Manages test page drive optimizer list operations and coordinates related state changes for the component.
+    """Verify page drive optimizer list via page.tbl.rowCount, page.refresh_btn.isEnabled, page.progress.isVisible.
 
     Args:
         app: The app parameter.
@@ -705,9 +642,7 @@ def test_page_drive_optimizer_list(app, window):
 
 
 def _drive_action_text(drive: dict) -> str:
-    """_drive_action_text.
-
-    Manages drive action text operations and coordinates related state changes for the component.
+    """Drive action text using _drive_action.
 
     Args:
         drive (dict): The drive parameter.
@@ -722,8 +657,6 @@ def _drive_action_text(drive: dict) -> str:
 @pytest.mark.skipif(not IS_WINDOWS, reason="virtual disk compaction is Windows-only")
 def test_page_virtual_disks(app, window):
     """Discovery is read-only, so it runs here; compaction is worker-tested.
-
-    Manages test page virtual disks operations and coordinates related state changes for the component.
 
     Args:
         app: The app parameter.
@@ -773,9 +706,7 @@ def test_page_component_store_construct(app, window):
 
 
 def test_page_system_info_load(app, window):
-    """test_page_system_info_load.
-
-    Manages test page system info load operations and coordinates related state changes for the component.
+    """Verify page system info load via window._select, page.info_label.text, pump_until.
 
     Args:
         app: The app parameter.
@@ -789,9 +720,7 @@ def test_page_system_info_load(app, window):
 
 
 def test_page_package_caches_load(app, window):
-    """test_page_package_caches_load.
-
-    Manages test page package caches load operations and coordinates related state changes for the component.
+    """Verify page package caches load via page.refresh_btn.isEnabled, window._select, pump_until.
 
     Args:
         app: The app parameter.
@@ -840,9 +769,7 @@ def test_dashboard_smart_learning_loop(app, window, tmp_path):
 
 def test_page_broken_links_and_dupfolders_construct(app, window):
     # These don't auto-load (need a folder); just verify they construct + wire.
-    """test_page_broken_links_and_dupfolders_construct.
-
-    Manages test page broken links and dupfolders construct operations and coordinates related state changes for the component.
+    """Verify page broken links and dupfolders construct via page.run_btn.isEnabled, window._select, hasattr.
 
     Args:
         app: The app parameter.
@@ -860,9 +787,7 @@ def test_page_broken_links_and_dupfolders_construct(app, window):
 # ---------------------------------------------------------------------------
 
 def test_page_shred_storage_detection(app, window, tmp_path):
-    """test_page_shred_storage_detection.
-
-    Manages test page shred storage detection operations and coordinates related state changes for the component.
+    """Verify page shred storage detection via window._select, page.win.run_worker, StorageWorker.
 
     Args:
         app: The app parameter.
@@ -889,9 +814,7 @@ def test_page_shred_storage_detection(app, window, tmp_path):
 # ---------------------------------------------------------------------------
 
 def test_page_settings_theme_toggle(app, window):
-    """test_page_settings_theme_toggle.
-
-    Manages test page settings theme toggle operations and coordinates related state changes for the component.
+    """Verify page settings theme toggle via window._select, page.light_btn.click, page.dark_btn.click.
 
     Args:
         app: The app parameter.
@@ -908,8 +831,6 @@ def test_page_settings_theme_toggle(app, window):
 @pytest.mark.skipif(not IS_WINDOWS, reason="restore points are Windows-only")
 def test_page_settings_restore_point_list(app, window):
     """The safety card must list restore points (read-only) without hanging.
-
-    Manages test page settings restore point list operations and coordinates related state changes for the component.
 
     Args:
         app: The app parameter.
@@ -944,8 +865,6 @@ def test_restore_point_worker_reports_honest_status(app):
 
 def test_page_lan_devices_renders_synthetic_advanced_audit(window):
     """Exercise the premium audit UI without touching the live network.
-
-    Manages test page lan devices renders synthetic advanced audit operations and coordinates related state changes for the component.
 
     Args:
         window: Parent window or shell controller instance.
@@ -983,9 +902,7 @@ def test_page_lan_devices_renders_synthetic_advanced_audit(window):
     assert page.table.visible_count == 1
 
     def cell(row, col):
-        """Cell.
-
-        Manages cell operations and coordinates related state changes for the component.
+        """Cell using model.data, model.index.
 
         Args:
             row: Table row index or list of row indices.
@@ -1013,9 +930,7 @@ def test_page_lan_devices_renders_synthetic_advanced_audit(window):
 # ---------------------------------------------------------------------------
 
 def test_page_winapp2_e2e(app, window):
-    """test_page_winapp2_e2e.
-
-    Manages test page winapp2 e2e operations and coordinates related state changes for the component.
+    """Verify page winapp2 e2e via page.progress_bar.isVisible, page._start_scan, pump_until.
 
     Args:
         app: The app parameter.
@@ -1029,9 +944,7 @@ def test_page_winapp2_e2e(app, window):
 
 
 def test_page_srum_bam_e2e(app, window):
-    """test_page_srum_bam_e2e.
-
-    Manages test page srum bam e2e operations and coordinates related state changes for the component.
+    """Verify page srum bam e2e via page.progress_bar.isVisible, page._start_scan, pump_until.
 
     Args:
         app: The app parameter.
@@ -1045,9 +958,7 @@ def test_page_srum_bam_e2e(app, window):
 
 
 def test_page_directstorage_e2e(app, window):
-    """test_page_directstorage_e2e.
-
-    Manages test page directstorage e2e operations and coordinates related state changes for the component.
+    """Verify page directstorage e2e via page.progress_bar.isVisible, page._start_audit, pump_until.
 
     Args:
         app: The app parameter.
@@ -1061,9 +972,7 @@ def test_page_directstorage_e2e(app, window):
 
 
 def test_page_standby_purger_e2e(app, window):
-    """test_page_standby_purger_e2e.
-
-    Manages test page standby purger e2e operations and coordinates related state changes for the component.
+    """Verify page standby purger e2e via page._refresh_stats, page.stat_phys_total.value.
 
     Args:
         app: The app parameter.
@@ -1077,9 +986,7 @@ def test_page_standby_purger_e2e(app, window):
 
 
 def test_page_mft_slack_e2e(app, window):
-    """test_page_mft_slack_e2e.
-
-    Manages test page mft slack e2e operations and coordinates related state changes for the component.
+    """Verify page mft slack e2e via page.progress_bar.isVisible, page._start_audit, pump_until.
 
     Args:
         app: The app parameter.
@@ -1093,9 +1000,7 @@ def test_page_mft_slack_e2e(app, window):
 
 
 def test_page_search_optimizer_e2e(app, window):
-    """test_page_search_optimizer_e2e.
-
-    Manages test page search optimizer e2e operations and coordinates related state changes for the component.
+    """Verify page search optimizer e2e via page.progress_bar.isVisible, page._start_status_query, pump_until.
 
     Args:
         app: The app parameter.
@@ -1109,9 +1014,7 @@ def test_page_search_optimizer_e2e(app, window):
 
 
 def test_page_disk_analyzer_e2e(app, window, tmp_path):
-    """test_page_disk_analyzer_e2e.
-
-    Manages test page disk analyzer e2e operations and coordinates related state changes for the component.
+    """Verify page disk analyzer e2e via page._path_edit.setText, page._tbl.rowCount, page._run.
 
     Args:
         app: The app parameter.

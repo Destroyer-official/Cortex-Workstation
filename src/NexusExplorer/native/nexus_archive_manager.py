@@ -26,9 +26,9 @@ class ArchiveFormat(Enum):
 
 
 class CompressionLevel(Enum):
-    """Compressionlevel.
+    """ZIP Deflate compression level.
 
-    Manages CompressionLevel operations and coordinates related state changes for the component.
+    Maps STORE/FAST/NORMAL/MAXIMUM to zipfile compresslevel values 0/1/6/9.
     """
     STORE = 0
     FAST = 1
@@ -38,9 +38,9 @@ class CompressionLevel(Enum):
 
 @dataclass
 class ArchiveEntryInfo:
-    """Archiveentryinfo.
+    """Metadata for one archive member.
 
-    Manages ArchiveEntryInfo operations and coordinates related state changes for the component.
+    Stores filename, uncompressed/compressed sizes, directory flag, mtime, and CRC hex.
     """
     filename: str
     uncompressed_size: int
@@ -52,9 +52,9 @@ class ArchiveEntryInfo:
 
 @dataclass
 class ArchiveOperationResult:
-    """Archiveoperationresult.
+    """Outcome of an archive create/extract operation.
 
-    Manages ArchiveOperationResult operations and coordinates related state changes for the component.
+    Records success, archive path, file counts, byte totals, elapsed seconds, and error.
     """
     success: bool
     archive_path: str
@@ -66,9 +66,9 @@ class ArchiveOperationResult:
 
 
 class ArchiveManager:
-    """Archivemanager.
+    """ZIP/TAR archive manager using stdlib zipfile/tarfile.
 
-    Manages ArchiveManager operations and coordinates related state changes for the component.
+    Supports ZIP plus TAR/TAR_GZ/TAR_BZ2/TAR_XZ with progress_cb and cancel_check; no passwords.
     """
 
     @staticmethod
@@ -100,7 +100,7 @@ class ArchiveManager:
     def list_entries(cls, archive_path: str | Path) -> List[ArchiveEntryInfo]:
         """List all entries contained in an archive without extracting to disk.
 
-        Manages list entries operations and coordinates related state changes for the component.
+        Reads ZIP infolist or TAR members without extracting; returns [] on missing file or error.
 
         Args:
             archive_path (str | Path): Filesystem path to the target file or directory.
@@ -149,7 +149,7 @@ class ArchiveManager:
     def test_archive(cls, archive_path: str | Path) -> Tuple[bool, Optional[str]]:
         """Verify archive integrity and check for CRC/decompress corruption.
 
-        Manages test archive operations and coordinates related state changes for the component.
+        Verifies ZIP via testzip CRC check or streams TAR members for decompression errors.
 
         Args:
             archive_path (str | Path): Filesystem path to the target file or directory.
@@ -193,7 +193,7 @@ class ArchiveManager:
     ) -> ArchiveOperationResult:
         """Extract an archive to a destination directory.
 
-        Manages extract archive operations and coordinates related state changes for the component.
+        Extracts ZIP (optional password bytes) or TAR (data filter when available) into destination_dir with progress/cancel support.
 
         Args:
             archive_path (str | Path): Filesystem path to the target file or directory.

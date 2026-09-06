@@ -33,18 +33,13 @@ from PySide6.QtWidgets import QApplication  # noqa: E402
 
 @pytest.fixture(scope="module")
 def app():
-    """App.
-
-    Manages app operations and coordinates related state changes for the component.
-    """
+    """Provide app fixture that provides a shared QApplication."""
     return QApplication.instance() or QApplication([])
 
 
 @pytest.fixture
 def window(app):
-    """Window.
-
-    Manages window operations and coordinates related state changes for the component.
+    """Provide window fixture via PremiumMainWindow, win.close, apply_theme.
 
     Args:
         app: The app parameter.
@@ -62,10 +57,7 @@ def window(app):
 
 
 class _CooperativeWorker(QObject):
-    """Cooperativeworker.
-
-    Manages CooperativeWorker operations and coordinates related state changes for the component.
-    """
+    """Helper cooperativeworker using threading.Event, Signal, self._cancel.set."""
 
     finished = Signal(str)
     failed = Signal(str)
@@ -140,9 +132,7 @@ class _StubbornWorker(QObject):
 
 
 def test_cooperative_worker_lets_close_return_promptly(app, window):
-    """test_cooperative_worker_lets_close_return_promptly.
-
-    Manages test cooperative worker lets close return promptly operations and coordinates related state changes for the component.
+    """Verify cooperative worker lets close return promptly via _CooperativeWorker, window.run_worker, time.perf_counter.
 
     Args:
         app: The app parameter.
@@ -179,9 +169,7 @@ def _wait_for_natural_completion(thread, timeout_s: float = 15.0) -> None:
 def test_uncooperative_worker_is_detached_not_terminated(app, window):
     # Long enough that it is still running at the end of the grace period,
     # short enough that the test doesn't hang waiting for it to finish.
-    """test_uncooperative_worker_is_detached_not_terminated.
-
-    Manages test uncooperative worker is detached not terminated operations and coordinates related state changes for the component.
+    """Verify uncooperative worker is detached not terminated via _StubbornWorker, window.run_worker, time.perf_counter.
 
     Args:
         app: The app parameter.
@@ -213,8 +201,6 @@ def test_uncooperative_worker_is_detached_not_terminated(app, window):
 def test_shutdown_workers_never_calls_terminate(app, window, monkeypatch):
     """Guard against the unsafe fallback ever being reintroduced.
 
-    Manages test shutdown workers never calls terminate operations and coordinates related state changes for the component.
-
     Args:
         app: The app parameter.
         window: Parent window or shell controller instance.
@@ -226,10 +212,7 @@ def test_shutdown_workers_never_calls_terminate(app, window, monkeypatch):
     original = QThread.terminate
 
     def _tracking_terminate(self):
-        """_tracking_terminate.
-
-        Manages tracking terminate operations and coordinates related state changes for the component.
-        """
+        """Tracking terminate using calls.append, original."""
         calls.append(self)
         return original(self)
 
@@ -248,8 +231,6 @@ def test_shutdown_workers_never_calls_terminate(app, window, monkeypatch):
 
 def test_multiple_workers_shut_down_within_one_shared_deadline(app, window):
     """Several workers must be waited on concurrently, not N times serially.
-
-    Manages test multiple workers shut down within one shared deadline operations and coordinates related state changes for the component.
 
     Args:
         app: The app parameter.

@@ -26,10 +26,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Signal, QObject
 
 def audit_all_pages():
-    """audit_all_pages.
-
-    Manages audit all pages operations and coordinates related state changes for the component.
-    """
+    """Audit all pages using QApplication.instance, page.findChildren, PremiumMainWindow."""
     app = QApplication.instance() or QApplication(sys.argv)
     from cortex_unified.ui.premium.window import PremiumMainWindow
     from cortex_unified.ui.premium.registry import PAGES

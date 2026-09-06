@@ -29,10 +29,7 @@ from .window import _Page, fmt_bytes
 
 
 class _Winapp2Worker(QObject):
-    """Winapp2worker.
-
-    Manages Winapp2Worker operations and coordinates related state changes for the component.
-    """
+    """Background worker (_Winapp2Worker) performing Winapp2Worker. Signals progress, finished, clean_finished report status. Configured with cleaner, targets."""
     progress = Signal(int, int, str)
     finished = Signal(object)
     clean_finished = Signal(int, int)
@@ -51,18 +48,12 @@ class _Winapp2Worker(QObject):
         self.targets = targets
 
     def run_scan(self) -> None:
-        """run_scan.
-
-        Manages run scan operations and coordinates related state changes for the component.
-        """
+        """Execute the background run scan operation and emit the result for the page."""
         report = self.cleaner.scan(progress_cb=lambda cur, tot, name: self.progress.emit(cur, tot, name))
         self.finished.emit(report)
 
     def run_clean(self) -> None:
-        """run_clean.
-
-        Manages run clean operations and coordinates related state changes for the component.
-        """
+        """Execute the background run clean operation and emit the result for the page."""
         b, count = self.cleaner.clean(
             self.targets,
             dry_run=False,
@@ -72,10 +63,7 @@ class _Winapp2Worker(QObject):
 
 
 class Winapp2CleanerPage(_Page):
-    """Winapp2cleanerpage.
-
-    Manages Winapp2CleanerPage operations and coordinates related state changes for the component.
-    """
+    """Community App Cleaner (Winapp2) page: Declarative deep cleaner for 500+ desktop applications, gaming platforms, and dev tools."""
 
     def __init__(self, win) -> None:
         """__init__.
@@ -145,10 +133,7 @@ class Winapp2CleanerPage(_Page):
         self.add_scrolling_list(self.table, stretch=1)
 
     def _start_scan(self) -> None:
-        """_start_scan.
-
-        Manages start scan operations and coordinates related state changes for the component.
-        """
+        """Disable action buttons, show progress/status, and launch the background worker (setEnabled, setVisible, setValue)."""
         self.btn_scan.setEnabled(False)
         self.btn_clean.setEnabled(False)
         self.progress_bar.setVisible(True)
@@ -178,9 +163,7 @@ class Winapp2CleanerPage(_Page):
         self.lbl_status.setText(f"Checking: {name[:40]}...")
 
     def _on_scan_finished(self, report: Winapp2Report) -> None:
-        """_on_scan_finished.
-
-        Manages on scan finished operations and coordinates related state changes for the component.
+        """Populate the results table (quit, wait, setVisible) with the latest data.
 
         Args:
             report (Winapp2Report): The generated report data object from the backend.
@@ -206,10 +189,7 @@ class Winapp2CleanerPage(_Page):
             self.table.setItem(row, 3, QTableWidgetItem(fmt_bytes(tgt.size_bytes)))
 
     def _start_clean(self) -> None:
-        """_start_clean.
-
-        Manages start clean operations and coordinates related state changes for the component.
-        """
+        """Validate the current selection and ask the user to confirm via a message box showing 'Confirm Cleanup'."""
         if not self.current_report or not self.current_report.targets:
             return
 
@@ -237,9 +217,7 @@ class Winapp2CleanerPage(_Page):
         self._thread.start()
 
     def _on_clean_finished(self, cleaned_bytes: int, cleaned_count: int) -> None:
-        """_on_clean_finished.
-
-        Manages on clean finished operations and coordinates related state changes for the component.
+        """Validate the current selection and ask the user to confirm via a message box showing 'Successfully cleaned'.
 
         Args:
             cleaned_bytes (int): The cleaned bytes parameter.

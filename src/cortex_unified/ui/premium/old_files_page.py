@@ -32,10 +32,7 @@ from .window import _Page, fmt_bytes
 
 
 class _OldFilesScanWorker(QObject):
-    """Oldfilesscanworker.
-
-    Manages OldFilesScanWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker (_OldFilesScanWorker) performing OldFilesScanWorker. Signals finished, failed report status. Configured with root_path, min_age_days. Its run() step calls OldFileCleaner, cleaner.find_old_files, cleaner.get_stats, str."""
     finished = Signal(list, dict)  # old_files list, stats dict
     failed = Signal(str)
 
@@ -70,10 +67,7 @@ class _OldFilesScanWorker(QObject):
 
 
 class OldFilesPage(_Page):
-    """Oldfilespage.
-
-    Manages OldFilesPage operations and coordinates related state changes for the component.
-    """
+    """Old & Inactive Files Finder page: Identifies files that have not been modified or accessed for extended periods."""
 
     def __init__(self, win):
         """Init.
@@ -225,10 +219,7 @@ class OldFilesPage(_Page):
             self.win.statusBar().showMessage(summary, 6000)
 
     def _delete_selected(self):
-        """Delete selected.
-
-        Manages delete selected operations and coordinates related state changes for the component.
-        """
+        """Validate the current selection and ask the user to confirm via a message box showing 'No Selection'."""
         sel = self.tbl.selectionModel().selectedRows()
         if not sel:
             QMessageBox.information(self, "No Selection", "Please select one or more files to delete.")

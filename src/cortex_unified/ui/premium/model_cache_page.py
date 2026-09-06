@@ -87,10 +87,7 @@ class _CleanOrphansWorker(QObject):
 
 
 class ModelCachePage(_Page):
-    """Modelcachepage.
-
-    Manages ModelCachePage operations and coordinates related state changes for the component.
-    """
+    """Model Cache page: LLM model caches (Hugging Face hub CAS, Ollama blobs, LM Studio, ComfyUI) –."""
 
     def __init__(self, win):
         """__init__.
@@ -181,9 +178,7 @@ class ModelCachePage(_Page):
         self.win.run_worker(_ScanWorker(), self._on_scan, self._fail)
 
     def _on_scan(self, stores):
-        """_on_scan.
-
-        Manages on scan operations and coordinates related state changes for the component.
+        """Populate the results table (setEnabled, any, show_empty) with the latest data.
 
         Args:
             stores: The stores parameter.
@@ -262,9 +257,7 @@ class ModelCachePage(_Page):
         self.win.run_worker(_CleanOrphansWorker(dry_run), self._on_clean, self._fail)
 
     def _on_clean(self, ok: bool, msg: str, freed: int):
-        """_on_clean.
-
-        Manages on clean operations and coordinates related state changes for the component.
+        """Validate the current selection and ask the user to confirm via a message box showing 'Orphan cleanup'.
 
         Args:
             ok (bool): The ok parameter.

@@ -71,10 +71,7 @@ from typing import Any, Deque, Dict, Hashable, Optional, Tuple
 
 @dataclass(slots=True)
 class _Entry:
-    """Entry.
-
-    Manages Entry operations and coordinates related state changes for the component.
-    """
+    """Record holding key, value, freq."""
     key: Hashable
     value: Any
     freq: int = 0  # 0..3 (2 bits)
@@ -82,10 +79,7 @@ class _Entry:
 
 @dataclass
 class S3FIFOStats:
-    """S3fifostats.
-
-    Manages S3FIFOStats operations and coordinates related state changes for the component.
-    """
+    """Record holding hits, misses, ghost_hits, evictions, small_evictions_to_main, small_evictions_to_ghost, main_reinsertions."""
     hits: int = 0
     misses: int = 0
     ghost_hits: int = 0
@@ -95,12 +89,10 @@ class S3FIFOStats:
     main_reinsertions: int = 0
 
     def to_dict(self) -> dict:
-        """To dict.
-
-        Manages to dict operations and coordinates related state changes for the component.
+        """Serialize to a plain dict with keys hits, misses, hit_ratio, ghost_hits, evictions, small_to_main, small_to_ghost, main_reinsertions.
 
         Returns:
-            dict: Dictionary mapping identifiers to status or values.
+        dict: Dictionary mapping identifiers to status or values.
         """
         total = self.hits + self.misses
         return {
@@ -155,25 +147,21 @@ class S3FIFO:
     # -- internal helpers
 
     def _ghost_contains(self, key: Hashable) -> bool:
-        """_ghost_contains.
-
-        Manages ghost contains operations and coordinates related state changes for the component.
+        """Ghost contains helper. Returns key in self._ghost_set.
 
         Args:
-            key (Hashable): The key parameter.
+        key (Hashable): The key parameter.
 
         Returns:
-            bool: True if the operation succeeded, False otherwise.
+        bool: True if the operation succeeded, False otherwise.
         """
         return key in self._ghost_set
 
     def _ghost_add(self, key: Hashable) -> None:
-        """_ghost_add.
-
-        Manages ghost add operations and coordinates related state changes for the component.
+        """Ghost add helper.
 
         Args:
-            key (Hashable): The key parameter.
+        key (Hashable): The key parameter.
         """
         if key in self._ghost_set:
             # Move to tail (FIFO recency) – remove old position
@@ -188,12 +176,10 @@ class S3FIFO:
             self._ghost_set.discard(old)
 
     def _ghost_remove(self, key: Hashable) -> None:
-        """_ghost_remove.
-
-        Manages ghost remove operations and coordinates related state changes for the component.
+        """Ghost remove helper.
 
         Args:
-            key (Hashable): The key parameter.
+        key (Hashable): The key parameter.
         """
         if key in self._ghost_set:
             try:
@@ -203,10 +189,7 @@ class S3FIFO:
             self._ghost_set.discard(key)
 
     def _evict_small_if_needed(self) -> None:
-        """_evict_small_if_needed.
-
-        Manages evict small if needed operations and coordinates related state changes for the component.
-        """
+        """Evict small if needed helper."""
         while len(self._small) > self.small_capacity:
             entry = self._small.popleft()
             # Remove from index (will be re-added if promoted)
@@ -225,10 +208,7 @@ class S3FIFO:
 
     def _evict_main_if_needed(self) -> None:
         # FIFO-Reinsertion: keep looping until within capacity
-        """_evict_main_if_needed.
-
-        Manages evict main if needed operations and coordinates related state changes for the component.
-        """
+        """Evict main if needed helper."""
         while len(self._main) > self.main_capacity:
             entry = self._main.popleft()
             if entry.freq >= 1:
@@ -244,15 +224,13 @@ class S3FIFO:
     # -- public API
 
     def get(self, key: Hashable) -> Optional[Any]:
-        """Get.
-
-        Manages get operations and coordinates related state changes for the component.
+        """Get helper.
 
         Args:
-            key (Hashable): The key parameter.
+        key (Hashable): The key parameter.
 
         Returns:
-            Optional[Any]: Result of the operation.
+        Optional[Any]: Result of the operation.
         """
         with self._lock:
             hit = self._index.get(key)
@@ -296,15 +274,13 @@ class S3FIFO:
                 self._evict_small_if_needed()
 
     def delete(self, key: Hashable) -> bool:
-        """Delete.
-
-        Manages delete operations and coordinates related state changes for the component.
+        """Delete helper. Returns False.
 
         Args:
-            key (Hashable): The key parameter.
+        key (Hashable): The key parameter.
 
         Returns:
-            bool: True if the operation succeeded, False otherwise.
+        bool: True if the operation succeeded, False otherwise.
         """
         with self._lock:
             hit = self._index.pop(key, None)
@@ -321,48 +297,39 @@ class S3FIFO:
             return True
 
     def contains(self, key: Hashable) -> bool:
-        """Contains.
-
-        Manages contains operations and coordinates related state changes for the component.
+        """Contains helper. Returns key in self._index.
 
         Args:
-            key (Hashable): The key parameter.
+        key (Hashable): The key parameter.
 
         Returns:
-            bool: True if the operation succeeded, False otherwise.
+        bool: True if the operation succeeded, False otherwise.
         """
         with self._lock:
             return key in self._index
 
     def __contains__(self, key: object) -> bool:  # type: ignore[override]
-        """Contains.
-
-        Manages contains operations and coordinates related state changes for the component.
+        """Return the underlying contains attribute.
 
         Args:
-            key (object): The key parameter.
+        key (object): The key parameter.
 
         Returns:
-            bool: True if the operation succeeded, False otherwise.
+        bool: True if the operation succeeded, False otherwise.
         """
         return self.contains(key)  # type: ignore[arg-type]
 
     def __len__(self) -> int:
-        """Len.
-
-        Manages len operations and coordinates related state changes for the component.
+        """Len helper. Returns len(self._index).
 
         Returns:
-            int: Result of the operation.
+        int: Result of the operation.
         """
         with self._lock:
             return len(self._index)
 
     def clear(self) -> None:
-        """Clear.
-
-        Manages clear operations and coordinates related state changes for the component.
-        """
+        """Clear helper."""
         with self._lock:
             self._small.clear()
             self._main.clear()
@@ -372,12 +339,10 @@ class S3FIFO:
             self._stats = S3FIFOStats()
 
     def stats(self) -> dict:
-        """Stats.
-
-        Manages stats operations and coordinates related state changes for the component.
+        """Stats helper. Returns d.
 
         Returns:
-            dict: Dictionary mapping identifiers to status or values.
+        dict: Dictionary mapping identifiers to status or values.
         """
         with self._lock:
             d = self._stats.to_dict()
@@ -397,23 +362,19 @@ class S3FIFO:
     # Convenience for debugging / UI
 
     def keys(self) -> list[Hashable]:
-        """Keys.
-
-        Manages keys operations and coordinates related state changes for the component.
+        """Keys helper. Returns list(self._index.keys()).
 
         Returns:
-            list[Hashable]: List of processed items or identifiers.
+        list[Hashable]: List of processed items or identifiers.
         """
         with self._lock:
             return list(self._index.keys())
 
     def snapshot(self) -> dict:
-        """Snapshot.
-
-        Manages snapshot operations and coordinates related state changes for the component.
+        """Snapshot helper.
 
         Returns:
-            dict: Dictionary mapping identifiers to status or values.
+        dict: Dictionary mapping identifiers to status or values.
         """
         with self._lock:
             return {

@@ -18,9 +18,9 @@ from typing import Dict, List, Optional, Tuple
 
 @dataclass
 class BrowserTarget:
-    """Browsertarget.
+    """One browser cache directory eligible for cleaning.
 
-    Manages BrowserTarget operations and coordinates related state changes for the component.
+    Records browser, cache category, path, size, and file count.
     """
     browser_name: str
     category: str  # "Web Cache", "GPU Cache", "Code Cache", "Service Worker", "Crash Dumps"
@@ -31,9 +31,9 @@ class BrowserTarget:
 
 @dataclass
 class BrowserCleanResult:
-    """Browsercleanresult.
+    """Outcome of a deep browser cache purge.
 
-    Manages BrowserCleanResult operations and coordinates related state changes for the component.
+    Counts browsers touched, files deleted, and bytes freed.
     """
     browsers_cleaned: int
     files_deleted: int
@@ -41,25 +41,23 @@ class BrowserCleanResult:
     errors: List[str] = None
 
     def __post_init__(self):
-        """__post_init__.
-
-        Manages post init operations and coordinates related state changes for the component.
-        """
+        """Initialize the errors list when not provided."""
         if self.errors is None:
             self.errors = []
 
 
 class BrowserDeepCleaner:
-    """Browserdeepcleaner.
+    """Forensic cleaner for multi-browser caches preserving logins/cookies.
 
-    Manages BrowserDeepCleaner operations and coordinates related state changes for the component.
+    Scan is read-only; clean_targets permanently deletes cache file contents.
+    No admin required, but browsers should be closed to unlock files.
     """
 
     @classmethod
     def _dir_stats(cls, path: Path) -> Tuple[int, int]:
         """Compute size in bytes and file count for directory.
 
-        Manages dir stats operations and coordinates related state changes for the component.
+        Read-only walk; returns (0, 0) when missing or unreadable.
 
         Args:
             path (Path): Filesystem path to the target file or directory.

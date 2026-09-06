@@ -82,9 +82,7 @@ class _ScanWorker(QObject):
             )
 
             def _cb(scanned_files: int, scanned_bytes: int, current: str):
-                """Cb.
-
-                Manages cb operations and coordinates related state changes for the component.
+                """Forward worker progress unless cancellation was requested, formatting byte counts.
 
                 Args:
                     scanned_files (int): The scanned files parameter.
@@ -124,8 +122,6 @@ class _ScanWorker(QObject):
 def _discover_fixed_drives() -> List[Tuple[str, str]]:
     """Return ``[(letter, label)]`` for every existing fixed drive letter.
 
-    Manages discover fixed drives operations and coordinates related state changes for the component.
-
     Returns:
         List[Tuple[str, str]]: List of processed items or identifiers.
     """
@@ -157,8 +153,6 @@ def _discover_fixed_drives() -> List[Tuple[str, str]]:
 def _compute_depth(node, target_path: str) -> int:
     """Walk the tree to find the depth of *target_path*.
 
-    Manages compute depth operations and coordinates related state changes for the component.
-
     Args:
         node: The node parameter.
         target_path (str): Filesystem path to the target file or directory.
@@ -176,10 +170,7 @@ def _compute_depth(node, target_path: str) -> int:
 
 
 class DiskAnalyzerPage(_Page):
-    """Diskanalyzerpage.
-
-    Manages DiskAnalyzerPage operations and coordinates related state changes for the component.
-    """
+    """Advanced Disk Analyzer page: Fast NTFS MFT scan with treemap data. Analyze where space goes."""
 
     def __init__(self, win):
         """__init__.
@@ -335,9 +326,7 @@ class DiskAnalyzerPage(_Page):
         self._drive_combo.blockSignals(False)
 
     def _on_drive_changed(self, idx: int):
-        """_on_drive_changed.
-
-        Manages on drive changed operations and coordinates related state changes for the component.
+        """Handle a selection change (on drive changed) by updating dependent labels and controls.
 
         Args:
             idx (int): The idx parameter.
@@ -364,10 +353,7 @@ class DiskAnalyzerPage(_Page):
     # ── Scan ───────────────────────────────────────────────────────────
 
     def _run(self):
-        """Run.
-
-        Manages run operations and coordinates related state changes for the component.
-        """
+        """Disable action buttons, show progress/status, and launch the background worker (strip, text, is_dir)."""
         path = self._path_edit.text().strip()
         if not path or not Path(path).is_dir():
             self._status.setText("Please enter a valid directory path.")
@@ -506,10 +492,7 @@ class DiskAnalyzerPage(_Page):
         self._state.show_error(msg, on_retry=self._run)
 
     def _export_sunburst(self):
-        """Export current disk analysis tree as an interactive Sunburst HTML chart.
-
-        Manages export sunburst operations and coordinates related state changes for the component.
-        """
+        """Prompt the user with a file dialog (Path) and apply the chosen path to the page state."""
         if not getattr(self, "_last_tree", None):
             return
         from PySide6.QtWidgets import QFileDialog, QMessageBox
@@ -528,10 +511,7 @@ class DiskAnalyzerPage(_Page):
             QMessageBox.warning(self, "Export Error", f"Failed to export chart: {exc}")
 
     def _export_treemap(self):
-        """Export current disk analysis tree as an interactive TreeMap HTML chart.
-
-        Manages export treemap operations and coordinates related state changes for the component.
-        """
+        """Prompt the user with a file dialog (Path) and apply the chosen path to the page state."""
         if not getattr(self, "_last_tree", None):
             return
         from PySide6.QtWidgets import QFileDialog, QMessageBox

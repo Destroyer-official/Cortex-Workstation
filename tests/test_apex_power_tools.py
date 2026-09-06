@@ -18,9 +18,7 @@ from cortex_unified.system_tools.notification_cleaner import NotificationCleaner
 
 def test_file_signature_sniffer(tmp_path):
     # 1. Test PNG Header
-    """test_file_signature_sniffer.
-
-    Manages test file signature sniffer operations and coordinates related state changes for the component.
+    """Verify file signature sniffer via FileSignatureSniffer.sniff_file, res.detected_mime.lower.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.
@@ -40,9 +38,7 @@ def test_file_signature_sniffer(tmp_path):
 
 
 def test_binary_differ(tmp_path):
-    """test_binary_differ.
-
-    Manages test binary differ operations and coordinates related state changes for the component.
+    """Verify binary differ via BinaryDiffer.compare_binary_files.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.
@@ -62,10 +58,7 @@ def test_binary_differ(tmp_path):
 
 
 def test_usn_journal_scanner():
-    """test_usn_journal_scanner.
-
-    Manages test usn journal scanner operations and coordinates related state changes for the component.
-    """
+    """Verify usn journal scanner via UsnJournalScanner.query_volume_journal."""
     st = UsnJournalScanner.query_volume_journal("C:")
     assert isinstance(st, UsnJournalStatus)
     assert st.drive_letter == "C:"
@@ -74,9 +67,7 @@ def test_usn_journal_scanner():
 
 
 def test_par2_recovery(tmp_path):
-    """test_par2_recovery.
-
-    Manages test par2 recovery operations and coordinates related state changes for the component.
+    """Verify par2 recovery via Par2RecoveryEngine.inspect_par2_file, pkt_len.to_bytes.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.
@@ -96,9 +87,7 @@ def test_par2_recovery(tmp_path):
 
 
 def test_image_optimizer(tmp_path):
-    """test_image_optimizer.
-
-    Manages test image optimizer operations and coordinates related state changes for the component.
+    """Verify image optimizer via ImageOptimizer.optimize_image, QImage, img.fill.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.
@@ -118,10 +107,7 @@ def test_image_optimizer(tmp_path):
 
 
 def test_driver_store_cleaner():
-    """test_driver_store_cleaner.
-
-    Manages test driver store cleaner operations and coordinates related state changes for the component.
-    """
+    """Verify driver store cleaner via DriverStoreCleaner.enumerate_drivers, bool."""
     drivers = DriverStoreCleaner.enumerate_drivers()
     assert isinstance(drivers, list)
     # On Windows test system, verifies driver parse format or empty graceful handling
@@ -131,20 +117,14 @@ def test_driver_store_cleaner():
 
 
 def test_power_plan_optimizer():
-    """test_power_plan_optimizer.
-
-    Manages test power plan optimizer operations and coordinates related state changes for the component.
-    """
+    """Verify power plan optimizer via PowerPlanOptimizer.get_status, bool."""
     st = PowerPlanOptimizer.get_status()
     assert isinstance(st, PowerPlanStatus)
     assert bool(st.active_scheme_name)
 
 
 def test_shellbags_privacy_cleaner():
-    """test_shellbags_privacy_cleaner.
-
-    Manages test shellbags privacy cleaner operations and coordinates related state changes for the component.
-    """
+    """Verify shellbags privacy cleaner via ShellbagsPrivacyCleaner.scan_shell_activity, bool."""
     targets = ShellbagsPrivacyCleaner.scan_shell_activity()
     assert isinstance(targets, list)
     # Test dry calculation
@@ -154,9 +134,7 @@ def test_shellbags_privacy_cleaner():
 
 
 def test_hosts_file_manager(tmp_path):
-    """test_hosts_file_manager.
-
-    Manages test hosts file manager operations and coordinates related state changes for the component.
+    """Verify hosts file manager via HostsFileManager.parse_hosts_file, HostsFileManager.apply_anti_telemetry_shield.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.
@@ -185,10 +163,7 @@ def test_hosts_file_manager(tmp_path):
 
 
 def test_notification_cleaner():
-    """test_notification_cleaner.
-
-    Manages test notification cleaner operations and coordinates related state changes for the component.
-    """
+    """Verify notification cleaner via NotificationCleaner.get_status, hasattr."""
     st = NotificationCleaner.get_status()
     assert hasattr(st, "total_size_bytes")
     assert st.total_size_bytes >= 0

@@ -65,7 +65,7 @@ class Scanner:
     def _should_exclude_path(self, path: Path) -> bool:
         """True when *path* hits a system directory or a configured pattern.
 
-        Manages should exclude path operations and coordinates related state changes for the component.
+        Treats platform system directories as always excluded so cleanup can never enter them.
 
         Args:
             path (Path): Filesystem path to the target file or directory.
@@ -91,14 +91,14 @@ class Scanner:
     def _is_file_old_enough(self, filepath: Path) -> bool:
         """Apply the ``min_age_days`` rule; files younger are skipped.
 
-        Manages is file old enough operations and coordinates related state changes for the component.
+ Returns True when min_age_days is disabled or the file mtime clears the floor; unknown age counts as old enough for empty files.
 
-        Args:
-            filepath (Path): Filesystem path to the target file or directory.
+ Args:
+ filepath (Path): Filesystem path to the target file or directory.
 
-        Returns:
-            bool: True if the operation succeeded, False otherwise.
-        """
+ Returns:
+ bool: True if the operation succeeded, False otherwise.
+ """
         if self.min_age_days <= 0:
             return True
         
@@ -329,11 +329,11 @@ class Scanner:
     def _estimate_total_items(self) -> int:
         """Rough item count for progress bars; exactness is not required.
 
-        Manages estimate total items operations and coordinates related state changes for the component.
+ Walks at most ~10k entries then extrapolates, so progress bars stay cheap on huge trees.
 
-        Returns:
-            int: Result of the operation.
-        """
+ Returns:
+ int: Result of the operation.
+ """
         try:
             count = 0
             for root, dirs, files in os.walk(self.root_path):
@@ -408,19 +408,19 @@ class Scanner:
     def pause_scan(self) -> None:
         """Pause the current scan operation.
 
-        Manages pause scan operations and coordinates related state changes for the component.
-        """
+ Delegates pause to ScanManager when checkpointing is enabled.
+ """
         if self._scan_manager:
             self._scan_manager.pause_scan()
     
     def resume_scan(self, checkpoint_id: Optional[str] = None) -> None:
-        """resume_scan.
+        """Resume scan.
 
-        Manages resume scan operations and coordinates related state changes for the component.
+ Delegates resume to ScanManager with an optional checkpoint id.
 
-        Args:
-            checkpoint_id (Optional[str]): The checkpoint id parameter.
-        """
+ Args:
+ checkpoint_id (Optional[str]): The checkpoint id parameter.
+ """
         if self._scan_manager:
             self._scan_manager.resume_scan(checkpoint_id)
     
@@ -436,11 +436,11 @@ class Scanner:
     def create_checkpoint(self) -> Optional[str]:
         """Create a checkpoint of current scan state.
 
-        Manages create checkpoint operations and coordinates related state changes for the component.
+ Snapshots current empty-file/dir lists into ScanManager.
 
-        Returns:
-            Optional[str]: Formatted string or path.
-        """
+ Returns:
+ Optional[str]: Formatted string or path.
+ """
         if self._scan_manager:
             scan_state = {
                 'empty_files': [str(f) for f in self.empty_files],
@@ -453,8 +453,8 @@ class Scanner:
     def list_checkpoints(self):
         """List available checkpoints.
 
-        Manages list checkpoints operations and coordinates related state changes for the component.
-        """
+ Lists ScanManager checkpoints, or empty when disabled.
+ """
         if self._scan_manager:
             return self._scan_manager.list_checkpoints()
         return []
@@ -462,11 +462,11 @@ class Scanner:
     def get_stats(self) -> dict:
         """Get statistics about the scan.
 
-        Manages get stats operations and coordinates related state changes for the component.
+ Counts of empty files, dirs, and their total.
 
-        Returns:
-            dict: Dictionary mapping identifiers to status or values.
-        """
+ Returns:
+ dict: Dictionary mapping identifiers to status or values.
+ """
         return {
             "empty_files_count": len(self.empty_files),
             "empty_dirs_count": len(self.empty_dirs),

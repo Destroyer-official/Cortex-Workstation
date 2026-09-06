@@ -24,9 +24,9 @@ from cortex_unified.licensing import Feature, allowed
 
 
 class FileShredderWorker(QThread):
-    """Fileshredderworker.
+    """QThread worker shredding files and directories via AdvancedShredder with optional FreeSpaceWiper.
 
-    Manages FileShredderWorker operations and coordinates related state changes for the component.
+        Emits progress_update while overwriting and finished or error on completion.
     """
     finished = Signal(dict)
     error = Signal(str)
@@ -105,9 +105,9 @@ class FileShredderWorker(QThread):
 
 
 class FileShredderTab(BaseTab):
-    """Fileshreddertab.
+    """File-shredder tab with shred file list, passes/free-space options, progress bar, and results view.
 
-    Manages FileShredderTab operations and coordinates related state changes for the component.
+        Add, remove, and shred actions stage paths in a set and launch FileShredderWorker after confirmation.
     """
 
     def __init__(self, config, logger, safety_manager):
@@ -125,8 +125,6 @@ class FileShredderTab(BaseTab):
 
     def setup_ui(self):
         """Create the file shredder tab.
-
-        Manages setup ui operations and coordinates related state changes for the component.
         """
         layout = QVBoxLayout(self)
         
@@ -224,8 +222,6 @@ class FileShredderTab(BaseTab):
 
     def _sync_list(self):
         """Rebuild the list widget from the shred set and toggle the start button.
-
-        Manages sync list operations and coordinates related state changes for the component.
         """
         self.shredder_file_list.clear()
         for f in self.files_to_shred:
@@ -234,8 +230,6 @@ class FileShredderTab(BaseTab):
 
     def add_files_to_shred(self):
         """Add chosen files to the shred set and refresh the list.
-
-        Manages add files to shred operations and coordinates related state changes for the component.
         """
         files, _ = QFileDialog.getOpenFileNames(self, "Select Files to Shred")
         if files:
@@ -245,8 +239,6 @@ class FileShredderTab(BaseTab):
 
     def add_folder_to_shred(self):
         """Add a chosen folder to the shred set and refresh the list.
-
-        Manages add folder to shred operations and coordinates related state changes for the component.
         """
         folder = QFileDialog.getExistingDirectory(self, "Select Directory to Shred")
         if folder:
@@ -255,8 +247,6 @@ class FileShredderTab(BaseTab):
 
     def remove_files_from_shred(self):
         """Discard the selected entries from the shred set.
-
-        Manages remove files from shred operations and coordinates related state changes for the component.
         """
         items = self.shredder_file_list.selectedItems()
         for item in items:
@@ -265,16 +255,12 @@ class FileShredderTab(BaseTab):
 
     def clear_shred_list(self):
         """Empty the shred set and refresh the list.
-
-        Manages clear shred list operations and coordinates related state changes for the component.
         """
         self.files_to_shred.clear()
         self._sync_list()
 
     def _resolve_passes(self):
         """Entitlement-checked pass count; never exceeds the licensed cap.
-
-        Manages resolve passes operations and coordinates related state changes for the component.
         """
         passes = self.shred_passes_spinbox.value()
         if passes > 1 and not allowed(Feature.SHRED_MULTIPASS):
@@ -287,7 +273,6 @@ class FileShredderTab(BaseTab):
     def _derive_drive_letter(paths):
         """Single drive letter shared by all target paths, else None.
 
-        Manages derive drive letter operations and coordinates related state changes for the component.
 
         Args:
             paths: Filesystem path to the target file or directory.
@@ -300,8 +285,6 @@ class FileShredderTab(BaseTab):
 
     def start_file_shredding(self):
         """Confirm destructiveness, resolve passes/wipe drive, and launch the worker.
-
-        Manages start file shredding operations and coordinates related state changes for the component.
         """
         if not self.files_to_shred:
             return
@@ -372,7 +355,6 @@ class FileShredderTab(BaseTab):
     def _on_worker_finished(self, worker):
         """Unregister a finished worker thread and delete it.
 
-        Manages on worker finished operations and coordinates related state changes for the component.
 
         Args:
             worker: The worker parameter.
@@ -383,7 +365,6 @@ class FileShredderTab(BaseTab):
     def _on_shred_complete(self, results):
         """Report shredded/failed paths and the free-space wipe result, then clear the list.
 
-        Manages on shred complete operations and coordinates related state changes for the component.
 
         Args:
             results: Collection or dictionary holding operation results.
@@ -416,7 +397,6 @@ class FileShredderTab(BaseTab):
     def _on_shred_error(self, error):
         """Re-enable shredding and report the fatal error.
 
-        Manages on shred error operations and coordinates related state changes for the component.
 
         Args:
             error: Error message string or exception instance.

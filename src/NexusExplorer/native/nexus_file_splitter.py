@@ -13,9 +13,9 @@ from typing import Callable, List, Optional, Tuple
 
 
 class SplitPreset(Enum):
-    """Splitpreset.
+    """Named chunk-size preset.
 
-    Manages SplitPreset operations and coordinates related state changes for the component.
+    Maps CUSTOM/10MB/50MB/100MB/CD-700MB/FAT32-4GB/DVD labels to PRESET_BYTES byte counts.
     """
     CUSTOM = "Custom Size"
     MB_10 = "10 MB"
@@ -38,9 +38,9 @@ PRESET_BYTES = {
 
 @dataclass
 class SplitManifest:
-    """Splitmanifest.
+    """JSON manifest describing a split set.
 
-    Manages SplitManifest operations and coordinates related state changes for the component.
+    Stores original name/size, chunk size, part count, uppercase SHA-256, timestamp, and part filenames.
     """
     original_filename: str
     original_size: int
@@ -53,9 +53,9 @@ class SplitManifest:
 
 @dataclass
 class SplitResult:
-    """Splitresult.
+    """Outcome of split_file.
 
-    Manages SplitResult operations and coordinates related state changes for the component.
+    Holds success, created part paths, manifest path, elapsed seconds, and error.
     """
     success: bool
     parts_created: List[str]
@@ -66,9 +66,9 @@ class SplitResult:
 
 @dataclass
 class JoinResult:
-    """Joinresult.
+    """Outcome of join_files.
 
-    Manages JoinResult operations and coordinates related state changes for the component.
+    Holds success, output path, byte total, manifest hash-verified flag, elapsed seconds, and error.
     """
     success: bool
     output_path: str
@@ -79,9 +79,9 @@ class JoinResult:
 
 
 class FileSplitterJoiner:
-    """Filesplitterjoiner.
+    """File splitter/joiner with SHA-256 manifests.
 
-    Manages FileSplitterJoiner operations and coordinates related state changes for the component.
+    Splits with 128KB BUFFER_SIZE streaming and joins .NNN parts or .split.json manifests with cancellation cleanup.
     """
 
     BUFFER_SIZE = 128 * 1024  # 128 KB chunk buffer
@@ -97,7 +97,7 @@ class FileSplitterJoiner:
     ) -> SplitResult:
         """Split a file into sequential parts with SHA256 integrity manifest.
 
-        Manages split file operations and coordinates related state changes for the component.
+        Streams source in BUFFER_SIZE blocks into sequential .NNN parts, hashes overall SHA-256, writes .split.json, and deletes partials on cancel.
 
         Args:
             source_file (str | Path): The source file parameter.
@@ -193,7 +193,7 @@ class FileSplitterJoiner:
     ) -> JoinResult:
         """Reassemble sequential split parts (.001, .002...) back into the original file.
 
-        Manages join files operations and coordinates related state changes for the component.
+        Resolves parts from manifest or numbered scan plus sibling manifest, streams them in order with hashing, verifies SHA-256, and removes partial output on cancel.
 
         Args:
             first_part_or_manifest (str | Path): The first part or manifest parameter.

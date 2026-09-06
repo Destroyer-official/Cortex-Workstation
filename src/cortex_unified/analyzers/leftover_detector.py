@@ -23,9 +23,8 @@ except ImportError:
 
 @dataclass
 class DetectedItem:
-    """Detecteditem.
+    """Base record for one detected leftover item with confidence, size, and reasons.
 
-    Manages DetectedItem operations and coordinates related state changes for the component.
     """
     path: Path
     item_type: str  # 'folder', 'file', 'registry_key'
@@ -36,9 +35,7 @@ class DetectedItem:
     metadata: Dict[str, Any]
     
     def to_dict(self) -> Dict[str, Any]:
-        """to_dict.
-
-        Manages to dict operations and coordinates related state changes for the component.
+        """Serialize this item to a dict with path and timestamp as strings.
 
         Returns:
             Dict[str, Any]: Dictionary mapping identifiers to status or values.
@@ -50,9 +47,8 @@ class DetectedItem:
 
 @dataclass
 class OrphanedFolder(DetectedItem):
-    """Orphanedfolder.
+    """Folder flagged as a possible app leftover, with install-location type and content flags.
 
-    Manages OrphanedFolder operations and coordinates related state changes for the component.
     """
     app_name: str
     installation_path_type: str  # 'program_files', 'appdata', 'temp', 'user_profile'
@@ -63,7 +59,6 @@ class OrphanedFolder(DetectedItem):
     def __post_init__(self):
         """Set item type after initialization.
 
-        Manages post init operations and coordinates related state changes for the component.
         """
         self.item_type = 'folder'
 
@@ -71,7 +66,6 @@ class OrphanedFolder(DetectedItem):
 class InstallerFile(DetectedItem):
     """Represents a detected installer file.
 
-    Initiates the package or update installation workflow in the background, monitoring execution progress.
     """
     installer_type: str  # 'msi', 'exe', 'dmg', 'deb', 'rpm', etc.
     is_duplicate: bool
@@ -81,15 +75,13 @@ class InstallerFile(DetectedItem):
     def __post_init__(self):
         """Set item type after initialization.
 
-        Manages post init operations and coordinates related state changes for the component.
         """
         self.item_type = 'file'
 
 @dataclass
 class RegistryOrphan(DetectedItem):
-    """Registryorphan.
+    """Registry key whose referenced file path no longer exists on disk.
 
-    Manages RegistryOrphan operations and coordinates related state changes for the component.
     """
     registry_key: str
     registry_hive: str  # 'HKLM', 'HKCU', etc.
@@ -99,7 +91,6 @@ class RegistryOrphan(DetectedItem):
     def __post_init__(self):
         """Set item type after initialization.
 
-        Manages post init operations and coordinates related state changes for the component.
         """
         self.item_type = 'registry_key'
 
@@ -107,7 +98,6 @@ class RegistryOrphan(DetectedItem):
 class CleanupRecommendation:
     """Represents a cleanup recommendation with risk assessment.
 
-    Permanently purges or removes specified target items, reclaiming storage space and logging actions taken.
     """
     items: List[DetectedItem]
     recommendation_type: str  # 'safe_delete', 'review_required', 'high_risk'
@@ -117,15 +107,12 @@ class CleanupRecommendation:
     warnings: List[str]
 
 class LeftoverDetector:
-    """Leftoverdetector.
+    """Scans install roots, download/temp folders, and registry for orphaned leftovers.
 
-    Manages LeftoverDetector operations and coordinates related state changes for the component.
     """
     
     def __init__(self, config: Config = None):
-        """__init__.
-
-        Initializes the instance and configures internal state.
+        """Store config, init result lists, stats, detection patterns, and install roots.
 
         Args:
             config (Config): The config parameter.
@@ -158,7 +145,6 @@ class LeftoverDetector:
     def _setup_installation_paths(self):
         """Set up common installation paths for different platforms.
 
-        Manages setup installation paths operations and coordinates related state changes for the component.
         """
         if sys.platform.startswith("win"):
             self.installation_paths = {
@@ -199,7 +185,6 @@ class LeftoverDetector:
     def _load_detection_patterns(self):
         """Load ML patterns and heuristics for leftover detection.
 
-        Manages load detection patterns operations and coordinates related state changes for the component.
         """
         # Common patterns for orphaned folders
         self.orphaned_folder_patterns = {
@@ -262,8 +247,6 @@ class LeftoverDetector:
     def scan_orphaned_folders(self, paths: List[str] = None) -> List[OrphanedFolder]:
         """Scan for orphaned application folders in common installation paths.
 
-        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
-
         Args:
             paths (List[str]): Filesystem path to the target file or directory.
 
@@ -295,8 +278,6 @@ class LeftoverDetector:
     
     def _scan_directory_for_orphans(self, directory: Path):
         """Scan a specific directory for orphaned folders.
-
-        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
 
         Args:
             directory (Path): The directory parameter.
@@ -332,8 +313,6 @@ class LeftoverDetector:
     def _is_system_directory(self, path: Path) -> bool:
         """Check if a directory is a system directory that should be skipped.
 
-        Manages is system directory operations and coordinates related state changes for the component.
-
         Args:
             path (Path): Filesystem path to the target file or directory.
 
@@ -350,8 +329,6 @@ class LeftoverDetector:
     
     def _analyze_folder_for_orphan_signs(self, folder: Path) -> float:
         """Analyze a folder for signs that it might be an orphan.
-
-        Manages analyze folder for orphan signs operations and coordinates related state changes for the component.
 
         Args:
             folder (Path): Filesystem path to the target file or directory.
@@ -396,8 +373,6 @@ class LeftoverDetector:
     def _folder_appears_abandoned(self, folder: Path) -> bool:
         """Check if a folder appears to be abandoned.
 
-        Manages folder appears abandoned operations and coordinates related state changes for the component.
-
         Args:
             folder (Path): Filesystem path to the target file or directory.
 
@@ -426,8 +401,6 @@ class LeftoverDetector:
     def _contains_uninstaller_remnants(self, folder: Path) -> bool:
         """Check if folder contains uninstaller remnants.
 
-        Manages contains uninstaller remnants operations and coordinates related state changes for the component.
-
         Args:
             folder (Path): Filesystem path to the target file or directory.
 
@@ -446,8 +419,6 @@ class LeftoverDetector:
     
     def _create_orphaned_folder_object(self, folder: Path, confidence: float) -> Optional[OrphanedFolder]:
         """Create an OrphanedFolder object from analysis results.
-
-        Manages create orphaned folder object operations and coordinates related state changes for the component.
 
         Args:
             folder (Path): Filesystem path to the target file or directory.
@@ -494,8 +465,6 @@ class LeftoverDetector:
     def _determine_installation_path_type(self, folder: Path) -> str:
         """Determine the type of installation path.
 
-        Manages determine installation path type operations and coordinates related state changes for the component.
-
         Args:
             folder (Path): Filesystem path to the target file or directory.
 
@@ -520,8 +489,6 @@ class LeftoverDetector:
     def _contains_executables(self, folder: Path) -> bool:
         """Check if folder contains executable files.
 
-        Manages contains executables operations and coordinates related state changes for the component.
-
         Args:
             folder (Path): Filesystem path to the target file or directory.
 
@@ -539,8 +506,6 @@ class LeftoverDetector:
     
     def _contains_config_files(self, folder: Path) -> bool:
         """Check if folder contains configuration files.
-
-        Manages contains config files operations and coordinates related state changes for the component.
 
         Args:
             folder (Path): Filesystem path to the target file or directory.
@@ -564,8 +529,6 @@ class LeftoverDetector:
     def _contains_data_files(self, folder: Path) -> bool:
         """Check if folder contains data files.
 
-        Manages contains data files operations and coordinates related state changes for the component.
-
         Args:
             folder (Path): Filesystem path to the target file or directory.
 
@@ -583,8 +546,6 @@ class LeftoverDetector:
     
     def _calculate_folder_size(self, folder: Path) -> int:
         """Calculate total size of folder in bytes.
-
-        Manages calculate folder size operations and coordinates related state changes for the component.
 
         Args:
             folder (Path): Filesystem path to the target file or directory.
@@ -607,8 +568,6 @@ class LeftoverDetector:
     def _extract_app_name(self, folder_name: str) -> str:
         """Extract application name from folder name.
 
-        Manages extract app name operations and coordinates related state changes for the component.
-
         Args:
             folder_name (str): The folder name parameter.
 
@@ -622,9 +581,7 @@ class LeftoverDetector:
         return name or folder_name
     
     def detect_installer_files(self, paths: List[str] = None) -> List[InstallerFile]:
-        """detect_installer_files.
-
-        Manages detect installer files operations and coordinates related state changes for the component.
+        """Scan download/temp roots for installer files by platform extension.
 
         Args:
             paths (List[str]): Filesystem path to the target file or directory.
@@ -678,8 +635,6 @@ class LeftoverDetector:
     def _scan_for_installer_files(self, directory: Path, installer_extensions: set):
         """Scan directory for installer files.
 
-        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
-
         Args:
             directory (Path): The directory parameter.
             installer_extensions (set): The installer extensions parameter.
@@ -707,8 +662,6 @@ class LeftoverDetector:
     
     def _analyze_installer_file(self, file_path: Path) -> Optional[InstallerFile]:
         """Analyze a potential installer file.
-
-        Manages analyze installer file operations and coordinates related state changes for the component.
 
         Args:
             file_path (Path): Filesystem path to the target file or directory.
@@ -753,8 +706,6 @@ class LeftoverDetector:
     def _check_installer_duplicate(self, file_path: Path) -> bool:
         """Check if installer file is a duplicate (simplified implementation).
 
-        Manages check installer duplicate operations and coordinates related state changes for the component.
-
         Args:
             file_path (Path): Filesystem path to the target file or directory.
 
@@ -774,8 +725,6 @@ class LeftoverDetector:
     
     def _extract_version_from_filename(self, filename: str) -> Optional[str]:
         """Extract version number from filename.
-
-        Manages extract version from filename operations and coordinates related state changes for the component.
 
         Args:
             filename (str): The filename parameter.
@@ -800,8 +749,6 @@ class LeftoverDetector:
     
     def _calculate_installer_confidence(self, file_path: Path, size_bytes: int) -> float:
         """Calculate confidence score for installer file detection.
-
-        Manages calculate installer confidence operations and coordinates related state changes for the component.
 
         Args:
             file_path (Path): Filesystem path to the target file or directory.
@@ -828,8 +775,6 @@ class LeftoverDetector:
     
     def analyze_registry_orphans(self) -> List[RegistryOrphan]:
         """Analyze Windows registry for orphaned entries.
-
-        Manages analyze registry orphans operations and coordinates related state changes for the component.
 
         Returns:
             List[RegistryOrphan]: List of processed items or identifiers.
@@ -860,8 +805,6 @@ class LeftoverDetector:
     def _analyze_registry_key(self, hive, hive_name: str, key_path: str):
         """Analyze a specific registry key for orphaned entries.
 
-        Manages analyze registry key operations and coordinates related state changes for the component.
-
         Args:
             hive: The hive parameter.
             hive_name (str): The hive name parameter.
@@ -889,8 +832,6 @@ class LeftoverDetector:
     
     def _check_registry_subkey_for_orphans(self, hive, hive_name: str, full_key_path: str, subkey_name: str):
         """Check a registry subkey for orphaned file references.
-
-        Manages check registry subkey for orphans operations and coordinates related state changes for the component.
 
         Args:
             hive: The hive parameter.
@@ -926,8 +867,6 @@ class LeftoverDetector:
     def _create_registry_orphan(self, registry_key: str, hive: str, referenced_path: str, key_type: str) -> Optional[RegistryOrphan]:
         """Create a RegistryOrphan object.
 
-        Manages create registry orphan operations and coordinates related state changes for the component.
-
         Args:
             registry_key (str): The registry key parameter.
             hive (str): The hive parameter.
@@ -961,8 +900,6 @@ class LeftoverDetector:
     
     def apply_ml_patterns(self, items: List[DetectedItem]) -> List[DetectedItem]:
         """Apply machine learning patterns to improve detection accuracy.
-
-        Manages apply ml patterns operations and coordinates related state changes for the component.
 
         Args:
             items (List[DetectedItem]): Collection of items or entries to process.
@@ -1018,8 +955,6 @@ class LeftoverDetector:
     def _apply_pattern_adjustments(self, item: DetectedItem) -> float:
         """Apply pattern-based adjustments to confidence score.
 
-        Manages apply pattern adjustments operations and coordinates related state changes for the component.
-
         Args:
             item (DetectedItem): The item parameter.
 
@@ -1053,8 +988,6 @@ class LeftoverDetector:
     def calculate_confidence_score(self, item: DetectedItem) -> float:
         """Calculate overall confidence score for a detected item.
 
-        Manages calculate confidence score operations and coordinates related state changes for the component.
-
         Args:
             item (DetectedItem): The item parameter.
 
@@ -1065,8 +998,6 @@ class LeftoverDetector:
     
     def generate_cleanup_recommendations(self, confidence_threshold: float = 0.7) -> List[CleanupRecommendation]:
         """Generate cleanup recommendations based on detected items.
-
-        Manages generate cleanup recommendations operations and coordinates related state changes for the component.
 
         Args:
             confidence_threshold (float): The confidence threshold parameter.
@@ -1127,8 +1058,6 @@ class LeftoverDetector:
     def export_results(self, filepath: str) -> bool:
         """Export detection results to JSON file.
 
-        Manages export results operations and coordinates related state changes for the component.
-
         Args:
             filepath (str): Filesystem path to the target file or directory.
 
@@ -1157,8 +1086,6 @@ class LeftoverDetector:
     
     def get_stats(self) -> Dict[str, Any]:
         """Get detection statistics.
-
-        Manages get stats operations and coordinates related state changes for the component.
 
         Returns:
             Dict[str, Any]: Dictionary mapping identifiers to status or values.

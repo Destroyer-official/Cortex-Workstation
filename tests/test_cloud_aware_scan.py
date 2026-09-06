@@ -26,9 +26,7 @@ _MARK_MTIME = 946_684_800.0  # 2000-01-01T00:00:00Z
 
 
 def _mark_as_online(path: Path) -> None:
-    """_mark_as_online.
-
-    Manages mark as online operations and coordinates related state changes for the component.
+    """Mark as online using os.utime.
 
     Args:
         path (Path): Filesystem path to the target file or directory.
@@ -39,8 +37,6 @@ def _mark_as_online(path: Path) -> None:
 @pytest.fixture
 def cloud_attrs(monkeypatch):
     """Make the walker see mtime-marked files as dehydrated placeholders.
-
-    Manages cloud attrs operations and coordinates related state changes for the component.
 
     Args:
         monkeypatch: The monkeypatch parameter.
@@ -54,10 +50,7 @@ def cloud_attrs(monkeypatch):
 # -- classification ---------------------------------------------------------
 
 def test_dehydrated_detects_all_recall_flags():
-    """test_dehydrated_detects_all_recall_flags.
-
-    Manages test dehydrated detects all recall flags operations and coordinates related state changes for the component.
-    """
+    """Verify dehydrated detects all recall flags via winattrs.is_dehydrated."""
     for bit in (winattrs.FILE_ATTRIBUTE_OFFLINE,
                 winattrs.FILE_ATTRIBUTE_RECALL_ON_OPEN,
                 winattrs.FILE_ATTRIBUTE_RECALL_ON_DATA_ACCESS):
@@ -68,10 +61,7 @@ def test_dehydrated_detects_all_recall_flags():
 
 
 def test_cloud_tag_covers_the_provider_range():
-    """test_cloud_tag_covers_the_provider_range.
-
-    Manages test cloud tag covers the provider range operations and coordinates related state changes for the component.
-    """
+    """Verify cloud tag covers the provider range via winattrs.is_cloud_tag."""
     assert winattrs.is_cloud_tag(0x9000001A) is True
     assert winattrs.is_cloud_tag(0x9000101A) is True   # provider variant 1
     assert winattrs.is_cloud_tag(0x9000F01A) is True   # provider variant 15
@@ -79,18 +69,13 @@ def test_cloud_tag_covers_the_provider_range():
 
 
 def test_junction_is_distinct_from_symlink():
-    """Python reports junctions as non-symlinks, so they need their own check.
-
-    Manages test junction is distinct from symlink operations and coordinates related state changes for the component.
-    """
+    """Python reports junctions as non-symlinks, so they need their own check."""
     assert winattrs.is_junction(winattrs.IO_REPARSE_TAG_MOUNT_POINT) is True
     assert winattrs.is_junction(winattrs.IO_REPARSE_TAG_SYMLINK) is False
 
 
 def test_attribute_readers_tolerate_a_posix_stat(tmp_path):
-    """test_attribute_readers_tolerate_a_posix_stat.
-
-    Manages test attribute readers tolerate a posix stat operations and coordinates related state changes for the component.
+    """Verify attribute readers tolerate a posix stat via winattrs.reparse_tag_of, f.stat, winattrs.attrs_of.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.
@@ -104,10 +89,7 @@ def test_attribute_readers_tolerate_a_posix_stat(tmp_path):
 
 
 def test_describe_explains_special_entries():
-    """test_describe_explains_special_entries.
-
-    Manages test describe explains special entries operations and coordinates related state changes for the component.
-    """
+    """Verify describe explains special entries via winattrs.describe."""
     assert "cloud" in winattrs.describe(ONLINE, 0)
     assert "junction" in winattrs.describe(0, winattrs.IO_REPARSE_TAG_MOUNT_POINT)
     assert winattrs.describe(0, 0) == ""
@@ -116,10 +98,7 @@ def test_describe_explains_special_entries():
 # -- FileEntry honesty ------------------------------------------------------
 
 def test_placeholder_entry_reclaims_nothing():
-    """test_placeholder_entry_reclaims_nothing.
-
-    Manages test placeholder entry reclaims nothing operations and coordinates related state changes for the component.
-    """
+    """Verify placeholder entry reclaims nothing via FileEntry, Path."""
     e = FileEntry(Path("x"), size=5 * 1024 ** 3, mtime=0.0, attrs=ONLINE)
     assert e.is_cloud_placeholder is True
     # A 5 GB online-only file frees zero local bytes.
@@ -127,10 +106,7 @@ def test_placeholder_entry_reclaims_nothing():
 
 
 def test_measured_on_disk_size_wins_over_logical():
-    """test_measured_on_disk_size_wins_over_logical.
-
-    Manages test measured on disk size wins over logical operations and coordinates related state changes for the component.
-    """
+    """Verify measured on disk size wins over logical via FileEntry, Path."""
     sparse = FileEntry(Path("x"), size=1_000_000, mtime=0.0,
                        attrs=winattrs.FILE_ATTRIBUTE_SPARSE_FILE, on_disk=4096)
     assert sparse.reclaimable_size == 4096
@@ -139,10 +115,7 @@ def test_measured_on_disk_size_wins_over_logical():
 
 
 def test_to_dict_reports_cloud_state():
-    """test_to_dict_reports_cloud_state.
-
-    Manages test to dict reports cloud state operations and coordinates related state changes for the component.
-    """
+    """Verify to dict reports cloud state via FileEntry, Path, to_dict."""
     d = FileEntry(Path("x"), 10, 0.0, attrs=winattrs.FILE_ATTRIBUTE_OFFLINE).to_dict()
     assert d["cloud_placeholder"] is True
     assert "cloud" in d["note"]
@@ -151,9 +124,7 @@ def test_to_dict_reports_cloud_state():
 # -- walker policy ----------------------------------------------------------
 
 def test_walker_skips_placeholders_and_reports_the_omission(tmp_path, cloud_attrs):
-    """test_walker_skips_placeholders_and_reports_the_omission.
-
-    Manages test walker skips placeholders and reports the omission operations and coordinates related state changes for the component.
+    """Verify walker skips placeholders and reports the omission via FastWalker, WalkOptions, scan.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.
@@ -176,9 +147,7 @@ def test_walker_skips_placeholders_and_reports_the_omission(tmp_path, cloud_attr
 
 
 def test_placeholders_can_be_included_on_request(tmp_path, cloud_attrs):
-    """test_placeholders_can_be_included_on_request.
-
-    Manages test placeholders can be included on request operations and coordinates related state changes for the component.
+    """Verify placeholders can be included on request via walker.scan, FastWalker, WalkOptions.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.
@@ -197,9 +166,7 @@ def test_placeholders_can_be_included_on_request(tmp_path, cloud_attrs):
 
 
 def test_find_empty_never_offers_a_placeholder_for_deletion(tmp_path, cloud_attrs):
-    """test_find_empty_never_offers_a_placeholder_for_deletion.
-
-    Manages test find empty never offers a placeholder for deletion operations and coordinates related state changes for the component.
+    """Verify find empty never offers a placeholder for deletion via real_empty.touch, online_empty.touch, FastWalker.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.
@@ -219,9 +186,7 @@ def test_find_empty_never_offers_a_placeholder_for_deletion(tmp_path, cloud_attr
 
 
 def test_walker_still_reports_plain_trees_unchanged(tmp_path):
-    """test_walker_still_reports_plain_trees_unchanged.
-
-    Manages test walker still reports plain trees unchanged operations and coordinates related state changes for the component.
+    """Verify walker still reports plain trees unchanged via FastWalker, WalkOptions, scan.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.
@@ -240,9 +205,7 @@ def test_walker_still_reports_plain_trees_unchanged(tmp_path):
 
 @pytest.mark.skipif(os.name != "nt", reason="allocated size query is Windows-specific")
 def test_on_disk_size_for_a_plain_file(tmp_path):
-    """test_on_disk_size_for_a_plain_file.
-
-    Manages test on disk size for a plain file operations and coordinates related state changes for the component.
+    """Verify on disk size for a plain file via pytest.mark.skipif, winattrs.on_disk_size.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.
@@ -253,19 +216,14 @@ def test_on_disk_size_for_a_plain_file(tmp_path):
 
 
 def test_on_disk_size_falls_back_when_the_path_is_gone():
-    """test_on_disk_size_falls_back_when_the_path_is_gone.
-
-    Manages test on disk size falls back when the path is gone operations and coordinates related state changes for the component.
-    """
+    """Verify on disk size falls back when the path is gone via winattrs.on_disk_size."""
     assert winattrs.on_disk_size("Z:/does/not/exist.bin", 777) in (None, 0, 777)
 
 
 # -- shredder refuses placeholders -----------------------------------------
 
 def test_shredder_refuses_to_overwrite_a_placeholder(tmp_path, monkeypatch):
-    """test_shredder_refuses_to_overwrite_a_placeholder.
-
-    Manages test shredder refuses to overwrite a placeholder operations and coordinates related state changes for the component.
+    """Verify shredder refuses to overwrite a placeholder via monkeypatch.setattr, SecureDeleter, deleter.delete.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.

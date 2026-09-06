@@ -10,10 +10,10 @@ from contextlib import contextmanager
 
 @dataclass
 class ProfileReport:
-    """Profilereport.
+    """Profile Report.
 
-    Manages ProfileReport operations and coordinates related state changes for the component.
-    """
+ Handles profile report for.
+ """
     operation_name: str
     total_time: float
     memory_usage: Dict[str, float] = field(default_factory=dict)
@@ -22,13 +22,13 @@ class ProfileReport:
     custom_metrics: Dict[str, Any] = field(default_factory=dict)
     
     def to_dict(self) -> Dict[str, Any]:
-        """to_dict.
+        """To dict.
 
-        Manages to dict operations and coordinates related state changes for the component.
+ Handles to dict for.
 
-        Returns:
-            Dict[str, Any]: Dictionary mapping identifiers to status or values.
-        """
+ Returns:
+ Dict[str, Any]: Dictionary mapping identifiers to status or values.
+ """
         return {
             'operation_name': self.operation_name,
             'total_time': self.total_time,
@@ -39,10 +39,10 @@ class ProfileReport:
         }
 
 class OperationProfiler:
-    """Operationprofiler.
+    """Operation Profiler.
 
-    Manages OperationProfiler operations and coordinates related state changes for the component.
-    """
+ Handles operation profiler for.
+ """
     
     def __init__(self):
         """Initialize the instance and configure internal state.
@@ -58,11 +58,11 @@ class OperationProfiler:
     def profile_operation(self, operation_name: str):
         """Context manager for profiling operations.
 
-        Manages profile operation operations and coordinates related state changes for the component.
+ Handles profile operation for.
 
-        Args:
-            operation_name (str): The operation name parameter.
-        """
+ Args:
+ operation_name (str): The operation name parameter.
+ """
         self.start_operation(operation_name)
         try:
             yield self
@@ -72,11 +72,11 @@ class OperationProfiler:
     def start_operation(self, operation_name: str) -> None:
         """Start profiling an operation.
 
-        Manages start operation operations and coordinates related state changes for the component.
+ Handles start operation for.
 
-        Args:
-            operation_name (str): The operation name parameter.
-        """
+ Args:
+ operation_name (str): The operation name parameter.
+ """
         self.current_operation = operation_name
         self.start_time = time.time()
         self.logger.debug(f"Started profiling: {operation_name}")
@@ -84,11 +84,11 @@ class OperationProfiler:
     def end_operation(self) -> ProfileReport:
         """End profiling and create report.
 
-        Manages end operation operations and coordinates related state changes for the component.
+ Handles end operation for.
 
-        Returns:
-            ProfileReport: Result of the operation.
-        """
+ Returns:
+ ProfileReport: Result of the operation.
+ """
         if not self.current_operation or not self.start_time:
             raise ValueError("No operation currently being profiled")
         
@@ -110,42 +110,42 @@ class OperationProfiler:
     def get_reports(self) -> List[ProfileReport]:
         """Get all profiling reports.
 
-        Manages get reports operations and coordinates related state changes for the component.
+ Handles get reports for.
 
-        Returns:
-            List[ProfileReport]: List of processed items or identifiers.
-        """
+ Returns:
+ List[ProfileReport]: List of processed items or identifiers.
+ """
         return self.profiles.copy()
     
     def get_report_by_name(self, operation_name: str) -> List[ProfileReport]:
         """Get reports for specific operation.
 
-        Manages get report by name operations and coordinates related state changes for the component.
+ Handles get report by name for.
 
-        Args:
-            operation_name (str): The operation name parameter.
+ Args:
+ operation_name (str): The operation name parameter.
 
-        Returns:
-            List[ProfileReport]: List of processed items or identifiers.
-        """
+ Returns:
+ List[ProfileReport]: List of processed items or identifiers.
+ """
         return [r for r in self.profiles if r.operation_name == operation_name]
     
     def clear_reports(self) -> None:
         """Clear all profiling reports.
 
-        Manages clear reports operations and coordinates related state changes for the component.
-        """
+ Handles clear reports for.
+ """
         self.profiles.clear()
         self.logger.debug("Cleared all profiling reports")
     
     def get_summary(self) -> Dict[str, Any]:
         """Get summary of all profiling data.
 
-        Manages get summary operations and coordinates related state changes for the component.
+ Handles get summary for.
 
-        Returns:
-            Dict[str, Any]: Dictionary mapping identifiers to status or values.
-        """
+ Returns:
+ Dict[str, Any]: Dictionary mapping identifiers to status or values.
+ """
         if not self.profiles:
             return {}
         

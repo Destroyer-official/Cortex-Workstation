@@ -20,10 +20,7 @@ from cortex_unified.system_tools.storage_growth_tracker import StorageGrowthTrac
 
 
 def test_vss_manager():
-    """test_vss_manager.
-
-    Manages test vss manager operations and coordinates related state changes for the component.
-    """
+    """Verify vss manager via VssManager, mgr.audit."""
     mgr = VssManager()
     rep = mgr.audit()
     assert isinstance(rep, VssAuditReport)
@@ -34,10 +31,7 @@ def test_vss_manager():
 
 
 def test_dev_drive_optimizer():
-    """test_dev_drive_optimizer.
-
-    Manages test dev drive optimizer operations and coordinates related state changes for the component.
-    """
+    """Verify dev drive optimizer via DevDriveOptimizer, opt.audit, c_drive.drive_letter.endswith."""
     opt = DevDriveOptimizer()
     rep = opt.audit()
     assert isinstance(rep, DevDriveAuditReport)
@@ -49,10 +43,7 @@ def test_dev_drive_optimizer():
 
 
 def test_bitlocker_auditor():
-    """test_bitlocker_auditor.
-
-    Manages test bitlocker auditor operations and coordinates related state changes for the component.
-    """
+    """Verify bitlocker auditor via BitLockerAuditor, aud.audit."""
     aud = BitLockerAuditor()
     rep = aud.audit()
     assert isinstance(rep, BitLockerAuditReport)
@@ -62,10 +53,7 @@ def test_bitlocker_auditor():
 
 
 def test_junction_auditor():
-    """test_junction_auditor.
-
-    Manages test junction auditor operations and coordinates related state changes for the component.
-    """
+    """Verify junction auditor via tempfile.TemporaryDirectory, Path, JunctionAuditor."""
     with tempfile.TemporaryDirectory() as tmpdir:
         tmp = Path(tmpdir)
         sub = tmp / "real_folder"
@@ -80,9 +68,7 @@ def test_junction_auditor():
 
 
 def test_bitrot_scrubber(tmp_path):
-    """test_bitrot_scrubber.
-
-    Manages test bitrot scrubber operations and coordinates related state changes for the component.
+    """Verify bitrot scrubber via BitRotScrubber, scrubber.scrub, f1.stat.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.
@@ -120,10 +106,7 @@ def test_bitrot_scrubber(tmp_path):
 
 
 def test_memory_compression_tuner():
-    """test_memory_compression_tuner.
-
-    Manages test memory compression tuner operations and coordinates related state changes for the component.
-    """
+    """Verify memory compression tuner via MemoryCompressionTuner, tuner.audit."""
     tuner = MemoryCompressionTuner()
     rep = tuner.audit()
     assert isinstance(rep, MemoryTunerReport)
@@ -134,10 +117,7 @@ def test_memory_compression_tuner():
 
 
 def test_sandbox_cleaner():
-    """test_sandbox_cleaner.
-
-    Manages test sandbox cleaner operations and coordinates related state changes for the component.
-    """
+    """Verify sandbox cleaner via cleaner.scan, SandboxCleaner."""
     cleaner = SandboxCleaner()
     rep = cleaner.scan()
     assert isinstance(rep, SandboxCleanReport)
@@ -146,10 +126,7 @@ def test_sandbox_cleaner():
 
 
 def test_smb_share_auditor():
-    """test_smb_share_auditor.
-
-    Manages test smb share auditor operations and coordinates related state changes for the component.
-    """
+    """Verify smb share auditor via SmbShareAuditor, aud.audit."""
     aud = SmbShareAuditor()
     rep = aud.audit()
     assert isinstance(rep, SmbSecurityReport)
@@ -158,10 +135,7 @@ def test_smb_share_auditor():
 
 
 def test_process_token_auditor():
-    """test_process_token_auditor.
-
-    Manages test process token auditor operations and coordinates related state changes for the component.
-    """
+    """Verify process token auditor via ProcessTokenAuditor, aud.audit."""
     aud = ProcessTokenAuditor()
     rep = aud.audit(max_processes=20)
     assert isinstance(rep, ProcessTokenAuditReport)
@@ -172,9 +146,7 @@ def test_process_token_auditor():
 
 
 def test_storage_growth_tracker(tmp_path):
-    """test_storage_growth_tracker.
-
-    Manages test storage growth tracker operations and coordinates related state changes for the component.
+    """Verify storage growth tracker via StorageGrowthTracker, tracker.take_snapshot, tracker.compare_snapshots.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.

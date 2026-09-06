@@ -39,9 +39,7 @@ IS_WINDOWS = os.name == "nt"
 
 
 def _touch_empty(path: Path) -> Path:
-    """_touch_empty.
-
-    Manages touch empty operations and coordinates related state changes for the component.
+    """Touch empty using path.parent.mkdir, path.write_bytes.
 
     Args:
         path (Path): Filesystem path to the target file or directory.
@@ -55,9 +53,7 @@ def _touch_empty(path: Path) -> Path:
 
 
 def _touch_file(path: Path, content: bytes = b"hello") -> Path:
-    """_touch_file.
-
-    Manages touch file operations and coordinates related state changes for the component.
+    """Touch file using path.parent.mkdir, path.write_bytes.
 
     Args:
         path (Path): Filesystem path to the target file or directory.
@@ -74,8 +70,6 @@ def _touch_file(path: Path, content: bytes = b"hello") -> Path:
 def _make_minimal_png(path: Path) -> Path:
     """Create a minimal valid PNG with a 1x1 white pixel.
 
-    Manages make minimal png operations and coordinates related state changes for the component.
-
     Args:
         path (Path): Filesystem path to the target file or directory.
 
@@ -88,9 +82,7 @@ def _make_minimal_png(path: Path) -> Path:
     sig = b"\x89PNG\r\n\x1a\n"
 
     def _chunk(ctype: bytes, data: bytes) -> bytes:
-        """Chunk.
-
-        Manages chunk operations and coordinates related state changes for the component.
+        """Chunk using zlib.crc32, to_bytes.
 
         Args:
             ctype (bytes): The ctype parameter.
@@ -114,8 +106,6 @@ def _make_minimal_png(path: Path) -> Path:
 def _make_minimal_jpg(path: Path) -> Path:
     """Create a minimal JPEG file.
 
-    Manages make minimal jpg operations and coordinates related state changes for the component.
-
     Args:
         path (Path): Filesystem path to the target file or directory.
 
@@ -128,9 +118,7 @@ def _make_minimal_jpg(path: Path) -> Path:
 
 
 def _make_minimal_pdf(path: Path) -> Path:
-    """_make_minimal_pdf.
-
-    Manages make minimal pdf operations and coordinates related state changes for the component.
+    """Make minimal pdf using path.parent.mkdir, path.write_bytes.
 
     Args:
         path (Path): Filesystem path to the target file or directory.
@@ -144,9 +132,7 @@ def _make_minimal_pdf(path: Path) -> Path:
 
 
 def _make_minimal_zip(path: Path) -> Path:
-    """_make_minimal_zip.
-
-    Manages make minimal zip operations and coordinates related state changes for the component.
+    """Make minimal zip using zipfile.ZipFile, zf.writestr.
 
     Args:
         path (Path): Filesystem path to the target file or directory.
@@ -166,14 +152,9 @@ def _make_minimal_zip(path: Path) -> Path:
 
 
 class TestEmptyFinder:
-    """Testemptyfinder.
-
-    Manages TestEmptyFinder operations and coordinates related state changes for the component.
-    """
+    """Group testemptyfinder tests covering finds empty files; finds empty dirs; returns empty when nothing empty; scanned count; duration is non negative; cancel stops early."""
     def test_finds_empty_files(self, tmp_path: Path):
-        """test_finds_empty_files.
-
-        Manages test finds empty files operations and coordinates related state changes for the component.
+        """Verify finds empty files via EmptyFinder, _touch_empty, _touch_file.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -186,9 +167,7 @@ class TestEmptyFinder:
         assert "notempty.txt" not in names
 
     def test_finds_empty_dirs(self, tmp_path: Path):
-        """test_finds_empty_dirs.
-
-        Manages test finds empty dirs operations and coordinates related state changes for the component.
+        """Verify finds empty dirs via EmptyFinder, find.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -204,9 +183,7 @@ class TestEmptyFinder:
         assert "nonempty_dir" not in dir_names
 
     def test_returns_empty_when_nothing_empty(self, tmp_path: Path):
-        """test_returns_empty_when_nothing_empty.
-
-        Manages test returns empty when nothing empty operations and coordinates related state changes for the component.
+        """Verify returns empty when nothing empty via EmptyFinder, _touch_file, find.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -218,9 +195,7 @@ class TestEmptyFinder:
         assert result.empty_folders == []
 
     def test_scanned_count(self, tmp_path: Path):
-        """test_scanned_count.
-
-        Manages test scanned count operations and coordinates related state changes for the component.
+        """Verify scanned count via EmptyFinder, _touch_empty, _touch_file.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -232,9 +207,7 @@ class TestEmptyFinder:
         assert result.scanned == 3
 
     def test_duration_is_non_negative(self, tmp_path: Path):
-        """test_duration_is_non_negative.
-
-        Manages test duration is non negative operations and coordinates related state changes for the component.
+        """Verify duration is non negative via EmptyFinder, _touch_empty, find.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -244,9 +217,7 @@ class TestEmptyFinder:
         assert result.duration >= 0
 
     def test_cancel_stops_early(self, tmp_path: Path):
-        """test_cancel_stops_early.
-
-        Manages test cancel stops early operations and coordinates related state changes for the component.
+        """Verify cancel stops early via threading.Event, EmptyFinder, cancel.set.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -272,9 +243,7 @@ class TestEmptyFinder:
         assert len(called) > 0
 
     def test_exclude_dirs(self, tmp_path: Path):
-        """test_exclude_dirs.
-
-        Manages test exclude dirs operations and coordinates related state changes for the component.
+        """Verify exclude dirs via EmptyFinder, Config, _touch_empty.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -291,9 +260,7 @@ class TestEmptyFinder:
         assert "e.txt" not in names
 
     def test_nested_empty_files(self, tmp_path: Path):
-        """test_nested_empty_files.
-
-        Manages test nested empty files operations and coordinates related state changes for the component.
+        """Verify nested empty files via EmptyFinder, _touch_empty, find.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -312,14 +279,9 @@ class TestEmptyFinder:
     IS_WINDOWS, reason="symlinks require elevated privileges on Windows"
 )
 class TestInvalidSymlinkFinder:
-    """Testinvalidsymlinkfinder.
-
-    Manages TestInvalidSymlinkFinder operations and coordinates related state changes for the component.
-    """
+    """Group testinvalidsymlinkfinder tests covering finds broken symlink; ignores valid symlink; empty when no symlinks; scanned count; relative symlink broken; relative symlink valid."""
     def test_finds_broken_symlink(self, tmp_path: Path):
-        """test_finds_broken_symlink.
-
-        Manages test finds broken symlink operations and coordinates related state changes for the component.
+        """Verify finds broken symlink via InvalidSymlinkFinder, broken.symlink_to, find.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -331,9 +293,7 @@ class TestInvalidSymlinkFinder:
         assert result.broken[0][0] == broken
 
     def test_ignores_valid_symlink(self, tmp_path: Path):
-        """test_ignores_valid_symlink.
-
-        Manages test ignores valid symlink operations and coordinates related state changes for the component.
+        """Verify ignores valid symlink via InvalidSymlinkFinder, link.symlink_to, _touch_file.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -346,9 +306,7 @@ class TestInvalidSymlinkFinder:
         assert result.broken == []
 
     def test_empty_when_no_symlinks(self, tmp_path: Path):
-        """test_empty_when_no_symlinks.
-
-        Manages test empty when no symlinks operations and coordinates related state changes for the component.
+        """Verify empty when no symlinks via InvalidSymlinkFinder, _touch_file, find.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -359,9 +317,7 @@ class TestInvalidSymlinkFinder:
         assert result.scanned == 0
 
     def test_scanned_count(self, tmp_path: Path):
-        """test_scanned_count.
-
-        Manages test scanned count operations and coordinates related state changes for the component.
+        """Verify scanned count via InvalidSymlinkFinder, _touch_file, symlink_to.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -376,9 +332,7 @@ class TestInvalidSymlinkFinder:
         assert result.scanned == 2
 
     def test_relative_symlink_broken(self, tmp_path: Path):
-        """test_relative_symlink_broken.
-
-        Manages test relative symlink broken operations and coordinates related state changes for the component.
+        """Verify relative symlink broken via InvalidSymlinkFinder, link.symlink_to, find.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -389,9 +343,7 @@ class TestInvalidSymlinkFinder:
         assert len(result.broken) == 1
 
     def test_relative_symlink_valid(self, tmp_path: Path):
-        """test_relative_symlink_valid.
-
-        Manages test relative symlink valid operations and coordinates related state changes for the component.
+        """Verify relative symlink valid via InvalidSymlinkFinder, link.symlink_to, _touch_file.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -404,9 +356,7 @@ class TestInvalidSymlinkFinder:
         assert result.broken == []
 
     def test_cancel_stops_early(self, tmp_path: Path):
-        """test_cancel_stops_early.
-
-        Manages test cancel stops early operations and coordinates related state changes for the component.
+        """Verify cancel stops early via threading.Event, InvalidSymlinkFinder, cancel.set.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -418,9 +368,7 @@ class TestInvalidSymlinkFinder:
         assert result.scanned == 0
 
     def test_exclude_dirs(self, tmp_path: Path):
-        """test_exclude_dirs.
-
-        Manages test exclude dirs operations and coordinates related state changes for the component.
+        """Verify exclude dirs via InvalidSymlinkFinder, Config, symlink_to.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -441,14 +389,9 @@ class TestInvalidSymlinkFinder:
 
 
 class TestBrokenFileFinder:
-    """Testbrokenfilefinder.
-
-    Manages TestBrokenFileFinder operations and coordinates related state changes for the component.
-    """
+    """Group testbrokenfilefinder tests covering finds corrupted zip; ignores valid zip; finds bad pdf; ignores valid pdf; finds corrupted png; ignores valid png."""
     def test_finds_corrupted_zip(self, tmp_path: Path):
-        """test_finds_corrupted_zip.
-
-        Manages test finds corrupted zip operations and coordinates related state changes for the component.
+        """Verify finds corrupted zip via BrokenFileFinder, _touch_file, find.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -459,9 +402,7 @@ class TestBrokenFileFinder:
         assert p in broken
 
     def test_ignores_valid_zip(self, tmp_path: Path):
-        """test_ignores_valid_zip.
-
-        Manages test ignores valid zip operations and coordinates related state changes for the component.
+        """Verify ignores valid zip via BrokenFileFinder, _make_minimal_zip, find.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -472,9 +413,7 @@ class TestBrokenFileFinder:
         assert p not in broken
 
     def test_finds_bad_pdf(self, tmp_path: Path):
-        """test_finds_bad_pdf.
-
-        Manages test finds bad pdf operations and coordinates related state changes for the component.
+        """Verify finds bad pdf via BrokenFileFinder, _touch_file, find.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -485,9 +424,7 @@ class TestBrokenFileFinder:
         assert p in broken
 
     def test_ignores_valid_pdf(self, tmp_path: Path):
-        """test_ignores_valid_pdf.
-
-        Manages test ignores valid pdf operations and coordinates related state changes for the component.
+        """Verify ignores valid pdf via BrokenFileFinder, _make_minimal_pdf, find.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -498,9 +435,7 @@ class TestBrokenFileFinder:
         assert p not in broken
 
     def test_finds_corrupted_png(self, tmp_path: Path):
-        """test_finds_corrupted_png.
-
-        Manages test finds corrupted png operations and coordinates related state changes for the component.
+        """Verify finds corrupted png via BrokenFileFinder, _touch_file, find.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -514,9 +449,7 @@ class TestBrokenFileFinder:
         IS_WINDOWS, reason="minimal PNG without PIL may misbehave on Windows"
     )
     def test_ignores_valid_png(self, tmp_path: Path):
-        """test_ignores_valid_png.
-
-        Manages test ignores valid png operations and coordinates related state changes for the component.
+        """Verify ignores valid png via BrokenFileFinder, pytest.mark.skipif, _make_minimal_png.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -527,9 +460,7 @@ class TestBrokenFileFinder:
         assert p not in broken
 
     def test_ignores_non_supported_extension(self, tmp_path: Path):
-        """test_ignores_non_supported_extension.
-
-        Manages test ignores non supported extension operations and coordinates related state changes for the component.
+        """Verify ignores non supported extension via BrokenFileFinder, _touch_file, find.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -540,9 +471,7 @@ class TestBrokenFileFinder:
         assert p not in broken
 
     def test_empty_returns_nothing(self, tmp_path: Path):
-        """test_empty_returns_nothing.
-
-        Manages test empty returns nothing operations and coordinates related state changes for the component.
+        """Verify empty returns nothing via BrokenFileFinder, find.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -551,9 +480,7 @@ class TestBrokenFileFinder:
         assert broken == []
 
     def test_cancel_stops_early(self, tmp_path: Path):
-        """test_cancel_stops_early.
-
-        Manages test cancel stops early operations and coordinates related state changes for the component.
+        """Verify cancel stops early via threading.Event, BrokenFileFinder, cancel.set.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -565,9 +492,7 @@ class TestBrokenFileFinder:
         assert broken == []
 
     def test_exclude_dirs(self, tmp_path: Path):
-        """test_exclude_dirs.
-
-        Manages test exclude dirs operations and coordinates related state changes for the component.
+        """Verify exclude dirs via BrokenFileFinder, Config, _touch_file.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -588,14 +513,9 @@ class TestBrokenFileFinder:
 
 
 class TestBadExtensionFinder:
-    """Testbadextensionfinder.
-
-    Manages TestBadExtensionFinder operations and coordinates related state changes for the component.
-    """
+    """Group testbadextensionfinder tests covering finds png with wrong ext; finds jpg with wrong ext; ignores correct extension; ignores extensionless files; allows jpg jpeg alias; empty dir."""
     def test_finds_png_with_wrong_ext(self, tmp_path: Path):
-        """test_finds_png_with_wrong_ext.
-
-        Manages test finds png with wrong ext operations and coordinates related state changes for the component.
+        """Verify finds png with wrong ext via BadExtensionFinder, _make_minimal_png, find.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -609,9 +529,7 @@ class TestBadExtensionFinder:
         assert results[0].claimed == ".txt"
 
     def test_finds_jpg_with_wrong_ext(self, tmp_path: Path):
-        """test_finds_jpg_with_wrong_ext.
-
-        Manages test finds jpg with wrong ext operations and coordinates related state changes for the component.
+        """Verify finds jpg with wrong ext via BadExtensionFinder, _make_minimal_jpg, find.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -623,9 +541,7 @@ class TestBadExtensionFinder:
         assert results[0].actual in {".jpg", ".jpeg"}
 
     def test_ignores_correct_extension(self, tmp_path: Path):
-        """test_ignores_correct_extension.
-
-        Manages test ignores correct extension operations and coordinates related state changes for the component.
+        """Verify ignores correct extension via BadExtensionFinder, _make_minimal_png, find.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -636,9 +552,7 @@ class TestBadExtensionFinder:
         assert results == []
 
     def test_ignores_extensionless_files(self, tmp_path: Path):
-        """test_ignores_extensionless_files.
-
-        Manages test ignores extensionless files operations and coordinates related state changes for the component.
+        """Verify ignores extensionless files via BadExtensionFinder, _touch_file, find.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -649,9 +563,7 @@ class TestBadExtensionFinder:
         assert results == []
 
     def test_allows_jpg_jpeg_alias(self, tmp_path: Path):
-        """test_allows_jpg_jpeg_alias.
-
-        Manages test allows jpg jpeg alias operations and coordinates related state changes for the component.
+        """Verify allows jpg jpeg alias via BadExtensionFinder, _make_minimal_jpg, find.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -662,9 +574,7 @@ class TestBadExtensionFinder:
         assert results == []
 
     def test_empty_dir(self, tmp_path: Path):
-        """test_empty_dir.
-
-        Manages test empty dir operations and coordinates related state changes for the component.
+        """Verify empty dir via BadExtensionFinder, find.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -673,9 +583,7 @@ class TestBadExtensionFinder:
         assert results == []
 
     def test_cancel_stops_early(self, tmp_path: Path):
-        """test_cancel_stops_early.
-
-        Manages test cancel stops early operations and coordinates related state changes for the component.
+        """Verify cancel stops early via threading.Event, BadExtensionFinder, cancel.set.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -688,9 +596,7 @@ class TestBadExtensionFinder:
         assert results == []
 
     def test_exclude_dirs(self, tmp_path: Path):
-        """test_exclude_dirs.
-
-        Manages test exclude dirs operations and coordinates related state changes for the component.
+        """Verify exclude dirs via BadExtensionFinder, Config, _make_minimal_png.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -712,17 +618,12 @@ class TestBadExtensionFinder:
 
 
 class TestBadNamesFinder:
-    """Testbadnamesfinder.
-
-    Manages TestBadNamesFinder operations and coordinates related state changes for the component.
-    """
+    """Group testbadnamesfinder tests covering finds control chars; finds windows reserved chars; finds leading space; finds trailing space; finds trailing dot; finds reserved windows names."""
     @pytest.mark.skipif(
         IS_WINDOWS, reason="null bytes in filenames unsupported on Windows"
     )
     def test_finds_control_chars(self, tmp_path: Path):
-        """test_finds_control_chars.
-
-        Manages test finds control chars operations and coordinates related state changes for the component.
+        """Verify finds control chars via BadNamesFinder, pytest.mark.skipif, _touch_file.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -736,9 +637,7 @@ class TestBadNamesFinder:
         IS_WINDOWS, reason="reserved chars cannot be created on Windows"
     )
     def test_finds_windows_reserved_chars(self, tmp_path: Path):
-        """test_finds_windows_reserved_chars.
-
-        Manages test finds windows reserved chars operations and coordinates related state changes for the component.
+        """Verify finds windows reserved chars via BadNamesFinder, pytest.mark.skipif, find.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -751,9 +650,7 @@ class TestBadNamesFinder:
 
     @pytest.mark.skipif(IS_WINDOWS, reason="trailing spaces stripped by Windows")
     def test_finds_leading_space(self, tmp_path: Path):
-        """test_finds_leading_space.
-
-        Manages test finds leading space operations and coordinates related state changes for the component.
+        """Verify finds leading space via BadNamesFinder, pytest.mark.skipif, _touch_file.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -765,9 +662,7 @@ class TestBadNamesFinder:
 
     @pytest.mark.skipif(IS_WINDOWS, reason="trailing spaces stripped by Windows")
     def test_finds_trailing_space(self, tmp_path: Path):
-        """test_finds_trailing_space.
-
-        Manages test finds trailing space operations and coordinates related state changes for the component.
+        """Verify finds trailing space via BadNamesFinder, pytest.mark.skipif, _touch_file.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -779,9 +674,7 @@ class TestBadNamesFinder:
 
     @pytest.mark.skipif(IS_WINDOWS, reason="trailing dots stripped by Windows")
     def test_finds_trailing_dot(self, tmp_path: Path):
-        """test_finds_trailing_dot.
-
-        Manages test finds trailing dot operations and coordinates related state changes for the component.
+        """Verify finds trailing dot via BadNamesFinder, pytest.mark.skipif, _touch_file.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -793,9 +686,7 @@ class TestBadNamesFinder:
 
     def test_finds_reserved_windows_names(self, tmp_path: Path):
         # NUL etc. are device names on Windows — may be created but invisible to os.walk
-        """test_finds_reserved_windows_names.
-
-        Manages test finds reserved windows names operations and coordinates related state changes for the component.
+        """Verify finds reserved windows names via BadNamesFinder, find, _touch_file.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -812,9 +703,7 @@ class TestBadNamesFinder:
         assert len(bad) >= 1
 
     def test_ignores_good_names(self, tmp_path: Path):
-        """test_ignores_good_names.
-
-        Manages test ignores good names operations and coordinates related state changes for the component.
+        """Verify ignores good names via BadNamesFinder, find, _touch_file.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -828,9 +717,7 @@ class TestBadNamesFinder:
         IS_WINDOWS, reason="null bytes in filenames unsupported on Windows"
     )
     def test_finds_bad_dir_names(self, tmp_path: Path):
-        """test_finds_bad_dir_names.
-
-        Manages test finds bad dir names operations and coordinates related state changes for the component.
+        """Verify finds bad dir names via BadNamesFinder, pytest.mark.skipif, find.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -841,9 +728,7 @@ class TestBadNamesFinder:
         assert any(b.name == "bad dir\x00name" for b in bad)
 
     def test_cancel_stops_early(self, tmp_path: Path):
-        """test_cancel_stops_early.
-
-        Manages test cancel stops early operations and coordinates related state changes for the component.
+        """Verify cancel stops early via threading.Event, BadNamesFinder, cancel.set.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -859,9 +744,7 @@ class TestBadNamesFinder:
         assert bad == []
 
     def test_exclude_dirs(self, tmp_path: Path):
-        """test_exclude_dirs.
-
-        Manages test exclude dirs operations and coordinates related state changes for the component.
+        """Verify exclude dirs via BadNamesFinder, Config, _touch_file.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -883,14 +766,9 @@ class TestBadNamesFinder:
 
 
 class TestExifCleaner:
-    """Testexifcleaner.
-
-    Manages TestExifCleaner operations and coordinates related state changes for the component.
-    """
+    """Group testexifcleaner tests covering scan finds exif if pil available; scan skips non image files; scan empty dir; strip returns dict for empty list; cancel stops scan early; exclude dirs."""
     def test_scan_finds_exif_if_pil_available(self, tmp_path: Path):
-        """test_scan_finds_exif_if_pil_available.
-
-        Manages test scan finds exif if pil available operations and coordinates related state changes for the component.
+        """Verify scan finds exif if pil available via Image.new, cleaner.scan, img.save.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -908,9 +786,7 @@ class TestExifCleaner:
             pytest.skip("PIL not available")
 
     def test_scan_skips_non_image_files(self, tmp_path: Path):
-        """test_scan_skips_non_image_files.
-
-        Manages test scan skips non image files operations and coordinates related state changes for the component.
+        """Verify scan skips non image files via cleaner.scan, ExifCleaner, _touch_file.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -921,9 +797,7 @@ class TestExifCleaner:
         assert results == []
 
     def test_scan_empty_dir(self, tmp_path: Path):
-        """test_scan_empty_dir.
-
-        Manages test scan empty dir operations and coordinates related state changes for the component.
+        """Verify scan empty dir via cleaner.scan, ExifCleaner.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -933,9 +807,7 @@ class TestExifCleaner:
         assert results == []
 
     def test_strip_returns_dict_for_empty_list(self, tmp_path: Path):
-        """test_strip_returns_dict_for_empty_list.
-
-        Manages test strip returns dict for empty list operations and coordinates related state changes for the component.
+        """Verify strip returns dict for empty list via ExifCleaner, cleaner.strip.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -945,9 +817,7 @@ class TestExifCleaner:
         assert out == {}
 
     def test_cancel_stops_scan_early(self, tmp_path: Path):
-        """test_cancel_stops_scan_early.
-
-        Manages test cancel stops scan early operations and coordinates related state changes for the component.
+        """Verify cancel stops scan early via threading.Event, cleaner.scan, cancel.set.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -959,9 +829,7 @@ class TestExifCleaner:
         assert results == []
 
     def test_exclude_dirs(self, tmp_path: Path):
-        """test_exclude_dirs.
-
-        Manages test exclude dirs operations and coordinates related state changes for the component.
+        """Verify exclude dirs via cleaner.scan, Config, ExifCleaner.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -983,14 +851,9 @@ class TestExifCleaner:
 
 
 class TestTempFileFinder:
-    """Testtempfilefinder.
-
-    Manages TestTempFileFinder operations and coordinates related state changes for the component.
-    """
+    """Group testtempfilefinder tests covering finds tmp extension; finds temp extension; finds log files; finds bak files; finds old files; finds swap files."""
     def test_finds_tmp_extension(self, tmp_path: Path):
-        """test_finds_tmp_extension.
-
-        Manages test finds tmp extension operations and coordinates related state changes for the component.
+        """Verify finds tmp extension via TempFileFinder, _touch_file, find.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -1003,9 +866,7 @@ class TestTempFileFinder:
         assert "keep.txt" not in names
 
     def test_finds_temp_extension(self, tmp_path: Path):
-        """test_finds_temp_extension.
-
-        Manages test finds temp extension operations and coordinates related state changes for the component.
+        """Verify finds temp extension via TempFileFinder, _touch_file, find.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -1015,9 +876,7 @@ class TestTempFileFinder:
         assert any(p.name == "data.temp" for p in results)
 
     def test_finds_log_files(self, tmp_path: Path):
-        """test_finds_log_files.
-
-        Manages test finds log files operations and coordinates related state changes for the component.
+        """Verify finds log files via TempFileFinder, _touch_file, find.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -1027,9 +886,7 @@ class TestTempFileFinder:
         assert any(p.name == "app.log" for p in results)
 
     def test_finds_bak_files(self, tmp_path: Path):
-        """test_finds_bak_files.
-
-        Manages test finds bak files operations and coordinates related state changes for the component.
+        """Verify finds bak files via TempFileFinder, _touch_file, find.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -1039,9 +896,7 @@ class TestTempFileFinder:
         assert any(p.name == "config.bak" for p in results)
 
     def test_finds_old_files(self, tmp_path: Path):
-        """test_finds_old_files.
-
-        Manages test finds old files operations and coordinates related state changes for the component.
+        """Verify finds old files via TempFileFinder, _touch_file, find.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -1051,9 +906,7 @@ class TestTempFileFinder:
         assert any(p.name == "data.old" for p in results)
 
     def test_finds_swap_files(self, tmp_path: Path):
-        """test_finds_swap_files.
-
-        Manages test finds swap files operations and coordinates related state changes for the component.
+        """Verify finds swap files via TempFileFinder, _touch_file, find.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -1066,9 +919,7 @@ class TestTempFileFinder:
         assert "file.swo" in names
 
     def test_finds_tilde_backup_files(self, tmp_path: Path):
-        """test_finds_tilde_backup_files.
-
-        Manages test finds tilde backup files operations and coordinates related state changes for the component.
+        """Verify finds tilde backup files via TempFileFinder, _touch_file, find.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -1078,9 +929,7 @@ class TestTempFileFinder:
         assert any(p.name == "script.py~" for p in results)
 
     def test_finds_thumbs_db(self, tmp_path: Path):
-        """test_finds_thumbs_db.
-
-        Manages test finds thumbs db operations and coordinates related state changes for the component.
+        """Verify finds thumbs db via TempFileFinder, _touch_file, find.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -1090,9 +939,7 @@ class TestTempFileFinder:
         assert any(p.name == "Thumbs.db" for p in results)
 
     def test_finds_ds_store(self, tmp_path: Path):
-        """test_finds_ds_store.
-
-        Manages test finds ds store operations and coordinates related state changes for the component.
+        """Verify finds ds store via TempFileFinder, _touch_file, find.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -1102,9 +949,7 @@ class TestTempFileFinder:
         assert any(p.name == ".DS_Store" for p in results)
 
     def test_finds_desktop_ini(self, tmp_path: Path):
-        """test_finds_desktop_ini.
-
-        Manages test finds desktop ini operations and coordinates related state changes for the component.
+        """Verify finds desktop ini via TempFileFinder, _touch_file, find.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -1114,9 +959,7 @@ class TestTempFileFinder:
         assert any(p.name == "desktop.ini" for p in results)
 
     def test_finds_dmp_files(self, tmp_path: Path):
-        """test_finds_dmp_files.
-
-        Manages test finds dmp files operations and coordinates related state changes for the component.
+        """Verify finds dmp files via TempFileFinder, _touch_file, find.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -1126,9 +969,7 @@ class TestTempFileFinder:
         assert any(p.name == "crash.dmp" for p in results)
 
     def test_ignores_normal_files(self, tmp_path: Path):
-        """test_ignores_normal_files.
-
-        Manages test ignores normal files operations and coordinates related state changes for the component.
+        """Verify ignores normal files via TempFileFinder, _touch_file, find.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -1138,9 +979,7 @@ class TestTempFileFinder:
         assert results == []
 
     def test_empty_dir(self, tmp_path: Path):
-        """test_empty_dir.
-
-        Manages test empty dir operations and coordinates related state changes for the component.
+        """Verify empty dir via TempFileFinder, find.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -1149,9 +988,7 @@ class TestTempFileFinder:
         assert results == []
 
     def test_cancel_stops_early(self, tmp_path: Path):
-        """test_cancel_stops_early.
-
-        Manages test cancel stops early operations and coordinates related state changes for the component.
+        """Verify cancel stops early via threading.Event, TempFileFinder, cancel.set.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -1163,9 +1000,7 @@ class TestTempFileFinder:
         assert results == []
 
     def test_exclude_dirs(self, tmp_path: Path):
-        """test_exclude_dirs.
-
-        Manages test exclude dirs operations and coordinates related state changes for the component.
+        """Verify exclude dirs via TempFileFinder, Config, _touch_file.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -1180,9 +1015,7 @@ class TestTempFileFinder:
         assert all(p.parent.name != "skip" for p in results)
 
     def test_lock_files(self, tmp_path: Path):
-        """test_lock_files.
-
-        Manages test lock files operations and coordinates related state changes for the component.
+        """Verify lock files via TempFileFinder, _touch_file, find.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -1192,9 +1025,7 @@ class TestTempFileFinder:
         assert any(p.name == ".~lock.document.xlsx" for p in results)
 
     def test_finds_nested_temp_files(self, tmp_path: Path):
-        """test_finds_nested_temp_files.
-
-        Manages test finds nested temp files operations and coordinates related state changes for the component.
+        """Verify finds nested temp files via TempFileFinder, _touch_file, find.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -1210,14 +1041,9 @@ class TestTempFileFinder:
 
 
 class TestVideoOptimizer:
-    """Testvideooptimizer.
-
-    Manages TestVideoOptimizer operations and coordinates related state changes for the component.
-    """
+    """Group testvideooptimizer tests covering find static borders returns none on missing ffprobe; find static borders returns none on nonzero exit; find static borders parses json; optimize returns false on ffmpeg error; optimize returns false on exception."""
     def test_find_static_borders_returns_none_on_missing_ffprobe(self, tmp_path: Path):
-        """test_find_static_borders_returns_none_on_missing_ffprobe.
-
-        Manages test find static borders returns none on missing ffprobe operations and coordinates related state changes for the component.
+        """Verify find static borders returns none on missing ffprobe via VideoOptimizer, opt.find_static_borders, _touch_file.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -1230,9 +1056,7 @@ class TestVideoOptimizer:
         assert result is None
 
     def test_find_static_borders_returns_none_on_nonzero_exit(self, tmp_path: Path):
-        """test_find_static_borders_returns_none_on_nonzero_exit.
-
-        Manages test find static borders returns none on nonzero exit operations and coordinates related state changes for the component.
+        """Verify find static borders returns none on nonzero exit via MagicMock, VideoOptimizer, opt.find_static_borders.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -1246,9 +1070,7 @@ class TestVideoOptimizer:
         assert result is None
 
     def test_find_static_borders_parses_json(self, tmp_path: Path):
-        """test_find_static_borders_parses_json.
-
-        Manages test find static borders parses json operations and coordinates related state changes for the component.
+        """Verify find static borders parses json via json.dumps, MagicMock, VideoOptimizer.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -1283,9 +1105,7 @@ class TestVideoOptimizer:
         assert result.path == p
 
     def test_optimize_returns_false_on_ffmpeg_error(self, tmp_path: Path):
-        """test_optimize_returns_false_on_ffmpeg_error.
-
-        Manages test optimize returns false on ffmpeg error operations and coordinates related state changes for the component.
+        """Verify optimize returns false on ffmpeg error via MagicMock, VideoOptimizer, opt.optimize.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -1299,9 +1119,7 @@ class TestVideoOptimizer:
         assert result is False
 
     def test_optimize_returns_false_on_exception(self, tmp_path: Path):
-        """test_optimize_returns_false_on_exception.
-
-        Manages test optimize returns false on exception operations and coordinates related state changes for the component.
+        """Verify optimize returns false on exception via VideoOptimizer, opt.optimize, OSError.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -1314,10 +1132,7 @@ class TestVideoOptimizer:
         assert result is False
 
     def test_video_info_dataclass(self):
-        """test_video_info_dataclass.
-
-        Manages test video info dataclass operations and coordinates related state changes for the component.
-        """
+        """Verify video info dataclass via VideoInfo, Path."""
         vi = VideoInfo(
             path=Path("/test.mp4"),
             width=1280,
@@ -1339,14 +1154,9 @@ class TestVideoOptimizer:
 
 
 class TestSniffExtension:
-    """Testsniffextension.
-
-    Manages TestSniffExtension operations and coordinates related state changes for the component.
-    """
+    """Group testsniffextension tests covering sniff png; sniff jpg; sniff pdf; sniff zip; sniff unknown returns none."""
     def test_sniff_png(self, tmp_path: Path):
-        """test_sniff_png.
-
-        Manages test sniff png operations and coordinates related state changes for the component.
+        """Verify sniff png via _make_minimal_png, _sniff_extension.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -1355,9 +1165,7 @@ class TestSniffExtension:
         assert _sniff_extension(p) == ".png"
 
     def test_sniff_jpg(self, tmp_path: Path):
-        """test_sniff_jpg.
-
-        Manages test sniff jpg operations and coordinates related state changes for the component.
+        """Verify sniff jpg via _make_minimal_jpg, _sniff_extension.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -1366,9 +1174,7 @@ class TestSniffExtension:
         assert _sniff_extension(p) == ".jpg"
 
     def test_sniff_pdf(self, tmp_path: Path):
-        """test_sniff_pdf.
-
-        Manages test sniff pdf operations and coordinates related state changes for the component.
+        """Verify sniff pdf via _make_minimal_pdf, _sniff_extension.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -1377,9 +1183,7 @@ class TestSniffExtension:
         assert _sniff_extension(p) == ".pdf"
 
     def test_sniff_zip(self, tmp_path: Path):
-        """test_sniff_zip.
-
-        Manages test sniff zip operations and coordinates related state changes for the component.
+        """Verify sniff zip via _make_minimal_zip, _sniff_extension.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -1388,9 +1192,7 @@ class TestSniffExtension:
         assert _sniff_extension(p) == ".zip"
 
     def test_sniff_unknown_returns_none(self, tmp_path: Path):
-        """test_sniff_unknown_returns_none.
-
-        Manages test sniff unknown returns none operations and coordinates related state changes for the component.
+        """Verify sniff unknown returns none via _touch_file, _sniff_extension.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -1406,15 +1208,9 @@ class TestSniffExtension:
 
 
 class TestExports:
-    """Testexports.
-
-    Manages TestExports operations and coordinates related state changes for the component.
-    """
+    """Group testexports tests covering all exports present; magic headers completeness."""
     def test_all_exports_present(self):
-        """test_all_exports_present.
-
-        Manages test all exports present operations and coordinates related state changes for the component.
-        """
+        """Verify all exports present."""
         from cortex_unified.analyzers.czkawka_tools import __all__
 
         expected = [
@@ -1435,10 +1231,7 @@ class TestExports:
             assert name in __all__
 
     def test_magic_headers_completeness(self):
-        """test_magic_headers_completeness.
-
-        Manages test magic headers completeness operations and coordinates related state changes for the component.
-        """
+        """Verify magic headers completeness via _MAGIC_HEADERS.values."""
         assert ".jpg" in _MAGIC_HEADERS.values()
         assert ".png" in _MAGIC_HEADERS.values()
         assert ".pdf" in _MAGIC_HEADERS.values()

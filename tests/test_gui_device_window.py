@@ -28,18 +28,13 @@ SCOPES = ("192.168.50.0/24",)
 
 @pytest.fixture(scope="module")
 def app():
-    """App.
-
-    Manages app operations and coordinates related state changes for the component.
-    """
+    """Provide app fixture that provides a shared QApplication."""
     return QApplication.instance() or QApplication([])
 
 
 @pytest.fixture
 def window(app):
-    """Window.
-
-    Manages window operations and coordinates related state changes for the component.
+    """Provide window fixture via PremiumMainWindow, win.close, apply_theme.
 
     Args:
         app: The app parameter.
@@ -55,9 +50,7 @@ def window(app):
 
 
 def _observation(port=443, name="https", **kwargs):
-    """Observation.
-
-    Manages observation operations and coordinates related state changes for the component.
+    """Observation using kwargs.pop, ServiceObservation.
 
     Args:
         port: The port parameter.
@@ -73,10 +66,7 @@ def _observation(port=443, name="https", **kwargs):
 
 
 def _device(**kwargs):
-    """Device.
-
-    Manages device operations and coordinates related state changes for the component.
-    """
+    """Device using payload.update, Device, _observation."""
     payload = dict(
         ip="192.168.50.20",
         mac="00:11:22:33:44:55",
@@ -92,9 +82,7 @@ def _device(**kwargs):
 
 
 def test_window_renders_discovery_evidence_before_any_scan(window):
-    """test_window_renders_discovery_evidence_before_any_scan.
-
-    Manages test window renders discovery evidence before any scan operations and coordinates related state changes for the component.
+    """Verify window renders discovery evidence before any scan via device_window_module.DeviceDetailWindow, win.windowTitle, win.services_tbl.rowCount.
 
     Args:
         window: Parent window or shell controller instance.
@@ -115,9 +103,7 @@ def test_window_renders_discovery_evidence_before_any_scan(window):
 
 
 def test_window_renders_completed_scan_payload_with_severity_badge(window):
-    """test_window_renders_completed_scan_payload_with_severity_badge.
-
-    Manages test window renders completed scan payload with severity badge operations and coordinates related state changes for the component.
+    """Verify window renders completed scan payload with severity badge via device_window_module.DeviceDetailWindow, win.export_btn.isEnabled, win.open_btn.isEnabled.
 
     Args:
         window: Parent window or shell controller instance.
@@ -188,18 +174,13 @@ def test_window_renders_completed_scan_payload_with_severity_badge(window):
 
 
 def test_worker_refuses_target_outside_authorized_scope(monkeypatch):
-    """test_worker_refuses_target_outside_authorized_scope.
-
-    Manages test worker refuses target outside authorized scope operations and coordinates related state changes for the component.
+    """Verify worker refuses target outside authorized scope via device_window_module.DeviceDeepScanWorker, monkeypatch.setattr, worker.failed.connect.
 
     Args:
         monkeypatch: The monkeypatch parameter.
     """
     def fail_scan(*_args, **_kwargs):
-        """fail_scan.
-
-        Manages fail scan operations and coordinates related state changes for the component.
-        """
+        """Fail scan using AssertionError."""
         raise AssertionError("an out-of-scope device must never be scanned")
 
     from cortex_unified.system_tools import network_service_scanner
@@ -215,9 +196,7 @@ def test_worker_refuses_target_outside_authorized_scope(monkeypatch):
 
 
 def test_worker_collects_services_findings_and_history(monkeypatch):
-    """test_worker_collects_services_findings_and_history.
-
-    Manages test worker collects services findings and history operations and coordinates related state changes for the component.
+    """Verify worker collects services findings and history via device_window_module.DeviceDeepScanWorker, network_tools.PingResult, monkeypatch.setattr.
 
     Args:
         monkeypatch: The monkeypatch parameter.
@@ -262,9 +241,7 @@ def test_worker_collects_services_findings_and_history(monkeypatch):
 
 
 def test_worker_reports_missing_nmap_without_failing(monkeypatch):
-    """test_worker_reports_missing_nmap_without_failing.
-
-    Manages test worker reports missing nmap without failing operations and coordinates related state changes for the component.
+    """Verify worker reports missing nmap without failing via device_window_module.DeviceDeepScanWorker, monkeypatch.setattr, worker.finished.connect.
 
     Args:
         monkeypatch: The monkeypatch parameter.
@@ -302,9 +279,7 @@ def test_worker_reports_missing_nmap_without_failing(monkeypatch):
 
 
 def test_worker_does_not_claim_port_source_without_observation(monkeypatch):
-    """test_worker_does_not_claim_port_source_without_observation.
-
-    Manages test worker does not claim port source without observation operations and coordinates related state changes for the component.
+    """Verify worker does not claim port source without observation via device_window_module.DeviceDeepScanWorker, monkeypatch.setattr, worker.finished.connect.
 
     Args:
         monkeypatch: The monkeypatch parameter.
@@ -351,9 +326,7 @@ def test_worker_does_not_claim_port_source_without_observation(monkeypatch):
 
 
 def test_ping_worker_is_scope_checked_and_does_not_scan_ports(monkeypatch):
-    """test_ping_worker_is_scope_checked_and_does_not_scan_ports.
-
-    Manages test ping worker is scope checked and does not scan ports operations and coordinates related state changes for the component.
+    """Verify ping worker is scope checked and does not scan ports via device_window_module.DevicePingWorker, network_tools.PingResult, monkeypatch.setattr.
 
     Args:
         monkeypatch: The monkeypatch parameter.
@@ -364,10 +337,7 @@ def test_ping_worker_is_scope_checked_and_does_not_scan_ports(monkeypatch):
     )
 
     def fail_scan(*_args, **_kwargs):
-        """fail_scan.
-
-        Manages fail scan operations and coordinates related state changes for the component.
-        """
+        """Fail scan using AssertionError."""
         raise AssertionError("the Ping action must not start a service scan")
 
     monkeypatch.setattr(
@@ -397,9 +367,7 @@ def test_ping_worker_is_scope_checked_and_does_not_scan_ports(monkeypatch):
 
 
 def test_failed_scan_restores_capability_based_actions(window, monkeypatch):
-    """test_failed_scan_restores_capability_based_actions.
-
-    Manages test failed scan restores capability based actions operations and coordinates related state changes for the component.
+    """Verify failed scan restores capability based actions via win.scan_btn.isEnabled, device_window_module.DeviceDetailWindow, win.ping_btn.isEnabled.
 
     Args:
         window: Parent window or shell controller instance.
@@ -430,9 +398,7 @@ def test_lan_page_opens_retains_and_safely_closes_device_window(
     window,
     monkeypatch,
 ):
-    """test_lan_page_opens_retains_and_safely_closes_device_window.
-
-    Manages test lan page opens retains and safely closes device window operations and coordinates related state changes for the component.
+    """Verify lan page opens retains and safely closes device window via page.tbl.selectRow, page.device_btn.isEnabled, app.processEvents.
 
     Args:
         app: The app parameter.
@@ -442,10 +408,7 @@ def test_lan_page_opens_retains_and_safely_closes_device_window(
     from cortex_unified.system_tools.network_discovery import DiscoveryResult
 
     class FakeWorker:
-        """Fakeworker.
-
-        Manages FakeWorker operations and coordinates related state changes for the component.
-        """
+        """Helper fakeworker."""
         def __init__(self):
             """Initialize the instance and configure internal state.
 
@@ -463,9 +426,7 @@ def test_lan_page_opens_retains_and_safely_closes_device_window(
     started: list[tuple[object, str]] = []
 
     def fake_start_scan(detail_window, profile="advanced"):
-        """fake_start_scan.
-
-        Manages fake start scan operations and coordinates related state changes for the component.
+        """Fake start scan using FakeWorker, detail_window._busy, started.append.
 
         Args:
             detail_window: The detail window parameter.

@@ -42,10 +42,7 @@ IS_WINDOWS = sys.platform == "win32"
 # =====================================================================
 
 class DiskAnalyzeWorker(QObject):
-    """Diskanalyzeworker.
-
-    Manages DiskAnalyzeWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker that analyzes disk usage via DiskAnalyzer."""
     finished = Signal(dict)
     failed = Signal(str)
 
@@ -77,10 +74,7 @@ class DiskAnalyzeWorker(QObject):
 
 
 class DiskHealthWorker(QObject):
-    """Diskhealthworker.
-
-    Manages DiskHealthWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker that reads drive health via DiskHealthMonitor."""
     finished = Signal(list)
     failed = Signal(str)
 
@@ -97,10 +91,7 @@ class DiskHealthWorker(QObject):
 
 
 class ScheduledTasksWorker(QObject):
-    """Scheduledtasksworker.
-
-    Manages ScheduledTasksWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker that lists scheduled tasks via TaskScheduler."""
     finished = Signal(list)
     failed = Signal(str)
 
@@ -117,10 +108,7 @@ class ScheduledTasksWorker(QObject):
 
 
 class BootPerfWorker(QObject):
-    """Bootperfworker.
-
-    Manages BootPerfWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker that analyzes boot performance via BootPerformanceMonitor."""
     finished = Signal(dict)
     failed = Signal(str)
 
@@ -137,10 +125,7 @@ class BootPerfWorker(QObject):
 
 
 class SystemRepairWorker(QObject):
-    """Systemrepairworker.
-
-    Manages SystemRepairWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker that runs SFC/DISM/CHKDSK via SystemRepair."""
     finished = Signal(dict)
     failed = Signal(str)
 
@@ -181,10 +166,7 @@ class SystemRepairWorker(QObject):
 
 
 class DeleteTaskWorker(QObject):
-    """Deletetaskworker.
-
-    Manages DeleteTaskWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker that deletes a scheduled task via TaskScheduler."""
     finished = Signal(bool, str)   # (success, task_name)
     failed = Signal(str)
 
@@ -217,10 +199,7 @@ class DeleteTaskWorker(QObject):
 # =====================================================================
 
 class DiskAnalyzerPage(_Page):
-    """Diskanalyzerpage.
-
-    Manages DiskAnalyzerPage operations and coordinates related state changes for the component.
-    """
+    """Disk Analyzer page with folder picker, usage cards and file-type/directory tables."""
 
     def __init__(self, win):
         """Build the page layout (buttons, tables, cards, title header) and connect button/worker actions.
@@ -316,10 +295,7 @@ class DiskAnalyzerPage(_Page):
             self.path_label.setText(folder)
 
     def _run(self):
-        """Run.
-
-        Manages run operations and coordinates related state changes for the component.
-        """
+        """Run DiskAnalyzeWorker on the chosen folder."""
         self.run_btn.setEnabled(False)
         self.state.show_loading("Analyzing disk usage\u2026")
         self.win.statusBar().showMessage("Analyzing disk usage\u2026")
@@ -394,10 +370,7 @@ class DiskAnalyzerPage(_Page):
 # =====================================================================
 
 class DiskHealthPage(_Page):
-    """Diskhealthpage.
-
-    Manages DiskHealthPage operations and coordinates related state changes for the component.
-    """
+    """Disk Health page with S.M.A.R.T. table, hint label and state panel."""
 
     def __init__(self, win):
         """Build the page layout (buttons, tables, title header, state panel) and connect button/worker actions.
@@ -469,9 +442,7 @@ class DiskHealthPage(_Page):
 
     @staticmethod
     def _dash(v):
-        """Dash.
-
-        Manages dash operations and coordinates related state changes for the component.
+        """Return an em dash for None, else str(v).
 
         Args:
             v: The v parameter.
@@ -536,10 +507,7 @@ class DiskHealthPage(_Page):
 # =====================================================================
 
 class ScheduledTasksPage(_Page):
-    """Scheduledtaskspage.
-
-    Manages ScheduledTasksPage operations and coordinates related state changes for the component.
-    """
+    """Scheduled Tasks page with refresh/delete controls, task table and state panel."""
 
     def __init__(self, win):
         """Build the page layout (buttons, tables, title header, state panel) and connect button/worker actions.
@@ -635,10 +603,7 @@ class ScheduledTasksPage(_Page):
         self.win.statusBar().showMessage(f"{len(tasks)} scheduled task(s)", 5000)
 
     def _delete(self):
-        """Delete.
-
-        Manages delete operations and coordinates related state changes for the component.
-        """
+        """Delete the selected scheduled task via DeleteTaskWorker after confirmation."""
         sel = self.tbl.selectedIndexes()
         if not sel:
             return
@@ -657,9 +622,7 @@ class ScheduledTasksPage(_Page):
         self.win.run_worker(DeleteTaskWorker(name), self._on_deleted, self._fail)
 
     def _on_deleted(self, ok: bool, name: str):
-        """Handle worker results: update widgets and clear the busy state.
-
-        Manages on deleted operations and coordinates related state changes for the component.
+        """Report the delete result, then reload.
 
         Args:
             ok (bool): The ok parameter.
@@ -691,10 +654,7 @@ class ScheduledTasksPage(_Page):
 # =====================================================================
 
 class BootPerformancePage(_Page):
-    """Bootperformancepage.
-
-    Manages BootPerformancePage operations and coordinates related state changes for the component.
-    """
+    """Boot Performance page with boot cards, slowdown table and hint label."""
 
     def __init__(self, win):
         """Build the page layout (buttons, tables, cards, title header) and connect button/worker actions.
@@ -846,10 +806,7 @@ class BootPerformancePage(_Page):
 # =====================================================================
 
 class SystemRepairPage(_Page):
-    """Systemrepairpage.
-
-    Manages SystemRepairPage operations and coordinates related state changes for the component.
-    """
+    """System File Health page with SFC/DISM/CHKDSK rows, progress and result card."""
 
     def __init__(self, win):
         """Build the page layout (cards, title header, progress bar) and connect button/worker actions.
@@ -931,9 +888,7 @@ class SystemRepairPage(_Page):
         self._buttons = [self.check_btn, self.dism_btn, self.sfc_btn, self.chkdsk_btn]
 
     def _tool_row(self, layout, title, desc, handler) -> QPushButton:
-        """Tool row via the worker/widgets; results return through worker signals.
-
-        Manages tool row operations and coordinates related state changes for the component.
+        """Build a repair-tool row with title, description and Run button.
 
         Args:
             layout: The layout parameter.
@@ -960,9 +915,7 @@ class SystemRepairPage(_Page):
         return btn
 
     def _run(self, action: str, title: str, prompt: str):
-        """Run.
-
-        Manages run operations and coordinates related state changes for the component.
+        """Confirm then run a SystemRepairWorker action with buttons disabled.
 
         Args:
             action (str): The action parameter.
@@ -1043,10 +996,7 @@ class SystemRepairPage(_Page):
 # =====================================================================
 
 class StorageSenseWorker(QObject):
-    """Storagesenseworker.
-
-    Manages StorageSenseWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker that reads or updates Storage Sense via StorageSense."""
     finished = Signal(dict)
     failed = Signal(str)
 
@@ -1083,10 +1033,7 @@ class StorageSenseWorker(QObject):
 
 
 class StorageSensePage(_Page):
-    """Storagesensepage.
-
-    Manages StorageSensePage operations and coordinates related state changes for the component.
-    """
+    """Storage Sense page with enable checkbox, cadence combos and status label."""
 
     _CADENCE = [(0, "When disk space is low"), (1, "Every day"),
                 (7, "Every week"), (30, "Every month")]
@@ -1161,9 +1108,7 @@ class StorageSensePage(_Page):
         self.win.run_worker(StorageSenseWorker("status"), self._on_status, self._fail)
 
     def _on_status(self, s: dict):
-        """Handle worker results: update cards/labels and clear the busy state.
-
-        Manages on status operations and coordinates related state changes for the component.
+        """Apply Storage Sense status to the checkbox, combos and status label.
 
         Args:
             s (dict): The s parameter.
@@ -1205,9 +1150,7 @@ class StorageSensePage(_Page):
                             self._on_status, self._fail)
 
     def _set_cadence(self, idx: int):
-        """Compute and return the value for set cadence used by the page.
-
-        Manages set cadence operations and coordinates related state changes for the component.
+        """Update Storage Sense cleanup cadence via StorageSenseWorker.
 
         Args:
             idx (int): The idx parameter.
@@ -1218,9 +1161,7 @@ class StorageSensePage(_Page):
                             self._on_status, self._fail)
 
     def _set_recycle(self, idx: int):
-        """Compute and return the value for set recycle used by the page.
-
-        Manages set recycle operations and coordinates related state changes for the component.
+        """Update Recycle Bin cleanup age via StorageSenseWorker.
 
         Args:
             idx (int): The idx parameter.
@@ -1246,10 +1187,7 @@ class StorageSensePage(_Page):
 # =====================================================================
 
 class DefenderStatusWorker(QObject):
-    """Defenderstatusworker.
-
-    Manages DefenderStatusWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker that reads Defender status and threats via WindowsDefender."""
     finished = Signal(dict, list)
     failed = Signal(str)
 
@@ -1267,10 +1205,7 @@ class DefenderStatusWorker(QObject):
 
 
 class DefenderScanWorker(QObject):
-    """Defenderscanworker.
-
-    Manages DefenderScanWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker that starts a Defender quick scan via WindowsDefender."""
     finished = Signal(bool, str)
     failed = Signal(str)
 
@@ -1288,10 +1223,7 @@ class DefenderScanWorker(QObject):
 
 
 class SecurityPage(_Page):
-    """Securitypage.
-
-    Manages SecurityPage operations and coordinates related state changes for the component.
-    """
+    """Security page with Defender status card, threat table and scan controls."""
 
     def __init__(self, win):
         """Build the page layout (buttons, tables, cards, title header) and connect button/worker actions.
@@ -1370,9 +1302,7 @@ class SecurityPage(_Page):
         self.win.run_worker(DefenderStatusWorker(), self._on_status, self._fail)
 
     def _on_status(self, s: dict, threats: list):
-        """Handle worker results: refresh tables/trees, re-enable buttons and clear the busy state.
-
-        Manages on status operations and coordinates related state changes for the component.
+        """Show Defender protection state in the card and threats in the table.
 
         Args:
             s (dict): The s parameter.
@@ -1441,9 +1371,7 @@ class SecurityPage(_Page):
         self.win.run_worker(DefenderScanWorker(), self._on_scanned, self._fail)
 
     def _on_scanned(self, ok: bool, msg: str):
-        """Handle worker results: re-enable buttons and clear the busy state.
-
-        Manages on scanned operations and coordinates related state changes for the component.
+        """Report the Defender scan result, then reload status.
 
         Args:
             ok (bool): The ok parameter.
@@ -1475,10 +1403,7 @@ class SecurityPage(_Page):
 # =====================================================================
 
 class HealthCheckWorker(QObject):
-    """Healthcheckworker.
-
-    Manages HealthCheckWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker that runs HealthChecker with progress signals."""
     progress = Signal(str)
     finished = Signal(dict)
     failed = Signal(str)
@@ -1497,10 +1422,7 @@ class HealthCheckWorker(QObject):
 
 
 class HealthCheckPage(_Page):
-    """Healthcheckpage.
-
-    Manages HealthCheckPage operations and coordinates related state changes for the component.
-    """
+    """Health Check page with score gauge, run button and checks table."""
 
     #: severity -> (icon asset, colour, human label). The marks used to be
     #: codepoints; U+2705 and U+26D4 have *emoji* presentation on Windows, so
@@ -1598,10 +1520,7 @@ class HealthCheckPage(_Page):
         self._loaded = False
 
     def _run(self):
-        """Run.
-
-        Manages run operations and coordinates related state changes for the component.
-        """
+        """Run HealthCheckWorker with gauge reset and skeleton shown."""
         self.run_btn.setEnabled(False)
         self.progress.setVisible(True)
         self.scan_status.setText("Starting\u2026")
@@ -1703,10 +1622,7 @@ class HealthCheckPage(_Page):
 # =====================================================================
 
 class WUActivityWorker(QObject):
-    """Wuactivityworker.
-
-    Manages WUActivityWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker that reads update activity and history via WindowsUpdate."""
     finished = Signal(dict, list)   # (last_activity, history)
     failed = Signal(str)
 
@@ -1724,10 +1640,7 @@ class WUActivityWorker(QObject):
 
 
 class WUPendingWorker(QObject):
-    """Wupendingworker.
-
-    Manages WUPendingWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker that checks pending updates via WindowsUpdate."""
     finished = Signal(list)
     failed = Signal(str)
 
@@ -1744,10 +1657,7 @@ class WUPendingWorker(QObject):
 
 
 class WindowsUpdatePage(_Page):
-    """Windowsupdatepage.
-
-    Manages WindowsUpdatePage operations and coordinates related state changes for the component.
-    """
+    """Windows Update page with last-check cards, pending/history tables."""
 
     def __init__(self, win):
         """Build the page layout (buttons, tables, cards, title header) and connect button/worker actions.
@@ -1840,9 +1750,7 @@ class WindowsUpdatePage(_Page):
         self.win.run_worker(WUActivityWorker(), self._on_activity, self._fail)
 
     def _on_activity(self, activity: dict, history: list):
-        """Handle worker results: refresh tables/trees, update cards/labels and clear the busy state.
-
-        Manages on activity operations and coordinates related state changes for the component.
+        """Show last-check cards and update history in the tables.
 
         Args:
             activity (dict): The activity parameter.
@@ -1861,19 +1769,14 @@ class WindowsUpdatePage(_Page):
             self.hist_tbl.setItem(r, 2, res_item)
 
     def _check_pending(self):
-        """Handle check pending for the page widgets and worker state.
-
-        Manages check pending operations and coordinates related state changes for the component.
-        """
+        """Check pending updates online via WUPendingWorker."""
         self.check_btn.setEnabled(False)
         self.progress.setVisible(True)
         self.win.statusBar().showMessage("Checking Windows Update (online)\u2026")
         self.win.run_worker(WUPendingWorker(), self._on_pending, self._fail)
 
     def _on_pending(self, updates: list):
-        """Handle worker results: refresh tables/trees, note status, re-enable buttons and clear the busy state.
-
-        Manages on pending operations and coordinates related state changes for the component.
+        """Show pending updates in the table and update the status bar.
 
         Args:
             updates (list): The updates parameter.
@@ -1891,10 +1794,7 @@ class WindowsUpdatePage(_Page):
             self.win.statusBar().showMessage(f"{len(updates)} update(s) available", 5000)
 
     def _open_settings(self):
-        """Handle open settings for the page widgets and worker state.
-
-        Manages open settings operations and coordinates related state changes for the component.
-        """
+        """Open the Windows Update Settings page."""
         try:
             import os
             os.startfile("ms-settings:windowsupdate")  # type: ignore[attr-defined]
@@ -2056,9 +1956,7 @@ class ComponentStorePage(_Page):
     # -- selection -----------------------------------------------------------
 
     def _selected_leftovers(self) -> list:
-        """Compute and return the value for selected leftovers used by the page.
-
-        Manages selected leftovers operations and coordinates related state changes for the component.
+        """Return selected leftover items resolved by table row.
 
         Returns:
             list: List of processed items or identifiers.
@@ -2067,10 +1965,7 @@ class ComponentStorePage(_Page):
         return [self._leftovers[r] for r in rows if 0 <= r < len(self._leftovers)]
 
     def _on_select(self):
-        """Handle worker results: re-enable buttons and clear the busy state.
-
-        Manages on select operations and coordinates related state changes for the component.
-        """
+        """Enable Remove when removable leftovers are selected."""
         chosen = self._selected_leftovers()
         # Managed items can never be removed here, so don't offer it.
         self.del_btn.setEnabled(bool(chosen) and all(item.removable_here for item in chosen))
@@ -2078,10 +1973,7 @@ class ComponentStorePage(_Page):
     # -- analyze -------------------------------------------------------------
 
     def _analyze(self):
-        """Analyze.
-
-        Manages analyze operations and coordinates related state changes for the component.
-        """
+        """Analyze the component store via ComponentStoreAnalyzeWorker."""
         from .workers import ComponentStoreAnalyzeWorker
         self.analyze_btn.setEnabled(False)
         self.clean_btn.setEnabled(False)
@@ -2090,9 +1982,7 @@ class ComponentStorePage(_Page):
                             self._fail, on_progress=self.status.setText)
 
     def _on_analyzed(self, analysis, leftovers: list):
-        """Handle worker results: refresh tables/trees, update cards/labels, update the state panel and clear the busy state.
-
-        Manages on analyzed operations and coordinates related state changes for the component.
+        """Show analysis cards, verdict and leftovers table.
 
         Args:
             analysis: The analysis parameter.
@@ -2181,9 +2071,7 @@ class ComponentStorePage(_Page):
                             self._fail, on_progress=self.status.setText)
 
     def _on_cleaned(self, outcome):
-        """Handle worker results: note status, re-enable buttons and clear the busy state.
-
-        Manages on cleaned operations and coordinates related state changes for the component.
+        """Report the cleanup outcome, then re-analyze on success.
 
         Args:
             outcome: The outcome parameter.
@@ -2211,10 +2099,7 @@ class ComponentStorePage(_Page):
             self._analyze()
 
     def _run_task(self):
-        """Handle run task for the page widgets and worker state.
-
-        Manages run task operations and coordinates related state changes for the component.
-        """
+        """Start Windows' own component cleanup task after confirmation."""
         from .workers import ServicingTaskWorker
         confirm = QMessageBox.question(
             self, "Let Windows clean it",
@@ -2231,9 +2116,7 @@ class ComponentStorePage(_Page):
         self.win.run_worker(ServicingTaskWorker(), self._on_task, self._fail)
 
     def _on_task(self, ok: bool, message: str):
-        """Handle worker results: note status, re-enable buttons and clear the busy state.
-
-        Manages on task operations and coordinates related state changes for the component.
+        """Report the servicing task result in status and dialog.
 
         Args:
             ok (bool): The ok parameter.
@@ -2249,10 +2132,7 @@ class ComponentStorePage(_Page):
             QMessageBox.warning(self, "Windows cleanup task", message)
 
     def _fix_24h2(self):
-        """Fix Windows 11 24H2 stuck staged packages using ComponentStoreCleaner.
-
-        Manages fix 24h2 operations and coordinates related state changes for the component.
-        """
+        """Fix stuck 24H2 staged packages via ComponentStoreCleaner."""
         confirm = QMessageBox.question(
             self, "Fix 24H2 Staged Packages",
             "This targets stuck 'Staged' checkpoint cumulative update packages in Windows 11 24H2 "
@@ -2278,10 +2158,7 @@ class ComponentStorePage(_Page):
             self._fail(f"Fix failed: {exc}")
 
     def _delete_leftovers(self):
-        """Handle delete leftovers for the page widgets and worker state.
-
-        Manages delete leftovers operations and coordinates related state changes for the component.
-        """
+        """Permanently remove selected removable leftovers after confirmation."""
         from .workers import LeftoverDeleteWorker
         chosen = [item for item in self._selected_leftovers() if item.removable_here]
         if not chosen:
@@ -2313,9 +2190,7 @@ class ComponentStorePage(_Page):
             self._on_deleted, self._fail, on_progress=self.status.setText)
 
     def _on_deleted(self, freed: int, removed: int, blocked: int):
-        """Handle worker results: note status and clear the busy state.
-
-        Manages on deleted operations and coordinates related state changes for the component.
+        """Report freed space and re-analyze.
 
         Args:
             freed (int): The freed parameter.

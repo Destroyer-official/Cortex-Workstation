@@ -35,10 +35,7 @@ _NO_WINDOW = 0x08000000 if _IS_WINDOWS else 0
 
 @dataclass(slots=True)
 class RepairResult:
-    """Repairresult.
-
-    Manages RepairResult operations and coordinates related state changes for the component.
-    """
+    """Record holding tool, success, status, message, needs_reboot, raw_tail."""
     tool: str
     success: bool
     status: str          # short outcome label
@@ -47,12 +44,10 @@ class RepairResult:
     raw_tail: str = ""   # last lines of output for transparency
 
     def to_dict(self) -> dict[str, Any]:
-        """To dict.
-
-        Manages to dict operations and coordinates related state changes for the component.
+        """Serialize to a plain dict with keys tool, success, status, message, needs_reboot, raw_tail.
 
         Returns:
-            dict[str, Any]: Dictionary mapping identifiers to status or values.
+        dict[str, Any]: Dictionary mapping identifiers to status or values.
         """
         return {
             "tool": self.tool, "success": self.success, "status": self.status,
@@ -62,30 +57,23 @@ class RepairResult:
 
 
 class SystemRepair:
-    """Systemrepair.
-
-    Manages SystemRepair operations and coordinates related state changes for the component.
-    """
+    """Groups related helpers: is supported, is elevated, run sfc, parse sfc, run dism, parse dism, run chkdsk scan, parse chkdsk. Requires elevation for protected targets."""
 
     @staticmethod
     def is_supported() -> bool:
-        """Is supported.
-
-        Manages is supported operations and coordinates related state changes for the component.
+        """Return True on Windows where the feature exists; False elsewhere. Windows-only; returns a safe default elsewhere.
 
         Returns:
-            bool: True if the operation succeeded, False otherwise.
+        bool: True if the operation succeeded, False otherwise.
         """
         return _IS_WINDOWS
 
     @staticmethod
     def is_elevated() -> bool:
-        """Is elevated.
-
-        Manages is elevated operations and coordinates related state changes for the component.
+        """Is elevated helper. Returns False. Requires elevation for protected targets.
 
         Returns:
-            bool: True if the operation succeeded, False otherwise.
+        bool: True if the operation succeeded, False otherwise.
         """
         if not _IS_WINDOWS:
             return False
@@ -98,15 +86,13 @@ class SystemRepair:
     # -- SFC ----------------------------------------------------------------
 
     def run_sfc(self, cancel_event: "threading.Event | None" = None) -> RepairResult:
-        """Run sfc.
-
-        Manages run sfc operations and coordinates related state changes for the component.
+        """Run sfc helper (runs `["sfc", "/scannow"]`). Returns RepairResult(...). Windows-only; returns a safe default elsewhere.
 
         Args:
-            cancel_event ('threading.Event | None'): Threading event or callable to check for cancellation.
+        cancel_event ('threading.Event | None'): Threading event or callable to check for cancellation.
 
         Returns:
-            RepairResult: Result of the operation.
+        RepairResult: Result of the operation.
         """
         if not _IS_WINDOWS:
             return RepairResult("SFC", False, "unsupported", "Windows only.")
@@ -115,15 +101,13 @@ class SystemRepair:
 
     @staticmethod
     def _parse_sfc(out: str | None) -> RepairResult:
-        """_parse_sfc.
-
-        Manages parse sfc operations and coordinates related state changes for the component.
+        """Parse sfc helper. Returns RepairResult(...).
 
         Args:
-            out (str | None): The out parameter.
+        out (str | None): The out parameter.
 
         Returns:
-            RepairResult: Result of the operation.
+        RepairResult: Result of the operation.
         """
         if out is None:
             return RepairResult("SFC", False, "error",
@@ -151,16 +135,14 @@ class SystemRepair:
 
     def run_dism(self, action: str = "CheckHealth",
                 cancel_event: "threading.Event | None" = None) -> RepairResult:
-        """Run dism.
-
-        Manages run dism operations and coordinates related state changes for the component.
+        """Run dism helper (runs `["dism", "/Online", "/Cleanup-Image", f"/{action}"]`). Returns RepairResult(...). Windows-only; returns a safe default elsewhere.
 
         Args:
-            action (str): The action parameter.
-            cancel_event ('threading.Event | None'): Threading event or callable to check for cancellation.
+        action (str): The action parameter.
+        cancel_event ('threading.Event | None'): Threading event or callable to check for cancellation.
 
         Returns:
-            RepairResult: Result of the operation.
+        RepairResult: Result of the operation.
         """
         if not _IS_WINDOWS:
             return RepairResult("DISM", False, "unsupported", "Windows only.")
@@ -173,16 +155,14 @@ class SystemRepair:
 
     @staticmethod
     def _parse_dism(out: str | None, action: str) -> RepairResult:
-        """_parse_dism.
-
-        Manages parse dism operations and coordinates related state changes for the component.
+        """Parse dism helper. Returns RepairResult(...).
 
         Args:
-            out (str | None): The out parameter.
-            action (str): The action parameter.
+        out (str | None): The out parameter.
+        action (str): The action parameter.
 
         Returns:
-            RepairResult: Result of the operation.
+        RepairResult: Result of the operation.
         """
         if out is None:
             return RepairResult("DISM", False, "error",
@@ -214,16 +194,14 @@ class SystemRepair:
 
     def run_chkdsk_scan(self, drive: str = "C",
                         cancel_event: "threading.Event | None" = None) -> RepairResult:
-        """Run chkdsk scan.
-
-        Manages run chkdsk scan operations and coordinates related state changes for the component.
+        """Run chkdsk scan helper. Returns RepairResult(...). Windows-only; returns a safe default elsewhere.
 
         Args:
-            drive (str): The drive parameter.
-            cancel_event ('threading.Event | None'): Threading event or callable to check for cancellation.
+        drive (str): The drive parameter.
+        cancel_event ('threading.Event | None'): Threading event or callable to check for cancellation.
 
         Returns:
-            RepairResult: Result of the operation.
+        RepairResult: Result of the operation.
         """
         if not _IS_WINDOWS:
             return RepairResult("CHKDSK", False, "unsupported", "Windows only.")
@@ -235,16 +213,14 @@ class SystemRepair:
 
     @staticmethod
     def _parse_chkdsk(out: str | None, letter: str) -> RepairResult:
-        """_parse_chkdsk.
-
-        Manages parse chkdsk operations and coordinates related state changes for the component.
+        """Parse chkdsk helper. Returns RepairResult(...).
 
         Args:
-            out (str | None): The out parameter.
-            letter (str): The letter parameter.
+        out (str | None): The out parameter.
+        letter (str): The letter parameter.
 
         Returns:
-            RepairResult: Result of the operation.
+        RepairResult: Result of the operation.
         """
         if out is None:
             return RepairResult("CHKDSK", False, "error",
@@ -266,17 +242,15 @@ class SystemRepair:
 
     def _run(self, args: list[str], timeout: int,
             cancel_event: "threading.Event | None" = None) -> str | None:
-        """Run.
-
-        Manages run operations and coordinates related state changes for the component.
+        """Run helper (spawns a subprocess). Returns text.
 
         Args:
-            args (list[str]): The args parameter.
-            timeout (int): The timeout parameter.
-            cancel_event ('threading.Event | None'): Threading event or callable to check for cancellation.
+        args (list[str]): The args parameter.
+        timeout (int): The timeout parameter.
+        cancel_event ('threading.Event | None'): Threading event or callable to check for cancellation.
 
         Returns:
-            str | None: Formatted string or path.
+        str | None: Formatted string or path.
         """
         try:
             # SFC/DISM/CHKDSK can run for many minutes; proc.run() polls the
@@ -305,15 +279,13 @@ class SystemRepair:
 
     @staticmethod
     def _decode(raw: bytes) -> str:
-        """Decode.
-
-        Manages decode operations and coordinates related state changes for the component.
+        """Decode bytes with utf-8/utf-16-le/cp1252 fallbacks; never raises.
 
         Args:
-            raw (bytes): The raw parameter.
+        raw (bytes): The raw parameter.
 
         Returns:
-            str: Formatted string or path.
+        str: Formatted string or path.
         """
         if not raw:
             return ""

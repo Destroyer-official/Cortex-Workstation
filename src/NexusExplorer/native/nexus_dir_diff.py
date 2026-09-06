@@ -18,9 +18,9 @@ from typing import Callable, Dict, List, Optional, Set, Tuple
 
 
 class DiffStatus(Enum):
-    """Diffstatus.
+    """Classification of one relative path.
 
-    Manages DiffStatus operations and coordinates related state changes for the component.
+    Covers IDENTICAL, LEFT_ONLY, RIGHT_ONLY, NEWER_LEFT/RIGHT, and CONTENT_DIFF.
     """
     IDENTICAL = "Identical"
     LEFT_ONLY = "Left Only"
@@ -31,9 +31,9 @@ class DiffStatus(Enum):
 
 
 class SyncMode(Enum):
-    """Syncmode.
+    """Folder sync strategy.
 
-    Manages SyncMode operations and coordinates related state changes for the component.
+    Selects MIRROR_LEFT_TO_RIGHT, MIRROR_RIGHT_TO_LEFT, TWO_WAY_MERGE, or UPDATE_NEWER.
     """
     MIRROR_LEFT_TO_RIGHT = "Mirror Left -> Right"
     MIRROR_RIGHT_TO_LEFT = "Mirror Right -> Left"
@@ -43,9 +43,9 @@ class SyncMode(Enum):
 
 @dataclass
 class DiffEntry:
-    """Diffentry.
+    """Comparison record for one relative path.
 
-    Manages DiffEntry operations and coordinates related state changes for the component.
+    Stores left/right absolute paths, DiffStatus, sizes, mtimes, and directory flag.
     """
     relative_path: str
     left_path: Optional[str]
@@ -60,9 +60,9 @@ class DiffEntry:
 
 @dataclass
 class SyncStats:
-    """Syncstats.
+    """Counters accumulated during execute_sync.
 
-    Manages SyncStats operations and coordinates related state changes for the component.
+    Tallies copied/updated/deleted/skipped, bytes transferred, and per-path error strings.
     """
     copied: int = 0
     updated: int = 0
@@ -72,18 +72,18 @@ class SyncStats:
     errors: List[str] = None
 
     def __post_init__(self):
-        """__post_init__.
+        """Initialize mutable SyncStats defaults.
 
-        Manages post init operations and coordinates related state changes for the component.
+        Replaces errors=None with a fresh list to avoid shared dataclass state.
         """
         if self.errors is None:
             self.errors = []
 
 
 class DirectoryDiffEngine:
-    """Directorydiffengine.
+    """Recursive two-tree folder comparison and sync engine.
 
-    Manages DirectoryDiffEngine operations and coordinates related state changes for the component.
+    Walks both trees with os.walk, applies 2-second FAT32 mtime tolerance, and optionally samples first/last 64KB for quick-hash comparison.
     """
 
     @staticmethod
@@ -113,7 +113,7 @@ class DirectoryDiffEngine:
     ) -> List[DiffEntry]:
         """Compare two folders recursively and return a list of DiffEntry items.
 
-        Manages compare directories operations and coordinates related state changes for the component.
+        Collects size/mtime/dir maps for both roots, unions relative paths, honors cancel_check, and emits progress every 50 entries.
 
         Args:
             left_dir (str | Path): The left dir parameter.
@@ -259,7 +259,7 @@ class DirectoryDiffEngine:
     ) -> SyncStats:
         """Execute folder synchronization according to selected SyncMode strategy.
 
-        Manages execute sync operations and coordinates related state changes for the component.
+        Applies the chosen SyncMode via shutil.copy2/rmtree/unlink, creating parents, counting stats, and collecting per-entry errors.
 
         Args:
             diff_list (List[DiffEntry]): The diff list parameter.

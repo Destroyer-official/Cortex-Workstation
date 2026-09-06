@@ -24,9 +24,9 @@ from cortex_unified.analyzers.czkawka_tools import EmptyFinder, EmptyResult
 
 
 class EmptyFinderWorker(QThread):
-    """Emptyfinderworker.
+    """QThread worker scanning zero-byte files and empty folders via czkawka EmptyFinder.
 
-    Manages EmptyFinderWorker operations and coordinates related state changes for the component.
+        Emits status_updated and progress_updated during the scan, then scan_completed or error_occurred.
     """
 
     progress_updated = Signal(int)
@@ -65,9 +65,9 @@ class EmptyFinderWorker(QThread):
             self.error_occurred.emit(str(e))
 
 class EmptyFilesWorker(QThread):
-    """Emptyfilesworker.
+    """QThread worker scanning for or deleting empty files and directories via Scanner and Deleter.
 
-    Manages EmptyFilesWorker operations and coordinates related state changes for the component.
+        Emits status_updated and progress_updated during work, then scan_completed, delete_completed, or error_occurred.
     """
 
     progress_updated = Signal(int)
@@ -148,9 +148,9 @@ class EmptyFilesWorker(QThread):
             self.error_occurred.emit(str(e))
 
 class EmptyFilesTab(BaseTab):
-    """Emptyfilestab.
+    """Empty-files tab with scan-location picker, dry-run/trash/age options, results table, and progress bar.
 
-    Manages EmptyFilesTab operations and coordinates related state changes for the component.
+        Scan, czkawka-scan, and delete actions run EmptyFilesWorker and EmptyFinderWorker threads.
     """
 
     def __init__(self, config, logger, safety_manager):
@@ -168,9 +168,7 @@ class EmptyFilesTab(BaseTab):
         self.empty_dirs = []
 
     def setup_ui(self):
-        """Set up the user interface.
-
-        Manages setup ui operations and coordinates related state changes for the component.
+        """Build the scan-location picker, dry-run/trash/age options, scan/delete buttons, progress bar, and results table.
         """
         layout = QVBoxLayout(self)
 
@@ -286,9 +284,7 @@ class EmptyFilesTab(BaseTab):
         layout.addWidget(self.summary_label)
 
     def setup_tooltips(self):
-        """Set up tooltips.
-
-        Manages setup tooltips operations and coordinates related state changes for the component.
+        """Assign tooltips to the path, dry-run/trash/age option, and scan/delete action widgets.
         """
         self.path_input.setToolTip(
             "Directory path to scan for empty files and folders")
@@ -307,8 +303,6 @@ class EmptyFilesTab(BaseTab):
 
     def browse_path(self):
         """Browse for directory to scan.
-
-        Manages browse path operations and coordinates related state changes for the component.
         """
         path = QFileDialog.getExistingDirectory(
             self, "Select Directory to Scan")
@@ -317,8 +311,6 @@ class EmptyFilesTab(BaseTab):
 
     def start_scan(self):
         """Validate the path and launch the scan worker.
-
-        Manages start scan operations and coordinates related state changes for the component.
         """
         path = self.path_input.text().strip()
         if not path or not Path(path).exists():
@@ -348,8 +340,6 @@ class EmptyFilesTab(BaseTab):
 
     def start_czkawka_scan(self):
         """Validate the path and launch the czkawka EmptyFinder worker.
-
-        Manages start czkawka scan operations and coordinates related state changes for the component.
         """
         path = self.path_input.text().strip()
         if not path or not Path(path).exists():
@@ -382,8 +372,6 @@ class EmptyFilesTab(BaseTab):
 
     def start_delete(self):
         """Start deleting selected items.
-
-        Manages start delete operations and coordinates related state changes for the component.
         """
         selected_files = []
         selected_dirs = []
@@ -482,8 +470,6 @@ class EmptyFilesTab(BaseTab):
 
     def select_all_items(self):
         """Check every row checkbox in the results table.
-
-        Manages select all items operations and coordinates related state changes for the component.
         """
         for row in range(self.results_table.rowCount()):
             checkbox = self.results_table.cellWidget(row, 0)
@@ -492,8 +478,6 @@ class EmptyFilesTab(BaseTab):
 
     def deselect_all_items(self):
         """Uncheck every row checkbox in the results table.
-
-        Manages deselect all items operations and coordinates related state changes for the component.
         """
         for row in range(self.results_table.rowCount()):
             checkbox = self.results_table.cellWidget(row, 0)
@@ -501,9 +485,8 @@ class EmptyFilesTab(BaseTab):
                 checkbox.setChecked(False)
 
     def delete_completed(self, result):
-        """Handle deletion completion.
+        """Report deleted file/directory counts in a message box, then rescan.
 
-        Manages delete completed operations and coordinates related state changes for the component.
 
         Args:
             result: Collection or dictionary holding operation results.
@@ -524,7 +507,6 @@ class EmptyFilesTab(BaseTab):
     def handle_error(self, error_message):
         """Show the error in a dialog and the status label.
 
-        Manages handle error operations and coordinates related state changes for the component.
 
         Args:
             error_message: Informational or progress status message.
@@ -534,9 +516,8 @@ class EmptyFilesTab(BaseTab):
         self.status_label.setText(f"Error: {error_message}")
 
     def operation_finished(self, worker):
-        """Handle operation completion.
+        """Hide the progress bar, re-enable scanning, and reap the finished worker thread.
 
-        Manages operation finished operations and coordinates related state changes for the component.
 
         Args:
             worker: The worker parameter.

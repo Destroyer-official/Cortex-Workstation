@@ -34,9 +34,7 @@ from cortex_unified.system_tools.wan_audit import (
     ],
 )
 def test_public_ip_classification(address, expected):
-    """test_public_ip_classification.
-
-    Manages test public ip classification operations and coordinates related state changes for the component.
+    """Verify public ip classification via pytest.mark.parametrize, classify_public_ip.
 
     Args:
         address: The address parameter.
@@ -46,10 +44,7 @@ def test_public_ip_classification(address, expected):
 
 
 def test_ssrf_guard_requires_literal_private_host_on_local_network():
-    """test_ssrf_guard_requires_literal_private_host_on_local_network.
-
-    Manages test ssrf guard requires literal private host on local network operations and coordinates related state changes for the component.
-    """
+    """Verify ssrf guard requires literal private host on local network via ipaddress.IPv4Network, _is_trusted_url."""
     networks = [ipaddress.IPv4Network("192.168.50.0/24")]
     assert _is_trusted_url("http://192.168.50.1:1900/root.xml", networks)
     assert _is_trusted_url("https://192.168.50.2/igd", networks)
@@ -67,10 +62,7 @@ def test_ssrf_guard_requires_literal_private_host_on_local_network():
 
 
 def test_xml_rejects_entities_and_excessive_depth():
-    """test_xml_rejects_entities_and_excessive_depth.
-
-    Manages test xml rejects entities and excessive depth operations and coordinates related state changes for the component.
-    """
+    """Verify xml rejects entities and excessive depth via pytest.raises, encode, _safe_xml."""
     with pytest.raises(ValueError, match="DTD"):
         _safe_xml(b'<!DOCTYPE x [<!ENTITY y "z">]><x>&y;</x>')
     deep = ("<x>" * 30 + "ok" + "</x>" * 30).encode()
@@ -79,9 +71,7 @@ def test_xml_rejects_entities_and_excessive_depth():
 
 
 def test_igd_control_url_is_resolved_and_kept_local(monkeypatch):
-    """test_igd_control_url_is_resolved_and_kept_local.
-
-    Manages test igd control url is resolved and kept local operations and coordinates related state changes for the component.
+    """Verify igd control url is resolved and kept local via ipaddress.IPv4Network, WanAuditor, monkeypatch.setattr.
 
     Args:
         monkeypatch: The monkeypatch parameter.
@@ -103,9 +93,7 @@ def test_igd_control_url_is_resolved_and_kept_local(monkeypatch):
 
 
 def test_igd_rejects_control_url_to_other_network(monkeypatch):
-    """test_igd_rejects_control_url_to_other_network.
-
-    Manages test igd rejects control url to other network operations and coordinates related state changes for the component.
+    """Verify igd rejects control url to other network via ipaddress.IPv4Network, WanAuditor, monkeypatch.setattr.
 
     Args:
         monkeypatch: The monkeypatch parameter.
@@ -125,9 +113,7 @@ def test_igd_rejects_control_url_to_other_network(monkeypatch):
 
 
 def _soap_response(action: str, content: str) -> bytes:
-    """_soap_response.
-
-    Manages soap response operations and coordinates related state changes for the component.
+    """Soap response using encode.
 
     Args:
         action (str): The action parameter.
@@ -144,9 +130,7 @@ def _soap_response(action: str, content: str) -> bytes:
 
 
 def test_soap_allowlist_and_mapping_parser(monkeypatch):
-    """test_soap_allowlist_and_mapping_parser.
-
-    Manages test soap allowlist and mapping parser operations and coordinates related state changes for the component.
+    """Verify soap allowlist and mapping parser via WanAuditor, monkeypatch.setattr, auditor._soap.
 
     Args:
         monkeypatch: The monkeypatch parameter.
@@ -173,38 +157,24 @@ def test_soap_allowlist_and_mapping_parser(monkeypatch):
 
 
 class SyntheticAuditor(WanAuditor):
-    """Syntheticauditor.
-
-    Manages SyntheticAuditor operations and coordinates related state changes for the component.
-    """
+    """Helper syntheticauditor using ValueError, InterfaceStatus, _safe_xml."""
     @staticmethod
     def local_interfaces():
-        """local_interfaces.
-
-        Manages local interfaces operations and coordinates related state changes for the component.
-        """
+        """Local interfaces using InterfaceStatus."""
         return [InterfaceStatus("test", "192.168.50.20", "255.255.255.0", "192.168.50.0/24")]
 
     @staticmethod
     def default_gateway():
-        """default_gateway.
-
-        Manages default gateway operations and coordinates related state changes for the component.
-        """
+        """Default gateway."""
         return "192.168.50.1"
 
     @staticmethod
     def dns_servers():
-        """dns_servers.
-
-        Manages dns servers operations and coordinates related state changes for the component.
-        """
+        """Dns servers."""
         return ["192.168.50.1"]
 
     def discover_locations(self, networks, cancel_event=None):
-        """discover_locations.
-
-        Manages discover locations operations and coordinates related state changes for the component.
+        """Discover locations.
 
         Args:
             networks: The networks parameter.
@@ -213,9 +183,7 @@ class SyntheticAuditor(WanAuditor):
         return ["http://192.168.50.1/root.xml"]
 
     def _load_igd(self, location, networks):
-        """_load_igd.
-
-        Manages load igd operations and coordinates related state changes for the component.
+        """Load igd.
 
         Args:
             location: The location parameter.
@@ -224,9 +192,7 @@ class SyntheticAuditor(WanAuditor):
         return "urn:schemas-upnp-org:service:WANIPConnection:1", "http://192.168.50.1/control"
 
     def _soap(self, url, service_type, action, arguments=None):
-        """Soap.
-
-        Manages soap operations and coordinates related state changes for the component.
+        """Soap using ValueError, _safe_xml, _soap_response.
 
         Args:
             url: The url parameter.
@@ -242,10 +208,7 @@ class SyntheticAuditor(WanAuditor):
 
 
 def test_audit_is_json_safe_and_contains_local_context():
-    """test_audit_is_json_safe_and_contains_local_context.
-
-    Manages test audit is json safe and contains local context operations and coordinates related state changes for the component.
-    """
+    """Verify audit is json safe and contains local context via json.loads, json.dumps, SyntheticAuditor."""
     status = SyntheticAuditor(max_mappings=2).audit(include_upnp=True)
     payload = json.loads(json.dumps(status.to_dict()))
     assert payload["external_ip"] == "100.64.2.3"
@@ -256,9 +219,7 @@ def test_audit_is_json_safe_and_contains_local_context():
 
 
 def test_pre_cancelled_audit_does_not_discover(monkeypatch):
-    """test_pre_cancelled_audit_does_not_discover.
-
-    Manages test pre cancelled audit does not discover operations and coordinates related state changes for the component.
+    """Verify pre cancelled audit does not discover via threading.Event, event.set, SyntheticAuditor.
 
     Args:
         monkeypatch: The monkeypatch parameter.

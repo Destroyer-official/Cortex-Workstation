@@ -33,8 +33,6 @@ IS_WINDOWS = platform.system() == "Windows"
 def fake_vhdx(tmp_path):
     """A stand-in .vhdx file of a known size.
 
-    Manages fake vhdx operations and coordinates related state changes for the component.
-
     Args:
         tmp_path: Filesystem path to the target file or directory.
     """
@@ -48,9 +46,7 @@ def fake_vhdx(tmp_path):
 # ---------------------------------------------------------------------------
 
 def test_saving_is_unknown_without_a_guest_measurement(fake_vhdx):
-    """test_saving_is_unknown_without_a_guest_measurement.
-
-    Manages test saving is unknown without a guest measurement operations and coordinates related state changes for the component.
+    """Verify saving is unknown without a guest measurement via VirtualDisk.
 
     Args:
         fake_vhdx: The fake vhdx parameter.
@@ -63,9 +59,7 @@ def test_saving_is_unknown_without_a_guest_measurement(fake_vhdx):
 
 
 def test_saving_is_host_size_minus_guest_usage(fake_vhdx):
-    """test_saving_is_host_size_minus_guest_usage.
-
-    Manages test saving is host size minus guest usage operations and coordinates related state changes for the component.
+    """Verify saving is host size minus guest usage via VirtualDisk.
 
     Args:
         fake_vhdx: The fake vhdx parameter.
@@ -79,8 +73,6 @@ def test_saving_is_host_size_minus_guest_usage(fake_vhdx):
 def test_saving_never_goes_negative(fake_vhdx):
     """Guest usage can exceed the host file for a sparse disk; clamp at zero.
 
-    Manages test saving never goes negative operations and coordinates related state changes for the component.
-
     Args:
         fake_vhdx: The fake vhdx parameter.
     """
@@ -90,9 +82,7 @@ def test_saving_never_goes_negative(fake_vhdx):
 
 
 def test_running_disk_names_the_blocking_process(fake_vhdx):
-    """test_running_disk_names_the_blocking_process.
-
-    Manages test running disk names the blocking process operations and coordinates related state changes for the component.
+    """Verify running disk names the blocking process via VirtualDisk.
 
     Args:
         fake_vhdx: The fake vhdx parameter.
@@ -105,9 +95,7 @@ def test_running_disk_names_the_blocking_process(fake_vhdx):
 
 
 def test_missing_file_is_reported_not_offered(tmp_path):
-    """test_missing_file_is_reported_not_offered.
-
-    Manages test missing file is reported not offered operations and coordinates related state changes for the component.
+    """Verify missing file is reported not offered via VirtualDisk.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.
@@ -118,9 +106,7 @@ def test_missing_file_is_reported_not_offered(tmp_path):
 
 
 def test_disk_to_dict_is_json_ready(fake_vhdx):
-    """test_disk_to_dict_is_json_ready.
-
-    Manages test disk to dict is json ready operations and coordinates related state changes for the component.
+    """Verify disk to dict is json ready via VirtualDisk, json.loads, json.dumps.
 
     Args:
         fake_vhdx: The fake vhdx parameter.
@@ -139,9 +125,7 @@ def test_disk_to_dict_is_json_ready(fake_vhdx):
 # ---------------------------------------------------------------------------
 
 def test_list_disks_dedupes_sorts_and_flags_blockers(monkeypatch, tmp_path):
-    """test_list_disks_dedupes_sorts_and_flags_blockers.
-
-    Manages test list disks dedupes sorts and flags blockers operations and coordinates related state changes for the component.
+    """Verify list disks dedupes sorts and flags blockers via VhdxManager, monkeypatch.setattr, mgr.list_disks.
 
     Args:
         monkeypatch: The monkeypatch parameter.
@@ -180,10 +164,7 @@ def test_list_disks_dedupes_sorts_and_flags_blockers(monkeypatch, tmp_path):
 
 @pytest.mark.skipif(not IS_WINDOWS, reason="registry/PowerShell probes are Windows-only")
 def test_real_discovery_never_raises():
-    """On a machine with no WSL/Docker/Hyper-V this must return [], not blow up.
-
-    Manages test real discovery never raises operations and coordinates related state changes for the component.
-    """
+    """On a machine with no WSL/Docker/Hyper-V this must return [], not blow up."""
     disks = VhdxManager().list_disks()
     assert isinstance(disks, list)
     for d in disks:
@@ -191,9 +172,7 @@ def test_real_discovery_never_raises():
 
 
 def test_unsupported_platform_returns_empty(monkeypatch):
-    """test_unsupported_platform_returns_empty.
-
-    Manages test unsupported platform returns empty operations and coordinates related state changes for the component.
+    """Verify unsupported platform returns empty via monkeypatch.setattr, VhdxManager, list_disks.
 
     Args:
         monkeypatch: The monkeypatch parameter.
@@ -212,8 +191,6 @@ def test_unsupported_platform_returns_empty(monkeypatch):
 def test_compact_refuses_while_runtime_holds_the_disk(monkeypatch, fake_vhdx):
     """The whole point: never touch a disk that is still attached.
 
-    Manages test compact refuses while runtime holds the disk operations and coordinates related state changes for the component.
-
     Args:
         monkeypatch: The monkeypatch parameter.
         fake_vhdx: The fake vhdx parameter.
@@ -223,10 +200,7 @@ def test_compact_refuses_while_runtime_holds_the_disk(monkeypatch, fake_vhdx):
                         staticmethod(lambda: {"wslservice.exe"}))
 
     def _boom(*_a, **_k):
-        """Boom.
-
-        Manages boom operations and coordinates related state changes for the component.
-        """
+        """Boom using AssertionError."""
         raise AssertionError("diskpart must not run while the disk is in use")
 
     monkeypatch.setattr(mgr, "_run_diskpart", _boom)
@@ -240,9 +214,7 @@ def test_compact_refuses_while_runtime_holds_the_disk(monkeypatch, fake_vhdx):
 
 @pytest.mark.skipif(not IS_WINDOWS, reason="compaction is a Windows operation")
 def test_compact_reports_measured_delta(monkeypatch, fake_vhdx):
-    """test_compact_reports_measured_delta.
-
-    Manages test compact reports measured delta operations and coordinates related state changes for the component.
+    """Verify compact reports measured delta via pytest.mark.skipif, VhdxManager, monkeypatch.setattr.
 
     Args:
         monkeypatch: The monkeypatch parameter.
@@ -252,9 +224,7 @@ def test_compact_reports_measured_delta(monkeypatch, fake_vhdx):
     monkeypatch.setattr(VhdxManager, "_running_processes", staticmethod(set))
 
     def _shrink(script, timeout, cancel_event=None):
-        """Shrink.
-
-        Manages shrink operations and coordinates related state changes for the component.
+        """Shrink using fake_vhdx.write_bytes.
 
         Args:
             script: The script parameter.
@@ -278,9 +248,7 @@ def test_compact_reports_measured_delta(monkeypatch, fake_vhdx):
 
 @pytest.mark.skipif(not IS_WINDOWS, reason="compaction is a Windows operation")
 def test_compact_is_honest_when_nothing_was_reclaimed(monkeypatch, fake_vhdx):
-    """test_compact_is_honest_when_nothing_was_reclaimed.
-
-    Manages test compact is honest when nothing was reclaimed operations and coordinates related state changes for the component.
+    """Verify compact is honest when nothing was reclaimed via pytest.mark.skipif, VhdxManager, monkeypatch.setattr.
 
     Args:
         monkeypatch: The monkeypatch parameter.
@@ -299,9 +267,7 @@ def test_compact_is_honest_when_nothing_was_reclaimed(monkeypatch, fake_vhdx):
 
 @pytest.mark.skipif(not IS_WINDOWS, reason="compaction is a Windows operation")
 def test_compact_surfaces_permission_failure(monkeypatch, fake_vhdx):
-    """test_compact_surfaces_permission_failure.
-
-    Manages test compact surfaces permission failure operations and coordinates related state changes for the component.
+    """Verify compact surfaces permission failure via pytest.mark.skipif, VhdxManager, monkeypatch.setattr.
 
     Args:
         monkeypatch: The monkeypatch parameter.
@@ -319,9 +285,7 @@ def test_compact_surfaces_permission_failure(monkeypatch, fake_vhdx):
 
 
 def test_compact_missing_file_fails_clearly(tmp_path):
-    """test_compact_missing_file_fails_clearly.
-
-    Manages test compact missing file fails clearly operations and coordinates related state changes for the component.
+    """Verify compact missing file fails clearly via VirtualDisk, VhdxManager, compact.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.
@@ -333,10 +297,7 @@ def test_compact_missing_file_fails_clearly(tmp_path):
 
 
 def test_failure_messages_are_actionable():
-    """test_failure_messages_are_actionable.
-
-    Manages test failure messages are actionable operations and coordinates related state changes for the component.
-    """
+    """Verify failure messages are actionable via explain, lower."""
     explain = VhdxManager._explain_failure
     assert "Administrator" in explain("Access is denied.")
     assert "Stop WSL" in explain("The virtual disk is currently in use.")
@@ -345,8 +306,6 @@ def test_failure_messages_are_actionable():
 
 def test_compact_result_freed_bytes_never_negative(tmp_path):
     """A disk that grew during the run must not report negative savings.
-
-    Manages test compact result freed bytes never negative operations and coordinates related state changes for the component.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.
@@ -357,19 +316,14 @@ def test_compact_result_freed_bytes_never_negative(tmp_path):
 
 
 def test_decode_handles_utf16_console_output():
-    """diskpart emits UTF-16LE with embedded NULs on some consoles.
-
-    Manages test decode handles utf16 console output operations and coordinates related state changes for the component.
-    """
+    """diskpart emits UTF-16LE with embedded NULs on some consoles."""
     raw = "successfully compacted".encode("utf-16-le")
     assert "successfully compacted" in VhdxManager._decode(raw)
     assert VhdxManager._decode(None) == ""
 
 
 def test_sparse_mode_is_wsl_only(fake_vhdx):
-    """test_sparse_mode_is_wsl_only.
-
-    Manages test sparse mode is wsl only operations and coordinates related state changes for the component.
+    """Verify sparse mode is wsl only via VirtualDisk, msg.lower, VhdxManager.
 
     Args:
         fake_vhdx: The fake vhdx parameter.

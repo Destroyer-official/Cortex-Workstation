@@ -217,10 +217,7 @@ class _BackupWorker(QObject):
 
 
 class DriverManagerPage(_Page):
-    """Drivermanagerpage.
-
-    Manages DriverManagerPage operations and coordinates related state changes for the component.
-    """
+    """Driver Manager page: Enumerate all PnP devices, check for outdated drivers via Windows."""
 
     def __init__(self, win):
         """Build the Driver Manager page: filter, action buttons, progress, and results table.
@@ -320,8 +317,6 @@ class DriverManagerPage(_Page):
 
     def _selected_hwids(self) -> list[str]:
         """Return hardware IDs of the currently selected table rows.
-
-        Manages selected hwids operations and coordinates related state changes for the component.
 
         Returns:
             list[str]: List of processed items or identifiers.

@@ -25,9 +25,9 @@ from cortex_unified.analyzers.duplicate_finder import DuplicateFinder
 from cortex_unified.core.utils import normalize_path
 
 class DuplicateFinderWorker(QThread):
-    """Duplicatefinderworker.
+    """QThread worker grouping duplicate files via DuplicateFinder.
 
-    Manages DuplicateFinderWorker operations and coordinates related state changes for the component.
+        Emits status_updated and progress_updated during hashing, then finished_scan or error_occurred.
     """
     finished_scan = Signal(dict)
     error_occurred = Signal(str)
@@ -91,9 +91,9 @@ class DuplicateFinderWorker(QThread):
 
 
 class DuplicatesTab(BaseTab):
-    """Duplicatestab.
+    """Duplicates tab with path picker, hash/strategy options, groups tree, progress bar, and status label.
 
-    Manages DuplicatesTab operations and coordinates related state changes for the component.
+        Find and delete actions run DuplicateFinderWorker and recycle selections via Deleter.
     """
     def __init__(self, config, logger, safety_manager):
         """Initialize the tab and empty the current duplicates cache.
@@ -110,8 +110,6 @@ class DuplicatesTab(BaseTab):
         
     def setup_ui(self):
         """Build the tab: path picker, hash/strategy options, and group/details splitter.
-
-        Manages setup ui operations and coordinates related state changes for the component.
         """
         layout = QVBoxLayout(self)
         layout.setSpacing(10)
@@ -200,8 +198,6 @@ class DuplicatesTab(BaseTab):
 
     def start_find_duplicates(self):
         """Validate the path and launch the DuplicateFinderWorker.
-
-        Manages start find duplicates operations and coordinates related state changes for the component.
         """
         path = self.duplicates_path_input.text().strip()
         if not path or not Path(path).exists():
@@ -228,7 +224,6 @@ class DuplicatesTab(BaseTab):
     def duplicates_found(self, result):
         """Populate the groups tree, pre-checking files per the chosen strategy.
 
-        Manages duplicates found operations and coordinates related state changes for the component.
 
         Args:
             result: Collection or dictionary holding operation results.
@@ -285,22 +280,17 @@ class DuplicatesTab(BaseTab):
         
     def select_all_duplicates(self):
         """Check every file row across all duplicate groups.
-
-        Manages select all duplicates operations and coordinates related state changes for the component.
         """
         self._set_tree_states(Qt.CheckState.Checked)
         
     def deselect_all_duplicates(self):
         """Uncheck every file row across all duplicate groups.
-
-        Manages deselect all duplicates operations and coordinates related state changes for the component.
         """
         self._set_tree_states(Qt.CheckState.Unchecked)
         
     def _set_tree_states(self, state):
         """Apply a check state to every child row in the groups tree.
 
-        Manages set tree states operations and coordinates related state changes for the component.
 
         Args:
             state: The state parameter.
@@ -316,7 +306,6 @@ class DuplicatesTab(BaseTab):
     def duplicates_error(self, error):
         """Log and report the duplicate-scan error.
 
-        Manages duplicates error operations and coordinates related state changes for the component.
 
         Args:
             error: Error message string or exception instance.
@@ -327,8 +316,6 @@ class DuplicatesTab(BaseTab):
         
     def delete_selected_duplicates(self):
         """Confirm, then recycle the checked duplicates via Deleter and rescan.
-
-        Manages delete selected duplicates operations and coordinates related state changes for the component.
         """
         self.logger.info("Deleting selected duplicates")
         selected_files = []
@@ -386,7 +373,6 @@ class DuplicatesTab(BaseTab):
     def operation_finished(self, worker):
         """Hide progress, re-enable the find button, and reap the worker.
 
-        Manages operation finished operations and coordinates related state changes for the component.
 
         Args:
             worker: The worker parameter.

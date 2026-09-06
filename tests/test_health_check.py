@@ -14,9 +14,7 @@ IS_WINDOWS = platform.system() == "Windows"
 
 
 def _c(sev):
-    """C.
-
-    Manages c operations and coordinates related state changes for the component.
+    """C using HealthCheck.
 
     Args:
         sev: The sev parameter.
@@ -25,55 +23,34 @@ def _c(sev):
 
 
 class TestScoring:
-    """Testscoring.
-
-    Manages TestScoring operations and coordinates related state changes for the component.
-    """
+    """Group testscoring tests covering all good is a; info does not deduct; one warning; one critical; multiple criticals floor at zero; grade boundaries."""
     def test_all_good_is_a(self):
-        """test_all_good_is_a.
-
-        Manages test all good is a operations and coordinates related state changes for the component.
-        """
+        """Verify all good is a via HealthChecker._score, _c."""
         score, grade = HealthChecker._score([_c("good"), _c("good"), _c("good")])
         assert score == 100 and grade == "A"
 
     def test_info_does_not_deduct(self):
-        """test_info_does_not_deduct.
-
-        Manages test info does not deduct operations and coordinates related state changes for the component.
-        """
+        """Verify info does not deduct via HealthChecker._score, _c."""
         score, grade = HealthChecker._score([_c("info"), _c("info")])
         assert score == 100 and grade == "A"
 
     def test_one_warning(self):
-        """test_one_warning.
-
-        Manages test one warning operations and coordinates related state changes for the component.
-        """
+        """Verify one warning via HealthChecker._score, _c."""
         score, _ = HealthChecker._score([_c("warning")])
         assert score == 88  # 100 - 12
 
     def test_one_critical(self):
-        """test_one_critical.
-
-        Manages test one critical operations and coordinates related state changes for the component.
-        """
+        """Verify one critical via HealthChecker._score, _c."""
         score, grade = HealthChecker._score([_c("critical")])
         assert score == 70 and grade == "C"
 
     def test_multiple_criticals_floor_at_zero(self):
-        """test_multiple_criticals_floor_at_zero.
-
-        Manages test multiple criticals floor at zero operations and coordinates related state changes for the component.
-        """
+        """Verify multiple criticals floor at zero via HealthChecker._score, _c."""
         score, grade = HealthChecker._score([_c("critical")] * 10)
         assert score == 0 and grade == "F"
 
     def test_grade_boundaries(self):
-        """test_grade_boundaries.
-
-        Manages test grade boundaries operations and coordinates related state changes for the component.
-        """
+        """Verify grade boundaries via HealthChecker._score, _c."""
         assert HealthChecker._score([])[1] == "A"
         # 100 - 12 - 12 = 76 -> B
         assert HealthChecker._score([_c("warning"), _c("warning")])[1] == "B"
@@ -82,15 +59,9 @@ class TestScoring:
 
 
 class TestRun:
-    """Testrun.
-
-    Manages TestRun operations and coordinates related state changes for the component.
-    """
+    """Group testrun tests covering run returns report; progress called; checks have valid severity; to dict."""
     def test_run_returns_report(self):
-        """test_run_returns_report.
-
-        Manages test run returns report operations and coordinates related state changes for the component.
-        """
+        """Verify run returns report via HealthChecker, run."""
         report = HealthChecker().run()
         assert isinstance(report, HealthReport)
         assert 0 <= report.score <= 100
@@ -110,19 +81,13 @@ class TestRun:
         assert len(msgs) >= 2
 
     def test_checks_have_valid_severity(self):
-        """test_checks_have_valid_severity.
-
-        Manages test checks have valid severity operations and coordinates related state changes for the component.
-        """
+        """Verify checks have valid severity via HealthChecker, run."""
         report = HealthChecker().run()
         for c in report.checks:
             assert c.severity in {"good", "warning", "critical", "info"}
 
     def test_to_dict(self):
-        """test_to_dict.
-
-        Manages test to dict operations and coordinates related state changes for the component.
-        """
+        """Verify to dict via report.to_dict, HealthChecker, run."""
         report = HealthChecker().run()
         d = report.to_dict()
         assert set(d) == {"checks", "score", "grade"}
@@ -130,15 +95,9 @@ class TestRun:
 
 
 class TestDiskSpaceCheck:
-    """Testdiskspacecheck.
-
-    Manages TestDiskSpaceCheck operations and coordinates related state changes for the component.
-    """
+    """Group testdiskspacecheck tests covering disk space check runs."""
     def test_disk_space_check_runs(self):
-        """test_disk_space_check_runs.
-
-        Manages test disk space check runs operations and coordinates related state changes for the component.
-        """
+        """Verify disk space check runs via HealthChecker._check_disk_space."""
         c = HealthChecker._check_disk_space()
         assert c.id == "disk_space"
         assert c.severity in {"good", "warning", "critical"}

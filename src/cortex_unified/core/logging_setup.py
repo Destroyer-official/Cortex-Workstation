@@ -23,7 +23,7 @@ correlation_id_var: ContextVar[Optional[str]] = ContextVar("correlation_id", def
 def add_correlation_id(logger: Any, method_name: str, event_dict: EventDict) -> EventDict:
     """Add correlation ID to log events if present.
 
-    Manages add correlation id operations and coordinates related state changes for the component.
+    Propagates the request correlation ID into every event for tracing.
 
     Args:
         logger (Any): The logger parameter.
@@ -41,16 +41,16 @@ def add_correlation_id(logger: Any, method_name: str, event_dict: EventDict) -> 
 def add_app_context(logger: Any, method_name: str, event_dict: EventDict) -> EventDict:
     """Add application context to all log events.
 
-    Manages add app context operations and coordinates related state changes for the component.
+ Tags every event with app name and package version.
 
-    Args:
-        logger (Any): The logger parameter.
-        method_name (str): The method name parameter.
-        event_dict (EventDict): The event dict parameter.
+ Args:
+ logger (Any): The logger parameter.
+ method_name (str): The method name parameter.
+ event_dict (EventDict): The event dict parameter.
 
-    Returns:
-        EventDict: Dictionary mapping identifiers to status or values.
-    """
+ Returns:
+ EventDict: Dictionary mapping identifiers to status or values.
+ """
     event_dict["app"] = "cortex_cleaner"
     try:
         from cortex_unified import __version__ as app_version
@@ -71,9 +71,9 @@ def censor_sensitive_data(logger: Any, method_name: str, event_dict: EventDict) 
     }
     
     def _censor_dict(d: Dict[str, Any]) -> Dict[str, Any]:
-        """_censor_dict.
+        """Censor dict.
 
-        Manages censor dict operations and coordinates related state changes for the component.
+        Redacts password/token/secret values recursively before emission.
 
         Args:
             d (Dict[str, Any]): The d parameter.
@@ -235,9 +235,9 @@ def set_correlation_id(correlation_id: str) -> None:
     correlation_id_var.set(correlation_id)
 
 def clear_correlation_id() -> None:
-    """clear_correlation_id.
+    """Clear correlation id.
 
-    Manages clear correlation id operations and coordinates related state changes for the component.
+    Propagates the request correlation ID into every event for tracing.
     """
     correlation_id_var.set(None)
 
@@ -290,13 +290,13 @@ def log_scan_start(
 ) -> None:
     """Log the start of a scan operation.
 
-    Manages log scan start operations and coordinates related state changes for the component.
+ Emits a scan_started event with type and root path.
 
-    Args:
-        logger (structlog.BoundLogger): The logger parameter.
-        scan_type (str): The scan type parameter.
-        root_path (str): Filesystem path to the target file or directory.
-    """
+ Args:
+ logger (structlog.BoundLogger): The logger parameter.
+ scan_type (str): The scan type parameter.
+ root_path (str): Filesystem path to the target file or directory.
+ """
     logger.info(
         "scan_started",
         scan_type=scan_type,
@@ -314,15 +314,15 @@ def log_scan_complete(
 ) -> None:
     """Log the completion of a scan operation.
 
-    Manages log scan complete operations and coordinates related state changes for the component.
+ Emits scan_completed with counts, bytes, and rounded duration.
 
-    Args:
-        logger (structlog.BoundLogger): The logger parameter.
-        scan_type (str): The scan type parameter.
-        items_found (int): The items found parameter.
-        bytes_found (int): The bytes found parameter.
-        duration_seconds (float): The duration seconds parameter.
-    """
+ Args:
+ logger (structlog.BoundLogger): The logger parameter.
+ scan_type (str): The scan type parameter.
+ items_found (int): The items found parameter.
+ bytes_found (int): The bytes found parameter.
+ duration_seconds (float): The duration seconds parameter.
+ """
     logger.info(
         "scan_completed",
         scan_type=scan_type,
@@ -340,13 +340,13 @@ def log_scan_error(
 ) -> None:
     """Log a scan error with exception details.
 
-    Manages log scan error operations and coordinates related state changes for the component.
+ Emits scan_failed with exception type, message, and traceback.
 
-    Args:
-        logger (structlog.BoundLogger): The logger parameter.
-        scan_type (str): The scan type parameter.
-        error (Exception): Error message string or exception instance.
-    """
+ Args:
+ logger (structlog.BoundLogger): The logger parameter.
+ scan_type (str): The scan type parameter.
+ error (Exception): Error message string or exception instance.
+ """
     logger.error(
         "scan_failed",
         scan_type=scan_type,
@@ -363,16 +363,16 @@ def log_file_operation(
     success: bool,
     **kwargs
 ) -> None:
-    """log_file_operation.
+    """Log file operation.
 
-    Manages log file operation operations and coordinates related state changes for the component.
+ Emits file_operation at info on success and warning on failure.
 
-    Args:
-        logger (structlog.BoundLogger): The logger parameter.
-        operation (str): The operation parameter.
-        path (str): Filesystem path to the target file or directory.
-        success (bool): The success parameter.
-    """
+ Args:
+ logger (structlog.BoundLogger): The logger parameter.
+ operation (str): The operation parameter.
+ path (str): Filesystem path to the target file or directory.
+ success (bool): The success parameter.
+ """
     level = "info" if success else "warning"
     getattr(logger, level)(
         "file_operation",
@@ -389,16 +389,16 @@ def log_performance_metric(
     unit: str = "seconds",
     **kwargs
 ) -> None:
-    """log_performance_metric.
+    """Log performance metric.
 
-    Manages log performance metric operations and coordinates related state changes for the component.
+ Emits performance_metric with the value rounded to milliseconds.
 
-    Args:
-        logger (structlog.BoundLogger): The logger parameter.
-        metric_name (str): The metric name parameter.
-        value (float): The value parameter.
-        unit (str): The unit parameter.
-    """
+ Args:
+ logger (structlog.BoundLogger): The logger parameter.
+ metric_name (str): The metric name parameter.
+ value (float): The value parameter.
+ unit (str): The unit parameter.
+ """
     logger.info(
         "performance_metric",
         metric=metric_name,

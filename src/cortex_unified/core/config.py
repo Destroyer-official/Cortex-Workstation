@@ -27,7 +27,7 @@ class Config:
     """
 
     def __init__(self, config_path: str = None):
-        """__init__.
+        """Initialize the instance.
 
         Initializes the instance and configures internal state.
 
@@ -40,11 +40,11 @@ class Config:
     def _get_default_config_path(self) -> str:
         """Get the default configuration file path.
 
-        Manages get default config path operations and coordinates related state changes for the component.
+ Resolves the legacy ~/.deepcleaner.yaml location.
 
-        Returns:
-            str: Formatted string or path.
-        """
+ Returns:
+ str: Formatted string or path.
+ """
         home = Path.home()
         return str(home / ".deepcleaner.yaml")
     
@@ -109,7 +109,7 @@ class Config:
     def exclude_patterns(self) -> List[str]:
         """Get exclude patterns from config.
 
-        Manages exclude patterns operations and coordinates related state changes for the component.
+        Returns exclude_patterns from the loaded YAML mapping, defaulting to [] when unset.
 
         Returns:
             List[str]: List of processed items or identifiers.
@@ -120,7 +120,7 @@ class Config:
     def exclude_dirs(self) -> List[str]:
         """Get exclude directories from config.
 
-        Manages exclude dirs operations and coordinates related state changes for the component.
+        Returns exclude_dirs from the loaded YAML mapping, defaulting to [] when unset.
 
         Returns:
             List[str]: List of processed items or identifiers.
@@ -131,7 +131,7 @@ class Config:
     def exclude_regex_patterns(self) -> List[str]:
         """Get exclude regex patterns from config.
 
-        Manages exclude regex patterns operations and coordinates related state changes for the component.
+        Returns exclude_regex_patterns from the loaded YAML mapping, defaulting to [] when unset.
 
         Returns:
             List[str]: List of processed items or identifiers.
@@ -142,7 +142,7 @@ class Config:
     def min_age_days(self) -> int:
         """Get minimum age in days.
 
-        Manages min age days operations and coordinates related state changes for the component.
+        Returns min_age_days from the loaded YAML mapping, defaulting to 0 when unset.
 
         Returns:
             int: Result of the operation.
@@ -151,9 +151,9 @@ class Config:
     
     @property
     def default_action(self) -> str:
-        """default_action.
+        """Default action.
 
-        Manages default action operations and coordinates related state changes for the component.
+        Returns default_action from the loaded YAML mapping, defaulting to "dry_run" when unset.
 
         Returns:
             str: Formatted string or path.
@@ -162,9 +162,9 @@ class Config:
     
     @property
     def log_file(self) -> str:
-        """log_file.
+        """Log file.
 
-        Manages log file operations and coordinates related state changes for the component.
+        Returns log_file from the loaded YAML mapping, defaulting to "" when unset.
 
         Returns:
             str: Formatted string or path.
@@ -173,9 +173,9 @@ class Config:
     
     @property
     def json_logging(self) -> bool:
-        """json_logging.
+        """Json logging.
 
-        Manages json logging operations and coordinates related state changes for the component.
+        Returns json_logging from the loaded YAML mapping, defaulting to False when unset.
 
         Returns:
             bool: True if the operation succeeded, False otherwise.
@@ -184,9 +184,9 @@ class Config:
     
     @property
     def threads(self) -> int:
-        """Threads.
+        """Threads helper.
 
-        Manages threads operations and coordinates related state changes for the component.
+        Returns threads from the loaded YAML mapping, defaulting to 0 when unset.
 
         Returns:
             int: Result of the operation.
@@ -195,9 +195,9 @@ class Config:
     
     @property
     def follow_symlinks(self) -> bool:
-        """follow_symlinks.
+        """Follow symlinks.
 
-        Manages follow symlinks operations and coordinates related state changes for the component.
+        Returns follow_symlinks from the loaded YAML mapping, defaulting to False when unset.
 
         Returns:
             bool: True if the operation succeeded, False otherwise.
@@ -207,7 +207,7 @@ class Config:
     def matches_exclude_patterns(self, path: str) -> bool:
         """Check if a path matches any exclude patterns (glob or regex).
 
-        Manages matches exclude patterns operations and coordinates related state changes for the component.
+        Checks glob patterns and names first, then directory names, then regexes, skipping invalid regexes.
 
         Args:
             path (str): Filesystem path to the target file or directory.

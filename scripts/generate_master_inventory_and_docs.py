@@ -26,8 +26,6 @@ sys.path.insert(0, str(SRC_DIR / "NexusExplorer" / "native"))
 def parse_py_file(file_path: Path):
     """Parse python file using AST and extract structural details.
 
-    Manages parse py file operations and coordinates related state changes for the component.
-
     Args:
         file_path (Path): Filesystem path to the target file or directory.
     """
@@ -95,10 +93,7 @@ def parse_py_file(file_path: Path):
     }
 
 def gather_all_codebase():
-    """Scan all python files in the repository.
-
-    Manages gather all codebase operations and coordinates related state changes for the component.
-    """
+    """Scan all python files in the repository."""
     results = {}
     for root, _, files in os.walk(REPO_ROOT):
         r_path = Path(root)
@@ -112,10 +107,7 @@ def gather_all_codebase():
     return results
 
 def get_registered_gui_pages():
-    """Load registry.py and extract all PageSpecs.
-
-    Manages get registered gui pages operations and coordinates related state changes for the component.
-    """
+    """Load registry.py and extract all PageSpecs."""
     import cortex_unified.ui.premium.registry as r
     pages = []
     for spec in r.PAGES:
@@ -130,8 +122,6 @@ def get_registered_gui_pages():
 
 def generate_inventory_markdown(codebase, gui_pages):
     """Generate PROGRAM_FILES_AND_FUNCTIONS_INVENTORY.md.
-
-    Manages generate inventory markdown operations and coordinates related state changes for the component.
 
     Args:
         codebase: The codebase parameter.
@@ -227,8 +217,6 @@ def generate_inventory_markdown(codebase, gui_pages):
 def generate_master_reference_markdown(codebase, gui_pages):
     """Generate CLI_AND_GUI_FEATURES_MASTER_REFERENCE.md.
 
-    Manages generate master reference markdown operations and coordinates related state changes for the component.
-
     Args:
         codebase: The codebase parameter.
         gui_pages: The gui pages parameter.
@@ -300,8 +288,6 @@ def generate_master_reference_markdown(codebase, gui_pages):
 
 def generate_comprehensive_documentation(codebase, gui_pages):
     """Generate COMPREHENSIVE_FUNCTION_DOCUMENTATION.md.
-
-    Manages generate comprehensive documentation operations and coordinates related state changes for the component.
 
     Args:
         codebase: The codebase parameter.
@@ -417,10 +403,7 @@ def generate_comprehensive_documentation(codebase, gui_pages):
     return "\n".join(lines)
 
 def main():
-    """Main.
-
-    Manages main operations and coordinates related state changes for the component.
-    """
+    """Main using inv_path.stat, ref_path.stat, doc_path.stat."""
     print("Beginning comprehensive codebase audit...")
     codebase = gather_all_codebase()
     print(f"Parsed {len(codebase)} python files across repository.")

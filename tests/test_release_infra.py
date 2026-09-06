@@ -14,15 +14,9 @@ import pytest
 
 
 class TestParseVersion:
-    """Testparseversion.
-
-    Manages TestParseVersion operations and coordinates related state changes for the component.
-    """
+    """Group testparseversion tests covering plain and v prefixed; unparseable tags return none."""
     def test_plain_and_v_prefixed(self):
-        """test_plain_and_v_prefixed.
-
-        Manages test plain and v prefixed operations and coordinates related state changes for the component.
-        """
+        """Verify plain and v prefixed via parse_version."""
         from cortex_unified.system_tools.update_checker import parse_version
         assert parse_version("1.2.3") == (1, 2, 3)
         assert parse_version("v1.2.3") == (1, 2, 3)
@@ -31,9 +25,7 @@ class TestParseVersion:
     @pytest.mark.parametrize("bad", ["", "abc", "1.2", "v1.2.3.4",
                                      "release-42"])
     def test_unparseable_tags_return_none(self, bad):
-        """test_unparseable_tags_return_none.
-
-        Manages test unparseable tags return none operations and coordinates related state changes for the component.
+        """Verify unparseable tags return none via pytest.mark.parametrize, parse_version.
 
         Args:
             bad: The bad parameter.
@@ -43,14 +35,9 @@ class TestParseVersion:
 
 
 class TestCheckForUpdate:
-    """Testcheckforupdate.
-
-    Manages TestCheckForUpdate operations and coordinates related state changes for the component.
-    """
+    """Group testcheckforupdate tests covering update available when latest is newer; up to date when equal or older; offline reports unknown never raises; unparseable remote tag is unknown."""
     def _patch_fetch(self, monkeypatch, tag):
-        """_patch_fetch.
-
-        Manages patch fetch operations and coordinates related state changes for the component.
+        """Patch fetch using monkeypatch.setattr.
 
         Args:
             monkeypatch: The monkeypatch parameter.
@@ -61,9 +48,7 @@ class TestCheckForUpdate:
                             lambda *a, **k: tag)
 
     def test_update_available_when_latest_is_newer(self, monkeypatch):
-        """test_update_available_when_latest_is_newer.
-
-        Manages test update available when latest is newer operations and coordinates related state changes for the component.
+        """Verify update available when latest is newer via self._patch_fetch, check_for_update.
 
         Args:
             monkeypatch: The monkeypatch parameter.
@@ -76,9 +61,7 @@ class TestCheckForUpdate:
         assert result["installed"] == "1.0.0"
 
     def test_up_to_date_when_equal_or_older(self, monkeypatch):
-        """test_up_to_date_when_equal_or_older.
-
-        Manages test up to date when equal or older operations and coordinates related state changes for the component.
+        """Verify up to date when equal or older via self._patch_fetch, check_for_update.
 
         Args:
             monkeypatch: The monkeypatch parameter.
@@ -90,9 +73,7 @@ class TestCheckForUpdate:
         assert check_for_update(installed="1.0.0")["status"] == "up_to_date"
 
     def test_offline_reports_unknown_never_raises(self, monkeypatch):
-        """test_offline_reports_unknown_never_raises.
-
-        Manages test offline reports unknown never raises operations and coordinates related state changes for the component.
+        """Verify offline reports unknown never raises via self._patch_fetch, check_for_update.
 
         Args:
             monkeypatch: The monkeypatch parameter.
@@ -103,9 +84,7 @@ class TestCheckForUpdate:
         assert result["status"] == "unknown"
 
     def test_unparseable_remote_tag_is_unknown(self, monkeypatch):
-        """test_unparseable_remote_tag_is_unknown.
-
-        Manages test unparseable remote tag is unknown operations and coordinates related state changes for the component.
+        """Verify unparseable remote tag is unknown via self._patch_fetch, check_for_update.
 
         Args:
             monkeypatch: The monkeypatch parameter.
@@ -116,14 +95,9 @@ class TestCheckForUpdate:
 
 
 class TestCrashReport:
-    """Testcrashreport.
-
-    Manages TestCrashReport operations and coordinates related state changes for the component.
-    """
+    """Group testcrashreport tests covering excepthook writes crash file."""
     def test_excepthook_writes_crash_file(self, tmp_path, monkeypatch):
         """The excepthook persists a redact-flagged crash report file.
-
-        Manages test excepthook writes crash file operations and coordinates related state changes for the component.
 
         Args:
             tmp_path: Filesystem path to the target file or directory.

@@ -30,10 +30,7 @@ from .window import _Page
 
 
 class _WanAuditWorker(QObject):
-    """Wanauditworker.
-
-    Manages WanAuditWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker (_WanAuditWorker) performing WanAuditWorker. Signals finished, progress, failed report status. Its run() step calls WanAuditor, auditor.audit, emit, str."""
     finished = Signal(object)  # WanStatus
     progress = Signal(str)
     failed = Signal(str)
@@ -72,10 +69,7 @@ class _WanAuditWorker(QObject):
 
 
 class WanAuditPage(_Page):
-    """Wanauditpage.
-
-    Manages WanAuditPage operations and coordinates related state changes for the component.
-    """
+    """WAN & UPnP Gateway Auditor page: Discovers Internet Gateway Devices (IGD) on your local network using SSDP/UPnP."""
 
     def __init__(self, win):
         """Init.
@@ -226,10 +220,7 @@ class WanAuditPage(_Page):
         )
 
     def _export(self):
-        """Export.
-
-        Manages export operations and coordinates related state changes for the component.
-        """
+        """Prompt the user with a file dialog (QFileDialog.getSaveFileName) and apply the chosen path to the page state."""
         if not self._last_status:
             return
         path, _ = QFileDialog.getSaveFileName(self, "Export WAN Audit Report", "wan_audit_report.json", "JSON Files (*.json)")

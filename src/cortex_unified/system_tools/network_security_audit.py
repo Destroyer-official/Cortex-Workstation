@@ -13,10 +13,7 @@ _VALID_SEVERITIES = frozenset(_SEVERITY_ORDER)
 
 @dataclass(slots=True)
 class SecurityFinding:
-    """Securityfinding.
-
-    Manages SecurityFinding operations and coordinates related state changes for the component.
-    """
+    """Record holding code, severity, title, detail, remediation, device_ip, evidence, cve_ids."""
     code: str
     severity: str
     title: str
@@ -29,22 +26,17 @@ class SecurityFinding:
     port: int | None = None
 
     def __post_init__(self) -> None:
-        """__post_init__.
-
-        Manages post init operations and coordinates related state changes for the component.
-        """
+        """Validate and normalize fields after init; normalizes case, validates values, clamps numeric ranges."""
         self.severity = self.severity.lower()
         if self.severity not in _VALID_SEVERITIES:
             raise ValueError(f"unsupported finding severity: {self.severity!r}")
         self.confidence = max(0.0, min(1.0, float(self.confidence)))
 
     def to_dict(self) -> dict[str, Any]:
-        """To dict.
-
-        Manages to dict operations and coordinates related state changes for the component.
+        """Serialize to a plain dict with keys code, severity, title, detail, remediation, device_ip, evidence, cve_ids, confidence, port.
 
         Returns:
-            dict[str, Any]: Dictionary mapping identifiers to status or values.
+        dict[str, Any]: Dictionary mapping identifiers to status or values.
         """
         return {
             "code": self.code,
@@ -62,60 +54,50 @@ class SecurityFinding:
     # Read-only compatibility properties for the previous audit API.
     @property
     def finding_id(self) -> str:
-        """Finding id.
-
-        Manages finding id operations and coordinates related state changes for the component.
+        """Return the underlying code attribute.
 
         Returns:
-            str: Formatted string or path.
+        str: Formatted string or path.
         """
         return self.code
 
     @property
     def description(self) -> str:
-        """Description.
-
-        Manages description operations and coordinates related state changes for the component.
+        """Return the underlying detail attribute.
 
         Returns:
-            str: Formatted string or path.
+        str: Formatted string or path.
         """
         return self.detail
 
     @property
     def recommendation(self) -> str:
-        """Recommendation.
-
-        Manages recommendation operations and coordinates related state changes for the component.
+        """Return the underlying remediation attribute.
 
         Returns:
-            str: Formatted string or path.
+        str: Formatted string or path.
         """
         return self.remediation
 
     @property
     def cve(self) -> str:
-        """Cve.
-
-        Manages cve operations and coordinates related state changes for the component.
+        """Return the underlying cve_ids attribute.
 
         Returns:
-            str: Formatted string or path.
+        str: Formatted string or path.
         """
         return self.cve_ids[0] if self.cve_ids else ""
 
 
 def _evidence(observation: ServiceObservation, extra: str = "") -> list[str]:
-    """Evidence.
-
-    Manages evidence operations and coordinates related state changes for the component.
+    """Evidence helper. Returns list(dict.fromkeys(values)).
 
     Args:
-        observation (ServiceObservation): The observation parameter.
-        extra (str): The extra parameter.
+    observation (ServiceObservation): The observation parameter.
+    extra (str): The extra parameter.
 
     Returns:
-        list[str]: List of processed items or identifiers.
+    list[str]: List of processed items or identifiers.
     """
     values = observation.evidence
     if observation.banner:
@@ -135,22 +117,20 @@ def _finding(
     confidence: float,
     extra: str = "",
 ) -> SecurityFinding:
-    """Finding.
-
-    Manages finding operations and coordinates related state changes for the component.
+    """Finding helper. Returns SecurityFinding.
 
     Args:
-        observation (ServiceObservation): The observation parameter.
-        code (str): The code parameter.
-        severity (str): The severity parameter.
-        title (str): Display text string.
-        detail (str): The detail parameter.
-        remediation (str): The remediation parameter.
-        confidence (float): The confidence parameter.
-        extra (str): The extra parameter.
+    observation (ServiceObservation): The observation parameter.
+    code (str): The code parameter.
+    severity (str): The severity parameter.
+    title (str): Display text string.
+    detail (str): The detail parameter.
+    remediation (str): The remediation parameter.
+    confidence (float): The confidence parameter.
+    extra (str): The extra parameter.
 
     Returns:
-        SecurityFinding: Result of the operation.
+    SecurityFinding: Result of the operation.
     """
     return SecurityFinding(
         code=code,
@@ -168,15 +148,13 @@ def _finding(
 def _observation_findings(observation: ServiceObservation) -> list[SecurityFinding]:
     # ACK/firewall-map output and filtered/closed states are evidence, not an
     # open application service and must never trigger service-risk findings.
-    """_observation_findings.
-
-    Manages observation findings operations and coordinates related state changes for the component.
+    """Observation findings helper.
 
     Args:
-        observation (ServiceObservation): The observation parameter.
+    observation (ServiceObservation): The observation parameter.
 
     Returns:
-        list[SecurityFinding]: List of processed items or identifiers.
+    list[SecurityFinding]: List of processed items or identifiers.
     """
     if observation.state != "open":
         return []
@@ -287,14 +265,12 @@ def analyze_services(
 ) -> tuple[Any, list[SecurityFinding]]:
     """Compatibility analysis entry point returning fingerprint and findings.
 
-    Manages analyze services operations and coordinates related state changes for the component.
-
     Args:
-        services (Iterable[ServiceObservation]): The services parameter.
-        catalog (Any | None): The catalog parameter.
+    services (Iterable[ServiceObservation]): The services parameter.
+    catalog (Any | None): The catalog parameter.
 
     Returns:
-        tuple[Any, list[SecurityFinding]]: List of processed items or identifiers.
+    tuple[Any, list[SecurityFinding]]: List of processed items or identifiers.
     """
     from cortex_unified.system_tools.device_fingerprint import fingerprint_device
 
@@ -312,31 +288,27 @@ def analyze_services(
 
 
 def _get(value: Any, name: str, default: Any = None) -> Any:
-    """Get.
-
-    Manages get operations and coordinates related state changes for the component.
+    """Get helper. Returns value.get(...).
 
     Args:
-        value (Any): The value parameter.
-        name (str): The name parameter.
-        default (Any): The default parameter.
+    value (Any): The value parameter.
+    name (str): The name parameter.
+    default (Any): The default parameter.
 
     Returns:
-        Any: Result of the operation.
+    Any: Result of the operation.
     """
     return value.get(name, default) if isinstance(value, Mapping) else getattr(value, name, default)
 
 
 def _device_observations(device: Any) -> list[ServiceObservation]:
-    """_device_observations.
-
-    Manages device observations operations and coordinates related state changes for the component.
+    """Device observations helper.
 
     Args:
-        device (Any): The device parameter.
+    device (Any): The device parameter.
 
     Returns:
-        list[ServiceObservation]: List of processed items or identifiers.
+    list[ServiceObservation]: List of processed items or identifiers.
     """
     for name in ("service_observations", "observations", "scanned_services"):
         values = _get(device, name, None)
@@ -349,15 +321,13 @@ def _device_observations(device: Any) -> list[ServiceObservation]:
 
 
 def _deduplicate(findings: Iterable[SecurityFinding]) -> list[SecurityFinding]:
-    """Deduplicate.
-
-    Manages deduplicate operations and coordinates related state changes for the component.
+    """Deduplicate helper. Returns sorted(...).
 
     Args:
-        findings (Iterable[SecurityFinding]): The findings parameter.
+    findings (Iterable[SecurityFinding]): The findings parameter.
 
     Returns:
-        list[SecurityFinding]: List of processed items or identifiers.
+    list[SecurityFinding]: List of processed items or identifiers.
     """
     unique: dict[tuple[str, str, int | None], SecurityFinding] = {}
     for finding in findings:
@@ -374,14 +344,12 @@ def audit_devices(
 ) -> list[SecurityFinding]:
     """Analyze supplied evidence only; this function performs no network I/O.
 
-    Manages audit devices operations and coordinates related state changes for the component.
-
     Args:
-        devices (Iterable[Any]): The devices parameter.
-        vulnerability_catalog (Any | None): The vulnerability catalog parameter.
+    devices (Iterable[Any]): The devices parameter.
+    vulnerability_catalog (Any | None): The vulnerability catalog parameter.
 
     Returns:
-        list[SecurityFinding]: List of processed items or identifiers.
+    list[SecurityFinding]: List of processed items or identifiers.
     """
     findings: list[SecurityFinding] = []
     for device in devices:
@@ -455,13 +423,11 @@ def audit_devices(
 def audit_wan(wan_status: Any) -> list[SecurityFinding]:
     """Report enabled IGD mappings as exposure observations, never connectivity tests.
 
-    Manages audit wan operations and coordinates related state changes for the component.
-
     Args:
-        wan_status (Any): The wan status parameter.
+    wan_status (Any): The wan status parameter.
 
     Returns:
-        list[SecurityFinding]: List of processed items or identifiers.
+    list[SecurityFinding]: List of processed items or identifiers.
     """
     findings: list[SecurityFinding] = []
     gateway = str(_get(wan_status, "gateway", ""))

@@ -43,10 +43,7 @@ _DURATION_MS = 360
 
 
 class SmoothScroller(QObject):
-    """Smoothscroller.
-
-    Manages SmoothScroller operations and coordinates related state changes for the component.
-    """
+    """Application event filter implementing :focus-visible: behavior; tracks keyboard vs mouse modality and toggles the focusVisible property."""
 
     def __init__(self, area: QAbstractScrollArea, parent: QObject | None = None):
         """__init__.
@@ -89,9 +86,7 @@ class SmoothScroller(QObject):
             return False
 
     def _on_wheel(self, event) -> bool:
-        """_on_wheel.
-
-        Manages on wheel operations and coordinates related state changes for the component.
+        """Handle wheel events with smooth animated scrolling unless reduced motion is preferred.
 
         Args:
             event: The Qt event object.

@@ -116,9 +116,9 @@ def _fmt_bytes(b: int) -> str:
 # ===========================================================================
 
 class LinksManagerPage(_Page):
-    """Linksmanagerpage.
+    """Links Manager page with folder picker, recursive option, and links table.
 
-    Manages LinksManagerPage operations and coordinates related state changes for the component.
+        Backed by LinksManager, QMessageBox, QFileDialog; builds tables, buttons, and dialogs for the actions below.
     """
     def __init__(self, win: PremiumMainWindow):
         """Build the Links Manager page with folder picker, recursive option, and links table.
@@ -180,7 +180,7 @@ class LinksManagerPage(_Page):
     def _on_choose_folder(self):
         """Open a directory picker and remember it as the scan target.
 
-        Manages on choose folder operations and coordinates related state changes for the component.
+            Uses QFileDialog; updates self._scan_dir, self.selected_path_label.
         """
         folder = QFileDialog.getExistingDirectory(self, "Select Folder to Scan for Links")
         if folder:
@@ -190,7 +190,7 @@ class LinksManagerPage(_Page):
     def _on_scan(self):
         """Scan the chosen directory (or home) for links on the worker runtime.
 
-        Manages on scan operations and coordinates related state changes for the component.
+            Uses LinksManager; updates self._scan_dir, self.scan_btn, self.table.
         """
         target = self._scan_dir or Path.home()
         self.scan_btn.setEnabled(False)
@@ -229,7 +229,7 @@ class LinksManagerPage(_Page):
     def _on_remove_link(self):
         """Confirm and remove the selected link without touching its target files.
 
-        Manages on remove link operations and coordinates related state changes for the component.
+            Uses LinksManager, QMessageBox; updates self.table, self._items, self._on_scan.
         """
         sel = self.table.currentRow()
         if sel < 0 or sel >= len(self._items):
@@ -256,9 +256,9 @@ class LinksManagerPage(_Page):
 # ===========================================================================
 
 class FastCopierPage(_Page):
-    """Fastcopierpage.
+    """Fast Copier page with source/destination pickers, mode combo, and progress bar.
 
-    Manages FastCopierPage operations and coordinates related state changes for the component.
+        Backed by FastCopier, QMessageBox, QFileDialog; builds tables, buttons, and dialogs for the actions below.
     """
     def __init__(self, win: PremiumMainWindow):
         """Build the Fast Copier page with source/destination pickers, mode combo, and progress bar.
@@ -338,7 +338,7 @@ class FastCopierPage(_Page):
     def _on_add_source(self):
         """Append a picked source directory to the copy list.
 
-        Manages on add source operations and coordinates related state changes for the component.
+            Uses QFileDialog; updates self._sources, self.sources_label.
         """
         folder = QFileDialog.getExistingDirectory(self, "Select Source Directory")
         if folder:
@@ -348,7 +348,7 @@ class FastCopierPage(_Page):
     def _on_choose_dest(self):
         """Pick the destination directory for the batch copy.
 
-        Manages on choose dest operations and coordinates related state changes for the component.
+            Uses QFileDialog; updates self._dest_dir, self.dest_label.
         """
         folder = QFileDialog.getExistingDirectory(self, "Select Destination Directory")
         if folder:
@@ -358,7 +358,7 @@ class FastCopierPage(_Page):
     def _on_start_copy(self):
         """Run the batch copy in the background with the chosen mode and speed limit.
 
-        Manages on start copy operations and coordinates related state changes for the component.
+            Uses FastCopier, QMessageBox; updates self._sources, self._dest_dir, self.start_btn.
         """
         if not self._sources or not self._dest_dir:
             QMessageBox.information(self, "Fast Copier", "Please select source files/folders and destination directory.")
@@ -414,9 +414,9 @@ class FastCopierPage(_Page):
 # ===========================================================================
 
 class TimestampTouchPage(_Page):
-    """Timestamptouchpage.
+    """Timestamp Touch page with file picker, datetime editors, and attribute checkboxes.
 
-    Manages TimestampTouchPage operations and coordinates related state changes for the component.
+        Backed by TimestampTouchEngine, QMessageBox, QFileDialog; builds tables, buttons, and dialogs for the actions below.
     """
     def __init__(self, win: PremiumMainWindow):
         """Build the Timestamp Touch page with file picker, datetime editors, and attribute checkboxes.
@@ -509,7 +509,7 @@ class TimestampTouchPage(_Page):
     def _on_choose_files(self):
         """Pick files and preload the first file's timestamps and attributes into the editors.
 
-        Manages on choose files operations and coordinates related state changes for the component.
+            Uses TimestampTouchEngine, QFileDialog; updates self._selected_files, self.files_label, self.created_edit.
         """
         files, _ = QFileDialog.getOpenFileNames(self, "Select Files to Touch")
         if files:
@@ -529,7 +529,7 @@ class TimestampTouchPage(_Page):
     def _on_apply(self):
         """Apply the chosen timestamps and attributes to every selected file.
 
-        Manages on apply operations and coordinates related state changes for the component.
+            Uses TimestampTouchEngine, QMessageBox; updates self._selected_files, self.created_edit, self.set_created_check.
         """
         if not self._selected_files:
             QMessageBox.information(self, "Timestamp Touch", "Please select files first.")
@@ -556,9 +556,9 @@ class TimestampTouchPage(_Page):
 # ===========================================================================
 
 class ArchiveManagerPage(_Page):
-    """Archivemanagerpage.
+    """Archive Studio page with open/test/extract/create buttons and a contents table.
 
-    Manages ArchiveManagerPage operations and coordinates related state changes for the component.
+        Backed by ArchiveManager, QMessageBox, QFileDialog; builds tables, buttons, and dialogs for the actions below.
     """
     def __init__(self, win: PremiumMainWindow):
         """Build the Archive Studio page with open/test/extract/create buttons and a contents table.
@@ -618,7 +618,7 @@ class ArchiveManagerPage(_Page):
     def _on_open_archive(self):
         """Open an archive and list its entries in the table.
 
-        Manages on open archive operations and coordinates related state changes for the component.
+            Uses ArchiveManager, QFileDialog; updates self._current_archive, self.archive_info_label, self.table.
         """
         f, _ = QFileDialog.getOpenFileName(self, "Open Archive", "", "Archives (*.zip *.tar *.tar.gz *.tgz *.tar.bz2 *.tbz2 *.tar.xz)")
         if f:
@@ -635,7 +635,7 @@ class ArchiveManagerPage(_Page):
     def _on_test_archive(self):
         """Run an integrity test on the currently opened archive.
 
-        Manages on test archive operations and coordinates related state changes for the component.
+            Uses ArchiveManager, QMessageBox; updates self._current_archive.
         """
         if not self._current_archive:
             QMessageBox.information(self, "Archive Studio", "Please open an archive first.")
@@ -650,7 +650,7 @@ class ArchiveManagerPage(_Page):
     def _on_extract_archive(self):
         """Extract the opened archive into a chosen destination folder.
 
-        Manages on extract archive operations and coordinates related state changes for the component.
+            Uses ArchiveManager, QMessageBox; updates self._current_archive.
         """
         if not self._current_archive:
             QMessageBox.information(self, "Archive Studio", "Please open an archive first.")
@@ -667,7 +667,7 @@ class ArchiveManagerPage(_Page):
     def _on_create_archive(self):
         """Pick files and a target name, then build a new archive.
 
-        Manages on create archive operations and coordinates related state changes for the component.
+            Uses ArchiveManager, QMessageBox.
         """
         sources, _ = QFileDialog.getOpenFileNames(self, "Select Files to Compress")
         if not sources:
@@ -688,9 +688,9 @@ class ArchiveManagerPage(_Page):
 # ===========================================================================
 
 class PrefetchAnalyzerPage(_Page):
-    """Prefetchanalyzerpage.
+    """Prefetch page with status line, scan/clean buttons, and a traces table.
 
-    Manages PrefetchAnalyzerPage operations and coordinates related state changes for the component.
+        Backed by PrefetchAnalyzer, QMessageBox; builds tables, buttons, and dialogs for the actions below.
     """
     def __init__(self, win: PremiumMainWindow):
         """Build the Prefetch page with status line, scan/clean buttons, and a traces table.
@@ -741,7 +741,7 @@ class PrefetchAnalyzerPage(_Page):
     def _refresh_status(self):
         """Refresh the prefetch cache size, SysMain state, and privilege line.
 
-        Manages refresh status operations and coordinates related state changes for the component.
+            Uses PrefetchAnalyzer; updates self.status_label.
         """
         st = PrefetchAnalyzer.get_status()
         self.status_label.setText(
@@ -753,7 +753,7 @@ class PrefetchAnalyzerPage(_Page):
     def _on_scan(self):
         """Scan prefetch trace files on the worker runtime.
 
-        Manages on scan operations and coordinates related state changes for the component.
+            Uses PrefetchAnalyzer; updates self.scan_btn, self.table, self._refresh_status.
         """
         self.scan_btn.setEnabled(False)
         self.table.setRowCount(0)
@@ -788,7 +788,7 @@ class PrefetchAnalyzerPage(_Page):
     def _on_clean(self):
         """Confirm and flush all prefetch traces, then rescan.
 
-        Manages on clean operations and coordinates related state changes for the component.
+            Uses PrefetchAnalyzer, QMessageBox; updates self._on_scan.
         """
         confirm = QMessageBox.question(
             self, "Confirm Prefetch Purge",
@@ -806,9 +806,9 @@ class PrefetchAnalyzerPage(_Page):
 # ===========================================================================
 
 class SearchIndexOptimizerPage(_Page):
-    """Searchindexoptimizerpage.
+    """Search Index page with status card and compact/rebuild buttons.
 
-    Manages SearchIndexOptimizerPage operations and coordinates related state changes for the component.
+        Backed by SearchIndexOptimizer, QMessageBox; builds tables, buttons, and dialogs for the actions below.
     """
     def __init__(self, win: PremiumMainWindow):
         """Build the Search Index page with status card and compact/rebuild buttons.
@@ -868,7 +868,7 @@ class SearchIndexOptimizerPage(_Page):
     def _on_compact(self):
         """Confirm and run offline ESENT compaction in the background.
 
-        Manages on compact operations and coordinates related state changes for the component.
+            Uses SearchIndexOptimizer, QMessageBox; updates self.compact_btn, self._refresh, self.win.
         """
         confirm = QMessageBox.question(
             self, "Confirm Compaction",
@@ -905,7 +905,7 @@ class SearchIndexOptimizerPage(_Page):
     def _on_rebuild(self):
         """Confirm and trigger a full search-index rebuild.
 
-        Manages on rebuild operations and coordinates related state changes for the component.
+            Uses SearchIndexOptimizer, QMessageBox; updates self._refresh.
         """
         confirm = QMessageBox.question(
             self, "Confirm Index Rebuild",
@@ -923,9 +923,9 @@ class SearchIndexOptimizerPage(_Page):
 # ===========================================================================
 
 class DnsBenchmarkPage(_Page):
-    """Dnsbenchmarkpage.
+    """DNS Benchmark page with run/apply buttons and a results table.
 
-    Manages DnsBenchmarkPage operations and coordinates related state changes for the component.
+        Backed by DnsBenchmarkEngine, QMessageBox; builds tables, buttons, and dialogs for the actions below.
     """
     def __init__(self, win: PremiumMainWindow):
         """Build the DNS Benchmark page with run/apply buttons and a results table.
@@ -974,7 +974,7 @@ class DnsBenchmarkPage(_Page):
     def _on_benchmark(self):
         """Run the full DNS benchmark on the worker runtime.
 
-        Manages on benchmark operations and coordinates related state changes for the component.
+            Uses DnsBenchmarkEngine; updates self.run_btn, self.table, self._results.
         """
         self.run_btn.setEnabled(False)
         self.table.setRowCount(0)
@@ -1014,7 +1014,7 @@ class DnsBenchmarkPage(_Page):
     def _on_apply_dns(self):
         """Apply the selected provider's DNS servers to Wi-Fi, falling back to Ethernet.
 
-        Manages on apply dns operations and coordinates related state changes for the component.
+            Uses DnsBenchmarkEngine, QMessageBox; updates self.table, self._results.
         """
         sel = self.table.currentRow()
         if sel < 0 or sel >= len(self._results):
@@ -1038,9 +1038,9 @@ class DnsBenchmarkPage(_Page):
 # ===========================================================================
 
 class DiskBenchmarkPage(_Page):
-    """Diskbenchmarkpage.
+    """Disk Benchmark page with target picker, progress label, and results table.
 
-    Manages DiskBenchmarkPage operations and coordinates related state changes for the component.
+        Backed by DiskBenchmarkEngine, QFileDialog; builds tables, buttons, and dialogs for the actions below.
     """
     def __init__(self, win: PremiumMainWindow):
         """Build the Disk Benchmark page with target picker, progress label, and results table.
@@ -1101,7 +1101,7 @@ class DiskBenchmarkPage(_Page):
     def _on_select_target(self):
         """Pick the drive or folder to benchmark.
 
-        Manages on select target operations and coordinates related state changes for the component.
+            Uses QFileDialog; updates self._target_path, self.target_label.
         """
         folder = QFileDialog.getExistingDirectory(self, "Select Benchmark Target Drive")
         if folder:
@@ -1111,7 +1111,7 @@ class DiskBenchmarkPage(_Page):
     def _on_start_bench(self):
         """Run a 64 MB storage benchmark on the target in the background.
 
-        Manages on start bench operations and coordinates related state changes for the component.
+            Uses DiskBenchmarkEngine; updates self.start_btn, self.progress_label, self._target_path.
         """
         self.start_btn.setEnabled(False)
         self.progress_label.setText("Running storage benchmark (64MB sample)...")
@@ -1148,9 +1148,9 @@ class DiskBenchmarkPage(_Page):
 # ===========================================================================
 
 class MemoryOptimizerPage(_Page):
-    """Memoryoptimizerpage.
+    """RAM Optimizer page with summary line, process table, and trim button.
 
-    Manages MemoryOptimizerPage operations and coordinates related state changes for the component.
+        Backed by MemoryOptimizer, QMessageBox; builds tables, buttons, and dialogs for the actions below.
     """
     def __init__(self, win: PremiumMainWindow):
         """Build the RAM Optimizer page with summary line, process table, and trim button.
@@ -1199,7 +1199,7 @@ class MemoryOptimizerPage(_Page):
     def _on_refresh(self):
         """Refresh the RAM summary and top-30 process memory table.
 
-        Manages on refresh operations and coordinates related state changes for the component.
+            Uses MemoryOptimizer; updates self.ram_summary, self.table.
         """
         m = MemoryOptimizer.get_system_ram_metrics()
         self.ram_summary.setText(
@@ -1219,7 +1219,7 @@ class MemoryOptimizerPage(_Page):
     def _on_trim(self):
         """Trim background process working sets, then refresh.
 
-        Manages on trim operations and coordinates related state changes for the component.
+            Uses MemoryOptimizer, QMessageBox; updates self._on_refresh.
         """
         res = MemoryOptimizer.optimize_all_background_working_sets()
         QMessageBox.information(self, "Memory Optimized", f"Trimmed working sets of {res.processes_trimmed} background processes.")
@@ -1231,9 +1231,9 @@ class MemoryOptimizerPage(_Page):
 # ===========================================================================
 
 class DevCleanerPage(_Page):
-    """Devcleanerpage.
+    """Dev Cleaner page with scan/clean buttons and a caches table.
 
-    Manages DevCleanerPage operations and coordinates related state changes for the component.
+        Backed by DevCleaner, QMessageBox; builds tables, buttons, and dialogs for the actions below.
     """
     def __init__(self, win: PremiumMainWindow):
         """Build the Dev Cleaner page with scan/clean buttons and a caches table.
@@ -1280,7 +1280,7 @@ class DevCleanerPage(_Page):
     def _on_scan(self):
         """Scan developer caches on the worker runtime.
 
-        Manages on scan operations and coordinates related state changes for the component.
+            Uses DevCleaner; updates self.scan_btn, self.table, self._items.
         """
         self.scan_btn.setEnabled(False)
         self.table.setRowCount(0)
@@ -1314,7 +1314,7 @@ class DevCleanerPage(_Page):
     def _on_clean(self):
         """Confirm and purge all discovered caches, then rescan.
 
-        Manages on clean operations and coordinates related state changes for the component.
+            Uses DevCleaner, QMessageBox; updates self._items, self._on_scan.
         """
         if not self._items:
             QMessageBox.information(self, "Dev Cleaner", "Please scan for developer caches first.")
@@ -1336,9 +1336,9 @@ class DevCleanerPage(_Page):
 # ===========================================================================
 
 class BrowserDeepCleanerPage(_Page):
-    """Browserdeepcleanerpage.
+    """Browser Cleaner page with scan/clean buttons and a targets table.
 
-    Manages BrowserDeepCleanerPage operations and coordinates related state changes for the component.
+        Backed by BrowserDeepCleaner, QMessageBox; builds tables, buttons, and dialogs for the actions below.
     """
     def __init__(self, win: PremiumMainWindow):
         """Build the Browser Cleaner page with scan/clean buttons and a targets table.
@@ -1390,7 +1390,7 @@ class BrowserDeepCleanerPage(_Page):
     def _on_scan(self):
         """Scan browser caches on the worker runtime.
 
-        Manages on scan operations and coordinates related state changes for the component.
+            Uses BrowserDeepCleaner; updates self.scan_btn, self.table, self._targets.
         """
         self.scan_btn.setEnabled(False)
         self.table.setRowCount(0)
@@ -1424,7 +1424,7 @@ class BrowserDeepCleanerPage(_Page):
     def _on_clean(self):
         """Confirm and purge transient browser caches (logins preserved), then rescan.
 
-        Manages on clean operations and coordinates related state changes for the component.
+            Uses BrowserDeepCleaner, QMessageBox; updates self._targets, self._on_scan.
         """
         if not self._targets:
             QMessageBox.information(self, "Browser Cleaner", "Please scan for browser caches first.")
@@ -1443,7 +1443,7 @@ class BrowserDeepCleanerPage(_Page):
     def _on_vacuum(self):
         """Find and VACUUM browser SQLite databases to compact and reclaim space.
 
-        Manages on vacuum operations and coordinates related state changes for the component.
+            Uses QMessageBox; updates self.vacuum_btn, self.win.
         """
         confirm = QMessageBox.question(
             self, "Vacuum Databases",

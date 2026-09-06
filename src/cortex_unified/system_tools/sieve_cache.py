@@ -21,10 +21,7 @@ V = TypeVar("V")
 
 
 class SieveNode(Generic[K, V]):
-    """Sievenode.
-
-    Manages SieveNode operations and coordinates related state changes for the component.
-    """
+    """Groups related helpers: init, repr."""
     __slots__ = ("key", "value", "visited", "prev", "next")
 
     def __init__(self, key: K, value: V) -> None:
@@ -54,10 +51,7 @@ class SieveNode(Generic[K, V]):
 
 
 class SieveCache(Generic[K, V]):
-    """Sievecache.
-
-    Manages SieveCache operations and coordinates related state changes for the component.
-    """
+    """Groups related helpers: init, get, contains, put, insert head, remove node, evict, delete."""
 
     def __init__(self, capacity: int) -> None:
         """Initialize Sieve Cache.
@@ -82,16 +76,14 @@ class SieveCache(Generic[K, V]):
         self._evictions: int = 0
 
     def get(self, key: K, default: Optional[V] = None) -> Optional[V]:
-        """Get.
-
-        Manages get operations and coordinates related state changes for the component.
+        """Get helper. Returns node.value.
 
         Args:
-            key (K): The key parameter.
-            default (Optional[V]): The default parameter.
+        key (K): The key parameter.
+        default (Optional[V]): The default parameter.
 
         Returns:
-            Optional[V]: Result of the operation.
+        Optional[V]: Result of the operation.
         """
         with self._lock:
             node = self._table.get(key)
@@ -103,27 +95,23 @@ class SieveCache(Generic[K, V]):
             return default
 
     def contains(self, key: K) -> bool:
-        """Contains.
-
-        Manages contains operations and coordinates related state changes for the component.
+        """Contains helper. Returns key in self._table.
 
         Args:
-            key (K): The key parameter.
+        key (K): The key parameter.
 
         Returns:
-            bool: True if the operation succeeded, False otherwise.
+        bool: True if the operation succeeded, False otherwise.
         """
         with self._lock:
             return key in self._table
 
     def put(self, key: K, value: V) -> None:
-        """Put.
-
-        Manages put operations and coordinates related state changes for the component.
+        """Put helper. Returns if len(...).
 
         Args:
-            key (K): The key parameter.
-            value (V): The value parameter.
+        key (K): The key parameter.
+        value (V): The value parameter.
         """
         with self._lock:
             if key in self._table:
@@ -142,10 +130,8 @@ class SieveCache(Generic[K, V]):
     def _insert_head(self, node: SieveNode[K, V]) -> None:
         """Insert node at head (most recent insertion point).
 
-        Manages insert head operations and coordinates related state changes for the component.
-
         Args:
-            node (SieveNode[K, V]): The node parameter.
+        node (SieveNode[K, V]): The node parameter.
         """
         node.next = self._head
         node.prev = None
@@ -158,10 +144,8 @@ class SieveCache(Generic[K, V]):
     def _remove_node(self, node: SieveNode[K, V]) -> None:
         """Remove node from doubly linked list and advance hand if pointing to it.
 
-        Manages remove node operations and coordinates related state changes for the component.
-
         Args:
-            node (SieveNode[K, V]): The node parameter.
+        node (SieveNode[K, V]): The node parameter.
         """
         if self._hand is node:
             self._hand = node.prev
@@ -180,12 +164,10 @@ class SieveCache(Generic[K, V]):
         node.next = None
 
     def _evict(self) -> Optional[Tuple[K, V]]:
-        """Evict.
-
-        Manages evict operations and coordinates related state changes for the component.
+        """Evict helper. Returns (o.key, o.value).
 
         Returns:
-            Optional[Tuple[K, V]]: Result of the operation.
+        Optional[Tuple[K, V]]: Result of the operation.
         """
         o = self._hand if self._hand is not None else self._tail
         while o is not None and o.visited:
@@ -201,15 +183,13 @@ class SieveCache(Generic[K, V]):
         return None
 
     def delete(self, key: K) -> bool:
-        """Delete.
-
-        Manages delete operations and coordinates related state changes for the component.
+        """Delete helper. Returns True.
 
         Args:
-            key (K): The key parameter.
+        key (K): The key parameter.
 
         Returns:
-            bool: True if the operation succeeded, False otherwise.
+        bool: True if the operation succeeded, False otherwise.
         """
         with self._lock:
             node = self._table.pop(key, None)
@@ -219,10 +199,7 @@ class SieveCache(Generic[K, V]):
             return False
 
     def clear(self) -> None:
-        """Clear.
-
-        Manages clear operations and coordinates related state changes for the component.
-        """
+        """Clear helper."""
         with self._lock:
             self._table.clear()
             self._head = None
@@ -231,36 +208,30 @@ class SieveCache(Generic[K, V]):
 
     @property
     def size(self) -> int:
-        """Size.
-
-        Manages size operations and coordinates related state changes for the component.
+        """Size helper. Returns len(self._table).
 
         Returns:
-            int: Result of the operation.
+        int: Result of the operation.
         """
         with self._lock:
             return len(self._table)
 
     @property
     def hit_ratio(self) -> float:
-        """Hit ratio.
-
-        Manages hit ratio operations and coordinates related state changes for the component.
+        """Hit ratio helper. Returns (...).
 
         Returns:
-            float: Result of the operation.
+        float: Result of the operation.
         """
         with self._lock:
             total = self._hits + self._misses
             return (self._hits / total) if total > 0 else 0.0
 
     def stats(self) -> Dict[str, Any]:
-        """Stats.
-
-        Manages stats operations and coordinates related state changes for the component.
+        """Stats helper.
 
         Returns:
-            Dict[str, Any]: Dictionary mapping identifiers to status or values.
+        Dict[str, Any]: Dictionary mapping identifiers to status or values.
         """
         with self._lock:
             return {
@@ -274,12 +245,10 @@ class SieveCache(Generic[K, V]):
             }
 
     def keys(self) -> List[K]:
-        """Keys.
-
-        Manages keys operations and coordinates related state changes for the component.
+        """Keys helper. Returns list(self._table.keys()).
 
         Returns:
-            List[K]: List of processed items or identifiers.
+        List[K]: List of processed items or identifiers.
         """
         with self._lock:
             return list(self._table.keys())

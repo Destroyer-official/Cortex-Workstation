@@ -10,10 +10,7 @@ from cortex_unified.system_tools.mft_slack_scrubber import (
 
 
 def test_parse_ntfsinfo():
-    """test_parse_ntfsinfo.
-
-    Manages test parse ntfsinfo operations and coordinates related state changes for the component.
-    """
+    """Verify parse ntfsinfo via MftSlackScrubber.parse_ntfsinfo_output."""
     sample = """
 NTFS Volume Serial Number :       0x7e89ddb1
 Bytes Per Sector  :                512
@@ -37,10 +34,7 @@ Free Clusters :                    4000000
 
 
 def test_audit_structure():
-    """test_audit_structure.
-
-    Manages test audit structure operations and coordinates related state changes for the component.
-    """
+    """Verify audit structure via MftSlackScrubber, scrubber.audit, report.to_dict."""
     scrubber = MftSlackScrubber("C:")
     report = scrubber.audit()
     assert isinstance(report, MftScrubReport)
@@ -50,10 +44,7 @@ def test_audit_structure():
 
 
 def test_scrub_structure():
-    """test_scrub_structure.
-
-    Manages test scrub structure operations and coordinates related state changes for the component.
-    """
+    """Verify scrub structure via MftSlackScrubber, scrubber.scrub."""
     scrubber = MftSlackScrubber("C:")
     report = scrubber.scrub()
     assert isinstance(report, MftScrubReport)

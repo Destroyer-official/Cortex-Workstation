@@ -32,8 +32,6 @@ def _make_sqlite(
 ) -> Path:
     """Create a tiny SQLite DB at *path* and return the path.
 
-    Manages make sqlite operations and coordinates related state changes for the component.
-
     Args:
         path (Path): Filesystem path to the target file or directory.
         table (str): The table parameter.
@@ -73,8 +71,6 @@ def _make_cache_dir(
 ) -> Path:
     """Populate a cache sub-directory with dummy files.
 
-    Manages make cache dir operations and coordinates related state changes for the component.
-
     Args:
         base (Path): The base parameter.
         category (str): The category parameter.
@@ -91,8 +87,6 @@ def _make_cache_dir(
 
 def _make_chromium_profile(root: Path, *, browser: str = "chrome") -> Path:
     """Build a realistic Chromium profile tree under *root*.
-
-    Manages make chromium profile operations and coordinates related state changes for the component.
 
     Args:
         root (Path): Filesystem path to the target file or directory.
@@ -138,8 +132,6 @@ def _make_chromium_profile(root: Path, *, browser: str = "chrome") -> Path:
 def _make_firefox_profile(base: Path) -> Path:
     """Build a realistic Firefox profile tree under *base*.
 
-    Manages make firefox profile operations and coordinates related state changes for the component.
-
     Args:
         base (Path): The base parameter.
 
@@ -184,8 +176,6 @@ def _make_firefox_profile(base: Path) -> Path:
 def fake_chromium_home(tmp_path, monkeypatch):
     """Redirect LOCALAPPDATA so Chromium discovery hits our fake profiles.
 
-    Manages fake chromium home operations and coordinates related state changes for the component.
-
     Args:
         tmp_path: Filesystem path to the target file or directory.
         monkeypatch: The monkeypatch parameter.
@@ -201,8 +191,6 @@ def fake_chromium_home(tmp_path, monkeypatch):
 @pytest.fixture
 def fake_firefox_home(tmp_path, monkeypatch):
     """Redirect APPDATA so Firefox discovery hits our fake profiles.
-
-    Manages fake firefox home operations and coordinates related state changes for the component.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.
@@ -220,8 +208,6 @@ def fake_firefox_home(tmp_path, monkeypatch):
 @pytest.fixture
 def fake_multi_browser(tmp_path, monkeypatch):
     """A single LOCALAPPDATA tree with Chrome, Edge, and Brave profiles.
-
-    Manages fake multi browser operations and coordinates related state changes for the component.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.
@@ -246,15 +232,9 @@ def fake_multi_browser(tmp_path, monkeypatch):
 
 
 class TestDeepBrowserCleanerInit:
-    """Testdeepbrowsercleanerinit.
-
-    Manages TestDeepBrowserCleanerInit operations and coordinates related state changes for the component.
-    """
+    """Group testdeepbrowsercleanerinit tests covering default init; keep cookies compiled; progress callback stored; custom cancel event; expert mode default off."""
     def test_default_init(self):
-        """test_default_init.
-
-        Manages test default init operations and coordinates related state changes for the component.
-        """
+        """Verify default init via DeepBrowserCleaner, cleaner.cancel.is_set, callable."""
         cleaner = DeepBrowserCleaner()
         assert cleaner.keep_cookies == []
         assert callable(cleaner.progress)
@@ -263,10 +243,7 @@ class TestDeepBrowserCleanerInit:
         assert cleaner.expert_mode is False
 
     def test_keep_cookies_compiled(self):
-        """test_keep_cookies_compiled.
-
-        Manages test keep cookies compiled operations and coordinates related state changes for the component.
-        """
+        """Verify keep cookies compiled via DeepBrowserCleaner."""
         cleaner = DeepBrowserCleaner(keep_cookies=["example\\.com", ".*google.*"])
         assert len(cleaner.keep_cookies) == 2
         assert all(isinstance(p, re.Pattern) for p in cleaner.keep_cookies)
@@ -282,20 +259,14 @@ class TestDeepBrowserCleanerInit:
         assert calls == ["hello"]
 
     def test_custom_cancel_event(self):
-        """test_custom_cancel_event.
-
-        Manages test custom cancel event operations and coordinates related state changes for the component.
-        """
+        """Verify custom cancel event via threading.Event, evt.set, DeepBrowserCleaner."""
         evt = threading.Event()
         evt.set()
         cleaner = DeepBrowserCleaner(cancel=evt)
         assert cleaner.cancel.is_set()
 
     def test_expert_mode_default_off(self):
-        """test_expert_mode_default_off.
-
-        Manages test expert mode default off operations and coordinates related state changes for the component.
-        """
+        """Verify expert mode default off via DeepBrowserCleaner."""
         assert DeepBrowserCleaner().expert_mode is False
 
 
@@ -305,14 +276,9 @@ class TestDeepBrowserCleanerInit:
 
 
 class TestProfileDiscovery:
-    """Testprofilediscovery.
-
-    Manages TestProfileDiscovery operations and coordinates related state changes for the component.
-    """
+    """Group testprofilediscovery tests covering chromium discovers default profile; chromium skips nonexistent root; firefox discovers profile; firefox profiles ini parsing; firefox absolute profile in ini."""
     def test_chromium_discovers_default_profile(self, fake_chromium_home):
-        """test_chromium_discovers_default_profile.
-
-        Manages test chromium discovers default profile operations and coordinates related state changes for the component.
+        """Verify chromium discovers default profile via _discover_chromium_profiles.
 
         Args:
             fake_chromium_home: The fake chromium home parameter.
@@ -322,9 +288,7 @@ class TestProfileDiscovery:
         assert any("Default" in str(p) for p in profiles)
 
     def test_chromium_skips_nonexistent_root(self, fake_chromium_home, monkeypatch):
-        """test_chromium_skips_nonexistent_root.
-
-        Manages test chromium skips nonexistent root operations and coordinates related state changes for the component.
+        """Verify chromium skips nonexistent root via _discover_chromium_profiles.
 
         Args:
             fake_chromium_home: The fake chromium home parameter.
@@ -334,9 +298,7 @@ class TestProfileDiscovery:
         assert profiles == []
 
     def test_firefox_discovers_profile(self, fake_firefox_home):
-        """test_firefox_discovers_profile.
-
-        Manages test firefox discovers profile operations and coordinates related state changes for the component.
+        """Verify firefox discovers profile via _discover_firefox_profiles.
 
         Args:
             fake_firefox_home: The fake firefox home parameter.
@@ -346,9 +308,7 @@ class TestProfileDiscovery:
         assert any("default-release" in str(p) for p in profiles)
 
     def test_firefox_profiles_ini_parsing(self, fake_firefox_home, monkeypatch):
-        """test_firefox_profiles_ini_parsing.
-
-        Manages test firefox profiles ini parsing operations and coordinates related state changes for the component.
+        """Verify firefox profiles ini parsing via _discover_firefox_profiles.
 
         Args:
             fake_firefox_home: The fake firefox home parameter.
@@ -370,9 +330,7 @@ class TestProfileDiscovery:
         assert any("custom-profile" in str(p) for p in profiles)
 
     def test_firefox_absolute_profile_in_ini(self, fake_firefox_home, tmp_path):
-        """test_firefox_absolute_profile_in_ini.
-
-        Manages test firefox absolute profile in ini operations and coordinates related state changes for the component.
+        """Verify firefox absolute profile in ini via _discover_firefox_profiles.
 
         Args:
             fake_firefox_home: The fake firefox home parameter.
@@ -394,14 +352,9 @@ class TestProfileDiscovery:
 
 
 class TestCookieCleaning:
-    """Testcookiecleaning.
-
-    Manages TestCookieCleaning operations and coordinates related state changes for the component.
-    """
+    """Group testcookiecleaning tests covering delete non matching cookies; keep all matching cookies; missing db returns zero; keep list regex case insensitive; empty keep list deletes all."""
     def test_delete_non_matching_cookies(self, fake_chromium_home):
-        """test_delete_non_matching_cookies.
-
-        Manages test delete non matching cookies operations and coordinates related state changes for the component.
+        """Verify delete non matching cookies via DeepBrowserCleaner, cleaner.clean_cookies_keep_list, sqlite3.connect.
 
         Args:
             fake_chromium_home: The fake chromium home parameter.
@@ -421,9 +374,7 @@ class TestCookieCleaning:
         con.close()
 
     def test_keep_all_matching_cookies(self, fake_chromium_home):
-        """test_keep_all_matching_cookies.
-
-        Manages test keep all matching cookies operations and coordinates related state changes for the component.
+        """Verify keep all matching cookies via DeepBrowserCleaner, cleaner.clean_cookies_keep_list, sqlite3.connect.
 
         Args:
             fake_chromium_home: The fake chromium home parameter.
@@ -440,9 +391,7 @@ class TestCookieCleaning:
         assert removed == 0
 
     def test_missing_db_returns_zero(self, fake_chromium_home):
-        """test_missing_db_returns_zero.
-
-        Manages test missing db returns zero operations and coordinates related state changes for the component.
+        """Verify missing db returns zero via DeepBrowserCleaner, cleaner.clean_cookies_keep_list.
 
         Args:
             fake_chromium_home: The fake chromium home parameter.
@@ -453,9 +402,7 @@ class TestCookieCleaning:
         assert cleaner.clean_cookies_keep_list(fake_db) == 0
 
     def test_keep_list_regex_case_insensitive(self, fake_chromium_home):
-        """test_keep_list_regex_case_insensitive.
-
-        Manages test keep list regex case insensitive operations and coordinates related state changes for the component.
+        """Verify keep list regex case insensitive via DeepBrowserCleaner, cleaner.clean_cookies_keep_list, sqlite3.connect.
 
         Args:
             fake_chromium_home: The fake chromium home parameter.
@@ -471,9 +418,7 @@ class TestCookieCleaning:
         assert "example.com" in hosts
 
     def test_empty_keep_list_deletes_all(self, fake_chromium_home):
-        """test_empty_keep_list_deletes_all.
-
-        Manages test empty keep list deletes all operations and coordinates related state changes for the component.
+        """Verify empty keep list deletes all via DeepBrowserCleaner, cleaner.clean_cookies_keep_list, sqlite3.connect.
 
         Args:
             fake_chromium_home: The fake chromium home parameter.
@@ -496,14 +441,9 @@ class TestCookieCleaning:
 
 
 class TestClean:
-    """Testclean.
-
-    Manages TestClean operations and coordinates related state changes for the component.
-    """
+    """Group testclean tests covering clean removes file; clean removes directory; clean multiple paths; clean missing path handled gracefully; clean shred overwrites; clean respects cancel."""
     def test_clean_removes_file(self, tmp_path):
-        """test_clean_removes_file.
-
-        Manages test clean removes file operations and coordinates related state changes for the component.
+        """Verify clean removes file via DeepBrowserCleaner, cleaner.clean.
 
         Args:
             tmp_path: Filesystem path to the target file or directory.
@@ -516,9 +456,7 @@ class TestClean:
         assert not f.exists()
 
     def test_clean_removes_directory(self, tmp_path):
-        """test_clean_removes_directory.
-
-        Manages test clean removes directory operations and coordinates related state changes for the component.
+        """Verify clean removes directory via DeepBrowserCleaner, cleaner.clean.
 
         Args:
             tmp_path: Filesystem path to the target file or directory.
@@ -532,9 +470,7 @@ class TestClean:
         assert not d.exists()
 
     def test_clean_multiple_paths(self, tmp_path):
-        """test_clean_multiple_paths.
-
-        Manages test clean multiple paths operations and coordinates related state changes for the component.
+        """Verify clean multiple paths via DeepBrowserCleaner, cleaner.clean.
 
         Args:
             tmp_path: Filesystem path to the target file or directory.
@@ -548,9 +484,7 @@ class TestClean:
         assert all(not f.exists() for f in files)
 
     def test_clean_missing_path_handled_gracefully(self, tmp_path):
-        """test_clean_missing_path_handled_gracefully.
-
-        Manages test clean missing path handled gracefully operations and coordinates related state changes for the component.
+        """Verify clean missing path handled gracefully via DeepBrowserCleaner, cleaner.clean.
 
         Args:
             tmp_path: Filesystem path to the target file or directory.
@@ -563,9 +497,7 @@ class TestClean:
         assert results[missing] is True
 
     def test_clean_shred_overwrites(self, tmp_path):
-        """test_clean_shred_overwrites.
-
-        Manages test clean shred overwrites operations and coordinates related state changes for the component.
+        """Verify clean shred overwrites via DeepBrowserCleaner, cleaner.clean.
 
         Args:
             tmp_path: Filesystem path to the target file or directory.
@@ -578,9 +510,7 @@ class TestClean:
         assert not f.exists()
 
     def test_clean_respects_cancel(self, tmp_path):
-        """test_clean_respects_cancel.
-
-        Manages test clean respects cancel operations and coordinates related state changes for the component.
+        """Verify clean respects cancel via threading.Event, DeepBrowserCleaner, cancel.set.
 
         Args:
             tmp_path: Filesystem path to the target file or directory.
@@ -610,9 +540,7 @@ class TestClean:
         assert any("Cleaned" in c for c in calls)
 
     def test_clean_permission_error(self, tmp_path):
-        """test_clean_permission_error.
-
-        Manages test clean permission error operations and coordinates related state changes for the component.
+        """Verify clean permission error via DeepBrowserCleaner, f.chmod, cleaner.clean.
 
         Args:
             tmp_path: Filesystem path to the target file or directory.
@@ -637,14 +565,9 @@ class TestClean:
 
 
 class TestVacuum:
-    """Testvacuum.
-
-    Manages TestVacuum operations and coordinates related state changes for the component.
-    """
+    """Group testvacuum tests covering vacuum runs without error; vacuum missing db no crash; vacuum progress callback; vacuum multiple dbs."""
     def test_vacuum_runs_without_error(self, tmp_path):
-        """test_vacuum_runs_without_error.
-
-        Manages test vacuum runs without error operations and coordinates related state changes for the component.
+        """Verify vacuum runs without error via DeepBrowserCleaner, cleaner.vacuum_databases, _make_sqlite.
 
         Args:
             tmp_path: Filesystem path to the target file or directory.
@@ -660,9 +583,7 @@ class TestVacuum:
         assert results[db] >= 0
 
     def test_vacuum_missing_db_no_crash(self, tmp_path):
-        """test_vacuum_missing_db_no_crash.
-
-        Manages test vacuum missing db no crash operations and coordinates related state changes for the component.
+        """Verify vacuum missing db no crash via DeepBrowserCleaner, cleaner.vacuum_databases.
 
         Args:
             tmp_path: Filesystem path to the target file or directory.
@@ -687,9 +608,7 @@ class TestVacuum:
         assert any("Vacuumed" in c for c in calls)
 
     def test_vacuum_multiple_dbs(self, tmp_path):
-        """test_vacuum_multiple_dbs.
-
-        Manages test vacuum multiple dbs operations and coordinates related state changes for the component.
+        """Verify vacuum multiple dbs via DeepBrowserCleaner, cleaner.vacuum_databases, dbs.append.
 
         Args:
             tmp_path: Filesystem path to the target file or directory.
@@ -709,14 +628,9 @@ class TestVacuum:
 
 
 class TestBrowserDetection:
-    """Testbrowserdetection.
-
-    Manages TestBrowserDetection operations and coordinates related state changes for the component.
-    """
+    """Group testbrowserdetection tests covering scan chromium profile; scan firefox profile; all browsers detected; firefox browser label; vivaldi not in scope."""
     def test_scan_chromium_profile(self, fake_chromium_home):
-        """test_scan_chromium_profile.
-
-        Manages test scan chromium profile operations and coordinates related state changes for the component.
+        """Verify scan chromium profile via cleaner._scan_chromium_profile, DeepBrowserCleaner.
 
         Args:
             fake_chromium_home: The fake chromium home parameter.
@@ -732,9 +646,7 @@ class TestBrowserDetection:
         assert "history" in categories
 
     def test_scan_firefox_profile(self, fake_firefox_home):
-        """test_scan_firefox_profile.
-
-        Manages test scan firefox profile operations and coordinates related state changes for the component.
+        """Verify scan firefox profile via cleaner._scan_firefox_profile, DeepBrowserCleaner, next.
 
         Args:
             fake_firefox_home: The fake firefox home parameter.
@@ -750,9 +662,7 @@ class TestBrowserDetection:
         assert "indexeddb" in categories
 
     def test_all_browsers_detected(self, fake_multi_browser):
-        """test_all_browsers_detected.
-
-        Manages test all browsers detected operations and coordinates related state changes for the component.
+        """Verify all browsers detected via cleaner.scan, DeepBrowserCleaner.
 
         Args:
             fake_multi_browser: The fake multi browser parameter.
@@ -765,9 +675,7 @@ class TestBrowserDetection:
         assert "brave" in browsers
 
     def test_firefox_browser_label(self, fake_firefox_home):
-        """test_firefox_browser_label.
-
-        Manages test firefox browser label operations and coordinates related state changes for the component.
+        """Verify firefox browser label via cleaner.scan, DeepBrowserCleaner.
 
         Args:
             fake_firefox_home: The fake firefox home parameter.
@@ -778,9 +686,7 @@ class TestBrowserDetection:
         assert len(firefox_items) > 0
 
     def test_vivaldi_not_in_scope(self, fake_multi_browser):
-        """test_vivaldi_not_in_scope.
-
-        Manages test vivaldi not in scope operations and coordinates related state changes for the component.
+        """Verify vivaldi not in scope via cleaner.scan, DeepBrowserCleaner.
 
         Args:
             fake_multi_browser: The fake multi browser parameter.
@@ -837,14 +743,9 @@ class TestProgressCallback:
 
 
 class TestCancellation:
-    """Testcancellation.
-
-    Manages TestCancellation operations and coordinates related state changes for the component.
-    """
+    """Group testcancellation tests covering cancel stops scan; cancel stops clean; default cancel not set; cancel event prevents scan iteration."""
     def test_cancel_stops_scan(self, fake_chromium_home):
-        """test_cancel_stops_scan.
-
-        Manages test cancel stops scan operations and coordinates related state changes for the component.
+        """Verify cancel stops scan via threading.Event, cleaner.scan, DeepBrowserCleaner.
 
         Args:
             fake_chromium_home: The fake chromium home parameter.
@@ -856,9 +757,7 @@ class TestCancellation:
         assert items == []
 
     def test_cancel_stops_clean(self, tmp_path):
-        """test_cancel_stops_clean.
-
-        Manages test cancel stops clean operations and coordinates related state changes for the component.
+        """Verify cancel stops clean via threading.Event, DeepBrowserCleaner, cancel.set.
 
         Args:
             tmp_path: Filesystem path to the target file or directory.
@@ -873,17 +772,12 @@ class TestCancellation:
         assert results == {}
 
     def test_default_cancel_not_set(self):
-        """test_default_cancel_not_set.
-
-        Manages test default cancel not set operations and coordinates related state changes for the component.
-        """
+        """Verify default cancel not set via DeepBrowserCleaner, cleaner.cancel.is_set."""
         cleaner = DeepBrowserCleaner()
         assert not cleaner.cancel.is_set()
 
     def test_cancel_event_prevents_scan_iteration(self, fake_chromium_home):
-        """test_cancel_event_prevents_scan_iteration.
-
-        Manages test cancel event prevents scan iteration operations and coordinates related state changes for the component.
+        """Verify cancel event prevents scan iteration via threading.Event, cleaner.scan, DeepBrowserCleaner.
 
         Args:
             fake_chromium_home: The fake chromium home parameter.
@@ -894,10 +788,7 @@ class TestCancellation:
         original_scan = cleaner.scan
 
         def interrupting_scan():
-            """interrupting_scan.
-
-            Manages interrupting scan operations and coordinates related state changes for the component.
-            """
+            """Interrupting scan using cancel.set, original_scan."""
             cancel.set()
             return original_scan()
 
@@ -912,14 +803,9 @@ class TestCancellation:
 
 
 class TestExpertMode:
-    """Testexpertmode.
-
-    Manages TestExpertMode operations and coordinates related state changes for the component.
-    """
+    """Group testexpertmode tests covering passwords excluded by default; passwords included with expert mode; forms always included; passwords risk is high."""
     def test_passwords_excluded_by_default(self, fake_chromium_home):
-        """test_passwords_excluded_by_default.
-
-        Manages test passwords excluded by default operations and coordinates related state changes for the component.
+        """Verify passwords excluded by default via cleaner.scan, DeepBrowserCleaner, _make_sqlite.
 
         Args:
             fake_chromium_home: The fake chromium home parameter.
@@ -933,9 +819,7 @@ class TestExpertMode:
         assert len(password_items) == 0
 
     def test_passwords_included_with_expert_mode(self, fake_chromium_home):
-        """test_passwords_included_with_expert_mode.
-
-        Manages test passwords included with expert mode operations and coordinates related state changes for the component.
+        """Verify passwords included with expert mode via cleaner.scan, DeepBrowserCleaner, _make_sqlite.
 
         Args:
             fake_chromium_home: The fake chromium home parameter.
@@ -951,9 +835,7 @@ class TestExpertMode:
         assert password_items[0].risk == "high"
 
     def test_forms_always_included(self, fake_chromium_home):
-        """test_forms_always_included.
-
-        Manages test forms always included operations and coordinates related state changes for the component.
+        """Verify forms always included via cleaner.scan, DeepBrowserCleaner, _make_sqlite.
 
         Args:
             fake_chromium_home: The fake chromium home parameter.
@@ -967,9 +849,7 @@ class TestExpertMode:
         assert len(form_items) == 1
 
     def test_passwords_risk_is_high(self, fake_chromium_home):
-        """test_passwords_risk_is_high.
-
-        Manages test passwords risk is high operations and coordinates related state changes for the component.
+        """Verify passwords risk is high via cleaner.scan, DeepBrowserCleaner, _make_sqlite.
 
         Args:
             fake_chromium_home: The fake chromium home parameter.
@@ -991,14 +871,9 @@ class TestExpertMode:
 
 
 class TestSizeCalculation:
-    """Testsizecalculation.
-
-    Manages TestSizeCalculation operations and coordinates related state changes for the component.
-    """
+    """Group testsizecalculation tests covering file size reported; directory size summed; scan returns sizes; nonexistent profile returns empty; cleanable dataclass fields; zero size item."""
     def test_file_size_reported(self, tmp_path):
-        """test_file_size_reported.
-
-        Manages test file size reported operations and coordinates related state changes for the component.
+        """Verify file size reported via Cleanable, f.stat.
 
         Args:
             tmp_path: Filesystem path to the target file or directory.
@@ -1009,9 +884,7 @@ class TestSizeCalculation:
         assert c.size == 1024
 
     def test_directory_size_summed(self, tmp_path):
-        """test_directory_size_summed.
-
-        Manages test directory size summed operations and coordinates related state changes for the component.
+        """Verify directory size summed via f.stat, sum.
 
         Args:
             tmp_path: Filesystem path to the target file or directory.
@@ -1024,9 +897,7 @@ class TestSizeCalculation:
         assert total == 300
 
     def test_scan_returns_sizes(self, fake_chromium_home):
-        """test_scan_returns_sizes.
-
-        Manages test scan returns sizes operations and coordinates related state changes for the component.
+        """Verify scan returns sizes via cleaner.scan, DeepBrowserCleaner.
 
         Args:
             fake_chromium_home: The fake chromium home parameter.
@@ -1037,9 +908,7 @@ class TestSizeCalculation:
             assert item.size >= 0
 
     def test_nonexistent_profile_returns_empty(self, tmp_path):
-        """test_nonexistent_profile_returns_empty.
-
-        Manages test nonexistent profile returns empty operations and coordinates related state changes for the component.
+        """Verify nonexistent profile returns empty via cleaner._scan_chromium_profile, DeepBrowserCleaner.
 
         Args:
             tmp_path: Filesystem path to the target file or directory.
@@ -1049,9 +918,7 @@ class TestSizeCalculation:
         assert items == []
 
     def test_cleanable_dataclass_fields(self, tmp_path):
-        """test_cleanable_dataclass_fields.
-
-        Manages test cleanable dataclass fields operations and coordinates related state changes for the component.
+        """Verify cleanable dataclass fields via Cleanable.
 
         Args:
             tmp_path: Filesystem path to the target file or directory.
@@ -1067,10 +934,7 @@ class TestSizeCalculation:
         assert c.can_vacuum is False
 
     def test_zero_size_item(self):
-        """test_zero_size_item.
-
-        Manages test zero size item operations and coordinates related state changes for the component.
-        """
+        """Verify zero size item via Cleanable, Path."""
         c = Cleanable(Path("/tmp/x"), 0, "cache", "chrome", "desc", "low")
         assert c.size == 0
 
@@ -1081,14 +945,9 @@ class TestSizeCalculation:
 
 
 class TestScanIntegration:
-    """Testscanintegration.
-
-    Manages TestScanIntegration operations and coordinates related state changes for the component.
-    """
+    """Group testscanintegration tests covering scan returns list; all items are cleanable; no duplicate paths in scan; cookie risk medium; cache risk low; vacuumable items flagged."""
     def test_scan_returns_list(self, fake_chromium_home):
-        """test_scan_returns_list.
-
-        Manages test scan returns list operations and coordinates related state changes for the component.
+        """Verify scan returns list via cleaner.scan, DeepBrowserCleaner.
 
         Args:
             fake_chromium_home: The fake chromium home parameter.
@@ -1099,9 +958,7 @@ class TestScanIntegration:
         assert len(items) > 0
 
     def test_all_items_are_cleanable(self, fake_chromium_home):
-        """test_all_items_are_cleanable.
-
-        Manages test all items are cleanable operations and coordinates related state changes for the component.
+        """Verify all items are cleanable via cleaner.scan, DeepBrowserCleaner.
 
         Args:
             fake_chromium_home: The fake chromium home parameter.
@@ -1112,9 +969,7 @@ class TestScanIntegration:
             assert isinstance(item, Cleanable)
 
     def test_no_duplicate_paths_in_scan(self, fake_chromium_home):
-        """test_no_duplicate_paths_in_scan.
-
-        Manages test no duplicate paths in scan operations and coordinates related state changes for the component.
+        """Verify no duplicate paths in scan via cleaner.scan, DeepBrowserCleaner.
 
         Args:
             fake_chromium_home: The fake chromium home parameter.
@@ -1125,9 +980,7 @@ class TestScanIntegration:
         assert len(paths) == len(set(paths))
 
     def test_cookie_risk_medium(self, fake_chromium_home):
-        """test_cookie_risk_medium.
-
-        Manages test cookie risk medium operations and coordinates related state changes for the component.
+        """Verify cookie risk medium via cleaner.scan, DeepBrowserCleaner.
 
         Args:
             fake_chromium_home: The fake chromium home parameter.
@@ -1138,9 +991,7 @@ class TestScanIntegration:
         assert all(i.risk == "medium" for i in cookie_items)
 
     def test_cache_risk_low(self, fake_chromium_home):
-        """test_cache_risk_low.
-
-        Manages test cache risk low operations and coordinates related state changes for the component.
+        """Verify cache risk low via cleaner.scan, DeepBrowserCleaner.
 
         Args:
             fake_chromium_home: The fake chromium home parameter.
@@ -1155,9 +1006,7 @@ class TestScanIntegration:
         assert all(i.risk == "low" for i in cache_items)
 
     def test_vacuumable_items_flagged(self, fake_chromium_home):
-        """test_vacuumable_items_flagged.
-
-        Manages test vacuumable items flagged operations and coordinates related state changes for the component.
+        """Verify vacuumable items flagged via cleaner.scan, DeepBrowserCleaner.
 
         Args:
             fake_chromium_home: The fake chromium home parameter.

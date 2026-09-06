@@ -183,8 +183,6 @@ class PrivacyCleaner:
     def _discover_chromium_profiles(base_path: str) -> List[str]:
         """Dynamically find Chromium profile directories.
 
-        Manages discover chromium profiles operations and coordinates related state changes for the component.
-
         Args:
             base_path (str): Filesystem path to the target file or directory.
 
@@ -292,9 +290,7 @@ class PrivacyCleaner:
 
     @staticmethod
     def _get_file_size(path: str) -> int:
-        """_get_file_size.
-
-        Manages get file size operations and coordinates related state changes for the component.
+        """Return a file's byte size, or 0 when missing or unreadable.
 
         Args:
             path (str): Filesystem path to the target file or directory.
@@ -309,9 +305,7 @@ class PrivacyCleaner:
 
     @staticmethod
     def _get_dir_size(path: str) -> int:
-        """_get_dir_size.
-
-        Manages get dir size operations and coordinates related state changes for the component.
+        """Return total byte size of a directory tree, or 0 when unreadable.
 
         Args:
             path (str): Filesystem path to the target file or directory.
@@ -337,8 +331,6 @@ class PrivacyCleaner:
     def _safe_delete(path: str):
         """Remove a file, ignoring errors (browsers commonly hold locks).
 
-        Manages safe delete operations and coordinates related state changes for the component.
-
         Args:
             path (str): Filesystem path to the target file or directory.
         """
@@ -351,8 +343,6 @@ class PrivacyCleaner:
     @staticmethod
     def _safe_delete_dir(path: str):
         """Recursively remove a directory tree, ignoring failures.
-
-        Manages safe delete dir operations and coordinates related state changes for the component.
 
         Args:
             path (str): Filesystem path to the target file or directory.

@@ -156,8 +156,6 @@ _RISK_STYLE = {
 def _risk_label(risk: RiskLevel) -> str:
     """Return the display label ("LOW"/"MEDIUM"/"HIGH") for a risk level.
 
-    Manages risk label operations and coordinates related state changes for the component.
-
     Args:
         risk (RiskLevel): The risk parameter.
 
@@ -169,8 +167,6 @@ def _risk_label(risk: RiskLevel) -> str:
 
 def _risk_color(risk: RiskLevel) -> str:
     """Return the badge hex color for a risk level.
-
-    Manages risk color operations and coordinates related state changes for the component.
 
     Args:
         risk (RiskLevel): The risk parameter.
@@ -365,8 +361,6 @@ class CleanupHubPage(_Page):
     def _on_scanned(self, report):
         """Update summary cards and rebuild the category card grid from the scan report.
 
-        Manages on scanned operations and coordinates related state changes for the component.
-
         Args:
             report: The generated report data object from the backend.
         """
@@ -423,8 +417,6 @@ class CleanupHubPage(_Page):
 
     def _make_card(self, cat: CleanupCategory, est_bytes: int, est_files: int) -> Card:
         """Build one category card: risk/reversible badges, paths, globs, estimate, and select checkbox.
-
-        Manages make card operations and coordinates related state changes for the component.
 
         Args:
             cat (CleanupCategory): The cat parameter.
@@ -492,8 +484,6 @@ class CleanupHubPage(_Page):
         def _on_toggled(checked, _cid=cid):
             """Record the card's selection state and refresh the Clean button.
 
-            Manages on toggled operations and coordinates related state changes for the component.
-
             Args:
                 checked: The checked parameter.
                 _cid: The  cid parameter.
@@ -509,8 +499,6 @@ class CleanupHubPage(_Page):
     def _select_all_cards(self, state: bool):
         """Check or uncheck every category card checkbox at once.
 
-        Manages select all cards operations and coordinates related state changes for the component.
-
         Args:
             state (bool): The state parameter.
         """
@@ -520,10 +508,7 @@ class CleanupHubPage(_Page):
         self._update_clean_enabled()
 
     def _update_clean_enabled(self):
-        """Enable the Clean button only when something is selected and a scan has files.
-
-        Manages update clean enabled operations and coordinates related state changes for the component.
-        """
+        """Implement update clean enabled via any, values, setEnabled."""
         any_sel = any(self._selected.values())
         report_ok = self._report is not None and self._report.total_files > 0
         self.clean_btn.setEnabled(any_sel and report_ok)
@@ -556,8 +541,6 @@ class CleanupHubPage(_Page):
     def _on_temp_scanned(self, findings):
         """Show stale-temp totals (count + bytes) in status + info dialog.
 
-        Manages on temp scanned operations and coordinates related state changes for the component.
-
         Args:
             findings: The findings parameter.
         """
@@ -587,10 +570,7 @@ class CleanupHubPage(_Page):
     # -- pickers ------------------------------------------------------------
 
     def _pick_custom_folder(self):
-        """Add a chosen directory to the scan roots and rescan.
-
-        Manages pick custom folder operations and coordinates related state changes for the component.
-        """
+        """Prompt the user with a file dialog (QFileDialog.getExistingDirectory) and apply the chosen path to the page state."""
         folder = QFileDialog.getExistingDirectory(self, "Select Directory to Add to Cleanup Sweep", str(Path.home()))
         if folder:
             p = Path(folder)
@@ -600,10 +580,7 @@ class CleanupHubPage(_Page):
             self._scan()
 
     def _pick_custom_file(self):
-        """Add the parent folder of a chosen file to the scan roots and rescan.
-
-        Manages pick custom file operations and coordinates related state changes for the component.
-        """
+        """Prompt the user with a file dialog (QFileDialog.getOpenFileName) and apply the chosen path to the page state."""
         file_path, _ = QFileDialog.getOpenFileName(self, "Select File to Add Parent Location", str(Path.home()))
         if file_path:
             p = Path(file_path).parent
@@ -613,19 +590,13 @@ class CleanupHubPage(_Page):
             self._scan()
 
     def _clear_custom_roots(self):
-        """Remove all custom scan roots (back to system defaults) and rescan.
-
-        Manages clear custom roots operations and coordinates related state changes for the component.
-        """
+        """Implement clear custom roots via clear, self._update_roots_status, self._scan."""
         self._custom_roots.clear()
         self._update_roots_status()
         self._scan()
 
     def _update_roots_status(self):
-        """Refresh the active-scan-roots label and Reset Roots button visibility.
-
-        Manages update roots status operations and coordinates related state changes for the component.
-        """
+        """Implement update roots status via join, setText, setVisible."""
         if self._custom_roots:
             roots_str = ", ".join(str(r) for r in self._custom_roots)
             self.target_roots_label.setText(f"Active Scan Roots: System Defaults + {roots_str}")
@@ -675,8 +646,6 @@ class CleanupHubPage(_Page):
 
     def _on_cleaned(self, freed: int, items: int, skipped: int):
         """Report freed bytes and item counts after cleanup finishes.
-
-        Manages on cleaned operations and coordinates related state changes for the component.
 
         Args:
             freed (int): The freed parameter.

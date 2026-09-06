@@ -45,10 +45,7 @@ _LOG = logging.getLogger("cortex.ui.premium")
 
 
 class LicensePage(_Page):
-    """Licensepage.
-
-    Manages LicensePage operations and coordinates related state changes for the component.
-    """
+    """License & Tiers page: Activate a key, start the free PRO trial, or compare what each."""
 
     def __init__(self, win):
         """__init__.
@@ -205,10 +202,7 @@ class LicensePage(_Page):
     # -- actions ----------------------------------------------------------
 
     def _activate(self) -> None:
-        """Activate.
-
-        Manages activate operations and coordinates related state changes for the component.
-        """
+        """Validate the current selection and ask the user to confirm via a message box showing 'activation rejected: %s'."""
         try:
             state = get_license_manager().activate(
                 self.key_edit.text(),
@@ -229,10 +223,7 @@ class LicensePage(_Page):
         self._refresh()
 
     def _start_trial(self) -> None:
-        """Start the once-per-machine PRO trial.
-
-        Manages start trial operations and coordinates related state changes for the component.
-        """
+        """Validate the current selection and ask the user to confirm via a message box showing 'trial refused from License page: %s'."""
         try:
             state = get_license_manager().start_trial()
         except RuntimeError as exc:
@@ -247,10 +238,7 @@ class LicensePage(_Page):
         self._refresh()
 
     def _deactivate(self) -> None:
-        """Deactivate.
-
-        Manages deactivate operations and coordinates related state changes for the component.
-        """
+        """Validate the current selection and ask the user to confirm via a message box showing 'Deactivate license'."""
         confirm = QMessageBox.question(
             self, "Deactivate license",
             "Remove the license from this machine?\n\n"

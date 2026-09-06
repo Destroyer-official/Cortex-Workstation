@@ -18,10 +18,7 @@ from typing import Dict, List, Optional, Tuple
 
 @dataclass
 class NotificationDatabaseStatus:
-    """Notificationdatabasestatus.
-
-    Manages NotificationDatabaseStatus operations and coordinates related state changes for the component.
-    """
+    """Record holding database_path, database_size_bytes, appmetadata_size_bytes, total_size_bytes, is_present."""
     database_path: str
     database_size_bytes: int
     appmetadata_size_bytes: int
@@ -31,38 +28,27 @@ class NotificationDatabaseStatus:
 
 @dataclass
 class NotificationCleanResult:
-    """Notificationcleanresult.
-
-    Manages NotificationCleanResult operations and coordinates related state changes for the component.
-    """
+    """Record holding success, bytes_freed, message, errors."""
     success: bool
     bytes_freed: int
     message: str
     errors: List[str] = None
 
     def __post_init__(self):
-        """__post_init__.
-
-        Manages post init operations and coordinates related state changes for the component.
-        """
+        """Validate and normalize fields after init; initializes empty collections."""
         if self.errors is None:
             self.errors = []
 
 
 class NotificationCleaner:
-    """Notificationcleaner.
-
-    Manages NotificationCleaner operations and coordinates related state changes for the component.
-    """
+    """Groups related helpers: get status, clean notification database. Windows-only; returns a safe default elsewhere."""
 
     @classmethod
     def get_status(cls) -> NotificationDatabaseStatus:
         """Query notification database paths and sizes.
 
-        Manages get status operations and coordinates related state changes for the component.
-
         Returns:
-            NotificationDatabaseStatus: Result of the operation.
+        NotificationDatabaseStatus: Result of the operation.
         """
         if platform.system() != "Windows":
             return NotificationDatabaseStatus("", 0, 0, 0, False)

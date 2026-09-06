@@ -37,10 +37,7 @@ def get_path_size_safe(path: Path) -> int:
         return 0
 
 class DeepCleaner:
-    """Deepcleaner.
-
-    Manages DeepCleaner operations and coordinates related state changes for the component.
-    """
+    """Cross-platform deep junk scanner over declarative per-OS target tables."""
 
     def __init__(self, config: Config = None):
         """
@@ -274,9 +271,7 @@ class DeepCleaner:
         return self.found_items
     
     def get_stats(self) -> dict:
-        """get_stats.
-
-        Manages get stats operations and coordinates related state changes for the component.
+        """Summarize found junk items as counts and total reclaimable size.
 
         Returns:
             dict: Dictionary mapping identifiers to status or values.

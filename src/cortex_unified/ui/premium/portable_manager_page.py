@@ -39,10 +39,7 @@ from cortex_unified.analyzers.portable_manager import PortableManager
 
 
 class _PortableWorker(QObject):
-    """Portableworker.
-
-    Manages PortableWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker (_PortableWorker) performing PortableWorker. Signals finished, progress, failed report status. Configured with roots, target_apps. Its run() step calls PortableManager, mgr.scan_portable_roots, lower, t.lower."""
     finished = Signal(list)
     progress = Signal(str)
     failed = Signal(str)
@@ -92,10 +89,7 @@ class _PortableWorker(QObject):
 
 
 class _UpdateWorker(QObject):
-    """Updateworker.
-
-    Manages UpdateWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker (_UpdateWorker) performing UpdateWorker. Signals finished, progress, failed report status. Configured with apps. Its run() step calls PortableManager, is_set, emit, mgr.update_app."""
     finished = Signal(list)
     progress = Signal(str)
     failed = Signal(str)
@@ -150,10 +144,7 @@ _TARGET_APPS = [
 
 
 class PortableManagerPage(_Page):
-    """Portablemanagerpage.
-
-    Manages PortableManagerPage operations and coordinates related state changes for the component.
-    """
+    """Portable App Manager page: Scan for portable apps (PAF format, LiberKey, exe-based),."""
 
     def __init__(self, win):
         """__init__.
@@ -244,10 +235,7 @@ class PortableManagerPage(_Page):
         self._worker = None
 
     def _add_root(self):
-        """_add_root.
-
-        Manages add root operations and coordinates related state changes for the component.
-        """
+        """Prompt the user with a file dialog (QFileDialog.getExistingDirectory) and apply the chosen path to the page state."""
         from PySide6.QtWidgets import QFileDialog
 
         folder = QFileDialog.getExistingDirectory(self, "Select portable app root")
@@ -259,9 +247,7 @@ class PortableManagerPage(_Page):
                 self.roots_entry.setText(folder)
 
     def _parse_roots(self) -> list[str]:
-        """_parse_roots.
-
-        Manages parse roots operations and coordinates related state changes for the component.
+        """Parse the given color string into an RGB triple, returning None when unparseable.
 
         Returns:
             list[str]: List of processed items or identifiers.
@@ -272,9 +258,7 @@ class PortableManagerPage(_Page):
         return [r.strip() for r in text.split(",") if r.strip()]
 
     def _get_target_apps(self) -> list[str] | None:
-        """_get_target_apps.
-
-        Manages get target apps operations and coordinates related state changes for the component.
+        """Return the apps targeted by the current scope selection.
 
         Returns:
             list[str] | None: List of processed items or identifiers.
@@ -285,10 +269,7 @@ class PortableManagerPage(_Page):
         return [_TARGET_APPS[idx - 1]]
 
     def _run(self):
-        """Run.
-
-        Manages run operations and coordinates related state changes for the component.
-        """
+        """Disable action buttons, show progress/status, and launch the background worker (setEnabled, setVisible, show_loading)."""
         self.scan_btn.setEnabled(False)
         self.progress.setVisible(True)
         self.state.show_loading("Scanning for portable apps…")
@@ -358,9 +339,7 @@ class PortableManagerPage(_Page):
             self._auto_update(apps)
 
     def _auto_update(self, apps: list):
-        """_auto_update.
-
-        Manages auto update operations and coordinates related state changes for the component.
+        """Validate the current selection and ask the user to confirm via a message box showing 'Auto-Update'.
 
         Args:
             apps (list): The apps parameter.

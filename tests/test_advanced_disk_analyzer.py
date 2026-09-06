@@ -30,15 +30,9 @@ from cortex_unified.analyzers.advanced_disk_analyzer import (
 
 
 class TestFileEntry:
-    """Testfileentry.
-
-    Manages TestFileEntry operations and coordinates related state changes for the component.
-    """
+    """Group testfileentry tests covering default values; cloud provider field; is dir flag."""
     def test_default_values(self):
-        """test_default_values.
-
-        Manages test default values operations and coordinates related state changes for the component.
-        """
+        """Verify default values via FileEntry."""
         e = FileEntry(
             path="C:\\test.txt",
             size=1024,
@@ -59,10 +53,7 @@ class TestFileEntry:
         assert e.etag == ""
 
     def test_cloud_provider_field(self):
-        """test_cloud_provider_field.
-
-        Manages test cloud provider field operations and coordinates related state changes for the component.
-        """
+        """Verify cloud provider field via FileEntry."""
         e = FileEntry(
             path="onedrive:doc.pdf",
             size=500,
@@ -78,10 +69,7 @@ class TestFileEntry:
         assert e.etag == "abc123"
 
     def test_is_dir_flag(self):
-        """test_is_dir_flag.
-
-        Manages test is dir flag operations and coordinates related state changes for the component.
-        """
+        """Verify is dir flag via FileEntry."""
         e = FileEntry(
             path="/tmp",
             size=0,
@@ -100,15 +88,9 @@ class TestFileEntry:
 
 
 class TestFolderNode:
-    """Testfoldernode.
-
-    Manages TestFolderNode operations and coordinates related state changes for the component.
-    """
+    """Group testfoldernode tests covering empty node; add single file; add file in subdirectory; add multiple files accumulates sizes; add file with empty relpath; add file root only parts."""
     def test_empty_node(self):
-        """test_empty_node.
-
-        Manages test empty node operations and coordinates related state changes for the component.
-        """
+        """Verify empty node via FolderNode."""
         node = FolderNode(name="root", path="/root")
         assert node.size == 0
         assert node.file_count == 0
@@ -117,10 +99,7 @@ class TestFolderNode:
         assert node.extension_stats == {}
 
     def test_add_single_file(self):
-        """test_add_single_file.
-
-        Manages test add single file operations and coordinates related state changes for the component.
-        """
+        """Verify add single file via FolderNode, node.add_file."""
         node = FolderNode(name="root", path="/root")
         node.add_file("file.txt", 100, ".txt")
         assert node.size == 100
@@ -129,10 +108,7 @@ class TestFolderNode:
         assert node.children == {}
 
     def test_add_file_in_subdirectory(self):
-        """test_add_file_in_subdirectory.
-
-        Manages test add file in subdirectory operations and coordinates related state changes for the component.
-        """
+        """Verify add file in subdirectory via FolderNode, node.add_file."""
         node = FolderNode(name="root", path="/root")
         node.add_file("sub/deep/file.bin", 500, ".bin")
         assert node.size == 500
@@ -144,10 +120,7 @@ class TestFolderNode:
         assert node.children["sub"].children["deep"].size == 500
 
     def test_add_multiple_files_accumulates_sizes(self):
-        """test_add_multiple_files_accumulates_sizes.
-
-        Manages test add multiple files accumulates sizes operations and coordinates related state changes for the component.
-        """
+        """Verify add multiple files accumulates sizes via FolderNode, node.add_file."""
         node = FolderNode(name="root", path="/root")
         node.add_file("a.txt", 100, ".txt")
         node.add_file("b.txt", 200, ".txt")
@@ -158,30 +131,21 @@ class TestFolderNode:
         assert node.extension_stats[".py"] == 50
 
     def test_add_file_with_empty_relpath(self):
-        """test_add_file_with_empty_relpath.
-
-        Manages test add file with empty relpath operations and coordinates related state changes for the component.
-        """
+        """Verify add file with empty relpath via FolderNode, node.add_file."""
         node = FolderNode(name="root", path="/root")
         node.add_file("", 10, ".txt")
         assert node.size == 10
         assert node.file_count == 1
 
     def test_add_file_root_only_parts(self):
-        """test_add_file_root_only_parts.
-
-        Manages test add file root only parts operations and coordinates related state changes for the component.
-        """
+        """Verify add file root only parts via FolderNode, node.add_file."""
         node = FolderNode(name="root", path="/root")
         node.add_file("file.dat", 42, ".dat")
         assert node.size == 42
         assert node.file_count == 1
 
     def test_top_extensions_sorted_desc(self):
-        """test_top_extensions_sorted_desc.
-
-        Manages test top extensions sorted desc operations and coordinates related state changes for the component.
-        """
+        """Verify top extensions sorted desc via FolderNode, node.top_extensions."""
         node = FolderNode(name="root", path="/root")
         node.extension_stats[".mp4"] = 1000
         node.extension_stats[".txt"] = 5000
@@ -192,10 +156,7 @@ class TestFolderNode:
         assert top[1] == (".py", 2000)
 
     def test_top_extensions_limit(self):
-        """test_top_extensions_limit.
-
-        Manages test top extensions limit operations and coordinates related state changes for the component.
-        """
+        """Verify top extensions limit via FolderNode, node.top_extensions."""
         node = FolderNode(name="root", path="/root")
         for i in range(20):
             node.extension_stats[f".ext{i}"] = i * 100
@@ -210,15 +171,9 @@ class TestFolderNode:
 
 
 class TestFolderNodeTreemap:
-    """Testfoldernodetreemap.
-
-    Manages TestFolderNodeTreemap operations and coordinates related state changes for the component.
-    """
+    """Group testfoldernodetreemap tests covering single file produces root entry; children listed in parent; max depth truncation; file count and folder count."""
     def test_single_file_produces_root_entry(self):
-        """test_single_file_produces_root_entry.
-
-        Manages test single file produces root entry operations and coordinates related state changes for the component.
-        """
+        """Verify single file produces root entry via FolderNode, root.add_file, root.to_treemap."""
         root = FolderNode(name="", path="")
         root.add_file("doc.txt", 100, ".txt")
         tm = root.to_treemap()
@@ -228,10 +183,7 @@ class TestFolderNodeTreemap:
         assert tm[0]["depth"] == 0
 
     def test_children_listed_in_parent(self):
-        """test_children_listed_in_parent.
-
-        Manages test children listed in parent operations and coordinates related state changes for the component.
-        """
+        """Verify children listed in parent via FolderNode, root.add_file, root.to_treemap."""
         root = FolderNode(name="", path="")
         root.add_file("a/x.txt", 10, ".txt")
         root.add_file("b/y.txt", 20, ".txt")
@@ -241,10 +193,7 @@ class TestFolderNodeTreemap:
         assert "b" in root_entry["children"]
 
     def test_max_depth_truncation(self):
-        """test_max_depth_truncation.
-
-        Manages test max depth truncation operations and coordinates related state changes for the component.
-        """
+        """Verify max depth truncation via FolderNode, root.add_file, root.to_treemap."""
         root = FolderNode(name="", path="")
         root.add_file("a/b/c/d/e/file.txt", 100, ".txt")
         tm = root.to_treemap(max_depth=2)
@@ -252,10 +201,7 @@ class TestFolderNodeTreemap:
         assert max(depths) <= 1  # max_depth=2 means depths 0 and 1
 
     def test_file_count_and_folder_count(self):
-        """test_file_count_and_folder_count.
-
-        Manages test file count and folder count operations and coordinates related state changes for the component.
-        """
+        """Verify file count and folder count via FolderNode, root.add_file, root.to_treemap."""
         root = FolderNode(name="root", path="/root")
         root.add_file("sub/f1.txt", 10, ".txt")
         root.add_file("sub/f2.txt", 20, ".txt")
@@ -272,15 +218,9 @@ class TestFolderNodeTreemap:
 
 
 class TestFolderNodeSunburst:
-    """Testfoldernodesunburst.
-
-    Manages TestFolderNodeSunburst operations and coordinates related state changes for the component.
-    """
+    """Group testfoldernodesunburst tests covering root has empty parent; child references parent path; max depth truncation; value matches size."""
     def test_root_has_empty_parent(self):
-        """test_root_has_empty_parent.
-
-        Manages test root has empty parent operations and coordinates related state changes for the component.
-        """
+        """Verify root has empty parent via FolderNode, root.add_file, root.to_sunburst."""
         root = FolderNode(name="", path="")
         root.add_file("file.txt", 50, ".txt")
         sb = root.to_sunburst()
@@ -289,10 +229,7 @@ class TestFolderNodeSunburst:
         assert sb[0]["id"] == ""
 
     def test_child_references_parent_path(self):
-        """test_child_references_parent_path.
-
-        Manages test child references parent path operations and coordinates related state changes for the component.
-        """
+        """Verify child references parent path via FolderNode, root.add_file, root.to_sunburst."""
         root = FolderNode(name="", path="")
         root.add_file("sub/file.txt", 50, ".txt")
         sb = root.to_sunburst()
@@ -301,10 +238,7 @@ class TestFolderNodeSunburst:
         assert child[0]["parent"] == ""
 
     def test_max_depth_truncation(self):
-        """test_max_depth_truncation.
-
-        Manages test max depth truncation operations and coordinates related state changes for the component.
-        """
+        """Verify max depth truncation via FolderNode, root.add_file, root.to_sunburst."""
         root = FolderNode(name="", path="")
         root.add_file("a/b/c/file.txt", 100, ".txt")
         sb = root.to_sunburst(max_depth=1)
@@ -312,10 +246,7 @@ class TestFolderNodeSunburst:
         assert max(depths) == 0
 
     def test_value_matches_size(self):
-        """test_value_matches_size.
-
-        Manages test value matches size operations and coordinates related state changes for the component.
-        """
+        """Verify value matches size via FolderNode, root.add_file, root.to_sunburst."""
         root = FolderNode(name="", path="")
         root.add_file("big.iso", 999999, ".iso")
         sb = root.to_sunburst()
@@ -329,25 +260,16 @@ class TestFolderNodeSunburst:
 
 
 class TestFolderNodeBarChart:
-    """Testfoldernodebarchart.
-
-    Manages TestFolderNodeBarChart operations and coordinates related state changes for the component.
-    """
+    """Group testfoldernodebarchart tests covering excludes root from bar; top n limit; sorted largest first; bar chart with no children."""
     def test_excludes_root_from_bar(self):
-        """test_excludes_root_from_bar.
-
-        Manages test excludes root from bar operations and coordinates related state changes for the component.
-        """
+        """Verify excludes root from bar via FolderNode, root.add_file, root.to_bar_chart."""
         root = FolderNode(name="", path="")
         root.add_file("a/f.txt", 100, ".txt")
         bc = root.to_bar_chart()
         assert all(e["path"] != "" for e in bc)
 
     def test_top_n_limit(self):
-        """test_top_n_limit.
-
-        Manages test top n limit operations and coordinates related state changes for the component.
-        """
+        """Verify top n limit via FolderNode, root.to_bar_chart, root.add_file."""
         root = FolderNode(name="", path="")
         for i in range(30):
             root.add_file(f"dir{i}/file.txt", (30 - i) * 10, ".txt")
@@ -356,10 +278,7 @@ class TestFolderNodeBarChart:
         assert bc[0]["size"] >= bc[-1]["size"]
 
     def test_sorted_largest_first(self):
-        """test_sorted_largest_first.
-
-        Manages test sorted largest first operations and coordinates related state changes for the component.
-        """
+        """Verify sorted largest first via FolderNode, root.add_file, root.to_bar_chart."""
         root = FolderNode(name="", path="")
         root.add_file("small/file.txt", 10, ".txt")
         root.add_file("large/file.txt", 1000, ".txt")
@@ -369,10 +288,7 @@ class TestFolderNodeBarChart:
         assert sizes == sorted(sizes, reverse=True)
 
     def test_bar_chart_with_no_children(self):
-        """test_bar_chart_with_no_children.
-
-        Manages test bar chart with no children operations and coordinates related state changes for the component.
-        """
+        """Verify bar chart with no children via FolderNode, root.add_file, root.to_bar_chart."""
         root = FolderNode(name="", path="")
         root.add_file("sole.txt", 42, ".txt")
         bc = root.to_bar_chart()
@@ -385,42 +301,28 @@ class TestFolderNodeBarChart:
 
 
 class TestCloudScanner:
-    """Testcloudscanner.
-
-    Manages TestCloudScanner operations and coordinates related state changes for the component.
-    """
+    """Group testcloudscanner tests covering default providers; custom providers; scan local path no colon skips; rclone not available yields nothing."""
     def test_default_providers(self):
-        """test_default_providers.
-
-        Manages test default providers operations and coordinates related state changes for the component.
-        """
+        """Verify default providers via CloudScanner."""
         scanner = CloudScanner()
         assert "onedrive" in scanner.providers
         assert "s3" in scanner.providers
         assert "azureblob" in scanner.providers
 
     def test_custom_providers(self):
-        """test_custom_providers.
-
-        Manages test custom providers operations and coordinates related state changes for the component.
-        """
+        """Verify custom providers via CloudScanner."""
         scanner = CloudScanner(providers=["s3", "gdrive"])
         assert scanner.providers == ["s3", "gdrive"]
 
     def test_scan_local_path_no_colon_skips(self):
-        """test_scan_local_path_no_colon_skips.
-
-        Manages test scan local path no colon skips operations and coordinates related state changes for the component.
-        """
+        """Verify scan local path no colon skips via scanner.scan, CloudScanner."""
         scanner = CloudScanner()
         # rclone not available in test env, so scan yields nothing
         entries = list(scanner.scan("/some/local/path"))
         assert entries == []
 
     def test_rclone_not_available_yields_nothing(self, monkeypatch):
-        """test_rclone_not_available_yields_nothing.
-
-        Manages test rclone not available yields nothing operations and coordinates related state changes for the component.
+        """Verify rclone not available yields nothing via scanner.scan, monkeypatch.setattr, CloudScanner.
 
         Args:
             monkeypatch: The monkeypatch parameter.
@@ -440,25 +342,16 @@ class TestCloudScanner:
 
 
 class TestAdvancedDiskAnalyzerInit:
-    """Testadvanceddiskanalyzerinit.
-
-    Manages TestAdvancedDiskAnalyzerInit operations and coordinates related state changes for the component.
-    """
+    """Group testadvanceddiskanalyzerinit tests covering default init; custom cancel event; progress callback stored; include cloud false uses local scanner; include cloud true without deps uses local."""
     def test_default_init(self):
-        """test_default_init.
-
-        Manages test default init operations and coordinates related state changes for the component.
-        """
+        """Verify default init via AdvancedDiskAnalyzer."""
         analyzer = AdvancedDiskAnalyzer()
         assert isinstance(analyzer._scanner, (NTFSScanner, PosixScanner))
         assert analyzer._root_node is None
         assert isinstance(analyzer.cancel_event, threading.Event)
 
     def test_custom_cancel_event(self):
-        """test_custom_cancel_event.
-
-        Manages test custom cancel event operations and coordinates related state changes for the component.
-        """
+        """Verify custom cancel event via threading.Event, AdvancedDiskAnalyzer."""
         evt = threading.Event()
         analyzer = AdvancedDiskAnalyzer(cancel_event=evt)
         assert analyzer.cancel_event is evt
@@ -473,18 +366,12 @@ class TestAdvancedDiskAnalyzerInit:
         assert analyzer.progress_cb is cb
 
     def test_include_cloud_false_uses_local_scanner(self):
-        """test_include_cloud_false_uses_local_scanner.
-
-        Manages test include cloud false uses local scanner operations and coordinates related state changes for the component.
-        """
+        """Verify include cloud false uses local scanner via AdvancedDiskAnalyzer."""
         analyzer = AdvancedDiskAnalyzer(include_cloud=False)
         assert isinstance(analyzer._scanner, (NTFSScanner, PosixScanner))
 
     def test_include_cloud_true_without_deps_uses_local(self):
-        """test_include_cloud_true_without_deps_uses_local.
-
-        Manages test include cloud true without deps uses local operations and coordinates related state changes for the component.
-        """
+        """Verify include cloud true without deps uses local via AdvancedDiskAnalyzer, patch."""
         with (
             patch("cortex_unified.analyzers.advanced_disk_analyzer.HAS_RCLONE", False),
             patch("cortex_unified.analyzers.advanced_disk_analyzer.HAS_MSGRAPH", False),
@@ -500,15 +387,9 @@ class TestAdvancedDiskAnalyzerInit:
 
 
 class TestBuildTree:
-    """Testbuildtree.
-
-    Manages TestBuildTree operations and coordinates related state changes for the component.
-    """
+    """Group testbuildtree tests covering build tree from entries; build tree skips directories; build tree handles missing extension; build tree nested paths; size accuracy sum matches."""
     def test_build_tree_from_entries(self):
-        """test_build_tree_from_entries.
-
-        Manages test build tree from entries operations and coordinates related state changes for the component.
-        """
+        """Verify build tree from entries via AdvancedDiskAnalyzer, analyzer.build_tree, FileEntry."""
         entries = [
             FileEntry("/a.txt", 100, 0.0, 0.0, 0.0, False, ".txt"),
             FileEntry("/b.py", 200, 0.0, 0.0, 0.0, False, ".py"),
@@ -522,10 +403,7 @@ class TestBuildTree:
         assert root.extension_stats[".py"] == 200
 
     def test_build_tree_skips_directories(self):
-        """test_build_tree_skips_directories.
-
-        Manages test build tree skips directories operations and coordinates related state changes for the component.
-        """
+        """Verify build tree skips directories via AdvancedDiskAnalyzer, analyzer.build_tree, FileEntry."""
         entries = [
             FileEntry("/file.txt", 100, 0.0, 0.0, 0.0, False, ".txt"),
             FileEntry("/dir", 0, 0.0, 0.0, 0.0, True, ""),
@@ -536,10 +414,7 @@ class TestBuildTree:
         assert root.size == 100
 
     def test_build_tree_handles_missing_extension(self):
-        """test_build_tree_handles_missing_extension.
-
-        Manages test build tree handles missing extension operations and coordinates related state changes for the component.
-        """
+        """Verify build tree handles missing extension via AdvancedDiskAnalyzer, analyzer.build_tree, FileEntry."""
         entries = [
             FileEntry("/noext", 50, 0.0, 0.0, 0.0, False, ""),
         ]
@@ -548,10 +423,7 @@ class TestBuildTree:
         assert root.extension_stats["noext"] == 50
 
     def test_build_tree_nested_paths(self):
-        """test_build_tree_nested_paths.
-
-        Manages test build tree nested paths operations and coordinates related state changes for the component.
-        """
+        """Verify build tree nested paths via AdvancedDiskAnalyzer, analyzer.build_tree, FileEntry."""
         entries = [
             FileEntry("docs/work/report.pdf", 500, 0.0, 0.0, 0.0, False, ".pdf"),
             FileEntry("docs/personal/photo.jpg", 200, 0.0, 0.0, 0.0, False, ".jpg"),
@@ -565,10 +437,7 @@ class TestBuildTree:
         assert root.children["docs"].children["work"].size == 500
 
     def test_size_accuracy_sum_matches(self):
-        """test_size_accuracy_sum_matches.
-
-        Manages test size accuracy sum matches operations and coordinates related state changes for the component.
-        """
+        """Verify size accuracy sum matches via AdvancedDiskAnalyzer, analyzer.build_tree, FileEntry."""
         entries = [
             FileEntry(f"/file_{i}.dat", i * 100, 0.0, 0.0, 0.0, False, ".dat")
             for i in range(1, 11)
@@ -586,24 +455,15 @@ class TestBuildTree:
 
 
 class TestGetVisualizations:
-    """Testgetvisualizations.
-
-    Manages TestGetVisualizations operations and coordinates related state changes for the component.
-    """
+    """Group testgetvisualizations tests covering returns empty dict before build; returns all keys after build; total size matches tree; extension breakdown is dict."""
     def test_returns_empty_dict_before_build(self):
-        """test_returns_empty_dict_before_build.
-
-        Manages test returns empty dict before build operations and coordinates related state changes for the component.
-        """
+        """Verify returns empty dict before build via AdvancedDiskAnalyzer, analyzer.get_visualizations."""
         analyzer = AdvancedDiskAnalyzer()
         viz = analyzer.get_visualizations()
         assert viz == {}
 
     def test_returns_all_keys_after_build(self):
-        """test_returns_all_keys_after_build.
-
-        Manages test returns all keys after build operations and coordinates related state changes for the component.
-        """
+        """Verify returns all keys after build via AdvancedDiskAnalyzer, analyzer.build_tree, analyzer.get_visualizations."""
         entries = [
             FileEntry("/a.txt", 100, 0.0, 0.0, 0.0, False, ".txt"),
         ]
@@ -619,10 +479,7 @@ class TestGetVisualizations:
         assert "total_folders" in viz
 
     def test_total_size_matches_tree(self):
-        """test_total_size_matches_tree.
-
-        Manages test total size matches tree operations and coordinates related state changes for the component.
-        """
+        """Verify total size matches tree via AdvancedDiskAnalyzer, analyzer.build_tree, analyzer.get_visualizations."""
         entries = [
             FileEntry("/x.bin", 999, 0.0, 0.0, 0.0, False, ".bin"),
         ]
@@ -633,10 +490,7 @@ class TestGetVisualizations:
         assert viz["total_files"] == 1
 
     def test_extension_breakdown_is_dict(self):
-        """test_extension_breakdown_is_dict.
-
-        Manages test extension breakdown is dict operations and coordinates related state changes for the component.
-        """
+        """Verify extension breakdown is dict via AdvancedDiskAnalyzer, analyzer.build_tree, analyzer.get_visualizations."""
         entries = [
             FileEntry("/a.txt", 10, 0.0, 0.0, 0.0, False, ".txt"),
             FileEntry("/b.py", 20, 0.0, 0.0, 0.0, False, ".py"),
@@ -655,25 +509,16 @@ class TestGetVisualizations:
 
 
 class TestGetStats:
-    """Testgetstats.
-
-    Manages TestGetStats operations and coordinates related state changes for the component.
-    """
+    """Group testgetstats tests covering initial stats are zero; stats after manual scan increment."""
     def test_initial_stats_are_zero(self):
-        """test_initial_stats_are_zero.
-
-        Manages test initial stats are zero operations and coordinates related state changes for the component.
-        """
+        """Verify initial stats are zero via AdvancedDiskAnalyzer, analyzer.get_stats."""
         analyzer = AdvancedDiskAnalyzer()
         stats = analyzer.get_stats()
         assert stats["scanned_files"] == 0
         assert stats["scanned_bytes"] == 0
 
     def test_stats_after_manual_scan_increment(self):
-        """test_stats_after_manual_scan_increment.
-
-        Manages test stats after manual scan increment operations and coordinates related state changes for the component.
-        """
+        """Verify stats after manual scan increment via AdvancedDiskAnalyzer, analyzer.get_stats."""
         analyzer = AdvancedDiskAnalyzer()
         analyzer._scanner._scanned_files = 42
         analyzer._scanner._scanned_bytes = 12345
@@ -688,14 +533,9 @@ class TestGetStats:
 
 
 class TestScanRealDirectory:
-    """Testscanrealdirectory.
-
-    Manages TestScanRealDirectory operations and coordinates related state changes for the component.
-    """
+    """Group testscanrealdirectory tests covering scan finds files; scan builds correct tree; scan respects cancellation; scan cancelled before start; scan progress callback; scan progress callback fires at interval."""
     def test_scan_finds_files(self, tmp_path):
-        """test_scan_finds_files.
-
-        Manages test scan finds files operations and coordinates related state changes for the component.
+        """Verify scan finds files via scanner.scan, PosixScanner, Path.
 
         Args:
             tmp_path: Filesystem path to the target file or directory.
@@ -714,9 +554,7 @@ class TestScanRealDirectory:
         assert "c.log" in names
 
     def test_scan_builds_correct_tree(self, tmp_path):
-        """test_scan_builds_correct_tree.
-
-        Manages test scan builds correct tree operations and coordinates related state changes for the component.
+        """Verify scan builds correct tree via scanner.scan, PosixScanner, AdvancedDiskAnalyzer.
 
         Args:
             tmp_path: Filesystem path to the target file or directory.
@@ -735,9 +573,7 @@ class TestScanRealDirectory:
         assert root.file_count == 3
 
     def test_scan_respects_cancellation(self, tmp_path):
-        """test_scan_respects_cancellation.
-
-        Manages test scan respects cancellation operations and coordinates related state changes for the component.
+        """Verify scan respects cancellation via threading.Event, scanner.scan, PosixScanner.
 
         Args:
             tmp_path: Filesystem path to the target file or directory.
@@ -767,9 +603,7 @@ class TestScanRealDirectory:
         assert len(entries) < 500
 
     def test_scan_cancelled_before_start(self, tmp_path):
-        """test_scan_cancelled_before_start.
-
-        Manages test scan cancelled before start operations and coordinates related state changes for the component.
+        """Verify scan cancelled before start via threading.Event, scanner.scan, cancel_event.set.
 
         Args:
             tmp_path: Filesystem path to the target file or directory.
@@ -795,9 +629,7 @@ class TestScanRealDirectory:
         received = []
 
         def capture(files, bytez, path):
-            """Capture.
-
-            Manages capture operations and coordinates related state changes for the component.
+            """Capture using received.append.
 
             Args:
                 files: The files parameter.
@@ -837,10 +669,7 @@ class TestScanRealDirectory:
 
 
 class TestScanSync:
-    """Testscansync.
-
-    Manages TestScanSync operations and coordinates related state changes for the component.
-    """
+    """Group testscansync tests covering returns entries and tree; real scan sync; collects all files; with progress cb."""
     def _scan_and_build(self, root, **kwargs):
         """Helper: scan synchronously and build tree, bypassing broken async wrapper.
 
@@ -856,9 +685,7 @@ class TestScanSync:
         return entries, tree
 
     def test_returns_entries_and_tree(self, tmp_path):
-        """test_returns_entries_and_tree.
-
-        Manages test returns entries and tree operations and coordinates related state changes for the component.
+        """Verify returns entries and tree via self._scan_and_build.
 
         Args:
             tmp_path: Filesystem path to the target file or directory.
@@ -870,9 +697,7 @@ class TestScanSync:
         assert tree.size > 0
 
     def test_real_scan_sync(self, tmp_path):
-        """test_real_scan_sync.
-
-        Manages test real scan sync operations and coordinates related state changes for the component.
+        """Verify real scan sync via scan_sync.
 
         Args:
             tmp_path: Filesystem path to the target file or directory.
@@ -884,9 +709,7 @@ class TestScanSync:
         assert tree.size > 0
 
     def test_collects_all_files(self, tmp_path):
-        """test_collects_all_files.
-
-        Manages test collects all files operations and coordinates related state changes for the component.
+        """Verify collects all files via self._scan_and_build.
 
         Args:
             tmp_path: Filesystem path to the target file or directory.
@@ -923,42 +746,27 @@ class TestScanSync:
 
 
 class TestScannerBaseHelpers:
-    """Testscannerbasehelpers.
-
-    Manages TestScannerBaseHelpers operations and coordinates related state changes for the component.
-    """
+    """Group testscannerbasehelpers tests covering check cancel default not set; check cancel when set; report increments counter; report calls callback at interval; report does not call below interval."""
     def test_check_cancel_default_not_set(self):
-        """test_check_cancel_default_not_set.
-
-        Manages test check cancel default not set operations and coordinates related state changes for the component.
-        """
+        """Verify check cancel default not set via scanner._check_cancel, PosixScanner."""
         scanner = PosixScanner()
         assert scanner._check_cancel() is False
 
     def test_check_cancel_when_set(self):
-        """test_check_cancel_when_set.
-
-        Manages test check cancel when set operations and coordinates related state changes for the component.
-        """
+        """Verify check cancel when set via threading.Event, scanner._check_cancel, evt.set."""
         evt = threading.Event()
         evt.set()
         scanner = PosixScanner(cancel_event=evt)
         assert scanner._check_cancel() is True
 
     def test_report_increments_counter(self):
-        """test_report_increments_counter.
-
-        Manages test report increments counter operations and coordinates related state changes for the component.
-        """
+        """Verify report increments counter via scanner._report, PosixScanner."""
         scanner = PosixScanner()
         scanner._report("/some/path")
         assert scanner._scanned_files == 1
 
     def test_report_calls_callback_at_interval(self):
-        """test_report_calls_callback_at_interval.
-
-        Manages test report calls callback at interval operations and coordinates related state changes for the component.
-        """
+        """Verify report calls callback at interval via scanner._report, PosixScanner, calls.append."""
         calls = []
         cb = lambda f, b, p: calls.append((f, b, p))
         scanner = PosixScanner(progress_cb=cb)
@@ -969,10 +777,7 @@ class TestScannerBaseHelpers:
         assert len(calls) >= 1
 
     def test_report_does_not_call_below_interval(self):
-        """test_report_does_not_call_below_interval.
-
-        Manages test report does not call below interval operations and coordinates related state changes for the component.
-        """
+        """Verify report does not call below interval via scanner._report, PosixScanner, calls.append."""
         calls = []
         cb = lambda f, b, p: calls.append((f, b, p))
         scanner = PosixScanner(progress_cb=cb)

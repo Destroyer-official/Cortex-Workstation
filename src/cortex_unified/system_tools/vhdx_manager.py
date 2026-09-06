@@ -42,10 +42,7 @@ _BLOCKERS = {
 
 
 class DiskKind(str, enum.Enum):
-    """Diskkind.
-
-    Manages DiskKind operations and coordinates related state changes for the component.
-    """
+    """Virtual-disk owner: WSL, Docker, Hyper-V, or unknown."""
 
     WSL = "wsl"
     DOCKER = "docker"
@@ -55,10 +52,7 @@ class DiskKind(str, enum.Enum):
 
 @dataclass(slots=True)
 class VirtualDisk:
-    """Virtualdisk.
-
-    Manages VirtualDisk operations and coordinates related state changes for the component.
-    """
+    """Record holding path, kind, label, size_bytes, on_disk_bytes, used_inside_bytes, running, blockers."""
 
     path: Path
     kind: DiskKind
@@ -89,10 +83,8 @@ class VirtualDisk:
     def can_compact(self) -> bool:
         """True when compaction can be attempted right now.
 
-        Manages can compact operations and coordinates related state changes for the component.
-
         Returns:
-            bool: True if the operation succeeded, False otherwise.
+        bool: True if the operation succeeded, False otherwise.
         """
         return not self.running and self.path.exists()
 
@@ -100,10 +92,8 @@ class VirtualDisk:
     def status_note(self) -> str:
         """Plain explanation of the current state, always safe to display.
 
-        Manages status note operations and coordinates related state changes for the component.
-
         Returns:
-            str: Formatted string or path.
+        str: Formatted string or path.
         """
         if not self.path.exists():
             return "file no longer exists"
@@ -116,12 +106,10 @@ class VirtualDisk:
         return "ready to compact"
 
     def to_dict(self) -> dict[str, Any]:
-        """To dict.
-
-        Manages to dict operations and coordinates related state changes for the component.
+        """Serialize to a plain dict with keys path, kind, label, size_bytes, on_disk_bytes, used_inside_bytes, potential_saving_bytes, running, blockers, can_compact, note.
 
         Returns:
-            dict[str, Any]: Dictionary mapping identifiers to status or values.
+        dict[str, Any]: Dictionary mapping identifiers to status or values.
         """
         return {
             "path": str(self.path),
@@ -140,10 +128,7 @@ class VirtualDisk:
 
 @dataclass(slots=True)
 class CompactResult:
-    """Compactresult.
-
-    Manages CompactResult operations and coordinates related state changes for the component.
-    """
+    """Record holding path, label, success, before_bytes, after_bytes, message, detail."""
 
     path: Path
     label: str
@@ -157,20 +142,16 @@ class CompactResult:
     def freed_bytes(self) -> int:
         """Actual bytes returned to the host (never negative).
 
-        Manages freed bytes operations and coordinates related state changes for the component.
-
         Returns:
-            int: Result of the operation.
+        int: Result of the operation.
         """
         return max(0, self.before_bytes - self.after_bytes)
 
     def to_dict(self) -> dict[str, Any]:
-        """To dict.
-
-        Manages to dict operations and coordinates related state changes for the component.
+        """Serialize to a plain dict with keys path, label, success, before_bytes, after_bytes, freed_bytes, message.
 
         Returns:
-            dict[str, Any]: Dictionary mapping identifiers to status or values.
+        dict[str, Any]: Dictionary mapping identifiers to status or values.
         """
         return {
             "path": str(self.path),
@@ -184,10 +165,7 @@ class CompactResult:
 
 
 class VhdxManager:
-    """Vhdxmanager.
-
-    Manages VhdxManager operations and coordinates related state changes for the component.
-    """
+    """Groups related helpers: init, is supported, list disks, wsl disks, docker disks, hyperv disks, measure, measure guest usage. Windows-only; typically requires elevation."""
 
     def __init__(self) -> None:
         """Initialize Vhdx Manager.
@@ -200,10 +178,8 @@ class VhdxManager:
     def is_supported() -> bool:
         """Virtual-disk compaction is a Windows-only concern.
 
-        Manages is supported operations and coordinates related state changes for the component.
-
         Returns:
-            bool: True if the operation succeeded, False otherwise.
+        bool: True if the operation succeeded, False otherwise.
         """
         return _IS_WINDOWS
 
@@ -212,10 +188,8 @@ class VhdxManager:
     def list_disks(self) -> list[VirtualDisk]:
         """Return every virtual disk we can account for, largest first.
 
-        Manages list disks operations and coordinates related state changes for the component.
-
         Returns:
-            list[VirtualDisk]: List of processed items or identifiers.
+        list[VirtualDisk]: List of processed items or identifiers.
         """
         if not _IS_WINDOWS:
             return []
@@ -290,10 +264,8 @@ class VhdxManager:
     def _docker_disks(self) -> list[VirtualDisk]:
         """Find Docker Desktop data disks outside the WSL registry entries.
 
-        Manages docker disks operations and coordinates related state changes for the component.
-
         Returns:
-            list[VirtualDisk]: List of processed items or identifiers.
+        list[VirtualDisk]: List of processed items or identifiers.
         """
         out: list[VirtualDisk] = []
         local = os.environ.get("LOCALAPPDATA")
@@ -318,10 +290,8 @@ class VhdxManager:
     def _hyperv_disks(self) -> list[VirtualDisk]:
         """List Hyper-V VM disks, but only when the role is actually installed.
 
-        Manages hyperv disks operations and coordinates related state changes for the component.
-
         Returns:
-            list[VirtualDisk]: List of processed items or identifiers.
+        list[VirtualDisk]: List of processed items or identifiers.
         """
         script = (
             "$ErrorActionPreference='SilentlyContinue';"
@@ -344,12 +314,10 @@ class VhdxManager:
         return out
 
     def _measure(self, disk: VirtualDisk) -> None:
-        """Measure.
-
-        Manages measure operations and coordinates related state changes for the component.
+        """Measure helper.
 
         Args:
-            disk (VirtualDisk): The disk parameter.
+        disk (VirtualDisk): The disk parameter.
         """
         try:
             disk.size_bytes = disk.path.stat().st_size
@@ -526,13 +494,11 @@ class VhdxManager:
     def _explain_failure(out: str | None) -> str:
         """Translate diskpart's output into something actionable.
 
-        Manages explain failure operations and coordinates related state changes for the component.
-
         Args:
-            out (str | None): The out parameter.
+        out (str | None): The out parameter.
 
         Returns:
-            str: Formatted string or path.
+        str: Formatted string or path.
         """
         low = (out or "").lower()
         if "access is denied" in low or "administrator" in low:
@@ -593,14 +559,12 @@ class VhdxManager:
     def _run_ps(self, script: str, timeout: int) -> str | None:
         """Run a PowerShell snippet with a hidden window; None on any failure.
 
-        Manages run ps operations and coordinates related state changes for the component.
-
         Args:
-            script (str): The script parameter.
-            timeout (int): The timeout parameter.
+        script (str): The script parameter.
+        timeout (int): The timeout parameter.
 
         Returns:
-            str | None: Formatted string or path.
+        str | None: Formatted string or path.
         """
         try:
             proc = subprocess.run(
@@ -617,10 +581,8 @@ class VhdxManager:
     def _running_processes() -> set[str]:
         """Lower-cased names of running processes (empty set if unavailable).
 
-        Manages running processes operations and coordinates related state changes for the component.
-
         Returns:
-            set[str]: Formatted string or path.
+        set[str]: Formatted string or path.
         """
         try:
             import psutil
@@ -638,15 +600,13 @@ class VhdxManager:
 
     @staticmethod
     def _decode(raw: bytes | str | None) -> str:
-        """Decode.
-
-        Manages decode operations and coordinates related state changes for the component.
+        """Decode bytes with utf-8/utf-16-le/cp1252 fallbacks; never raises.
 
         Args:
-            raw (bytes | str | None): The raw parameter.
+        raw (bytes | str | None): The raw parameter.
 
         Returns:
-            str: Formatted string or path.
+        str: Formatted string or path.
         """
         if raw is None:
             return ""
@@ -661,16 +621,14 @@ class VhdxManager:
 
     @staticmethod
     def _reg_str(key, name: str) -> str:
-        """_reg_str.
-
-        Manages reg str operations and coordinates related state changes for the component.
+        """Read a string registry value; return "" on any miss.
 
         Args:
-            key: The key parameter.
-            name (str): The name parameter.
+        key: The key parameter.
+        name (str): The name parameter.
 
         Returns:
-            str: Formatted string or path.
+        str: Formatted string or path.
         """
         try:
             import winreg
@@ -681,16 +639,14 @@ class VhdxManager:
 
     @staticmethod
     def _reg_int(key, name: str) -> int:
-        """_reg_int.
-
-        Manages reg int operations and coordinates related state changes for the component.
+        """Read an integer registry value; return 0 on any miss.
 
         Args:
-            key: The key parameter.
-            name (str): The name parameter.
+        key: The key parameter.
+        name (str): The name parameter.
 
         Returns:
-            int: Result of the operation.
+        int: Result of the operation.
         """
         try:
             import winreg

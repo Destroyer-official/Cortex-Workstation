@@ -5,10 +5,7 @@ import re
 from pathlib import Path
 
 def analyze_paths():
-    """analyze_paths.
-
-    Manages analyze paths operations and coordinates related state changes for the component.
-    """
+    """Analyze paths using re.compile, os.walk, f.endswith."""
     print("=== Analyzing Hardcoded Paths across src/ ===")
     hardcoded_re = re.compile(r'["\'](C:[/\\][^"\']*)["\']', re.I)
     

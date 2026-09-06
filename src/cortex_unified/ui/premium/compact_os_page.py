@@ -81,10 +81,7 @@ class _ScanWorker(QObject):
 
 
 class _CompactWorker(QObject):
-    """Compactworker.
-
-    Manages CompactWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker (_CompactWorker) performing CompactWorker. Signals finished, failed report status. Configured with path. Its run() step calls compact_folder, CompactOSManager, emit, str."""
     finished = Signal(bool, str)
     failed = Signal(str)
 
@@ -114,10 +111,7 @@ class _CompactWorker(QObject):
 
 
 class _QueryWorker(QObject):
-    """Queryworker.
-
-    Manages QueryWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker (_QueryWorker) performing QueryWorker. Signals finished, failed report status. Its run() step calls CompactOSManager, m.compactos_query, m.drive_compression_state, emit."""
     finished = Signal(dict)
     failed = Signal(str)
 
@@ -138,10 +132,7 @@ class _QueryWorker(QObject):
 
 
 class CompactOsPage(_Page):
-    """Compactospage.
-
-    Manages CompactOsPage operations and coordinates related state changes for the component.
-    """
+    """CompactOS / NTFS Compression page: Question, then act (USENIX ATC 2024): find folders whose text/log/."""
 
     def __init__(self, win):
         """__init__.
@@ -243,18 +234,13 @@ class CompactOsPage(_Page):
             self._path_lbl.setText(folder)
 
     def _query(self):
-        """Query.
-
-        Manages query operations and coordinates related state changes for the component.
-        """
+        """Disable action buttons, show progress/status, and launch the background worker (setEnabled, setText, run_worker)."""
         self._query_btn.setEnabled(False)
         self._status_lbl.setText("Querying…")
         self.win.run_worker(_QueryWorker(), self._on_query, self._fail)
 
     def _on_query(self, info: dict):
-        """_on_query.
-
-        Manages on query operations and coordinates related state changes for the component.
+        """Handle a selection change (on query) by updating dependent labels and controls.
 
         Args:
             info (dict): The info parameter.
@@ -319,10 +305,7 @@ class CompactOsPage(_Page):
             f"{len(ests)} compressible folders, ~{fmt_bytes(total)} potential savings", 6000)
 
     def _compress(self):
-        """Compress.
-
-        Manages compress operations and coordinates related state changes for the component.
-        """
+        """Validate the current selection and ask the user to confirm via a message box showing 'Compress folder'."""
         sel = self.tbl.selectedIndexes()
         if not sel:
             return

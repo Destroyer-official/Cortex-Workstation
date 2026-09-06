@@ -14,9 +14,9 @@ from PySide6.QtCore import QObject, Signal
 
 
 class BackgroundAgent(QObject):
-    """Backgroundagent.
+    """Background Agent.
 
-    Manages BackgroundAgent operations and coordinates related state changes for the component.
+    Samples CPU/RAM/disk via psutil and emits Qt signals with per-metric cooldowns to avoid alert spam; loops until stop() clears the flag, sleeping check_interval seconds between ticks.
     """
 
     alert_high_ram = Signal(float)
@@ -25,7 +25,7 @@ class BackgroundAgent(QObject):
     status_update = Signal(dict)
 
     def __init__(self, check_interval: int = 10):
-        """__init__.
+        """Initialize the instance.
 
         Initializes the instance and configures internal state.
 
@@ -51,7 +51,7 @@ class BackgroundAgent(QObject):
     def start_monitoring(self):
         """Main loop — called when the owning QThread starts.
 
-        Manages start monitoring operations and coordinates related state changes for the component.
+        Samples CPU/RAM/disk via psutil and emits Qt signals with per-metric cooldowns to avoid alert spam; loops until stop() clears the flag, sleeping check_interval seconds between ticks.
         """
         try:
             import psutil

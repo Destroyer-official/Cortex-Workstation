@@ -32,9 +32,9 @@ _KIND_BADGE = {"copy": "COPY", "move": "MOVE", "delete": "DELETE"}
 
 
 class _JobRow(QWidget):
-    """Jobrow.
+    """Per-job transfer card with controls.
 
-    Manages JobRow operations and coordinates related state changes for the component.
+    Binds to TransferQueue job_id, shows kind badge, progress bar, speed/ETA detail, and Pause/Resume/Cancel buttons.
     """
 
     def __init__(self, job_id: str, queue: TransferQueue, parent=None):
@@ -109,9 +109,9 @@ class _JobRow(QWidget):
     # ------------------------------------------------------------- helpers
     @staticmethod
     def _describe(job) -> str:
-        """Describe.
+        """Build user-facing job title.
 
-        Manages describe operations and coordinates related state changes for the component.
+        Formats delete counts or 'src -> dest' with '+N more' suffix from job sources/dest.
 
         Args:
             job: The job parameter.
@@ -195,18 +195,18 @@ class _JobRow(QWidget):
         self._refresh(self.queue.get_job(self.job_id))
 
     def _cancel(self):
-        """Cancel.
+        """Cancel the bound transfer job.
 
-        Manages cancel operations and coordinates related state changes for the component.
+        Delegates to TransferQueue.cancel then refreshes the row.
         """
         self.queue.cancel(self.job_id)
         self._refresh(self.queue.get_job(self.job_id))
 
 
 class TransferMonitorDialog(QDialog):
-    """Transfermonitordialog.
+    """Non-modal window listing live transfer jobs.
 
-    Manages TransferMonitorDialog operations and coordinates related state changes for the component.
+    Hosts scrollable _JobRow cards, wires job_added/progress/completed/cancelled signals, polls RUNNING rows on a 250ms QTimer, and aggregates summary.
     """
 
     def __init__(self, queue: TransferQueue, parent=None):
@@ -269,9 +269,9 @@ class TransferMonitorDialog(QDialog):
 
     # ------------------------------------------------------------- slots
     def _on_job_added(self, job_id: str):
-        """_on_job_added.
+        """Insert a card for a new job.
 
-        Manages on job added operations and coordinates related state changes for the component.
+        Creates _JobRow, inserts above the stretch, then shows/raises the dialog.
 
         Args:
             job_id (str): The job id parameter.
@@ -310,9 +310,9 @@ class TransferMonitorDialog(QDialog):
         self._update_summary()
 
     def _update_summary(self):
-        """_update_summary.
+        """Recompute the footer aggregate.
 
-        Manages update summary operations and coordinates related state changes for the component.
+        Averages progress across QUEUED/RUNNING/PAUSED jobs and counts COMPLETED for the summary label.
         """
         jobs = self._queue.get_all_jobs()
         active = [j for j in jobs if j.state in (
@@ -329,9 +329,9 @@ class TransferMonitorDialog(QDialog):
             self.summary.setText("No active transfers")
 
     def _clear_finished(self):
-        """_clear_finished.
+        """Drop finished cards via the queue.
 
-        Manages clear finished operations and coordinates related state changes for the component.
+        Calls TransferQueue.clear_finished then destroys rows whose jobs are gone.
         """
         n = self._queue.clear_finished()
         for jid, row in list(self._rows.items()):
@@ -343,9 +343,9 @@ class TransferMonitorDialog(QDialog):
         log.debug("cleared %d finished jobs", n)
 
     def open_for(self) -> None:
-        """open_for.
+        """Show and focus the monitor window.
 
-        Manages open for operations and coordinates related state changes for the component.
+        Calls show/raise/activateWindow with no arguments.
         """
         self.show()
         self.raise_()

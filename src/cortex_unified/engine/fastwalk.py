@@ -41,10 +41,10 @@ _MEASURE_MASK = (
 
 @dataclass(slots=True)
 class WalkOptions:
-    """Walkoptions.
+    """Walk Options.
 
-    Manages WalkOptions operations and coordinates related state changes for the component.
-    """
+ Handles walk options for.
+ """
 
     exclude_dir_names: frozenset[str] = field(
         default_factory=lambda: frozenset(
@@ -85,7 +85,7 @@ class FastWalker:
     """
 
     def __init__(self, options: WalkOptions | None = None) -> None:
-        """__init__.
+        """Initialize the instance.
 
         Initializes the instance and configures internal state.
 
@@ -109,10 +109,10 @@ class FastWalker:
         self._cancel.set()
 
     def reset(self) -> None:
-        """Reset.
+        """Reset helper.
 
-        Manages reset operations and coordinates related state changes for the component.
-        """
+ Handles reset for.
+ """
         self._cancel.clear()
         self.cloud_skipped = 0
         self.cloud_skipped_bytes = 0
@@ -121,25 +121,25 @@ class FastWalker:
     # -- exclusion rules ----------------------------------------------------
 
     def _excluded_dir(self, name: str, full: str) -> bool:
-        """_excluded_dir.
+        """Excluded dir.
 
-        Manages excluded dir operations and coordinates related state changes for the component.
+ Handles excluded dir for.
 
-        Args:
-            name (str): The name parameter.
-            full (str): The full parameter.
+ Args:
+ name (str): The name parameter.
+ full (str): The full parameter.
 
-        Returns:
-            bool: True if the operation succeeded, False otherwise.
-        """
+ Returns:
+ bool: True if the operation succeeded, False otherwise.
+ """
         if name in self.options.exclude_dir_names:
             return True
         return self._matches_patterns(name, full)
 
     def _matches_patterns(self, name: str, full: str) -> bool:
-        """_matches_patterns.
+        """Matches patterns.
 
-        Manages matches patterns operations and coordinates related state changes for the component.
+        Returns True when the condition holds, False otherwise.
 
         Args:
             name (str): The name parameter.
@@ -166,7 +166,7 @@ class FastWalker:
     ) -> Iterator[FileEntry]:
         """Yield :class:`FileEntry` for every matching file under *root*.
 
-        Manages iter files operations and coordinates related state changes for the component.
+        Never follows symlinks unless explicitly enabled, so a planted link cannot redirect the scan; enforces the min-age floor and treats unstatable files as too young to delete.
 
         Args:
             root (os.PathLike[str] | str): Filesystem path to the target file or directory.
@@ -314,9 +314,9 @@ class FastWalker:
         dirs_post: list[str] = []  # post-order list of directories
 
         def _visit(dpath: str) -> None:
-            """Visit.
+            """Visit helper.
 
-            Manages visit operations and coordinates related state changes for the component.
+            Never follows symlinks unless explicitly enabled, so a planted link cannot redirect the scan.
 
             Args:
                 dpath (str): Filesystem path to the target file or directory.

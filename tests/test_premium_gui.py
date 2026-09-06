@@ -19,19 +19,14 @@ from PySide6.QtWidgets import QApplication  # noqa: E402
 
 @pytest.fixture(scope="module")
 def app():
-    """App.
-
-    Manages app operations and coordinates related state changes for the component.
-    """
+    """Provide app fixture that provides a shared QApplication."""
     application = QApplication.instance() or QApplication([])
     yield application
 
 
 @pytest.fixture
 def window(app):
-    """Window.
-
-    Manages window operations and coordinates related state changes for the component.
+    """Provide window fixture via win.deleteLater, app.processEvents, PremiumMainWindow.
 
     Args:
         app: The app parameter.
@@ -53,9 +48,7 @@ def window(app):
 
 
 def test_stylesheet_builds_for_both_themes(app):
-    """test_stylesheet_builds_for_both_themes.
-
-    Manages test stylesheet builds for both themes operations and coordinates related state changes for the component.
+    """Verify stylesheet builds for both themes via THEMES.items, build_stylesheet.
 
     Args:
         app: The app parameter.
@@ -68,9 +61,7 @@ def test_stylesheet_builds_for_both_themes(app):
 
 
 def test_all_pages_present(window):
-    """test_all_pages_present.
-
-    Manages test all pages present operations and coordinates related state changes for the component.
+    """Verify all pages present via set.
 
     Args:
         window: Parent window or shell controller instance.
@@ -82,8 +73,6 @@ def test_all_pages_present(window):
 def test_navigate_every_page(window):
     """Selecting each page must switch the stack without error.
 
-    Manages test navigate every page operations and coordinates related state changes for the component.
-
     Args:
         window: Parent window or shell controller instance.
     """
@@ -93,9 +82,7 @@ def test_navigate_every_page(window):
 
 
 def test_theme_toggle_does_not_crash(window):
-    """test_theme_toggle_does_not_crash.
-
-    Manages test theme toggle does not crash operations and coordinates related state changes for the component.
+    """Verify theme toggle does not crash via window.set_theme.
 
     Args:
         window: Parent window or shell controller instance.
@@ -107,9 +94,7 @@ def test_theme_toggle_does_not_crash(window):
 
 
 def test_navigation_switches_pages(window):
-    """test_navigation_switches_pages.
-
-    Manages test navigation switches pages operations and coordinates related state changes for the component.
+    """Verify navigation switches pages via window._stack.currentWidget, window._select.
 
     Args:
         window: Parent window or shell controller instance.
@@ -121,9 +106,7 @@ def test_navigation_switches_pages(window):
 
 
 def test_dashboard_populates_from_report(window):
-    """test_dashboard_populates_from_report.
-
-    Manages test dashboard populates from report operations and coordinates related state changes for the component.
+    """Verify dashboard populates from report via dash.recycle_btn.isEnabled, dash.tree.topLevelItemCount, dash._on_scanned.
 
     Args:
         window: Parent window or shell controller instance.
@@ -148,8 +131,6 @@ def test_dashboard_populates_from_report(window):
 
 def test_dashboard_preview_expands(window):
     """Expanding a category must lazily reveal its contents (preview).
-
-    Manages test dashboard preview expands operations and coordinates related state changes for the component.
 
     Args:
         window: Parent window or shell controller instance.
@@ -198,8 +179,6 @@ def test_dashboard_preview_expands(window):
 def test_preview_helpers(app):
     """The drill-down grouping helpers must aggregate correctly and fast.
 
-    Manages test preview helpers operations and coordinates related state changes for the component.
-
     Args:
         app: The app parameter.
     """
@@ -232,8 +211,6 @@ def test_preview_helpers(app):
 def test_group_by_app(app):
     """App caches must group by their owning app with friendly names.
 
-    Manages test group by app operations and coordinates related state changes for the component.
-
     Args:
         app: The app parameter.
     """
@@ -257,8 +234,6 @@ def test_group_by_app(app):
 
 def test_dashboard_selection_excludes(window):
     """Unchecking an app/folder in the preview must exclude it from cleaning.
-
-    Manages test dashboard selection excludes operations and coordinates related state changes for the component.
 
     Args:
         window: Parent window or shell controller instance.
@@ -305,9 +280,7 @@ def test_dashboard_selection_excludes(window):
 
 
 def test_circular_gauge_animates(window):
-    """test_circular_gauge_animates.
-
-    Manages test circular gauge animates operations and coordinates related state changes for the component.
+    """Verify circular gauge animates via dash.gauge.animate_to.
 
     Args:
         window: Parent window or shell controller instance.
@@ -321,8 +294,6 @@ def test_circular_gauge_animates(window):
 def test_render_to_pixmap(window):
     """The window must render to a non-empty pixmap (catches paint crashes).
 
-    Manages test render to pixmap operations and coordinates related state changes for the component.
-
     Args:
         window: Parent window or shell controller instance.
     """
@@ -333,8 +304,6 @@ def test_render_to_pixmap(window):
 
 def test_responsive_resize(window):
     """Content must adapt (and render) across small and large window sizes.
-
-    Manages test responsive resize operations and coordinates related state changes for the component.
 
     Args:
         window: Parent window or shell controller instance.
@@ -364,8 +333,6 @@ def test_responsive_resize(window):
 def test_core_bars_widget_renders(app):
     """The per-core CPU bar widget must accept values and paint without error.
 
-    Manages test core bars widget renders operations and coordinates related state changes for the component.
-
     Args:
         app: The app parameter.
     """
@@ -382,9 +349,7 @@ def test_core_bars_widget_renders(app):
 
 
 def test_stat_card_animate_value(app):
-    """test_stat_card_animate_value.
-
-    Manages test stat card animate value operations and coordinates related state changes for the component.
+    """Verify stat card animate value via StatCard, card.set_value, card._value.text.
 
     Args:
         app: The app parameter.
@@ -399,9 +364,7 @@ def test_stat_card_animate_value(app):
 
 
 def test_shred_page_present_and_wired(window):
-    """test_shred_page_present_and_wired.
-
-    Manages test shred page present and wired operations and coordinates related state changes for the component.
+    """Verify shred page present and wired via page.shred_btn.isEnabled, hasattr.
 
     Args:
         window: Parent window or shell controller instance.
@@ -414,8 +377,6 @@ def test_shred_page_present_and_wired(window):
 
 def test_recycle_worker_actually_removes(app, tmp_path):
     """DeleteSelectedWorker (recycle) must remove a real file, run synchronously.
-
-    Manages test recycle worker actually removes operations and coordinates related state changes for the component.
 
     Args:
         app: The app parameter.
@@ -462,8 +423,6 @@ def test_dashboard_live_scan_completes(app, window):
 def test_shred_worker_overwrites_and_removes(app, tmp_path):
     """ShredWorker with force_flash must overwrite+delete regardless of medium.
 
-    Manages test shred worker overwrites and removes operations and coordinates related state changes for the component.
-
     Args:
         app: The app parameter.
         tmp_path: Filesystem path to the target file or directory.
@@ -487,24 +446,15 @@ def test_shred_worker_overwrites_and_removes(app, tmp_path):
 # ---------------------------------------------------------------------------
 
 class _CoopWorker:
-    """Coopworker.
-
-    Manages CoopWorker operations and coordinates related state changes for the component.
-    """
+    """Helper coopworker using threading.Event, W, Signal."""
 
     def __new__(cls):
-        """New.
-
-        Manages new operations and coordinates related state changes for the component.
-        """
+        """New using threading.Event, W, Signal."""
         import threading
         from PySide6.QtCore import QObject, Signal
 
         class W(QObject):
-            """W.
-
-            Manages W operations and coordinates related state changes for the component.
-            """
+            """Helper w using threading.Event, Signal, self._cancel.set."""
             finished = Signal(str)
             failed = Signal(str)
 
@@ -560,10 +510,7 @@ def test_close_with_unkillable_worker_detaches_instead_of_crashing(app, window):
     from PySide6.QtCore import QObject, Signal
 
     class StuckWorker(QObject):
-        """Stuckworker.
-
-        Manages StuckWorker operations and coordinates related state changes for the component.
-        """
+        """Helper stuckworker using threading.Event, Signal, event.wait."""
         finished = Signal(str)
         failed = Signal(str)
 
@@ -603,10 +550,7 @@ def test_run_worker_refused_after_close(app, window):
     ran = []
 
     class Probe(_CoopWorker().__class__):
-        """Probe.
-
-        Manages Probe operations and coordinates related state changes for the component.
-        """
+        """Helper probe using _CoopWorker, ran.append."""
         def run(self):
             """run.
 
@@ -645,8 +589,6 @@ def temp_window(app, tmp_path):
 def _fake_qobject_window(app):
     """A minimal QObject that quacks like the window for tray-action tests.
 
-    Manages fake qobject window operations and coordinates related state changes for the component.
-
     Args:
         app: The app parameter.
     """
@@ -654,10 +596,7 @@ def _fake_qobject_window(app):
     from cortex_unified.ui.premium.theme import THEMES
 
     class FakeWin(QObject):
-        """Fakewin.
-
-        Manages FakeWin operations and coordinates related state changes for the component.
-        """
+        """Helper fakewin using self.calls.append, __init__, super."""
         def __init__(self):
             """Initialize the instance and configure internal state.
 
@@ -670,44 +609,27 @@ def _fake_qobject_window(app):
             self.calls: list = []
 
         def isMinimized(self):  # noqa: N802
-            """Isminimized.
-
-            Manages isMinimized operations and coordinates related state changes for the component.
-            """
+            """IsMinimized."""
             return False
 
         def show(self):
-            """Show.
-
-            Manages show operations and coordinates related state changes for the component.
-            """
+            """Show using self.calls.append."""
             self.calls.append("show")
 
         def showNormal(self):  # noqa: N802
-            """Shownormal.
-
-            Manages showNormal operations and coordinates related state changes for the component.
-            """
+            """ShowNormal using self.calls.append."""
             self.calls.append("showNormal")
 
         def raise_(self):
-            """Raise.
-
-            Manages raise operations and coordinates related state changes for the component.
-            """
+            """Raise using self.calls.append."""
             self.calls.append("raise")
 
         def activateWindow(self):  # noqa: N802
-            """Activatewindow.
-
-            Manages activateWindow operations and coordinates related state changes for the component.
-            """
+            """ActivateWindow using self.calls.append."""
             self.calls.append("activate")
 
         def _select(self, pid):
-            """Select.
-
-            Manages select operations and coordinates related state changes for the component.
+            """Select using self.calls.append.
 
             Args:
                 pid: The pid parameter.
@@ -715,19 +637,14 @@ def _fake_qobject_window(app):
             self.calls.append(("select", pid))
 
         def close(self):
-            """Close.
-
-            Manages close operations and coordinates related state changes for the component.
-            """
+            """Close using self.calls.append."""
             self.calls.append("close")
 
     return FakeWin()
 
 
 def test_settings_store_defaults_and_roundtrip(tmp_path):
-    """test_settings_store_defaults_and_roundtrip.
-
-    Manages test settings store defaults and roundtrip operations and coordinates related state changes for the component.
+    """Verify settings store defaults and roundtrip via SettingsStore.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.
@@ -745,9 +662,7 @@ def test_settings_store_defaults_and_roundtrip(tmp_path):
 
 
 def test_settings_store_tolerates_corrupt_file(tmp_path):
-    """test_settings_store_tolerates_corrupt_file.
-
-    Manages test settings store tolerates corrupt file operations and coordinates related state changes for the component.
+    """Verify settings store tolerates corrupt file via SettingsStore.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.
@@ -761,9 +676,7 @@ def test_settings_store_tolerates_corrupt_file(tmp_path):
 
 
 def test_settings_store_sanitizes_bad_values(tmp_path):
-    """test_settings_store_sanitizes_bad_values.
-
-    Manages test settings store sanitizes bad values operations and coordinates related state changes for the component.
+    """Verify settings store sanitizes bad values via SettingsStore, json.dumps.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.
@@ -780,9 +693,7 @@ def test_settings_store_sanitizes_bad_values(tmp_path):
 
 
 def test_theme_choice_persists_across_restart(temp_window):
-    """test_theme_choice_persists_across_restart.
-
-    Manages test theme choice persists across restart operations and coordinates related state changes for the component.
+    """Verify theme choice persists across restart via win.set_theme, SettingsStore.
 
     Args:
         temp_window: The temp window parameter.
@@ -796,9 +707,7 @@ def test_theme_choice_persists_across_restart(temp_window):
 
 
 def test_settings_page_marks_active_theme(temp_window):
-    """test_settings_page_marks_active_theme.
-
-    Manages test settings page marks active theme operations and coordinates related state changes for the component.
+    """Verify settings page marks active theme via page.dark_btn.objectName, page.light_btn.objectName, page._choose_theme.
 
     Args:
         temp_window: The temp window parameter.
@@ -815,9 +724,7 @@ def test_settings_page_marks_active_theme(temp_window):
 
 
 def test_tray_icon_renders_for_both_themes(app):
-    """test_tray_icon_renders_for_both_themes.
-
-    Manages test tray icon renders for both themes operations and coordinates related state changes for the component.
+    """Verify tray icon renders for both themes via THEMES.values, isNull, _render_tray_icon.
 
     Args:
         app: The app parameter.
@@ -843,9 +750,7 @@ def test_tray_is_inert_when_unavailable(app, tmp_path):
 
 
 def test_tray_menu_actions_drive_window(app, tmp_path):
-    """test_tray_menu_actions_drive_window.
-
-    Manages test tray menu actions drive window operations and coordinates related state changes for the component.
+    """Verify tray menu actions drive window via PremiumTray, tray._restore_window, tray._run_health_check.
 
     Args:
         app: The app parameter.
@@ -870,10 +775,7 @@ def test_close_to_tray_hides_instead_of_quitting(temp_window):
     win, store = temp_window
 
     class FakeTray:
-        """Faketray.
-
-        Manages FakeTray operations and coordinates related state changes for the component.
-        """
+        """Helper faketray using self.msgs.append."""
         def __init__(self):
             """Initialize the instance and configure internal state.
 
@@ -884,9 +786,7 @@ def test_close_to_tray_hides_instead_of_quitting(temp_window):
             self.stopped = False
 
         def show_message(self, title, message, msecs=6000):
-            """show_message.
-
-            Manages show message operations and coordinates related state changes for the component.
+            """Show message using self.msgs.append.
 
             Args:
                 title: Display text string.
@@ -903,9 +803,7 @@ def test_close_to_tray_hides_instead_of_quitting(temp_window):
             self.stopped = True
 
         def refresh_theme(self, palette):
-            """refresh_theme.
-
-            Manages refresh theme operations and coordinates related state changes for the component.
+            """Refresh theme.
 
             Args:
                 palette: The palette parameter.
@@ -930,9 +828,7 @@ def test_close_to_tray_hides_instead_of_quitting(temp_window):
 
 
 def test_close_to_tray_only_hints_once(temp_window):
-    """test_close_to_tray_only_hints_once.
-
-    Manages test close to tray only hints once operations and coordinates related state changes for the component.
+    """Verify close to tray only hints once via FakeTray, win.show, win.close.
 
     Args:
         temp_window: The temp window parameter.
@@ -940,10 +836,7 @@ def test_close_to_tray_only_hints_once(temp_window):
     win, store = temp_window
 
     class FakeTray:
-        """Faketray.
-
-        Manages FakeTray operations and coordinates related state changes for the component.
-        """
+        """Helper faketray using self.msgs.append."""
         def __init__(self):
             """Initialize the instance and configure internal state.
 
@@ -953,9 +846,7 @@ def test_close_to_tray_only_hints_once(temp_window):
             self.msgs: list = []
 
         def show_message(self, title, message, msecs=6000):
-            """show_message.
-
-            Manages show message operations and coordinates related state changes for the component.
+            """Show message using self.msgs.append.
 
             Args:
                 title: Display text string.
@@ -1026,9 +917,7 @@ def test_focus_visible_ring_only_for_keyboard(app):
 
 
 def test_install_focus_visible_is_idempotent(app):
-    """test_install_focus_visible_is_idempotent.
-
-    Manages test install focus visible is idempotent operations and coordinates related state changes for the component.
+    """Verify install focus visible is idempotent via install_focus_visible, getattr.
 
     Args:
         app: The app parameter.
@@ -1048,8 +937,6 @@ def test_install_focus_visible_is_idempotent(app):
 def _scroll_area(app, rng: int = 1000):
     """A scroll area with a deterministic vertical range for wheel tests.
 
-    Manages scroll area operations and coordinates related state changes for the component.
-
     Args:
         app: The app parameter.
         rng (int): The rng parameter.
@@ -1064,9 +951,7 @@ def _scroll_area(app, rng: int = 1000):
 
 
 def _wheel(down: bool = True, pixel: bool = False):
-    """Wheel.
-
-    Manages wheel operations and coordinates related state changes for the component.
+    """Wheel using QPoint, QWheelEvent, QPointF.
 
     Args:
         down (bool): The down parameter.
@@ -1082,9 +967,7 @@ def _wheel(down: bool = True, pixel: bool = False):
 
 
 def test_smooth_scroll_glides_on_mouse_wheel(app):
-    """test_smooth_scroll_glides_on_mouse_wheel.
-
-    Manages test smooth scroll glides on mouse wheel operations and coordinates related state changes for the component.
+    """Verify smooth scroll glides on mouse wheel via sc.eventFilter, sc._anim.endValue, area.viewport.
 
     Args:
         app: The app parameter.
@@ -1100,9 +983,7 @@ def test_smooth_scroll_glides_on_mouse_wheel(app):
 
 
 def test_smooth_scroll_ignores_touchpad(app):
-    """test_smooth_scroll_ignores_touchpad.
-
-    Manages test smooth scroll ignores touchpad operations and coordinates related state changes for the component.
+    """Verify smooth scroll ignores touchpad via sc.eventFilter, area.viewport, _scroll_area.
 
     Args:
         app: The app parameter.
@@ -1115,9 +996,7 @@ def test_smooth_scroll_ignores_touchpad(app):
 
 
 def test_smooth_scroll_hands_off_at_boundary(app):
-    """test_smooth_scroll_hands_off_at_boundary.
-
-    Manages test smooth scroll hands off at boundary operations and coordinates related state changes for the component.
+    """Verify smooth scroll hands off at boundary via bar.setValue, sc.eventFilter, area.viewport.
 
     Args:
         app: The app parameter.
@@ -1132,9 +1011,7 @@ def test_smooth_scroll_hands_off_at_boundary(app):
 
 
 def test_smooth_scroll_respects_reduced_motion(app):
-    """test_smooth_scroll_respects_reduced_motion.
-
-    Manages test smooth scroll respects reduced motion operations and coordinates related state changes for the component.
+    """Verify smooth scroll respects reduced motion via sc.eventFilter, motion.set_reduced_motion, area.viewport.
 
     Args:
         app: The app parameter.
@@ -1152,9 +1029,7 @@ def test_smooth_scroll_respects_reduced_motion(app):
 
 
 def test_install_smooth_scroll_is_idempotent(app):
-    """test_install_smooth_scroll_is_idempotent.
-
-    Manages test install smooth scroll is idempotent operations and coordinates related state changes for the component.
+    """Verify install smooth scroll is idempotent via _scroll_area, install_smooth_scroll.
 
     Args:
         app: The app parameter.
@@ -1169,8 +1044,6 @@ def test_install_smooth_scroll_is_idempotent(app):
 def test_pages_have_smooth_scroll_installed(window):
     """Every page's outer scroll area gets the premium glide.
 
-    Manages test pages have smooth scroll installed operations and coordinates related state changes for the component.
-
     Args:
         window: Parent window or shell controller instance.
     """
@@ -1183,9 +1056,7 @@ def test_pages_have_smooth_scroll_installed(window):
 # ---------------------------------------------------------------------------
 
 def test_reveal_respects_reduced_motion(app):
-    """test_reveal_respects_reduced_motion.
-
-    Manages test reveal respects reduced motion operations and coordinates related state changes for the component.
+    """Verify reveal respects reduced motion via QWidget, w.resize, motion.set_reduced_motion.
 
     Args:
         app: The app parameter.
@@ -1208,9 +1079,7 @@ def test_reveal_respects_reduced_motion(app):
 
 
 def test_settings_store_reduced_motion_roundtrip(tmp_path):
-    """test_settings_store_reduced_motion_roundtrip.
-
-    Manages test settings store reduced motion roundtrip operations and coordinates related state changes for the component.
+    """Verify settings store reduced motion roundtrip via SettingsStore.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.
@@ -1224,9 +1093,7 @@ def test_settings_store_reduced_motion_roundtrip(tmp_path):
 
 
 def test_shimmer_skeleton_start_stop(app):
-    """test_shimmer_skeleton_start_stop.
-
-    Manages test shimmer skeleton start stop operations and coordinates related state changes for the component.
+    """Verify shimmer skeleton start stop via ShimmerSkeleton, sk.resize, sk.start.
 
     Args:
         app: The app parameter.
@@ -1248,9 +1115,7 @@ def test_shimmer_skeleton_start_stop(app):
 
 
 def test_settings_page_reduced_motion_toggle(temp_window):
-    """test_settings_page_reduced_motion_toggle.
-
-    Manages test settings page reduced motion toggle operations and coordinates related state changes for the component.
+    """Verify settings page reduced motion toggle via page._on_reduced_motion_toggled, motion.set_reduced_motion, motion.prefers_reduced_motion.
 
     Args:
         temp_window: The temp window parameter.
@@ -1268,9 +1133,7 @@ def test_settings_page_reduced_motion_toggle(temp_window):
 
 
 def test_health_page_has_shimmer_skeleton(window):
-    """test_health_page_has_shimmer_skeleton.
-
-    Manages test health page has shimmer skeleton operations and coordinates related state changes for the component.
+    """Verify health page has shimmer skeleton via getattr.
 
     Args:
         window: Parent window or shell controller instance.
@@ -1285,9 +1148,7 @@ def test_health_page_has_shimmer_skeleton(window):
 # ---------------------------------------------------------------------------
 
 def test_press_feedback_sinks_and_restores(app):
-    """test_press_feedback_sinks_and_restores.
-
-    Manages test press feedback sinks and restores operations and coordinates related state changes for the component.
+    """Verify press feedback sinks and restores via b._press_anim.endValue, QPushButton, b.move.
 
     Args:
         app: The app parameter.
@@ -1306,9 +1167,7 @@ def test_press_feedback_sinks_and_restores(app):
 
 
 def test_press_feedback_respects_reduced_motion(app):
-    """test_press_feedback_respects_reduced_motion.
-
-    Manages test press feedback respects reduced motion operations and coordinates related state changes for the component.
+    """Verify press feedback respects reduced motion via QPushButton, motion.press_feedback, motion.set_reduced_motion.
 
     Args:
         app: The app parameter.
@@ -1326,9 +1185,7 @@ def test_press_feedback_respects_reduced_motion(app):
 
 
 def test_bento_tile_hover_in_stylesheet(app):
-    """test_bento_tile_hover_in_stylesheet.
-
-    Manages test bento tile hover in stylesheet operations and coordinates related state changes for the component.
+    """Verify bento tile hover in stylesheet via THEMES.values, build_stylesheet.
 
     Args:
         app: The app parameter.
@@ -1341,9 +1198,7 @@ def test_bento_tile_hover_in_stylesheet(app):
 
 
 def test_dashboard_uses_bento_tiles(window):
-    """test_dashboard_uses_bento_tiles.
-
-    Manages test dashboard uses bento tiles operations and coordinates related state changes for the component.
+    """Verify dashboard uses bento tiles via tile.objectName, dash.card_space.set_value, dash.card_space._value.text.
 
     Args:
         window: Parent window or shell controller instance.
@@ -1402,9 +1257,7 @@ def test_health_check_columns_size_to_content(window):
 # ---------------------------------------------------------------------------
 
 def test_uninstaller_page_has_leftover_section(window):
-    """test_uninstaller_page_has_leftover_section.
-
-    Manages test uninstaller page has leftover section operations and coordinates related state changes for the component.
+    """Verify uninstaller page has leftover section via lp.clean_leftover_btn.isEnabled, hasattr.
 
     Args:
         window: Parent window or shell controller instance.
@@ -1418,9 +1271,7 @@ def test_uninstaller_page_has_leftover_section(window):
 
 
 def test_leftover_findings_populate_table_and_status(window):
-    """test_leftover_findings_populate_table_and_status.
-
-    Manages test leftover findings populate table and status operations and coordinates related state changes for the component.
+    """Verify leftover findings populate table and status via lp.leftover_table.model.rowCount, lp.leftover_state.isHidden, lp.leftover_state.isVisible.
 
     Args:
         window: Parent window or shell controller instance.
@@ -1440,9 +1291,7 @@ def test_leftover_findings_populate_table_and_status(window):
 
 
 def test_leftover_clean_button_needs_selection(window):
-    """test_leftover_clean_button_needs_selection.
-
-    Manages test leftover clean button needs selection operations and coordinates related state changes for the component.
+    """Verify leftover clean button needs selection via lp.clean_leftover_btn.setEnabled, lp.clean_leftover_btn.isEnabled, lp._on_leftovers.
 
     Args:
         window: Parent window or shell controller instance.
@@ -1459,8 +1308,6 @@ def test_leftover_clean_button_needs_selection(window):
 
 def test_leftover_scan_without_pending_shows_hint(window, monkeypatch):
     """Clicking Scan with no recorded uninstall must hint, never crash.
-
-    Manages test leftover scan without pending shows hint operations and coordinates related state changes for the component.
 
     Args:
         window: Parent window or shell controller instance.
@@ -1479,8 +1326,6 @@ def test_leftover_scan_without_pending_shows_hint(window, monkeypatch):
 def test_leftover_clean_worker_recycles_and_reports(tmp_path, monkeypatch):
     """LeftoverCleanWorker routes findings through LeftoverCleaner.
 
-    Manages test leftover clean worker recycles and reports operations and coordinates related state changes for the component.
-
     Args:
         tmp_path: Filesystem path to the target file or directory.
         monkeypatch: The monkeypatch parameter.
@@ -1489,10 +1334,7 @@ def test_leftover_clean_worker_recycles_and_reports(tmp_path, monkeypatch):
     calls = {}
 
     class FakeCleaner:
-        """Fakecleaner.
-
-        Manages FakeCleaner operations and coordinates related state changes for the component.
-        """
+        """Helper fakecleaner using CleanOutcome."""
         def __init__(self):
             """Initialize the instance and configure internal state.
 
@@ -1536,8 +1378,6 @@ def test_leftover_clean_worker_requests_restore_point_when_asked(
         tmp_path, monkeypatch):
     """The checkbox's choice reaches the cleaner as create_restore_point.
 
-    Manages test leftover clean worker requests restore point when asked operations and coordinates related state changes for the component.
-
     Args:
         tmp_path: Filesystem path to the target file or directory.
         monkeypatch: The monkeypatch parameter.
@@ -1546,10 +1386,7 @@ def test_leftover_clean_worker_requests_restore_point_when_asked(
     seen = {}
 
     class FakeCleaner:
-        """Fakecleaner.
-
-        Manages FakeCleaner operations and coordinates related state changes for the component.
-        """
+        """Helper fakecleaner using CleanOutcome."""
         def __init__(self):
             """Initialize the instance and configure internal state.
 
@@ -1590,8 +1427,6 @@ def test_leftover_clean_worker_requests_restore_point_when_asked(
 def test_leftover_scan_worker_emits_sorted_findings(monkeypatch):
     """Findings come back as plain dicts sorted by score descending.
 
-    Manages test leftover scan worker emits sorted findings operations and coordinates related state changes for the component.
-
     Args:
         monkeypatch: The monkeypatch parameter.
     """
@@ -1599,10 +1434,7 @@ def test_leftover_scan_worker_emits_sorted_findings(monkeypatch):
     from cortex_unified.system_tools import leftover_cleaner as lc
 
     class FakeScanner:
-        """Fakescanner.
-
-        Manages FakeScanner operations and coordinates related state changes for the component.
-        """
+        """Helper fakescanner using lc.LeftoverFinding."""
         def __init__(self, installed_apps=None, exclusions=None,
                      cancel_event=None, policy=None):
             """__init__.
@@ -1647,10 +1479,7 @@ def test_leftover_scan_worker_emits_sorted_findings(monkeypatch):
 
 
 def test_leftover_workers_support_cooperative_cancel():
-    """cancel() must exist on all three workers (window shutdown calls it).
-
-    Manages test leftover workers support cooperative cancel operations and coordinates related state changes for the component.
-    """
+    """cancel() must exist on all three workers (window shutdown calls it)."""
     from cortex_unified.ui.premium.system_pages import (
         LeftoverScanWorker,
         OrphanScanWorker,
@@ -1699,9 +1528,7 @@ def test_uninstall_hands_off_metadata_to_leftover_page(window, monkeypatch):
     seen_apps: list = []
 
     def fake_worker_init(self, apps, exclusions=None):
-        """fake_worker_init.
-
-        Manages fake worker init operations and coordinates related state changes for the component.
+        """Fake worker init using QObject.__init__, seen_apps.append, Event.
 
         Args:
             apps: The apps parameter.
@@ -1715,10 +1542,7 @@ def test_uninstall_hands_off_metadata_to_leftover_page(window, monkeypatch):
         self._cancel = Event()
 
     def fake_worker_run(self):
-        """fake_worker_run.
-
-        Manages fake worker run operations and coordinates related state changes for the component.
-        """
+        """Fake worker run using self.finished.emit."""
         self.finished.emit([{"kind": "folder", "path": r"C:\x\Zeta",
                              "size_bytes": 1, "score": 8,
                              "level": "VeryGood", "reasons": []}]

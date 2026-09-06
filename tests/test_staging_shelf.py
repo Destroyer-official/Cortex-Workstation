@@ -13,10 +13,7 @@ os.environ["QT_QPA_PLATFORM"] = "offscreen"
 
 @pytest.fixture(scope="session")
 def qapp():
-    """Qapp.
-
-    Manages qapp operations and coordinates related state changes for the component.
-    """
+    """Provide qapp fixture that provides a shared QApplication."""
     app = QApplication.instance()
     if app is None:
         app = QApplication([])
@@ -24,9 +21,7 @@ def qapp():
 
 
 def test_nexus_clipboard_cut_copy_clear(qapp):
-    """test_nexus_clipboard_cut_copy_clear.
-
-    Manages test nexus clipboard cut copy clear operations and coordinates related state changes for the component.
+    """Verify nexus clipboard cut copy clear via clip.copy, NexusClipboard, clip.changed.connect.
 
     Args:
         qapp: The qapp parameter.
@@ -57,9 +52,7 @@ def test_nexus_clipboard_cut_copy_clear(qapp):
 
 
 def test_staging_shelf_widget_basic(qapp):
-    """test_staging_shelf_widget_basic.
-
-    Manages test staging shelf widget basic operations and coordinates related state changes for the component.
+    """Verify staging shelf widget basic via tempfile.TemporaryDirectory, shelf.list_widget.isHidden, shelf.empty_card.isHidden.
 
     Args:
         qapp: The qapp parameter.
@@ -114,9 +107,7 @@ def test_staging_shelf_widget_basic(qapp):
 
 
 def test_staging_shelf_paste_requested_signal(qapp):
-    """test_staging_shelf_paste_requested_signal.
-
-    Manages test staging shelf paste requested signal operations and coordinates related state changes for the component.
+    """Verify staging shelf paste requested signal via tempfile.TemporaryDirectory, StagingShelfWidget, shelf.set_current_folder.
 
     Args:
         qapp: The qapp parameter.
@@ -144,9 +135,7 @@ def test_staging_shelf_paste_requested_signal(qapp):
 
 
 def test_preview_pane_with_staging_shelf(qapp):
-    """test_preview_pane_with_staging_shelf.
-
-    Manages test preview pane with staging shelf operations and coordinates related state changes for the component.
+    """Verify preview pane with staging shelf via tempfile.TemporaryDirectory, PreviewPane, preview.set_current_folder.
 
     Args:
         qapp: The qapp parameter.
@@ -171,9 +160,7 @@ def test_preview_pane_with_staging_shelf(qapp):
 
 
 def test_file_table_model_drag_mime_data(qapp):
-    """test_file_table_model_drag_mime_data.
-
-    Manages test file table model drag mime data operations and coordinates related state changes for the component.
+    """Verify file table model drag mime data via model.mimeData, mime.hasUrls, u.toLocalFile.
 
     Args:
         qapp: The qapp parameter.
@@ -198,9 +185,7 @@ def test_file_table_model_drag_mime_data(qapp):
 
 
 def test_staged_item_row_attributes_and_drag(qapp):
-    """test_staged_item_row_attributes_and_drag.
-
-    Manages test staged item row attributes and drag operations and coordinates related state changes for the component.
+    """Verify staged item row attributes and drag via tempfile.TemporaryDirectory, row.name_lbl.testAttribute, row.icon_lbl.testAttribute.
 
     Args:
         qapp: The qapp parameter.
@@ -222,9 +207,7 @@ def test_staged_item_row_attributes_and_drag(qapp):
 
 
 def test_python_transfer_fallback_copy_and_move(qapp):
-    """test_python_transfer_fallback_copy_and_move.
-
-    Manages test python transfer fallback copy and move operations and coordinates related state changes for the component.
+    """Verify python transfer fallback copy and move via tempfile.TemporaryDirectory, qapp.processEvents, TransferQueue.
 
     Args:
         qapp: The qapp parameter.
@@ -238,10 +221,7 @@ def test_python_transfer_fallback_copy_and_move(qapp):
 
         # Fake engine without FFI and without CLI
         class _DummyEngine:
-            """Dummyengine.
-
-            Manages DummyEngine operations and coordinates related state changes for the component.
-            """
+            """Helper dummyengine."""
             ffi = None
             cli = ""
 
@@ -266,9 +246,7 @@ def test_python_transfer_fallback_copy_and_move(qapp):
 
 
 def test_context_menu_paste_option(qapp):
-    """test_context_menu_paste_option.
-
-    Manages test context menu paste option operations and coordinates related state changes for the component.
+    """Verify context menu paste option via tempfile.TemporaryDirectory, widget.deleteLater, qapp.processEvents.
 
     Args:
         qapp: The qapp parameter.
@@ -299,9 +277,7 @@ def test_context_menu_paste_option(qapp):
 
 
 def test_python_transfer_locked_file_handling(qapp):
-    """test_python_transfer_locked_file_handling.
-
-    Manages test python transfer locked file handling operations and coordinates related state changes for the component.
+    """Verify python transfer locked file handling via tempfile.TemporaryDirectory, qapp.processEvents, TransferQueue.
 
     Args:
         qapp: The qapp parameter.
@@ -317,10 +293,7 @@ def test_python_transfer_locked_file_handling(qapp):
         f_locked.write_text("locked content", encoding="utf-8")
 
         class _DummyEngine:
-            """Dummyengine.
-
-            Manages DummyEngine operations and coordinates related state changes for the component.
-            """
+            """Helper dummyengine."""
             ffi = None
             cli = ""
 
@@ -334,9 +307,7 @@ def test_python_transfer_locked_file_handling(qapp):
         orig_open = open
 
         def _mock_open(file, *args, **kwargs):
-            """_mock_open.
-
-            Manages mock open operations and coordinates related state changes for the component.
+            """Mock open using PermissionError, orig_open.
 
             Args:
                 file: Filesystem path to the target file or directory.
@@ -361,9 +332,7 @@ def test_python_transfer_locked_file_handling(qapp):
 
 
 def test_preview_pane_transfer_dock_integration(qapp):
-    """test_preview_pane_transfer_dock_integration.
-
-    Manages test preview pane transfer dock integration operations and coordinates related state changes for the component.
+    """Verify preview pane transfer dock integration via qapp.processEvents, preview.transfer_dock.isHidden, PreviewPane.
 
     Args:
         qapp: The qapp parameter.
@@ -374,10 +343,7 @@ def test_preview_pane_transfer_dock_integration(qapp):
     preview = PreviewPane()
     preview.show()
     class _DummyEngine:
-        """Dummyengine.
-
-        Manages DummyEngine operations and coordinates related state changes for the component.
-        """
+        """Helper dummyengine."""
         ffi = None
         cli = ""
 
@@ -408,9 +374,7 @@ def test_preview_pane_transfer_dock_integration(qapp):
 
 
 def test_read_only_delete_retry(qapp):
-    """test_read_only_delete_retry.
-
-    Manages test read only delete retry operations and coordinates related state changes for the component.
+    """Verify read only delete retry via tempfile.TemporaryDirectory, qapp.processEvents, os.chmod.
 
     Args:
         qapp: The qapp parameter.
@@ -426,10 +390,7 @@ def test_read_only_delete_retry(qapp):
         os.chmod(str(ro_file), stat.S_IREAD)
 
         class _DummyEngine:
-            """Dummyengine.
-
-            Manages DummyEngine operations and coordinates related state changes for the component.
-            """
+            """Helper dummyengine."""
             ffi = None
             cli = ""
 
@@ -451,19 +412,14 @@ def test_read_only_delete_retry(qapp):
 
 
 def test_transfer_queue_is_busy_property(qapp):
-    """test_transfer_queue_is_busy_property.
-
-    Manages test transfer queue is busy property operations and coordinates related state changes for the component.
+    """Verify transfer queue is busy property via TransferQueue, tq.stop, _DummyEngine.
 
     Args:
         qapp: The qapp parameter.
     """
     from cortex_unified.explorer.transfers import TransferQueue
     class _DummyEngine:
-        """Dummyengine.
-
-        Manages DummyEngine operations and coordinates related state changes for the component.
-        """
+        """Helper dummyengine."""
         ffi = None
         cli = ""
 
@@ -474,9 +430,7 @@ def test_transfer_queue_is_busy_property(qapp):
 
 
 def test_staging_shelf_drag_and_drop_onto_empty_state(qapp):
-    """test_staging_shelf_drag_and_drop_onto_empty_state.
-
-    Manages test staging shelf drag and drop onto empty state operations and coordinates related state changes for the component.
+    """Verify staging shelf drag and drop onto empty state via tempfile.TemporaryDirectory, qapp.processEvents, mime.setUrls.
 
     Args:
         qapp: The qapp parameter.
@@ -516,9 +470,7 @@ def test_staging_shelf_drag_and_drop_onto_empty_state(qapp):
 
 
 def test_file_checksum_dialog(qapp):
-    """test_file_checksum_dialog.
-
-    Manages test file checksum dialog operations and coordinates related state changes for the component.
+    """Verify file checksum dialog via tempfile.TemporaryDirectory, dlg.verify_input.setText, dlg.deleteLater.
 
     Args:
         qapp: The qapp parameter.

@@ -25,9 +25,7 @@ for p in pkg_root.rglob("*.py"):
 
 # Collect top-level symbols per module (classes, functions, assignments, imports-as)
 def module_symbols(path):
-    """module_symbols.
-
-    Manages module symbols operations and coordinates related state changes for the component.
+    """Module symbols using ast.parse, ast.walk, syms.add.
 
     Args:
         path: Filesystem path to the target file or directory.
@@ -80,9 +78,7 @@ def module_symbols(path):
 
 sym_cache = {}
 def get_syms(modname):
-    """get_syms.
-
-    Manages get syms operations and coordinates related state changes for the component.
+    """Get syms using modules.get, module_symbols.
 
     Args:
         modname: The modname parameter.

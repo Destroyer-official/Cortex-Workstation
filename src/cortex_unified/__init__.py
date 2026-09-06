@@ -80,9 +80,8 @@ def __getattr__(name: str) -> Any:
 
 
 def __dir__() -> list[str]:
-    """Dir.
+    """List public module attributes including lazy exports.
 
-    Manages dir operations and coordinates related state changes for the component.
 
     Returns:
         list[str]: List of processed items or identifiers.

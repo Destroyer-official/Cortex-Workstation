@@ -21,31 +21,19 @@ IS_WINDOWS = platform.system() == "Windows"
 
 
 class TestPermissionRisk:
-    """Testpermissionrisk.
-
-    Manages TestPermissionRisk operations and coordinates related state changes for the component.
-    """
+    """Group testpermissionrisk tests covering broad permissions flagged; narrow permissions not flagged; to dict includes flag."""
     def test_broad_permissions_flagged(self):
-        """test_broad_permissions_flagged.
-
-        Manages test broad permissions flagged operations and coordinates related state changes for the component.
-        """
+        """Verify broad permissions flagged via BrowserExtension."""
         e = BrowserExtension("Chrome", "Spy", "1.0", "abc", ["<all_urls>", "tabs"])
         assert e.broad_permissions is True
 
     def test_narrow_permissions_not_flagged(self):
-        """test_narrow_permissions_not_flagged.
-
-        Manages test narrow permissions not flagged operations and coordinates related state changes for the component.
-        """
+        """Verify narrow permissions not flagged via BrowserExtension."""
         e = BrowserExtension("Chrome", "Calc", "1.0", "abc", ["storage"])
         assert e.broad_permissions is False
 
     def test_to_dict_includes_flag(self):
-        """test_to_dict_includes_flag.
-
-        Manages test to dict includes flag operations and coordinates related state changes for the component.
-        """
+        """Verify to dict includes flag via BrowserExtension, e.to_dict."""
         e = BrowserExtension("Edge", "X", "2", "id", ["cookies"])
         d = e.to_dict()
         assert d["broad_permissions"] is True
@@ -53,9 +41,7 @@ class TestPermissionRisk:
 
 
 def _make_chrome_ext(base, browser_parts, ext_id, manifest):
-    """_make_chrome_ext.
-
-    Manages make chrome ext operations and coordinates related state changes for the component.
+    """Make chrome ext using json.dumps.
 
     Args:
         base: The base parameter.
@@ -71,9 +57,7 @@ def _make_chrome_ext(base, browser_parts, ext_id, manifest):
 @pytest.fixture
 def fake_home(tmp_path, monkeypatch):
     # Point LOCALAPPDATA (Windows) or ~/.config (else) at tmp for Chromium.
-    """fake_home.
-
-    Manages fake home operations and coordinates related state changes for the component.
+    """Provide fake home fixture that creates an isolated directory and sets NEXUS_DATA_DIR.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.
@@ -90,14 +74,9 @@ def fake_home(tmp_path, monkeypatch):
 
 
 class TestChromiumScan:
-    """Testchromiumscan.
-
-    Manages TestChromiumScan operations and coordinates related state changes for the component.
-    """
+    """Group testchromiumscan tests covering finds extension with permissions; host permissions merged; no browsers returns empty; bad manifest skipped."""
     def test_finds_extension_with_permissions(self, fake_home):
-        """test_finds_extension_with_permissions.
-
-        Manages test finds extension with permissions operations and coordinates related state changes for the component.
+        """Verify finds extension with permissions via BrowserExtensionAuditor, auditor.audit, _make_chrome_ext.
 
         Args:
             fake_home: The fake home parameter.
@@ -116,9 +95,7 @@ class TestChromiumScan:
         assert chrome[0].broad_permissions is True
 
     def test_host_permissions_merged(self, fake_home):
-        """test_host_permissions_merged.
-
-        Manages test host permissions merged operations and coordinates related state changes for the component.
+        """Verify host permissions merged via BrowserExtensionAuditor, _make_chrome_ext, audit.
 
         Args:
             fake_home: The fake home parameter.
@@ -133,9 +110,7 @@ class TestChromiumScan:
         assert edge and edge[0].broad_permissions is True
 
     def test_no_browsers_returns_empty(self, tmp_path, monkeypatch):
-        """test_no_browsers_returns_empty.
-
-        Manages test no browsers returns empty operations and coordinates related state changes for the component.
+        """Verify no browsers returns empty via BrowserExtensionAuditor, monkeypatch.setenv, auditor.audit.
 
         Args:
             tmp_path: Filesystem path to the target file or directory.
@@ -147,9 +122,7 @@ class TestChromiumScan:
         assert auditor.audit() == []
 
     def test_bad_manifest_skipped(self, fake_home):
-        """test_bad_manifest_skipped.
-
-        Manages test bad manifest skipped operations and coordinates related state changes for the component.
+        """Verify bad manifest skipped via BrowserExtensionAuditor, audit.
 
         Args:
             fake_home: The fake home parameter.
@@ -165,13 +138,7 @@ class TestChromiumScan:
 
 
 class TestAuditNeverRaises:
-    """Testauditneverraises.
-
-    Manages TestAuditNeverRaises operations and coordinates related state changes for the component.
-    """
+    """Group testauditneverraises tests covering audit returns list."""
     def test_audit_returns_list(self):
-        """test_audit_returns_list.
-
-        Manages test audit returns list operations and coordinates related state changes for the component.
-        """
+        """Verify audit returns list via BrowserExtensionAuditor, audit."""
         assert isinstance(BrowserExtensionAuditor().audit(), list)

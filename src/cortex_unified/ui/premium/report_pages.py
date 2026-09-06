@@ -35,10 +35,7 @@ from .window import _Page
 # =====================================================================
 
 class HealthReportWorker(QObject):
-    """Healthreportworker.
-
-    Manages HealthReportWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker (HealthReportWorker) performing HealthReportWorker. Signals finished, failed report status. Configured with fmt. Its run() step calls self._collect, ReportsGenerator, gen.generate_html_report, gen.generate_json_report."""
 
     finished = Signal(str, dict)   # (report_path, data)
     failed = Signal(str)
@@ -111,8 +108,6 @@ class ManifestListWorker(QObject):
     @staticmethod
     def _leftover_sessions() -> list[dict]:
         """Build read-only history rows from leftover-cleanup journals (newest first).
-
-        Manages leftover sessions operations and coordinates related state changes for the component.
 
         Returns:
             list[dict]: List of processed items or identifiers.
@@ -203,10 +198,7 @@ class RestoreWorker(QObject):
 # =====================================================================
 
 class HealthReportPage(_Page):
-    """Healthreportpage.
-
-    Manages HealthReportPage operations and coordinates related state changes for the component.
-    """
+    """PC Health Report page: Generate a shareable snapshot of your system: hardware, OS, memory,."""
 
     def __init__(self, win):
         """Build the PC Health Report page: export buttons, progress, and preview card.
@@ -262,9 +254,7 @@ class HealthReportPage(_Page):
         self._last_path: str | None = None
 
     def _generate(self, fmt: str):
-        """Generate.
-
-        Manages generate operations and coordinates related state changes for the component.
+        """Disable action buttons, show progress/status, and launch the background worker (b.setEnabled, show_loading, showMessage).
 
         Args:
             fmt (str): The fmt parameter.
@@ -308,10 +298,7 @@ class HealthReportPage(_Page):
         self.win.statusBar().showMessage(f"Report written to {path}", 6000)
 
     def _open_last(self):
-        """Open the most recently generated report with the OS default viewer.
-
-        Manages open last operations and coordinates related state changes for the component.
-        """
+        """Validate the current selection and ask the user to confirm via a message box showing 'Open failed'."""
         if not self._last_path:
             return
         try:
@@ -413,10 +400,7 @@ class BackupsPage(_Page):
         self._loaded = False
 
     def _on_sel(self):
-        """Enable Preview/Restore buttons based on table selection.
-
-        Manages on sel operations and coordinates related state changes for the component.
-        """
+        """Collect the rows currently selected in the results table and map them back to data objects."""
         has = bool(self.tbl.selectedIndexes())
         self.preview_btn.setEnabled(has)
         self.restore_btn.setEnabled(has)
@@ -432,8 +416,6 @@ class BackupsPage(_Page):
 
     def _on_listed(self, manifests: list):
         """Populate the backups table and show an empty state when none exist.
-
-        Manages on listed operations and coordinates related state changes for the component.
 
         Args:
             manifests (list): The manifests parameter.
@@ -461,8 +443,6 @@ class BackupsPage(_Page):
     def _selected_manifest(self) -> str | None:
         """Return the file path of the currently selected backup row.
 
-        Manages selected manifest operations and coordinates related state changes for the component.
-
         Returns:
             str | None: Formatted string or path.
         """
@@ -473,10 +453,7 @@ class BackupsPage(_Page):
         return item.data(Qt.ItemDataRole.UserRole) if item else None
 
     def _preview(self):
-        """Preview.
-
-        Manages preview operations and coordinates related state changes for the component.
-        """
+        """Disable action buttons, show progress/status, and launch the background worker (self._selected_manifest, self._busy, run_worker)."""
         mf = self._selected_manifest()
         if not mf:
             return
@@ -485,8 +462,6 @@ class BackupsPage(_Page):
 
     def _on_preview(self, res: dict):
         """Show dry-run counts (would-restore / skipped / errors) in the status line.
-
-        Manages on preview operations and coordinates related state changes for the component.
 
         Args:
             res (dict): The res parameter.
@@ -498,10 +473,7 @@ class BackupsPage(_Page):
             + (f"First issues: {res['error_details'][0]}" if res.get("error_details") else ""))
 
     def _restore(self):
-        """Restore.
-
-        Manages restore operations and coordinates related state changes for the component.
-        """
+        """Validate the current selection and ask the user to confirm via a message box showing 'Overwrite existing?'."""
         mf = self._selected_manifest()
         if not mf:
             return
@@ -525,8 +497,6 @@ class BackupsPage(_Page):
 
     def _on_restored(self, res: dict):
         """Report restore results (restored / skipped / errors) in a dialog and status line.
-
-        Manages on restored operations and coordinates related state changes for the component.
 
         Args:
             res (dict): The res parameter.

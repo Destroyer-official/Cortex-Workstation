@@ -32,10 +32,7 @@ IS_WINDOWS = sys.platform == "win32"
 
 
 class _ProcessScanWorker(QObject):
-    """Processscanworker.
-
-    Manages ProcessScanWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker (_ProcessScanWorker) performing ProcessScanWorker. Signals finished, failed report status. Its run() step calls ProcessAnalyzer, analyzer.list_processes, emit, str."""
     finished = Signal(list)
     failed = Signal(str)
 
@@ -54,10 +51,7 @@ class _ProcessScanWorker(QObject):
 
 
 class ProcessStudioPage(_Page):
-    """Processstudiopage.
-
-    Manages ProcessStudioPage operations and coordinates related state changes for the component.
-    """
+    """Advanced Process & Threat Studio page: Real-time Windows process inspection. Details memory allocation, CPU time,."""
 
     def __init__(self, win):
         """Init.
@@ -156,10 +150,7 @@ class ProcessStudioPage(_Page):
         self._apply_filter()
 
     def _apply_filter(self):
-        """Apply filter.
-
-        Manages apply filter operations and coordinates related state changes for the component.
-        """
+        """Populate the results table (lower, strip, text) with the latest data."""
         query = self._filter_input.text().strip().lower()
         if not query:
             filtered = self._all_procs
@@ -192,10 +183,7 @@ class ProcessStudioPage(_Page):
         self._summary_lbl.setText(f"Showing {len(filtered)} of {len(self._all_procs)} active processes")
 
     def _kill_selected(self):
-        """Kill selected.
-
-        Manages kill selected operations and coordinates related state changes for the component.
-        """
+        """Validate the current selection and ask the user to confirm via a message box showing 'Select Process'."""
         sel = self.tbl.selectionModel().selectedRows()
         if not sel:
             QMessageBox.information(self, "Select Process", "Please select a process from the list to end.")

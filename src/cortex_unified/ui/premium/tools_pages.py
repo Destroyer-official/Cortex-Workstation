@@ -31,9 +31,7 @@ IS_WINDOWS = sys.platform == "win32"
 
 
 def _windows_only(page: _Page, feature: str) -> bool:
-    """_windows_only.
-
-    Manages windows only operations and coordinates related state changes for the component.
+    """Render a Windows-only placeholder note for unsupported platforms.
 
     Args:
         page (_Page): The page parameter.
@@ -56,10 +54,7 @@ def _windows_only(page: _Page, feature: str) -> bool:
 # =====================================================================
 
 class PowerPlanListWorker(QObject):
-    """Powerplanlistworker.
-
-    Manages PowerPlanListWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker (PowerPlanListWorker) performing PowerPlanListWorker. Signals finished, failed report status. Its run() step calls emit, p.to_dict, list_plans, PerformanceTuner."""
     finished = Signal(list)
     failed = Signal(str)
 
@@ -76,10 +71,7 @@ class PowerPlanListWorker(QObject):
 
 
 class PowerPlanSetWorker(QObject):
-    """Powerplansetworker.
-
-    Manages PowerPlanSetWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker (PowerPlanSetWorker) performing PowerPlanSetWorker. Signals finished, failed report status. Configured with guid. Its run() step calls set_active, PerformanceTuner, emit, str."""
     finished = Signal(bool, str)
     failed = Signal(str)
 
@@ -108,10 +100,7 @@ class PowerPlanSetWorker(QObject):
 
 
 class ExtensionAuditWorker(QObject):
-    """Extensionauditworker.
-
-    Manages ExtensionAuditWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker (ExtensionAuditWorker) performing ExtensionAuditWorker. Signals finished, failed report status. Its run() step calls emit, e.to_dict, audit, BrowserExtensionAuditor."""
     finished = Signal(list)
     failed = Signal(str)
 
@@ -170,10 +159,7 @@ def _date_sort_key(driver: dict) -> str:
 
 
 class DriverListWorker(QObject):
-    """Driverlistworker.
-
-    Manages DriverListWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker (DriverListWorker) performing DriverListWorker. Signals finished, failed report status. Its run() step calls emit, d.to_dict, list_drivers, DriverInventory."""
     finished = Signal(list)
     failed = Signal(str)
 
@@ -194,10 +180,7 @@ class DriverListWorker(QObject):
 # =====================================================================
 
 class PerformancePage(_Page):
-    """Performancepage.
-
-    Manages PerformancePage operations and coordinates related state changes for the component.
-    """
+    """Performance page: Switch your Windows power plan: High performance for demanding work."""
 
     def __init__(self, win):
         """__init__.
@@ -292,9 +275,7 @@ class PerformancePage(_Page):
         self.win.run_worker(PowerPlanListWorker(), self._on_listed, self._fail)
 
     def _on_listed(self, plans: list):
-        """_on_listed.
-
-        Manages on listed operations and coordinates related state changes for the component.
+        """Update page state/placeholders via show_empty, clear, setEnabled to reflect the current operation.
 
         Args:
             plans (list): The plans parameter.
@@ -312,10 +293,7 @@ class PerformancePage(_Page):
         self.win.statusBar().showMessage(f"{len(plans)} power plan(s)", 5000)
 
     def _apply(self):
-        """Apply.
-
-        Manages apply operations and coordinates related state changes for the component.
-        """
+        """Validate the current selection and ask the user to confirm via a message box showing 'Activate power plan'."""
         # Resolved through the binding, not by indexing a list with the view's
         # row number - that pattern quietly activates the wrong plan as soon as
         # the table is sorted.
@@ -338,9 +316,7 @@ class PerformancePage(_Page):
         self.win.run_worker(PowerPlanSetWorker(guid), self._on_applied, self._fail)
 
     def _on_applied(self, ok: bool, msg: str):
-        """_on_applied.
-
-        Manages on applied operations and coordinates related state changes for the component.
+        """Validate the current selection and ask the user to confirm via a message box showing 'Power plan'.
 
         Args:
             ok (bool): The ok parameter.
@@ -370,10 +346,7 @@ class PerformancePage(_Page):
 # =====================================================================
 
 class BrowserExtensionsPage(_Page):
-    """Browserextensionspage.
-
-    Manages BrowserExtensionsPage operations and coordinates related state changes for the component.
-    """
+    """Browser Extensions page: Review extensions installed in Chrome, Edge, Brave, Vivaldi and."""
 
     def __init__(self, win):
         """__init__.
@@ -505,10 +478,7 @@ class BrowserExtensionsPage(_Page):
 # =====================================================================
 
 class DriverInventoryPage(_Page):
-    """Driverinventorypage.
-
-    Manages DriverInventoryPage operations and coordinates related state changes for the component.
-    """
+    """Driver Inventory page: An honest, read-only list of your installed drivers with versions."""
 
     def __init__(self, win):
         """__init__.

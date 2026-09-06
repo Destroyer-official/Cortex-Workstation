@@ -18,14 +18,12 @@ except ImportError:
     HAS_PLOTLY = False
     # No-op stand-ins keep method bodies runnable without Plotly
     class go:
-        """Go.
+        """Fallback Plotly graph_objects namespace when Plotly is missing.
 
-        Manages go operations and coordinates related state changes for the component.
         """
         class Figure:
-            """Figure.
+            """Minimal Figure stub with no-op trace and layout methods.
 
-            Manages Figure operations and coordinates related state changes for the component.
             """
             def __init__(self, *args, **kwargs):
                 """Initialize the instance and configure internal state.
@@ -34,46 +32,39 @@ except ImportError:
                 """
                 pass
             def add_trace(self, *args, **kwargs):
-                """add_trace.
+                """No-op stub matching Plotly Figure.add_trace.
 
-                Manages add trace operations and coordinates related state changes for the component.
                 """
                 pass
             def update_layout(self, *args, **kwargs):
-                """update_layout.
+                """No-op stub matching Plotly Figure.update_layout.
 
-                Manages update layout operations and coordinates related state changes for the component.
                 """
                 pass
     class px:
-        """Px.
+        """Fallback Plotly express namespace when Plotly is missing.
 
-        Manages px operations and coordinates related state changes for the component.
         """
         @staticmethod
         def bar(*args, **kwargs):
-            """Bar.
+            """Return an empty Figure stub for bar-chart calls.
 
-            Manages bar operations and coordinates related state changes for the component.
             """
             return go.Figure()
         @staticmethod
         def pie(*args, **kwargs):
-            """Pie.
+            """Return an empty Figure stub for pie-chart calls.
 
-            Manages pie operations and coordinates related state changes for the component.
             """
             return go.Figure()
     def make_subplots(*args, **kwargs):
-        """make_subplots.
+        """Return an empty Figure stub for subplot layouts.
 
-        Manages make subplots operations and coordinates related state changes for the component.
         """
         return go.Figure()
     def plot(*args, **kwargs):
-        """Plot.
+        """No-op stub matching plotly.offline.plot.
 
-        Manages plot operations and coordinates related state changes for the component.
         """
         pass
 
@@ -109,7 +100,6 @@ class InteractiveDashboard:
     def _initialize_generators(self):
         """(Re)build tree generators from the current analyzer.
 
-        Manages initialize generators operations and coordinates related state changes for the component.
         """
         if self.analyzer:
             self.treemap_generator = TreeMapGenerator(self.analyzer)
@@ -142,7 +132,6 @@ class InteractiveDashboard:
     def _create_empty_dashboard(self) -> go.Figure:
         """Empty state figure prompting the user to run an analysis.
 
-        Manages create empty dashboard operations and coordinates related state changes for the component.
 
         Returns:
             go.Figure: Result of the operation.
@@ -166,7 +155,6 @@ class InteractiveDashboard:
     def _create_treemap_dashboard(self) -> go.Figure:
         """Full-height treemap alone.
 
-        Manages create treemap dashboard operations and coordinates related state changes for the component.
 
         Returns:
             go.Figure: Result of the operation.
@@ -184,7 +172,6 @@ class InteractiveDashboard:
     def _create_sunburst_dashboard(self) -> go.Figure:
         """Full-height sunburst alone.
 
-        Manages create sunburst dashboard operations and coordinates related state changes for the component.
 
         Returns:
             go.Figure: Result of the operation.
@@ -202,7 +189,6 @@ class InteractiveDashboard:
     def _create_side_by_side_dashboard(self) -> go.Figure:
         """Treemap and sunburst sharing one row.
 
-        Manages create side by side dashboard operations and coordinates related state changes for the component.
 
         Returns:
             go.Figure: Result of the operation.
@@ -238,7 +224,6 @@ class InteractiveDashboard:
     def _create_combined_dashboard(self) -> go.Figure:
         """Pie + bar overview on row 1, full-width treemap on row 2.
 
-        Manages create combined dashboard operations and coordinates related state changes for the component.
 
         Returns:
             go.Figure: Result of the operation.
@@ -281,7 +266,6 @@ class InteractiveDashboard:
     def _add_disk_usage_pie(self, fig: go.Figure, row: int, col: int):
         """Pie of used vs free bytes; silently skipped when data absent.
 
-        Manages add disk usage pie operations and coordinates related state changes for the component.
 
         Args:
             fig (go.Figure): The fig parameter.
@@ -312,7 +296,6 @@ class InteractiveDashboard:
     def _add_file_type_bar(self, fig: go.Figure, row: int, col: int):
         """Bar chart of the ten largest extensions by total bytes.
 
-        Manages add file type bar operations and coordinates related state changes for the component.
 
         Args:
             fig (go.Figure): The fig parameter.
@@ -376,7 +359,6 @@ class InteractiveDashboard:
     def handle_drill_up(self) -> go.Figure:
         """Pop the last drilled path; walk to the filesystem parent if empty.
 
-        Manages handle drill up operations and coordinates related state changes for the component.
 
         Returns:
             go.Figure: Result of the operation.
@@ -395,7 +377,6 @@ class InteractiveDashboard:
     def handle_context_menu(self, path: str) -> Dict[str, Any]:
         """Action descriptors offered for a right-clicked path.
 
-        Manages handle context menu operations and coordinates related state changes for the component.
 
         Args:
             path (str): Filesystem path to the target file or directory.
@@ -488,7 +469,6 @@ class InteractiveDashboard:
     def export_batch(self, base_path: str, formats: List[str]) -> Dict[str, bool]:
         """Export the dashboard once per format; per-format success map.
 
-        Manages export batch operations and coordinates related state changes for the component.
 
         Args:
             base_path (str): Filesystem path to the target file or directory.
@@ -513,7 +493,6 @@ class InteractiveDashboard:
     def refresh_data(self) -> go.Figure:
         """Re-run all analyses and rebuild; empty figure without analyzer.
 
-        Manages refresh data operations and coordinates related state changes for the component.
 
         Returns:
             go.Figure: Result of the operation.
@@ -532,7 +511,6 @@ class InteractiveDashboard:
     def get_dashboard_stats(self) -> Dict[str, Any]:
         """Snapshot of current path, drill depth, size, and counts.
 
-        Manages get dashboard stats operations and coordinates related state changes for the component.
 
         Returns:
             Dict[str, Any]: Dictionary mapping identifiers to status or values.

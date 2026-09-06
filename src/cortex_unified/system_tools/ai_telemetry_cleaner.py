@@ -33,9 +33,10 @@ _LOG = logging.getLogger("cortex.system_tools.ai_telemetry")
 
 @dataclass
 class AiArtifactInfo:
-    """Aiartifactinfo.
+    """One Windows AI artifact found on disk.
 
-    Manages AiArtifactInfo operations and coordinates related state changes for the component.
+    Describes a Recall/Copilot/Edge/WAL file with its size, category, and
+    whether it is safe to clean.
     """
     name: str
     category: str  # "Recall", "Copilot Cache", "SQLite WAL", "Edge AI"
@@ -46,9 +47,7 @@ class AiArtifactInfo:
     description: str = ""
 
     def to_dict(self) -> Dict[str, Any]:
-        """To dict.
-
-        Manages to dict operations and coordinates related state changes for the component.
+        """Serialize this AI artifact to a plain dict.
 
         Returns:
             Dict[str, Any]: Dictionary mapping identifiers to status or values.
@@ -66,9 +65,10 @@ class AiArtifactInfo:
 
 @dataclass
 class AiTelemetryReport:
-    """Aitelemetryreport.
+    """Aggregate scan result for Windows AI telemetry.
 
-    Manages AiTelemetryReport operations and coordinates related state changes for the component.
+    Totals disk usage split into WAL-journal versus cache bytes and flags
+    whether Recall appears configured.
     """
     artifacts: List[AiArtifactInfo] = field(default_factory=list)
     total_size_bytes: int = 0
@@ -78,9 +78,7 @@ class AiTelemetryReport:
     scan_duration_ms: float = 0.0
 
     def to_dict(self) -> Dict[str, Any]:
-        """To dict.
-
-        Manages to dict operations and coordinates related state changes for the component.
+        """Serialize this telemetry report to a plain dict.
 
         Returns:
             Dict[str, Any]: Dictionary mapping identifiers to status or values.
@@ -97,9 +95,10 @@ class AiTelemetryReport:
 
 @dataclass
 class AiCleanResult:
-    """Aicleanresult.
+    """Outcome of an AI cache/WAL cleanup pass.
 
-    Manages AiCleanResult operations and coordinates related state changes for the component.
+    Counts cleaned items, reclaimed bytes, and truncated WAL journals;
+    honors dry-run (no deletions).
     """
     cleaned_items: int = 0
     freed_bytes: int = 0
@@ -108,9 +107,7 @@ class AiCleanResult:
     dry_run: bool = False
 
     def to_dict(self) -> Dict[str, Any]:
-        """To dict.
-
-        Manages to dict operations and coordinates related state changes for the component.
+        """Serialize this cleanup result to a plain dict.
 
         Returns:
             Dict[str, Any]: Dictionary mapping identifiers to status or values.
@@ -125,9 +122,11 @@ class AiCleanResult:
 
 
 class AiTelemetryCleaner:
-    """Aitelemetrycleaner.
+    """Scanner/cleaner for Windows Recall, Copilot, and bloated AI WAL journals.
 
-    Manages AiTelemetryCleaner operations and coordinates related state changes for the component.
+    Read-only scan by default; clean() deletes transient caches and safely
+    checkpoints SQLite WALs. No admin required, though some paths may be
+    locked while AI services run.
     """
 
     def __init__(self) -> None:
@@ -140,7 +139,7 @@ class AiTelemetryCleaner:
     def _get_search_roots(self) -> List[tuple[str, str, Path, str]]:
         """Resolve candidate search locations dynamically from active user and system environments.
 
-        Manages get search roots operations and coordinates related state changes for the component.
+        Builds Recall, Copilot, Edge, and WAL paths from LOCALAPPDATA/PROGRAMDATA.
 
         Returns:
             List[tuple[str, str, Path, str]]: List of processed items or identifiers.
@@ -234,9 +233,7 @@ class AiTelemetryCleaner:
         description: str,
         is_wal: bool = False,
     ) -> None:
-        """_record_artifact.
-
-        Manages record artifact operations and coordinates related state changes for the component.
+        """Append one discovered artifact to the report with size accounting.
 
         Args:
             report (AiTelemetryReport): The generated report data object from the backend.
@@ -270,7 +267,8 @@ class AiTelemetryCleaner:
     def checkpoint_wal_journal(self, wal_path: Path) -> int:
         """Safely truncate a SQLite WAL file by connecting to its parent DB and executing PRAGMA wal_checkpoint(TRUNCATE).
 
-        Manages checkpoint wal journal operations and coordinates related state changes for the component.
+        Returns bytes reclaimed; returns 0 when the parent DB is missing or
+        locked. Side effect: compacts the WAL without deleting user data.
 
         Args:
             wal_path (Path): Filesystem path to the target file or directory.

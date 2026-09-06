@@ -23,10 +23,7 @@ logger = logging.getLogger("cortex.system_tools.vss_manager")
 
 @dataclass
 class ShadowCopyInfo:
-    """Shadowcopyinfo.
-
-    Manages ShadowCopyInfo operations and coordinates related state changes for the component.
-    """
+    """Record holding shadow_id, original_volume, creation_time, shadow_volume, provider, attributes."""
     shadow_id: str
     original_volume: str
     creation_time: str
@@ -37,10 +34,7 @@ class ShadowCopyInfo:
 
 @dataclass
 class ShadowStorageInfo:
-    """Shadowstorageinfo.
-
-    Manages ShadowStorageInfo operations and coordinates related state changes for the component.
-    """
+    """Record holding for_volume, on_volume, used_bytes, allocated_bytes, max_bytes."""
     for_volume: str
     on_volume: str
     used_bytes: int
@@ -49,44 +43,35 @@ class ShadowStorageInfo:
 
     @property
     def used_gb(self) -> float:
-        """Used gb.
-
-        Manages used gb operations and coordinates related state changes for the component.
+        """Return the underlying used_bytes attribute.
 
         Returns:
-            float: Result of the operation.
+        float: Result of the operation.
         """
         return self.used_bytes / (1024**3)
 
     @property
     def allocated_gb(self) -> float:
-        """Allocated gb.
-
-        Manages allocated gb operations and coordinates related state changes for the component.
+        """Return the underlying allocated_bytes attribute.
 
         Returns:
-            float: Result of the operation.
+        float: Result of the operation.
         """
         return self.allocated_bytes / (1024**3)
 
     @property
     def max_gb(self) -> float:
-        """Max gb.
-
-        Manages max gb operations and coordinates related state changes for the component.
+        """Return the underlying max_bytes attribute.
 
         Returns:
-            float: Result of the operation.
+        float: Result of the operation.
         """
         return self.max_bytes / (1024**3)
 
 
 @dataclass
 class VssAuditReport:
-    """Vssauditreport.
-
-    Manages VssAuditReport operations and coordinates related state changes for the component.
-    """
+    """Record holding shadows, storages, total_used_bytes, total_allocated_bytes, error."""
     shadows: list[ShadowCopyInfo] = field(default_factory=list)
     storages: list[ShadowStorageInfo] = field(default_factory=list)
     total_used_bytes: int = 0
@@ -95,10 +80,7 @@ class VssAuditReport:
 
 
 class VssManager:
-    """Vssmanager.
-
-    Manages VssManager operations and coordinates related state changes for the component.
-    """
+    """Groups related helpers: init, audit, list shadows, list shadow storage, create shadow copy, delete oldest shadow. Windows-only; returns a safe default elsewhere."""
 
     def __init__(self):
         """Initialize Vss Manager.
@@ -108,12 +90,10 @@ class VssManager:
         self._is_windows = os.name == "nt"
 
     def audit(self) -> VssAuditReport:
-        """Audit.
-
-        Manages audit operations and coordinates related state changes for the component.
+        """Audit helper. Returns VssAuditReport(...). Windows-only; returns a safe default elsewhere.
 
         Returns:
-            VssAuditReport: Result of the operation.
+        VssAuditReport: Result of the operation.
         """
         if not self._is_windows:
             return VssAuditReport(error="VSS management requires Windows NT.")
@@ -134,10 +114,8 @@ class VssManager:
     def list_shadows(self) -> list[ShadowCopyInfo]:
         """List all active shadow copies via vssadmin.
 
-        Manages list shadows operations and coordinates related state changes for the component.
-
         Returns:
-            list[ShadowCopyInfo]: List of processed items or identifiers.
+        list[ShadowCopyInfo]: List of processed items or identifiers.
         """
         if not self._is_windows:
             return []
@@ -207,10 +185,8 @@ class VssManager:
     def list_shadow_storage(self) -> list[ShadowStorageInfo]:
         """List shadow copy storage space allocations.
 
-        Manages list shadow storage operations and coordinates related state changes for the component.
-
         Returns:
-            list[ShadowStorageInfo]: List of processed items or identifiers.
+        list[ShadowStorageInfo]: List of processed items or identifiers.
         """
         if not self._is_windows:
             return []
@@ -239,15 +215,13 @@ class VssManager:
 
         def _parse_bytes(text: str) -> int:
             # Matches formats like '1.50 GB (1,610,612,736 B)' or '100 MB'
-            """_parse_bytes.
-
-            Manages parse bytes operations and coordinates related state changes for the component.
+            """Parse bytes helper (mutates filesystem state). Returns int(m.group(1).replace(",", "")).
 
             Args:
-                text (str): Display text string.
+            text (str): Display text string.
 
             Returns:
-                int: Result of the operation.
+            int: Result of the operation.
             """
             m = re.search(r"\(([\d,]+)\s*B\)", text)
             if m:
@@ -301,13 +275,11 @@ class VssManager:
     def create_shadow_copy(self, volume: str = "C:") -> tuple[bool, str]:
         """Create an on-demand volume shadow copy.
 
-        Manages create shadow copy operations and coordinates related state changes for the component.
-
         Args:
-            volume (str): The volume parameter.
+        volume (str): The volume parameter.
 
         Returns:
-            tuple[bool, str]: True if the operation succeeded, False otherwise.
+        tuple[bool, str]: True if the operation succeeded, False otherwise.
         """
         if not self._is_windows:
             return False, "Windows required"
@@ -336,13 +308,11 @@ class VssManager:
     def delete_oldest_shadow(self, volume: str = "C:") -> tuple[bool, str]:
         """Delete the oldest shadow copy on a given volume to reclaim space.
 
-        Manages delete oldest shadow operations and coordinates related state changes for the component.
-
         Args:
-            volume (str): The volume parameter.
+        volume (str): The volume parameter.
 
         Returns:
-            tuple[bool, str]: True if the operation succeeded, False otherwise.
+        tuple[bool, str]: True if the operation succeeded, False otherwise.
         """
         if not self._is_windows:
             return False, "Windows required"

@@ -45,28 +45,19 @@ from cortex_unified.analyzers.registry_cleaner_ai import (  # noqa: E402
 # ---------------------------------------------------------------------------
 
 def test_resolve_target_keeps_unquoted_path_with_spaces():
-    """test_resolve_target_keeps_unquoted_path_with_spaces.
-
-    Manages test resolve target keeps unquoted path with spaces operations and coordinates related state changes for the component.
-    """
+    """Verify resolve target keeps unquoted path with spaces via _resolve_target."""
     raw = r"C:\Program Files\Example Suite\Editor.exe"
     assert _resolve_target(raw) == raw
 
 
 def test_resolve_target_strips_quotes_and_keeps_args_out():
-    """test_resolve_target_strips_quotes_and_keeps_args_out.
-
-    Manages test resolve target strips quotes and keeps args out operations and coordinates related state changes for the component.
-    """
+    """Verify resolve target strips quotes and keeps args out via _resolve_target."""
     raw = r'"C:\Program Files\App\un.exe" /S'
     assert _resolve_target(raw) == r"C:\Program Files\App\un.exe"
 
 
 def test_resolve_target_expands_system_root_prefix():
-    """test_resolve_target_expands_system_root_prefix.
-
-    Manages test resolve target expands system root prefix operations and coordinates related state changes for the component.
-    """
+    """Verify resolve target expands system root prefix via resolved.startswith, _resolve_target."""
     raw = r"\SystemRoot\System32\drivers\amdk8.sys"
     resolved = _resolve_target(raw)
     assert resolved is not None
@@ -75,10 +66,7 @@ def test_resolve_target_expands_system_root_prefix():
 
 
 def test_target_candidates_includes_full_path_first_then_prefixes():
-    """test_target_candidates_includes_full_path_first_then_prefixes.
-
-    Manages test target candidates includes full path first then prefixes operations and coordinates related state changes for the component.
-    """
+    """Verify target candidates includes full path first then prefixes via cands.index, _target_candidates."""
     raw = r"C:\Program Files\App\tool.exe -flag"
     cands = _target_candidates(raw)
     assert cands[0] == r"C:\Program Files\App\tool.exe -flag"
@@ -88,10 +76,7 @@ def test_target_candidates_includes_full_path_first_then_prefixes():
 
 
 def test_target_candidates_anchors_relative_paths_at_system_roots():
-    """test_target_candidates_anchors_relative_paths_at_system_roots.
-
-    Manages test target candidates anchors relative paths at system roots operations and coordinates related state changes for the component.
-    """
+    """Verify target candidates anchors relative paths at system roots via c.lower, Path, _target_candidates."""
     cands = _target_candidates(r"system32\drivers\cdfs.sys")
     assert len(cands) >= 4
     # Every candidate is absolute (anchored at a real root); the bare
@@ -105,9 +90,7 @@ def test_target_candidates_anchors_relative_paths_at_system_roots():
 
 
 def test_verifiable_true_for_missing_but_listable_parent(tmp_path):
-    """test_verifiable_true_for_missing_but_listable_parent.
-
-    Manages test verifiable true for missing but listable parent operations and coordinates related state changes for the component.
+    """Verify verifiable true for missing but listable parent via _verifiable.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.
@@ -116,9 +99,7 @@ def test_verifiable_true_for_missing_but_listable_parent(tmp_path):
 
 
 def test_verifiable_true_for_existing_file(tmp_path):
-    """test_verifiable_true_for_existing_file.
-
-    Manages test verifiable true for existing file operations and coordinates related state changes for the component.
+    """Verify verifiable true for existing file via _verifiable.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.
@@ -129,9 +110,7 @@ def test_verifiable_true_for_existing_file(tmp_path):
 
 
 def test_verifiable_false_when_ancestor_listing_denied(tmp_path, monkeypatch):
-    """test_verifiable_false_when_ancestor_listing_denied.
-
-    Manages test verifiable false when ancestor listing denied operations and coordinates related state changes for the component.
+    """Verify verifiable false when ancestor listing denied via monkeypatch.setattr, PermissionError, endswith.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.
@@ -144,9 +123,7 @@ def test_verifiable_false_when_ancestor_listing_denied(tmp_path, monkeypatch):
     def fake_stat(p, *a, **k):
         # Simulate an ACL-locked subtree: the target itself raises
         # PermissionError exactly like WindowsApps does.
-        """fake_stat.
-
-        Manages fake stat operations and coordinates related state changes for the component.
+        """Fake stat using PermissionError, endswith, real_stat.
 
         Args:
             p: The p parameter.
@@ -160,9 +137,7 @@ def test_verifiable_false_when_ancestor_listing_denied(tmp_path, monkeypatch):
 
 
 def test_target_exists_treats_unprovable_as_present(tmp_path, monkeypatch):
-    """test_target_exists_treats_unprovable_as_present.
-
-    Manages test target exists treats unprovable as present operations and coordinates related state changes for the component.
+    """Verify target exists treats unprovable as present via monkeypatch.setattr, PermissionError, endswith.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.
@@ -173,9 +148,7 @@ def test_target_exists_treats_unprovable_as_present(tmp_path, monkeypatch):
     real_stat = os.stat
 
     def fake_stat(p, *a, **k):
-        """fake_stat.
-
-        Manages fake stat operations and coordinates related state changes for the component.
+        """Fake stat using PermissionError, endswith, real_stat.
 
         Args:
             p: The p parameter.
@@ -189,9 +162,7 @@ def test_target_exists_treats_unprovable_as_present(tmp_path, monkeypatch):
 
 
 def test_target_exists_false_only_when_provably_missing(tmp_path):
-    """test_target_exists_false_only_when_provably_missing.
-
-    Manages test target exists false only when provably missing operations and coordinates related state changes for the component.
+    """Verify target exists false only when provably missing via _target_exists.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.
@@ -200,20 +171,14 @@ def test_target_exists_false_only_when_provably_missing(tmp_path):
 
 
 def test_font_candidates_anchor_relative_names_at_fonts_dir():
-    """test_font_candidates_anchor_relative_names_at_fonts_dir.
-
-    Manages test font candidates anchor relative names at fonts dir operations and coordinates related state changes for the component.
-    """
+    """Verify font candidates anchor relative names at fonts dir via _font_candidates, endswith, lower."""
     cands = _font_candidates("segoeui.ttf")
     assert len(cands) == 1
     assert cands[0].lower().endswith(r"\fonts\segoeui.ttf")
 
 
 def test_font_candidates_keep_absolute_paths():
-    """test_font_candidates_keep_absolute_paths.
-
-    Manages test font candidates keep absolute paths operations and coordinates related state changes for the component.
-    """
+    """Verify font candidates keep absolute paths via _font_candidates."""
     cands = _font_candidates(r"C:\Windows\Fonts\arial.ttf")
     assert cands == [r"C:\Windows\Fonts\arial.ttf"]
 
@@ -223,37 +188,25 @@ def test_font_candidates_keep_absolute_paths():
 # ---------------------------------------------------------------------------
 
 def test_split_returns_64bit_view_for_hklm():
-    """test_split_returns_64bit_view_for_hklm.
-
-    Manages test split returns 64bit view for hklm operations and coordinates related state changes for the component.
-    """
+    """Verify split returns 64bit view for hklm via _split."""
     _hive, _sub, access = _split(r"HKLM\Software")
     assert access & winreg.KEY_WOW64_64KEY
 
 
 def test_split32_returns_32bit_view_for_hklm():
-    """test_split32_returns_32bit_view_for_hklm.
-
-    Manages test split32 returns 32bit view for hklm operations and coordinates related state changes for the component.
-    """
+    """Verify split32 returns 32bit view for hklm via _split32."""
     parts = _split32(r"HKLM\Software")
     assert parts is not None
     assert parts[2] & winreg.KEY_WOW64_32KEY
 
 
 def test_split32_is_none_for_hkcu():
-    """test_split32_is_none_for_hkcu.
-
-    Manages test split32 is none for hkcu operations and coordinates related state changes for the component.
-    """
+    """Verify split32 is none for hkcu via _split32."""
     assert _split32(r"HKCU\Software") is None
 
 
 def test_split_rejects_unknown_hive():
-    """test_split_rejects_unknown_hive.
-
-    Manages test split rejects unknown hive operations and coordinates related state changes for the component.
-    """
+    """Verify split rejects unknown hive via pytest.raises, _split."""
     with pytest.raises(KeyError):
         _split(r"HKXX\Software")
 
@@ -263,9 +216,7 @@ def test_split_rejects_unknown_hive():
 # ---------------------------------------------------------------------------
 
 def test_detect_missing_path_true_when_target_gone(tmp_path):
-    """test_detect_missing_path_true_when_target_gone.
-
-    Manages test detect missing path true when target gone operations and coordinates related state changes for the component.
+    """Verify detect missing path true when target gone via _detect_missing_path.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.
@@ -275,9 +226,7 @@ def test_detect_missing_path_true_when_target_gone(tmp_path):
 
 
 def test_detect_missing_path_false_when_target_exists(tmp_path):
-    """test_detect_missing_path_false_when_target_exists.
-
-    Manages test detect missing path false when target exists operations and coordinates related state changes for the component.
+    """Verify detect missing path false when target exists via _detect_missing_path.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.
@@ -289,19 +238,13 @@ def test_detect_missing_path_false_when_target_exists(tmp_path):
 
 
 def test_detect_missing_path_false_when_default_value_empty():
-    """test_detect_missing_path_false_when_default_value_empty.
-
-    Manages test detect missing path false when default value empty operations and coordinates related state changes for the component.
-    """
+    """Verify detect missing path false when default value empty via _detect_missing_path."""
     values = {"Path": (r"C:\Windows\System32\cmd.exe", winreg.REG_SZ)}
     assert _detect_missing_path("HKCU\\X\\cmd.exe", values, 0) is False
 
 
 def test_detect_orphaned_service_skips_boot_and_system_start():
-    """test_detect_orphaned_service_skips_boot_and_system_start.
-
-    Manages test detect orphaned service skips boot and system start operations and coordinates related state changes for the component.
-    """
+    """Verify detect orphaned service skips boot and system start via _detect_orphaned_service."""
     image = r"C:\definitely\not\here.sys"
     assert _detect_orphaned_service(
         "HKLM\\X\\svc", {"Start": (0, winreg.REG_DWORD),
@@ -312,9 +255,7 @@ def test_detect_orphaned_service_skips_boot_and_system_start():
 
 
 def test_detect_orphaned_service_true_when_verifiably_missing(tmp_path):
-    """test_detect_orphaned_service_true_when_verifiably_missing.
-
-    Manages test detect orphaned service true when verifiably missing operations and coordinates related state changes for the component.
+    """Verify detect orphaned service true when verifiably missing via _detect_orphaned_service.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.
@@ -326,9 +267,7 @@ def test_detect_orphaned_service_true_when_verifiably_missing(tmp_path):
 
 
 def test_detect_orphaned_service_false_when_image_missing_but_dll_alive(tmp_path):
-    """test_detect_orphaned_service_false_when_image_missing_but_dll_alive.
-
-    Manages test detect orphaned service false when image missing but dll alive operations and coordinates related state changes for the component.
+    """Verify detect orphaned service false when image missing but dll alive via _detect_orphaned_service.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.
@@ -341,9 +280,7 @@ def test_detect_orphaned_service_false_when_image_missing_but_dll_alive(tmp_path
 
 
 def test_detect_orphaned_service_true_when_dll_verifiably_missing(tmp_path):
-    """test_detect_orphaned_service_true_when_dll_verifiably_missing.
-
-    Manages test detect orphaned service true when dll verifiably missing operations and coordinates related state changes for the component.
+    """Verify detect orphaned service true when dll verifiably missing via _detect_orphaned_service.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.
@@ -355,17 +292,12 @@ def test_detect_orphaned_service_true_when_dll_verifiably_missing(tmp_path):
 
 
 def test_detect_orphaned_service_never_guesses_with_no_targets():
-    """test_detect_orphaned_service_never_guesses_with_no_targets.
-
-    Manages test detect orphaned service never guesses with no targets operations and coordinates related state changes for the component.
-    """
+    """Verify detect orphaned service never guesses with no targets via _detect_orphaned_service."""
     assert _detect_orphaned_service("HKLM\\X\\svc", {}, 0) is False
 
 
 def test_detect_shared_dll_uses_value_names_as_paths(tmp_path):
-    """test_detect_shared_dll_uses_value_names_as_paths.
-
-    Manages test detect shared dll uses value names as paths operations and coordinates related state changes for the component.
+    """Verify detect shared dll uses value names as paths via _detect_shared_dll_gone.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.
@@ -400,10 +332,7 @@ def test_scan_targets_offending_value():
 
 @pytest.mark.live
 def test_scan_service_category_never_flags_boot_drivers():
-    """test_scan_service_category_never_flags_boot_drivers.
-
-    Manages test scan service category never flags boot drivers operations and coordinates related state changes for the component.
-    """
+    """Verify scan service category never flags boot drivers via cleaner.scan, AIRegistryCleaner."""
     cleaner = AIRegistryCleaner(create_restore_point=False)
     result = cleaner.scan(["orphaned_service_driver"])
     for issue in result.issues:
@@ -421,10 +350,7 @@ _TEST_ROOT = r"HKCU\Software\CortexCleanerSelfTest"
 
 @pytest.fixture()
 def throwaway_key():
-    """A test key under HKCU removed after each test.
-
-    Manages throwaway key operations and coordinates related state changes for the component.
-    """
+    """A test key under HKCU removed after each test."""
     sub = _TEST_ROOT.partition("\\")[2]
     winreg.CreateKey(winreg.HKEY_CURRENT_USER, sub)
     yield sub
@@ -450,9 +376,7 @@ def _cleaner(tmp_path):
 
 
 def test_clean_deletes_value_level_orphan(throwaway_key, tmp_path):
-    """test_clean_deletes_value_level_orphan.
-
-    Manages test clean deletes value level orphan operations and coordinates related state changes for the component.
+    """Verify clean deletes value level orphan via winreg.CreateKey, winreg.SetValueEx, winreg.OpenKey.
 
     Args:
         throwaway_key: The throwaway key parameter.
@@ -476,9 +400,7 @@ def test_clean_deletes_value_level_orphan(throwaway_key, tmp_path):
 
 
 def test_clean_deletes_key_level_orphan(throwaway_key, tmp_path):
-    """test_clean_deletes_key_level_orphan.
-
-    Manages test clean deletes key level orphan operations and coordinates related state changes for the component.
+    """Verify clean deletes key level orphan via winreg.CreateKey, winreg.OpenKey, RegistryIssue.
 
     Args:
         throwaway_key: The throwaway key parameter.
@@ -498,9 +420,7 @@ def test_clean_deletes_key_level_orphan(throwaway_key, tmp_path):
 
 
 def test_clean_backs_up_before_deleting(throwaway_key, tmp_path):
-    """test_clean_backs_up_before_deleting.
-
-    Manages test clean backs up before deleting operations and coordinates related state changes for the component.
+    """Verify clean backs up before deleting via winreg.CreateKey, winreg.OpenKey, winreg.SetValueEx.
 
     Args:
         throwaway_key: The throwaway key parameter.
@@ -525,9 +445,7 @@ def test_clean_backs_up_before_deleting(throwaway_key, tmp_path):
 
 
 def test_clean_refuses_delete_when_subkeys_present(throwaway_key, tmp_path):
-    """test_clean_refuses_delete_when_subkeys_present.
-
-    Manages test clean refuses delete when subkeys present operations and coordinates related state changes for the component.
+    """Verify clean refuses delete when subkeys present via winreg.CreateKey, winreg.OpenKey, RegistryIssue.
 
     Args:
         throwaway_key: The throwaway key parameter.
@@ -549,9 +467,7 @@ def test_clean_refuses_delete_when_subkeys_present(throwaway_key, tmp_path):
 
 
 def test_clean_keep_recommendation_is_not_deleted(throwaway_key, tmp_path):
-    """test_clean_keep_recommendation_is_not_deleted.
-
-    Manages test clean keep recommendation is not deleted operations and coordinates related state changes for the component.
+    """Verify clean keep recommendation is not deleted via winreg.CreateKey, winreg.SetValueEx, winreg.OpenKey.
 
     Args:
         throwaway_key: The throwaway key parameter.

@@ -19,9 +19,9 @@ from typing import Callable, Dict, List, Optional, Set, Tuple
 
 
 class LinkType(Enum):
-    """Linktype.
+    """NTFS link classification.
 
-    Manages LinkType operations and coordinates related state changes for the component.
+    Distinguishes DIRECTORY_JUNCTION, DIRECTORY/FILE_SYMLINK, HARDLINK (nlink>1), and REGULAR.
     """
     DIRECTORY_JUNCTION = "Directory Junction"
     DIRECTORY_SYMLINK = "Directory Symlink"
@@ -32,9 +32,9 @@ class LinkType(Enum):
 
 @dataclass
 class LinkItem:
-    """Linkitem.
+    """Inspection record for one path.
 
-    Manages LinkItem operations and coordinates related state changes for the component.
+    Stores path/name, LinkType, raw target, broken flag, directory flag, size, hardlink count, and error.
     """
     path: str
     name: str
@@ -49,9 +49,9 @@ class LinkItem:
 
 @dataclass
 class LinkOperationResult:
-    """Linkoperationresult.
+    """Outcome of one link create/remove call.
 
-    Manages LinkOperationResult operations and coordinates related state changes for the component.
+    Holds success, message, and created/target paths.
     """
     success: bool
     message: str
@@ -60,9 +60,9 @@ class LinkOperationResult:
 
 
 class LinksManager:
-    """Linksmanager.
+    """NTFS junction/symlink/hardlink manager.
 
-    Manages LinksManager operations and coordinates related state changes for the component.
+    Inspects via lstat/readlink/nlink and mutates via mklink subprocess, os.symlink, os.link, and reparse-safe removal.
     """
 
     @staticmethod
@@ -87,7 +87,7 @@ class LinksManager:
     def get_link_info(cls, file_or_dir: str | Path) -> LinkItem:
         """Inspect a file or directory and extract link metadata.
 
-        Manages get link info operations and coordinates related state changes for the component.
+        Uses lstat st_nlink/st_file_attributes plus os.readlink to classify junctions vs symlinks, resolve broken targets, and count hardlinks.
 
         Args:
             file_or_dir (str | Path): The file or dir parameter.
@@ -228,7 +228,7 @@ class LinksManager:
     def create_junction(cls, link_path: str | Path, target_dir: str | Path) -> LinkOperationResult:
         """Create an NTFS Directory Junction.
 
-        Manages create junction operations and coordinates related state changes for the component.
+        Validates target dir and missing link path, runs 'cmd /c mklink /J' subprocess on Windows with 10s timeout, else os.symlink fallback.
 
         Args:
             link_path (str | Path): Filesystem path to the target file or directory.
@@ -274,7 +274,7 @@ class LinksManager:
     ) -> LinkOperationResult:
         """Create a Symbolic Link (File or Directory).
 
-        Manages create symlink operations and coordinates related state changes for the component.
+        Creates file/dir symlink via os.symlink, inferring target_is_directory, and reports Windows privilege (WinError 1314) hints on failure.
 
         Args:
             link_path (str | Path): Filesystem path to the target file or directory.
@@ -307,7 +307,7 @@ class LinksManager:
     def create_hardlink(cls, link_path: str | Path, target_file: str | Path) -> LinkOperationResult:
         """Create an NTFS Hardlink to an existing file.
 
-        Manages create hardlink operations and coordinates related state changes for the component.
+        Creates same-volume file hardlink via os.link after regular-file and non-existence checks.
 
         Args:
             link_path (str | Path): Filesystem path to the target file or directory.
@@ -335,7 +335,7 @@ class LinksManager:
     def remove_link_safely(cls, link_path: str | Path) -> LinkOperationResult:
         """Safely delete a junction or symlink without removing the contents of the target folder.
 
-        Manages remove link safely operations and coordinates related state changes for the component.
+        Removes directory reparse points with os.rmdir (target untouched) and file links with os.unlink after is_junction check.
 
         Args:
             link_path (str | Path): Filesystem path to the target file or directory.

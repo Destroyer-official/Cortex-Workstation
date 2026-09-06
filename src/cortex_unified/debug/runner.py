@@ -34,9 +34,8 @@ USE_COLOR = sys.stdout.isatty() or os.environ.get("FORCE_COLOR") == "1"
 
 
 def _col(text: str, code: str) -> str:
-    """Col.
+    """Wrap text in an ANSI color code only when color output is enabled.
 
-    Manages col operations and coordinates related state changes for the component.
 
     Args:
         text (str): Display text string.
@@ -49,9 +48,8 @@ def _col(text: str, code: str) -> str:
 
 
 def green(text: str) -> str:
-    """Green.
+    """Wrap text in green only when color output is enabled.
 
-    Manages green operations and coordinates related state changes for the component.
 
     Args:
         text (str): Display text string.
@@ -63,9 +61,8 @@ def green(text: str) -> str:
 
 
 def red(text: str) -> str:
-    """Red.
+    """Wrap text in red only when color output is enabled.
 
-    Manages red operations and coordinates related state changes for the component.
 
     Args:
         text (str): Display text string.
@@ -77,9 +74,8 @@ def red(text: str) -> str:
 
 
 def yellow(text: str) -> str:
-    """Yellow.
+    """Wrap text in yellow only when color output is enabled.
 
-    Manages yellow operations and coordinates related state changes for the component.
 
     Args:
         text (str): Display text string.
@@ -91,9 +87,8 @@ def yellow(text: str) -> str:
 
 
 def cyan(text: str) -> str:
-    """Cyan.
+    """Wrap text in cyan only when color output is enabled.
 
-    Manages cyan operations and coordinates related state changes for the component.
 
     Args:
         text (str): Display text string.
@@ -105,9 +100,8 @@ def cyan(text: str) -> str:
 
 
 def bold(text: str) -> str:
-    """Bold.
+    """Wrap text in bold only when color output is enabled.
 
-    Manages bold operations and coordinates related state changes for the component.
 
     Args:
         text (str): Display text string.
@@ -120,9 +114,8 @@ def bold(text: str) -> str:
 
 @dataclass
 class DiagnosticItem:
-    """Diagnosticitem.
+    """Single named check outcome with status, message, and timing.
 
-    Manages DiagnosticItem operations and coordinates related state changes for the component.
     """
     name: str
     status: str  # PASS, FAIL, SKIP, WARN
@@ -133,9 +126,8 @@ class DiagnosticItem:
 
 @dataclass
 class DiagnosticSection:
-    """Diagnosticsection.
+    """Grouped checks with pass, fail, and skip tallies.
 
-    Manages DiagnosticSection operations and coordinates related state changes for the component.
     """
     title: str
     items: List[DiagnosticItem] = field(default_factory=list)
@@ -146,9 +138,8 @@ class DiagnosticSection:
 
     @property
     def total(self) -> int:
-        """Total.
+        """Number of items recorded in this section.
 
-        Manages total operations and coordinates related state changes for the component.
 
         Returns:
             int: Result of the operation.
@@ -157,9 +148,8 @@ class DiagnosticSection:
 
     @property
     def is_success(self) -> bool:
-        """is_success.
+        """True when this section recorded zero failures.
 
-        Manages is success operations and coordinates related state changes for the component.
 
         Returns:
             bool: True if the operation succeeded, False otherwise.
@@ -169,9 +159,8 @@ class DiagnosticSection:
 
 @dataclass
 class DiagnosticReport:
-    """Diagnosticreport.
+    """Whole-run diagnostics with per-section breakdown and readiness flag.
 
-    Manages DiagnosticReport operations and coordinates related state changes for the component.
     """
     timestamp: str
     total_duration_sec: float
@@ -183,9 +172,8 @@ class DiagnosticReport:
     is_production_ready: bool = True
 
     def to_dict(self) -> Dict[str, Any]:
-        """to_dict.
+        """Serialize this report or section to a JSON-safe dict.
 
-        Manages to dict operations and coordinates related state changes for the component.
 
         Returns:
             Dict[str, Any]: Dictionary mapping identifiers to status or values.
@@ -214,12 +202,11 @@ class DiagnosticReport:
 
 
 class DiagnosticRunner:
-    """Diagnosticrunner.
+    """Offscreen production diagnostics orchestrator across subsystems.
 
-    Manages DiagnosticRunner operations and coordinates related state changes for the component.
     """
     def __init__(self, verbose: bool = False):
-        """__init__.
+        """Initialize the runner with an empty diagnostic report.
 
         Initializes the instance and configures internal state.
 
@@ -235,9 +222,8 @@ class DiagnosticRunner:
     def run_section(
         self, title: str, fn: Callable[[DiagnosticSection], None]
     ) -> DiagnosticSection:
-        """run_section.
+        """Run one named section, capturing unhandled exceptions as FAIL.
 
-        Manages run section operations and coordinates related state changes for the component.
 
         Args:
             title (str): Display text string.
@@ -272,7 +258,6 @@ class DiagnosticRunner:
     def check_icons(self, sec: DiagnosticSection) -> None:
         """Audit vector icon pipeline and SVG rendering.
 
-        Manages check icons operations and coordinates related state changes for the component.
 
         Args:
             sec (DiagnosticSection): The sec parameter.
@@ -324,7 +309,6 @@ class DiagnosticRunner:
     def check_system_tools(self, sec: DiagnosticSection) -> None:
         """Audit all 55 system tools.
 
-        Manages check system tools operations and coordinates related state changes for the component.
 
         Args:
             sec (DiagnosticSection): The sec parameter.
@@ -362,7 +346,6 @@ class DiagnosticRunner:
     def check_analyzers(self, sec: DiagnosticSection) -> None:
         """Audit all 23 file and dedup analyzers.
 
-        Manages check analyzers operations and coordinates related state changes for the component.
 
         Args:
             sec (DiagnosticSection): The sec parameter.
@@ -400,7 +383,6 @@ class DiagnosticRunner:
     def check_core_engine(self, sec: DiagnosticSection) -> None:
         """Audit Core Engine, FastWalk, and Security Guards.
 
-        Manages check core engine operations and coordinates related state changes for the component.
 
         Args:
             sec (DiagnosticSection): The sec parameter.
@@ -463,7 +445,6 @@ class DiagnosticRunner:
     def check_caches_and_algorithms(self, sec: DiagnosticSection) -> None:
         """Audit algorithmic performance caches & chunkers.
 
-        Manages check caches and algorithms operations and coordinates related state changes for the component.
 
         Args:
             sec (DiagnosticSection): The sec parameter.
@@ -523,7 +504,6 @@ class DiagnosticRunner:
     def check_nexus_explorer(self, sec: DiagnosticSection) -> None:
         """Audit Nexus File Manager subsystem & Fluent header.
 
-        Manages check nexus explorer operations and coordinates related state changes for the component.
 
         Args:
             sec (DiagnosticSection): The sec parameter.
@@ -765,7 +745,6 @@ class DiagnosticRunner:
     def check_ui_pages(self, sec: DiagnosticSection) -> None:
         """Audit all 59 registered UI pages in shell.
 
-        Manages check ui pages operations and coordinates related state changes for the component.
 
         Args:
             sec (DiagnosticSection): The sec parameter.
@@ -807,6 +786,16 @@ class DiagnosticRunner:
                     sec.failed += 1
 
             win.close()
+            win.deleteLater()
+            from PySide6.QtWidgets import QApplication
+
+            app = QApplication.instance()
+            if app:
+                app.processEvents()
+            del win
+            import gc
+
+            gc.collect()
         except Exception as exc:
             sec.items.append(
                 DiagnosticItem(name="UI Shell", status="FAIL", message=str(exc))
@@ -814,9 +803,8 @@ class DiagnosticRunner:
             sec.failed += 1
 
     def run_all(self) -> DiagnosticReport:
-        """run_all.
+        """Run all seven diagnostic sections headlessly and print the summary.
 
-        Manages run all operations and coordinates related state changes for the component.
 
         Returns:
             DiagnosticReport: Result of the operation.
@@ -893,9 +881,8 @@ class DiagnosticRunner:
         return self.report
 
     def _print_section_summary(self, sec: DiagnosticSection) -> None:
-        """_print_section_summary.
+        """Print one section pass or fail summary with failing items.
 
-        Manages print section summary operations and coordinates related state changes for the component.
 
         Args:
             sec (DiagnosticSection): The sec parameter.
@@ -914,9 +901,8 @@ class DiagnosticRunner:
 
 
 def run_all_diagnostics(verbose: bool = False) -> DiagnosticReport:
-    """run_all_diagnostics.
+    """Run the full production diagnostics suite and return the report.
 
-    Manages run all diagnostics operations and coordinates related state changes for the component.
 
     Args:
         verbose (bool): The verbose parameter.
@@ -929,9 +915,8 @@ def run_all_diagnostics(verbose: bool = False) -> DiagnosticReport:
 
 
 def main() -> int:
-    """Main.
+    """CLI entry point parsing --json and --verbose flags; return exit status.
 
-    Manages main operations and coordinates related state changes for the component.
 
     Returns:
         int: Result of the operation.
@@ -957,4 +942,7 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    code = main()
+    sys.stdout.flush()
+    sys.stderr.flush()
+    os._exit(code)

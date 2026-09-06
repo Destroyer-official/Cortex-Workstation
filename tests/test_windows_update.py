@@ -10,23 +10,14 @@ IS_WINDOWS = platform.system() == "Windows"
 
 
 class TestPendingParse:
-    """Testpendingparse.
-
-    Manages TestPendingParse operations and coordinates related state changes for the component.
-    """
+    """Group testpendingparse tests covering empty; single; array; titleless skipped; no kb."""
     def test_empty(self):
-        """test_empty.
-
-        Manages test empty operations and coordinates related state changes for the component.
-        """
+        """Verify empty via WindowsUpdate._parse_pending."""
         assert WindowsUpdate._parse_pending(None) == []
         assert WindowsUpdate._parse_pending("bad{") == []
 
     def test_single(self):
-        """test_single.
-
-        Manages test single operations and coordinates related state changes for the component.
-        """
+        """Verify single via WindowsUpdate._parse_pending."""
         payload = ('{"Title":"2026-07 Cumulative Update","KB":"5001234",'
                    '"Severity":"Critical","Size":123456789}')
         ups = WindowsUpdate._parse_pending(payload)
@@ -38,35 +29,23 @@ class TestPendingParse:
         assert u.size_bytes == 123456789
 
     def test_array(self):
-        """test_array.
-
-        Manages test array operations and coordinates related state changes for the component.
-        """
+        """Verify array via WindowsUpdate._parse_pending."""
         payload = ('[{"Title":"Update A","KB":"1","Size":10},'
                    '{"Title":"Update B","KB":"2","Size":20}]')
         assert len(WindowsUpdate._parse_pending(payload)) == 2
 
     def test_titleless_skipped(self):
-        """test_titleless_skipped.
-
-        Manages test titleless skipped operations and coordinates related state changes for the component.
-        """
+        """Verify titleless skipped via WindowsUpdate._parse_pending."""
         assert WindowsUpdate._parse_pending('{"Title":"","KB":"1"}') == []
 
     def test_no_kb(self):
-        """test_no_kb.
-
-        Manages test no kb operations and coordinates related state changes for the component.
-        """
+        """Verify no kb via WindowsUpdate._parse_pending."""
         u = WindowsUpdate._parse_pending('{"Title":"Defender def update","Size":0}')[0]
         assert u.kb == ""
 
 
 class TestHistoryParse:
-    """Testhistoryparse.
-
-    Manages TestHistoryParse operations and coordinates related state changes for the component.
-    """
+    """Group testhistoryparse tests covering success and fail; date formatted; empty."""
     def test_success_and_fail(self):
         """Handle an operation failure and notify the user.
 
@@ -88,47 +67,29 @@ class TestHistoryParse:
         assert rows[0]["date"] == "2026-07-01 10:00:00"
 
     def test_empty(self):
-        """test_empty.
-
-        Manages test empty operations and coordinates related state changes for the component.
-        """
+        """Verify empty via WindowsUpdate._parse_history."""
         assert WindowsUpdate._parse_history(None) == []
         assert WindowsUpdate._parse_history("") == []
 
 
 class TestGating:
-    """Testgating.
-
-    Manages TestGating operations and coordinates related state changes for the component.
-    """
+    """Group testgating tests covering is supported; last activity shape; check pending returns list; to dict."""
     def test_is_supported(self):
-        """test_is_supported.
-
-        Manages test is supported operations and coordinates related state changes for the component.
-        """
+        """Verify is supported via WindowsUpdate.is_supported."""
         assert WindowsUpdate.is_supported() == IS_WINDOWS
 
     def test_last_activity_shape(self):
-        """test_last_activity_shape.
-
-        Manages test last activity shape operations and coordinates related state changes for the component.
-        """
+        """Verify last activity shape via WindowsUpdate, last_activity."""
         a = WindowsUpdate().last_activity()
         assert set(a) == {"last_check", "last_install"}
 
     def test_check_pending_returns_list(self):
         # Off-Windows returns []; on Windows it may query online but must be a list.
-        """test_check_pending_returns_list.
-
-        Manages test check pending returns list operations and coordinates related state changes for the component.
-        """
+        """Verify check pending returns list via WindowsUpdate, check_pending."""
         result = WindowsUpdate().check_pending() if not IS_WINDOWS else []
         assert isinstance(result, list)
 
     def test_to_dict(self):
-        """test_to_dict.
-
-        Manages test to dict operations and coordinates related state changes for the component.
-        """
+        """Verify to dict via PendingUpdate, to_dict."""
         d = PendingUpdate("Title", "KB1", "Important", 100).to_dict()
         assert set(d) == {"title", "kb", "severity", "size_bytes"}

@@ -35,19 +35,14 @@ _ARP_RE = re.compile(
 
 @dataclass(slots=True)
 class LanDevice:
-    """Landevice.
-
-    Manages LanDevice operations and coordinates related state changes for the component.
-    """
+    """One LAN host from the ARP cache with IP, MAC, kind, and OUI vendor guess."""
     ip: str
     mac: str
     kind: str          # dynamic / static
     vendor: str = ""
 
     def to_dict(self) -> dict[str, Any]:
-        """To dict.
-
-        Manages to dict operations and coordinates related state changes for the component.
+        """Serialize this LAN device to a plain dict.
 
         Returns:
             dict[str, Any]: Dictionary mapping identifiers to status or values.
@@ -56,10 +51,7 @@ class LanDevice:
 
 
 class LanScanner:
-    """Lanscanner.
-
-    Manages LanScanner operations and coordinates related state changes for the component.
-    """
+    """Read-only LAN discovery via the OS ARP cache (``arp -a``), no probes sent."""
 
     def scan(self) -> list[LanDevice]:
         """Scan.
@@ -119,9 +111,7 @@ class LanScanner:
         return devices
 
     def _run(self) -> str | None:
-        """Run.
-
-        Manages run operations and coordinates related state changes for the component.
+        """Run ``arp -a`` and return stdout, or None on failure (read-only).
 
         Returns:
             str | None: Formatted string or path.

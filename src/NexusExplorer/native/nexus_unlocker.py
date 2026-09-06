@@ -23,9 +23,9 @@ if platform.system() == "Windows":
     CCH_RM_MAX_SVC_NAME = 63
 
     class RM_UNIQUE_PROCESS(ctypes.Structure):
-        """RM_UNIQUE_PROCESS.
+        """ctypes mirror of RM_UNIQUE_PROCESS.
 
-        Manages RM UNIQUE PROCESS operations and coordinates related state changes for the component.
+        Packs dwProcessId plus FILETIME start time for RmGetList FFI.
         """
         _fields_ = [
             ("dwProcessId", wintypes.DWORD),
@@ -33,16 +33,16 @@ if platform.system() == "Windows":
         ]
 
     class RM_APP_TYPE(ctypes.c_int):
-        """RM_APP_TYPE.
+        """ctypes int placeholder for RM_APP_TYPE enum.
 
-        Manages RM APP TYPE operations and coordinates related state changes for the component.
+        Satisfies RM_PROCESS_INFO.ApplicationType field in the Restart Manager signature.
         """
         pass
 
     class RM_PROCESS_INFO(ctypes.Structure):
-        """RM_PROCESS_INFO.
+        """ctypes mirror of RM_PROCESS_INFO.
 
-        Manages RM PROCESS INFO operations and coordinates related state changes for the component.
+        Holds RM_UNIQUE_PROCESS, app/service names, type, status, session, and restartable flag.
         """
         _fields_ = [
             ("Process", RM_UNIQUE_PROCESS),
@@ -57,9 +57,9 @@ if platform.system() == "Windows":
 
 @dataclass
 class LockingProcessInfo:
-    """Lockingprocessinfo.
+    """One process holding a file lock.
 
-    Manages LockingProcessInfo operations and coordinates related state changes for the component.
+    Records pid, name, exe path, system flag, service name, user, and RSS MB.
     """
     pid: int
     name: str
@@ -71,16 +71,16 @@ class LockingProcessInfo:
 
 
 class FileUnlocker:
-    """Fileunlocker.
+    """File-lock inspector and terminator.
 
-    Manages FileUnlocker operations and coordinates related state changes for the component.
+    Prefers Restart Manager rstrtmgr FFI on Windows with psutil enrichment, falls back to psutil handle scan, and guards protected processes.
     """
 
     @classmethod
     def get_locking_processes(cls, file_path: str | Path) -> List[LockingProcessInfo]:
         """Query which processes currently hold an open lock on the target file.
 
-        Manages get locking processes operations and coordinates related state changes for the component.
+        Resolves the path, returns [] when missing, routes Windows to Restart Manager else to psutil handle scan.
 
         Args:
             file_path (str | Path): Filesystem path to the target file or directory.
@@ -104,7 +104,7 @@ class FileUnlocker:
     def _query_restart_manager(cls, file_paths: List[str]) -> List[LockingProcessInfo]:
         """Invoke Windows Restart Manager to enumerate locking processes.
 
-        Manages query restart manager operations and coordinates related state changes for the component.
+        Drives RmStartSession/RmRegisterResources/RmGetList (handling ERROR_MORE_DATA 234) via ctypes, enriches with psutil exe/memory/user, then RmEndSession.
 
         Args:
             file_paths (List[str]): Filesystem path to the target file or directory.
@@ -218,7 +218,7 @@ class FileUnlocker:
     def _query_psutil_handles(cls, target_path: str) -> List[LockingProcessInfo]:
         """Fallback process inspection via psutil open_files.
 
-        Manages query psutil handles operations and coordinates related state changes for the component.
+        Iterates psutil processes, matches open_files case-insensitively to target, and records memory/user metadata.
 
         Args:
             target_path (str): Filesystem path to the target file or directory.
@@ -257,7 +257,7 @@ class FileUnlocker:
     def unlock_and_terminate(cls, pid: int, force: bool = False) -> Tuple[bool, str]:
         """Terminate a locking process by PID to release locked files.
 
-        Manages unlock and terminate operations and coordinates related state changes for the component.
+        Refuses PID 0/4, blocks is_protected_process names, then terminate/wait-3s/kill escalation via psutil.
 
         Args:
             pid (int): The pid parameter.

@@ -99,10 +99,7 @@ def _fmt_rate(bps: float) -> str:
 # =====================================================================
 
 class TrafficMonitorPage(_Page):
-    """Trafficmonitorpage.
-
-    Manages TrafficMonitorPage operations and coordinates related state changes for the component.
-    """
+    """Traffic Monitor page with Download/Upload/Session StatCards, TrafficGraph and per-interface table; samples TrafficMonitor.instance() on a 1s QTimer."""
 
     def __init__(self, win):
         """Build the page layout (tables, cards, title header) and connect button/worker actions.
@@ -161,10 +158,7 @@ class TrafficMonitorPage(_Page):
         self._loaded = False
 
     def _start(self):
-        """Start.
-
-        Manages start operations and coordinates related state changes for the component.
-        """
+        """Prime TrafficMonitor.instance().sample(), start the 1s timer and tick once."""
         from cortex_unified.system_tools.network_traffic import TrafficMonitor
         self._mon = TrafficMonitor.instance()
         self._mon.sample()   # prime so the first visible rate is real
@@ -202,10 +196,7 @@ class TrafficMonitorPage(_Page):
 # =====================================================================
 
 class FirewallListWorker(QObject):
-    """Firewalllistworker.
-
-    Manages FirewallListWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker listing Cortex firewall rules via FirewallManager.list_rules; emits finished(list) / failed(str)."""
     finished = Signal(list)
     failed = Signal(str)
 
@@ -234,10 +225,7 @@ class FirewallListWorker(QObject):
 
 
 class FirewallActionWorker(QObject):
-    """Firewallactionworker.
-
-    Manages FirewallActionWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker applying one firewall change via FirewallManager block/allow/toggle/remove; emits finished(bool, str) / failed(str)."""
     finished = Signal(bool, str)
     failed = Signal(str)
 
@@ -284,10 +272,7 @@ class FirewallActionWorker(QObject):
 # =====================================================================
 
 class FirewallPage(_Page):
-    """Firewallpage.
-
-    Manages FirewallPage operations and coordinates related state changes for the component.
-    """
+    """Firewall page with program/address create-rule Card, Cortex-rules table, Refresh/Enable-Disable/Remove buttons, progress and state panel; uses FirewallListWorker/ActionWorker."""
 
     def __init__(self, win):
         """Build the page layout (buttons, tables, cards, title header) and connect button/worker actions.
@@ -416,11 +401,9 @@ class FirewallPage(_Page):
         self.refresh_btn.setEnabled(not on)
 
     def _create(self, action: str):
-        """Create.
+        """Validate program/address inputs, confirm, then create the rule via FirewallActionWorker; shows busy state.
 
-        Manages create operations and coordinates related state changes for the component.
-
-        Args:
+            Args:
             action (str): The action parameter.
         """
         if action == "block_address":
@@ -453,9 +436,7 @@ class FirewallPage(_Page):
     def _on_action(self, ok: bool, msg: str):
         """Handle worker results: note status and clear the busy state.
 
-        Manages on action operations and coordinates related state changes for the component.
-
-        Args:
+            Args:
             ok (bool): The ok parameter.
             msg (str): Informational or progress status message.
         """
@@ -478,9 +459,7 @@ class FirewallPage(_Page):
     def _on_listed(self, rules: list):
         """Handle worker results: refresh tables/trees, update the state panel, note status and clear the busy state.
 
-        Manages on listed operations and coordinates related state changes for the component.
-
-        Args:
+            Args:
             rules (list): The rules parameter.
         """
         self.refresh_btn.setEnabled(True)
@@ -503,20 +482,15 @@ class FirewallPage(_Page):
             self.win.statusBar().showMessage("No Cortex firewall rules yet.", 4000)
 
     def _on_sel(self):
-        """Handle worker results: re-enable buttons and clear the busy state.
-
-        Manages on sel operations and coordinates related state changes for the component.
-        """
+        """Handle worker results: re-enable buttons and clear the busy state."""
         has = bool(self.tbl.selectedIndexes())
         self.toggle_btn.setEnabled(has)
         self.remove_btn.setEnabled(has)
 
     def _selected(self) -> tuple[str, bool] | None:
-        """Selected.
+        """Return the selected rule name and enabled flag from the table, or None when nothing is selected.
 
-        Manages selected operations and coordinates related state changes for the component.
-
-        Returns:
+            Returns:
             tuple[str, bool] | None: True if the operation succeeded, False otherwise.
         """
         sel = self.tbl.selectedIndexes()
@@ -542,10 +516,7 @@ class FirewallPage(_Page):
             self._on_action, self._fail)
 
     def _remove(self):
-        """Remove.
-
-        Manages remove operations and coordinates related state changes for the component.
-        """
+        """Confirm then remove the selected rule via FirewallActionWorker; shows busy state."""
         sel = self._selected()
         if not sel:
             return
@@ -579,10 +550,7 @@ class FirewallPage(_Page):
 
 
 class _MapCanvas(QWidget):
-    """Mapcanvas.
-
-    Manages MapCanvas operations and coordinates related state changes for the component.
-    """
+    """Map canvas QWidget drawing This PC to process to remote-host curves and nodes with QPainter; set_edges caps and repaints."""
 
     def __init__(self, palette, parent=None):
         """Build the page layout (widgets) and connect button/worker actions.
@@ -601,9 +569,7 @@ class _MapCanvas(QWidget):
     def set_edges(self, edges: list[tuple[str, str, bool]]):
         """Store graph edges and trigger a repaint of the canvas.
 
-        Manages set edges operations and coordinates related state changes for the component.
-
-        Args:
+            Args:
             edges (list[tuple[str, str, bool]]): The edges parameter.
         """
         # Keep the view readable: cap processes and remotes.
@@ -646,14 +612,12 @@ class _MapCanvas(QWidget):
         col_remote = w * 0.80
 
         def _ys(n: int) -> list[float]:
-            """Ys.
+            """Compute evenly spaced Y positions for n map nodes between the top and bottom margins.
 
-            Manages ys operations and coordinates related state changes for the component.
-
-            Args:
+                Args:
                 n (int): The n parameter.
 
-            Returns:
+                Returns:
                 list[float]: List of processed items or identifiers.
             """
             if n == 0:
@@ -693,11 +657,9 @@ class _MapCanvas(QWidget):
         painter.end()
 
     def _curve(self, painter, x1, y1, x2, y2, color: QColor):
-        """Curve.
+        """Draw one cubic Bezier edge path between two map nodes with the given color.
 
-        Manages curve operations and coordinates related state changes for the component.
-
-        Args:
+            Args:
             painter: The painter parameter.
             x1: The x1 parameter.
             y1: The y1 parameter.
@@ -715,11 +677,9 @@ class _MapCanvas(QWidget):
         painter.drawPath(path)
 
     def _node(self, painter, cx, cy, label, color: QColor, big=False, small=False):
-        """Node.
+        """Draw one rounded map node pill with an elided label.
 
-        Manages node operations and coordinates related state changes for the component.
-
-        Args:
+            Args:
             painter: The painter parameter.
             cx: The cx parameter.
             cy: The cy parameter.
@@ -748,10 +708,7 @@ class _MapCanvas(QWidget):
 
 
 class NetworkMapPage(_Page):
-    """Networkmappage.
-
-    Manages NetworkMapPage operations and coordinates related state changes for the component.
-    """
+    """Network Map page with Refresh Map button, External-only checkbox, summary label, _MapCanvas Card and state panel; loads via NetworkWorker."""
 
     def __init__(self, win):
         """Build the page layout (buttons, cards, title header, state panel) and connect button/worker actions.
@@ -812,9 +769,7 @@ class NetworkMapPage(_Page):
     def _on_loaded(self, conns: list, summary: dict):
         """Handle worker results: refresh tables/trees, re-enable buttons and clear the busy state.
 
-        Manages on loaded operations and coordinates related state changes for the component.
-
-        Args:
+            Args:
             conns (list): The conns parameter.
             summary (dict): The summary parameter.
         """
@@ -824,10 +779,7 @@ class NetworkMapPage(_Page):
         self._render()
 
     def _render(self):
-        """Render.
-
-        Manages render operations and coordinates related state changes for the component.
-        """
+        """Build process to remote edges from cached connections honoring the external-only checkbox; updates the canvas and summary."""
         ext_only = self.external_only.isChecked()
         edges: list[tuple[str, str, bool]] = []
         for c in self._conns:
@@ -935,10 +887,7 @@ class LanScanWorker(QObject):
 
 
 class VendorDatabaseWorker(QObject):
-    """Vendordatabaseworker.
-
-    Manages VendorDatabaseWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker refreshing the IEEE OUI database via oui.refresh_from_ieee with cancel; emits finished(bool, str) / failed(str)."""
 
     finished = Signal(bool, str)
     failed = Signal(str)
@@ -973,10 +922,7 @@ class VendorDatabaseWorker(QObject):
 
 
 class NetworkScheduleWorker(QObject):
-    """Networkscheduleworker.
-
-    Manages NetworkScheduleWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker creating/deleting/querying scans via NetworkScanScheduler; emits finished(action, status) / failed(str)."""
     finished = Signal(str, object)
     failed = Signal(str)
 
@@ -1015,10 +961,7 @@ class NetworkScheduleWorker(QObject):
 
 
 class ExposureLookupWorker(QObject):
-    """Exposurelookupworker.
-
-    Manages ExposureLookupWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker looking up a public IP via ExternalExposureClient.lookup with consent; emits finished(result) / failed(str)."""
     finished = Signal(object)
     failed = Signal(str)
 
@@ -1058,10 +1001,7 @@ class ExposureLookupWorker(QObject):
 
 
 class DeviceActionWorker(QObject):
-    """Deviceactionworker.
-
-    Manages DeviceActionWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker pinging via NetworkTools.ping or waking via send_magic_packet; emits finished(action, payload) / failed(str)."""
 
     finished = Signal(str, object)
     failed = Signal(str)
@@ -1614,10 +1554,7 @@ class LanDevicesPage(_Page):
                             on_progress=self.status.setText)
 
     def _run_expert_scan(self):
-        """Run expert scan for the results widgets after confirmation; keeps buttons/state in sync.
-
-        Manages run expert scan operations and coordinates related state changes for the component.
-        """
+        """Run expert scan for the results widgets after confirmation; keeps buttons/state in sync."""
         try:
             from cortex_unified.system_tools.network_service_scanner import (
                 parse_custom_port_spec,
@@ -1657,10 +1594,7 @@ class LanDevicesPage(_Page):
             advisory_catalog_path=self.catalog_input.text().strip() or None)
 
     def _browse_advisory_catalog(self):
-        """Browse advisory catalog for the results widgets via file dialog; keeps buttons/state in sync.
-
-        Manages browse advisory catalog operations and coordinates related state changes for the component.
-        """
+        """Browse advisory catalog for the results widgets via file dialog; keeps buttons/state in sync."""
         path, _selected = QFileDialog.getOpenFileName(
             self, "Select local advisory catalog", "",
             "JSON advisory catalog (*.json)")
@@ -1692,12 +1626,10 @@ class LanDevicesPage(_Page):
     def _device_name(self, dev) -> str:
         """Return the display name for a discovered device (custom name plus router/this-PC tag).
 
-        Manages device name operations and coordinates related state changes for the component.
-
-        Args:
+            Args:
             dev: The dev parameter.
 
-        Returns:
+            Returns:
             str: Formatted string or path.
         """
         metadata = self._metadata_by_key.get(self._identity_of(dev))
@@ -1711,12 +1643,10 @@ class LanDevicesPage(_Page):
     def _device_type(self, dev) -> str:
         """Return the type/OS string for a device including trust state and OS fingerprint.
 
-        Manages device type operations and coordinates related state changes for the component.
-
-        Args:
+            Args:
             dev: The dev parameter.
 
-        Returns:
+            Returns:
             str: Formatted string or path.
         """
         metadata = self._metadata_by_key.get(self._identity_of(dev))
@@ -1735,12 +1665,10 @@ class LanDevicesPage(_Page):
     def _device_services(dev) -> str:
         """Return the compact service summary (port/proto/name) for the device row.
 
-        Manages device services operations and coordinates related state changes for the component.
-
-        Args:
+            Args:
             dev: The dev parameter.
 
-        Returns:
+            Returns:
             str: Formatted string or path.
         """
         observed = sorted(
@@ -1756,12 +1684,10 @@ class LanDevicesPage(_Page):
     def _device_findings(self, dev) -> list:
         """Return the severity-sorted security findings for a device IP.
 
-        Manages device findings operations and coordinates related state changes for the component.
-
-        Args:
+            Args:
             dev: The dev parameter.
 
-        Returns:
+            Returns:
             list: List of processed items or identifiers.
         """
         return sorted(
@@ -1771,12 +1697,10 @@ class LanDevicesPage(_Page):
     def _device_security(self, dev) -> str:
         """Return the headline security text for a device row.
 
-        Manages device security operations and coordinates related state changes for the component.
-
-        Args:
+            Args:
             dev: The dev parameter.
 
-        Returns:
+            Returns:
             str: Formatted string or path.
         """
         found = self._device_findings(dev)
@@ -1790,12 +1714,10 @@ class LanDevicesPage(_Page):
     def _device_security_rank(self, dev) -> int:
         """Sort worst-first: a device with a critical finding outranks a clean one.
 
-        Manages device security rank operations and coordinates related state changes for the component.
-
-        Args:
+            Args:
             dev: The dev parameter.
 
-        Returns:
+            Returns:
             int: Result of the operation.
         """
         found = self._device_findings(dev)
@@ -1806,22 +1728,17 @@ class LanDevicesPage(_Page):
     def _identity_of(self, dev) -> str:
         """Return the stable identity key used for metadata/findings lookup.
 
-        Manages identity of operations and coordinates related state changes for the component.
-
-        Args:
+            Args:
             dev: The dev parameter.
 
-        Returns:
+            Returns:
             str: Formatted string or path.
         """
         resolver = self._identity_key_for
         return resolver(dev) if resolver is not None else ""
 
     def _open_device_window(self, *_args):
-        """Open the selected device in its own full-detail premium window.
-
-        Manages open device window operations and coordinates related state changes for the component.
-        """
+        """Open the selected device in its own full-detail premium window."""
         device = self._selected_device()
         result = self._last_result
         if device is None or result is None:
@@ -1844,9 +1761,7 @@ class LanDevicesPage(_Page):
     def _forget_device_window(self, window) -> None:
         """Forget device window for the results widgets; keeps buttons/state in sync.
 
-        Manages forget device window operations and coordinates related state changes for the component.
-
-        Args:
+            Args:
             window: Parent window or shell controller instance.
         """
         self._device_windows = [
@@ -1865,9 +1780,7 @@ class LanDevicesPage(_Page):
     def _device_action(self, action: str):
         """Device action for the results widgets on a worker thread; keeps buttons/state in sync.
 
-        Manages device action operations and coordinates related state changes for the component.
-
-        Args:
+            Args:
             action (str): The action parameter.
         """
         device = self._selected_device()
@@ -1927,10 +1840,7 @@ class LanDevicesPage(_Page):
         QMessageBox.warning(self, "Device action failed", message)
 
     def _open_selected_service(self):
-        """Open selected service for the results widgets in the browser/tool; keeps buttons/state in sync.
-
-        Manages open selected service operations and coordinates related state changes for the component.
-        """
+        """Open selected service for the results widgets in the browser/tool; keeps buttons/state in sync."""
         device = self._selected_device()
         if device is None:
             return
@@ -1953,9 +1863,7 @@ class LanDevicesPage(_Page):
     def _load_selected_metadata(self, device):
         """Load selected metadata for the results widgets; keeps buttons/state in sync.
 
-        Manages load selected metadata operations and coordinates related state changes for the component.
-
-        Args:
+            Args:
             device: The device parameter.
         """
         try:
@@ -1975,10 +1883,7 @@ class LanDevicesPage(_Page):
         self.notes_input.setText(metadata.notes if metadata else "")
 
     def _save_selected_metadata(self):
-        """Save selected metadata for the results widgets after confirmation; keeps buttons/state in sync.
-
-        Manages save selected metadata operations and coordinates related state changes for the component.
-        """
+        """Save selected metadata for the results widgets after confirmation; keeps buttons/state in sync."""
         device = self._selected_device()
         if device is None:
             QMessageBox.information(
@@ -2007,10 +1912,7 @@ class LanDevicesPage(_Page):
         self.table.model.set_records(self.table.model.records)
 
     def _export_inventory_csv(self):
-        """Export inventory csv for the results widgets via file dialog as CSV; keeps buttons/state in sync.
-
-        Manages export inventory csv operations and coordinates related state changes for the component.
-        """
+        """Export inventory csv for the results widgets via file dialog as CSV; keeps buttons/state in sync."""
         path, _selected = QFileDialog.getSaveFileName(
             self, "Export device inventory", "network-inventory.csv",
             "CSV inventory (*.csv)")
@@ -2028,10 +1930,7 @@ class LanDevicesPage(_Page):
         self.status.setText(f"Exported {count} inventory device(s) to {path}")
 
     def _import_inventory_csv(self):
-        """Import inventory csv for the results widgets via file dialog as CSV; keeps buttons/state in sync.
-
-        Manages import inventory csv operations and coordinates related state changes for the component.
-        """
+        """Import inventory csv for the results widgets via file dialog as CSV; keeps buttons/state in sync."""
         path, _selected = QFileDialog.getOpenFileName(
             self, "Import device metadata", "", "CSV inventory (*.csv)")
         if not path:
@@ -2066,10 +1965,7 @@ class LanDevicesPage(_Page):
             self._load_selected_metadata(device)
 
     def _lookup_external_exposure(self):
-        """Lookup external exposure for the results widgets after confirmation on a worker thread; keeps buttons/state in sync.
-
-        Manages lookup external exposure operations and coordinates related state changes for the component.
-        """
+        """Lookup external exposure for the results widgets after confirmation on a worker thread; keeps buttons/state in sync."""
         result = self._last_result
         wan = getattr(result, "wan_status", None) if result is not None else None
         public_ip = getattr(wan, "external_ip", "") if wan is not None else ""
@@ -2132,10 +2028,7 @@ class LanDevicesPage(_Page):
         self.exposure_output.setPlainText(message)
 
     def _create_schedule(self):
-        """Create schedule for the results widgets after confirmation; keeps buttons/state in sync.
-
-        Manages create schedule operations and coordinates related state changes for the component.
-        """
+        """Create schedule for the results widgets after confirmation; keeps buttons/state in sync."""
         answer = QMessageBox.question(
             self, "Create recurring network scan?",
             "This creates or replaces one Windows Task Scheduler entry for "
@@ -2165,10 +2058,7 @@ class LanDevicesPage(_Page):
         self._run_schedule_action("create", spec)
 
     def _delete_schedule(self):
-        """Delete schedule for the results widgets after confirmation; keeps buttons/state in sync.
-
-        Manages delete schedule operations and coordinates related state changes for the component.
-        """
+        """Delete schedule for the results widgets after confirmation; keeps buttons/state in sync."""
         answer = QMessageBox.question(
             self, "Remove recurring scan?",
             "Remove the Cortex recurring network-security scan from Windows "
@@ -2181,9 +2071,7 @@ class LanDevicesPage(_Page):
     def _run_schedule_action(self, action: str, spec=None):
         """Run schedule action for the results widgets on a worker thread; keeps buttons/state in sync.
 
-        Manages run schedule action operations and coordinates related state changes for the component.
-
-        Args:
+            Args:
             action (str): The action parameter.
             spec: The spec parameter.
         """
@@ -2220,10 +2108,7 @@ class LanDevicesPage(_Page):
         QMessageBox.warning(self, "Schedule operation failed", message)
 
     def _confirm_deep_audit(self):
-        """Confirm deep audit for the results widgets after confirmation; keeps buttons/state in sync.
-
-        Manages confirm deep audit operations and coordinates related state changes for the component.
-        """
+        """Confirm deep audit for the results widgets after confirmation; keeps buttons/state in sync."""
         answer = QMessageBox.question(
             self,
             "Run authorized deep audit?",
@@ -2239,10 +2124,7 @@ class LanDevicesPage(_Page):
                        include_upnp_wan=True)
 
     def _update_vendors(self):
-        """Update vendors for the results widgets on a worker thread; keeps buttons/state in sync.
-
-        Manages update vendors operations and coordinates related state changes for the component.
-        """
+        """Update vendors for the results widgets on a worker thread; keeps buttons/state in sync."""
         self.vendor_btn.setEnabled(False)
         self.status.setText("Downloading official IEEE vendor assignments\u2026")
         self._vendor_worker = VendorDatabaseWorker()
@@ -2252,9 +2134,7 @@ class LanDevicesPage(_Page):
     def _vendors_updated(self, ok: bool, message: str):
         """Handle worker results: note status, re-enable buttons and clear the busy state.
 
-        Manages vendors updated operations and coordinates related state changes for the component.
-
-        Args:
+            Args:
             ok (bool): The ok parameter.
             message (str): Informational or progress status message.
         """
@@ -2280,10 +2160,7 @@ class LanDevicesPage(_Page):
         self.status.setText(f"Vendor update failed: {message}")
 
     def _export_report(self):
-        """Export report for the results widgets via file dialog as CSV; keeps buttons/state in sync.
-
-        Manages export report operations and coordinates related state changes for the component.
-        """
+        """Export report for the results widgets via file dialog as CSV; keeps buttons/state in sync."""
         result = self._last_result
         if result is None:
             return
@@ -2365,10 +2242,7 @@ class LanDevicesPage(_Page):
         self.win.statusBar().showMessage(f"Report exported to {target}", 8000)
 
     def _export_inventory_csv(self):
-        """Export full network inventory to CSV via NetworkInventory.
-
-        Manages export inventory csv operations and coordinates related state changes for the component.
-        """
+        """Export full network inventory to CSV via NetworkInventory."""
         file_path, _ = QFileDialog.getSaveFileName(
             self, "Export Network Inventory CSV", "network_inventory.csv", "CSV Files (*.csv)"
         )
@@ -2387,10 +2261,7 @@ class LanDevicesPage(_Page):
             QMessageBox.critical(self, "Export Error", f"Failed to export inventory CSV:\n{exc}")
 
     def _open_wan_audit(self):
-        """Navigate to WAN Audit page or run external WAN audit.
-
-        Manages open wan audit operations and coordinates related state changes for the component.
-        """
+        """Navigate to WAN Audit page or run external WAN audit."""
         try:
             if hasattr(self.win, "nav_to"):
                 self.win.nav_to("wan_audit")
@@ -2436,10 +2307,7 @@ class LanDevicesPage(_Page):
             QMessageBox.critical(self, "Scan LAN Error", str(exc))
 
     def _show_device_details(self, *_args):
-        """Show device details for the results widgets; keeps buttons/state in sync.
-
-        Manages show device details operations and coordinates related state changes for the component.
-        """
+        """Show device details for the results widgets; keeps buttons/state in sync."""
         device = self.table.selected_record()
         if device is None or self._last_result is None:
             self.detail_tabs.setVisible(False)
@@ -2503,10 +2371,7 @@ class LanDevicesPage(_Page):
         self.detail_tabs.setVisible(True)
 
     def _cancel(self):
-        """Cancel.
-
-        Manages cancel operations and coordinates related state changes for the component.
-        """
+        """Cancel the running scan and vendor workers and show a Cancelling status."""
         worker = getattr(self, "_worker", None)
         if worker is not None:
             worker.cancel()
@@ -2544,9 +2409,7 @@ class LanDevicesPage(_Page):
     def _on_loaded(self, result):
         """Handle worker results: refresh tables/trees, update cards/labels, update the state panel and clear the busy state.
 
-        Manages on loaded operations and coordinates related state changes for the component.
-
-        Args:
+            Args:
             result: Collection or dictionary holding operation results.
         """
         self._busy(False)
@@ -2557,9 +2420,7 @@ class LanDevicesPage(_Page):
         def _ip_key(dev):
             """Build a numeric sort key for IP addresses so dotted octets order correctly.
 
-            Manages ip key operations and coordinates related state changes for the component.
-
-            Args:
+                Args:
                 dev: The dev parameter.
             """
             try:
@@ -2763,10 +2624,7 @@ class LanDevicesPage(_Page):
 # =====================================================================
 
 class _ToolWorker(QObject):
-    """Toolworker.
-
-    Manages ToolWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker running ping/traceroute/dns/ports/ipinfo via NetworkTools; emits finished(tool, result) / failed(str)."""
 
     finished = Signal(str, object)   # (tool, result)
     failed = Signal(str)
@@ -2821,13 +2679,10 @@ class _ToolWorker(QObject):
 
 
 class RemoteServerDialog(QDialog):
-    """Remoteserverdialog.
-
-    Manages RemoteServerDialog operations and coordinates related state changes for the component.
-    """
+    """Remote Server Browser dialog for SMB/FTP/SFTP/WebDAV with connection form, NetworkManager, remote file table and Connect/Disconnect/Download actions."""
 
     def __init__(self, parent=None):
-        """Init.
+        """Build the remote server dialog with connection form, NetworkManager, file table and action buttons.
 
         Initializes the instance and configures internal state.
 
@@ -2919,20 +2774,15 @@ class RemoteServerDialog(QDialog):
         layout.addWidget(self.status_lbl)
 
     def _get_active_protocol(self):
-        """Get active protocol.
-
-        Manages get active protocol operations and coordinates related state changes for the component.
-        """
+        """Handle get active protocol."""
         from cortex_unified.explorer.network import NetworkProtocol
         idx = self.proto_combo.currentIndex()
         return [NetworkProtocol.SMB, NetworkProtocol.FTP, NetworkProtocol.SFTP, NetworkProtocol.WEBDAV][idx]
 
     def _on_proto_changed(self, idx: int):
-        """On proto changed.
+        """Handle on proto changed.
 
-        Manages on proto changed operations and coordinates related state changes for the component.
-
-        Args:
+            Args:
             idx (int): The idx parameter.
         """
         ports = ["445", "21", "22", "443"]
@@ -2976,10 +2826,7 @@ class RemoteServerDialog(QDialog):
             QMessageBox.critical(self, "Connection Error", str(exc))
 
     def _disconnect(self):
-        """Disconnect.
-
-        Manages disconnect operations and coordinates related state changes for the component.
-        """
+        """Disconnect the active protocol via NetworkManager and reset buttons, table and status."""
         if self._connected_proto:
             self._mgr.disconnect(self._connected_proto)
             self._connected_proto = None
@@ -2991,10 +2838,7 @@ class RemoteServerDialog(QDialog):
         self.files_table.setRowCount(0)
 
     def _list_remote_files(self):
-        """List remote files.
-
-        Manages list remote files operations and coordinates related state changes for the component.
-        """
+        """Handle list remote files and refreshes the results table."""
         if not self._connected_proto:
             return
         path = self.remote_path_input.text().strip() or "/"
@@ -3016,10 +2860,7 @@ class RemoteServerDialog(QDialog):
             self.status_lbl.setText(f"Failed to list: {exc}")
 
     def _download_selected(self):
-        """Download selected.
-
-        Manages download selected operations and coordinates related state changes for the component.
-        """
+        """Download the selected remote file via the provider to a chosen local folder with result dialogs."""
         row = self.files_table.currentRow()
         if row < 0 or not self._connected_proto:
             return
@@ -3044,10 +2885,7 @@ class RemoteServerDialog(QDialog):
 
 
 class NetworkToolsPage(_Page):
-    """Networktoolspage.
-
-    Manages NetworkToolsPage operations and coordinates related state changes for the component.
-    """
+    """Network Tools page with target input, Ping/Traceroute/DNS/IP-Info/Ports buttons, server-dialog button, progress and results views; runs via _ToolWorker."""
 
     def __init__(self, win):
         """Build the page layout (buttons, tables, cards, title header) and connect button/worker actions.
@@ -3124,11 +2962,9 @@ class NetworkToolsPage(_Page):
         self._busy_count = 0
 
     def _run(self, tool: str):
-        """Run.
+        """Validate the target, show progress/summary and run the chosen tool via _ToolWorker.
 
-        Manages run operations and coordinates related state changes for the component.
-
-        Args:
+            Args:
             tool (str): The tool parameter.
         """
         target = self.target.text().strip()
@@ -3146,9 +2982,7 @@ class NetworkToolsPage(_Page):
     def _on_result(self, tool: str, result):
         """Handle worker results: update widgets and clear the busy state.
 
-        Manages on result operations and coordinates related state changes for the component.
-
-        Args:
+            Args:
             tool (str): The tool parameter.
             result: Collection or dictionary holding operation results.
         """
@@ -3168,9 +3002,7 @@ class NetworkToolsPage(_Page):
     def _show_ping(self, r: dict):
         """Show ping for the results widgets; keeps buttons/state in sync.
 
-        Manages show ping operations and coordinates related state changes for the component.
-
-        Args:
+            Args:
             r (dict): The r parameter.
         """
         self.tbl.setVisible(False)
@@ -3187,9 +3019,7 @@ class NetworkToolsPage(_Page):
     def _show_traceroute(self, hops: list):
         """Show traceroute for the results widgets; keeps buttons/state in sync.
 
-        Manages show traceroute operations and coordinates related state changes for the component.
-
-        Args:
+            Args:
             hops (list): The hops parameter.
         """
         self.summary.setText(f"Route traced - {len(hops)} hop(s):")
@@ -3205,9 +3035,7 @@ class NetworkToolsPage(_Page):
     def _show_dns(self, r: dict):
         """Show dns for the results widgets; keeps buttons/state in sync.
 
-        Manages show dns operations and coordinates related state changes for the component.
-
-        Args:
+            Args:
             r (dict): The r parameter.
         """
         fwd = r["forward"]
@@ -3227,9 +3055,7 @@ class NetworkToolsPage(_Page):
     def _show_ports(self, res: dict):
         """Show ports for the results widgets; keeps buttons/state in sync.
 
-        Manages show ports operations and coordinates related state changes for the component.
-
-        Args:
+            Args:
             res (dict): The res parameter.
         """
         from cortex_unified.system_tools.network_tools import COMMON_PORTS
@@ -3254,9 +3080,7 @@ class NetworkToolsPage(_Page):
     def _show_ipinfo(self, info: dict):
         """Show ipinfo for the results widgets; keeps buttons/state in sync.
 
-        Manages show ipinfo operations and coordinates related state changes for the component.
-
-        Args:
+            Args:
             info (dict): The info parameter.
         """
         self.tbl.setVisible(False)
@@ -3285,10 +3109,7 @@ class NetworkToolsPage(_Page):
         self.summary.setText(f"Error: {msg}")
 
     def _open_remote_server_dialog(self):
-        """Open the interactive Remote Server Browser (SMB/FTP/SFTP/WebDAV) dialog.
-
-        Manages open remote server dialog operations and coordinates related state changes for the component.
-        """
+        """Open the interactive Remote Server Browser (SMB/FTP/SFTP/WebDAV) dialog."""
         dlg = RemoteServerDialog(self)
         dlg.exec()
 
@@ -3301,10 +3122,7 @@ from PySide6.QtWidgets import QSpinBox  # noqa: E402
 
 
 class AuthorizeWorker(QObject):
-    """Authorizeworker.
-
-    Manages AuthorizeWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker authorizing a host via TargetAuthorizer.authorize; emits finished(dict) / failed(str)."""
     finished = Signal(dict)
     failed = Signal(str)
 
@@ -3335,10 +3153,7 @@ class AuthorizeWorker(QObject):
 
 
 class LoadTestWorker(QObject):
-    """Loadtestworker.
-
-    Manages LoadTestWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker running HTTP/TCP load via LoadTester.run_http/run_tcp with progress and cancel; emits progress(dict) / finished(dict) / failed(str)."""
     progress = Signal(dict)
     finished = Signal(dict)
     failed = Signal(str)
@@ -3394,10 +3209,7 @@ class LoadTestWorker(QObject):
 
 
 class LoadTesterPage(_Page):
-    """Loadtesterpage.
-
-    Manages LoadTesterPage operations and coordinates related state changes for the component.
-    """
+    """Load/Resilience Tester page with target/auth row, mode/port/concurrency/duration controls, Check/Start actions, progress and results; uses AuthorizeWorker/LoadTestWorker."""
 
     def __init__(self, win):
         """Build the page layout (buttons, cards, title header, controls) and connect button/worker actions.
@@ -3507,19 +3319,13 @@ class LoadTesterPage(_Page):
 
     # -- mode --
     def _mode_changed(self):
-        """Mode changed via the worker/widgets; results return through worker signals.
-
-        Manages mode changed operations and coordinates related state changes for the component.
-        """
+        """Mode changed via the worker/widgets; results return through worker signals."""
         is_tcp = self.mode.currentIndex() == 1
         self.port.setEnabled(is_tcp)
 
     # -- authorization --
     def _check(self):
-        """Check.
-
-        Manages check operations and coordinates related state changes for the component.
-        """
+        """Validate the target, disable Check and authorize the host via AuthorizeWorker."""
         host = self.target.text().strip()
         if not host:
             self.auth_label.setText("Enter a target first.")
@@ -3531,9 +3337,7 @@ class LoadTesterPage(_Page):
     def _on_auth(self, auth: dict):
         """Handle worker results: update cards/labels, re-enable buttons and clear the busy state.
 
-        Manages on auth operations and coordinates related state changes for the component.
-
-        Args:
+            Args:
             auth (dict): The auth parameter.
         """
         self.check_btn.setEnabled(True)
@@ -3555,9 +3359,7 @@ class LoadTesterPage(_Page):
     def _offer_token(self, auth: dict):
         """Offer token via the confirmation dialog; results return through worker signals.
 
-        Manages offer token operations and coordinates related state changes for the component.
-
-        Args:
+            Args:
             auth (dict): The auth parameter.
         """
         from cortex_unified.system_tools.load_tester import TargetAuthorizer
@@ -3599,10 +3401,7 @@ class LoadTesterPage(_Page):
         self._start()
 
     def _start(self):
-        """Start.
-
-        Manages start operations and coordinates related state changes for the component.
-        """
+        """Build the HTTP/TCP config from the widgets, confirm, then run LoadTestWorker with progress."""
         if not self._auth:
             self.auth_label.setText("Check authorization first.")
             return
@@ -3682,14 +3481,12 @@ class LoadTesterPage(_Page):
 
     @staticmethod
     def _verdict(s: dict) -> str:
-        """Verdict.
+        """Map error_rate and p95 latency to a Healthy/Approaching/Breaking-point HTML verdict.
 
-        Manages verdict operations and coordinates related state changes for the component.
-
-        Args:
+            Args:
             s (dict): The s parameter.
 
-        Returns:
+            Returns:
             str: Formatted string or path.
         """
         er = s.get("error_rate", 0)

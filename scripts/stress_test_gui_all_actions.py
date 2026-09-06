@@ -38,9 +38,7 @@ from cortex_unified.ui.premium.window import PremiumMainWindow
 
 
 def pump_events(app: QApplication, duration_ms: int = 150) -> None:
-    """pump_events.
-
-    Manages pump events operations and coordinates related state changes for the component.
+    """Pump events using app.processEvents, time.monotonic, time.sleep.
 
     Args:
         app (QApplication): The app parameter.
@@ -53,10 +51,7 @@ def pump_events(app: QApplication, duration_ms: int = 150) -> None:
 
 
 def main():
-    """Main.
-
-    Manages main operations and coordinates related state changes for the component.
-    """
+    """Main using QApplication.instance, page.findChildren, btn.isEnabled."""
     print("=" * 80, flush=True)
     print("  CORTEX CLEANER - COMPREHENSIVE GUI INTERACTIVE STRESS TEST", flush=True)
     print("=" * 80, flush=True)

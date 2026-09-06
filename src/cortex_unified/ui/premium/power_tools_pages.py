@@ -58,9 +58,9 @@ IS_WINDOWS = sys.platform == "win32"
 # ===========================================================================
 
 class HashVerifierPage(_Page):
-    """Hashverifierpage.
+    """Hash Verifier page with file picker, digests table, and manifest actions.
 
-    Manages HashVerifierPage operations and coordinates related state changes for the component.
+        Backed by HashTool, QMessageBox, QFileDialog; builds tables, buttons, and dialogs for the actions below.
     """
 
     def __init__(self, win):
@@ -127,7 +127,7 @@ class HashVerifierPage(_Page):
     def _pick_file(self):
         """Pick a file to hash and enable computation.
 
-        Manages pick file operations and coordinates related state changes for the component.
+            Uses QFileDialog; updates self._current_file, self.path_lbl, self.calc_btn.
         """
         fn, _ = QFileDialog.getOpenFileName(self, "Select File to Hash", str(Path.home()))
         if fn:
@@ -140,7 +140,7 @@ class HashVerifierPage(_Page):
     def _compute_hashes(self):
         """Compute MD5, SHA-1, SHA-256, SHA-512, and CRC32 for the chosen file.
 
-        Manages compute hashes operations and coordinates related state changes for the component.
+            Uses HashTool; updates self._current_file, self.table, self._copy_to_clip.
         """
         if not self._current_file or not self._current_file.is_file():
             return
@@ -166,10 +166,11 @@ class HashVerifierPage(_Page):
     def _copy_to_clip(self, text: str):
         """Copy a checksum digest to the clipboard and confirm.
 
-        Manages copy to clip operations and coordinates related state changes for the component.
+            Uses QMessageBox.
 
-        Args:
-            text (str): Display text string.
+                    Args:
+                        text (str): Display text string.
+
         """
         from PySide6.QtWidgets import QApplication
         QApplication.clipboard().setText(text)
@@ -178,7 +179,7 @@ class HashVerifierPage(_Page):
     def _verify_manifest(self):
         """Verify a .sfv/.md5/.sha256/.sha512 manifest and summarize match results.
 
-        Manages verify manifest operations and coordinates related state changes for the component.
+            Uses HashTool, QMessageBox.
         """
         fn, _ = QFileDialog.getOpenFileName(self, "Open Checksum Manifest", str(Path.home()), "Manifests (*.sfv *.md5 *.sha256 *.sha512);;All Files (*.*)")
         if not fn:
@@ -205,9 +206,9 @@ class HashVerifierPage(_Page):
 # ===========================================================================
 
 class BatchRenamerPage(_Page):
-    """Batchrenamerpage.
+    """Batch Renamer page with pattern form, preview table, and apply/undo buttons.
 
-    Manages BatchRenamerPage operations and coordinates related state changes for the component.
+        Backed by BatchRenamer, QMessageBox, QFileDialog; builds tables, buttons, and dialogs for the actions below.
     """
 
     def __init__(self, win):
@@ -300,7 +301,7 @@ class BatchRenamerPage(_Page):
     def _pick_files(self):
         """Pick files to rename and refresh the preview.
 
-        Manages pick files operations and coordinates related state changes for the component.
+            Uses QFileDialog; updates self._files, self.count_lbl, self._update_preview.
         """
         files, _ = QFileDialog.getOpenFileNames(self, "Select Files to Rename", str(Path.home()))
         if files:
@@ -311,7 +312,7 @@ class BatchRenamerPage(_Page):
     def _update_preview(self):
         """Recompute the rename plan and show per-file status in the table.
 
-        Manages update preview operations and coordinates related state changes for the component.
+            Updates self._files, self.case_combo, self._current_plan.
         """
         if not self._files:
             return
@@ -357,7 +358,7 @@ class BatchRenamerPage(_Page):
     def _apply_rename(self):
         """Execute the previewed rename plan and report the outcome.
 
-        Manages apply rename operations and coordinates related state changes for the component.
+            Uses QMessageBox; updates self._current_plan, self._renamer, self._files.
         """
         if not self._current_plan:
             return
@@ -372,7 +373,7 @@ class BatchRenamerPage(_Page):
     def _undo_rename(self):
         """Revert the last executed rename.
 
-        Manages undo rename operations and coordinates related state changes for the component.
+            Uses QMessageBox; updates self._renamer, self._update_preview.
         """
         count, errs = self._renamer.undo_last()
         if errs and count == 0:
@@ -387,9 +388,9 @@ class BatchRenamerPage(_Page):
 # ===========================================================================
 
 class FolderSyncPage(_Page):
-    """Foldersyncpage.
+    """Folder Sync page with folder pickers, compare controls, diff table, and sync mode.
 
-    Manages FolderSyncPage operations and coordinates related state changes for the component.
+        Backed by DirectoryDiffEngine, QMessageBox, QFileDialog; builds tables, buttons, and dialogs for the actions below.
     """
 
     def __init__(self, win):
@@ -479,7 +480,7 @@ class FolderSyncPage(_Page):
     def _pick_left(self):
         """Pick the left folder to compare.
 
-        Manages pick left operations and coordinates related state changes for the component.
+            Uses QFileDialog; updates self._left_dir, self.left_lbl.
         """
         d = QFileDialog.getExistingDirectory(self, "Select Left Folder", str(Path.home()))
         if d:
@@ -491,7 +492,7 @@ class FolderSyncPage(_Page):
     def _pick_right(self):
         """Pick the right folder to compare.
 
-        Manages pick right operations and coordinates related state changes for the component.
+            Uses QFileDialog; updates self._right_dir, self.right_lbl.
         """
         d = QFileDialog.getExistingDirectory(self, "Select Right Folder", str(Path.home()))
         if d:
@@ -503,7 +504,7 @@ class FolderSyncPage(_Page):
     def _run_compare(self):
         """Compare the two folders and fill the diff table; enable sync.
 
-        Manages run compare operations and coordinates related state changes for the component.
+            Uses DirectoryDiffEngine, QMessageBox; updates self._left_dir, self._right_dir, self._diff_list.
         """
         if not self._left_dir or not self._right_dir:
             QMessageBox.warning(self, "Compare", "Please select both Left and Right folders first.")
@@ -539,7 +540,7 @@ class FolderSyncPage(_Page):
     def _run_sync(self):
         """Confirm and execute the selected sync mode, then re-compare.
 
-        Manages run sync operations and coordinates related state changes for the component.
+            Uses DirectoryDiffEngine, QMessageBox; updates self._diff_list, self._left_dir, self._right_dir.
         """
         if not self._diff_list or not self._left_dir or not self._right_dir:
             return
@@ -576,9 +577,9 @@ class FolderSyncPage(_Page):
 # ===========================================================================
 
 class FileSplitterPage(_Page):
-    """Filesplitterpage.
+    """Splitter/Joiner page with split and join tabs.
 
-    Manages FileSplitterPage operations and coordinates related state changes for the component.
+        Backed by FileSplitterJoiner, QMessageBox, QFileDialog; builds tables, buttons, and dialogs for the actions below.
     """
 
     def __init__(self, win):
@@ -663,7 +664,7 @@ class FileSplitterPage(_Page):
     def _pick_split_src(self):
         """Pick the file to split and enable the split button.
 
-        Manages pick split src operations and coordinates related state changes for the component.
+            Uses QFileDialog; updates self._split_src, self.s_path_lbl, self.do_split_btn.
         """
         f, _ = QFileDialog.getOpenFileName(self, "Select File to Split", str(Path.home()))
         if f:
@@ -676,7 +677,7 @@ class FileSplitterPage(_Page):
     def _execute_split(self):
         """Split the source file into preset-sized chunks with a manifest.
 
-        Manages execute split operations and coordinates related state changes for the component.
+            Uses FileSplitterJoiner, QMessageBox; updates self._split_src, self.preset_combo.
         """
         if not self._split_src:
             return
@@ -705,7 +706,7 @@ class FileSplitterPage(_Page):
     def _pick_join_src(self):
         """Pick the first part or manifest to join and enable the join button.
 
-        Manages pick join src operations and coordinates related state changes for the component.
+            Uses QFileDialog; updates self._join_src, self.j_path_lbl, self.do_join_btn.
         """
         f, _ = QFileDialog.getOpenFileName(self, "Select First Part or Manifest", str(Path.home()), "Split Parts (*.001 *.json);;All Files (*.*)")
         if f:
@@ -718,7 +719,7 @@ class FileSplitterPage(_Page):
     def _execute_join(self):
         """Reassemble the split parts into the original file.
 
-        Manages execute join operations and coordinates related state changes for the component.
+            Uses FileSplitterJoiner, QMessageBox; updates self._join_src.
         """
         if not self._join_src:
             return
@@ -740,9 +741,9 @@ class FileSplitterPage(_Page):
 # ===========================================================================
 
 class FileUnlockerPage(_Page):
-    """Fileunlockerpage.
+    """File Unlocker page with a picker, lock table, and per-process kill actions.
 
-    Manages FileUnlockerPage operations and coordinates related state changes for the component.
+        Backed by FileUnlocker, QMessageBox, QFileDialog; builds tables, buttons, and dialogs for the actions below.
     """
 
     def __init__(self, win):
@@ -793,7 +794,7 @@ class FileUnlockerPage(_Page):
     def _pick_file(self):
         """Pick the locked file and immediately inspect its locks.
 
-        Manages pick file operations and coordinates related state changes for the component.
+            Uses QFileDialog; updates self._current_file, self.path_lbl, self.scan_btn.
         """
         f, _ = QFileDialog.getOpenFileName(self, "Select Locked File", str(Path.home()))
         if f:
@@ -807,7 +808,7 @@ class FileUnlockerPage(_Page):
     def _inspect_locks(self):
         """List processes holding locks on the chosen file.
 
-        Manages inspect locks operations and coordinates related state changes for the component.
+            Uses FileUnlocker, QMessageBox; updates self._current_file, self._locking_procs, self.table.
         """
         if not self._current_file:
             return
@@ -834,10 +835,11 @@ class FileUnlockerPage(_Page):
     def _terminate_proc(self, pid: int):
         """Force-terminate a locking process, then re-inspect locks.
 
-        Manages terminate proc operations and coordinates related state changes for the component.
+            Uses FileUnlocker, QMessageBox; updates self._inspect_locks.
 
-        Args:
-            pid (int): The pid parameter.
+                    Args:
+                        pid (int): The pid parameter.
+
         """
         from NexusExplorer.native.nexus_unlocker import FileUnlocker
         ok, msg = FileUnlocker.unlock_and_terminate(pid, force=True)
@@ -853,9 +855,9 @@ class FileUnlockerPage(_Page):
 # ===========================================================================
 
 class AdsManagerPage(_Page):
-    """Adsmanagerpage.
+    """ADS Manager page with a file picker, unblock button, and streams table.
 
-    Manages AdsManagerPage operations and coordinates related state changes for the component.
+        Backed by AlternateDataStreamsManager, QMessageBox, QFileDialog; builds tables, buttons, and dialogs for the actions below.
     """
 
     def __init__(self, win):
@@ -904,7 +906,7 @@ class AdsManagerPage(_Page):
     def _pick_file(self):
         """Pick a file and list its alternate data streams.
 
-        Manages pick file operations and coordinates related state changes for the component.
+            Uses QFileDialog; updates self._current_file, self.path_lbl, self._refresh_streams.
         """
         f, _ = QFileDialog.getOpenFileName(self, "Select File with Streams", str(Path.home()))
         if f:
@@ -917,7 +919,7 @@ class AdsManagerPage(_Page):
     def _refresh_streams(self):
         """List the file's NTFS streams and enable unblocking when a Zone.Identifier exists.
 
-        Manages refresh streams operations and coordinates related state changes for the component.
+            Uses AlternateDataStreamsManager; updates self._current_file, self.table, self.unblock_btn.
         """
         if not self._current_file:
             return
@@ -941,7 +943,7 @@ class AdsManagerPage(_Page):
     def _unblock_file(self):
         """Remove the Zone.Identifier stream to unblock the file.
 
-        Manages unblock file operations and coordinates related state changes for the component.
+            Uses AlternateDataStreamsManager, QMessageBox; updates self._current_file, self._refresh_streams.
         """
         if not self._current_file:
             return
@@ -956,10 +958,11 @@ class AdsManagerPage(_Page):
     def _delete_stream(self, stream_name: str):
         """Delete the named alternate data stream, then refresh.
 
-        Manages delete stream operations and coordinates related state changes for the component.
+            Uses AlternateDataStreamsManager, QMessageBox; updates self._current_file, self._refresh_streams.
 
-        Args:
-            stream_name (str): The stream name parameter.
+                    Args:
+                        stream_name (str): The stream name parameter.
+
         """
         if not self._current_file:
             return
@@ -977,9 +980,9 @@ class AdsManagerPage(_Page):
 # ===========================================================================
 
 class EventLogCleanerPage(_Page):
-    """Eventlogcleanerpage.
+    """Event Log page with stat cards, log table, and refresh/clear actions.
 
-    Manages EventLogCleanerPage operations and coordinates related state changes for the component.
+        Backed by EventLogCleaner, QMessageBox; builds tables, buttons, and dialogs for the actions below.
     """
 
     def __init__(self, win):
@@ -1038,7 +1041,7 @@ class EventLogCleanerPage(_Page):
     def _load_logs(self):
         """Load all event log channels into the table and stat cards.
 
-        Manages load logs operations and coordinates related state changes for the component.
+            Uses EventLogCleaner; updates self._logs, self.table, self.stat_channels.
         """
         from cortex_unified.system_tools.event_log_cleaner import EventLogCleaner
         self._logs = EventLogCleaner.list_all_logs()
@@ -1060,7 +1063,7 @@ class EventLogCleanerPage(_Page):
     def _clear_all_logs(self):
         """Confirm and clear every event log channel, then reload.
 
-        Manages clear all logs operations and coordinates related state changes for the component.
+            Uses EventLogCleaner, QMessageBox; updates self._load_logs.
         """
         confirm = QMessageBox.question(
             self,
@@ -1082,9 +1085,9 @@ class EventLogCleanerPage(_Page):
 # ===========================================================================
 
 class SystemCacheRebuilderPage(_Page):
-    """Systemcacherebuilderpage.
+    """Cache Rebuilder page with restart-shell option and rebuild button.
 
-    Manages SystemCacheRebuilderPage operations and coordinates related state changes for the component.
+        Backed by SystemCacheRebuilder, QMessageBox; builds tables, buttons, and dialogs for the actions below.
     """
 
     def __init__(self, win):
@@ -1130,7 +1133,7 @@ class SystemCacheRebuilderPage(_Page):
     def _execute_rebuild(self):
         """Rebuild font and icon caches and report the outcome.
 
-        Manages execute rebuild operations and coordinates related state changes for the component.
+            Uses SystemCacheRebuilder, QMessageBox; updates self.restart_shell_chk.
         """
         from cortex_unified.system_tools.system_cache_rebuilder import SystemCacheRebuilder
         report = SystemCacheRebuilder.execute_full_cache_rebuild(restart_shell=self.restart_shell_chk.isChecked())
@@ -1146,9 +1149,9 @@ class SystemCacheRebuilderPage(_Page):
 # ===========================================================================
 
 class NetworkOptimizerPage(_Page):
-    """Networkoptimizerpage.
+    """Network Optimizer page with TCP status form, tuning buttons, and repair actions.
 
-    Manages NetworkOptimizerPage operations and coordinates related state changes for the component.
+        Backed by NetworkStackOptimizer, QMessageBox; builds tables, buttons, and dialogs for the actions below.
     """
 
     def __init__(self, win):
@@ -1227,7 +1230,7 @@ class NetworkOptimizerPage(_Page):
     def _load_tcp_status(self):
         """Show current TCP autotuning, RSS, and ECN status.
 
-        Manages load tcp status operations and coordinates related state changes for the component.
+            Uses NetworkStackOptimizer; updates self.autotuning_lbl, self.rss_lbl, self.ecn_lbl.
         """
         from cortex_unified.system_tools.network_stack_optimizer import NetworkStackOptimizer
         st = NetworkStackOptimizer.get_tcp_settings()
@@ -1238,10 +1241,11 @@ class NetworkOptimizerPage(_Page):
     def _set_autotuning(self, level: str):
         """Set the TCP autotuning level, then refresh status.
 
-        Manages set autotuning operations and coordinates related state changes for the component.
+            Uses NetworkStackOptimizer, QMessageBox; updates self._load_tcp_status.
 
-        Args:
-            level (str): The level parameter.
+                    Args:
+                        level (str): The level parameter.
+
         """
         from cortex_unified.system_tools.network_stack_optimizer import NetworkStackOptimizer
         ok, msg = NetworkStackOptimizer.set_tcp_autotuning(level)
@@ -1251,7 +1255,7 @@ class NetworkOptimizerPage(_Page):
     def _flush_dns(self):
         """Flush the DNS resolver cache and report.
 
-        Manages flush dns operations and coordinates related state changes for the component.
+            Uses NetworkStackOptimizer, QMessageBox.
         """
         from cortex_unified.system_tools.network_stack_optimizer import NetworkStackOptimizer
         ok, msg = NetworkStackOptimizer.flush_dns()
@@ -1260,7 +1264,7 @@ class NetworkOptimizerPage(_Page):
     def _clear_arp(self):
         """Clear the ARP cache and report.
 
-        Manages clear arp operations and coordinates related state changes for the component.
+            Uses NetworkStackOptimizer, QMessageBox.
         """
         from cortex_unified.system_tools.network_stack_optimizer import NetworkStackOptimizer
         ok, msg = NetworkStackOptimizer.clear_arp_cache()
@@ -1269,7 +1273,7 @@ class NetworkOptimizerPage(_Page):
     def _reset_winsock(self):
         """Reset the Winsock catalog and report.
 
-        Manages reset winsock operations and coordinates related state changes for the component.
+            Uses NetworkStackOptimizer, QMessageBox.
         """
         from cortex_unified.system_tools.network_stack_optimizer import NetworkStackOptimizer
         ok, msg = NetworkStackOptimizer.reset_winsock()
@@ -1278,7 +1282,7 @@ class NetworkOptimizerPage(_Page):
     def _repair_all(self):
         """Run the complete network repair sequence, then refresh status.
 
-        Manages repair all operations and coordinates related state changes for the component.
+            Uses NetworkStackOptimizer, QMessageBox; updates self._load_tcp_status.
         """
         from cortex_unified.system_tools.network_stack_optimizer import NetworkStackOptimizer
         report = NetworkStackOptimizer.execute_complete_network_repair()
@@ -1291,9 +1295,9 @@ class NetworkOptimizerPage(_Page):
 # ===========================================================================
 
 class CrashDumpCleanerPage(_Page):
-    """Crashdumpcleanerpage.
+    """Crash Dump page with stat cards, dumps table, and scan/clean actions.
 
-    Manages CrashDumpCleanerPage operations and coordinates related state changes for the component.
+        Backed by CrashDumpCleaner, QMessageBox; builds tables, buttons, and dialogs for the actions below.
     """
 
     def __init__(self, win):

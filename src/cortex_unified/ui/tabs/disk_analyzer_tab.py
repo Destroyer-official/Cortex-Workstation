@@ -29,9 +29,9 @@ from cortex_unified.visualization.sunburst_generator import SunburstGenerator
 from cortex_unified.visualization.interactive_dashboard import InteractiveDashboard
 
 class DiskAnalyzerWorker(QThread):
-    """Diskanalyzerworker.
+    """QThread worker analyzing disk usage, directory tree, and file types via DiskAnalyzer.
 
-    Manages DiskAnalyzerWorker operations and coordinates related state changes for the component.
+        Emits finished with the disk-usage, file-type, and largest-directory payload and error on failure.
     """
     finished = Signal(dict)
     error = Signal(str)
@@ -74,9 +74,9 @@ class DiskAnalyzerWorker(QThread):
             self.error.emit(str(e))
 
 class DiskAnalyzerTab(BaseTab):
-    """Diskanalyzertab.
+    """Disk-analyzer tab with target-path picker, analysis buttons, and treemap/sunburst/dashboard views.
 
-    Manages DiskAnalyzerTab operations and coordinates related state changes for the component.
+        Analysis runs in DiskAnalyzerWorker; results feed the TreeMap, Sunburst, and InteractiveDashboard generators.
     """
 
     def __init__(self, config, logger, safety_manager):
@@ -92,9 +92,7 @@ class DiskAnalyzerTab(BaseTab):
         super().__init__(config, logger, safety_manager)
 
     def setup_ui(self):
-        """Set up the user interface.
-
-        Manages setup ui operations and coordinates related state changes for the component.
+        """Build the target-path picker, analysis buttons, and treemap/sunburst/dashboard/export actions.
         """
         layout = QVBoxLayout(self)
         layout.setSpacing(10)
@@ -186,8 +184,6 @@ class DiskAnalyzerTab(BaseTab):
 
     def start_disk_analysis(self):
         """Start disk analysis running safely in a background worker.
-
-        Manages start disk analysis operations and coordinates related state changes for the component.
         """
         path = self.disk_analyzer_path_input.text().strip()
         if not path:
@@ -222,7 +218,6 @@ class DiskAnalyzerTab(BaseTab):
     def _on_worker_finished(self, worker):
         """Unregister a finished worker thread and delete it.
 
-        Manages on worker finished operations and coordinates related state changes for the component.
 
         Args:
             worker: The worker parameter.
@@ -233,7 +228,6 @@ class DiskAnalyzerTab(BaseTab):
     def disk_analysis_complete(self, result: dict):
         """Handle disk analysis completion.
 
-        Manages disk analysis complete operations and coordinates related state changes for the component.
 
         Args:
             result (dict): Collection or dictionary holding operation results.
@@ -280,7 +274,6 @@ class DiskAnalyzerTab(BaseTab):
     def disk_analysis_error(self, error: str):
         """Reset the analyze button and report the analysis error.
 
-        Manages disk analysis error operations and coordinates related state changes for the component.
 
         Args:
             error (str): Error message string or exception instance.
@@ -294,8 +287,6 @@ class DiskAnalyzerTab(BaseTab):
 
     def quick_disk_analysis(self):
         """Point the path input at the home folder and start analysis.
-
-        Manages quick disk analysis operations and coordinates related state changes for the component.
         """
         self.logger.info('=== Quick disk analysis initiated ===')
         home_dir = str(Path.home())
@@ -305,8 +296,6 @@ class DiskAnalyzerTab(BaseTab):
     # Methods for rendering visualizations natively inside PyQt layout maps
     def show_treemap_visualization(self):
         """Write the analysis as a Plotly treemap HTML file and open it in a browser.
-
-        Manages show treemap visualization operations and coordinates related state changes for the component.
         """
         if not hasattr(self, 'current_analyzer') or not self.current_analyzer:
             QMessageBox.warning(self, "Error", "No analysis data available. Run scan first.")
@@ -320,8 +309,6 @@ class DiskAnalyzerTab(BaseTab):
 
     def show_sunburst_visualization(self):
         """Write the analysis as a Plotly sunburst HTML file and open it in a browser.
-
-        Manages show sunburst visualization operations and coordinates related state changes for the component.
         """
         if not hasattr(self, 'current_analyzer') or not self.current_analyzer:
             QMessageBox.warning(self, "Error", "No analysis data available. Run scan first.")
@@ -335,8 +322,6 @@ class DiskAnalyzerTab(BaseTab):
 
     def show_interactive_dashboard(self):
         """Export the interactive dashboard HTML to a temp file and open it in a browser.
-
-        Manages show interactive dashboard operations and coordinates related state changes for the component.
         """
         if not hasattr(self, 'current_analyzer') or not self.current_analyzer:
             QMessageBox.warning(self, "Error", "No analysis data available. Run scan first.")
@@ -351,8 +336,6 @@ class DiskAnalyzerTab(BaseTab):
 
     def export_visualization_dialog(self):
         """Choose a save path and export the dashboard as HTML/PNG/SVG.
-
-        Manages export visualization dialog operations and coordinates related state changes for the component.
         """
         if not hasattr(self, 'current_analyzer') or not self.current_analyzer:
             QMessageBox.warning(self, "Error", "No analysis data available. Run scan first.")

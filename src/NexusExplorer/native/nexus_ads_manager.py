@@ -18,9 +18,9 @@ if platform.system() == "Windows":
     from ctypes import wintypes
 
     class WIN32_FIND_STREAM_DATA(ctypes.Structure):
-        """WIN32_FIND_STREAM_DATA.
+        """ctypes mirror of WIN32_FIND_STREAM_DATA.
 
-        Manages WIN32 FIND STREAM DATA operations and coordinates related state changes for the component.
+        Exposes StreamSize and 296-WCHAR cStreamName for FindFirstStreamW/FindNextStreamW FFI signatures.
         """
         _fields_ = [
             ("StreamSize", ctypes.c_longlong),
@@ -30,9 +30,9 @@ if platform.system() == "Windows":
 
 @dataclass
 class AlternateDataStream:
-    """Alternatedatastream.
+    """One NTFS alternate data stream.
 
-    Manages AlternateDataStream operations and coordinates related state changes for the component.
+    Stores file path, full/stream names, $DATA type, size, Zone.Identifier flag, and 512-char preview.
     """
     file_path: str
     stream_full_name: str  # e.g. ":Zone.Identifier:$DATA"
@@ -44,16 +44,16 @@ class AlternateDataStream:
 
 
 class AlternateDataStreamsManager:
-    """Alternatedatastreamsmanager.
+    """NTFS ADS manager via kernel32 FFI.
 
-    Manages AlternateDataStreamsManager operations and coordinates related state changes for the component.
+    Enumerates and mutates ADS using FindFirstStreamW/FindNextStreamW and DeleteFileW with POSIX os.remove fallback.
     """
 
     @classmethod
     def list_streams(cls, file_path: str | Path) -> List[AlternateDataStream]:
         """Enumerate all alternate data streams for the target file.
 
-        Manages list streams operations and coordinates related state changes for the component.
+        Calls FindFirstStreamW/FindNextStreamW with 64-bit-safe prototypes, skips '::$DATA', and previews small streams.
 
         Args:
             file_path (str | Path): Filesystem path to the target file or directory.
@@ -132,7 +132,7 @@ class AlternateDataStreamsManager:
     def read_stream_text(cls, file_path: str | Path, stream_name: str) -> str:
         """Read text contents of a specific alternate data stream.
 
-        Manages read stream text operations and coordinates related state changes for the component.
+        Opens the '<file>:<stream>' path and returns UTF-8 text with replacement errors.
 
         Args:
             file_path (str | Path): Filesystem path to the target file or directory.
@@ -155,7 +155,7 @@ class AlternateDataStreamsManager:
     def delete_stream(cls, file_path: str | Path, stream_name: str) -> Tuple[bool, str]:
         """Delete an alternate data stream using kernel32.DeleteFileW.
 
-        Manages delete stream operations and coordinates related state changes for the component.
+        Deletes '<file>:<stream>' via kernel32.DeleteFileW on Windows, os.remove elsewhere, returning Win32 error on failure.
 
         Args:
             file_path (str | Path): Filesystem path to the target file or directory.
@@ -186,7 +186,7 @@ class AlternateDataStreamsManager:
     def unblock_file(cls, file_path: str | Path) -> Tuple[bool, str]:
         """Unblock downloaded file by removing its Zone.Identifier alternate data stream.
 
-        Manages unblock file operations and coordinates related state changes for the component.
+        Removes the Zone.Identifier Mark-of-the-Web stream by delegating to delete_stream.
 
         Args:
             file_path (str | Path): Filesystem path to the target file or directory.
@@ -200,7 +200,7 @@ class AlternateDataStreamsManager:
     def strip_all_streams(cls, file_path: str | Path) -> Tuple[int, int]:
         """Remove all alternate data streams from a file.
 
-        Manages strip all streams operations and coordinates related state changes for the component.
+        Lists all ADS then deletes each, returning (success, failed) counts.
 
         Args:
             file_path (str | Path): Filesystem path to the target file or directory.

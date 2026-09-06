@@ -99,7 +99,7 @@ class ProcessCancelled(subprocess.SubprocessError):
     """
 
     def __init__(self, args):
-        """__init__.
+        """Initialize the instance.
 
         Initializes the instance and configures internal state.
 
@@ -191,7 +191,7 @@ def run(
 def _kill_tree(proc: subprocess.Popen) -> None:
     """Best-effort kill of *proc* and every descendant it spawned.
 
-    Manages kill tree operations and coordinates related state changes for the component.
+    Kills the whole process tree (taskkill /T /F on Windows, killpg on POSIX) so no orphaned children survive.
 
     Args:
         proc (subprocess.Popen): The proc parameter.

@@ -15,10 +15,7 @@ from cortex_unified.core.config import Config
 
 
 class CacheCleaner:
-    """Cachecleaner.
-
-    Manages CacheCleaner operations and coordinates related state changes for the component.
-    """
+    """Scanner for application cache directories and log files."""
 
     def __init__(self, config: Config = None):
         """Args:
@@ -131,8 +128,6 @@ class CacheCleaner:
     def _get_platform_cache_paths(self) -> List[Path]:
         """Cache roots for this platform, deduplicated, existing ones only.
 
-        Manages get platform cache paths operations and coordinates related state changes for the component.
-
         Returns:
             List[Path]: List of processed items or identifiers.
         """
@@ -208,8 +203,6 @@ class CacheCleaner:
     def is_archive(self, path: Path) -> bool:
         """True when *path* is a keep-as-backup archive (.zip/.tar.gz).
 
-        Manages is archive operations and coordinates related state changes for the component.
-
         Args:
             path (Path): Filesystem path to the target file or directory.
 
@@ -223,8 +216,6 @@ class CacheCleaner:
 
     def _should_exclude_path(self, path: Path) -> bool:
         """True when *path* hits an excluded directory name or pattern.
-
-        Manages should exclude path operations and coordinates related state changes for the component.
 
         Args:
             path (Path): Filesystem path to the target file or directory.
@@ -245,8 +236,6 @@ class CacheCleaner:
     def _is_cache_directory(self, path: Path) -> bool:
         """True when the directory name contains a known cache marker.
 
-        Manages is cache directory operations and coordinates related state changes for the component.
-
         Args:
             path (Path): Filesystem path to the target file or directory.
 
@@ -261,8 +250,6 @@ class CacheCleaner:
 
     def _is_cache_file(self, path: Path) -> bool:
         """True when the file name matches a cache/log/build-artifact glob.
-
-        Manages is cache file operations and coordinates related state changes for the component.
 
         Args:
             path (Path): Filesystem path to the target file or directory.
@@ -305,9 +292,7 @@ class CacheCleaner:
         log_patterns = ("*.log", "*.log.*", "*.txt", "*.out", "*.err")
 
         def _is_log(name: str) -> bool:
-            """_is_log.
-
-            Manages is log operations and coordinates related state changes for the component.
+            """Return True when a file name matches a large-log glob.
 
             Args:
                 name (str): The name parameter.
@@ -434,9 +419,7 @@ class CacheCleaner:
         return self.found_files, self.found_dirs
 
     def get_stats(self) -> dict:
-        """Get statistics about the cache file finding process.
-
-        Manages get stats operations and coordinates related state changes for the component.
+        """Summarize found cache files and directories with total size.
 
         Returns:
             dict: Dictionary mapping identifiers to status or values.
@@ -479,8 +462,6 @@ class CacheCleaner:
 
     def get_cache_directories(self) -> List[Path]:
         """Get list of cache directories that would be scanned.
-
-        Manages get cache directories operations and coordinates related state changes for the component.
 
         Returns:
             List[Path]: List of processed items or identifiers.

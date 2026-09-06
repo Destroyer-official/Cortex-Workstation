@@ -18,14 +18,12 @@ except ImportError:
     HAS_PLOTLY = False
     # No-op stand-ins keep method bodies runnable without Plotly
     class go:
-        """Go.
+        """Fallback Plotly graph_objects namespace when Plotly is missing.
 
-        Manages go operations and coordinates related state changes for the component.
         """
         class Figure:
-            """Figure.
+            """Minimal Figure stub with no-op trace and layout methods.
 
-            Manages Figure operations and coordinates related state changes for the component.
             """
             def __init__(self, *args, **kwargs):
                 """Initialize the instance and configure internal state.
@@ -34,42 +32,36 @@ except ImportError:
                 """
                 pass
             def add_trace(self, *args, **kwargs):
-                """add_trace.
+                """No-op stub matching Plotly Figure.add_trace.
 
-                Manages add trace operations and coordinates related state changes for the component.
                 """
                 pass
             def update_layout(self, *args, **kwargs):
-                """update_layout.
+                """No-op stub matching Plotly Figure.update_layout.
 
-                Manages update layout operations and coordinates related state changes for the component.
                 """
                 pass
     class px:
-        """Px.
+        """Fallback Plotly express namespace when Plotly is missing.
 
-        Manages px operations and coordinates related state changes for the component.
         """
         @staticmethod
         def sunburst(*args, **kwargs):
-            """Sunburst.
+            """Return an empty Figure stub for sunburst calls.
 
-            Manages sunburst operations and coordinates related state changes for the component.
             """
             return go.Figure()
     def plot(*args, **kwargs):
-        """Plot.
+        """No-op stub matching plotly.offline.plot.
 
-        Manages plot operations and coordinates related state changes for the component.
         """
         pass
 import colorsys
 
 @dataclass
 class SunburstSegment:
-    """Sunburstsegment.
+    """Single sunburst slice with angular bounds and hierarchy parent.
 
-    Manages SunburstSegment operations and coordinates related state changes for the component.
     """
     name: str
     size: int
@@ -83,9 +75,8 @@ class SunburstSegment:
     file_type: Optional[str] = None
 
 class SunburstGenerator:
-    """Sunburstgenerator.
+    """Build sunburst figures from analyzer directory trees.
 
-    Manages SunburstGenerator operations and coordinates related state changes for the component.
     """
     
     def __init__(self, data: Any = None):
@@ -103,7 +94,6 @@ class SunburstGenerator:
     def _setup_color_scheme(self):
         """Palette per hierarchy depth plus per-extension overrides.
 
-        Manages setup color scheme operations and coordinates related state changes for the component.
         """
         self.level_colors = [
             '#3498db',  # Level 0 - Blue
@@ -137,7 +127,6 @@ class SunburstGenerator:
     def _get_file_type_from_path(self, path: str) -> str:
         """Extension tag for a path; 'directory'/'unknown' sentinels.
 
-        Manages get file type from path operations and coordinates related state changes for the component.
 
         Args:
             path (str): Filesystem path to the target file or directory.
@@ -193,9 +182,8 @@ class SunburstGenerator:
                 total_size = sum(child.get('size_bytes', 0) for child in tree_data['children'])
         
         def add_node(node_data: Dict, parent_id: str = "", level: int = 0):
-            """add_node.
+            """Append one tree node and descendants to sunburst column lists.
 
-            Manages add node operations and coordinates related state changes for the component.
 
             Args:
                 node_data (Dict): The node data parameter.

@@ -24,9 +24,9 @@ from cortex_unified.core.deleter import Deleter
 from cortex_unified.analyzers.large_file_finder import LargeFileFinder
 
 class LargeFileFinderWorker(QThread):
-    """Largefilefinderworker.
+    """QThread worker finding large files via LargeFileFinder.
 
-    Manages LargeFileFinderWorker operations and coordinates related state changes for the component.
+        Emits finished with the file list and stats, and error on failure.
     """
     finished = Signal(list)
     error = Signal(str)
@@ -60,9 +60,9 @@ class LargeFileFinderWorker(QThread):
             self.error.emit(str(e))
 
 class LargeFilesTab(BaseTab):
-    """Largefilestab.
+    """Large-files tab with target-path picker, size options, results table, and progress bar.
 
-    Manages LargeFilesTab operations and coordinates related state changes for the component.
+        Find and delete actions run LargeFileFinderWorker and recycle selections via Deleter.
     """
 
     def __init__(self, config, logger, safety_manager):
@@ -78,9 +78,7 @@ class LargeFilesTab(BaseTab):
         super().__init__(config, logger, safety_manager)
 
     def setup_ui(self):
-        """Set up the user interface.
-
-        Manages setup ui operations and coordinates related state changes for the component.
+        """Build the target-path picker, size options, results table, and find/delete/select actions.
         """
         layout = QVBoxLayout(self)
         layout.setSpacing(10)
@@ -158,30 +156,22 @@ class LargeFilesTab(BaseTab):
 
     def _on_selection_changed(self):
         """Enable the delete button when table rows are selected.
-
-        Manages on selection changed operations and coordinates related state changes for the component.
         """
         has_sel = len(self.large_files_table.selectedItems()) > 0
         self.delete_large_files_button.setEnabled(has_sel)
 
     def select_all(self):
         """Select all rows in the large-files table.
-
-        Manages select all operations and coordinates related state changes for the component.
         """
         self.large_files_table.selectAll()
         
     def deselect_all(self):
         """Clear the table's selection.
-
-        Manages deselect all operations and coordinates related state changes for the component.
         """
         self.large_files_table.clearSelection()
 
     def start_find_large_files(self):
         """Start finding large files natively via Thread manager.
-
-        Manages start find large files operations and coordinates related state changes for the component.
         """
         path = self.large_files_path_input.text().strip()
         if not path:
@@ -221,7 +211,6 @@ class LargeFilesTab(BaseTab):
     def _on_worker_finished(self, worker):
         """Unregister a finished worker thread and delete it.
 
-        Manages on worker finished operations and coordinates related state changes for the component.
 
         Args:
             worker: The worker parameter.
@@ -232,7 +221,6 @@ class LargeFilesTab(BaseTab):
     def large_files_found(self, result: list):
         """Fill the table with path/size/modified-time rows and enable actions.
 
-        Manages large files found operations and coordinates related state changes for the component.
 
         Args:
             result (list): Collection or dictionary holding operation results.
@@ -264,7 +252,6 @@ class LargeFilesTab(BaseTab):
     def large_files_error(self, error: str):
         """Reset the find button and report the error.
 
-        Manages large files error operations and coordinates related state changes for the component.
 
         Args:
             error (str): Error message string or exception instance.
@@ -276,8 +263,6 @@ class LargeFilesTab(BaseTab):
 
     def delete_selected_large_files(self):
         """Confirm, then trash the selected large files via Deleter and rescan.
-
-        Manages delete selected large files operations and coordinates related state changes for the component.
         """
         selected_ranges = self.large_files_table.selectedRanges()
         if not selected_ranges:

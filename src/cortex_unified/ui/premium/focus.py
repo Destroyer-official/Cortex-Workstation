@@ -41,10 +41,7 @@ _NAV_KEYS = frozenset({
 
 
 class FocusVisibleFilter(QObject):
-    """Focusvisiblefilter.
-
-    Manages FocusVisibleFilter operations and coordinates related state changes for the component.
-    """
+    """Application event filter implementing :focus-visible: behavior; tracks keyboard vs mouse modality and toggles the focusVisible property."""
 
     def __init__(self, app: QApplication):
         """__init__.
@@ -90,9 +87,7 @@ class FocusVisibleFilter(QObject):
 
     @staticmethod
     def _set_visible(obj, visible: bool) -> None:
-        """_set_visible.
-
-        Manages set visible operations and coordinates related state changes for the component.
+        """Set the focusVisible property on a widget and re-polish its style so focus rings follow keyboard modality.
 
         Args:
             obj: The obj parameter.

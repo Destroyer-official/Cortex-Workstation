@@ -40,18 +40,13 @@ from cortex_unified.analyzers.broken_link_detector import (  # noqa: E402
 
 @pytest.fixture(scope="module")
 def app():
-    """App.
-
-    Manages app operations and coordinates related state changes for the component.
-    """
+    """Provide app fixture that provides a shared QApplication."""
     return QApplication.instance() or QApplication([])
 
 
 @pytest.fixture
 def make_tab(app):
     """Factory building a tab without touching the real license manager.
-
-    Manages make tab operations and coordinates related state changes for the component.
 
     Args:
         app: The app parameter.
@@ -61,9 +56,7 @@ def make_tab(app):
     holder = type("SafetyManagerStub", (), {})()
 
     def _make(tab_cls):
-        """Make.
-
-        Manages make operations and coordinates related state changes for the component.
+        """Make using tab_cls.
 
         Args:
             tab_cls: The tab cls parameter.
@@ -74,9 +67,7 @@ def make_tab(app):
 
 
 def _link_item(path: Path) -> BrokenSymlink:
-    """_link_item.
-
-    Manages link item operations and coordinates related state changes for the component.
+    """Link item using BrokenSymlink, datetime.now.
 
     Args:
         path (Path): Filesystem path to the target file or directory.
@@ -96,9 +87,7 @@ def _link_item(path: Path) -> BrokenSymlink:
 
 
 def _registry_item(tmp_path: Path) -> BrokenRegistryRef:
-    """_registry_item.
-
-    Manages registry item operations and coordinates related state changes for the component.
+    """Registry item using BrokenRegistryRef, datetime.now.
 
     Args:
         tmp_path (Path): Filesystem path to the target file or directory.
@@ -124,9 +113,7 @@ def _registry_item(tmp_path: Path) -> BrokenRegistryRef:
 # ---------------------------------------------------------------------------
 
 def test_free_space_checkbox_disabled_on_free_tier(app, make_tab, monkeypatch):
-    """test_free_space_checkbox_disabled_on_free_tier.
-
-    Manages test free space checkbox disabled on free tier operations and coordinates related state changes for the component.
+    """Verify free space checkbox disabled on free tier via tab.shred_free_space_checkbox.isEnabled, tab.shred_free_space_checkbox.toolTip, monkeypatch.setattr.
 
     Args:
         app: The app parameter.
@@ -142,9 +129,7 @@ def test_free_space_checkbox_disabled_on_free_tier(app, make_tab, monkeypatch):
 
 
 def test_free_space_checkbox_enabled_when_entitled(app, make_tab, monkeypatch):
-    """test_free_space_checkbox_enabled_when_entitled.
-
-    Manages test free space checkbox enabled when entitled operations and coordinates related state changes for the component.
+    """Verify free space checkbox enabled when entitled via tab.shred_free_space_checkbox.isEnabled, monkeypatch.setattr, make_tab.
 
     Args:
         app: The app parameter.
@@ -160,9 +145,7 @@ def test_free_space_checkbox_enabled_when_entitled(app, make_tab, monkeypatch):
 
 
 def test_multipass_spinbox_capped_without_entitlement(app, make_tab, monkeypatch):
-    """test_multipass_spinbox_capped_without_entitlement.
-
-    Manages test multipass spinbox capped without entitlement operations and coordinates related state changes for the component.
+    """Verify multipass spinbox capped without entitlement via tab.shred_passes_spinbox.setRange, tab.shred_passes_spinbox.setValue, tab.shred_results.toPlainText.
 
     Args:
         app: The app parameter.
@@ -183,9 +166,7 @@ def test_multipass_spinbox_capped_without_entitlement(app, make_tab, monkeypatch
 
 
 def test_multipass_allowed_keeps_full_range(app, make_tab, monkeypatch):
-    """test_multipass_allowed_keeps_full_range.
-
-    Manages test multipass allowed keeps full range operations and coordinates related state changes for the component.
+    """Verify multipass allowed keeps full range via monkeypatch.setattr, tab.shred_passes_spinbox.maximum, make_tab.
 
     Args:
         app: The app parameter.
@@ -205,9 +186,7 @@ def test_multipass_allowed_keeps_full_range(app, make_tab, monkeypatch):
 # ---------------------------------------------------------------------------
 
 def _make_broken_symlink(tmp_path: Path):
-    """_make_broken_symlink.
-
-    Manages make broken symlink operations and coordinates related state changes for the component.
+    """Make broken symlink using os.symlink, pytest.skip.
 
     Args:
         tmp_path (Path): Filesystem path to the target file or directory.
@@ -222,9 +201,7 @@ def _make_broken_symlink(tmp_path: Path):
 
 
 def test_repair_dry_run_changes_nothing(app, tmp_path):
-    """test_repair_dry_run_changes_nothing.
-
-    Manages test repair dry run changes nothing operations and coordinates related state changes for the component.
+    """Verify repair dry run changes nothing via os.path.lexists, link_out.detail.lower, reg_out.detail.lower.
 
     Args:
         app: The app parameter.
@@ -250,9 +227,7 @@ def test_repair_dry_run_changes_nothing(app, tmp_path):
 
 
 def test_repair_removes_only_the_link(app, tmp_path, monkeypatch):
-    """test_repair_removes_only_the_link.
-
-    Manages test repair removes only the link operations and coordinates related state changes for the component.
+    """Verify repair removes only the link via os.path.lexists, _make_broken_symlink, repair.
 
     Args:
         app: The app parameter.
@@ -274,8 +249,6 @@ def test_repair_removes_only_the_link(app, tmp_path, monkeypatch):
 
 def test_repair_dry_run_plans_without_touching_fs(app, tmp_path, monkeypatch):
     """Planning path covered without needing OS link privileges.
-
-    Manages test repair dry run plans without touching fs operations and coordinates related state changes for the component.
 
     Args:
         app: The app parameter.
@@ -301,8 +274,6 @@ def test_repair_dry_run_plans_without_touching_fs(app, tmp_path, monkeypatch):
                     reason="NTFS junctions")
 def test_repair_removes_dangling_junction_link_only(app, tmp_path):
     """Junctions need no admin rights; removal must take the link only.
-
-    Manages test repair removes dangling junction link only operations and coordinates related state changes for the component.
 
     Args:
         app: The app parameter.
@@ -332,9 +303,7 @@ def test_repair_removes_dangling_junction_link_only(app, tmp_path):
 
 
 def test_repair_excludes_registry_refs(app, tmp_path):
-    """test_repair_excludes_registry_refs.
-
-    Manages test repair excludes registry refs operations and coordinates related state changes for the component.
+    """Verify repair excludes registry refs via out.detail.lower, repair, _registry_item.
 
     Args:
         app: The app parameter.
@@ -350,9 +319,7 @@ def test_repair_excludes_registry_refs(app, tmp_path):
 
 
 def test_repair_recycles_shortcut_via_send2trash(app, tmp_path, monkeypatch):
-    """test_repair_recycles_shortcut_via_send2trash.
-
-    Manages test repair recycles shortcut via send2trash operations and coordinates related state changes for the component.
+    """Verify repair recycles shortcut via send2trash via BrokenShortcut, monkeypatch.setattr, sent.append.
 
     Args:
         app: The app parameter.
@@ -374,9 +341,7 @@ def test_repair_recycles_shortcut_via_send2trash(app, tmp_path, monkeypatch):
     sent = []
 
     def fake_trash(p):
-        """fake_trash.
-
-        Manages fake trash operations and coordinates related state changes for the component.
+        """Fake trash using sent.append, os.remove.
 
         Args:
             p: The p parameter.
@@ -399,9 +364,7 @@ def test_repair_recycles_shortcut_via_send2trash(app, tmp_path, monkeypatch):
 
 
 def test_repair_refuses_real_directory(app, tmp_path):
-    """test_repair_refuses_real_directory.
-
-    Manages test repair refuses real directory operations and coordinates related state changes for the component.
+    """Verify repair refuses real directory via repair, exists, _link_item.
 
     Args:
         app: The app parameter.
@@ -426,18 +389,13 @@ def test_repair_refuses_real_directory(app, tmp_path):
 def _silence_message_boxes(monkeypatch, module):
     """Replace modal QMessageBox calls so headless tests never block.
 
-    Manages silence message boxes operations and coordinates related state changes for the component.
-
     Args:
         monkeypatch: The monkeypatch parameter.
         module: The module parameter.
     """
 
     class FakeBoxes:
-        """Fakeboxes.
-
-        Manages FakeBoxes operations and coordinates related state changes for the component.
-        """
+        """Helper fakeboxes."""
         def information(self, *a, **k):
             """information.
 
@@ -446,26 +404,18 @@ def _silence_message_boxes(monkeypatch, module):
             return None
 
         def warning(self, *a, **k):
-            """Warning.
-
-            Manages warning operations and coordinates related state changes for the component.
-            """
+            """Warning."""
             return None
 
         def critical(self, *a, **k):
-            """Critical.
-
-            Manages critical operations and coordinates related state changes for the component.
-            """
+            """Critical."""
             return None
 
     monkeypatch.setattr(module, "QMessageBox", FakeBoxes())
 
 
 def test_schedule_button_disabled_on_free_tier(app, make_tab, monkeypatch):
-    """test_schedule_button_disabled_on_free_tier.
-
-    Manages test schedule button disabled on free tier operations and coordinates related state changes for the component.
+    """Verify schedule button disabled on free tier via tab.schedule_report_button.isEnabled, tab.schedule_report_button.toolTip, monkeypatch.setattr.
 
     Args:
         app: The app parameter.
@@ -481,9 +431,7 @@ def test_schedule_button_disabled_on_free_tier(app, make_tab, monkeypatch):
 
 
 def test_schedule_button_enabled_and_creates_task(app, make_tab, monkeypatch):
-    """test_schedule_button_enabled_and_creates_task.
-
-    Manages test schedule button enabled and creates task operations and coordinates related state changes for the component.
+    """Verify schedule button enabled and creates task via tab.schedule_report_button.isEnabled, monkeypatch.setattr, tab.schedule_report.
 
     Args:
         app: The app parameter.
@@ -493,10 +441,7 @@ def test_schedule_button_enabled_and_creates_task(app, make_tab, monkeypatch):
     calls = []
 
     class FakeScheduler:
-        """Fakescheduler.
-
-        Manages FakeScheduler operations and coordinates related state changes for the component.
-        """
+        """Helper fakescheduler using calls.append."""
         def __init__(self, config=None):
             """__init__.
 
@@ -509,9 +454,7 @@ def test_schedule_button_enabled_and_creates_task(app, make_tab, monkeypatch):
 
         def create_scheduled_task(self, name, command, schedule_type,
                                   schedule_params=None):
-            """create_scheduled_task.
-
-            Manages create scheduled task operations and coordinates related state changes for the component.
+            """Create scheduled task using calls.append.
 
             Args:
                 name: The name parameter.
@@ -548,9 +491,7 @@ def test_schedule_button_enabled_and_creates_task(app, make_tab, monkeypatch):
 
 
 def test_schedule_dialog_cancel_creates_nothing(app, make_tab, monkeypatch):
-    """test_schedule_dialog_cancel_creates_nothing.
-
-    Manages test schedule dialog cancel creates nothing operations and coordinates related state changes for the component.
+    """Verify schedule dialog cancel creates nothing via monkeypatch.setattr, tab.schedule_report, calls.append.
 
     Args:
         app: The app parameter.
@@ -560,10 +501,7 @@ def test_schedule_dialog_cancel_creates_nothing(app, make_tab, monkeypatch):
     calls = []
 
     class FakeScheduler:
-        """Fakescheduler.
-
-        Manages FakeScheduler operations and coordinates related state changes for the component.
-        """
+        """Helper fakescheduler using calls.append."""
         def __init__(self, config=None):
             """__init__.
 
@@ -575,10 +513,7 @@ def test_schedule_dialog_cancel_creates_nothing(app, make_tab, monkeypatch):
             pass
 
         def create_scheduled_task(self, *args, **kwargs):
-            """create_scheduled_task.
-
-            Manages create scheduled task operations and coordinates related state changes for the component.
-            """
+            """Create scheduled task using calls.append."""
             calls.append(args)
             return True
 

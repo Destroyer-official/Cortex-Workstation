@@ -26,15 +26,15 @@ from cortex_unified.analyzers.czkawka_tools import BadExtensionFinder, BadNamesF
 
 
 class BadFilesWorker(QThread):
-    """Badfilesworker.
+    """QThread worker finding magic-byte extension mismatches via BadExtensionFinder and illegal names via BadNamesFinder.
 
-    Manages BadFilesWorker operations and coordinates related state changes for the component.
+        Emits finished with result dicts and error on failure.
     """
     finished = Signal(list)
     error = Signal(str)
 
     def __init__(self, root_path: str):
-        """Init.
+        """Store the root path for the BadExtensionFinder/BadNamesFinder scans.
 
         Initializes the instance and configures internal state.
 
@@ -45,7 +45,7 @@ class BadFilesWorker(QThread):
         self.root_path = root_path
 
     def run(self):
-        """Run.
+        """Collect extension-mismatch and invalid-name results and emit finished, or error.
 
         Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
         """
@@ -75,15 +75,15 @@ class BadFilesWorker(QThread):
 
 
 class HeuristicsScanWorker(QThread):
-    """Heuristicsscanworker.
+    """QThread worker scanning orphaned leftovers via LeftoverDetector with a temp/cache-dir fallback scan.
 
-    Manages HeuristicsScanWorker operations and coordinates related state changes for the component.
+        Emits finished with result dicts and error on failure.
     """
     finished = Signal(list)
     error = Signal(str)
 
     def __init__(self, path: str, confidence: int, use_ml: bool, check_registry: bool):
-        """Init.
+        """Store the scan path, confidence threshold, and ML/registry flags.
 
         Initializes the instance and configures internal state.
 
@@ -100,7 +100,7 @@ class HeuristicsScanWorker(QThread):
         self.check_registry = check_registry
 
     def run(self):
-        """Run.
+        """Scan leftovers via LeftoverDetector (with temp/cache-dir fallback) and emit finished, or error.
 
         Executes core worker logic off the main thread, periodically emitting progress updates and signaling completion or failure.
         """
@@ -135,9 +135,9 @@ class HeuristicsScanWorker(QThread):
 
 
 class HeuristicsTab(BaseTab):
-    """Heuristicstab.
+    """Heuristics tab with confidence/ML/registry/dry-run options, scan-path picker, and detected-items table.
 
-    Manages HeuristicsTab operations and coordinates related state changes for the component.
+        Leftover and bad-file scans run HeuristicsScanWorker and BadFilesWorker threads; cleanup deletes local paths.
     """
 
     def __init__(self, config, logger, safety_manager):
@@ -225,8 +225,6 @@ class HeuristicsTab(BaseTab):
 
     def browse_heuristics_path(self):
         """Open directory dialog to pick a custom target scan path.
-
-        Manages browse heuristics path operations and coordinates related state changes for the component.
         """
         target = QFileDialog.getExistingDirectory(self, "Select Directory to Scan", self.heuristics_path_edit.text())
         if target:
@@ -234,8 +232,6 @@ class HeuristicsTab(BaseTab):
 
     def start_heuristics_scan(self):
         """Start background heuristics scan on the target path.
-
-        Manages start heuristics scan operations and coordinates related state changes for the component.
         """
         p = self.heuristics_path_edit.text().strip()
         if not p or not Path(p).exists():
@@ -263,8 +259,6 @@ class HeuristicsTab(BaseTab):
 
     def start_bad_files_scan(self):
         """Scan directory for bad extensions (magic-byte mismatch) and invalid filenames.
-
-        Manages start bad files scan operations and coordinates related state changes for the component.
         """
         p = self.heuristics_path_edit.text().strip()
         if not p or not Path(p).exists():
@@ -286,9 +280,8 @@ class HeuristicsTab(BaseTab):
         worker.start()
 
     def _teardown_worker(self, worker):
-        """Teardown worker.
+        """Unregister the finished worker thread and schedule it for deletion.
 
-        Manages teardown worker operations and coordinates related state changes for the component.
 
         Args:
             worker: The worker parameter.
@@ -297,9 +290,8 @@ class HeuristicsTab(BaseTab):
         worker.deleteLater()
 
     def _on_scan_finished(self, results: list[dict]):
-        """On scan finished.
+        """Fill the heuristics table with result dicts, update the summary label, and enable cleanup.
 
-        Manages on scan finished operations and coordinates related state changes for the component.
 
         Args:
             results (list[dict]): Collection or dictionary holding operation results.
@@ -319,9 +311,8 @@ class HeuristicsTab(BaseTab):
         self.heuristics_cleanup_button.setEnabled(len(results) > 0)
 
     def _on_scan_error(self, err_msg: str):
-        """On scan error.
+        """Re-enable the scan buttons and report the heuristics scan error.
 
-        Manages on scan error operations and coordinates related state changes for the component.
 
         Args:
             err_msg (str): Informational or progress status message.
@@ -333,8 +324,6 @@ class HeuristicsTab(BaseTab):
 
     def start_heuristics_cleanup(self):
         """Clean up selected leftovers if dry-run is disabled.
-
-        Manages start heuristics cleanup operations and coordinates related state changes for the component.
         """
         if self.heuristics_dry_run_checkbox.isChecked():
             QMessageBox.information(

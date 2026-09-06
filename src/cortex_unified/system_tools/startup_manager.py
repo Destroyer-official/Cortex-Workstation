@@ -14,10 +14,7 @@ from typing import List, Dict
 from ..core.config import Config
 
 class StartupManager:
-    """Startupmanager.
-
-    Manages StartupManager operations and coordinates related state changes for the component.
-    """
+    """Groups related helpers: init, list startup items, list windows startup items, read registry startup items, read startup folder items, list macos startup items, read plist items, list linux startup items."""
 
     def __init__(self, config: Config = None):
         """Use *config* or a default Config; the OS decides which backends run.
@@ -36,10 +33,8 @@ class StartupManager:
     def list_startup_items(self) -> List[Dict]:
         """Populate ``startup_items`` from every autostart location for this OS.
 
-        Manages list startup items operations and coordinates related state changes for the component.
-
         Returns:
-            List[Dict]: List of processed items or identifiers.
+        List[Dict]: List of processed items or identifiers.
         """
         self.startup_items = []
         self.error_count = 0
@@ -57,10 +52,7 @@ class StartupManager:
         return self.startup_items
     
     def _list_windows_startup_items(self):
-        """Collect registry Run/RunOnce values plus Startup-folder files.
-
-        Manages list windows startup items operations and coordinates related state changes for the component.
-        """
+        """Collect registry Run/RunOnce values plus Startup-folder files."""
         try:
             # Registry-based items: HKCU/HKLM x Run/RunOnce.
             try:
@@ -104,11 +96,9 @@ class StartupManager:
     def _read_registry_startup_items(self, hive, key_path):
         """Append every value under one Run/RunOnce key.
 
-        Manages read registry startup items operations and coordinates related state changes for the component.
-
         Args:
-            hive: The hive parameter.
-            key_path: Filesystem path to the target file or directory.
+        hive: The hive parameter.
+        key_path: Filesystem path to the target file or directory.
         """
         try:
             import winreg
@@ -134,10 +124,8 @@ class StartupManager:
     def _read_startup_folder_items(self, folder_path: Path):
         """Append each file in one Startup folder.
 
-        Manages read startup folder items operations and coordinates related state changes for the component.
-
         Args:
-            folder_path (Path): Filesystem path to the target file or directory.
+        folder_path (Path): Filesystem path to the target file or directory.
         """
         try:
             if folder_path.exists():
@@ -154,10 +142,7 @@ class StartupManager:
             self.error_count += 1
     
     def _list_macos_startup_items(self):
-        """_list_macos_startup_items.
-
-        Manages list macos startup items operations and coordinates related state changes for the component.
-        """
+        """List macos startup items helper."""
         try:
             # Launch agents in ~/Library/LaunchAgents
             user_agents = Path.home() / "Library" / "LaunchAgents"
@@ -176,10 +161,8 @@ class StartupManager:
     def _read_plist_items(self, folder_path: Path):
         """Append each launchd plist in one folder (name only, no parsing).
 
-        Manages read plist items operations and coordinates related state changes for the component.
-
         Args:
-            folder_path (Path): Filesystem path to the target file or directory.
+        folder_path (Path): Filesystem path to the target file or directory.
         """
         try:
             if folder_path.exists():
@@ -199,10 +182,7 @@ class StartupManager:
             self.error_count += 1
     
     def _list_linux_startup_items(self):
-        """_list_linux_startup_items.
-
-        Manages list linux startup items operations and coordinates related state changes for the component.
-        """
+        """List linux startup items helper."""
         try:
             # Autostart directory items
             autostart_dirs = [
@@ -218,10 +198,8 @@ class StartupManager:
     def _read_desktop_items(self, folder_path: Path):
         """Read startup items from Linux .desktop files.
 
-        Manages read desktop items operations and coordinates related state changes for the component.
-
         Args:
-            folder_path (Path): Filesystem path to the target file or directory.
+        folder_path (Path): Filesystem path to the target file or directory.
         """
         try:
             if folder_path.exists():
@@ -243,20 +221,16 @@ class StartupManager:
     def _registry_backup_path(self) -> Path:
         """JSON sidecar where disabled Run/RunOnce values are preserved.
 
-        Manages registry backup path operations and coordinates related state changes for the component.
-
         Returns:
-            Path: Result of the operation.
+        Path: Result of the operation.
         """
         return Path.home() / "StartupBackup" / "disabled_registry_backup.json"
 
     def _load_registry_backup(self) -> Dict[str, dict]:
-        """_load_registry_backup.
-
-        Manages load registry backup operations and coordinates related state changes for the component.
+        """Load registry backup helper. Returns data if isinstance(...).
 
         Returns:
-            Dict[str, dict]: Dictionary mapping identifiers to status or values.
+        Dict[str, dict]: Dictionary mapping identifiers to status or values.
         """
         try:
             import json
@@ -267,12 +241,10 @@ class StartupManager:
             return {}
 
     def _save_registry_backup(self, backup: Dict[str, dict]) -> None:
-        """_save_registry_backup.
-
-        Manages save registry backup operations and coordinates related state changes for the component.
+        """Save registry backup helper (mutates filesystem state).
 
         Args:
-            backup (Dict[str, dict]): The backup parameter.
+        backup (Dict[str, dict]): The backup parameter.
         """
         try:
             import json
@@ -388,13 +360,11 @@ class StartupManager:
     def _disable_registry_item(self, name: str) -> bool:
         """Disable a registry-based startup item (values backed up first).
 
-        Manages disable registry item operations and coordinates related state changes for the component.
-
         Args:
-            name (str): The name parameter.
+        name (str): The name parameter.
 
         Returns:
-            bool: True if the operation succeeded, False otherwise.
+        bool: True if the operation succeeded, False otherwise.
         """
         try:
             import winreg
@@ -463,23 +433,19 @@ class StartupManager:
     def _disable_startup_folder_item(self, name: str) -> bool:
         """Disable a file-based startup item.
 
-        Manages disable startup folder item operations and coordinates related state changes for the component.
-
         Args:
-            name (str): The name parameter.
+        name (str): The name parameter.
 
         Returns:
-            bool: True if the operation succeeded, False otherwise.
+        bool: True if the operation succeeded, False otherwise.
         """
         try:
             # For file items, we can move them to a backup location
             def move_to_backup(item_path):
-                """Move to backup.
-
-                Manages move to backup operations and coordinates related state changes for the component.
+                """Move to backup helper (mutates filesystem state).
 
                 Args:
-                    item_path: Filesystem path to the target file or directory.
+                item_path: Filesystem path to the target file or directory.
                 """
                 try:
                     backup_folder = Path.home() / "StartupBackup"
@@ -511,10 +477,8 @@ class StartupManager:
     def get_stats(self) -> dict:
         """Get statistics about startup items.
 
-        Manages get stats operations and coordinates related state changes for the component.
-
         Returns:
-            dict: Dictionary mapping identifiers to status or values.
+        dict: Dictionary mapping identifiers to status or values.
         """
         enabled_count = sum(1 for item in self.startup_items if item.get("enabled", True))
         disabled_count = len(self.startup_items) - enabled_count
@@ -530,12 +494,10 @@ class StartupManager:
     def filter_by_type(self, item_type: str) -> List[Dict]:
         """Filter startup items by type.
 
-        Manages filter by type operations and coordinates related state changes for the component.
-
         Args:
-            item_type (str): The item type parameter.
+        item_type (str): The item type parameter.
 
         Returns:
-            List[Dict]: List of processed items or identifiers.
+        List[Dict]: List of processed items or identifiers.
         """
         return [item for item in self.startup_items if item.get("type") == item_type]

@@ -24,10 +24,7 @@ from cortex_unified.analyzers.perceptual_duplicate_finder import PerceptualDupli
 
 
 class _PerceptualWorker(QObject):
-    """Perceptualworker.
-
-    Manages PerceptualWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker (_PerceptualWorker) performing PerceptualWorker. Signals finished, progress, failed report status. Configured with root, max_distance. Its run() step calls PerceptualDuplicateFinder, finder.find_perceptual_duplicates, emit, str."""
     finished = Signal(dict)
     progress = Signal(str)
     failed = Signal(str)
@@ -77,10 +74,7 @@ class _PerceptualWorker(QObject):
 
 
 class PerceptualDuplicatesPage(_Page):
-    """Perceptualduplicatespage.
-
-    Manages PerceptualDuplicatesPage operations and coordinates related state changes for the component.
-    """
+    """Duplicate Photos (Perceptual) page: pHash / dHash / aHash (IEEE 2024) – groups photos that *look* the."""
 
     def __init__(self, win):
         """__init__.
@@ -156,10 +150,7 @@ class PerceptualDuplicatesPage(_Page):
             self.path_label.setText(folder)
 
     def _run(self):
-        """Run.
-
-        Manages run operations and coordinates related state changes for the component.
-        """
+        """Disable action buttons, show progress/status, and launch the background worker (setEnabled, setVisible, show_loading)."""
         self.run_btn.setEnabled(False)
         self.progress.setVisible(True)
         self.state.show_loading("Hashing photos (pHash)…")

@@ -32,50 +32,38 @@ _SCHEME_RE = re.compile(
 
 @dataclass(slots=True)
 class PowerPlan:
-    """Powerplan.
-
-    Manages PowerPlan operations and coordinates related state changes for the component.
-    """
+    """Record holding guid, name, active."""
 
     guid: str
     name: str
     active: bool = False
 
     def to_dict(self) -> dict[str, Any]:
-        """To dict.
-
-        Manages to dict operations and coordinates related state changes for the component.
+        """Serialize to a plain dict with keys guid, name, active.
 
         Returns:
-            dict[str, Any]: Dictionary mapping identifiers to status or values.
+        dict[str, Any]: Dictionary mapping identifiers to status or values.
         """
         return {"guid": self.guid, "name": self.name, "active": self.active}
 
 
 class PerformanceTuner:
-    """Performancetuner.
-
-    Manages PerformanceTuner operations and coordinates related state changes for the component.
-    """
+    """Groups related helpers: is supported, list plans, parse, active plan, set active, run. Windows-only; returns a safe default elsewhere."""
 
     @staticmethod
     def is_supported() -> bool:
         """powercfg-based control only exists on Windows.
 
-        Manages is supported operations and coordinates related state changes for the component.
-
         Returns:
-            bool: True if the operation succeeded, False otherwise.
+        bool: True if the operation succeeded, False otherwise.
         """
         return _IS_WINDOWS
 
     def list_plans(self) -> list[PowerPlan]:
         """Return available schemes; empty off-Windows or if powercfg fails.
 
-        Manages list plans operations and coordinates related state changes for the component.
-
         Returns:
-            list[PowerPlan]: List of processed items or identifiers.
+        list[PowerPlan]: List of processed items or identifiers.
         """
         if not _IS_WINDOWS:
             return []
@@ -106,10 +94,8 @@ class PerformanceTuner:
     def active_plan(self) -> PowerPlan | None:
         """Return the scheme powercfg marks active, or ``None`` if unknown.
 
-        Manages active plan operations and coordinates related state changes for the component.
-
         Returns:
-            PowerPlan | None: Result of the operation.
+        PowerPlan | None: Result of the operation.
         """
         for p in self.list_plans():
             if p.active:
@@ -132,13 +118,11 @@ class PerformanceTuner:
         return False, "Could not switch power plan (Administrator may be required)."
 
     def _run(self, args: list[str], want_returncode: bool = False):
-        """Run.
-
-        Manages run operations and coordinates related state changes for the component.
+        """Run helper (spawns a subprocess). Returns proc.returncode == 0.
 
         Args:
-            args (list[str]): The args parameter.
-            want_returncode (bool): The want returncode parameter.
+        args (list[str]): The args parameter.
+        want_returncode (bool): The want returncode parameter.
         """
         try:
             proc = _proc.run(args, text=True, timeout=20, creationflags=_NO_WINDOW)

@@ -9,10 +9,7 @@ from cortex_unified.core.background_agent import BackgroundAgent
 
 
 class SystemTrayManager(QObject):
-    """Systemtraymanager.
-
-    Manages SystemTrayManager operations and coordinates related state changes for the component.
-    """
+    """Manage the system tray icon, its context menu, background agent, and alerts."""
 
     def __init__(self, main_window, app):
         """__init__.
@@ -56,10 +53,7 @@ class SystemTrayManager(QObject):
     # ── Menu ──────────────────────────────────────────────────────────
 
     def _setup_menu(self):
-        """_setup_menu.
-
-        Manages setup menu operations and coordinates related state changes for the component.
-        """
+        """Build the tray context menu and connect its actions and activation signal."""
         menu = QMenu()
 
         show_action = QAction("Open Cortex Cleaner", self)
@@ -84,9 +78,7 @@ class SystemTrayManager(QObject):
     # ── Slots ─────────────────────────────────────────────────────────
 
     def _on_tray_activated(self, reason):
-        """_on_tray_activated.
-
-        Manages on tray activated operations and coordinates related state changes for the component.
+        """Restore the main window when the tray icon is activated.
 
         Args:
             reason: The reason parameter.
@@ -95,19 +87,13 @@ class SystemTrayManager(QObject):
             self._show_main_window()
 
     def _show_main_window(self):
-        """_show_main_window.
-
-        Manages show main window operations and coordinates related state changes for the component.
-        """
+        """Show, raise, and activate the main application window."""
         self.main_window.show()
         self.main_window.raise_()
         self.main_window.activateWindow()
 
     def _run_instant_scan(self):
-        """_run_instant_scan.
-
-        Manages run instant scan operations and coordinates related state changes for the component.
-        """
+        """Show the main window and start an instant smart scan from the Dashboard."""
         self._show_main_window()
         if hasattr(self.main_window, "navigation_controller"):
             nc = self.main_window.navigation_controller
@@ -117,10 +103,7 @@ class SystemTrayManager(QObject):
                 dashboard.run_smart_scan()
 
     def _quit_app(self):
-        """_quit_app.
-
-        Manages quit app operations and coordinates related state changes for the component.
-        """
+        """Stop background monitoring, tear down the tray icon, and quit the app."""
         self.agent.stop()
         self.agent_thread.quit()
         self.agent_thread.wait(3000)
@@ -130,9 +113,7 @@ class SystemTrayManager(QObject):
     # ── Alert notifications ───────────────────────────────────────────
 
     def _on_high_ram(self, value):
-        """_on_high_ram.
-
-        Manages on high ram operations and coordinates related state changes for the component.
+        """Notify the user of high memory usage via a tray balloon message.
 
         Args:
             value: The value parameter.
@@ -145,9 +126,7 @@ class SystemTrayManager(QObject):
         )
 
     def _on_high_cpu(self, value):
-        """_on_high_cpu.
-
-        Manages on high cpu operations and coordinates related state changes for the component.
+        """Notify the user of high CPU usage via a tray balloon message.
 
         Args:
             value: The value parameter.
@@ -160,9 +139,7 @@ class SystemTrayManager(QObject):
         )
 
     def _on_low_disk(self, free_gb):
-        """_on_low_disk.
-
-        Manages on low disk operations and coordinates related state changes for the component.
+        """Notify the user of low system-drive space via a tray balloon message.
 
         Args:
             free_gb: The free gb parameter.

@@ -23,18 +23,13 @@ from PySide6.QtWidgets import QApplication  # noqa: E402
 
 @pytest.fixture(scope="module")
 def qapp():
-    """Qapp.
-
-    Manages qapp operations and coordinates related state changes for the component.
-    """
+    """Provide qapp fixture that provides a shared QApplication."""
     app = QApplication.instance() or QApplication([])
     yield app
 
 
 def _row(name, size=0, is_dir=False, mtime=1000):
-    """Row.
-
-    Manages row operations and coordinates related state changes for the component.
+    """Row using Path, name.rsplit.
 
     Args:
         name: The name parameter.
@@ -53,14 +48,9 @@ def _row(name, size=0, is_dir=False, mtime=1000):
 
 
 class TestUpdateRowsIncremental:
-    """Testupdaterowsincremental.
-
-    Manages TestUpdateRowsIncremental operations and coordinates related state changes for the component.
-    """
+    """Group testupdaterowsincremental tests covering diff removes adds modifies; empty then populate."""
     def test_diff_removes_adds_modifies(self, qapp):
-        """test_diff_removes_adds_modifies.
-
-        Manages test diff removes adds modifies operations and coordinates related state changes for the component.
+        """Verify diff removes adds modifies via model.rowCount, FileTableModel, model.update_rows.
 
         Args:
             qapp: The qapp parameter.
@@ -85,9 +75,7 @@ class TestUpdateRowsIncremental:
         assert model.rows[0]["size"] == 999
 
     def test_empty_then_populate(self, qapp):
-        """test_empty_then_populate.
-
-        Manages test empty then populate operations and coordinates related state changes for the component.
+        """Verify empty then populate via model.rowCount, FileTableModel, model.update_rows.
 
         Args:
             qapp: The qapp parameter.
@@ -102,14 +90,9 @@ class TestUpdateRowsIncremental:
 
 
 class TestSessionRoundTrip:
-    """Testsessionroundtrip.
-
-    Manages TestSessionRoundTrip operations and coordinates related state changes for the component.
-    """
+    """Group testsessionroundtrip tests covering tabs and view mode persist."""
     def test_tabs_and_view_mode_persist(self, qapp, tmp_path):
-        """test_tabs_and_view_mode_persist.
-
-        Manages test tabs and view mode persist operations and coordinates related state changes for the component.
+        """Verify tabs and view mode persist via qapp.processEvents, w1.stack.currentIndex, w2.stack.currentIndex.
 
         Args:
             qapp: The qapp parameter.

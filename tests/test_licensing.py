@@ -36,9 +36,7 @@ from cortex_unified.licensing.tiers import FEATURE_MIN_TIER, features_for_tier
 
 @pytest.fixture()
 def manager(tmp_path: Path) -> LicenseManager:
-    """Manager.
-
-    Manages manager operations and coordinates related state changes for the component.
+    """Provide manager fixture via pytest.fixture, LicenseManager.
 
     Args:
         tmp_path (Path): Filesystem path to the target file or directory.
@@ -53,38 +51,23 @@ def manager(tmp_path: Path) -> LicenseManager:
 
 
 class TestFingerprint:
-    """Testfingerprint.
-
-    Manages TestFingerprint operations and coordinates related state changes for the component.
-    """
+    """Group testfingerprint tests covering stable across calls; memoised matches direct; shape; identifiers never empty."""
     def test_stable_across_calls(self):
-        """test_stable_across_calls.
-
-        Manages test stable across calls operations and coordinates related state changes for the component.
-        """
+        """Verify stable across calls via compute_fingerprint."""
         assert compute_fingerprint() == compute_fingerprint()
 
     def test_memoised_matches_direct(self):
-        """test_memoised_matches_direct.
-
-        Manages test memoised matches direct operations and coordinates related state changes for the component.
-        """
+        """Verify memoised matches direct via get_fingerprint, compute_fingerprint."""
         assert get_fingerprint() == compute_fingerprint()
 
     def test_shape(self):
-        """test_shape.
-
-        Manages test shape operations and coordinates related state changes for the component.
-        """
+        """Verify shape via get_fingerprint."""
         digest = get_fingerprint()
         assert len(digest) == 64
         int(digest, 16)  # hex parseable
 
     def test_identifiers_never_empty(self):
-        """test_identifiers_never_empty.
-
-        Manages test identifiers never empty operations and coordinates related state changes for the component.
-        """
+        """Verify identifiers never empty via fp.collect_identifiers."""
         from cortex_unified.licensing import fingerprint as fp
 
         assert fp.collect_identifiers()
@@ -94,42 +77,27 @@ class TestFingerprint:
 
 
 class TestTiers:
-    """Testtiers.
-
-    Manages TestTiers operations and coordinates related state changes for the component.
-    """
+    """Group testtiers tests covering rank ordering; includes is cumulative; parse defaults to free on garbage; feature matrix cumulative."""
     def test_rank_ordering(self):
-        """test_rank_ordering.
-
-        Manages test rank ordering operations and coordinates related state changes for the component.
-        """
+        """Verify rank ordering via sorted."""
         order = [Tier.FREE, Tier.PREMIUM, Tier.PRO, Tier.SUPER, Tier.ENTERPRISE]
         ranks = [t.rank for t in order]
         assert ranks == sorted(ranks)
 
     def test_includes_is_cumulative(self):
-        """test_includes_is_cumulative.
-
-        Manages test includes is cumulative operations and coordinates related state changes for the component.
-        """
+        """Verify includes is cumulative via Tier.ENTERPRISE.includes, Tier.PRO.includes, Tier.FREE.includes."""
         assert Tier.ENTERPRISE.includes(Tier.FREE)
         assert Tier.PRO.includes(Tier.PREMIUM)
         assert not Tier.FREE.includes(Tier.PRO)
 
     def test_parse_defaults_to_free_on_garbage(self):
-        """test_parse_defaults_to_free_on_garbage.
-
-        Manages test parse defaults to free on garbage operations and coordinates related state changes for the component.
-        """
+        """Verify parse defaults to free on garbage via Tier.parse."""
         assert Tier.parse("pro") is Tier.PRO
         assert Tier.parse("GOLD") is Tier.FREE
         assert Tier.parse(None) is Tier.FREE
 
     def test_feature_matrix_cumulative(self):
-        """test_feature_matrix_cumulative.
-
-        Manages test feature matrix cumulative operations and coordinates related state changes for the component.
-        """
+        """Verify feature matrix cumulative via features_for_tier."""
         free = features_for_tier(Tier.FREE)
         pro = features_for_tier(Tier.PRO)
         premium = features_for_tier(Tier.PREMIUM)
@@ -144,14 +112,9 @@ class TestTiers:
 
 
 class TestLicenseLifecycle:
-    """Testlicenselifecycle.
-
-    Manages TestLicenseLifecycle operations and coordinates related state changes for the component.
-    """
+    """Group testlicenselifecycle tests covering fresh machine is free; activate and validate; key masked in status; signature tamper rejected; payload tamper rejected; corrupt file degrades to free."""
     def test_fresh_machine_is_free(self, manager: LicenseManager):
-        """test_fresh_machine_is_free.
-
-        Manages test fresh machine is free operations and coordinates related state changes for the component.
+        """Verify fresh machine is free via manager.validate.
 
         Args:
             manager (LicenseManager): The manager parameter.
@@ -162,9 +125,7 @@ class TestLicenseLifecycle:
         assert not state.trial
 
     def test_activate_and_validate(self, manager: LicenseManager):
-        """test_activate_and_validate.
-
-        Manages test activate and validate operations and coordinates related state changes for the component.
+        """Verify activate and validate via manager.activate.
 
         Args:
             manager (LicenseManager): The manager parameter.
@@ -176,9 +137,7 @@ class TestLicenseLifecycle:
         assert Feature.SENTINEL_PRO in state.features
 
     def test_key_masked_in_status(self, manager: LicenseManager):
-        """test_key_masked_in_status.
-
-        Manages test key masked in status operations and coordinates related state changes for the component.
+        """Verify key masked in status via manager.activate, json.dumps, manager.status.
 
         Args:
             manager (LicenseManager): The manager parameter.
@@ -188,9 +147,7 @@ class TestLicenseLifecycle:
         assert "VERYSECRET" not in raw
 
     def test_signature_tamper_rejected(self, manager: LicenseManager):
-        """test_signature_tamper_rejected.
-
-        Manages test signature tamper rejected operations and coordinates related state changes for the component.
+        """Verify signature tamper rejected via manager.activate, json.loads, manager.validate.
 
         Args:
             manager (LicenseManager): The manager parameter.
@@ -204,9 +161,7 @@ class TestLicenseLifecycle:
         assert "signature" in state.reason
 
     def test_payload_tamper_rejected(self, manager: LicenseManager):
-        """test_payload_tamper_rejected.
-
-        Manages test payload tamper rejected operations and coordinates related state changes for the component.
+        """Verify payload tamper rejected via manager.activate, json.loads, json.dumps.
 
         Args:
             manager (LicenseManager): The manager parameter.
@@ -218,9 +173,7 @@ class TestLicenseLifecycle:
         assert manager.validate().tier is Tier.FREE
 
     def test_corrupt_file_degrades_to_free(self, manager: LicenseManager):
-        """test_corrupt_file_degrades_to_free.
-
-        Manages test corrupt file degrades to free operations and coordinates related state changes for the component.
+        """Verify corrupt file degrades to free via manager.activate, manager.validate.
 
         Args:
             manager (LicenseManager): The manager parameter.
@@ -232,9 +185,7 @@ class TestLicenseLifecycle:
         assert "corrupt" in state.reason
 
     def test_wrong_machine_rejected(self, manager: LicenseManager):
-        """test_wrong_machine_rejected.
-
-        Manages test wrong machine rejected operations and coordinates related state changes for the component.
+        """Verify wrong machine rejected via LicensePayload.from_dict, manager.activate, json.loads.
 
         Args:
             manager (LicenseManager): The manager parameter.
@@ -252,9 +203,7 @@ class TestLicenseLifecycle:
         assert "machine" in state.reason
 
     def test_expiry_freezes_after_grace(self, tmp_path: Path):
-        """test_expiry_freezes_after_grace.
-
-        Manages test expiry freezes after grace operations and coordinates related state changes for the component.
+        """Verify expiry freezes after grace via LicenseManager, manager.activate, LicensePayload.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -284,9 +233,7 @@ class TestLicenseLifecycle:
         assert "grace period ended" in expired.reason
 
     def test_grace_period_keeps_access(self, tmp_path: Path):
-        """test_grace_period_keeps_access.
-
-        Manages test grace period keeps access operations and coordinates related state changes for the component.
+        """Verify grace period keeps access via LicenseManager, LicensePayload, manager.validate.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -312,9 +259,7 @@ class TestLicenseLifecycle:
         assert Feature.SENTINEL_PRO in state.features
 
     def test_trial_once_only(self, manager: LicenseManager):
-        """test_trial_once_only.
-
-        Manages test trial once only operations and coordinates related state changes for the component.
+        """Verify trial once only via manager.start_trial, pytest.raises.
 
         Args:
             manager (LicenseManager): The manager parameter.
@@ -325,9 +270,7 @@ class TestLicenseLifecycle:
             manager.start_trial()
 
     def test_trial_refused_when_licensed(self, manager: LicenseManager):
-        """test_trial_refused_when_licensed.
-
-        Manages test trial refused when licensed operations and coordinates related state changes for the component.
+        """Verify trial refused when licensed via manager.activate, pytest.raises, manager.start_trial.
 
         Args:
             manager (LicenseManager): The manager parameter.
@@ -337,9 +280,7 @@ class TestLicenseLifecycle:
             manager.start_trial()
 
     def test_deactivate_returns_to_free(self, manager: LicenseManager):
-        """test_deactivate_returns_to_free.
-
-        Manages test deactivate returns to free operations and coordinates related state changes for the component.
+        """Verify deactivate returns to free via manager.activate, manager.deactivate, manager.validate.
 
         Args:
             manager (LicenseManager): The manager parameter.
@@ -351,9 +292,7 @@ class TestLicenseLifecycle:
         assert not manager._path.exists()
 
     def test_activate_rejects_bad_input(self, manager: LicenseManager):
-        """test_activate_rejects_bad_input.
-
-        Manages test activate rejects bad input operations and coordinates related state changes for the component.
+        """Verify activate rejects bad input via pytest.raises, manager.activate.
 
         Args:
             manager (LicenseManager): The manager parameter.
@@ -364,10 +303,7 @@ class TestLicenseLifecycle:
             manager.activate("K", Tier.PRO, term_days=-3)
 
     def test_singleton_resettable(self):
-        """test_singleton_resettable.
-
-        Manages test singleton resettable operations and coordinates related state changes for the component.
-        """
+        """Verify singleton resettable via get_license_manager, reset_singleton."""
         from cortex_unified.licensing.license_manager import (
             get_license_manager,
             reset_singleton,
@@ -383,15 +319,10 @@ class TestLicenseLifecycle:
 
 
 class TestGating:
-    """Testgating.
-
-    Manages TestGating operations and coordinates related state changes for the component.
-    """
+    """Group testgating tests covering current tier and features; allowed and require; entitlement error details; gate decorator blocks and passes."""
     @pytest.fixture(autouse=True)
     def _licensed_pro(self, monkeypatch, tmp_path):
         """Point the singleton at a temp PRO license for every test here.
-
-        Manages licensed pro operations and coordinates related state changes for the component.
 
         Args:
             monkeypatch: The monkeypatch parameter.
@@ -406,20 +337,14 @@ class TestGating:
         lm_module.reset_singleton()
 
     def test_current_tier_and_features(self):
-        """test_current_tier_and_features.
-
-        Manages test current tier and features operations and coordinates related state changes for the component.
-        """
+        """Verify current tier and features via effective_features, current_tier."""
         assert current_tier() is Tier.PRO
         feats = effective_features()
         assert Feature.SENTINEL_PRO in feats
         assert Feature.POLICY_FILES not in feats  # enterprise-only
 
     def test_allowed_and_require(self):
-        """test_allowed_and_require.
-
-        Manages test allowed and require operations and coordinates related state changes for the component.
-        """
+        """Verify allowed and require via pytest.raises, allowed, require."""
         assert allowed(Feature.SENTINEL_PRO)
         require = __import__(
             "cortex_unified.licensing.gating", fromlist=["require"]
@@ -429,10 +354,7 @@ class TestGating:
             require(Feature.POLICY_FILES)
 
     def test_entitlement_error_details(self):
-        """test_entitlement_error_details.
-
-        Manages test entitlement error details operations and coordinates related state changes for the component.
-        """
+        """Verify entitlement error details via pytest.raises, __import__, require."""
         require = __import__(
             "cortex_unified.licensing.gating", fromlist=["require"]
         ).require
@@ -442,24 +364,15 @@ class TestGating:
         assert excinfo.value.current is Tier.PRO
 
     def test_gate_decorator_blocks_and_passes(self):
-        """test_gate_decorator_blocks_and_passes.
-
-        Manages test gate decorator blocks and passes operations and coordinates related state changes for the component.
-        """
+        """Verify gate decorator blocks and passes via pytest.raises, gate, pro_tool."""
         @gate(Feature.SENTINEL_PRO)
         def pro_tool():
-            """pro_tool.
-
-            Manages pro tool operations and coordinates related state changes for the component.
-            """
+            """Pro tool using gate."""
             return "ran"
 
         @gate(Feature.POLICY_FILES)
         def enterprise_tool():
-            """enterprise_tool.
-
-            Manages enterprise tool operations and coordinates related state changes for the component.
-            """
+            """Enterprise tool using gate."""
             return "ran"
 
         assert pro_tool() == "ran"

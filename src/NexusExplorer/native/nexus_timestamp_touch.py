@@ -22,9 +22,9 @@ from typing import Dict, List, Optional, Tuple
 
 
 class FileAttributeFlags(Flag):
-    """Fileattributeflags.
+    """Win32 file attribute bit flags.
 
-    Manages FileAttributeFlags operations and coordinates related state changes for the component.
+    Mirrors READONLY/HIDDEN/SYSTEM/ARCHIVE/NORMAL/TEMPORARY/COMPRESSED constants for Get/SetFileAttributesW.
     """
     READONLY = 0x00000001
     HIDDEN = 0x00000002
@@ -37,9 +37,9 @@ class FileAttributeFlags(Flag):
 
 @dataclass
 class TimestampInfo:
-    """Timestampinfo.
+    """MACB timestamps plus attribute snapshot.
 
-    Manages TimestampInfo operations and coordinates related state changes for the component.
+    Stores path/filename, created/modified/accessed epochs, raw attributes int, and readonly/hidden/system/archive booleans.
     """
     path: str
     filename: str
@@ -55,9 +55,9 @@ class TimestampInfo:
 
 @dataclass
 class TimestampUpdateResult:
-    """Timestampupdateresult.
+    """Outcome of one timestamp update.
 
-    Manages TimestampUpdateResult operations and coordinates related state changes for the component.
+    Holds path, success flag, and optional error string.
     """
     path: str
     success: bool
@@ -65,16 +65,16 @@ class TimestampUpdateResult:
 
 
 class TimestampTouchEngine:
-    """Timestamptouchengine.
+    """Forensic MACB timestamp and attribute editor.
 
-    Manages TimestampTouchEngine operations and coordinates related state changes for the component.
+    Reads via stat (birthtime/ctime fallback) and writes via Win32 SetFileTime or POSIX os.utime with batch support.
     """
 
     @classmethod
     def get_file_metadata(cls, file_path: str | Path) -> Optional[TimestampInfo]:
         """Query full MACB timestamps and attribute flags.
 
-        Manages get file metadata operations and coordinates related state changes for the component.
+        Stats the path, derives creation time from st_birthtime/st_ctime fallback, and decodes attribute bits into flags.
 
         Args:
             file_path (str | Path): Filesystem path to the target file or directory.
@@ -118,7 +118,7 @@ class TimestampTouchEngine:
     ) -> TimestampUpdateResult:
         """Set Created, Modified, and Accessed timestamps on a file or directory.
 
-        Manages set timestamps operations and coordinates related state changes for the component.
+        Normalizes datetime/float inputs, routes Windows paths to _set_windows_timestamps, else applies os.utime preserving untouched fields.
 
         Args:
             file_path (str | Path): Filesystem path to the target file or directory.
@@ -134,9 +134,9 @@ class TimestampTouchEngine:
             return TimestampUpdateResult(str(p), False, "File does not exist")
 
         def _to_timestamp(val: Optional[float | datetime.datetime]) -> Optional[float]:
-            """_to_timestamp.
+            """Normalize datetime/float to epoch float.
 
-            Manages to timestamp operations and coordinates related state changes for the component.
+            Returns None passthrough, datetime.timestamp() for datetimes, else float(val).
 
             Args:
                 val (Optional[float | datetime.datetime]): The val parameter.
@@ -178,7 +178,7 @@ class TimestampTouchEngine:
     ) -> TimestampUpdateResult:
         """Win32 SetFileTime implementation via ctypes.
 
-        Manages set windows timestamps operations and coordinates related state changes for the component.
+        Opens handle with CreateFileW + BACKUP_SEMANTICS, converts epochs to 100ns FILETIME since 1601, and calls SetFileTime.
 
         Args:
             path (Path): Filesystem path to the target file or directory.
@@ -214,9 +214,9 @@ class TimestampTouchEngine:
 
         try:
             def _to_filetime(ts: Optional[float]) -> Optional[ctypes.c_uint64]:
-                """_to_filetime.
+                """Convert Unix epoch to Windows FILETIME.
 
-                Manages to filetime operations and coordinates related state changes for the component.
+                Computes int((ts+11644473600)*10_000_000) as c_uint64 for SetFileTime.
 
                 Args:
                     ts (Optional[float]): The ts parameter.
@@ -258,7 +258,7 @@ class TimestampTouchEngine:
     ) -> bool:
         """Update file attribute flags (Readonly, Hidden, System, Archive).
 
-        Manages set attributes operations and coordinates related state changes for the component.
+        Reads GetFileAttributesW, toggles READONLY/HIDDEN/SYSTEM/ARCHIVE bits per non-None args, and applies SetFileAttributesW.
 
         Args:
             file_path (str | Path): Filesystem path to the target file or directory.
@@ -303,7 +303,7 @@ class TimestampTouchEngine:
     ) -> List[TimestampUpdateResult]:
         """Apply timestamp touch updates across a batch of files.
 
-        Manages touch batch operations and coordinates related state changes for the component.
+        Applies set_timestamps with shared times to each path in order, collecting per-file results.
 
         Args:
             file_paths (List[str | Path]): Filesystem path to the target file or directory.

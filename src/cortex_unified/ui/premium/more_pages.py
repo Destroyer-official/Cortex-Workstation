@@ -108,10 +108,7 @@ def _selected_records(table: QTableWidget) -> list[dict]:
 # =====================================================================
 
 class UpdaterListWorker(QObject):
-    """Updaterlistworker.
-
-    Manages UpdaterListWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker listing upgradable apps via AppUpdater.list_upgradable; emits finished(list) / failed(str)."""
     finished = Signal(list)
     failed = Signal(str)
 
@@ -128,10 +125,7 @@ class UpdaterListWorker(QObject):
 
 
 class UpgradeWorker(QObject):
-    """Upgradeworker.
-
-    Manages UpgradeWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker upgrading package IDs via AppUpdater.upgrade; emits finished(succeeded, total) / failed(str)."""
     finished = Signal(int, int)   # (succeeded, total)
     failed = Signal(str)
 
@@ -164,10 +158,7 @@ class UpgradeWorker(QObject):
 
 
 class DriveListWorker(QObject):
-    """Drivelistworker.
-
-    Manages DriveListWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker listing fixed drives via DriveOptimizer.list_drives; emits finished(list) / failed(str)."""
     finished = Signal(list)
     failed = Signal(str)
 
@@ -184,10 +175,7 @@ class DriveListWorker(QObject):
 
 
 class DriveOptimizeWorker(QObject):
-    """Driveoptimizeworker.
-
-    Manages DriveOptimizeWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker optimizing one drive via DriveOptimizer.optimize; emits finished(bool, str) / failed(str)."""
     finished = Signal(bool, str)
     failed = Signal(str)
 
@@ -216,10 +204,7 @@ class DriveOptimizeWorker(QObject):
 
 
 class SystemInfoWorker(QObject):
-    """Systeminfoworker.
-
-    Manages SystemInfoWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker collecting a snapshot via SystemInfo.snapshot; emits finished(dict) / failed(str)."""
     finished = Signal(dict)
     failed = Signal(str)
 
@@ -240,10 +225,7 @@ class SystemInfoWorker(QObject):
 # =====================================================================
 
 class SoftwareUpdaterPage(_Page):
-    """Softwareupdaterpage.
-
-    Manages SoftwareUpdaterPage operations and coordinates related state changes for the component.
-    """
+    """Software Updater page with Check/Update Selected/Update All buttons, progress bar, 4-column app table and state panel; lists via UpdaterListWorker and upgrades via UpgradeWorker."""
 
     def __init__(self, win):
         """Initialize the Software Updater page.
@@ -355,10 +337,7 @@ class SoftwareUpdaterPage(_Page):
         return [self.tbl.item(r, 3).text() for r in sorted(rows) if self.tbl.item(r, 3)]
 
     def _update_selected(self):
-        """Handle the 'Update Selected' button click.
-
-        Manages update selected operations and coordinates related state changes for the component.
-        """
+        """Handle the 'Update Selected' button click."""
         ids = self._selected_ids()
         if not ids:
             QMessageBox.information(self, "No selection", "Select one or more apps to update.")
@@ -366,10 +345,7 @@ class SoftwareUpdaterPage(_Page):
         self._run_updates(ids, f"Update {len(ids)} selected app(s)?")
 
     def _update_all(self):
-        """Handle the 'Update All' button click.
-
-        Manages update all operations and coordinates related state changes for the component.
-        """
+        """Handle the 'Update All' button click."""
         ids = [self.tbl.item(r, 3).text() for r in range(self.tbl.rowCount()) if self.tbl.item(r, 3)]
         self._run_updates(ids, f"Update all {len(ids)} app(s)?")
 
@@ -425,10 +401,7 @@ class SoftwareUpdaterPage(_Page):
 # =====================================================================
 
 class DriveOptimizerPage(_Page):
-    """Driveoptimizerpage.
-
-    Manages DriveOptimizerPage operations and coordinates related state changes for the component.
-    """
+    """Drive Optimizer page with Detect/Optimize Selected buttons, progress bar, drive/medium/action table and state panel; lists via DriveListWorker and optimizes via DriveOptimizeWorker."""
 
     def __init__(self, win):
         """Initialize the Drive Optimizer page.
@@ -520,10 +493,7 @@ class DriveOptimizerPage(_Page):
         self.win.statusBar().showMessage(f"{len(drives)} fixed drive(s)", 5000)
 
     def _optimize(self):
-        """Optimize.
-
-        Manages optimize operations and coordinates related state changes for the component.
-        """
+        """Ask for confirmation then optimize the selected drive via DriveOptimizeWorker; disables the button and shows progress."""
         sel = self.tbl.selectedIndexes()
         if not sel:
             return
@@ -574,10 +544,7 @@ class DriveOptimizerPage(_Page):
 # =====================================================================
 
 class SystemInfoPage(_Page):
-    """Systeminfopage.
-
-    Manages SystemInfoPage operations and coordinates related state changes for the component.
-    """
+    """System Info page with Refresh button, info Card label, disk table and state panel; loads via SystemInfoWorker."""
 
     def __init__(self, win):
         """Initialize the System Info page.
@@ -677,10 +644,7 @@ class SystemInfoPage(_Page):
 # =====================================================================
 
 class BrokenLinksWorker(QObject):
-    """Brokenlinksworker.
-
-    Manages BrokenLinksWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker scanning a root via BrokenLinkDetector.scan_all with progress and cancel; emits finished(list) / progress(str) / failed(str)."""
     finished = Signal(list)
     progress = Signal(str)
     failed = Signal(str)
@@ -723,10 +687,7 @@ class BrokenLinksWorker(QObject):
 
 
 class DuplicateFoldersWorker(QObject):
-    """Duplicatefoldersworker.
-
-    Manages DuplicateFoldersWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker finding identical folders via DuplicateFolderFinder.find_duplicate_folders with progress and cancel; emits finished(dict) / progress(str) / failed(str)."""
     finished = Signal(dict)
     progress = Signal(str)
     failed = Signal(str)
@@ -767,10 +728,7 @@ class DuplicateFoldersWorker(QObject):
 
 
 class PackageCacheWorker(QObject):
-    """Packagecacheworker.
-
-    Manages PackageCacheWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker detecting managers and stats via PackageManagerCleaner.detect_package_managers/get_stats; emits finished(list) / failed(str)."""
     finished = Signal(list)
     failed = Signal(str)
 
@@ -798,10 +756,7 @@ class PackageCacheWorker(QObject):
 
 
 class PackageCleanWorker(QObject):
-    """Packagecleanworker.
-
-    Manages PackageCleanWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker cleaning one manager cache via PackageManagerCleaner.clean_pip_cache/clean_npm_cache/clean_system_packages; emits finished(manager, freed) / failed(str)."""
     finished = Signal(str, int)   # (manager, space_freed)
     failed = Signal(str)
 
@@ -949,9 +904,7 @@ class _SimpleFolderPage(_Page):
     def _build_results(self) -> QTableWidget:
         """Subclasses construct and return their specific QTableWidget.
 
-        Manages build results operations and coordinates related state changes for the component.
-
-        Returns:
+            Returns:
             QTableWidget: Result of the operation.
         """
         table = QTableWidget(0, 3)
@@ -987,11 +940,9 @@ class _SimpleFolderPage(_Page):
             self._run()
 
     def _start(self, worker, on_done):
-        """Start.
+        """Start a folder-scan worker; shows loading/progress, switches Run to Cancel and forwards progress when available.
 
-        Manages start operations and coordinates related state changes for the component.
-
-        Args:
+            Args:
             worker: The worker parameter.
             on_done: The on done parameter.
         """
@@ -1017,10 +968,7 @@ class _SimpleFolderPage(_Page):
         self.scan_status.setText(text)
 
     def _finish(self):
-        """Finish.
-
-        Manages finish operations and coordinates related state changes for the component.
-        """
+        """Clear the busy state; hide progress and restore the Run button."""
         self._running = False
         self._worker = None
         self.progress.setVisible(False)
@@ -1044,9 +992,7 @@ class _SimpleFolderPage(_Page):
     def _selected_paths(self) -> list[str]:
         """Compute and return the value for selected paths used by the page.
 
-        Manages selected paths operations and coordinates related state changes for the component.
-
-        Returns:
+            Returns:
             list[str]: List of processed items or identifiers.
         """
         rows = {idx.row() for idx in self.results_table.selectedIndexes()}
@@ -1054,10 +1000,7 @@ class _SimpleFolderPage(_Page):
                 if self.results_table.item(r, 0)]
 
     def _delete_selected(self):
-        """Handle delete selected for the page widgets and worker state.
-
-        Manages delete selected operations and coordinates related state changes for the component.
-        """
+        """Handle delete selected for the page widgets and worker state."""
         paths = self._selected_paths()
         if not paths:
             QMessageBox.information(self, "No selection", "Select rows first.")
@@ -1077,9 +1020,7 @@ class _SimpleFolderPage(_Page):
     def _on_deleted(self, freed: int, ok: int, blocked: int):
         """Handle worker results: update widgets and clear the busy state.
 
-        Manages on deleted operations and coordinates related state changes for the component.
-
-        Args:
+            Args:
             freed (int): The freed parameter.
             ok (int): The ok parameter.
             blocked (int): The blocked parameter.
@@ -1091,10 +1032,7 @@ class _SimpleFolderPage(_Page):
         self._run()
 
     def _run(self):
-        """Run.
-
-        Manages run operations and coordinates related state changes for the component.
-        """
+        """Base run hook; returns when no folder is chosen (subclasses start their worker)."""
         if not self._folder:
             return
         self._finish()
@@ -1117,10 +1055,7 @@ class _SimpleFolderPage(_Page):
 
 
 class BrokenLinksPage(_SimpleFolderPage):
-    """Brokenlinkspage.
-
-    Manages BrokenLinksPage operations and coordinates related state changes for the component.
-    """
+    """Broken Links page scanning a chosen folder for dead shortcuts/symlinks; Path/Target/Type table started via BrokenLinksWorker."""
     title = "Broken Links"
     subtitle = "Find dead shortcuts and symlinks whose targets no longer exist."
     action_label = "Scan for Broken Links"
@@ -1128,9 +1063,7 @@ class BrokenLinksPage(_SimpleFolderPage):
     def _build_results(self) -> QTableWidget:
         """Compute and return the value for build results used by the page.
 
-        Manages build results operations and coordinates related state changes for the component.
-
-        Returns:
+            Returns:
             QTableWidget: Result of the operation.
         """
         t = QTableWidget(0, 3)
@@ -1142,10 +1075,7 @@ class BrokenLinksPage(_SimpleFolderPage):
         return t
 
     def _run(self):
-        """Run.
-
-        Manages run operations and coordinates related state changes for the component.
-        """
+        """Start a BrokenLinksWorker for the chosen folder."""
         self._start(BrokenLinksWorker(self._folder), self._on_done)
 
     def _on_done(self, links: list):
@@ -1171,10 +1101,7 @@ class BrokenLinksPage(_SimpleFolderPage):
 
 
 class DuplicateFoldersPage(_SimpleFolderPage):
-    """Duplicatefolderspage.
-
-    Manages DuplicateFoldersPage operations and coordinates related state changes for the component.
-    """
+    """Duplicate Folders page scanning a chosen folder for byte-identical folders; Folder/Group table started via DuplicateFoldersWorker."""
     title = "Duplicate Folders"
     subtitle = "Find folders whose entire contents are byte-for-byte identical."
     action_label = "Find Duplicate Folders"
@@ -1182,9 +1109,7 @@ class DuplicateFoldersPage(_SimpleFolderPage):
     def _build_results(self) -> QTableWidget:
         """Compute and return the value for build results used by the page.
 
-        Manages build results operations and coordinates related state changes for the component.
-
-        Returns:
+            Returns:
             QTableWidget: Result of the operation.
         """
         t = QTableWidget(0, 2)
@@ -1196,10 +1121,7 @@ class DuplicateFoldersPage(_SimpleFolderPage):
         return t
 
     def _run(self):
-        """Run.
-
-        Manages run operations and coordinates related state changes for the component.
-        """
+        """Start a DuplicateFoldersWorker for the chosen folder."""
         self._start(DuplicateFoldersWorker(self._folder), self._on_done)
 
     def _on_done(self, groups: dict):
@@ -1440,10 +1362,7 @@ class PackageCachePage(_Page):
         self.pm_custom_folders: list = []
 
     def _browse_pm_directory(self):
-        """Handle browse pm directory for the page widgets and worker state.
-
-        Manages browse pm directory operations and coordinates related state changes for the component.
-        """
+        """Handle browse pm directory for the page widgets and worker state."""
         from pathlib import Path
         initial = self.pm_path_input.text().strip() or str(Path.home())
         folder = QFileDialog.getExistingDirectory(self, "Select Package Cache Directory", initial)
@@ -1452,10 +1371,7 @@ class PackageCachePage(_Page):
             self._add_custom_pm_location()
 
     def _browse_pm_file(self):
-        """Handle browse pm file for the page widgets and worker state.
-
-        Manages browse pm file operations and coordinates related state changes for the component.
-        """
+        """Handle browse pm file for the page widgets and worker state."""
         from pathlib import Path
         initial = self.pm_path_input.text().strip() or str(Path.home())
         file_path, _ = QFileDialog.getOpenFileName(self, "Select Package File / Cache Location", initial)
@@ -1465,10 +1381,7 @@ class PackageCachePage(_Page):
             self._add_custom_pm_location()
 
     def _add_custom_pm_location(self):
-        """Handle add custom pm location for the page widgets and worker state.
-
-        Manages add custom pm location operations and coordinates related state changes for the component.
-        """
+        """Handle add custom pm location for the page widgets and worker state."""
         txt = self.pm_path_input.text().strip()
         if txt and txt not in self.pm_custom_folders:
             self.pm_custom_folders.append(txt)
@@ -1476,10 +1389,7 @@ class PackageCachePage(_Page):
             self.pm_custom_locations_list.setVisible(True)
 
     def detect_package_managers(self):
-        """Detect package managers via the worker/widgets; results return through worker signals.
-
-        Manages detect package managers operations and coordinates related state changes for the component.
-        """
+        """Detect package managers via the worker/widgets; results return through worker signals."""
         self.pm_detect_status.setText("Detecting\u2026")
         self.refresh_btn.setEnabled(False)
 
@@ -1516,10 +1426,7 @@ class PackageCachePage(_Page):
             self.refresh_btn.setEnabled(True)
 
     def start_pm_scan(self):
-        """Start pm scan via the progress state; results return through worker signals.
-
-        Manages start pm scan operations and coordinates related state changes for the component.
-        """
+        """Start pm scan via the progress state; results return through worker signals."""
         self.scan_button.setEnabled(False)
         self.progress.setVisible(True)
 
@@ -1549,10 +1456,7 @@ class PackageCachePage(_Page):
             self.progress.setVisible(False)
 
     def start_autodiscover_scan(self):
-        """Auto-discover project build caches across all fixed drives using ProjectCacheScanner.
-
-        Manages start autodiscover scan operations and coordinates related state changes for the component.
-        """
+        """Auto-discover project build caches across all fixed drives using ProjectCacheScanner."""
         self.autodiscover_btn.setEnabled(False)
         self.scan_button.setEnabled(False)
         self.progress.setVisible(True)
@@ -1610,9 +1514,7 @@ class PackageCachePage(_Page):
     def _display_scan_results(self, resources):
         """Handle display scan results for the page widgets and worker state.
 
-        Manages display scan results operations and coordinates related state changes for the component.
-
-        Args:
+            Args:
             resources: Collection or dictionary holding operation results.
         """
         self.progress.setVisible(False)
@@ -1655,10 +1557,7 @@ class PackageCachePage(_Page):
         self.clean_btn.setEnabled(True)
 
     def start_pm_cleanup(self):
-        """Start pm cleanup via the confirmation dialog, progress state, results view; results return through worker signals.
-
-        Manages start pm cleanup operations and coordinates related state changes for the component.
-        """
+        """Start pm cleanup via the confirmation dialog, progress state, results view; results return through worker signals."""
         selected = []
         for row in range(self.pm_table.rowCount()):
             item = self.pm_table.item(row, 0)
@@ -1704,9 +1603,7 @@ class PackageCachePage(_Page):
     def _handle_cleanup_results(self, results, dry_run=True):
         """Handle worker results: refresh tables/trees, re-enable buttons and clear the busy state.
 
-        Manages handle cleanup results operations and coordinates related state changes for the component.
-
-        Args:
+            Args:
             results: Collection or dictionary holding operation results.
             dry_run: The dry run parameter.
         """
@@ -1759,19 +1656,14 @@ class PackageCachePage(_Page):
 # =====================================================================
 
 class SortableTreeWidgetItem(QTreeWidgetItem):
-    """Sortabletreewidgetitem.
-
-    Manages SortableTreeWidgetItem operations and coordinates related state changes for the component.
-    """
+    """QTreeWidgetItem with numeric-aware sorting; size column compares UserRole values, others compare case-insensitive text."""
     def __lt__(self, other: QTreeWidgetItem) -> bool:
-        """Lt.
+        """Compare tree rows; numeric UserRole sort on the size column, else case-insensitive text.
 
-        Manages lt operations and coordinates related state changes for the component.
-
-        Args:
+            Args:
             other (QTreeWidgetItem): The other parameter.
 
-        Returns:
+            Returns:
             bool: True if the operation succeeded, False otherwise.
         """
         tree = self.treeWidget()
@@ -1789,10 +1681,7 @@ class SortableTreeWidgetItem(QTreeWidgetItem):
 # =====================================================================
 
 class ProjectCachesPage(_Page):
-    """Projectcachespage.
-
-    Manages ProjectCachesPage operations and coordinates related state changes for the component.
-    """
+    """Project Folder Caches page with StatCard metrics, target-folder list, ecosystem checkboxes, results tree/table and Scan/Clean/Export actions."""
 
     def __init__(self, win):
         """Build the page layout (buttons, trees, cards, title header) and connect button/worker actions.
@@ -2194,18 +2083,12 @@ class ProjectCachesPage(_Page):
         self.settings_card.setVisible(checked)
 
     def _update_target_count_badge(self):
-        """Handle update target count badge for the page widgets and worker state.
-
-        Manages update target count badge operations and coordinates related state changes for the component.
-        """
+        """Handle update target count badge for the page widgets and worker state."""
         count = len(self.proj_folders)
         self.proj_target_count_badge.setText(f"{count} Active Director{'y' if count == 1 else 'ies'}")
 
     def _add_typed_target_folder(self):
-        """Handle add typed target folder for the page widgets and worker state.
-
-        Manages add typed target folder operations and coordinates related state changes for the component.
-        """
+        """Handle add typed target folder for the page widgets and worker state."""
         txt = self.proj_path_input.text().strip()
         if txt:
             if txt not in self.proj_folders:
@@ -2214,10 +2097,7 @@ class ProjectCachesPage(_Page):
             self._update_target_count_badge()
 
     def select_file_location_to_scan(self):
-        """Select file location to scan via the file dialog; results return through worker signals.
-
-        Manages select file location to scan operations and coordinates related state changes for the component.
-        """
+        """Select file location to scan via the file dialog; results return through worker signals."""
         from pathlib import Path
         initial = self.proj_path_input.text().strip() or str(Path.home())
         file_path, _ = QFileDialog.getOpenFileName(self, "Select Project File Location (e.g. package.json, Cargo.toml)", initial)
@@ -2230,10 +2110,7 @@ class ProjectCachesPage(_Page):
             self._update_target_count_badge()
 
     def auto_detect_code_folders(self):
-        """Auto detect code folders via the confirmation dialog; results return through worker signals.
-
-        Manages auto detect code folders operations and coordinates related state changes for the component.
-        """
+        """Auto detect code folders via the confirmation dialog; results return through worker signals."""
         from pathlib import Path
         try:
             from cortex_unified.analyzers.project_cache_scanner import _known_code_roots
@@ -2261,10 +2138,7 @@ class ProjectCachesPage(_Page):
             QMessageBox.information(self, "Auto-Detect Complete", "No new standard code directories found. You can manually click 'Select Directory'.")
 
     def add_current_workspace(self):
-        """Add current workspace via the confirmation dialog; results return through worker signals.
-
-        Manages add current workspace operations and coordinates related state changes for the component.
-        """
+        """Add current workspace via the confirmation dialog; results return through worker signals."""
         import os
         cwd = os.getcwd()
         self.proj_path_input.setText(cwd)
@@ -2276,10 +2150,7 @@ class ProjectCachesPage(_Page):
             QMessageBox.information(self, "Folder Already Added", f"{cwd} is already in the list.")
 
     def add_folder_to_scan(self):
-        """Add folder to scan via the file dialog; results return through worker signals.
-
-        Manages add folder to scan operations and coordinates related state changes for the component.
-        """
+        """Add folder to scan via the file dialog; results return through worker signals."""
         from pathlib import Path
         initial = self.proj_path_input.text().strip() or str(Path.home())
         folder = QFileDialog.getExistingDirectory(self, 'Select Project Directory to Scan', initial)
@@ -2291,10 +2162,7 @@ class ProjectCachesPage(_Page):
             self._update_target_count_badge()
 
     def remove_selected_folder(self):
-        """Remove selected folder via the worker/widgets; results return through worker signals.
-
-        Manages remove selected folder operations and coordinates related state changes for the component.
-        """
+        """Remove selected folder via the worker/widgets; results return through worker signals."""
         current_item = self.proj_folders_list.currentItem()
         if current_item:
             folder = current_item.text()
@@ -2305,10 +2173,7 @@ class ProjectCachesPage(_Page):
             self._update_target_count_badge()
 
     def clear_all_folders(self):
-        """Clear all folders via the confirmation dialog; results return through worker signals.
-
-        Manages clear all folders operations and coordinates related state changes for the component.
-        """
+        """Clear all folders via the confirmation dialog; results return through worker signals."""
         if self.proj_folders:
             confirm = QMessageBox.question(
                 self, "Clear All Folders",
@@ -2322,10 +2187,7 @@ class ProjectCachesPage(_Page):
                 self._update_target_count_badge()
 
     def select_all_categories(self):
-        """Select all categories via the worker/widgets; results return through worker signals.
-
-        Manages select all categories operations and coordinates related state changes for the component.
-        """
+        """Select all categories via the worker/widgets; results return through worker signals."""
         self.cat_cb_python.setChecked(True)
         self.cat_cb_node.setChecked(True)
         self.cat_cb_rust_go.setChecked(True)
@@ -2334,10 +2196,7 @@ class ProjectCachesPage(_Page):
         self.cat_cb_mobile_other.setChecked(True)
 
     def clear_all_categories(self):
-        """Clear all categories via the worker/widgets; results return through worker signals.
-
-        Manages clear all categories operations and coordinates related state changes for the component.
-        """
+        """Clear all categories via the worker/widgets; results return through worker signals."""
         self.cat_cb_python.setChecked(False)
         self.cat_cb_node.setChecked(False)
         self.cat_cb_rust_go.setChecked(False)
@@ -2348,9 +2207,7 @@ class ProjectCachesPage(_Page):
     def _get_enabled_categories(self) -> list[str]:
         """Handle get enabled categories for the page widgets and worker state.
 
-        Manages get enabled categories operations and coordinates related state changes for the component.
-
-        Returns:
+            Returns:
             list[str]: List of processed items or identifiers.
         """
         cats = []
@@ -2369,10 +2226,7 @@ class ProjectCachesPage(_Page):
         return cats
 
     def start_project_scan(self):
-        """Start project scan via the background worker, confirmation dialog, progress state; results return through worker signals.
-
-        Manages start project scan operations and coordinates related state changes for the component.
-        """
+        """Start project scan via the background worker, confirmation dialog, progress state; results return through worker signals."""
         txt = self.proj_path_input.text().strip()
         if txt and txt not in self.proj_folders:
             self.proj_folders.append(txt)
@@ -2431,9 +2285,7 @@ class ProjectCachesPage(_Page):
     def _on_proj_scan_finished(self, resources: list):
         """Handle worker results: refresh tables/trees and clear the busy state.
 
-        Manages on proj scan finished operations and coordinates related state changes for the component.
-
-        Args:
+            Args:
             resources (list): Collection or dictionary holding operation results.
         """
         self._cleanup_scan_thread()
@@ -2442,10 +2294,7 @@ class ProjectCachesPage(_Page):
         self._display_project_scan_results(self.proj_resources)
 
     def start_auto_scan(self):
-        """Auto-discover across all fixed drives (no folder pick needed).
-
-        Manages start auto scan operations and coordinates related state changes for the component.
-        """
+        """Auto-discover across all fixed drives (no folder pick needed)."""
         enabled_cats = self._get_enabled_categories()
         if not enabled_cats:
             QMessageBox.warning(self, "No Categories Selected", "Please check at least one ecosystem.")
@@ -2503,10 +2352,7 @@ class ProjectCachesPage(_Page):
         self.proj_status_label.setVisible(False)
 
     def cancel_project_operation(self):
-        """Cancel project operation via the worker/widgets; results return through worker signals.
-
-        Manages cancel project operation operations and coordinates related state changes for the component.
-        """
+        """Cancel project operation via the worker/widgets; results return through worker signals."""
         if self._scan_worker and hasattr(self._scan_worker, 'cancel'):
             self._scan_worker.cancel()
             self.proj_status_label.setText("Cancelling scan operation...")
@@ -2517,9 +2363,7 @@ class ProjectCachesPage(_Page):
     def _display_project_scan_results(self, resources: list):
         """Handle display project scan results for the page widgets and worker state.
 
-        Manages display project scan results operations and coordinates related state changes for the component.
-
-        Args:
+            Args:
             resources (list): Collection or dictionary holding operation results.
         """
         self.proj_tree.blockSignals(True)
@@ -2595,9 +2439,7 @@ class ProjectCachesPage(_Page):
     def _on_tree_item_expanded(self, item: QTreeWidgetItem):
         """Handle worker results: refresh tables/trees, update cards/labels, re-enable buttons and clear the busy state.
 
-        Manages on tree item expanded operations and coordinates related state changes for the component.
-
-        Args:
+            Args:
             item (QTreeWidgetItem): The item parameter.
         """
         if item.childCount() == 1 and "Expand" in item.child(0).text(1):
@@ -2646,9 +2488,7 @@ class ProjectCachesPage(_Page):
     def on_sort_combo_changed(self, index: int):
         """Handle on sort combo changed for the page widgets and worker state.
 
-        Manages on sort combo changed operations and coordinates related state changes for the component.
-
-        Args:
+            Args:
             index (int): The index parameter.
         """
         self.proj_tree.blockSignals(True)
@@ -2669,9 +2509,7 @@ class ProjectCachesPage(_Page):
     def filter_by_chip(self, cat_key: str):
         """Filter by chip via the results view; results return through worker signals.
 
-        Manages filter by chip operations and coordinates related state changes for the component.
-
-        Args:
+            Args:
             cat_key (str): The cat key parameter.
         """
         self.active_chip_filter = cat_key
@@ -2682,9 +2520,7 @@ class ProjectCachesPage(_Page):
     def _on_tree_item_double_clicked(self, item: QTreeWidgetItem, column: int):
         """Handle worker results: refresh tables/trees and clear the busy state.
 
-        Manages on tree item double clicked operations and coordinates related state changes for the component.
-
-        Args:
+            Args:
             item (QTreeWidgetItem): The item parameter.
             column (int): The column parameter.
         """
@@ -2701,9 +2537,7 @@ class ProjectCachesPage(_Page):
     def _on_tree_item_changed(self, item: QTreeWidgetItem, column: int):
         """Handle worker results: refresh tables/trees and clear the busy state.
 
-        Manages on tree item changed operations and coordinates related state changes for the component.
-
-        Args:
+            Args:
             item (QTreeWidgetItem): The item parameter.
             column (int): The column parameter.
         """
@@ -2721,9 +2555,7 @@ class ProjectCachesPage(_Page):
     def filter_results_table(self, query: str):
         """Filter results table via the results view; results return through worker signals.
 
-        Manages filter results table operations and coordinates related state changes for the component.
-
-        Args:
+            Args:
             query (str): The query parameter.
         """
         q = query.strip().lower()
@@ -2779,10 +2611,7 @@ class ProjectCachesPage(_Page):
         self.proj_tree.blockSignals(False)
 
     def export_report(self):
-        """Export report via the file dialog, confirmation dialog, CSV file; results return through worker signals.
-
-        Manages export report operations and coordinates related state changes for the component.
-        """
+        """Export report via the file dialog, confirmation dialog, CSV file; results return through worker signals."""
         if not self.proj_resources:
             QMessageBox.information(self, "No Results", "No scan results available to export.")
             return
@@ -2824,9 +2653,7 @@ class ProjectCachesPage(_Page):
     def _get_selected_resources(self) -> list[dict]:
         """Compute and return the value for get selected resources used by the page.
 
-        Manages get selected resources operations and coordinates related state changes for the component.
-
-        Returns:
+            Returns:
             list[dict]: List of processed items or identifiers.
         """
         selected = []
@@ -2839,10 +2666,7 @@ class ProjectCachesPage(_Page):
         return selected
 
     def start_project_cleanup(self):
-        """Start project cleanup via the background worker, confirmation dialog, progress state; results return through worker signals.
-
-        Manages start project cleanup operations and coordinates related state changes for the component.
-        """
+        """Start project cleanup via the background worker, confirmation dialog, progress state; results return through worker signals."""
         selected_resources = self._get_selected_resources()
         if not selected_resources:
             QMessageBox.warning(self, "No Caches Selected", "Please select at least one project cache to clean.")
@@ -2896,9 +2720,7 @@ class ProjectCachesPage(_Page):
     def _on_proj_clean_finished(self, results: dict, dry_run: bool):
         """Handle worker results: refresh tables/trees, update cards/labels and clear the busy state.
 
-        Manages on proj clean finished operations and coordinates related state changes for the component.
-
-        Args:
+            Args:
             results (dict): Collection or dictionary holding operation results.
             dry_run (bool): The dry run parameter.
         """
@@ -2928,9 +2750,7 @@ class ProjectCachesPage(_Page):
     def _handle_project_cleanup_results(self, results: dict, dry_run: bool = True):
         """Handle worker results: update widgets and clear the busy state.
 
-        Manages handle project cleanup results operations and coordinates related state changes for the component.
-
-        Args:
+            Args:
             results (dict): Collection or dictionary holding operation results.
             dry_run (bool): The dry run parameter.
         """
@@ -3001,10 +2821,7 @@ class ProjectCachesPage(_Page):
 # =====================================================================
 
 class SecretsScanWorker(QObject):
-    """Secretsscanworker.
-
-    Manages SecretsScanWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker scanning a directory via secrets_scanner.run_scan; emits finished(rows, risk_score) / failed(str)."""
     finished = Signal(list, int)
     failed = Signal(str)
 
@@ -3053,12 +2870,10 @@ _SEVERITY_RANK = {
 def _severity_rank(finding: dict) -> int:
     """Rank finding severities so critical/high sort before low/info.
 
-    Manages severity rank operations and coordinates related state changes for the component.
-
-    Args:
+        Args:
         finding (dict): The finding parameter.
 
-    Returns:
+        Returns:
         int: Result of the operation.
     """
     return _SEVERITY_RANK.get(str(finding.get("severity", "")).strip().upper(), 0)
@@ -3067,12 +2882,10 @@ def _severity_rank(finding: dict) -> int:
 def _line_sort_key(finding: dict) -> int:
     """Build a sort key for secret-match lines in the results table.
 
-    Manages line sort key operations and coordinates related state changes for the component.
-
-    Args:
+        Args:
         finding (dict): The finding parameter.
 
-    Returns:
+        Returns:
         int: Result of the operation.
     """
     raw = finding.get("line", "")
@@ -3083,10 +2896,7 @@ def _line_sort_key(finding: dict) -> int:
 
 
 class SecretsScannerPage(_Page):
-    """Secretsscannerpage.
-
-    Manages SecretsScannerPage operations and coordinates related state changes for the component.
-    """
+    """Secrets Scanner page with folder picker, Scan button, progress bar, Severity/Rule/File/Line table and state panel; scans via SecretsScanWorker."""
 
     def __init__(self, win):
         """Build the page layout (buttons, tables, title header, state panel) and connect button/worker actions.
@@ -3153,10 +2963,7 @@ class SecretsScannerPage(_Page):
             self.run_btn.setEnabled(True)
 
     def _run(self):
-        """Run.
-
-        Manages run operations and coordinates related state changes for the component.
-        """
+        """Disable Run, show progress/loading and start SecretsScanWorker for the chosen folder."""
         self.run_btn.setEnabled(False)
         self.progress.setVisible(True)
         self.state.show_loading("Scanning for secrets\u2026")
@@ -3321,19 +3128,14 @@ class VirtualDisksPage(_Page):
     def _selected_disks(self) -> list:
         """Compute and return the value for selected disks used by the page.
 
-        Manages selected disks operations and coordinates related state changes for the component.
-
-        Returns:
+            Returns:
             list: List of processed items or identifiers.
         """
         rows = sorted({i.row() for i in self.tbl.selectedIndexes()})
         return [self._disks[r] for r in rows if 0 <= r < len(self._disks)]
 
     def _on_select(self):
-        """Handle worker results: re-enable buttons and clear the busy state.
-
-        Manages on select operations and coordinates related state changes for the component.
-        """
+        """Handle worker results: re-enable buttons and clear the busy state."""
         chosen = self._selected_disks()
         self.compact_btn.setEnabled(bool(chosen) and all(d.can_compact for d in chosen))
         self.sparse_btn.setEnabled(
@@ -3355,9 +3157,7 @@ class VirtualDisksPage(_Page):
     def _on_listed(self, disks: list):
         """Handle worker results: refresh tables/trees, update cards/labels, update the state panel and clear the busy state.
 
-        Manages on listed operations and coordinates related state changes for the component.
-
-        Args:
+            Args:
             disks (list): The disks parameter.
         """
         self.refresh_btn.setEnabled(True)
@@ -3395,10 +3195,7 @@ class VirtualDisksPage(_Page):
     # -- actions -------------------------------------------------------------
 
     def _shutdown(self):
-        """Shutdown.
-
-        Manages shutdown operations and coordinates related state changes for the component.
-        """
+        """Confirm then stop all WSL distributions via WslShutdownWorker; disables Stop and shows progress."""
         from .workers import WslShutdownWorker
         confirm = QMessageBox.question(
             self, "Stop WSL",
@@ -3417,9 +3214,7 @@ class VirtualDisksPage(_Page):
     def _on_shutdown(self, ok: bool, message: str):
         """Handle worker results: note status, re-enable buttons and clear the busy state.
 
-        Manages on shutdown operations and coordinates related state changes for the component.
-
-        Args:
+            Args:
             ok (bool): The ok parameter.
             message (str): Informational or progress status message.
         """
@@ -3432,10 +3227,7 @@ class VirtualDisksPage(_Page):
         self._load()
 
     def _compact(self):
-        """Compact.
-
-        Manages compact operations and coordinates related state changes for the component.
-        """
+        """Confirm then compact selected virtual disks via VhdxCompactWorker; disables buttons and shows loading."""
         from .workers import VhdxCompactWorker
         disks = [d for d in self._selected_disks() if d.can_compact]
         if not disks:
@@ -3461,9 +3253,7 @@ class VirtualDisksPage(_Page):
     def _on_compacted(self, results: list):
         """Handle worker results: update cards/labels, note status, re-enable buttons and clear the busy state.
 
-        Manages on compacted operations and coordinates related state changes for the component.
-
-        Args:
+            Args:
             results (list): Collection or dictionary holding operation results.
         """
         self.progress.setVisible(False)
@@ -3494,10 +3284,7 @@ class VirtualDisksPage(_Page):
         self._load()
 
     def _set_sparse(self):
-        """Handle set sparse for the page widgets and worker state.
-
-        Manages set sparse operations and coordinates related state changes for the component.
-        """
+        """Handle set sparse for the page widgets and worker state."""
         from .workers import VhdxSparseWorker
         chosen = self._selected_disks()
         if len(chosen) != 1:
@@ -3521,9 +3308,7 @@ class VirtualDisksPage(_Page):
     def _on_sparse(self, ok: bool, message: str):
         """Handle worker results: note status, re-enable buttons and clear the busy state.
 
-        Manages on sparse operations and coordinates related state changes for the component.
-
-        Args:
+            Args:
             ok (bool): The ok parameter.
             message (str): Informational or progress status message.
         """

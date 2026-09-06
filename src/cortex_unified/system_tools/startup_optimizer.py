@@ -67,10 +67,7 @@ import psutil  # type: ignore
 # ---------------------------------------------------------------------------
 
 class AppType(enum.Enum):
-    """Apptype.
-
-    Manages AppType operations and coordinates related state changes for the component.
-    """
+    """Startup app category: GUI-heavy, network-bound, service, or background."""
 
     GUI = "gui"
     NETWORK = "network"
@@ -80,10 +77,7 @@ class AppType(enum.Enum):
 
 @dataclass(slots=True)
 class StartupEntry:
-    """Startupentry.
-
-    Manages StartupEntry operations and coordinates related state changes for the component.
-    """
+    """Record holding id, name, command, location, category, enabled, impact, publisher."""
     id: str
     name: str
     command: str
@@ -99,12 +93,10 @@ class StartupEntry:
     is_service_dependent: bool = False
 
     def to_dict(self) -> dict:
-        """To dict.
-
-        Manages to dict operations and coordinates related state changes for the component.
+        """To dict helper. Returns asdict(self).
 
         Returns:
-            dict: Dictionary mapping identifiers to status or values.
+        dict: Dictionary mapping identifiers to status or values.
         """
         return asdict(self)
 
@@ -127,12 +119,10 @@ _STARTUP_LOCATIONS = [
 ]
 
 def _enumerate_registry() -> List[StartupEntry]:
-    """_enumerate_registry.
-
-    Manages enumerate registry operations and coordinates related state changes for the component.
+    """Enumerate registry helper (reads Windows registry). Returns entries.
 
     Returns:
-        List[StartupEntry]: List of processed items or identifiers.
+    List[StartupEntry]: List of processed items or identifiers.
     """
     entries: List[StartupEntry] = []
     for reg_path, category in _STARTUP_LOCATIONS:
@@ -171,12 +161,10 @@ def _enumerate_registry() -> List[StartupEntry]:
     return entries
 
 def _enumerate_startup_folders() -> List[StartupEntry]:
-    """_enumerate_startup_folders.
-
-    Manages enumerate startup folders operations and coordinates related state changes for the component.
+    """Enumerate startup folders helper. Returns entries.
 
     Returns:
-        List[StartupEntry]: List of processed items or identifiers.
+    List[StartupEntry]: List of processed items or identifiers.
     """
     entries: List[StartupEntry] = []
     for env_key in ("APPDATA", "PROGRAMDATA"):
@@ -201,12 +189,10 @@ def _enumerate_startup_folders() -> List[StartupEntry]:
     return entries
 
 def _enumerate_scheduled_tasks() -> List[StartupEntry]:
-    """_enumerate_scheduled_tasks.
-
-    Manages enumerate scheduled tasks operations and coordinates related state changes for the component.
+    """Enumerate scheduled tasks helper (runs `["schtasks", "/Query", "/FO", "CSV", "/V"]`). Returns entries.
 
     Returns:
-        List[StartupEntry]: List of processed items or identifiers.
+    List[StartupEntry]: List of processed items or identifiers.
     """
     entries: List[StartupEntry] = []
     try:
@@ -234,15 +220,13 @@ def _enumerate_scheduled_tasks() -> List[StartupEntry]:
 
 def _classify_entry(entry: StartupEntry) -> StartupEntry:
     # PE header sniff for GUI/network/service hints
-    """_classify_entry.
-
-    Manages classify entry operations and coordinates related state changes for the component.
+    """Classify entry helper. Returns entry.
 
     Args:
-        entry (StartupEntry): The entry parameter.
+    entry (StartupEntry): The entry parameter.
 
     Returns:
-        StartupEntry: Result of the operation.
+    StartupEntry: Result of the operation.
     """
     cmd = entry.command.strip().strip('"')
     exe = cmd.split()[0].strip('"')
@@ -266,12 +250,10 @@ def _classify_entry(entry: StartupEntry) -> StartupEntry:
 # ---------------------------------------------------------------------------
 
 def _config_path() -> Path:
-    """_config_path.
-
-    Manages config path operations and coordinates related state changes for the component.
+    """Config path helper (mutates filesystem state). Returns d / "startup_delays.json".
 
     Returns:
-        Path: Result of the operation.
+    Path: Result of the operation.
     """
     base = Path(os.environ.get("LOCALAPPDATA", str(Path.home() / "AppData" / "Local")))
     d = base / "Cortex" / "Cleaner"
@@ -283,10 +265,7 @@ def _config_path() -> Path:
 # ---------------------------------------------------------------------------
 
 class StartupOptimizer:
-    """Startupoptimizer.
-
-    Manages StartupOptimizer operations and coordinates related state changes for the component.
-    """
+    """Groups related helpers: init, enumerate, load delays, save delays, set delay, remove delay, launch delayed, jitter."""
     def __init__(self, progress: Callable[[str], None] | None = None,
                  cancel: threading.Event | None = None):
         """Initialize Startup Optimizer.
@@ -301,12 +280,10 @@ class StartupOptimizer:
         self.cancel = cancel or threading.Event()
 
     def enumerate(self) -> List[StartupEntry]:
-        """Enumerate.
-
-        Manages enumerate operations and coordinates related state changes for the component.
+        """Enumerate helper. Returns entries.
 
         Returns:
-            List[StartupEntry]: List of processed items or identifiers.
+        List[StartupEntry]: List of processed items or identifiers.
         """
         entries: List[StartupEntry] = []
         for fn in (_enumerate_registry, _enumerate_startup_folders, _enumerate_scheduled_tasks):
@@ -338,12 +315,10 @@ class StartupOptimizer:
         return entries
 
     def _load_delays(self) -> Dict[str, dict]:
-        """_load_delays.
-
-        Manages load delays operations and coordinates related state changes for the component.
+        """Load delays helper.
 
         Returns:
-            Dict[str, dict]: Dictionary mapping identifiers to status or values.
+        Dict[str, dict]: Dictionary mapping identifiers to status or values.
         """
         p = _config_path()
         if not p.exists():
@@ -354,26 +329,22 @@ class StartupOptimizer:
             return {}
 
     def _save_delays(self, delays: Dict[str, dict]) -> None:
-        """_save_delays.
-
-        Manages save delays operations and coordinates related state changes for the component.
+        """Save delays helper (mutates filesystem state).
 
         Args:
-            delays (Dict[str, dict]): The delays parameter.
+        delays (Dict[str, dict]): The delays parameter.
         """
         p = _config_path()
         p.write_text(json.dumps(delays, indent=2), encoding="utf-8")
 
     def set_delay(self, entry_id: str, delay_seconds: int,
                   conditions: Dict[str, object] | None = None) -> None:
-        """Set delay.
-
-        Manages set delay operations and coordinates related state changes for the component.
+        """Set delay helper.
 
         Args:
-            entry_id (str): The entry id parameter.
-            delay_seconds (int): The delay seconds parameter.
-            conditions (Dict[str, object] | None): The conditions parameter.
+        entry_id (str): The entry id parameter.
+        delay_seconds (int): The delay seconds parameter.
+        conditions (Dict[str, object] | None): The conditions parameter.
         """
         delays = self._load_delays()
         delays[entry_id] = {"delay": max(0, min(120, delay_seconds)),
@@ -381,24 +352,20 @@ class StartupOptimizer:
         self._save_delays(delays)
 
     def remove_delay(self, entry_id: str) -> None:
-        """Remove delay.
-
-        Manages remove delay operations and coordinates related state changes for the component.
+        """Remove delay helper.
 
         Args:
-            entry_id (str): The entry id parameter.
+        entry_id (str): The entry id parameter.
         """
         delays = self._load_delays()
         delays.pop(entry_id, None)
         self._save_delays(delays)
 
     def launch_delayed(self, entries: List[StartupEntry] | None = None) -> None:
-        """Launch delayed.
-
-        Manages launch delayed operations and coordinates related state changes for the component.
+        """Launch delayed helper (spawns a subprocess). Returns time.sleep(1).
 
         Args:
-            entries (List[StartupEntry] | None): Collection of items or entries to process.
+        entries (List[StartupEntry] | None): Collection of items or entries to process.
         """
         if entries is None:
             entries = [e for e in self.enumerate() if e.delay_seconds > 0]
@@ -464,12 +431,10 @@ class StartupOptimizer:
                 self.progress(f"Launch failed {e.name}: {exc}")
 
     def _jitter(self) -> float:
-        """Jitter.
-
-        Manages jitter operations and coordinates related state changes for the component.
+        """Jitter helper. Returns random.uniform(-1.5, 1.5).
 
         Returns:
-            float: Result of the operation.
+        float: Result of the operation.
         """
         import random
         return random.uniform(-1.5, 1.5)
@@ -489,12 +454,10 @@ class StartupOptimizer:
         return bak
 
     def restore(self, backup: Path) -> None:
-        """Restore.
-
-        Manages restore operations and coordinates related state changes for the component.
+        """Restore helper (mutates filesystem state).
 
         Args:
-            backup (Path): The backup parameter.
+        backup (Path): The backup parameter.
         """
         p = _config_path()
         p.write_bytes(backup.read_bytes())

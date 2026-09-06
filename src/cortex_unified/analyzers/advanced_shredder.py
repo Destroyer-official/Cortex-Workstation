@@ -21,10 +21,7 @@ from cortex_unified.core.security import check_deletion_safety
 
 
 class ShredMethod(str, enum.Enum):
-    """Shredmethod.
-
-    Manages ShredMethod operations and coordinates related state changes for the component.
-    """
+    """Overwrite methods supported for secure file shredding."""
 
     ZERO = "Zero Fill (1 pass)"
     RANDOM = "Random (1 pass)"
@@ -37,10 +34,7 @@ class ShredMethod(str, enum.Enum):
 
 
 class AdvancedShredder:
-    """Advancedshredder.
-
-    Manages AdvancedShredder operations and coordinates related state changes for the component.
-    """
+    """Secure file and directory shredder using standard overwrite patterns."""
 
     # Gutmann 35-pass magnetic transition patterns
     _GUTMANN_PATTERNS = [
@@ -65,9 +59,7 @@ class AdvancedShredder:
         self.logger = logging.getLogger("advanced_shredder")
 
     def _generate_pass_data(self, pattern: bytes | None, size: int) -> bytes:
-        """Generate byte pattern for a single chunk.
-
-        Manages generate pass data operations and coordinates related state changes for the component.
+        """Build overwrite chunk bytes from a pattern, or random data when pattern is None.
 
         Args:
             pattern (bytes | None): The pattern parameter.
@@ -169,8 +161,6 @@ class AdvancedShredder:
         method: Union[ShredMethod, str] = ShredMethod.DOD_5220_22_M,
     ) -> bool:
         """Recursively shreds a directory and its contents.
-
-        Manages shred directory operations and coordinates related state changes for the component.
 
         Args:
             dir_path (str): Filesystem path to the target file or directory.

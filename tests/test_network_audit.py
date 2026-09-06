@@ -30,10 +30,7 @@ from cortex_unified.system_tools.wan_audit import (
 
 @dataclass
 class SyntheticDevice:
-    """Syntheticdevice.
-
-    Manages SyntheticDevice operations and coordinates related state changes for the component.
-    """
+    """Helper syntheticdevice using field."""
     ip: str
     mac: str = ""
     vendor: str = ""
@@ -44,9 +41,7 @@ class SyntheticDevice:
 
 
 def observation(port=22, name="ssh", **kwargs):
-    """Observation.
-
-    Manages observation operations and coordinates related state changes for the component.
+    """Observation using kwargs.pop, ServiceObservation.
 
     Args:
         port: The port parameter.
@@ -65,9 +60,7 @@ def observation(port=22, name="ssh", **kwargs):
 
 
 def test_scope_rejects_public_special_and_out_of_scope_without_sockets(monkeypatch):
-    """test_scope_rejects_public_special_and_out_of_scope_without_sockets.
-
-    Manages test scope rejects public special and out of scope without sockets operations and coordinates related state changes for the component.
+    """Verify scope rejects public special and out of scope without sockets via scanner.scan, monkeypatch.setattr, NetworkServiceScanner.
 
     Args:
         monkeypatch: The monkeypatch parameter.
@@ -94,10 +87,7 @@ def test_scope_rejects_public_special_and_out_of_scope_without_sockets(monkeypat
 
 
 def test_private_scope_spec_supports_host_cidr_and_range():
-    """test_private_scope_spec_supports_host_cidr_and_range.
-
-    Manages test private scope spec supports host cidr and range operations and coordinates related state changes for the component.
-    """
+    """Verify private scope spec supports host cidr and range via pytest.raises, parse_network_scope_spec."""
     scopes = parse_network_scope_spec(
         "192.168.50.7,192.168.50.16/30,"
         "192.168.50.20-192.168.50.22")
@@ -110,10 +100,7 @@ def test_private_scope_spec_supports_host_cidr_and_range():
 
 
 def test_custom_port_spec_is_bounded_and_deterministic():
-    """test_custom_port_spec_is_bounded_and_deterministic.
-
-    Manages test custom port spec is bounded and deterministic operations and coordinates related state changes for the component.
-    """
+    """Verify custom port spec is bounded and deterministic via pytest.raises, parse_custom_port_spec."""
     assert parse_custom_port_spec("443,80,8000-8002,443") == (
         80, 443, 8000, 8001, 8002)
     for value in ("0", "65536", "90-80", "80,,443", "x"):
@@ -122,9 +109,7 @@ def test_custom_port_spec_is_bounded_and_deterministic():
 
 
 def test_custom_ports_are_validated_before_any_socket(monkeypatch):
-    """test_custom_ports_are_validated_before_any_socket.
-
-    Manages test custom ports are validated before any socket operations and coordinates related state changes for the component.
+    """Verify custom ports are validated before any socket via scanner.scan, monkeypatch.setattr, NetworkServiceScanner.
 
     Args:
         monkeypatch: The monkeypatch parameter.
@@ -144,10 +129,7 @@ def test_custom_ports_are_validated_before_any_socket(monkeypatch):
 
 
 def test_observation_serialization_is_json_safe_and_deterministic():
-    """test_observation_serialization_is_json_safe_and_deterministic.
-
-    Manages test observation serialization is json safe and deterministic operations and coordinates related state changes for the component.
-    """
+    """Verify observation serialization is json safe and deterministic via json.dumps, json.loads, item.to_dict."""
     item = observation(
         banner="SSH-2.0-Synthetic_1.2",
         product="Synthetic",
@@ -164,10 +146,7 @@ def test_observation_serialization_is_json_safe_and_deterministic():
 
 
 def test_ports_and_banners_never_create_cve_claims():
-    """test_ports_and_banners_never_create_cve_claims.
-
-    Manages test ports and banners never create cve claims operations and coordinates related state changes for the component.
-    """
+    """Verify ports and banners never create cve claims via SyntheticDevice, audit_devices, observation."""
     device = SyntheticDevice(
         "192.168.50.20",
         service_observations=[
@@ -182,9 +161,7 @@ def test_ports_and_banners_never_create_cve_claims():
 
 
 def test_catalog_exact_product_version_and_no_version_false_positive(tmp_path):
-    """test_catalog_exact_product_version_and_no_version_false_positive.
-
-    Manages test catalog exact product version and no version false positive operations and coordinates related state changes for the component.
+    """Verify catalog exact product version and no version false positive via VulnerabilityCatalog.load, json.dumps, catalog.match.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.
@@ -225,10 +202,7 @@ def test_catalog_exact_product_version_and_no_version_false_positive(tmp_path):
 
 
 def test_fingerprint_combines_device_and_protocol_evidence():
-    """test_fingerprint_combines_device_and_protocol_evidence.
-
-    Manages test fingerprint combines device and protocol evidence operations and coordinates related state changes for the component.
-    """
+    """Verify fingerprint combines device and protocol evidence via SyntheticDevice, json.dumps, fingerprint.to_dict."""
     service = observation(
         banner="SSH-2.0-OpenWrt_23.05",
         product="OpenWrt",
@@ -260,9 +234,7 @@ def test_fingerprint_combines_device_and_protocol_evidence():
     ("not-an-ip", "unknown"),
 ])
 def test_wan_classification(address, expected):
-    """test_wan_classification.
-
-    Manages test wan classification operations and coordinates related state changes for the component.
+    """Verify wan classification via pytest.mark.parametrize, classify_external_ip.
 
     Args:
         address: The address parameter.
@@ -272,9 +244,7 @@ def test_wan_classification(address, expected):
 
 
 def test_wan_url_scope_and_route_only_default(monkeypatch):
-    """test_wan_url_scope_and_route_only_default.
-
-    Manages test wan url scope and route only default operations and coordinates related state changes for the component.
+    """Verify wan url scope and route only default via ipaddress.IPv4Network, WanAuditor, monkeypatch.setattr.
 
     Args:
         monkeypatch: The monkeypatch parameter.
@@ -301,9 +271,7 @@ def test_wan_url_scope_and_route_only_default(monkeypatch):
 
 
 def test_inventory_reports_new_address_service_and_gateway_changes(tmp_path):
-    """test_inventory_reports_new_address_service_and_gateway_changes.
-
-    Manages test inventory reports new address service and gateway changes operations and coordinates related state changes for the component.
+    """Verify inventory reports new address service and gateway changes via NetworkInventory, inventory.update, json.dumps.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.

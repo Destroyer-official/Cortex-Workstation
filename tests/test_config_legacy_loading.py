@@ -20,8 +20,6 @@ from cortex_unified.core.config import DEFAULT_CONFIG, Config
 def test_missing_file_is_silent_and_yields_defaults(tmp_path, caplog):
     """An absent config is the normal case - defaults apply, no warning.
 
-    Manages test missing file is silent and yields defaults operations and coordinates related state changes for the component.
-
     Args:
         tmp_path: Filesystem path to the target file or directory.
         caplog: The caplog parameter.
@@ -34,9 +32,7 @@ def test_missing_file_is_silent_and_yields_defaults(tmp_path, caplog):
 
 
 def test_valid_yaml_is_loaded_over_the_defaults(tmp_path):
-    """test_valid_yaml_is_loaded_over_the_defaults.
-
-    Manages test valid yaml is loaded over the defaults operations and coordinates related state changes for the component.
+    """Verify valid yaml is loaded over the defaults via Config.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.
@@ -53,8 +49,6 @@ def test_valid_yaml_is_loaded_over_the_defaults(tmp_path):
 def test_malformed_yaml_warns_and_falls_back(tmp_path, caplog):
     """A syntax error must be reported, not silently ignored.
 
-    Manages test malformed yaml warns and falls back operations and coordinates related state changes for the component.
-
     Args:
         tmp_path: Filesystem path to the target file or directory.
         caplog: The caplog parameter.
@@ -69,8 +63,6 @@ def test_malformed_yaml_warns_and_falls_back(tmp_path, caplog):
 
 def test_non_mapping_top_level_warns_and_falls_back(tmp_path, caplog):
     """A YAML list/scalar at the top level is a user mistake worth reporting.
-
-    Manages test non mapping top level warns and falls back operations and coordinates related state changes for the component.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.
@@ -87,8 +79,6 @@ def test_non_mapping_top_level_warns_and_falls_back(tmp_path, caplog):
 def test_empty_file_is_treated_as_no_settings(tmp_path, caplog):
     """An empty file parses to None; that is defaults, not an error.
 
-    Manages test empty file is treated as no settings operations and coordinates related state changes for the component.
-
     Args:
         tmp_path: Filesystem path to the target file or directory.
         caplog: The caplog parameter.
@@ -103,8 +93,6 @@ def test_empty_file_is_treated_as_no_settings(tmp_path, caplog):
 
 def test_non_utf8_bytes_warn_and_fall_back(tmp_path, caplog):
     """Explicit UTF-8 decoding means bad bytes are reported, not locale-luck.
-
-    Manages test non utf8 bytes warn and fall back operations and coordinates related state changes for the component.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.
@@ -121,8 +109,6 @@ def test_non_utf8_bytes_warn_and_fall_back(tmp_path, caplog):
 
 def test_unicode_paths_load_correctly(tmp_path):
     """Non-ASCII config content must load regardless of system locale.
-
-    Manages test unicode paths load correctly operations and coordinates related state changes for the component.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.
@@ -147,8 +133,6 @@ _PROTECTED = (".git", "node_modules", "__pycache__")
 def test_protected_directories_are_excluded_by_default(tmp_path, name):
     """With no config file, the safety exclusions must still apply.
 
-    Manages test protected directories are excluded by default operations and coordinates related state changes for the component.
-
     Args:
         tmp_path: Filesystem path to the target file or directory.
         name: The name parameter.
@@ -161,9 +145,7 @@ def test_protected_directories_are_excluded_by_default(tmp_path, name):
 
 
 def test_defaults_are_the_baseline_when_no_file_exists(tmp_path):
-    """test_defaults_are_the_baseline_when_no_file_exists.
-
-    Manages test defaults are the baseline when no file exists operations and coordinates related state changes for the component.
+    """Verify defaults are the baseline when no file exists via Config.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.
@@ -176,8 +158,6 @@ def test_defaults_are_the_baseline_when_no_file_exists(tmp_path):
 
 def test_defaults_still_apply_when_the_file_is_broken(tmp_path, caplog):
     """A malformed file must not silently drop the safety exclusions.
-
-    Manages test defaults still apply when the file is broken operations and coordinates related state changes for the component.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.
@@ -193,8 +173,6 @@ def test_defaults_still_apply_when_the_file_is_broken(tmp_path, caplog):
 
 def test_user_settings_override_defaults_key_by_key(tmp_path):
     """An explicit list replaces the default; untouched keys are inherited.
-
-    Manages test user settings override defaults key by key operations and coordinates related state changes for the component.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.

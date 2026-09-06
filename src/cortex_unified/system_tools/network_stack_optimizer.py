@@ -15,10 +15,7 @@ from typing import Dict, List, Optional, Tuple
 
 @dataclass
 class TcpGlobalSettings:
-    """Tcpglobalsettings.
-
-    Manages TcpGlobalSettings operations and coordinates related state changes for the component.
-    """
+    """Record holding autotuning_level, receive_side_scaling, ecn_capability, timestamps, rsc, raw_output."""
     autotuning_level: str = "normal"
     receive_side_scaling: str = "enabled"
     ecn_capability: str = "disabled"
@@ -29,10 +26,7 @@ class TcpGlobalSettings:
 
 @dataclass
 class NetworkResetReport:
-    """Networkresetreport.
-
-    Manages NetworkResetReport operations and coordinates related state changes for the component.
-    """
+    """Record holding dns_flushed, arp_cleared, winsock_reset, tcp_ip_reset, output_messages. Windows-only; typically requires elevation."""
     dns_flushed: bool = False
     arp_cleared: bool = False
     winsock_reset: bool = False
@@ -40,28 +34,20 @@ class NetworkResetReport:
     output_messages: List[str] = None
 
     def __post_init__(self):
-        """__post_init__.
-
-        Manages post init operations and coordinates related state changes for the component.
-        """
+        """Validate and normalize fields after init; initializes empty collections."""
         if self.output_messages is None:
             self.output_messages = []
 
 
 class NetworkStackOptimizer:
-    """Networkstackoptimizer.
-
-    Manages NetworkStackOptimizer operations and coordinates related state changes for the component.
-    """
+    """Groups related helpers: flush dns, clear arp cache, reset winsock, reset tcp ip stack, get tcp settings, set tcp autotuning, set ecn capability, execute complete network repair."""
 
     @classmethod
     def flush_dns(cls) -> Tuple[bool, str]:
         """Flush the Windows DNS Resolver cache (ipconfig /flushdns).
 
-        Manages flush dns operations and coordinates related state changes for the component.
-
         Returns:
-            Tuple[bool, str]: True if the operation succeeded, False otherwise.
+        Tuple[bool, str]: True if the operation succeeded, False otherwise.
         """
         if platform.system() != "Windows":
             return False, "Windows only"
@@ -78,10 +64,8 @@ class NetworkStackOptimizer:
     def clear_arp_cache(cls) -> Tuple[bool, str]:
         """Purge ARP cache tables (netsh interface ip delete arpcache).
 
-        Manages clear arp cache operations and coordinates related state changes for the component.
-
         Returns:
-            Tuple[bool, str]: True if the operation succeeded, False otherwise.
+        Tuple[bool, str]: True if the operation succeeded, False otherwise.
         """
         if platform.system() != "Windows":
             return False, "Windows only"
@@ -98,10 +82,8 @@ class NetworkStackOptimizer:
     def reset_winsock(cls) -> Tuple[bool, str]:
         """Reset the Winsock catalog back to default configuration.
 
-        Manages reset winsock operations and coordinates related state changes for the component.
-
         Returns:
-            Tuple[bool, str]: True if the operation succeeded, False otherwise.
+        Tuple[bool, str]: True if the operation succeeded, False otherwise.
         """
         if platform.system() != "Windows":
             return False, "Windows only"
@@ -118,10 +100,8 @@ class NetworkStackOptimizer:
     def reset_tcp_ip_stack(cls) -> Tuple[bool, str]:
         """Reset the TCP/IP stack configuration.
 
-        Manages reset tcp ip stack operations and coordinates related state changes for the component.
-
         Returns:
-            Tuple[bool, str]: True if the operation succeeded, False otherwise.
+        Tuple[bool, str]: True if the operation succeeded, False otherwise.
         """
         if platform.system() != "Windows":
             return False, "Windows only"
@@ -138,10 +118,8 @@ class NetworkStackOptimizer:
     def get_tcp_settings(cls) -> TcpGlobalSettings:
         """Query active Windows TCP global parameters.
 
-        Manages get tcp settings operations and coordinates related state changes for the component.
-
         Returns:
-            TcpGlobalSettings: Result of the operation.
+        TcpGlobalSettings: Result of the operation.
         """
         if platform.system() != "Windows":
             return TcpGlobalSettings()
@@ -172,13 +150,11 @@ class NetworkStackOptimizer:
     def set_tcp_autotuning(cls, level: str = "normal") -> Tuple[bool, str]:
         """Configure TCP Window Auto-Tuning (disabled, highlyrestricted, restricted, normal, experimental).
 
-        Manages set tcp autotuning operations and coordinates related state changes for the component.
-
         Args:
-            level (str): The level parameter.
+        level (str): The level parameter.
 
         Returns:
-            Tuple[bool, str]: True if the operation succeeded, False otherwise.
+        Tuple[bool, str]: True if the operation succeeded, False otherwise.
         """
         if platform.system() != "Windows":
             return False, "Windows only"
@@ -199,13 +175,11 @@ class NetworkStackOptimizer:
     def set_ecn_capability(cls, state: str = "enabled") -> Tuple[bool, str]:
         """Configure Explicit Congestion Notification (enabled / disabled).
 
-        Manages set ecn capability operations and coordinates related state changes for the component.
-
         Args:
-            state (str): The state parameter.
+        state (str): The state parameter.
 
         Returns:
-            Tuple[bool, str]: True if the operation succeeded, False otherwise.
+        Tuple[bool, str]: True if the operation succeeded, False otherwise.
         """
         if platform.system() != "Windows":
             return False, "Windows only"
@@ -222,10 +196,8 @@ class NetworkStackOptimizer:
     def execute_complete_network_repair(cls) -> NetworkResetReport:
         """Perform a complete flush and reset of DNS, ARP, Winsock, and TCP/IP.
 
-        Manages execute complete network repair operations and coordinates related state changes for the component.
-
         Returns:
-            NetworkResetReport: Result of the operation.
+        NetworkResetReport: Result of the operation.
         """
         report = NetworkResetReport()
 

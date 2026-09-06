@@ -37,10 +37,7 @@ _IS_WINDOWS = sys.platform == "win32"
 
 @dataclass
 class VssWriterStatus:
-    """Vsswriterstatus.
-
-    Manages VssWriterStatus operations and coordinates related state changes for the component.
-    """
+    """Record holding name, writer_id, state_code, state_desc, last_error, is_healthy."""
     name: str
     writer_id: str
     state_code: int
@@ -49,12 +46,10 @@ class VssWriterStatus:
     is_healthy: bool
 
     def to_dict(self) -> Dict[str, Any]:
-        """To dict.
-
-        Manages to dict operations and coordinates related state changes for the component.
+        """Serialize to a plain dict with keys name, writer_id, state_code, state_desc, last_error, is_healthy.
 
         Returns:
-            Dict[str, Any]: Dictionary mapping identifiers to status or values.
+        Dict[str, Any]: Dictionary mapping identifiers to status or values.
         """
         return {
             "name": self.name,
@@ -68,10 +63,7 @@ class VssWriterStatus:
 
 @dataclass
 class VssStorageAllocation:
-    """Vssstorageallocation.
-
-    Manages VssStorageAllocation operations and coordinates related state changes for the component.
-    """
+    """Record holding for_volume, shadow_volume, used_bytes, allocated_bytes, max_bytes."""
     for_volume: str
     shadow_volume: str
     used_bytes: int = 0
@@ -79,12 +71,10 @@ class VssStorageAllocation:
     max_bytes: int = 0
 
     def to_dict(self) -> Dict[str, Any]:
-        """To dict.
-
-        Manages to dict operations and coordinates related state changes for the component.
+        """Serialize to a plain dict with keys for_volume, shadow_volume, used_bytes, allocated_bytes, max_bytes.
 
         Returns:
-            Dict[str, Any]: Dictionary mapping identifiers to status or values.
+        Dict[str, Any]: Dictionary mapping identifiers to status or values.
         """
         return {
             "for_volume": self.for_volume,
@@ -97,10 +87,7 @@ class VssStorageAllocation:
 
 @dataclass
 class VssHealthReport:
-    """Vsshealthreport.
-
-    Manages VssHealthReport operations and coordinates related state changes for the component.
-    """
+    """Record holding writers, storage_allocations, healthy_writer_count, failed_writer_count, total_shadow_used_bytes, scan_duration_ms."""
     writers: List[VssWriterStatus] = field(default_factory=list)
     storage_allocations: List[VssStorageAllocation] = field(default_factory=list)
     healthy_writer_count: int = 0
@@ -109,12 +96,10 @@ class VssHealthReport:
     scan_duration_ms: float = 0.0
 
     def to_dict(self) -> Dict[str, Any]:
-        """To dict.
-
-        Manages to dict operations and coordinates related state changes for the component.
+        """Serialize to a plain dict with keys writers, storage_allocations, healthy_writer_count, failed_writer_count, total_shadow_used_bytes, scan_duration_ms.
 
         Returns:
-            Dict[str, Any]: Dictionary mapping identifiers to status or values.
+        Dict[str, Any]: Dictionary mapping identifiers to status or values.
         """
         return {
             "writers": [w.to_dict() for w in self.writers],
@@ -128,21 +113,16 @@ class VssHealthReport:
 
 @dataclass
 class VssResetResult:
-    """Vssresetresult.
-
-    Manages VssResetResult operations and coordinates related state changes for the component.
-    """
+    """Record holding success, restarted_services, message."""
     success: bool
     restarted_services: List[str] = field(default_factory=list)
     message: str = ""
 
     def to_dict(self) -> Dict[str, Any]:
-        """To dict.
-
-        Manages to dict operations and coordinates related state changes for the component.
+        """Serialize to a plain dict with keys success, restarted_services, message.
 
         Returns:
-            Dict[str, Any]: Dictionary mapping identifiers to status or values.
+        Dict[str, Any]: Dictionary mapping identifiers to status or values.
         """
         return {
             "success": self.success,
@@ -152,10 +132,7 @@ class VssResetResult:
 
 
 class VssHealthAnalyzer:
-    """Vsshealthanalyzer.
-
-    Manages VssHealthAnalyzer operations and coordinates related state changes for the component.
-    """
+    """Groups related helpers: init, inspect health, parse writers, build writer status, parse shadowstorage, build storage allocation, reset vss writers. Windows-only; returns a safe default elsewhere."""
 
     def __init__(self) -> None:
         """Initialize Vss Health Analyzer.
@@ -167,10 +144,8 @@ class VssHealthAnalyzer:
     def inspect_health(self) -> VssHealthReport:
         """Query vssadmin for active writers and volume shadow storage bounds.
 
-        Manages inspect health operations and coordinates related state changes for the component.
-
         Returns:
-            VssHealthReport: Result of the operation.
+        VssHealthReport: Result of the operation.
         """
         t0 = time.perf_counter()
         report = VssHealthReport()
@@ -216,15 +191,13 @@ class VssHealthAnalyzer:
         return report
 
     def _parse_writers(self, text: str) -> List[VssWriterStatus]:
-        """_parse_writers.
-
-        Manages parse writers operations and coordinates related state changes for the component.
+        """Parse writers helper. Returns writers.
 
         Args:
-            text (str): Display text string.
+        text (str): Display text string.
 
         Returns:
-            List[VssWriterStatus]: List of processed items or identifiers.
+        List[VssWriterStatus]: List of processed items or identifiers.
         """
         writers: List[VssWriterStatus] = []
         current: Dict[str, str] = {}
@@ -255,15 +228,13 @@ class VssHealthAnalyzer:
         return writers
 
     def _build_writer_status(self, d: Dict[str, str]) -> VssWriterStatus:
-        """_build_writer_status.
-
-        Manages build writer status operations and coordinates related state changes for the component.
+        """Build writer status helper. Returns VssWriterStatus.
 
         Args:
-            d (Dict[str, str]): The d parameter.
+        d (Dict[str, str]): The d parameter.
 
         Returns:
-            VssWriterStatus: Result of the operation.
+        VssWriterStatus: Result of the operation.
         """
         name = d.get("name", "Unknown Writer")
         wid = d.get("id", "")
@@ -287,15 +258,13 @@ class VssHealthAnalyzer:
         )
 
     def _parse_shadowstorage(self, text: str) -> List[VssStorageAllocation]:
-        """_parse_shadowstorage.
-
-        Manages parse shadowstorage operations and coordinates related state changes for the component.
+        """Parse shadowstorage helper. Returns allocs.
 
         Args:
-            text (str): Display text string.
+        text (str): Display text string.
 
         Returns:
-            List[VssStorageAllocation]: List of processed items or identifiers.
+        List[VssStorageAllocation]: List of processed items or identifiers.
         """
         allocs: List[VssStorageAllocation] = []
         current: Dict[str, str] = {}
@@ -325,27 +294,23 @@ class VssHealthAnalyzer:
         return allocs
 
     def _build_storage_allocation(self, d: Dict[str, str]) -> VssStorageAllocation:
-        """_build_storage_allocation.
-
-        Manages build storage allocation operations and coordinates related state changes for the component.
+        """Build storage allocation helper. Returns int(m.group(1)).
 
         Args:
-            d (Dict[str, str]): The d parameter.
+        d (Dict[str, str]): The d parameter.
 
         Returns:
-            VssStorageAllocation: Result of the operation.
+        VssStorageAllocation: Result of the operation.
         """
         def _parse_bytes(s: str) -> int:
             # Format: '1.234 GB (1234567890 B)'
-            """_parse_bytes.
-
-            Manages parse bytes operations and coordinates related state changes for the component.
+            """Parse bytes helper. Returns int(m.group(1)).
 
             Args:
-                s (str): The s parameter.
+            s (str): The s parameter.
 
             Returns:
-                int: Result of the operation.
+            int: Result of the operation.
             """
             m = re.search(r"\((\d+)\s*B\)", s)
             if m:
@@ -363,10 +328,8 @@ class VssHealthAnalyzer:
     def reset_vss_writers(self) -> VssResetResult:
         """Reset stalled VSS writers by cycling dependent Windows services.
 
-        Manages reset vss writers operations and coordinates related state changes for the component.
-
         Returns:
-            VssResetResult: Result of the operation.
+        VssResetResult: Result of the operation.
         """
         if not _IS_WINDOWS:
             return VssResetResult(True, ["vss", "swprv"], "[Emulated] VSS services cycled on non-Windows host.")

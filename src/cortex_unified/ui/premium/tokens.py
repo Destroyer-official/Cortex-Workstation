@@ -119,8 +119,6 @@ _SHADOW_ALPHA: tuple[int, ...] = (0, 45, 80, 120)
 def _parse_hex(color: str) -> tuple[int, int, int] | None:
     """Parse ``#RGB`` / ``#RRGGBB`` into an ``(r, g, b)`` triple, else ``None``.
 
-    Manages parse hex operations and coordinates related state changes for the component.
-
     Args:
         color (str): The color parameter.
 
@@ -151,9 +149,7 @@ def _rel_luminance(color: str) -> float:
         return 0.0
 
     def _lin(channel: int) -> float:
-        """Lin.
-
-        Manages lin operations and coordinates related state changes for the component.
+        """Linearize one sRGB channel (0-255) to linear light for WCAG luminance.
 
         Args:
             channel (int): The channel parameter.

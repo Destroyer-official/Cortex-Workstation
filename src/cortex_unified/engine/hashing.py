@@ -56,8 +56,8 @@ _CHUNK = 1024 * 1024      # 1 MiB streaming chunk for full hashes
 def _new_hasher():
     """Construct the fastest available hasher (see HASH_ALGORITHM).
 
-    Manages new hasher operations and coordinates related state changes for the component.
-    """
+ Constructs the fastest available hash object per HASH_ALGORITHM.
+ """
     if _HAS_XXHASH:
         return xxhash.xxh3_64()
     if _HAS_BLAKE3:
@@ -90,15 +90,15 @@ def hash_file(path: os.PathLike[str] | str, limit: int | None = None) -> str | N
 
 
 class DuplicateFinderEngine:
-    """Duplicatefinderengine.
+    """Duplicate Finder Engine.
 
-    Manages DuplicateFinderEngine operations and coordinates related state changes for the component.
+    Resolves 0 (auto) to the CPU count clamped to 64.
     """
 
     def __init__(self, workers: int = 0) -> None:
         # I/O-bound: a few more threads than cores keeps disks busy without
         # oversubscribing. Capped to avoid thrashing on spinning media.
-        """__init__.
+        """Initialize the instance.
 
         Initializes the instance and configures internal state.
 
@@ -143,18 +143,18 @@ class DuplicateFinderEngine:
         limit: int | None,
         progress: Callable[[int, int], None] | None,
     ) -> dict[str, list[Path]]:
-        """_group_by_hash.
+        """Group by hash.
 
-        Manages group by hash operations and coordinates related state changes for the component.
+ Hashes same-size candidates to confirm true duplicate groups.
 
-        Args:
-            paths (list[Path]): Filesystem path to the target file or directory.
-            limit (int | None): The limit parameter.
-            progress (Callable[[int, int], None] | None): The progress parameter.
+ Args:
+ paths (list[Path]): Filesystem path to the target file or directory.
+ limit (int | None): The limit parameter.
+ progress (Callable[[int, int], None] | None): The progress parameter.
 
-        Returns:
-            dict[str, list[Path]]: List of processed items or identifiers.
-        """
+ Returns:
+ dict[str, list[Path]]: List of processed items or identifiers.
+ """
         groups: dict[str, list[Path]] = defaultdict(list)
         total = len(paths)
         done = 0
@@ -174,14 +174,14 @@ class DuplicateFinderEngine:
     def wasted_bytes(groups: dict[str, list[Path]]) -> int:
         """Bytes reclaimable by keeping one copy per duplicate group.
 
-        Manages wasted bytes operations and coordinates related state changes for the component.
+ Sums bytes reclaimable by keeping one copy per group.
 
-        Args:
-            groups (dict[str, list[Path]]): The groups parameter.
+ Args:
+ groups (dict[str, list[Path]]): The groups parameter.
 
-        Returns:
-            int: Result of the operation.
-        """
+ Returns:
+ int: Result of the operation.
+ """
         total = 0
         for paths in groups.values():
             if len(paths) <= 1:

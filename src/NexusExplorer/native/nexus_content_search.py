@@ -60,9 +60,9 @@ MAX_DIR_DEPTH = 50
 
 @dataclass
 class ContentMatch:
-    """Contentmatch.
+    """One regex hit inside a file.
 
-    Manages ContentMatch operations and coordinates related state changes for the component.
+    Stores path, 1-based line number, line text, and match start/end offsets.
     """
     path: str
     line_number: int
@@ -73,9 +73,9 @@ class ContentMatch:
 
 @dataclass
 class ContentSearchResult:
-    """Contentsearchresult.
+    """All hits found in one file.
 
-    Manages ContentSearchResult operations and coordinates related state changes for the component.
+    Holds path, ContentMatch list, and truncated flag when max_matches_per_file is reached.
     """
     path: str
     matches: list[ContentMatch]
@@ -85,7 +85,7 @@ class ContentSearchResult:
 def is_searchable(path: str | Path) -> bool:
     """Check if a file is safe to search as text.
 
-    Manages is searchable operations and coordinates related state changes for the component.
+    Returns True for TEXT_EXTENSIONS suffixes and extensionless Makefile/Dockerfile-style names.
 
     Args:
         path (str | Path): Filesystem path to the target file or directory.
@@ -168,9 +168,9 @@ def search_file_content(
 
 
 class _ContentSearchWorker(QThread):
-    """Contentsearchworker.
+    """QThread worker fanning search across a ThreadPoolExecutor.
 
-    Manages ContentSearchWorker operations and coordinates related state changes for the component.
+    Compiles the regex once, walks the tree with symlink-loop and MAX_DIR_DEPTH guards, batches 100 files, and emits result/progress/finished signals.
     """
 
     result_found = Signal(ContentSearchResult)
@@ -289,9 +289,9 @@ class _ContentSearchWorker(QThread):
             self.error.emit(str(e))
 
     def _process_batch(self, executor, batch, compiled_re, total_matches, files_searched, total_files):
-        """_process_batch.
+        """Submit one batch to the pool and emit hits.
 
-        Manages process batch operations and coordinates related state changes for the component.
+        Submits search_file_content per path to the executor, emits result_found per hit, respects cancel, and throttles progress signals.
 
         Args:
             executor: The executor parameter.
@@ -330,9 +330,9 @@ class _ContentSearchWorker(QThread):
 
 
 class ContentSearchEngine(QObject):
-    """Contentsearchengine.
+    """QObject facade managing one live content search.
 
-    Manages ContentSearchEngine operations and coordinates related state changes for the component.
+    Owns a single _ContentSearchWorker plus cancel event; exposes search/stop/is_searching and forwards worker signals.
     """
 
     result_found = Signal(ContentSearchResult)
@@ -362,9 +362,9 @@ class ContentSearchEngine(QObject):
         max_results: int = 1000,
         file_filter: Callable[[str], bool] | None = None,
     ):
-        """Search.
+        """Start an async content search.
 
-        Manages search operations and coordinates related state changes for the component.
+        Stops any running worker, clears the cancel event, wires worker signals to engine signals, and starts the thread.
 
         Args:
             root (str): Filesystem path to the target file or directory.
@@ -404,9 +404,9 @@ class ContentSearchEngine(QObject):
         self._worker = None
 
     def is_searching(self) -> bool:
-        """is_searching.
+        """Return True while a worker thread is running.
 
-        Manages is searching operations and coordinates related state changes for the component.
+        Checks that _worker exists and QThread.isRunning() is true.
 
         Returns:
             bool: True if the operation succeeded, False otherwise.

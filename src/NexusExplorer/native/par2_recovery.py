@@ -18,9 +18,9 @@ from typing import Dict, List, Optional, Tuple
 
 @dataclass
 class Par2FileInfo:
-    """Par2fileinfo.
+    """Protected file described in a PAR2 set.
 
-    Manages Par2FileInfo operations and coordinates related state changes for the component.
+    Stores file id hex, name, size, and MD5 of first 16KB plus full-file MD5.
     """
     file_id: str
     file_name: str
@@ -31,9 +31,9 @@ class Par2FileInfo:
 
 @dataclass
 class Par2PacketInfo:
-    """Par2packetinfo.
+    """One parsed PAR2 packet header.
 
-    Manages Par2PacketInfo operations and coordinates related state changes for the component.
+    Records Main/FileDesc/Recovery-Slice type label, length, recovery set id, and validity.
     """
     packet_type: str
     packet_length: int
@@ -43,9 +43,9 @@ class Par2PacketInfo:
 
 @dataclass
 class Par2ValidationReport:
-    """Par2validationreport.
+    """Integrity verdict for one .par2 file.
 
-    Manages Par2ValidationReport operations and coordinates related state changes for the component.
+    Holds path, valid flag, set id, slice size, data/recovery slice counts, protected file list, packets, and error.
     """
     par2_file_path: str
     is_valid_par2: bool
@@ -60,9 +60,9 @@ class Par2ValidationReport:
 
 
 class Par2RecoveryEngine:
-    """Par2recoveryengine.
+    """PAR2 packet parser (no repair).
 
-    Manages Par2RecoveryEngine operations and coordinates related state changes for the component.
+    Scans for PAR2 magic with struct '<Q' lengths, decoding Main/FileDesc/RecvSlic/IFSC bodies.
     """
 
     PAR2_MAGIC = b"PAR2\x00PKT"
@@ -71,7 +71,7 @@ class Par2RecoveryEngine:
     def inspect_par2_file(cls, par2_path: str | Path) -> Par2ValidationReport:
         """Parse PAR2 file and extract parity slice and recovery information.
 
-        Manages inspect par2 file operations and coordinates related state changes for the component.
+        Reads the whole file, walks 64-byte-minimum packets with magic resync, extracts slice size/counts and FileDesc hashes into a report.
 
         Args:
             par2_path (str | Path): Filesystem path to the target file or directory.

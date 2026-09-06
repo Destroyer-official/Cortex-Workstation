@@ -46,8 +46,6 @@ _VALID_THEMES = ("dark", "light")
 def settings_path() -> Path:
     """Return the settings file path (``~/.cortex_cleaner/settings.json``).
 
-    Manages settings path operations and coordinates related state changes for the component.
-
     Returns:
         Path: Result of the operation.
     """
@@ -100,10 +98,7 @@ class SettingsStore:
         self._sanitize()
 
     def _sanitize(self) -> None:
-        """Sanitize.
-
-        Manages sanitize operations and coordinates related state changes for the component.
-        """
+        """Clamp raw settings values (booleans/themes) to valid ranges with safe defaults."""
         if self._data.get("theme") not in _VALID_THEMES:
             self._data["theme"] = _DEFAULTS["theme"]
         self._data["close_to_tray"] = bool(self._data.get("close_to_tray", False))
@@ -135,9 +130,7 @@ class SettingsStore:
     # -- accessors ----------------------------------------------------------
 
     def get(self, key: str, default: Any = None) -> Any:
-        """Get.
-
-        Manages get operations and coordinates related state changes for the component.
+        """Return a raw setting value from the JSON store with an optional default.
 
         Args:
             key (str): The key parameter.
@@ -149,9 +142,7 @@ class SettingsStore:
         return self._data.get(key, default)
 
     def set(self, key: str, value: Any) -> None:
-        """Set.
-
-        Manages set operations and coordinates related state changes for the component.
+        """Sanitize and persist one setting value to the JSON store.
 
         Args:
             key (str): The key parameter.
@@ -165,9 +156,7 @@ class SettingsStore:
 
     @property
     def theme(self) -> str:
-        """Theme.
-
-        Manages theme operations and coordinates related state changes for the component.
+        """Return the theme preference from the settings store.
 
         Returns:
             str: Formatted string or path.
@@ -176,9 +165,7 @@ class SettingsStore:
 
     @theme.setter
     def theme(self, value: str) -> None:
-        """Theme.
-
-        Manages theme operations and coordinates related state changes for the component.
+        """Return the theme preference from the settings store.
 
         Args:
             value (str): The value parameter.
@@ -187,9 +174,7 @@ class SettingsStore:
 
     @property
     def close_to_tray(self) -> bool:
-        """close_to_tray.
-
-        Manages close to tray operations and coordinates related state changes for the component.
+        """Return the close to tray preference from the settings store.
 
         Returns:
             bool: True if the operation succeeded, False otherwise.
@@ -198,9 +183,7 @@ class SettingsStore:
 
     @close_to_tray.setter
     def close_to_tray(self, value: bool) -> None:
-        """close_to_tray.
-
-        Manages close to tray operations and coordinates related state changes for the component.
+        """Return the close to tray preference from the settings store.
 
         Args:
             value (bool): The value parameter.
@@ -209,9 +192,7 @@ class SettingsStore:
 
     @property
     def reduced_motion(self) -> bool:
-        """reduced_motion.
-
-        Manages reduced motion operations and coordinates related state changes for the component.
+        """Return the reduced motion preference from the settings store.
 
         Returns:
             bool: True if the operation succeeded, False otherwise.
@@ -220,9 +201,7 @@ class SettingsStore:
 
     @reduced_motion.setter
     def reduced_motion(self, value: bool) -> None:
-        """reduced_motion.
-
-        Manages reduced motion operations and coordinates related state changes for the component.
+        """Return the reduced motion preference from the settings store.
 
         Args:
             value (bool): The value parameter.
@@ -231,9 +210,7 @@ class SettingsStore:
 
     @property
     def update_check(self) -> bool:
-        """update_check.
-
-        Manages update check operations and coordinates related state changes for the component.
+        """Return the update check preference from the settings store.
 
         Returns:
             bool: True if the operation succeeded, False otherwise.
@@ -242,9 +219,7 @@ class SettingsStore:
 
     @update_check.setter
     def update_check(self, value: bool) -> None:
-        """update_check.
-
-        Manages update check operations and coordinates related state changes for the component.
+        """Return the update check preference from the settings store.
 
         Args:
             value (bool): The value parameter.
@@ -253,9 +228,7 @@ class SettingsStore:
 
     @property
     def leftover_restore_point(self) -> bool:
-        """leftover_restore_point.
-
-        Manages leftover restore point operations and coordinates related state changes for the component.
+        """Return the leftover restore point preference from the settings store.
 
         Returns:
             bool: True if the operation succeeded, False otherwise.
@@ -264,9 +237,7 @@ class SettingsStore:
 
     @leftover_restore_point.setter
     def leftover_restore_point(self, value: bool) -> None:
-        """leftover_restore_point.
-
-        Manages leftover restore point operations and coordinates related state changes for the component.
+        """Return the leftover restore point preference from the settings store.
 
         Args:
             value (bool): The value parameter.

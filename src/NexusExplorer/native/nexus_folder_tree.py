@@ -21,9 +21,9 @@ except ImportError:
 
 
 class FolderTreeModel(QStandardItemModel):
-    """Foldertreemodel.
+    """Lazy QStandardItemModel for filesystem hierarchy.
 
-    Manages FolderTreeModel operations and coordinates related state changes for the component.
+    Tracks loaded state and visited (st_dev, st_ino) inodes, caps depth at _MAX_DEPTH=20, and filters hidden/system entries.
     """
 
     _MAX_DEPTH = 20
@@ -79,7 +79,7 @@ class FolderTreeModel(QStandardItemModel):
     def _get_drives(self) -> list[tuple[str, str]]:
         """List local drives with volume labels (empty label on failure).
 
-        Manages get drives operations and coordinates related state changes for the component.
+        Enumerates A-Z drives via Path.exists plus GetVolumeInformationW labels on Windows; returns Root on POSIX.
 
         Returns:
             list[tuple[str, str]]: List of processed items or identifiers.
@@ -105,7 +105,7 @@ class FolderTreeModel(QStandardItemModel):
     def _setup_children(self, parent_item: QStandardItem, path: str, depth: int = 0):
         """Add a lazy expansion sentinel child to display an expand chevron until contents load.
 
-        Manages setup children operations and coordinates related state changes for the component.
+        Appends an empty sentinel row and stores path/loaded/depth dict so the view shows an expand chevron.
 
         Args:
             parent_item (QStandardItem): The parent item parameter.
@@ -121,9 +121,9 @@ class FolderTreeModel(QStandardItemModel):
         )
 
     def hasChildren(self, parent: QModelIndex = QModelIndex()) -> bool:
-        """Haschildren.
+        """Report expandable state for lazy nodes.
 
-        Manages hasChildren operations and coordinates related state changes for the component.
+        Returns True for unloaded sentinels so Qt shows the chevron; defers to base model otherwise.
 
         Args:
             parent (QModelIndex): Parent window or shell controller instance.
@@ -144,9 +144,9 @@ class FolderTreeModel(QStandardItemModel):
         return item.hasChildren()
 
     def canFetchMore(self, parent: QModelIndex) -> bool:
-        """Canfetchmore.
+        """Indicate unloaded children remain.
 
-        Manages canFetchMore operations and coordinates related state changes for the component.
+        Returns True only when the item stored loaded flag is False.
 
         Args:
             parent (QModelIndex): Parent window or shell controller instance.
@@ -165,9 +165,9 @@ class FolderTreeModel(QStandardItemModel):
         return not data.get("loaded", True)
 
     def fetchMore(self, parent: QModelIndex):
-        """Fetchmore.
+        """Load one directory level on expansion.
 
-        Manages fetchMore operations and coordinates related state changes for the component.
+        Guards depth/inode loops, scandirs directories sorted case-insensitively, skips dot/hidden/system entries, and attaches sentinels.
 
         Args:
             parent (QModelIndex): Parent window or shell controller instance.
@@ -236,9 +236,9 @@ class FolderTreeModel(QStandardItemModel):
 
 
 class FolderTreeWidget(QWidget):
-    """Foldertreewidget.
+    """QTreeView wrapper emitting navigate_to on click.
 
-    Manages FolderTreeWidget operations and coordinates related state changes for the component.
+    Builds FolderTreeModel, enables animation/alternating rows, populates drives at construction, and offers select_path/refresh/cleanup.
     """
 
     navigate_to = Signal(str)  # Emitted when user clicks a folder
@@ -278,9 +278,9 @@ class FolderTreeWidget(QWidget):
         self.model.populate_drives()
 
     def _on_clicked(self, idx: QModelIndex):
-        """_on_clicked.
+        """Forward folder clicks as navigate_to.
 
-        Manages on clicked operations and coordinates related state changes for the component.
+        Resolves the item UserRole path and emits navigate_to when it is a directory.
 
         Args:
             idx (QModelIndex): The idx parameter.

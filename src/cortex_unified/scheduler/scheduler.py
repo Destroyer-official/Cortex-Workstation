@@ -16,9 +16,8 @@ from ..core import proc as _proc
 from ..core.config import Config
 
 class TaskScheduler:
-    """Taskscheduler.
+    """OS-native task scheduler using schtasks, launchd, or cron.
 
-    Manages TaskScheduler operations and coordinates related state changes for the component.
     """
     
     def __init__(self, config: Config = None):
@@ -73,7 +72,6 @@ class TaskScheduler:
     ) -> bool:
         """Create a Windows scheduled task using schtasks.
 
-        Manages create windows task operations and coordinates related state changes for the component.
 
         Args:
             name (str): The name parameter.
@@ -126,7 +124,6 @@ class TaskScheduler:
     ) -> bool:
         """Create a macOS scheduled task using launchd.
 
-        Manages create macos task operations and coordinates related state changes for the component.
 
         Args:
             name (str): The name parameter.
@@ -163,7 +160,6 @@ class TaskScheduler:
     ) -> str:
         """Render schedule params as a launchd property-list string.
 
-        Manages generate launchd plist operations and coordinates related state changes for the component.
 
         Args:
             name (str): The name parameter.
@@ -254,7 +250,6 @@ class TaskScheduler:
     ) -> bool:
         """Create a Linux scheduled task using cron.
 
-        Manages create linux task operations and coordinates related state changes for the component.
 
         Args:
             name (str): The name parameter.
@@ -290,7 +285,6 @@ class TaskScheduler:
     def _generate_cron_expression(self, schedule_type: str, schedule_params: Dict = None) -> str:
         """Translate schedule type/params into five cron fields.
 
-        Manages generate cron expression operations and coordinates related state changes for the component.
 
         Args:
             schedule_type (str): The schedule type parameter.
@@ -321,7 +315,6 @@ class TaskScheduler:
     def list_scheduled_tasks(self) -> List[Dict]:
         """List tasks from the platform scheduler in normalized dicts.
 
-        Manages list scheduled tasks operations and coordinates related state changes for the component.
 
         Returns:
             List[Dict]: List of processed items or identifiers.
@@ -343,7 +336,6 @@ class TaskScheduler:
     def _list_windows_tasks(self) -> List[Dict]:
         """List Windows scheduled tasks.
 
-        Manages list windows tasks operations and coordinates related state changes for the component.
 
         Returns:
             List[Dict]: List of processed items or identifiers.
@@ -374,7 +366,6 @@ class TaskScheduler:
     def _list_macos_tasks(self) -> List[Dict]:
         """List macOS scheduled tasks.
 
-        Manages list macos tasks operations and coordinates related state changes for the component.
 
         Returns:
             List[Dict]: List of processed items or identifiers.
@@ -404,7 +395,6 @@ class TaskScheduler:
     def _list_linux_tasks(self) -> List[Dict]:
         """List Linux scheduled tasks.
 
-        Manages list linux tasks operations and coordinates related state changes for the component.
 
         Returns:
             List[Dict]: List of processed items or identifiers.
@@ -430,9 +420,8 @@ class TaskScheduler:
             return []
     
     def delete_scheduled_task(self, name: str) -> bool:
-        """delete_scheduled_task.
+        """Delete a scheduled task by name on the current platform.
 
-        Manages delete scheduled task operations and coordinates related state changes for the component.
 
         Args:
             name (str): The name parameter.
@@ -472,7 +461,6 @@ class TaskScheduler:
     def get_stats(self) -> dict:
         """Summarize task count, platform, and error total.
 
-        Manages get stats operations and coordinates related state changes for the component.
 
         Returns:
             dict: Dictionary mapping identifiers to status or values.

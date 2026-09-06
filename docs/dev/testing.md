@@ -19,13 +19,13 @@ pytest tests/test_premium_gui.py tests/test_gui_pages_e2e.py --no-cov
 ```
 
 ### 3. Run Production Readiness Diagnostics
-Execute the 7-stage production diagnostics suite (covers SVG icons, system tools, analyzers, safety guards, and 132 UI pages):
+Execute the 7-stage production diagnostics suite (covers SVG icons, system tools, analyzers, safety guards, and 139 UI pages):
 ```bash
 python scripts/verify_production_readiness.py
 ```
 
 ### 4. Run One-by-One File-by-File Audit
-Validate AST syntax, bytecode compilation, and dynamic imports across all 484 repository files:
+Validate AST syntax, bytecode compilation, and dynamic imports across all 499 repository files:
 ```bash
 python scripts/check_all_structure_files.py
 ```

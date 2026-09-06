@@ -38,53 +38,32 @@ _ALL_MODES = _SCAN_MODES | {"version", "os"}
 
 
 class NmapError(RuntimeError):
-    """Nmaperror.
-
-    Manages NmapError operations and coordinates related state changes for the component.
-    """
+    """Base error for Nmap integration failures."""
 
 
 class NmapUnavailableError(NmapError):
-    """Nmapunavailableerror.
-
-    Manages NmapUnavailableError operations and coordinates related state changes for the component.
-    """
+    """Raised when no usable Nmap executable is installed or found."""
 
 
 class NmapAuthorizationError(NmapError):
-    """Nmapauthorizationerror.
-
-    Manages NmapAuthorizationError operations and coordinates related state changes for the component.
-    """
+    """Raised when a scan target falls outside authorized private scopes."""
 
 
 class NmapPrivilegeError(NmapError):
-    """Nmapprivilegeerror.
-
-    Manages NmapPrivilegeError operations and coordinates related state changes for the component.
-    """
+    """Raised when the requested scan mode needs elevation the process lacks."""
 
 
 class NmapExecutionError(NmapError):
-    """Nmapexecutionerror.
-
-    Manages NmapExecutionError operations and coordinates related state changes for the component.
-    """
+    """Raised when the Nmap subprocess fails, times out, or is cancelled."""
 
 
 class NmapOutputError(NmapError):
-    """Nmapoutputerror.
-
-    Manages NmapOutputError operations and coordinates related state changes for the component.
-    """
+    """Raised when Nmap XML output is missing, oversized, or unsafe to parse."""
 
 
 @dataclass(frozen=True, slots=True)
 class NmapStatus:
-    """Nmapstatus.
-
-    Manages NmapStatus operations and coordinates related state changes for the component.
-    """
+    """Record holding available, executable, reason."""
 
     available: bool
     executable: str | None
@@ -94,10 +73,8 @@ class NmapStatus:
 def _is_windows_admin() -> bool:
     """Return true only when Windows confirms this process is elevated.
 
-    Manages is windows admin operations and coordinates related state changes for the component.
-
     Returns:
-        bool: True if the operation succeeded, False otherwise.
+    bool: True if the operation succeeded, False otherwise.
     """
     if sys.platform != "win32":
         return False
@@ -108,59 +85,51 @@ def _is_windows_admin() -> bool:
 
 
 def _local_name(tag: str) -> str:
-    """_local_name.
-
-    Manages local name operations and coordinates related state changes for the component.
+    """Local name helper. Returns tag.rsplit(...).
 
     Args:
-        tag (str): The tag parameter.
+    tag (str): The tag parameter.
 
     Returns:
-        str: Formatted string or path.
+    str: Formatted string or path.
     """
     return tag.rsplit("}", 1)[-1]
 
 
 def _children(element: ET.Element, name: str) -> list[ET.Element]:
-    """Children.
-
-    Manages children operations and coordinates related state changes for the component.
+    """Children helper.
 
     Args:
-        element (ET.Element): The element parameter.
-        name (str): The name parameter.
+    element (ET.Element): The element parameter.
+    name (str): The name parameter.
 
     Returns:
-        list[ET.Element]: List of processed items or identifiers.
+    list[ET.Element]: List of processed items or identifiers.
     """
     return [child for child in element if _local_name(child.tag) == name]
 
 
 def _descendants(element: ET.Element, name: str) -> list[ET.Element]:
-    """Descendants.
-
-    Manages descendants operations and coordinates related state changes for the component.
+    """Descendants helper.
 
     Args:
-        element (ET.Element): The element parameter.
-        name (str): The name parameter.
+    element (ET.Element): The element parameter.
+    name (str): The name parameter.
 
     Returns:
-        list[ET.Element]: List of processed items or identifiers.
+    list[ET.Element]: List of processed items or identifiers.
     """
     return [item for item in element.iter() if _local_name(item.tag) == name]
 
 
 def _bounded_root(payload: bytes | str) -> ET.Element:
-    """_bounded_root.
-
-    Manages bounded root operations and coordinates related state changes for the component.
+    """Bounded root helper. Returns root.
 
     Args:
-        payload (bytes | str): The payload parameter.
+    payload (bytes | str): The payload parameter.
 
     Returns:
-        ET.Element: Result of the operation.
+    ET.Element: Result of the operation.
     """
     if isinstance(payload, str):
         data = payload.encode("utf-8")
@@ -196,16 +165,14 @@ def _normalize_targets(
     targets: Iterable[str],
     allowed_networks: Iterable[str | ipaddress.IPv4Network],
 ) -> tuple[tuple[str, ...], tuple[ipaddress.IPv4Network, ...]]:
-    """_normalize_targets.
-
-    Manages normalize targets operations and coordinates related state changes for the component.
+    """Normalize targets helper. Returns tuple(...).
 
     Args:
-        targets (Iterable[str]): The targets parameter.
-        allowed_networks (Iterable[str | ipaddress.IPv4Network]): The allowed networks parameter.
+    targets (Iterable[str]): The targets parameter.
+    allowed_networks (Iterable[str | ipaddress.IPv4Network]): The allowed networks parameter.
 
     Returns:
-        tuple[tuple[str, ...], tuple[ipaddress.IPv4Network, ...]]: Formatted string or path.
+    tuple[tuple[str, ...], tuple[ipaddress.IPv4Network, ...]]: Formatted string or path.
     """
     scopes = parse_allowed_networks(allowed_networks)
     if not scopes:
@@ -232,15 +199,13 @@ def _normalize_targets(
 
 
 def _normalize_ports(ports: Iterable[int]) -> tuple[int, ...]:
-    """_normalize_ports.
-
-    Manages normalize ports operations and coordinates related state changes for the component.
+    """Normalize ports helper. Returns unique.
 
     Args:
-        ports (Iterable[int]): The ports parameter.
+    ports (Iterable[int]): The ports parameter.
 
     Returns:
-        tuple[int, ...]: Result of the operation.
+    tuple[int, ...]: Result of the operation.
     """
     normalized: list[int] = []
     for value in ports:
@@ -262,15 +227,13 @@ def _normalize_ports(ports: Iterable[int]) -> tuple[int, ...]:
 
 
 def _normalize_modes(modes: Iterable[str] | str | None) -> tuple[str, ...]:
-    """_normalize_modes.
-
-    Manages normalize modes operations and coordinates related state changes for the component.
+    """Normalize modes helper. Returns normalized. Windows-only; returns a safe default elsewhere.
 
     Args:
-        modes (Iterable[str] | str | None): The modes parameter.
+    modes (Iterable[str] | str | None): The modes parameter.
 
     Returns:
-        tuple[str, ...]: Formatted string or path.
+    tuple[str, ...]: Formatted string or path.
     """
     if modes is None:
         values = _DEFAULT_MODES
@@ -401,10 +364,7 @@ def parse_nmap_xml(
 
 
 class NmapAdapter:
-    """Nmapadapter.
-
-    Manages NmapAdapter operations and coordinates related state changes for the component.
-    """
+    """Groups related helpers: init, executable, available, status, build arguments, scan."""
 
     def __init__(self, executable: str = "nmap") -> None:
         """Initialize Nmap Adapter.
@@ -417,33 +377,27 @@ class NmapAdapter:
         self._requested_executable = executable
 
     def _executable(self) -> str | None:
-        """Executable.
-
-        Manages executable operations and coordinates related state changes for the component.
+        """Executable helper. Returns shutil.which(self._requested_executable).
 
         Returns:
-            str | None: Formatted string or path.
+        str | None: Formatted string or path.
         """
         return shutil.which(self._requested_executable)
 
     @property
     def available(self) -> bool:
-        """Available.
-
-        Manages available operations and coordinates related state changes for the component.
+        """Return the underlying _executable attribute.
 
         Returns:
-            bool: True if the operation succeeded, False otherwise.
+        bool: True if the operation succeeded, False otherwise.
         """
         return self._executable() is not None
 
     def status(self) -> NmapStatus:
-        """Status.
-
-        Manages status operations and coordinates related state changes for the component.
+        """Status helper. Returns NmapStatus(True, executable, "Nmap is available").
 
         Returns:
-            NmapStatus: Result of the operation.
+        NmapStatus: Result of the operation.
         """
         executable = self._executable()
         if executable:
@@ -532,13 +486,11 @@ class NmapAdapter:
 def nmap_status(executable: str = "nmap") -> NmapStatus:
     """Return side-effect-free Nmap availability information.
 
-    Manages nmap status operations and coordinates related state changes for the component.
-
     Args:
-        executable (str): The executable parameter.
+    executable (str): The executable parameter.
 
     Returns:
-        NmapStatus: Result of the operation.
+    NmapStatus: Result of the operation.
     """
     return NmapAdapter(executable).status()
 
@@ -546,13 +498,11 @@ def nmap_status(executable: str = "nmap") -> NmapStatus:
 def is_nmap_available(executable: str = "nmap") -> bool:
     """Return whether the optional executable can be resolved.
 
-    Manages is nmap available operations and coordinates related state changes for the component.
-
     Args:
-        executable (str): The executable parameter.
+    executable (str): The executable parameter.
 
     Returns:
-        bool: True if the operation succeeded, False otherwise.
+    bool: True if the operation succeeded, False otherwise.
     """
     return NmapAdapter(executable).available
 

@@ -26,10 +26,7 @@ IO_REPARSE_TAG_WOF = 0x80000017
 
 @dataclass
 class ReparseItem:
-    """Reparseitem.
-
-    Manages ReparseItem operations and coordinates related state changes for the component.
-    """
+    """One NTFS reparse point (junction/symlink) with target liveness and loop flags."""
     path: str
     target: str
     link_type: str  # "Junction", "Symlink", "AppExecLink", "Hardlink"
@@ -40,10 +37,7 @@ class ReparseItem:
 
 @dataclass
 class JunctionAuditReport:
-    """Junctionauditreport.
-
-    Manages JunctionAuditReport operations and coordinates related state changes for the component.
-    """
+    """Counts and items from an NTFS junction/symlink audit (read-only scan)."""
     total_reparse_points: int = 0
     junction_count: int = 0
     symlink_count: int = 0
@@ -54,10 +48,7 @@ class JunctionAuditReport:
 
 
 class JunctionAuditor:
-    """Junctionauditor.
-
-    Manages JunctionAuditor operations and coordinates related state changes for the component.
-    """
+    """Windows-only NTFS link auditor; audit() is read-only, remove unlinks dead links."""
 
     def __init__(self):
         """Initialize Junction Auditor.
@@ -67,9 +58,7 @@ class JunctionAuditor:
         self._is_windows = os.name == "nt"
 
     def audit(self, root_path: Optional[str] = None, max_depth: int = 4) -> JunctionAuditReport:
-        """Audit.
-
-        Manages audit operations and coordinates related state changes for the component.
+        """Walk root_path (bounded depth) listing junctions/symlinks, dead and circular ones.
 
         Args:
             root_path (Optional[str]): Filesystem path to the target file or directory.
@@ -192,9 +181,7 @@ class JunctionAuditor:
         )
 
     def remove_dead_junction(self, link_path: str) -> tuple[bool, str]:
-        """Safely unlink a dead junction or symlink without touching target files.
-
-        Manages remove dead junction operations and coordinates related state changes for the component.
+        """Unlink a dead junction/symlink without touching its target (deletes link only).
 
         Args:
             link_path (str): Filesystem path to the target file or directory.

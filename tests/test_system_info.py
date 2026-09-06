@@ -6,10 +6,7 @@ from cortex_unified.system_tools.system_info import SystemInfo
 
 
 def test_platform_info_has_core_fields():
-    """test_platform_info_has_core_fields.
-
-    Manages test platform info has core fields operations and coordinates related state changes for the component.
-    """
+    """Verify platform info has core fields via SystemInfo, platform_info."""
     info = SystemInfo().platform_info()
     assert info["system"]
     assert info["python"]
@@ -17,10 +14,7 @@ def test_platform_info_has_core_fields():
 
 
 def test_snapshot_structure():
-    """test_snapshot_structure.
-
-    Manages test snapshot structure operations and coordinates related state changes for the component.
-    """
+    """Verify snapshot structure via SystemInfo, snapshot."""
     snap = SystemInfo().snapshot()
     for key in ("platform", "cpu", "memory", "disks", "psutil_available"):
         assert key in snap
@@ -28,10 +22,7 @@ def test_snapshot_structure():
 
 
 def test_memory_info_sane():
-    """test_memory_info_sane.
-
-    Manages test memory info sane operations and coordinates related state changes for the component.
-    """
+    """Verify memory info sane via SystemInfo, memory_info."""
     mem = SystemInfo().memory_info()
     if mem:  # only if psutil present
         assert mem["total"] > 0
@@ -40,10 +31,7 @@ def test_memory_info_sane():
 
 
 def test_disk_info_entries_sane():
-    """test_disk_info_entries_sane.
-
-    Manages test disk info entries sane operations and coordinates related state changes for the component.
-    """
+    """Verify disk info entries sane via SystemInfo, disk_info."""
     disks = SystemInfo().disk_info()
     for d in disks:
         assert 0 <= d["used_percent"] <= 100
@@ -51,10 +39,7 @@ def test_disk_info_entries_sane():
 
 
 def test_cpu_info_sane():
-    """test_cpu_info_sane.
-
-    Manages test cpu info sane operations and coordinates related state changes for the component.
-    """
+    """Verify cpu info sane via SystemInfo, cpu_info."""
     cpu = SystemInfo().cpu_info()
     if cpu:
         assert cpu["logical_cores"] and cpu["logical_cores"] >= 1

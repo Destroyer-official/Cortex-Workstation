@@ -18,15 +18,9 @@ SAMPLE = (
 
 
 class TestParse:
-    """Testparse.
-
-    Manages TestParse operations and coordinates related state changes for the component.
-    """
+    """Group testparse tests covering parses all plans; marks active plan; empty input."""
     def test_parses_all_plans(self):
-        """test_parses_all_plans.
-
-        Manages test parses all plans operations and coordinates related state changes for the component.
-        """
+        """Verify parses all plans via PerformanceTuner._parse."""
         plans = PerformanceTuner._parse(SAMPLE)
         assert len(plans) == 3
         assert all(isinstance(p, PowerPlan) for p in plans)
@@ -34,10 +28,7 @@ class TestParse:
         assert "Balanced" in names and "High performance" in names
 
     def test_marks_active_plan(self):
-        """test_marks_active_plan.
-
-        Manages test marks active plan operations and coordinates related state changes for the component.
-        """
+        """Verify marks active plan via PerformanceTuner._parse."""
         plans = PerformanceTuner._parse(SAMPLE)
         active = [p for p in plans if p.active]
         assert len(active) == 1
@@ -45,45 +36,27 @@ class TestParse:
         assert active[0].guid == "381b4222-f694-41f0-9685-ff5bb260df2e"
 
     def test_empty_input(self):
-        """test_empty_input.
-
-        Manages test empty input operations and coordinates related state changes for the component.
-        """
+        """Verify empty input via PerformanceTuner._parse."""
         assert PerformanceTuner._parse(None) == []
         assert PerformanceTuner._parse("") == []
 
 
 class TestSafety:
-    """Testsafety.
-
-    Manages TestSafety operations and coordinates related state changes for the component.
-    """
+    """Group testsafety tests covering is supported matches platform; set active rejects bad guid; list plans returns list; to dict."""
     def test_is_supported_matches_platform(self):
-        """test_is_supported_matches_platform.
-
-        Manages test is supported matches platform operations and coordinates related state changes for the component.
-        """
+        """Verify is supported matches platform via PerformanceTuner.is_supported."""
         assert PerformanceTuner.is_supported() == IS_WINDOWS
 
     def test_set_active_rejects_bad_guid(self):
-        """test_set_active_rejects_bad_guid.
-
-        Manages test set active rejects bad guid operations and coordinates related state changes for the component.
-        """
+        """Verify set active rejects bad guid via PerformanceTuner, set_active."""
         ok, msg = PerformanceTuner().set_active("not-a-guid")
         assert ok is False
 
     def test_list_plans_returns_list(self):
-        """test_list_plans_returns_list.
-
-        Manages test list plans returns list operations and coordinates related state changes for the component.
-        """
+        """Verify list plans returns list via PerformanceTuner, list_plans."""
         assert isinstance(PerformanceTuner().list_plans(), list)
 
     def test_to_dict(self):
-        """test_to_dict.
-
-        Manages test to dict operations and coordinates related state changes for the component.
-        """
+        """Verify to dict via PowerPlan, p.to_dict."""
         p = PowerPlan(guid="g", name="Balanced", active=True)
         assert p.to_dict() == {"guid": "g", "name": "Balanced", "active": True}

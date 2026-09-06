@@ -66,11 +66,11 @@ _LEVEL_ORDER = {"bad": 0, "questionable": 1, "good": 2, "verygood": 3}
 def _require_feature(feature) -> None:
     """Gate a CLI command on a licensing Feature (clean click error if denied).
 
-    Manages require feature operations and coordinates related state changes for the component.
+ Handles require feature for.
 
-    Args:
-        feature: The feature parameter.
-    """
+ Args:
+ feature: The feature parameter.
+ """
     from cortex_unified.licensing.gating import EntitlementError, require
     try:
         require(feature)
@@ -109,11 +109,11 @@ def _fmt_memory_stats(stats: dict) -> str:
 def _find_app_by_name(name: str):
     """Locate an installed/uninstalled app record by display name.
 
-    Manages find app by name operations and coordinates related state changes for the component.
+ Handles find app by name for.
 
-    Args:
-        name (str): The name parameter.
-    """
+ Args:
+ name (str): The name parameter.
+ """
     from cortex_unified.system_tools.leftover_cleaner import (
         InstalledApp,
         read_installed_apps,
@@ -127,14 +127,14 @@ def _find_app_by_name(name: str):
 
 
 def _echo_findings(findings, as_json: bool) -> None:
-    """_echo_findings.
+    """Echo findings.
 
-    Manages echo findings operations and coordinates related state changes for the component.
+ Handles echo findings for.
 
-    Args:
-        findings: The findings parameter.
-        as_json (bool): The as json parameter.
-    """
+ Args:
+ findings: The findings parameter.
+ as_json (bool): The as json parameter.
+ """
     if as_json:
         click.echo(_json.dumps([f.to_dict() for f in findings], indent=2))
         return
@@ -150,7 +150,7 @@ def _echo_findings(findings, as_json: bool) -> None:
 
 
 def _fmt_bytes(n: int) -> str:
-    """_fmt_bytes.
+    """Fmt bytes.
 
     Converts raw numeric values into formatted, localized, and human-readable string representations.
 
@@ -173,10 +173,10 @@ if click is not None:
     @click.group()
     @click.version_option(version=__version__, message="cortex engine %(version)s")
     def main() -> None:
-        """Main.
+        """Main helper.
 
-        Manages main operations and coordinates related state changes for the component.
-        """
+ Handles main for.
+ """
 
     @main.command()
     @click.option("--json", "as_json", is_flag=True, help="Machine-readable output.")
@@ -265,14 +265,14 @@ if click is not None:
     @click.argument("paths", nargs=-1, required=True, type=click.Path(exists=True))
     @click.option("--json", "as_json", is_flag=True)
     def duplicates(paths: tuple[str, ...], as_json: bool) -> None:
-        """Duplicates.
+        """Duplicates helper.
 
-        Manages duplicates operations and coordinates related state changes for the component.
+ Handles duplicates for.
 
-        Args:
-            paths (tuple[str, ...]): Filesystem path to the target file or directory.
-            as_json (bool): The as json parameter.
-        """
+ Args:
+ paths (tuple[str, ..]): Filesystem path to the target file or directory.
+ as_json (bool): The as json parameter.
+ """
         groups = CleanerService().find_duplicates([Path(p) for p in paths])
         if as_json:
             click.echo(_json.dumps({k: [str(p) for p in v] for k, v in groups.items()}, indent=2))
@@ -290,28 +290,28 @@ if click is not None:
     @click.option("--min-mb", type=float, default=100.0, show_default=True)
     @click.option("--limit", type=int, default=50, show_default=True)
     def large(path: str, min_mb: float, limit: int) -> None:
-        """Large.
+        """Large helper.
 
-        Manages large operations and coordinates related state changes for the component.
+ Handles large for.
 
-        Args:
-            path (str): Filesystem path to the target file or directory.
-            min_mb (float): The min mb parameter.
-            limit (int): The limit parameter.
-        """
+ Args:
+ path (str): Filesystem path to the target file or directory.
+ min_mb (float): The min mb parameter.
+ limit (int): The limit parameter.
+ """
         for e in CleanerService().find_large_files(path, min_mb=min_mb, limit=limit):
             click.echo(f"  {_fmt_bytes(e.size):>10}  {e.path}")
 
     @main.command()
     @click.argument("path", type=click.Path(exists=True))
     def empty(path: str) -> None:
-        """Empty.
+        """Empty helper.
 
-        Manages empty operations and coordinates related state changes for the component.
+ Handles empty for.
 
-        Args:
-            path (str): Filesystem path to the target file or directory.
-        """
+ Args:
+ path (str): Filesystem path to the target file or directory.
+ """
         files, dirs = CleanerService().find_empty(path)
         click.echo(f"Empty files: {len(files)}, empty dirs: {len(dirs)}")
         for p in files + dirs:
@@ -323,9 +323,9 @@ if click is not None:
     @click.option("--passes", type=int, default=3, show_default=True)
     @click.option("--force-flash", is_flag=True, help="Overwrite on SSD anyway (best-effort).")
     def shred(target: str, apply: bool, passes: int, force_flash: bool) -> None:
-        """Shred.
+        """Shred helper.
 
-        Manages shred operations and coordinates related state changes for the component.
+        Overwrites file contents for the configured passes before unlinking.
 
         Args:
             target (str): The target parameter.
@@ -355,10 +355,10 @@ if click is not None:
 
     @main.group()
     def leftovers() -> None:
-        """Leftovers.
+        """Leftovers helper.
 
-        Manages leftovers operations and coordinates related state changes for the component.
-        """
+ Handles leftovers for.
+ """
 
     @leftovers.command("scan")
     @click.argument("app_name")
@@ -366,12 +366,12 @@ if click is not None:
     def leftovers_scan(app_name: str, as_json: bool) -> None:
         """Scan APP_NAME's leftovers (read-only; works after uninstall too).
 
-        Manages leftovers scan operations and coordinates related state changes for the component.
+ Handles leftovers scan for.
 
-        Args:
-            app_name (str): The app name parameter.
-            as_json (bool): The as json parameter.
-        """
+ Args:
+ app_name (str): The app name parameter.
+ as_json (bool): The as json parameter.
+ """
         from cortex_unified.system_tools.leftover_cleaner import LeftoverScanner
         app = _find_app_by_name(app_name)
         findings = LeftoverScanner().scan_app(app)
@@ -384,11 +384,11 @@ if click is not None:
     def leftovers_orphans(as_json: bool) -> None:
         """List Program Files folders no installed app claims (read-only).
 
-        Manages leftovers orphans operations and coordinates related state changes for the component.
+ Handles leftovers orphans for.
 
-        Args:
-            as_json (bool): The as json parameter.
-        """
+ Args:
+ as_json (bool): The as json parameter.
+ """
         from cortex_unified.system_tools.leftover_cleaner import LeftoverScanner
         findings = LeftoverScanner().scan_orphans()
         if not as_json:
@@ -410,15 +410,15 @@ if click is not None:
                         restore_point: bool, as_json: bool) -> None:
         """Clean APP_NAME's leftovers. Dry-run unless --apply.
 
-        Manages leftovers clean operations and coordinates related state changes for the component.
+ Handles leftovers clean for.
 
-        Args:
-            app_name (str): The app name parameter.
-            apply (bool): The apply parameter.
-            min_level (str): The min level parameter.
-            restore_point (bool): The restore point parameter.
-            as_json (bool): The as json parameter.
-        """
+ Args:
+ app_name (str): The app name parameter.
+ apply (bool): The apply parameter.
+ min_level (str): The min level parameter.
+ restore_point (bool): The restore point parameter.
+ as_json (bool): The as json parameter.
+ """
         from cortex_unified.system_tools.leftover_cleaner import (
             LeftoverCleaner,
             LeftoverFinding,
@@ -475,21 +475,21 @@ if click is not None:
 
     @main.group()
     def license() -> None:
-        """License.
+        """License helper.
 
-        Manages license operations and coordinates related state changes for the component.
-        """
+ Handles license for.
+ """
 
     @license.command("status")
     @click.option("--json", "as_json", is_flag=True)
     def license_status(as_json: bool) -> None:
         """Show the current tier, features and expiry (works offline).
 
-        Manages license status operations and coordinates related state changes for the component.
+ Handles license status for.
 
-        Args:
-            as_json (bool): The as json parameter.
-        """
+ Args:
+ as_json (bool): The as json parameter.
+ """
         from cortex_unified.licensing import effective_features
         state = get_license_manager().validate()
         if as_json:
@@ -523,16 +523,16 @@ if click is not None:
                          days: int, as_json: bool) -> None:
         """Bind KEY to this machine and activate TIER (fully offline).
 
-        Manages license activate operations and coordinates related state changes for the component.
+ Handles license activate for.
 
-        Args:
-            key (str): The key parameter.
-            tier (str): The tier parameter.
-            name (str): The name parameter.
-            email (str): The email parameter.
-            days (int): The days parameter.
-            as_json (bool): The as json parameter.
-        """
+ Args:
+ key (str): The key parameter.
+ tier (str): The tier parameter.
+ name (str): The name parameter.
+ email (str): The email parameter.
+ days (int): The days parameter.
+ as_json (bool): The as json parameter.
+ """
         try:
             state = get_license_manager().activate(
                 key=key, tier=Tier(tier), name=name, email=email,
@@ -549,13 +549,13 @@ if click is not None:
     @license.command("trial")
     @click.option("--json", "as_json", is_flag=True)
     def license_trial(as_json: bool) -> None:
-        """license_trial.
+        """License trial.
 
-        Manages license trial operations and coordinates related state changes for the component.
+ Handles license trial for.
 
-        Args:
-            as_json (bool): The as json parameter.
-        """
+ Args:
+ as_json (bool): The as json parameter.
+ """
         f"""Start the once-per-machine {TRIAL_DAYS}-day Pro trial."""
         try:
             state = get_license_manager().start_trial()
@@ -570,8 +570,8 @@ if click is not None:
     def license_deactivate() -> None:
         """Remove the license; this machine returns to the Free tier.
 
-        Manages license deactivate operations and coordinates related state changes for the component.
-        """
+ Handles license deactivate for.
+ """
         get_license_manager().deactivate()
         click.echo("License removed. Tier: Free.")
 
@@ -579,21 +579,21 @@ if click is not None:
 
     @main.group()
     def boost() -> None:
-        """Boost.
+        """Boost helper.
 
-        Manages boost operations and coordinates related state changes for the component.
-        """
+ Handles boost for.
+ """
 
     @boost.command("status")
     @click.option("--json", "as_json", is_flag=True)
     def boost_status(as_json: bool) -> None:
         """Preview what a boost would change on this machine right now.
 
-        Manages boost status operations and coordinates related state changes for the component.
+ Handles boost status for.
 
-        Args:
-            as_json (bool): The as json parameter.
-        """
+ Args:
+ as_json (bool): The as json parameter.
+ """
         _require_feature(Feature.GAMING_MODE)
         preview = GameMode().preview()
         if as_json:
@@ -614,13 +614,13 @@ if click is not None:
     def boost_start(dry_run: bool, extra_suspend: tuple, as_json: bool) -> None:
         """Apply the gaming boost (power plan + background quieting).
 
-        Manages boost start operations and coordinates related state changes for the component.
+ Handles boost start for.
 
-        Args:
-            dry_run (bool): The dry run parameter.
-            extra_suspend (tuple): The extra suspend parameter.
-            as_json (bool): The as json parameter.
-        """
+ Args:
+ dry_run (bool): The dry run parameter.
+ extra_suspend (tuple): The extra suspend parameter.
+ as_json (bool): The as json parameter.
+ """
         _require_feature(Feature.GAMING_MODE)
         report = GameMode(extra_suspend=tuple(extra_suspend),
                           dry_run=dry_run).start()
@@ -638,11 +638,11 @@ if click is not None:
     def boost_stop(as_json: bool) -> None:
         """Restore the pre-boost power plan and resume paused apps.
 
-        Manages boost stop operations and coordinates related state changes for the component.
+ Handles boost stop for.
 
-        Args:
-            as_json (bool): The as json parameter.
-        """
+ Args:
+ as_json (bool): The as json parameter.
+ """
         report = GameMode().stop()
         if as_json:
             click.echo(_json.dumps(report.to_dict(), indent=2))
@@ -653,14 +653,14 @@ if click is not None:
     @click.option("--json", "as_json", is_flag=True, help="Machine-readable diagnostic JSON report.")
     @click.option("-v", "--verbose", is_flag=True, help="Verbose itemized diagnostic logs.")
     def debug(as_json: bool, verbose: bool) -> None:
-        """Debug.
+        """Debug helper.
 
-        Manages debug operations and coordinates related state changes for the component.
+ Handles debug for.
 
-        Args:
-            as_json (bool): The as json parameter.
-            verbose (bool): The verbose parameter.
-        """
+ Args:
+ as_json (bool): The as json parameter.
+ verbose (bool): The verbose parameter.
+ """
         from cortex_unified.debug.runner import DiagnosticRunner
         runner = DiagnosticRunner(verbose=verbose)
         report = runner.run_all()
@@ -678,16 +678,16 @@ if click is not None:
     @click.option("--json", "as_json", is_flag=True)
     def memory(min_rss_mb: int, apply: bool, stats_only: bool,
                as_json: bool) -> None:
-        """Memory.
+        """Memory helper.
 
-        Manages memory operations and coordinates related state changes for the component.
+ Handles memory for.
 
-        Args:
-            min_rss_mb (int): The min rss mb parameter.
-            apply (bool): The apply parameter.
-            stats_only (bool): The stats only parameter.
-            as_json (bool): The as json parameter.
-        """
+ Args:
+ min_rss_mb (int): The min rss mb parameter.
+ apply (bool): The apply parameter.
+ stats_only (bool): The stats only parameter.
+ as_json (bool): The as json parameter.
+ """
         if stats_only:
             stats = memory_stats()
             click.echo(_json.dumps(stats, indent=2) if as_json
@@ -703,10 +703,10 @@ if click is not None:
 else:  # pragma: no cover
 
     def main() -> None:
-        """Main.
+        """Main helper.
 
-        Manages main operations and coordinates related state changes for the component.
-        """
+ Handles main for.
+ """
         raise SystemExit("The 'click' package is required for the Cortex CLI. Install it with: pip install click")
 
 

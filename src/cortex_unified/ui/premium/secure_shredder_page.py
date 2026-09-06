@@ -37,10 +37,7 @@ from cortex_unified.system_tools.secure_shredder import (
 
 
 class _ShredWorker(QObject):
-    """Shredworker.
-
-    Manages ShredWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker (_ShredWorker) performing ShredWorker. Signals finished, progress, failed report status. Configured with file_paths, standard, verify. Its run() step calls SecureShredder, enumerate, is_set, emit."""
 
     finished = Signal(list)
     progress = Signal(str)
@@ -132,10 +129,7 @@ _STORAGE_LABELS: dict[StorageType, str] = {
 
 
 class SecureShredderPage(_Page):
-    """Secureshredderpage.
-
-    Manages SecureShredderPage operations and coordinates related state changes for the component.
-    """
+    """Secure Shredder page: NIST SP 800-88, DoD 5220.22-M, Gutmann, and international standards."""
 
     def __init__(self, win):
         """__init__.
@@ -286,10 +280,7 @@ class SecureShredderPage(_Page):
     # ── File selection ────────────────────────────────────────────────────────
 
     def _add_files(self):
-        """_add_files.
-
-        Manages add files operations and coordinates related state changes for the component.
-        """
+        """Prompt the user with a file dialog (QFileDialog.getOpenFileNames) and apply the chosen path to the page state."""
         paths, _ = QFileDialog.getOpenFileNames(
             self,
             "Select files to shred",
@@ -300,10 +291,7 @@ class SecureShredderPage(_Page):
             self._update_file_count()
 
     def _add_folder(self):
-        """_add_folder.
-
-        Manages add folder operations and coordinates related state changes for the component.
-        """
+        """Prompt the user with a file dialog (QFileDialog.getExistingDirectory) and apply the chosen path to the page state."""
         folder = QFileDialog.getExistingDirectory(
             self,
             "Select folder to shred",
@@ -322,20 +310,14 @@ class SecureShredderPage(_Page):
             self.status.setText(f"No files found in {folder}")
 
     def _clear_list(self):
-        """_clear_list.
-
-        Manages clear list operations and coordinates related state changes for the component.
-        """
+        """Populate the results table (clear, self._update_file_count, setRowCount) with the latest data."""
         self._files.clear()
         self._update_file_count()
         self.tbl.setRowCount(0)
         self.state.clear()
 
     def _update_file_count(self):
-        """_update_file_count.
-
-        Manages update file count operations and coordinates related state changes for the component.
-        """
+        """Refresh the file-count label and enable actions when files are present."""
         n = len(self._files)
         if n == 0:
             self.file_count_label.setText("No files selected")
@@ -356,10 +338,7 @@ class SecureShredderPage(_Page):
     # ── Shred action ──────────────────────────────────────────────────────────
 
     def _confirm_shred(self):
-        """_confirm_shred.
-
-        Manages confirm shred operations and coordinates related state changes for the component.
-        """
+        """Validate the current selection and ask the user to confirm via a message box showing 'Permanently shred'."""
         if not self._files:
             return
 
@@ -389,9 +368,7 @@ class SecureShredderPage(_Page):
         self._run_shred(standard, verify)
 
     def _run_shred(self, standard: ShredStandard, verify: bool):
-        """_run_shred.
-
-        Manages run shred operations and coordinates related state changes for the component.
+        """Disable action buttons, show progress/status, and launch the background worker (setEnabled, setVisible, show_loading).
 
         Args:
             standard (ShredStandard): The standard parameter.

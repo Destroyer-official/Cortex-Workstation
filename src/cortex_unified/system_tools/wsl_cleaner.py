@@ -31,10 +31,7 @@ _NO_WINDOW = 0x08000000 if _IS_WINDOWS else 0
 
 @dataclass(slots=True)
 class WslDistro:
-    """Wsldistro.
-
-    Manages WslDistro operations and coordinates related state changes for the component.
-    """
+    """Record holding name, state, version, vhdx_path, vhdx_bytes, vhdx_on_disk_bytes."""
     name: str
     state: str
     version: int
@@ -43,12 +40,10 @@ class WslDistro:
     vhdx_on_disk_bytes: int
 
     def to_dict(self) -> dict[str, Any]:
-        """To dict.
-
-        Manages to dict operations and coordinates related state changes for the component.
+        """Serialize to a plain dict with keys name, state, version, vhdx_path, vhdx_bytes, vhdx_on_disk_bytes, vhdx_human, on_disk_human.
 
         Returns:
-            dict[str, Any]: Dictionary mapping identifiers to status or values.
+        dict[str, Any]: Dictionary mapping identifiers to status or values.
         """
         return {
             "name": self.name,
@@ -82,15 +77,13 @@ def _fmt_bytes(n: int) -> str:
 
 
 def _decode(raw: bytes | str | None) -> str:
-    """Decode.
-
-    Manages decode operations and coordinates related state changes for the component.
+    """Decode bytes with utf-8/utf-16-le/cp1252 fallbacks; never raises.
 
     Args:
-        raw (bytes | str | None): The raw parameter.
+    raw (bytes | str | None): The raw parameter.
 
     Returns:
-        str: Formatted string or path.
+    str: Formatted string or path.
     """
     if raw is None:
         return ""
@@ -105,29 +98,22 @@ def _decode(raw: bytes | str | None) -> str:
 
 
 class WslCleaner:
-    """Wslcleaner.
-
-    Manages WslCleaner operations and coordinates related state changes for the component.
-    """
+    """Groups related helpers: is supported, is wsl available, list distros, shutdown, compact vhdx, get total vhdx size, reg str, reg int. Windows-only; typically requires elevation."""
 
     @staticmethod
     def is_supported() -> bool:
-        """Is supported.
-
-        Manages is supported operations and coordinates related state changes for the component.
+        """Return True on Windows where the feature exists; False elsewhere. Windows-only; returns a safe default elsewhere.
 
         Returns:
-            bool: True if the operation succeeded, False otherwise.
+        bool: True if the operation succeeded, False otherwise.
         """
         return _IS_WINDOWS
 
     def is_wsl_available(self) -> bool:
-        """Is wsl available.
-
-        Manages is wsl available operations and coordinates related state changes for the component.
+        """Probe `wsl --status`, wsl.exe, and the Lxss key to detect WSL. Windows-only; returns a safe default elsewhere.
 
         Returns:
-            bool: True if the operation succeeded, False otherwise.
+        bool: True if the operation succeeded, False otherwise.
         """
         if not _IS_WINDOWS:
             return False
@@ -149,10 +135,8 @@ class WslCleaner:
     def list_distros(self) -> list[WslDistro]:
         """Enumerate distros via ``wsl --list --verbose`` + vhdx size probe.
 
-        Manages list distros operations and coordinates related state changes for the component.
-
         Returns:
-            list[WslDistro]: List of processed items or identifiers.
+        list[WslDistro]: List of processed items or identifiers.
         """
         if not _IS_WINDOWS:
             return []
@@ -246,15 +230,13 @@ class WslCleaner:
         return distros
 
     def shutdown(self, timeout: int = 120) -> tuple[bool, str]:
-        """Shutdown.
-
-        Manages shutdown operations and coordinates related state changes for the component.
+        """Run `wsl --shutdown` to stop all distros. Windows-only; returns a safe default elsewhere.
 
         Args:
-            timeout (int): The timeout parameter.
+        timeout (int): The timeout parameter.
 
         Returns:
-            tuple[bool, str]: True if the operation succeeded, False otherwise.
+        tuple[bool, str]: True if the operation succeeded, False otherwise.
         """
         if not _IS_WINDOWS:
             return False, "Windows-only feature."
@@ -274,15 +256,13 @@ class WslCleaner:
                      cancel_event=None) -> dict[str, Any]:
         """Compact a single vhdx via VhdxManager.diskpart path (read-only attach).
 
-        Manages compact vhdx operations and coordinates related state changes for the component.
-
         Args:
-            vhdx_path (Path): Filesystem path to the target file or directory.
-            timeout (int): The timeout parameter.
-            cancel_event: Threading event or callable to check for cancellation.
+        vhdx_path (Path): Filesystem path to the target file or directory.
+        timeout (int): The timeout parameter.
+        cancel_event: Threading event or callable to check for cancellation.
 
         Returns:
-            dict[str, Any]: Dictionary mapping identifiers to status or values.
+        dict[str, Any]: Dictionary mapping identifiers to status or values.
         """
         from cortex_unified.system_tools.vhdx_manager import VhdxManager, VirtualDisk, DiskKind
         mgr = VhdxManager()
@@ -309,26 +289,22 @@ class WslCleaner:
     def get_total_vhdx_size(self) -> tuple[int, int]:
         """Total (logical, on-disk) bytes across all distro vhdx files.
 
-        Manages get total vhdx size operations and coordinates related state changes for the component.
-
         Returns:
-            tuple[int, int]: Result of the operation.
+        tuple[int, int]: Result of the operation.
         """
         distros = self.list_distros()
         return sum(d.vhdx_bytes for d in distros), sum(d.vhdx_on_disk_bytes for d in distros)
 
     @staticmethod
     def _reg_str(key, name: str) -> str:
-        """_reg_str.
-
-        Manages reg str operations and coordinates related state changes for the component.
+        """Read a string registry value; return "" on any miss.
 
         Args:
-            key: The key parameter.
-            name (str): The name parameter.
+        key: The key parameter.
+        name (str): The name parameter.
 
         Returns:
-            str: Formatted string or path.
+        str: Formatted string or path.
         """
         try:
             import winreg
@@ -339,16 +315,14 @@ class WslCleaner:
 
     @staticmethod
     def _reg_int(key, name: str) -> int:
-        """_reg_int.
-
-        Manages reg int operations and coordinates related state changes for the component.
+        """Read an integer registry value; return 0 on any miss.
 
         Args:
-            key: The key parameter.
-            name (str): The name parameter.
+        key: The key parameter.
+        name (str): The name parameter.
 
         Returns:
-            int: Result of the operation.
+        int: Result of the operation.
         """
         try:
             import winreg

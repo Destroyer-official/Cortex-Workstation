@@ -14,9 +14,9 @@ from typing import Callable, Dict, List, Optional, Tuple
 
 
 class CopyMode(Enum):
-    """Copymode.
+    """Copy throughput/verification mode.
 
-    Manages CopyMode operations and coordinates related state changes for the component.
+    Selects STANDARD buffered copy, DIRECT_IO label, or VERIFY_SHA256 streaming hash check.
     """
     STANDARD = "Standard Buffered"
     DIRECT_IO = "High Throughput Direct"
@@ -41,9 +41,9 @@ class CopyItemProgress:
 
 @dataclass
 class CopySummary:
-    """Copysummary.
+    """Aggregate result of copy_batch.
 
-    Manages CopySummary operations and coordinates related state changes for the component.
+    Records success, files copied, bytes transferred, elapsed/average speed, verified count, and errors.
     """
     success: bool
     files_copied: int
@@ -54,18 +54,18 @@ class CopySummary:
     errors: List[str] = None
 
     def __post_init__(self):
-        """__post_init__.
+        """Initialize mutable CopySummary defaults.
 
-        Manages post init operations and coordinates related state changes for the component.
+        Replaces errors=None with a fresh list.
         """
         if self.errors is None:
             self.errors = []
 
 
 class FastCopier:
-    """Fastcopier.
+    """Sequential buffered file copier with throttling and retries.
 
-    Manages FastCopier operations and coordinates related state changes for the component.
+    Uses 512KB DEFAULT_CHUNK_SIZE streaming I/O, os.utime timestamp carry-over only, optional KB/s throttle, and retry backoff.
     """
 
     DEFAULT_CHUNK_SIZE = 512 * 1024  # 512 KB streaming buffer
@@ -83,7 +83,7 @@ class FastCopier:
     ) -> Tuple[bool, int, Optional[str]]:
         """Stream copy a single file with optional throttling and hash verification.
 
-        Manages copy single file operations and coordinates related state changes for the component.
+        Streams src to dst in chunk_size blocks, updates optional SHA-256 hashers, enforces speed-limit sleep, preserves timestamps, and reports cancellation.
 
         Args:
             src (Path): The src parameter.
@@ -158,7 +158,7 @@ class FastCopier:
     ) -> CopySummary:
         """Transfer multiple files or directory trees to destination directory.
 
-        Manages copy batch operations and coordinates related state changes for the component.
+        Discovers (src,dst) pairs for files and trees, retries each up to max_retries with backoff, aggregates CopyItemProgress speed/ETA, and honors cancel.
 
         Args:
             sources (List[str | Path]): The sources parameter.
@@ -227,9 +227,9 @@ class FastCopier:
             err_msg = ""
             for attempt in range(max_retries):
                 def _file_chunk_cb(chunk_len: int):
-                    """_file_chunk_cb.
+                    """Per-chunk progress accumulator for one file.
 
-                    Manages file chunk cb operations and coordinates related state changes for the component.
+                    Adds chunk_len to totals, recomputes MB/s every 0.5s, derives percent/ETA, and forwards CopyItemProgress.
 
                     Args:
                         chunk_len (int): The chunk len parameter.

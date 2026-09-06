@@ -23,10 +23,7 @@ from cortex_unified.analyzers.video_duplicate_finder import VideoDuplicateFinder
 
 
 class _VideoWorker(QObject):
-    """Videoworker.
-
-    Manages VideoWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker (_VideoWorker) performing VideoWorker. Signals finished, progress, failed report status. Configured with root, threshold. Its run() step calls VideoDuplicateFinder, finder.find_video_duplicates, emit, str."""
     finished = Signal(dict)
     progress = Signal(str)
     failed = Signal(str)
@@ -73,10 +70,7 @@ class _VideoWorker(QObject):
 
 
 class VideoDuplicatesPage(_Page):
-    """Videoduplicatespage.
-
-    Manages VideoDuplicatesPage operations and coordinates related state changes for the component.
-    """
+    """Video Near-Duplicates page: Keyframe pHash + temporal consistence re-ranking (TCSVT 2024) –."""
 
     def __init__(self, win):
         """__init__.
@@ -163,10 +157,7 @@ class VideoDuplicatesPage(_Page):
             self.path_label.setText(folder)
 
     def _run(self):
-        """Run.
-
-        Manages run operations and coordinates related state changes for the component.
-        """
+        """Disable action buttons, show progress/status, and launch the background worker (setEnabled, setVisible, show_loading)."""
         self.run_btn.setEnabled(False)
         self.progress.setVisible(True)
         self.state.show_loading("Hashing video keyframes…")
@@ -239,10 +230,7 @@ class VideoDuplicatesPage(_Page):
         self.state.show_error(msg, on_retry=self._run)
 
     def _optimize_video(self):
-        """Optimize selected or picked video with VideoOptimizer.
-
-        Manages optimize video operations and coordinates related state changes for the component.
-        """
+        """Prompt the user with a file dialog (currentRow) and apply the chosen path to the page state."""
         row = self.tbl.currentRow()
         target_path = None
         if row >= 0:

@@ -29,8 +29,6 @@ _REDUCED_MOTION = os.environ.get("CORTEX_REDUCED_MOTION") in ("1", "true", "True
 def prefers_reduced_motion() -> bool:
     """Return True when non-essential animation should be suppressed.
 
-    Manages prefers reduced motion operations and coordinates related state changes for the component.
-
     Returns:
         bool: True if the operation succeeded, False otherwise.
     """
@@ -39,8 +37,6 @@ def prefers_reduced_motion() -> bool:
 
 def set_reduced_motion(value: bool) -> None:
     """Enable/disable the app-wide reduced-motion preference.
-
-    Manages set reduced motion operations and coordinates related state changes for the component.
 
     Args:
         value (bool): The value parameter.
@@ -96,10 +92,7 @@ def fade_in(
     anim.setEasingCurve(EASING_STANDARD)
 
     def _teardown() -> None:
-        """Teardown.
-
-        Manages teardown operations and coordinates related state changes for the component.
-        """
+        """Clear the widget graphics effect and invoke the completion callback."""
         # Guard against the widget having been deleted mid-animation.
         try:
             widget.setGraphicsEffect(None)
@@ -166,10 +159,7 @@ def reveal(
     group.addAnimation(slide)
 
     def _teardown() -> None:
-        """Teardown.
-
-        Manages teardown operations and coordinates related state changes for the component.
-        """
+        """Clear the widget graphics effect and invoke the completion callback."""
         try:
             widget.setGraphicsEffect(None)
             # Guarantee the final resting position even if a relayout raced us.
@@ -201,9 +191,7 @@ def press_feedback(widget, sink: int = 2) -> None:
         return
 
     def _anim_to(point: QPoint) -> QPropertyAnimation:
-        """_anim_to.
-
-        Manages anim to operations and coordinates related state changes for the component.
+        """Animate a widget property with QPropertyAnimation, skipping animation when reduced motion is preferred.
 
         Args:
             point (QPoint): The point parameter.
@@ -220,10 +208,7 @@ def press_feedback(widget, sink: int = 2) -> None:
         return anim
 
     def _down() -> None:
-        """Down.
-
-        Manages down operations and coordinates related state changes for the component.
-        """
+        """Slide a widget down with animation, honouring the reduced-motion preference."""
         if prefers_reduced_motion():
             return
         # Capture the resting position only when we're not mid-press, so a
@@ -235,10 +220,7 @@ def press_feedback(widget, sink: int = 2) -> None:
         _anim_to(QPoint(home.x(), home.y() + int(sink)))
 
     def _up() -> None:
-        """Up.
-
-        Manages up operations and coordinates related state changes for the component.
-        """
+        """Slide a widget up with animation, honouring the reduced-motion preference."""
         home = getattr(widget, "_press_home", None)
         if home is None:
             return

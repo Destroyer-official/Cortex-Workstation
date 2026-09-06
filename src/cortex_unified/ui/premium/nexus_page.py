@@ -36,10 +36,7 @@ NATIVE_DIR = next((p for p in _NEXUS_SEARCH_PATHS if p and p.is_dir()), _NEXUS_S
 
 
 def _load_nexus_module():
-    """Lazily import the explorer widget when QApplication is running.
-
-    Manages load nexus module operations and coordinates related state changes for the component.
-    """
+    """Implement load nexus module via log.debug, insert, type."""
     try:
         from cortex_unified.explorer.widget import DARK_QSS, ExplorerWidget
         if ExplorerWidget is not None:
@@ -59,10 +56,7 @@ def _load_nexus_module():
 
 
 class _ErrorCard(QWidget):
-    """Errorcard.
-
-    Manages ErrorCard operations and coordinates related state changes for the component.
-    """
+    """_ErrorCard (QWidget) implementing ErrorCard. Methods include __init__()."""
     def __init__(self, message: str, parent=None):
         """__init__.
 
@@ -114,10 +108,7 @@ class NexusExplorerPage(_Page):
         self._loaded = False
 
     def _build_explorer(self):
-        """_build_explorer.
-
-        Manages build explorer operations and coordinates related state changes for the component.
-        """
+        """Build the build explorer widget tree for the page."""
         if self._built:
             return
         self._built = True

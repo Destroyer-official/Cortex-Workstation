@@ -34,10 +34,7 @@ IS_WINDOWS = sys.platform == "win32"
 
 
 class _LogWorker(QObject):
-    """Logworker.
-
-    Manages LogWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker (_LogWorker) performing LogWorker. Signals finished, progress, failed report status. Configured with roots, min_mb. Its run() step calls CacheCleaner, cc.find_large_logs, emit, str."""
     finished = Signal(list)
     progress = Signal(str)
     failed = Signal(str)
@@ -87,10 +84,7 @@ class _LogWorker(QObject):
 
 
 class LogSweeperPage(_Page):
-    """Logsweeperpage.
-
-    Manages LogSweeperPage operations and coordinates related state changes for the component.
-    """
+    """Log Sweeper page: Find large *.log / *.txt files (>100MB) across any folder you pick —."""
 
     def __init__(self, win):
         """__init__.
@@ -199,10 +193,7 @@ class LogSweeperPage(_Page):
         self._results: list[tuple[Path, int]] = []
 
     def _add_root(self):
-        """_add_root.
-
-        Manages add root operations and coordinates related state changes for the component.
-        """
+        """Prompt the user with a file dialog (QFileDialog.getExistingDirectory) and apply the chosen path to the page state."""
         folder = QFileDialog.getExistingDirectory(
             self, "Select folder to sweep for logs", str(Path.home())
         )
@@ -213,8 +204,6 @@ class LogSweeperPage(_Page):
 
     def _discover_code_roots(self) -> list[Path]:
         """Discover common code root directories across all fixed drives.
-
-        Manages discover code roots operations and coordinates related state changes for the component.
 
         Returns:
             list[Path]: List of processed items or identifiers.
@@ -246,10 +235,7 @@ class LogSweeperPage(_Page):
         return roots
 
     def _select_code_root(self):
-        """Open folder picker to select a code root directory.
-
-        Manages select code root operations and coordinates related state changes for the component.
-        """
+        """Prompt the user with a file dialog (QFileDialog.getExistingDirectory) and apply the chosen path to the page state."""
         folder = QFileDialog.getExistingDirectory(
             self, "Select code root", str(Path.home())
         )
@@ -260,10 +246,7 @@ class LogSweeperPage(_Page):
             self.status.setText(f"Added {folder} — sweep will include it.")
 
     def _rm_root(self):
-        """_rm_root.
-
-        Manages rm root operations and coordinates related state changes for the component.
-        """
+        """Remove the selected custom root entry from the list."""
         row = self.roots_list.currentRow()
         if row >= 0:
             self.roots_list.takeItem(row)
@@ -332,10 +315,7 @@ class LogSweeperPage(_Page):
         )
 
     def _delete(self):
-        """Delete.
-
-        Manages delete operations and coordinates related state changes for the component.
-        """
+        """Validate the current selection and ask the user to confirm via a message box showing 'No selection'."""
         rows = {idx.row() for idx in self.tbl.selectedIndexes()}
         if not rows:
             QMessageBox.information(
@@ -365,9 +345,7 @@ class LogSweeperPage(_Page):
         )
 
     def _on_deleted(self, freed: int, ok: int, blocked: int):
-        """_on_deleted.
-
-        Manages on deleted operations and coordinates related state changes for the component.
+        """Validate the current selection and ask the user to confirm via a message box showing 'log(s), freed'.
 
         Args:
             freed (int): The freed parameter.

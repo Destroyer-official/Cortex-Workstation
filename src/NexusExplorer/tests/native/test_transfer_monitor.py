@@ -26,19 +26,14 @@ except FileNotFoundError:
 
 @pytest.fixture(scope="module")
 def qapp():
-    """Qapp.
-
-    Manages qapp operations and coordinates related state changes for the component.
-    """
+    """Provide qapp fixture that provides a shared QApplication."""
     app = QApplication.instance() or QApplication([])
     yield app
 
 
 @pytest.fixture
 def env(qapp, tmp_path, monkeypatch):
-    """Env.
-
-    Manages env operations and coordinates related state changes for the component.
+    """Provide env fixture that creates an isolated directory.
 
     Args:
         qapp: The qapp parameter.
@@ -90,9 +85,7 @@ def env(qapp, tmp_path, monkeypatch):
 
 
 def _pump(qapp, secs):
-    """Pump.
-
-    Manages pump operations and coordinates related state changes for the component.
+    """Pump using qapp.processEvents, time.time, time.sleep.
 
     Args:
         qapp: The qapp parameter.
@@ -105,9 +98,7 @@ def _pump(qapp, secs):
 
 
 def test_monitor_opens_and_completes_copy(env, qapp):
-    """test_monitor_opens_and_completes_copy.
-
-    Manages test monitor opens and completes copy operations and coordinates related state changes for the component.
+    """Verify monitor opens and completes copy via qapp.processEvents, mon.isVisible, _nexus_clipboard.copy.
 
     Args:
         env: The env parameter.
@@ -142,9 +133,7 @@ def test_monitor_opens_and_completes_copy(env, qapp):
 
 
 def test_pause_resume_cancel_through_monitor(env, qapp):
-    """test_pause_resume_cancel_through_monitor.
-
-    Manages test pause resume cancel through monitor operations and coordinates related state changes for the component.
+    """Verify pause resume cancel through monitor via qapp.processEvents, q.enqueue, q.get_job.
 
     Args:
         env: The env parameter.
@@ -188,9 +177,7 @@ def test_pause_resume_cancel_through_monitor(env, qapp):
 
 
 def test_cancel_mid_copy(env, qapp):
-    """test_cancel_mid_copy.
-
-    Manages test cancel mid copy operations and coordinates related state changes for the component.
+    """Verify cancel mid copy via qapp.processEvents, q.enqueue, q.get_job.
 
     Args:
         env: The env parameter.

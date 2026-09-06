@@ -7,9 +7,7 @@ from pathlib import Path
 
 
 def get_module_info(p: Path):
-    """get_module_info.
-
-    Manages get module info operations and coordinates related state changes for the component.
+    """Get module info using ast.parse, ast.get_docstring, content.splitlines.
 
     Args:
         p (Path): The p parameter.

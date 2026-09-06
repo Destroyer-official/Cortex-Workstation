@@ -17,9 +17,8 @@ from ..core.scanner import Scanner
 from ..core.deleter import Deleter
 
 class AutoCleanRules:
-    """Autocleanrules.
+    """Evaluate disk-usage, startup, shutdown, and scheduled cleanup rules.
 
-    Manages AutoCleanRules operations and coordinates related state changes for the component.
     """
     
     def __init__(self, config: Config = None):
@@ -133,7 +132,6 @@ class AutoCleanRules:
     def _check_disk_usage(self, threshold_percent: float) -> bool:
         """Check if disk usage exceeds threshold.
 
-        Manages check disk usage operations and coordinates related state changes for the component.
 
         Args:
             threshold_percent (float): The threshold percent parameter.
@@ -161,7 +159,6 @@ class AutoCleanRules:
     def _execute_clean_action(self, action: str, clean_params: Dict):
         """Dispatch the rule's action to its matching handler.
 
-        Manages execute clean action operations and coordinates related state changes for the component.
 
         Args:
             action (str): The action parameter.
@@ -180,7 +177,7 @@ class AutoCleanRules:
             self.error_count += 1
     
     def _clean_empty_files(self, params: Dict):
-        """_clean_empty_files.
+        """Clean empty files and directories via Scanner and Deleter.
 
         Permanently purges or removes specified target items, reclaiming storage space and logging actions taken.
 
@@ -346,9 +343,8 @@ class AutoCleanRules:
         self.monitor_thread.start()
     
     def stop_monitoring(self):
-        """stop_monitoring.
+        """Stop the background monitoring thread.
 
-        Manages stop monitoring operations and coordinates related state changes for the component.
         """
         self.monitoring = False
         if self.monitor_thread:
@@ -358,7 +354,6 @@ class AutoCleanRules:
     def _monitor_loop(self, interval_seconds: int):
         """Poll evaluate_rules until stopped; errors never kill the loop.
 
-        Manages monitor loop operations and coordinates related state changes for the component.
 
         Args:
             interval_seconds (int): The interval seconds parameter.
@@ -374,7 +369,6 @@ class AutoCleanRules:
     def get_stats(self) -> dict:
         """Summarize rule counts, monitor state, and error total.
 
-        Manages get stats operations and coordinates related state changes for the component.
 
         Returns:
             dict: Dictionary mapping identifiers to status or values.
@@ -391,9 +385,8 @@ class AutoCleanRules:
         }
     
     def enable_rule(self, rule_index: int):
-        """enable_rule.
+        """Activate the rule at the given index.
 
-        Manages enable rule operations and coordinates related state changes for the component.
 
         Args:
             rule_index (int): The rule index parameter.
@@ -403,9 +396,8 @@ class AutoCleanRules:
                 self.rules[rule_index]["active"] = True
     
     def disable_rule(self, rule_index: int):
-        """Disable rule.
+        """Deactivate the rule at the given index.
 
-        Manages disable rule operations and coordinates related state changes for the component.
 
         Args:
             rule_index (int): The rule index parameter.
@@ -415,9 +407,8 @@ class AutoCleanRules:
                 self.rules[rule_index]["active"] = False
     
     def remove_rule(self, rule_index: int):
-        """Remove rule.
+        """Delete the rule at the given index.
 
-        Manages remove rule operations and coordinates related state changes for the component.
 
         Args:
             rule_index (int): The rule index parameter.

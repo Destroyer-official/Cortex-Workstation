@@ -45,20 +45,14 @@ from cortex_unified.explorer.cloud import CloudManager, CloudProviderType, Cloud
 
 @dataclass(slots=True)
 class _WorkerResult:
-    """Workerresult.
-
-    Manages WorkerResult operations and coordinates related state changes for the component.
-    """
+    """Background worker (_WorkerResult) performing WorkerResult."""
     entries: list[CloudFileEntry]
     stats: CloudScanStats
     duplicates: list[DuplicateGroup]
 
 
 class _CloudWorker(QObject):
-    """Cloudworker.
-
-    Manages CloudWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker (_CloudWorker) performing CloudWorker. Signals finished, progress, failed report status. Configured with target, max_objects, include_versions, include_delete_markers. Its run() step calls CloudStorageAnalyzer, analyzer.scan_sync, analyzer.find_duplicates, emit."""
     finished = Signal(_WorkerResult)
     progress = Signal(str)
     failed = Signal(str)
@@ -113,10 +107,7 @@ class _CloudWorker(QObject):
 
 
 class CloudStoragePage(_Page):
-    """Cloudstoragepage.
-
-    Manages CloudStoragePage operations and coordinates related state changes for the component.
-    """
+    """Cloud Storage Analyzer page: S3 / Azure / Google Drive / OneDrive / rclone — live pricing,."""
 
     def __init__(self, win):
         """__init__.
@@ -220,10 +211,7 @@ class CloudStoragePage(_Page):
         self.v.addWidget(self.state, 1)
 
     def _build_summary_tab(self):
-        """_build_summary_tab.
-
-        Manages build summary tab operations and coordinates related state changes for the component.
-        """
+        """Build the build summary tab widget tree (layouts plus tables/cards) for the page."""
         lay = QVBoxLayout(self.summary_tab)
         lay.setContentsMargins(0, 0, 0, 0)
         lay.setSpacing(12)
@@ -258,10 +246,7 @@ class CloudStoragePage(_Page):
         lay.addWidget(self.provider_breakdown, 1)
 
     def _build_by_provider_tab(self):
-        """_build_by_provider_tab.
-
-        Manages build by provider tab operations and coordinates related state changes for the component.
-        """
+        """Build the build by provider tab widget tree (layouts plus tables/cards) for the page."""
         lay = QVBoxLayout(self.by_provider_tab)
         lay.setContentsMargins(0, 0, 0, 0)
         lay.setSpacing(8)
@@ -277,10 +262,7 @@ class CloudStoragePage(_Page):
         lay.addWidget(self.provider_tbl, 1)
 
     def _build_by_class_tab(self):
-        """_build_by_class_tab.
-
-        Manages build by class tab operations and coordinates related state changes for the component.
-        """
+        """Build the build by class tab widget tree (layouts plus tables/cards) for the page."""
         lay = QVBoxLayout(self.by_class_tab)
         lay.setContentsMargins(0, 0, 0, 0)
         lay.setSpacing(8)
@@ -296,10 +278,7 @@ class CloudStoragePage(_Page):
         lay.addWidget(self.class_tbl, 1)
 
     def _build_duplicates_tab(self):
-        """_build_duplicates_tab.
-
-        Manages build duplicates tab operations and coordinates related state changes for the component.
-        """
+        """Build the build duplicates tab widget tree (layouts plus tables/cards) for the page."""
         lay = QVBoxLayout(self.dup_tab)
         lay.setContentsMargins(0, 0, 0, 0)
         lay.setSpacing(8)
@@ -322,10 +301,7 @@ class CloudStoragePage(_Page):
         lay.addWidget(self.dup_tbl, 1)
 
     def _refresh_targets(self):
-        """_refresh_targets.
-
-        Manages refresh targets operations and coordinates related state changes for the component.
-        """
+        """Refresh the target list from the analyzer and repopulate the selection widgets."""
         analyzer = CloudStorageAnalyzer()
         targets = analyzer.available_targets()
         self.target_combo.clear()
@@ -347,10 +323,7 @@ class CloudStoragePage(_Page):
         )
 
     def _run(self):
-        """Run.
-
-        Manages run operations and coordinates related state changes for the component.
-        """
+        """Disable action buttons, show progress/status, and launch the background worker (strip, currentText, show_error)."""
         target = self.target_combo.currentText().strip()
         if not target:
             self.state.show_error("Select or enter a cloud target to analyze.")
@@ -570,10 +543,7 @@ class CloudStoragePage(_Page):
             self.dup_tbl.setItem(r, 5, QTableWidgetItem(paths))
 
     def _build_providers_tab(self):
-        """Build the interactive Cloud Providers tab with connect/disconnect/browse actions.
-
-        Manages build providers tab operations and coordinates related state changes for the component.
-        """
+        """Build the build providers tab widget tree (layouts plus tables/cards) for the page."""
         lay = QVBoxLayout(self.providers_tab)
         lay.setContentsMargins(0, 0, 0, 0)
         lay.setSpacing(12)
@@ -648,10 +618,7 @@ class CloudStoragePage(_Page):
         self._init_providers_table()
 
     def _init_providers_table(self):
-        """Populate the cloud providers table with connect/disconnect/browse controls.
-
-        Manages init providers table operations and coordinates related state changes for the component.
-        """
+        """Populate the results table (setRowCount, enumerate, setItem) with the latest data."""
         providers = [
             (CloudProviderType.ONEDRIVE, "Microsoft OneDrive", "Microsoft Graph API"),
             (CloudProviderType.GOOGLE_DRIVE, "Google Drive", "Google Drive API v3"),
@@ -695,8 +662,6 @@ class CloudStoragePage(_Page):
     def _connect_provider(self, pt: CloudProviderType):
         """Attempt connection to selected provider.
 
-        Manages connect provider operations and coordinates related state changes for the component.
-
         Args:
             pt (CloudProviderType): The pt parameter.
         """
@@ -712,9 +677,7 @@ class CloudStoragePage(_Page):
             )
 
     def _disconnect_provider(self, pt: CloudProviderType):
-        """Disconnect provider.
-
-        Manages disconnect provider operations and coordinates related state changes for the component.
+        """Disconnect a cloud provider and refresh the providers table and status.
 
         Args:
             pt (CloudProviderType): The pt parameter.
@@ -726,8 +689,6 @@ class CloudStoragePage(_Page):
     def _select_provider_for_browse(self, pt: CloudProviderType):
         """Select provider and browse remote path.
 
-        Manages select provider for browse operations and coordinates related state changes for the component.
-
         Args:
             pt (CloudProviderType): The pt parameter.
         """
@@ -736,10 +697,7 @@ class CloudStoragePage(_Page):
         self._on_browse_cloud_path()
 
     def _on_browse_cloud_path(self):
-        """Browse files in current provider path.
-
-        Manages on browse cloud path operations and coordinates related state changes for the component.
-        """
+        """Validate the current selection and ask the user to confirm via a message box showing 'Provider Error'."""
         if not self._active_provider:
             self._active_provider = CloudProviderType.S3
         p = self._cloud_mgr.get_provider(self._active_provider)
@@ -789,10 +747,7 @@ class CloudStoragePage(_Page):
             done(work())
 
     def _on_download_cloud_file(self):
-        """Download selected cloud file.
-
-        Manages on download cloud file operations and coordinates related state changes for the component.
-        """
+        """Prompt the user with a file dialog (currentRow) and apply the chosen path to the page state."""
         row = self.cloud_files_table.currentRow()
         if row < 0:
             QMessageBox.information(self, "Selection Required", "Please select a file to download.")
@@ -817,8 +772,6 @@ class CloudStoragePage(_Page):
 
     def _on_cloud_file_double_clicked(self, row, col):
         """Navigate into folder on double click.
-
-        Manages on cloud file double clicked operations and coordinates related state changes for the component.
 
         Args:
             row: Table row index or list of row indices.

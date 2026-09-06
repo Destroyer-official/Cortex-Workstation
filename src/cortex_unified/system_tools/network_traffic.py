@@ -23,10 +23,7 @@ from typing import Any
 
 @dataclass(slots=True)
 class NicSample:
-    """Nicsample.
-
-    Manages NicSample operations and coordinates related state changes for the component.
-    """
+    """Record holding name, bytes_sent, bytes_recv, send_rate, recv_rate."""
 
     name: str
     bytes_sent: int
@@ -35,12 +32,10 @@ class NicSample:
     recv_rate: float = 0.0   # bytes/sec
 
     def to_dict(self) -> dict[str, Any]:
-        """To dict.
-
-        Manages to dict operations and coordinates related state changes for the component.
+        """Serialize to a plain dict with keys name, bytes_sent, bytes_recv, send_rate, recv_rate.
 
         Returns:
-            dict[str, Any]: Dictionary mapping identifiers to status or values.
+        dict[str, Any]: Dictionary mapping identifiers to status or values.
         """
         return {
             "name": self.name,
@@ -53,10 +48,7 @@ class NicSample:
 
 @dataclass(slots=True)
 class TrafficSample:
-    """Trafficsample.
-
-    Manages TrafficSample operations and coordinates related state changes for the component.
-    """
+    """Record holding send_rate, recv_rate, total_sent, total_recv, sent_since_start, recv_since_start, per_nic."""
 
     send_rate: float = 0.0
     recv_rate: float = 0.0
@@ -67,12 +59,10 @@ class TrafficSample:
     per_nic: list[NicSample] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
-        """To dict.
-
-        Manages to dict operations and coordinates related state changes for the component.
+        """Serialize to a plain dict with keys send_rate, recv_rate, total_sent, total_recv, sent_since_start, recv_since_start, per_nic.
 
         Returns:
-            dict[str, Any]: Dictionary mapping identifiers to status or values.
+        dict[str, Any]: Dictionary mapping identifiers to status or values.
         """
         return {
             "send_rate": self.send_rate,
@@ -97,12 +87,10 @@ class TrafficMonitor:
 
     @classmethod
     def instance(cls) -> "TrafficMonitor":
-        """Instance.
-
-        Manages instance operations and coordinates related state changes for the component.
+        """Instance helper. Returns cls._instance.
 
         Returns:
-            'TrafficMonitor': Result of the operation.
+        'TrafficMonitor': Result of the operation.
         """
         if cls._instance is None:
             with cls._instance_lock:

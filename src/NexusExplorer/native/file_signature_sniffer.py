@@ -10,9 +10,9 @@ from typing import Callable, Dict, List, Optional, Tuple
 
 @dataclass
 class FileSignature:
-    """Filesignature.
+    """Magic-byte signature for one file format.
 
-    Manages FileSignature operations and coordinates related state changes for the component.
+    Stores extension, MIME type, description, magic bytes, and header offset for matching.
     """
     extension: str
     mime_type: str
@@ -75,9 +75,9 @@ SIGNATURE_LIBRARY: List[FileSignature] = [
 
 @dataclass
 class SniffResult:
-    """Sniffresult.
+    """Outcome of sniffing one file header.
 
-    Manages SniffResult operations and coordinates related state changes for the component.
+    Records declared extension, detected format/MIME, spoofed/unknown flags, header hex, and size.
     """
     file_path: str
     file_name: str
@@ -91,16 +91,16 @@ class SniffResult:
 
 
 class FileSignatureSniffer:
-    """Filesignaturesniffer.
+    """Magic-byte file-type detector using SIGNATURE_LIBRARY.
 
-    Manages FileSignatureSniffer operations and coordinates related state changes for the component.
+    Matches the first 512 header bytes against ~38 known signatures with extension-family aliasing.
     """
 
     @classmethod
     def sniff_file(cls, file_path: str | Path) -> SniffResult:
         """Read file header bytes and identify actual format vs declared extension.
 
-        Manages sniff file operations and coordinates related state changes for the component.
+        Reads up to 512 header bytes, matches offset-aware magic bytes, and flags extension mismatches as spoofed.
 
         Args:
             file_path (str | Path): Filesystem path to the target file or directory.

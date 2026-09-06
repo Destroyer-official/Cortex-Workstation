@@ -26,10 +26,7 @@ from .window import _Page
 
 
 class _BenchWorker(QObject):
-    """Benchworker.
-
-    Manages BenchWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker (_BenchWorker) performing BenchWorker. Signals finished, failed report status. Configured with capacity, trace_len. Its run() step calls random.Random, range, rnd.random, rnd.choice."""
     finished = Signal(dict)
     failed = Signal(str)
 
@@ -90,10 +87,7 @@ class _BenchWorker(QObject):
 
 
 class S3FifoPage(_Page):
-    """S3fifopage.
-
-    Manages S3FifoPage operations and coordinates related state changes for the component.
-    """
+    """S3-FIFO Cache (SOSP'23) page: FIFO Queues Are All You Need – three static FIFO queues (Small 10 % +."""
 
     def __init__(self, win):
         """__init__.
@@ -155,10 +149,7 @@ class S3FifoPage(_Page):
         self.v.addWidget(note)
 
     def _run(self):
-        """Run.
-
-        Manages run operations and coordinates related state changes for the component.
-        """
+        """Disable action buttons, show progress/status, and launch the background worker (setEnabled, setVisible, show_loading)."""
         self.run_btn.setEnabled(False)
         self.progress.setVisible(True)
         self.state.show_loading("Benchmarking S3-FIFO vs LRU…")

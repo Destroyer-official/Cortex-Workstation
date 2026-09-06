@@ -71,10 +71,7 @@ except ImportError:
 
 @dataclass(slots=True)
 class PortableApp:
-    """Portableapp.
-
-    Manages PortableApp operations and coordinates related state changes for the component.
-    """
+    """Portable application record parsed from appinfo.ini or exe detection."""
     id: str
     name: str
     version: str
@@ -88,9 +85,7 @@ class PortableApp:
     latest_version: Optional[str] = None
 
     def to_dict(self) -> dict:
-        """to_dict.
-
-        Manages to dict operations and coordinates related state changes for the component.
+        """Return the app record as a JSON-serializable dict.
 
         Returns:
             dict: Dictionary mapping identifiers to status or values.
@@ -105,9 +100,7 @@ class PortableApp:
 # ---------------------------------------------------------------------------
 
 def _find_removable_drives() -> List[Path]:
-    """_find_removable_drives.
-
-    Manages find removable drives operations and coordinates related state changes for the component.
+    """List removable drive roots for portable app discovery.
 
     Returns:
         List[Path]: List of processed items or identifiers.
@@ -140,9 +133,7 @@ def _find_removable_drives() -> List[Path]:
     return drives
 
 def _find_portable_roots() -> List[Path]:
-    """_find_portable_roots.
-
-    Manages find portable roots operations and coordinates related state changes for the component.
+    """List candidate portable roots from env, removable drives, and home.
 
     Returns:
         List[Path]: List of processed items or identifiers.
@@ -188,9 +179,7 @@ def _find_portable_roots() -> List[Path]:
 # ---------------------------------------------------------------------------
 
 def _parse_appinfo(ini_path: Path) -> Optional[PortableApp]:
-    """_parse_appinfo.
-
-    Manages parse appinfo operations and coordinates related state changes for the component.
+    """Parse an appinfo.ini file into a PortableApp record.
 
     Args:
         ini_path (Path): Filesystem path to the target file or directory.
@@ -235,10 +224,7 @@ def _parse_appinfo(ini_path: Path) -> Optional[PortableApp]:
 # ---------------------------------------------------------------------------
 
 class PortableManager:
-    """Portablemanager.
-
-    Manages PortableManager operations and coordinates related state changes for the component.
-    """
+    """Discover, update-check, and export portable apps as a USB toolkit."""
     def __init__(self, progress: Callable[[str], None] | None = None,
                  cancel: threading.Event | None = None):
         """__init__.

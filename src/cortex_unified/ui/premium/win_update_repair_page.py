@@ -34,10 +34,7 @@ from .window import _Page, fmt_bytes
 
 
 class _RepairWorker(QObject):
-    """Repairworker.
-
-    Manages RepairWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker (_RepairWorker) performing RepairWorker. Signals finished, progress, failed report status. Configured with phases. Its run() step calls WindowsUpdateRepair, repair.repair_all, emit, result.summary."""
 
     finished = Signal(dict)
     progress = Signal(str)
@@ -104,10 +101,7 @@ class _RepairWorker(QObject):
 
 
 class _PreflightWorker(QObject):
-    """Preflightworker.
-
-    Manages PreflightWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker (_PreflightWorker) performing PreflightWorker. Signals finished, failed report status. Its run() step calls WindowsUpdateRepair, repair.preflight, emit, str."""
 
     finished = Signal(dict)
     failed = Signal(str)
@@ -162,10 +156,7 @@ _PHASES = [
 
 
 class WinUpdateRepairPage(_Page):
-    """Winupdaterepairpage.
-
-    Manages WinUpdateRepairPage operations and coordinates related state changes for the component.
-    """
+    """Update Repair page: Comprehensive Windows Update component reset: stop services, clear."""
 
     def __init__(self, win):
         """__init__.
@@ -293,10 +284,7 @@ class WinUpdateRepairPage(_Page):
     # -- Preflight --
 
     def _run_preflight(self):
-        """_run_preflight.
-
-        Manages run preflight operations and coordinates related state changes for the component.
-        """
+        """Disable action buttons, show progress/status, and launch the background worker (setEnabled, show_loading, showMessage)."""
         self._pf_btn.setEnabled(False)
         self._state.show_loading("Running preflight diagnostics\u2026")
         self.win.statusBar().showMessage("Running preflight diagnostics\u2026")
@@ -361,10 +349,7 @@ class WinUpdateRepairPage(_Page):
     # -- Repair --
 
     def _run_repair(self):
-        """_run_repair.
-
-        Manages run repair operations and coordinates related state changes for the component.
-        """
+        """Validate the current selection and ask the user to confirm via a message box showing 'No phases'."""
         phases = [k for k, cb in self._checkboxes.items() if cb.isChecked()]
         if not phases:
             QMessageBox.information(

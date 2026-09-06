@@ -30,10 +30,7 @@ class TestFormatters:
     Converts raw numeric values into formatted, localized, and human-readable string representations.
     """
     def test_human_bytes_scale(self):
-        """test_human_bytes_scale.
-
-        Manages test human bytes scale operations and coordinates related state changes for the component.
-        """
+        """Verify human bytes scale via endswith, human."""
         assert human(0) == "0 B"
         assert human(-1) == ""
         assert human(512).endswith("B")
@@ -42,33 +39,22 @@ class TestFormatters:
         assert "GB" in human(3 * 1024**3)
 
     def test_fmt_ms_empty(self):
-        """test_fmt_ms_empty.
-
-        Manages test fmt ms empty operations and coordinates related state changes for the component.
-        """
+        """Verify fmt ms empty via fmt_ms."""
         assert fmt_ms(0) == ""
 
 
 @pytest.mark.skipif(not any(p.is_file() for p in CLI_CANDIDATES), reason="nexus-cli.exe not built")
 def test_find_cli_locates_built_binary():
-    """test_find_cli_locates_built_binary.
-
-    Manages test find cli locates built binary operations and coordinates related state changes for the component.
-    """
+    """Verify find cli locates built binary via pytest.mark.skipif, find_cli."""
     cli = find_cli()
     assert cli.is_file(), f"nexus-cli.exe not found at {cli}"
 
 
 class TestOpenWithQuotingRegression:
-    """Testopenwithquotingregression.
-
-    Manages TestOpenWithQuotingRegression operations and coordinates related state changes for the component.
-    """
+    """Group testopenwithquotingregression tests covering open with uses argument list."""
 
     def test_open_with_uses_argument_list(self, monkeypatch):
-        """test_open_with_uses_argument_list.
-
-        Manages test open with uses argument list operations and coordinates related state changes for the component.
+        """Verify open with uses argument list via nexus_explorer.ExplorerWidget._open_with, Path.home, monkeypatch.setattr.
 
         Args:
             monkeypatch: The monkeypatch parameter.
@@ -80,9 +66,7 @@ class TestOpenWithQuotingRegression:
         fake_path = str(Path.home() / "doc with space.txt")
 
         def fake_popen(args, **kwargs):
-            """fake_popen.
-
-            Manages fake popen operations and coordinates related state changes for the component.
+            """Fake popen using SimpleNamespace.
 
             Args:
                 args: The args parameter.
@@ -112,17 +96,11 @@ class TestOpenWithQuotingRegression:
     reason="Windows-only engine binary required"
 )
 class TestCliJsonContract:
-    """Testclijsoncontract.
-
-    Manages TestCliJsonContract operations and coordinates related state changes for the component.
-    """
+    """Group testclijsoncontract tests covering list json round trip; list json consumer keys."""
 
     @pytest.fixture
     def hostile_dir(self):
-        """hostile_dir.
-
-        Manages hostile dir operations and coordinates related state changes for the component.
-        """
+        """Provide hostile dir fixture via tempfile.TemporaryDirectory, Path."""
         with tempfile.TemporaryDirectory(prefix="nexus_test_") as tmp:
             names = ["emoji_📁.txt", "unicode_é中文.txt", "plain.md", "spaced  name.txt"]
             for n in names:
@@ -130,9 +108,7 @@ class TestCliJsonContract:
             yield tmp, names
 
     def test_list_json_round_trip(self, hostile_dir):
-        """test_list_json_round_trip.
-
-        Manages test list json round trip operations and coordinates related state changes for the component.
+        """Verify list json round trip via subprocess.run, json.loads, find_cli.
 
         Args:
             hostile_dir: The hostile dir parameter.
@@ -152,9 +128,7 @@ class TestCliJsonContract:
         assert not missing, f"files vanished from JSON output: {missing}"
 
     def test_list_json_consumer_keys(self, hostile_dir):
-        """test_list_json_consumer_keys.
-
-        Manages test list json consumer keys operations and coordinates related state changes for the component.
+        """Verify list json consumer keys via subprocess.run, json.loads, find_cli.
 
         Args:
             hostile_dir: The hostile dir parameter.

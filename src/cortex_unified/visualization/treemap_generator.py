@@ -14,14 +14,12 @@ except ImportError:
     HAS_PLOTLY = False
     # No-op stand-ins keep method bodies runnable without Plotly
     class go:
-        """Go.
+        """Fallback Plotly graph_objects namespace when Plotly is missing.
 
-        Manages go operations and coordinates related state changes for the component.
         """
         class Figure:
-            """Figure.
+            """Minimal Figure stub with no-op trace and layout methods.
 
-            Manages Figure operations and coordinates related state changes for the component.
             """
             def __init__(self, *args, **kwargs):
                 """Initialize the instance and configure internal state.
@@ -30,33 +28,28 @@ except ImportError:
                 """
                 pass
             def add_trace(self, *args, **kwargs):
-                """add_trace.
+                """No-op stub matching Plotly Figure.add_trace.
 
-                Manages add trace operations and coordinates related state changes for the component.
                 """
                 pass
             def update_layout(self, *args, **kwargs):
-                """update_layout.
+                """No-op stub matching Plotly Figure.update_layout.
 
-                Manages update layout operations and coordinates related state changes for the component.
                 """
                 pass
     class px:
-        """Px.
+        """Fallback Plotly express namespace when Plotly is missing.
 
-        Manages px operations and coordinates related state changes for the component.
         """
         @staticmethod
         def treemap(*args, **kwargs):
-            """Treemap.
+            """Return an empty Figure stub for treemap calls.
 
-            Manages treemap operations and coordinates related state changes for the component.
             """
             return go.Figure()
     def plot(*args, **kwargs):
-        """Plot.
+        """No-op stub matching plotly.offline.plot.
 
-        Manages plot operations and coordinates related state changes for the component.
         """
         pass
 
@@ -64,9 +57,8 @@ import colorsys
 
 @dataclass
 class TreeMapNode:
-    """Treemapnode.
+    """Single treemap rectangle with size, path, and children.
 
-    Manages TreeMapNode operations and coordinates related state changes for the component.
     """
     name: str
     size: int
@@ -78,9 +70,8 @@ class TreeMapNode:
     modified_time: Optional[float] = None
 
 class TreeMapGenerator:
-    """Treemapgenerator.
+    """Build treemap figures from analyzer directory trees.
 
-    Manages TreeMapGenerator operations and coordinates related state changes for the component.
     """
     
     def __init__(self, data: Any = None):
@@ -102,7 +93,6 @@ class TreeMapGenerator:
     def _setup_color_scheme(self):
         """Per-extension base hues; 'unknown' catches unlisted types.
 
-        Manages setup color scheme operations and coordinates related state changes for the component.
         """
         self.file_type_colors = {
             '.txt': '#3498db',    # Blue
@@ -125,7 +115,6 @@ class TreeMapGenerator:
     def _get_file_type_from_path(self, path: str) -> str:
         """Extension tag for a path; 'directory'/'unknown' sentinels.
 
-        Manages get file type from path operations and coordinates related state changes for the component.
 
         Args:
             path (str): Filesystem path to the target file or directory.
@@ -222,9 +211,8 @@ class TreeMapGenerator:
         hover_texts = []
         
         def add_node(node: TreeMapNode, parent_id: str = ""):
-            """add_node.
+            """Append one node and its children to Plotly parallel arrays.
 
-            Manages add node operations and coordinates related state changes for the component.
 
             Args:
                 node (TreeMapNode): The node parameter.
@@ -247,9 +235,8 @@ class TreeMapGenerator:
         
         all_sizes = []
         def collect_sizes(nodes_list):
-            """collect_sizes.
+            """Collect all node sizes to compute the maximum for coloring.
 
-            Manages collect sizes operations and coordinates related state changes for the component.
 
             Args:
                 nodes_list: The nodes list parameter.

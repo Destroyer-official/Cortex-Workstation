@@ -50,10 +50,7 @@ _WARNING_BANNER = (
 
 @dataclass(slots=True)
 class Authorization:
-    """Authorization.
-
-    Manages Authorization operations and coordinates related state changes for the component.
-    """
+    """Whether a load-test target is allowed, with category, IP, and reason."""
     authorized: bool
     category: str            # loopback / private / link-local / owned-public / denied
     host: str
@@ -61,9 +58,7 @@ class Authorization:
     reason: str = ""
 
     def to_dict(self) -> dict[str, Any]:
-        """To dict.
-
-        Manages to dict operations and coordinates related state changes for the component.
+        """Serialize this authorization decision to a plain dict.
 
         Returns:
             dict[str, Any]: Dictionary mapping identifiers to status or values.
@@ -75,10 +70,7 @@ class Authorization:
 
 
 class TargetAuthorizer:
-    """Targetauthorizer.
-
-    Manages TargetAuthorizer operations and coordinates related state changes for the component.
-    """
+    """Gate load tests to own infrastructure (private LAN or token-verified public host)."""
 
     @staticmethod
     def classify(host: str) -> tuple[str, str]:
@@ -110,9 +102,7 @@ class TargetAuthorizer:
 
     def authorize(self, host: str, ownership_token: str | None = None,
                   verify_public: bool = True) -> Authorization:
-        """Authorize.
-
-        Manages authorize operations and coordinates related state changes for the component.
+        """Decide if host is testable; public hosts need a matching token file.
 
         Args:
             host (str): The host parameter.
@@ -147,8 +137,6 @@ class TargetAuthorizer:
     def _verify_ownership(host: str, token: str) -> bool:
         """Fetch the token file the user placed on their server and compare.
 
-        Manages verify ownership operations and coordinates related state changes for the component.
-
         Args:
             host (str): The host parameter.
             token (str): The token parameter.
@@ -172,8 +160,6 @@ class TargetAuthorizer:
     def new_token() -> str:
         """Generate a random token for the user to host on their server.
 
-        Manages new token operations and coordinates related state changes for the component.
-
         Returns:
             str: Formatted string or path.
         """
@@ -187,10 +173,7 @@ class TargetAuthorizer:
 
 @dataclass(slots=True)
 class HttpLoadConfig:
-    """Httploadconfig.
-
-    Manages HttpLoadConfig operations and coordinates related state changes for the component.
-    """
+    """HTTP load-test parameters: URL, concurrency/duration caps, rate limit."""
     url: str
     method: str = "GET"
     concurrency: int = 10
@@ -202,10 +185,7 @@ class HttpLoadConfig:
 
 @dataclass(slots=True)
 class TcpLoadConfig:
-    """Tcploadconfig.
-
-    Manages TcpLoadConfig operations and coordinates related state changes for the component.
-    """
+    """TCP-connect load-test parameters: host, port, concurrency/duration caps."""
     host: str
     port: int
     concurrency: int = 10
@@ -215,10 +195,7 @@ class TcpLoadConfig:
 
 @dataclass(slots=True)
 class LoadResult:
-    """Loadresult.
-
-    Manages LoadResult operations and coordinates related state changes for the component.
-    """
+    """Thread-safe counters plus latencies for one load run; derives RPS/percentiles."""
     kind: str
     target: str
     total: int = 0
@@ -231,9 +208,7 @@ class LoadResult:
 
     @property
     def rps(self) -> float:
-        """Rps.
-
-        Manages rps operations and coordinates related state changes for the component.
+        """Throughput as total requests divided by elapsed seconds.
 
         Returns:
             float: Result of the operation.
@@ -242,9 +217,7 @@ class LoadResult:
 
     @property
     def error_rate(self) -> float:
-        """Error rate.
-
-        Manages error rate operations and coordinates related state changes for the component.
+        """Failed share as percent of total requests.
 
         Returns:
             float: Result of the operation.
@@ -252,9 +225,7 @@ class LoadResult:
         return round(100.0 * self.failed / self.total, 2) if self.total else 0.0
 
     def percentile(self, p: float) -> float:
-        """Percentile.
-
-        Manages percentile operations and coordinates related state changes for the component.
+        """Latency percentile (e.g. p95) over collected samples in ms.
 
         Args:
             p (float): The p parameter.
@@ -269,9 +240,7 @@ class LoadResult:
         return round(s[k], 1)
 
     def summary(self) -> dict[str, Any]:
-        """Summary.
-
-        Manages summary operations and coordinates related state changes for the component.
+        """Aggregate totals, RPS, error rate, latency min/avg/p50/p90/p95/p99.
 
         Returns:
             dict[str, Any]: Dictionary mapping identifiers to status or values.
@@ -300,10 +269,7 @@ ProgressCB = Callable[[dict], None]
 # =====================================================================
 
 class LoadTester:
-    """Loadtester.
-
-    Manages LoadTester operations and coordinates related state changes for the component.
-    """
+    """Authorized-only HTTP/TCP load tester with caps, confirm flag, and audit log."""
 
     def __init__(self):
         """Initialize Load Tester.
@@ -319,9 +285,10 @@ class LoadTester:
                  cancel_event: threading.Event | None = None,
                  confirm: bool = False,
                  safe_mode: bool = False) -> LoadResult:
-        """Run http.
+        """Flood own URL with threaded GETs; requires authorized auth + confirm=True.
 
-        Manages run http operations and coordinates related state changes for the component.
+        Side effects: generates real network traffic against your infrastructure
+        and appends to the audit log. No spoofing or evasion.
 
         Args:
             cfg (HttpLoadConfig): The cfg parameter.
@@ -354,9 +321,7 @@ class LoadTester:
         min_interval = (conc / cfg.rate_cap_rps) if cfg.rate_cap_rps > 0 else 0.0
 
         def worker(idx: int):
-            """Worker.
-
-            Manages worker operations and coordinates related state changes for the component.
+            """HTTP worker loop: issue requests until deadline/cancel, recording latencies.
 
             Args:
                 idx (int): The idx parameter.
@@ -411,9 +376,9 @@ class LoadTester:
                 cancel_event: threading.Event | None = None,
                 confirm: bool = False,
                 safe_mode: bool = False) -> LoadResult:
-        """Run tcp.
+        """Open repeated TCP connections to own host:port; requires authorized auth + confirm.
 
-        Manages run tcp operations and coordinates related state changes for the component.
+        Side effects: generates real connection load and appends to the audit log.
 
         Args:
             cfg (TcpLoadConfig): The cfg parameter.
@@ -445,9 +410,7 @@ class LoadTester:
         deadline = start + dur
 
         def worker(idx: int):
-            """Worker.
-
-            Manages worker operations and coordinates related state changes for the component.
+            """TCP worker loop: connect/close until deadline/cancel, recording latencies.
 
             Args:
                 idx (int): The idx parameter.
@@ -485,9 +448,7 @@ class LoadTester:
 
     @staticmethod
     def _run_pool(worker, conc, deadline, cancel, progress, result, start):
-        """_run_pool.
-
-        Manages run pool operations and coordinates related state changes for the component.
+        """Start/join worker threads until deadline, emitting progress snapshots.
 
         Args:
             worker: The worker parameter.
@@ -537,9 +498,7 @@ class LoadTester:
 
     @staticmethod
     def _audit(kind: str, target: str, auth: Authorization, conc: int, dur: int) -> None:
-        """Audit.
-
-        Manages audit operations and coordinates related state changes for the component.
+        """Append one load-test run line to the audit log (best-effort, ignores errors).
 
         Args:
             kind (str): The kind parameter.

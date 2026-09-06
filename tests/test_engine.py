@@ -35,9 +35,7 @@ from cortex_unified.engine.storage import StorageInfo, StorageProbe
 
 @pytest.fixture
 def tree(tmp_path: Path) -> Path:
-    """Tree.
-
-    Manages tree operations and coordinates related state changes for the component.
+    """Provide tree fixture that creates an isolated directory.
 
     Args:
         tmp_path (Path): Filesystem path to the target file or directory.
@@ -68,14 +66,9 @@ def tree(tmp_path: Path) -> Path:
 # --------------------------------------------------------------------------
 
 class TestFastWalker:
-    """Testfastwalker.
-
-    Manages TestFastWalker operations and coordinates related state changes for the component.
-    """
+    """Group testfastwalker tests covering scan counts and bytes; min size filter; excludes glob; find empty; symlinks not followed by default; cancel stops iteration."""
     def test_scan_counts_and_bytes(self, tree: Path):
-        """test_scan_counts_and_bytes.
-
-        Manages test scan counts and bytes operations and coordinates related state changes for the component.
+        """Verify scan counts and bytes via FastWalker, scan.
 
         Args:
             tree (Path): The tree parameter.
@@ -88,9 +81,7 @@ class TestFastWalker:
         assert result.files_scanned == len(result.files)
 
     def test_min_size_filter(self, tree: Path):
-        """test_min_size_filter.
-
-        Manages test min size filter operations and coordinates related state changes for the component.
+        """Verify min size filter via walker.scan, FastWalker, WalkOptions.
 
         Args:
             tree (Path): The tree parameter.
@@ -101,9 +92,7 @@ class TestFastWalker:
         assert any(f.path.name == "big.dat" for f in result.files)
 
     def test_excludes_glob(self, tree: Path):
-        """test_excludes_glob.
-
-        Manages test excludes glob operations and coordinates related state changes for the component.
+        """Verify excludes glob via walker.scan, FastWalker, WalkOptions.
 
         Args:
             tree (Path): The tree parameter.
@@ -113,9 +102,7 @@ class TestFastWalker:
         assert not any(f.path.suffix == ".log" for f in result.files)
 
     def test_find_empty(self, tree: Path):
-        """test_find_empty.
-
-        Manages test find empty operations and coordinates related state changes for the component.
+        """Verify find empty via FastWalker, find_empty.
 
         Args:
             tree (Path): The tree parameter.
@@ -129,9 +116,7 @@ class TestFastWalker:
         assert "deep" in empty_dir_names
 
     def test_symlinks_not_followed_by_default(self, tmp_path: Path):
-        """test_symlinks_not_followed_by_default.
-
-        Manages test symlinks not followed by default operations and coordinates related state changes for the component.
+        """Verify symlinks not followed by default via pytest.skip, link.symlink_to, FastWalker.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -151,9 +136,7 @@ class TestFastWalker:
         assert sum(1 for f in result.files if f.path.name == "f.txt") == 1
 
     def test_cancel_stops_iteration(self, tree: Path):
-        """test_cancel_stops_iteration.
-
-        Manages test cancel stops iteration operations and coordinates related state changes for the component.
+        """Verify cancel stops iteration via FastWalker, walker.iter_files, collected.append.
 
         Args:
             tree (Path): The tree parameter.
@@ -172,10 +155,7 @@ class TestFastWalker:
 # --------------------------------------------------------------------------
 
 class TestPathGuard:
-    """Testpathguard.
-
-    Manages TestPathGuard operations and coordinates related state changes for the component.
-    """
+    """Group testpathguard tests covering sibling name not falsely protected; blocks home root; blocks windows system dirs; blocks posix system dirs; sandbox confinement."""
     def test_sibling_name_not_falsely_protected(self, tmp_path: Path):
         """The legacy prefix matcher blocked '/usrdata' because it startswith
         '/usr'. The relationship-based guard must not."""
@@ -186,10 +166,7 @@ class TestPathGuard:
         assert guard.check(f).safe is True
 
     def test_blocks_home_root(self):
-        """test_blocks_home_root.
-
-        Manages test blocks home root operations and coordinates related state changes for the component.
-        """
+        """Verify blocks home root via Path.home, PathGuard, guard.check."""
         guard = PathGuard()
         verdict = guard.check(Path.home())
         assert verdict.safe is False
@@ -197,28 +174,20 @@ class TestPathGuard:
 
     @pytest.mark.skipif(sys.platform != "win32", reason="windows-only paths")
     def test_blocks_windows_system_dirs(self):
-        """test_blocks_windows_system_dirs.
-
-        Manages test blocks windows system dirs operations and coordinates related state changes for the component.
-        """
+        """Verify blocks windows system dirs via pytest.mark.skipif, PathGuard, guard.check."""
         guard = PathGuard()
         assert guard.check(Path(os.environ.get("SystemRoot", r"C:\Windows"))).safe is False
         assert guard.check(Path(r"C:\Windows\System32\kernel32.dll")).safe is False
 
     @pytest.mark.skipif(sys.platform == "win32", reason="posix-only paths")
     def test_blocks_posix_system_dirs(self):
-        """test_blocks_posix_system_dirs.
-
-        Manages test blocks posix system dirs operations and coordinates related state changes for the component.
-        """
+        """Verify blocks posix system dirs via pytest.mark.skipif, PathGuard, guard.check."""
         guard = PathGuard()
         assert guard.check(Path("/usr")).safe is False
         assert guard.check(Path("/etc/passwd")).safe is False
 
     def test_sandbox_confinement(self, tmp_path: Path):
-        """test_sandbox_confinement.
-
-        Manages test sandbox confinement operations and coordinates related state changes for the component.
+        """Verify sandbox confinement via PathGuard, guard.check.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -239,14 +208,9 @@ class TestPathGuard:
 # --------------------------------------------------------------------------
 
 class TestDuplicates:
-    """Testduplicates.
-
-    Manages TestDuplicates operations and coordinates related state changes for the component.
-    """
+    """Group testduplicates tests covering hash file stable and none on missing; finds content duplicates; unique sizes not flagged."""
     def test_hash_file_stable_and_none_on_missing(self, tmp_path: Path):
-        """test_hash_file_stable_and_none_on_missing.
-
-        Manages test hash file stable and none on missing operations and coordinates related state changes for the component.
+        """Verify hash file stable and none on missing via hash_file.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -259,9 +223,7 @@ class TestDuplicates:
         assert hash_file(tmp_path / "missing") is None
 
     def test_finds_content_duplicates(self, tree: Path):
-        """test_finds_content_duplicates.
-
-        Manages test finds content duplicates operations and coordinates related state changes for the component.
+        """Verify finds content duplicates via DuplicateFinderEngine.wasted_bytes, DuplicateFinderEngine, FastWalker.
 
         Args:
             tree (Path): The tree parameter.
@@ -275,9 +237,7 @@ class TestDuplicates:
         assert DuplicateFinderEngine.wasted_bytes(groups) > 0
 
     def test_unique_sizes_not_flagged(self, tmp_path: Path):
-        """test_unique_sizes_not_flagged.
-
-        Manages test unique sizes not flagged operations and coordinates related state changes for the component.
+        """Verify unique sizes not flagged via DuplicateFinderEngine, find.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -296,14 +256,9 @@ class TestDuplicates:
 # --------------------------------------------------------------------------
 
 class TestStorage:
-    """Teststorage.
-
-    Manages TestStorage operations and coordinates related state changes for the component.
-    """
+    """Group teststorage tests covering detect returns storageinfo; overwrite effective only for hdd; probe caches."""
     def test_detect_returns_storageinfo(self, tmp_path: Path):
-        """test_detect_returns_storageinfo.
-
-        Manages test detect returns storageinfo operations and coordinates related state changes for the component.
+        """Verify detect returns storageinfo via detect_storage.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -313,19 +268,14 @@ class TestStorage:
         assert isinstance(info.kind, StorageKind)
 
     def test_overwrite_effective_only_for_hdd(self):
-        """test_overwrite_effective_only_for_hdd.
-
-        Manages test overwrite effective only for hdd operations and coordinates related state changes for the component.
-        """
+        """Verify overwrite effective only for hdd."""
         assert StorageKind.HDD.overwrite_effective is True
         assert StorageKind.SSD.overwrite_effective is False
         assert StorageKind.NVME.overwrite_effective is False
         assert StorageKind.UNKNOWN.overwrite_effective is False
 
     def test_probe_caches(self, tmp_path: Path):
-        """test_probe_caches.
-
-        Manages test probe caches operations and coordinates related state changes for the component.
+        """Verify probe caches via StorageProbe, probe.probe.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -341,10 +291,7 @@ class TestStorage:
 # --------------------------------------------------------------------------
 
 class _FakeProbe(StorageProbe):
-    """Fakeprobe.
-
-    Manages FakeProbe operations and coordinates related state changes for the component.
-    """
+    """Helper fakeprobe using StorageInfo, __init__, super."""
     def __init__(self, kind: StorageKind):
         """__init__.
 
@@ -357,9 +304,7 @@ class _FakeProbe(StorageProbe):
         self._forced = kind
 
     def probe(self, path):  # type: ignore[override]
-        """Probe.
-
-        Manages probe operations and coordinates related state changes for the component.
+        """Probe using StorageInfo.
 
         Args:
             path: Filesystem path to the target file or directory.
@@ -368,14 +313,9 @@ class _FakeProbe(StorageProbe):
 
 
 class TestSecureDeleter:
-    """Testsecuredeleter.
-
-    Manages TestSecureDeleter operations and coordinates related state changes for the component.
-    """
+    """Group testsecuredeleter tests covering dry run touches nothing; plain delete file; plain delete directory is guarded; guard blocks unsafe; overwrite on hdd wipes; overwrite on ssd refuses honestly."""
     def test_dry_run_touches_nothing(self, tmp_path: Path):
-        """test_dry_run_touches_nothing.
-
-        Manages test dry run touches nothing operations and coordinates related state changes for the component.
+        """Verify dry run touches nothing via SecureDeleter, deleter.delete.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -388,9 +328,7 @@ class TestSecureDeleter:
         assert f.exists()
 
     def test_plain_delete_file(self, tmp_path: Path):
-        """test_plain_delete_file.
-
-        Manages test plain delete file operations and coordinates related state changes for the component.
+        """Verify plain delete file via SecureDeleter, delete.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -404,8 +342,6 @@ class TestSecureDeleter:
     def test_plain_delete_directory_is_guarded(self, tmp_path: Path):
         """Directory deletion must pass through the guard (legacy bug: it did not).
 
-        Manages test plain delete directory is guarded operations and coordinates related state changes for the component.
-
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
         """
@@ -417,18 +353,13 @@ class TestSecureDeleter:
         assert not d.exists()
 
     def test_guard_blocks_unsafe(self):
-        """test_guard_blocks_unsafe.
-
-        Manages test guard blocks unsafe operations and coordinates related state changes for the component.
-        """
+        """Verify guard blocks unsafe via Path.home, SecureDeleter, delete."""
         res = SecureDeleter().delete(Path.home(), DeletionMethod.DELETE)
         assert res.outcome is DeletionOutcome.SKIPPED_UNSAFE
         assert Path.home().exists()
 
     def test_overwrite_on_hdd_wipes(self, tmp_path: Path):
-        """test_overwrite_on_hdd_wipes.
-
-        Manages test overwrite on hdd wipes operations and coordinates related state changes for the component.
+        """Verify overwrite on hdd wipes via SecureDeleter, deleter.delete, _FakeProbe.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -441,9 +372,7 @@ class TestSecureDeleter:
         assert not f.exists()
 
     def test_overwrite_on_ssd_refuses_honestly(self, tmp_path: Path):
-        """test_overwrite_on_ssd_refuses_honestly.
-
-        Manages test overwrite on ssd refuses honestly operations and coordinates related state changes for the component.
+        """Verify overwrite on ssd refuses honestly via SecureDeleter, pytest.raises, deleter.delete.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -457,9 +386,7 @@ class TestSecureDeleter:
         assert f.exists()  # not touched
 
     def test_overwrite_on_ssd_forced_best_effort(self, tmp_path: Path):
-        """test_overwrite_on_ssd_forced_best_effort.
-
-        Manages test overwrite on ssd forced best effort operations and coordinates related state changes for the component.
+        """Verify overwrite on ssd forced best effort via SecureDeleter, deleter.delete, _FakeProbe.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -473,9 +400,7 @@ class TestSecureDeleter:
         assert not f.exists()
 
     def test_summary_aggregates(self, tmp_path: Path):
-        """test_summary_aggregates.
-
-        Manages test summary aggregates operations and coordinates related state changes for the component.
+        """Verify summary aggregates via SecureDeleter, deleter.delete_many, deleter.summary.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.

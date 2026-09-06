@@ -21,9 +21,7 @@ from cortex_unified.analyzers.perceptual_duplicate_finder import (  # noqa: E402
 
 
 def _make_image(path: Path, size: int = 128):
-    """_make_image.
-
-    Manages make image operations and coordinates related state changes for the component.
+    """Make image using Image.new, img.putdata, img.save.
 
     Args:
         path (Path): Filesystem path to the target file or directory.
@@ -38,9 +36,7 @@ def _make_image(path: Path, size: int = 128):
 
 
 def _make_plain(path: Path, size: int = 128, color: str = "red"):
-    """_make_plain.
-
-    Manages make plain operations and coordinates related state changes for the component.
+    """Make plain using Image.new, save.
 
     Args:
         path (Path): Filesystem path to the target file or directory.
@@ -53,9 +49,7 @@ def _make_plain(path: Path, size: int = 128, color: str = "red"):
 # --- hashing primitives ----------------------------------------------------
 
 def test_hashes_are_int(tmp_path):
-    """test_hashes_are_int.
-
-    Manages test hashes are int operations and coordinates related state changes for the component.
+    """Verify hashes are int via _make_image, compute_hash.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.
@@ -67,9 +61,7 @@ def test_hashes_are_int(tmp_path):
         assert 0 <= val <= 0xFFFFFFFFFFFFFFFF
 
 def test_hashes_deterministic_on_identical_image(tmp_path):
-    """test_hashes_deterministic_on_identical_image.
-
-    Manages test hashes deterministic on identical image operations and coordinates related state changes for the component.
+    """Verify hashes deterministic on identical image via _make_image, compute_hash.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.
@@ -83,19 +75,14 @@ def test_hashes_deterministic_on_identical_image(tmp_path):
 
 
 def test_hamming_distance_basic():
-    """test_hamming_distance_basic.
-
-    Manages test hamming distance basic operations and coordinates related state changes for the component.
-    """
+    """Verify hamming distance basic via hamming_distance."""
     assert hamming_distance(0, 0) == 0
     assert hamming_distance(0, 0xFFFFFFFFFFFFFFFF) == 64
     assert hamming_distance(0b1010, 0b1000) == 1
 
 
 def test_perceptual_hashes_agree_across_rescales(tmp_path):
-    """test_perceptual_hashes_agree_across_rescales.
-
-    Manages test perceptual hashes agree across rescales operations and coordinates related state changes for the component.
+    """Verify perceptual hashes agree across rescales via Image.open, im.resize, _make_image.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.
@@ -114,9 +101,7 @@ def test_different_images_are_far_apart_in_phash(tmp_path):
     # pHash drops the DC (brightness) term, so two plain solid colours are
     # *not* a good "different" case - they share near-zero AC structure. Use a
     # structured pattern vs a plain fill instead.
-    """test_different_images_are_far_apart_in_phash.
-
-    Manages test different images are far apart in phash operations and coordinates related state changes for the component.
+    """Verify different images are far apart in phash via _make_image, _make_plain, hamming_distance.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.
@@ -129,9 +114,7 @@ def test_different_images_are_far_apart_in_phash(tmp_path):
 
 
 def test_unknown_kind_raises(tmp_path):
-    """test_unknown_kind_raises.
-
-    Manages test unknown kind raises operations and coordinates related state changes for the component.
+    """Verify unknown kind raises via pytest.raises, Path, compute_hash.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.
@@ -143,9 +126,7 @@ def test_unknown_kind_raises(tmp_path):
 # --- finder -----------------------------------------------------------------
 
 def test_finder_groups_rescaled_identical_images(tmp_path):
-    """test_finder_groups_rescaled_identical_images.
-
-    Manages test finder groups rescaled identical images operations and coordinates related state changes for the component.
+    """Verify finder groups rescaled identical images via Image.open, PerceptualDuplicateFinder, finder.find_perceptual_duplicates.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.
@@ -164,9 +145,7 @@ def test_finder_groups_rescaled_identical_images(tmp_path):
 
 
 def test_finder_excludes_non_images(tmp_path):
-    """test_finder_excludes_non_images.
-
-    Manages test finder excludes non images operations and coordinates related state changes for the component.
+    """Verify finder excludes non images via PerceptualDuplicateFinder, finder.find_perceptual_duplicates, _make_image.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.
@@ -178,9 +157,7 @@ def test_finder_excludes_non_images(tmp_path):
     assert finder.find_perceptual_duplicates() == {}
 
 def test_finder_respects_exclude_dirs(tmp_path):
-    """test_finder_respects_exclude_dirs.
-
-    Manages test finder respects exclude dirs operations and coordinates related state changes for the component.
+    """Verify finder respects exclude dirs via PerceptualDuplicateFinder, finder.find_perceptual_duplicates, Config.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.
@@ -204,9 +181,7 @@ def test_finder_respects_exclude_dirs(tmp_path):
 
 
 def test_finder_stats(tmp_path):
-    """test_finder_stats.
-
-    Manages test finder stats operations and coordinates related state changes for the component.
+    """Verify finder stats via Image.open, PerceptualDuplicateFinder, finder.find_perceptual_duplicates.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.
@@ -223,9 +198,7 @@ def test_finder_stats(tmp_path):
 
 
 def test_finder_error_handling_skips_corrupt(tmp_path):
-    """test_finder_error_handling_skips_corrupt.
-
-    Manages test finder error handling skips corrupt operations and coordinates related state changes for the component.
+    """Verify finder error handling skips corrupt via PerceptualDuplicateFinder, finder.find_perceptual_duplicates, _make_image.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.

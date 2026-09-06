@@ -27,16 +27,14 @@ _NO_WINDOW = 0x08000000 if _IS_WINDOWS else 0
 
 
 def _describe(name: str, exe: str) -> str:
-    """Describe.
-
-    Manages describe operations and coordinates related state changes for the component.
+    """Describe helper. Returns describe(name, exe).
 
     Args:
-        name (str): The name parameter.
-        exe (str): The exe parameter.
+    name (str): The name parameter.
+    exe (str): The exe parameter.
 
     Returns:
-        str: Formatted string or path.
+    str: Formatted string or path.
     """
     try:
         from cortex_unified.system_tools.process_meta import describe
@@ -56,12 +54,10 @@ class TaskManager:
 
     @classmethod
     def instance(cls) -> "TaskManager":
-        """Instance.
-
-        Manages instance operations and coordinates related state changes for the component.
+        """Instance helper. Returns cls._instance.
 
         Returns:
-            'TaskManager': Result of the operation.
+        'TaskManager': Result of the operation.
         """
         if cls._instance is None:
             cls._instance = cls()
@@ -125,13 +121,11 @@ class TaskManager:
     def _refresh_handles(self, psutil) -> dict[int, Any]:
         """Return {pid: Process} reusing cached handles; drop dead ones.
 
-        Manages refresh handles operations and coordinates related state changes for the component.
-
         Args:
-            psutil: The psutil parameter.
+        psutil: The psutil parameter.
 
         Returns:
-            dict[int, Any]: Dictionary mapping identifiers to status or values.
+        dict[int, Any]: Dictionary mapping identifiers to status or values.
         """
         live: dict[int, Any] = {}
         for p in psutil.process_iter(["pid"]):
@@ -146,14 +140,12 @@ class TaskManager:
     def end_process(self, pid: int, force: bool = False) -> tuple[bool, str]:
         """Terminate (or kill) a process by PID. Returns (ok, message).
 
-        Manages end process operations and coordinates related state changes for the component.
-
         Args:
-            pid (int): The pid parameter.
-            force (bool): The force parameter.
+        pid (int): The pid parameter.
+        force (bool): The force parameter.
 
         Returns:
-            tuple[bool, str]: True if the operation succeeded, False otherwise.
+        tuple[bool, str]: True if the operation succeeded, False otherwise.
         """
         try:
             import psutil
@@ -181,17 +173,15 @@ class TaskManager:
 
     def _collect_processes(self, psutil, cores: int,
                            handles: dict[int, Any]) -> list[dict[str, Any]]:
-        """_collect_processes.
-
-        Manages collect processes operations and coordinates related state changes for the component.
+        """Collect processes helper. Returns procs.
 
         Args:
-            psutil: The psutil parameter.
-            cores (int): The cores parameter.
-            handles (dict[int, Any]): The handles parameter.
+        psutil: The psutil parameter.
+        cores (int): The cores parameter.
+        handles (dict[int, Any]): The handles parameter.
 
         Returns:
-            list[dict[str, Any]]: List of processed items or identifiers.
+        list[dict[str, Any]]: List of processed items or identifiers.
         """
         procs: list[dict[str, Any]] = []
         for pid, handle in handles.items():
@@ -230,16 +220,14 @@ class TaskManager:
         return procs
 
     def _collect_memory(self, psutil, processes: list[dict]) -> dict[str, Any]:
-        """_collect_memory.
-
-        Manages collect memory operations and coordinates related state changes for the component.
+        """Collect memory helper. Returns out.
 
         Args:
-            psutil: The psutil parameter.
-            processes (list[dict]): The processes parameter.
+        psutil: The psutil parameter.
+        processes (list[dict]): The processes parameter.
 
         Returns:
-            dict[str, Any]: Dictionary mapping identifiers to status or values.
+        dict[str, Any]: Dictionary mapping identifiers to status or values.
         """
         vm = psutil.virtual_memory()
         sum_ws = sum(p["rss"] for p in processes)

@@ -27,39 +27,27 @@ from cortex_unified.ui.premium import icons, registry  # noqa: E402
 
 @pytest.fixture(scope="module")
 def app():
-    """App.
-
-    Manages app operations and coordinates related state changes for the component.
-    """
+    """Provide app fixture that provides a shared QApplication."""
     return QApplication.instance() or QApplication([])
 
 
 # --- asset coverage --------------------------------------------------------
 
 def test_every_page_has_its_own_icon_asset():
-    """test_every_page_has_its_own_icon_asset.
-
-    Manages test every page has its own icon asset operations and coordinates related state changes for the component.
-    """
+    """Verify every page has its own icon asset via icons.has_icon."""
     missing = [s.id for s in registry.PAGES if not icons.has_icon(s.icon)]
     assert missing == [], f"pages without an icon asset: {missing}"
 
 
 def test_no_two_pages_share_an_icon():
-    """Regression: five glyphs were previously reused across tools.
-
-    Manages test no two pages share an icon operations and coordinates related state changes for the component.
-    """
+    """Regression: five glyphs were previously reused across tools."""
     used = [spec.icon for spec in registry.PAGES]
     duplicates = {name for name in used if used.count(name) > 1}
     assert duplicates == set(), f"icons reused across pages: {duplicates}"
 
 
 def test_registry_icons_are_asset_names_not_glyphs():
-    """An icon field must never contain a raw symbol codepoint again.
-
-    Manages test registry icons are asset names not glyphs operations and coordinates related state changes for the component.
-    """
+    """An icon field must never contain a raw symbol codepoint again."""
     for spec in registry.PAGES:
         assert spec.icon.isascii(), f"{spec.id} icon is not an asset name"
         assert not spec.icon.startswith("\\u"), spec.id
@@ -67,10 +55,7 @@ def test_registry_icons_are_asset_names_not_glyphs():
 
 
 def test_window_chrome_and_status_icons_are_shipped():
-    """test_window_chrome_and_status_icons_are_shipped.
-
-    Manages test window chrome and status icons are shipped operations and coordinates related state changes for the component.
-    """
+    """Verify window chrome and status icons are shipped via icons.has_icon."""
     for name in ("brand", "win-minimize", "win-maximize", "win-restore",
                  "win-close", "info", "warning", "success", "error"):
         assert icons.has_icon(name), name
@@ -79,9 +64,7 @@ def test_window_chrome_and_status_icons_are_shipped():
 # --- rendering quality -----------------------------------------------------
 
 def test_every_shipped_icon_renders(app):
-    """test_every_shipped_icon_renders.
-
-    Manages test every shipped icon renders operations and coordinates related state changes for the component.
+    """Verify every shipped icon renders via isNull, icons.available, icons.pixmap.
 
     Args:
         app: The app parameter.
@@ -108,9 +91,7 @@ def test_rasterises_at_device_resolution(app, dpr_x100, expected):
 
 
 def test_icons_are_tinted_to_the_requested_colour(app):
-    """test_icons_are_tinted_to_the_requested_colour.
-
-    Manages test icons are tinted to the requested colour operations and coordinates related state changes for the component.
+    """Verify icons are tinted to the requested colour via image.pixelColor, toImage, icons.pixmap.
 
     Args:
         app: The app parameter.
@@ -127,9 +108,7 @@ def test_icons_are_tinted_to_the_requested_colour(app):
 
 
 def test_icon_exposes_a_larger_variant_so_qt_never_upscales(app):
-    """test_icon_exposes_a_larger_variant_so_qt_never_upscales.
-
-    Manages test icon exposes a larger variant so qt never upscales operations and coordinates related state changes for the component.
+    """Verify icon exposes a larger variant so qt never upscales via availableSizes, icons.icon, s.width.
 
     Args:
         app: The app parameter.
@@ -144,8 +123,6 @@ def test_icon_exposes_a_larger_variant_so_qt_never_upscales(app):
 def test_missing_icon_degrades_to_empty_without_raising(app):
     """A missing decoration must never stop a tool from opening.
 
-    Manages test missing icon degrades to empty without raising operations and coordinates related state changes for the component.
-
     Args:
         app: The app parameter.
     """
@@ -154,9 +131,7 @@ def test_missing_icon_degrades_to_empty_without_raising(app):
 
 
 def test_clear_cache_allows_retinting(app):
-    """test_clear_cache_allows_retinting.
-
-    Manages test clear cache allows retinting operations and coordinates related state changes for the component.
+    """Verify clear cache allows retinting via first.toImage, second.toImage, first.isNull.
 
     Args:
         app: The app parameter.
@@ -171,9 +146,7 @@ def test_clear_cache_allows_retinting(app):
 # --- integration with the shell -------------------------------------------
 
 def test_navigation_uses_real_icons_and_clean_labels(app):
-    """test_navigation_uses_real_icons_and_clean_labels.
-
-    Manages test navigation uses real icons and clean labels operations and coordinates related state changes for the component.
+    """Verify navigation uses real icons and clean labels via PremiumMainWindow, buttons.items, win.close.
 
     Args:
         app: The app parameter.
@@ -196,9 +169,7 @@ def test_navigation_uses_real_icons_and_clean_labels(app):
 
 
 def test_theme_switch_retints_navigation_icons(app):
-    """test_theme_switch_retints_navigation_icons.
-
-    Manages test theme switch retints navigation icons operations and coordinates related state changes for the component.
+    """Verify theme switch retints navigation icons via PremiumMainWindow, win.set_theme, win.close.
 
     Args:
         app: The app parameter.
@@ -220,9 +191,7 @@ def test_theme_switch_retints_navigation_icons(app):
 
 
 def test_title_bar_controls_have_icons_and_accessible_names(app):
-    """test_title_bar_controls_have_icons_and_accessible_names.
-
-    Manages test title bar controls have icons and accessible names operations and coordinates related state changes for the component.
+    """Verify title bar controls have icons and accessible names via button.accessibleName, PremiumMainWindow, win.close.
 
     Args:
         app: The app parameter.
@@ -288,9 +257,7 @@ def test_no_symbol_glyphs_remain_in_the_premium_ui():
 
 
 def test_status_note_pairs_an_icon_with_accessible_text(app):
-    """test_status_note_pairs_an_icon_with_accessible_text.
-
-    Manages test status note pairs an icon with accessible text operations and coordinates related state changes for the component.
+    """Verify status note pairs an icon with accessible text via note.accessibleName, status_note.
 
     Args:
         app: The app parameter.

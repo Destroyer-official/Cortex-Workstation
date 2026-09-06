@@ -25,18 +25,13 @@ from PySide6.QtWidgets import QApplication, QWidget  # noqa: E402
 
 @pytest.fixture(scope="module")
 def app():
-    """App.
-
-    Manages app operations and coordinates related state changes for the component.
-    """
+    """Provide app fixture that provides a shared QApplication."""
     return QApplication.instance() or QApplication([])
 
 
 @pytest.fixture
 def window(app):
-    """Window.
-
-    Manages window operations and coordinates related state changes for the component.
+    """Provide window fixture via PremiumMainWindow, win.close, apply_theme.
 
     Args:
         app: The app parameter.
@@ -52,8 +47,6 @@ def window(app):
 def test_only_the_initial_page_is_built_at_startup(window):
     """Startup must construct the landing page and nothing else.
 
-    Manages test only the initial page is built at startup operations and coordinates related state changes for the component.
-
     Args:
         window: Parent window or shell controller instance.
     """
@@ -64,8 +57,6 @@ def test_only_the_initial_page_is_built_at_startup(window):
 
 def test_registry_reports_every_page_without_building_them(window):
     """``len``/iteration/``in`` must describe all pages, not just built ones.
-
-    Manages test registry reports every page without building them operations and coordinates related state changes for the component.
 
     Args:
         window: Parent window or shell controller instance.
@@ -87,8 +78,6 @@ def test_registry_reports_every_page_without_building_them(window):
 def test_getitem_builds_on_demand_and_caches(window):
     """Indexing behaves like a dict and returns a stable widget instance.
 
-    Manages test getitem builds on demand and caches operations and coordinates related state changes for the component.
-
     Args:
         window: Parent window or shell controller instance.
     """
@@ -103,8 +92,6 @@ def test_getitem_builds_on_demand_and_caches(window):
 def test_selecting_a_page_builds_it_and_shows_it(window):
     """Navigation must build the target page and make it current.
 
-    Manages test selecting a page builds it and shows it operations and coordinates related state changes for the component.
-
     Args:
         window: Parent window or shell controller instance.
     """
@@ -116,8 +103,6 @@ def test_selecting_a_page_builds_it_and_shows_it(window):
 
 def test_navigation_works_for_every_page(window):
     """Every page must build and become current when selected.
-
-    Manages test navigation works for every page operations and coordinates related state changes for the component.
 
     Args:
         window: Parent window or shell controller instance.
@@ -132,8 +117,6 @@ def test_navigation_works_for_every_page(window):
 def test_unknown_page_id_raises_key_error(window):
     """A typo must fail loudly rather than silently build nothing.
 
-    Manages test unknown page id raises key error operations and coordinates related state changes for the component.
-
     Args:
         window: Parent window or shell controller instance.
     """
@@ -144,8 +127,6 @@ def test_unknown_page_id_raises_key_error(window):
 def test_selecting_unknown_page_is_ignored(window):
     """``_select`` guards on the nav registry and must not raise.
 
-    Manages test selecting unknown page is ignored operations and coordinates related state changes for the component.
-
     Args:
         window: Parent window or shell controller instance.
     """
@@ -155,10 +136,7 @@ def test_selecting_unknown_page_is_ignored(window):
 
 
 def test_page_factory_registry_matches_navigation():
-    """A page in navigation without a factory would fail only on click.
-
-    Manages test page factory registry matches navigation operations and coordinates related state changes for the component.
-    """
+    """A page in navigation without a factory would fail only on click."""
     from cortex_unified.ui.premium.window import _NAV, _PAGE_FACTORIES
 
     nav_ids = {pid for pid, _label, _glyph in _NAV}
@@ -167,8 +145,6 @@ def test_page_factory_registry_matches_navigation():
 
 def test_lazily_built_page_is_added_to_the_stack(window):
     """A page must be parented into the stack, or it would never display.
-
-    Manages test lazily built page is added to the stack operations and coordinates related state changes for the component.
 
     Args:
         window: Parent window or shell controller instance.

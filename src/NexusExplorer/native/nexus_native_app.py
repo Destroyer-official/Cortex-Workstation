@@ -22,9 +22,9 @@ from nexus_explorer import DARK_QSS  # noqa: E402
 
 
 def main() -> int:
-    """Main.
+    """Launch standalone Nexus Explorer window.
 
-    Manages main operations and coordinates related state changes for the component.
+    Builds QApplication with DARK_QSS, resolves start path from argv or QSettings lastPath, restores geometry/sidebar, and persists them on quit.
 
     Returns:
         int: Result of the operation.
@@ -58,9 +58,9 @@ def main() -> int:
         widget._toggle_sidebar()
 
     def on_quit():
-        """on_quit.
+        """Persist session on application quit.
 
-        Manages on quit operations and coordinates related state changes for the component.
+        Saves current tab path, window geometry, and sidebar visibility into QSettings.
         """
         settings.setValue("lastPath", widget._tab()["path"])
         settings.setValue("windowGeometry", win.saveGeometry())

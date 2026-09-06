@@ -37,22 +37,13 @@ from cortex_unified.system_tools.leftover_cleaner import (
 # =====================================================================
 
 class TestEditDistance:
-    """Testeditdistance.
-
-    Manages TestEditDistance operations and coordinates related state changes for the component.
-    """
+    """Group testeditdistance tests covering identical strings cost zero; empty inputs; known distances; early exit exceeds bound."""
     def test_identical_strings_cost_zero(self):
-        """test_identical_strings_cost_zero.
-
-        Manages test identical strings cost zero operations and coordinates related state changes for the component.
-        """
+        """Verify identical strings cost zero via edit_distance."""
         assert edit_distance("sublime", "sublime") == 0
 
     def test_empty_inputs(self):
-        """test_empty_inputs.
-
-        Manages test empty inputs operations and coordinates related state changes for the component.
-        """
+        """Verify empty inputs via edit_distance."""
         assert edit_distance("", "abc") == 3
         assert edit_distance("abc", "") == 3
         assert edit_distance("", "") == 0
@@ -65,9 +56,7 @@ class TestEditDistance:
         ("copy", "copy", 0),
     ])
     def test_known_distances(self, a, b, expected):
-        """test_known_distances.
-
-        Manages test known distances operations and coordinates related state changes for the component.
+        """Verify known distances via pytest.mark.parametrize, edit_distance.
 
         Args:
             a: The a parameter.
@@ -77,99 +66,60 @@ class TestEditDistance:
         assert edit_distance(a, b) == expected
 
     def test_early_exit_exceeds_bound(self):
-        """test_early_exit_exceeds_bound.
-
-        Manages test early exit exceeds bound operations and coordinates related state changes for the component.
-        """
+        """Verify early exit exceeds bound via edit_distance."""
         assert edit_distance("aaaa", "bbbb", max_distance=2) > 2
 
 
 class TestMatchStringToProduct:
-    """Testmatchstringtoproduct.
-
-    Manages TestMatchStringToProduct operations and coordinates related state changes for the component.
-    """
+    """Group testmatchstringtoproduct tests covering perfect match; near match off by one; substring containment; short names never match; unrelated names rejected; distance beyond one third cutoff."""
     def test_perfect_match(self):
-        """test_perfect_match.
-
-        Manages test perfect match operations and coordinates related state changes for the component.
-        """
+        """Verify perfect match via match_string_to_product."""
         assert match_string_to_product("sublime text", "Sublime Text") == 0
 
     def test_near_match_off_by_one(self):
-        """test_near_match_off_by_one.
-
-        Manages test near match off by one operations and coordinates related state changes for the component.
-        """
+        """Verify near match off by one via match_string_to_product."""
         assert match_string_to_product("sublime txt", "Sublime Text") == 1
 
     def test_substring_containment(self):
-        """test_substring_containment.
-
-        Manages test substring containment operations and coordinates related state changes for the component.
-        """
+        """Verify substring containment via match_string_to_product."""
         assert match_string_to_product("firefox", "Mozilla Firefox") == 2
 
     def test_short_names_never_match(self):
         # The <=4 char floor prevents "Java" vs "JRE" style nonsense.
-        """test_short_names_never_match.
-
-        Manages test short names never match operations and coordinates related state changes for the component.
-        """
+        """Verify short names never match via match_string_to_product."""
         assert match_string_to_product("java", "jre") == -1
         assert match_string_to_product("app", "application") == -1
 
     def test_unrelated_names_rejected(self):
-        """test_unrelated_names_rejected.
-
-        Manages test unrelated names rejected operations and coordinates related state changes for the component.
-        """
+        """Verify unrelated names rejected via match_string_to_product."""
         assert match_string_to_product("thunderbird", "winrar") == -1
 
     def test_distance_beyond_one_third_cutoff(self):
-        """test_distance_beyond_one_third_cutoff.
-
-        Manages test distance beyond one third cutoff operations and coordinates related state changes for the component.
-        """
+        """Verify distance beyond one third cutoff via match_string_to_product."""
         assert match_string_to_product("abcdefghijklmnop", "qrstuvwxyz") == -1
 
 
 class TestBuildTokens:
-    """Testbuildtokens.
-
-    Manages TestBuildTokens operations and coordinates related state changes for the component.
-    """
+    """Group testbuildtokens tests covering noise suffixes removed; generic publishers excluded; specific publisher included; short tokens dropped."""
     def test_noise_suffixes_removed(self):
-        """test_noise_suffixes_removed.
-
-        Manages test noise suffixes removed operations and coordinates related state changes for the component.
-        """
+        """Verify noise suffixes removed via build_tokens."""
         tokens = build_tokens("AppX (64-bit) Free Edition")
         assert "appx" in tokens
         assert not any("free" in t or "edition" in t for t in tokens)
 
     def test_generic_publishers_excluded(self):
-        """test_generic_publishers_excluded.
-
-        Manages test generic publishers excluded operations and coordinates related state changes for the component.
-        """
+        """Verify generic publishers excluded via build_tokens."""
         tokens = build_tokens("SomeApp", "Microsoft Corporation")
         assert "microsoft" not in tokens
         assert "corporation" not in tokens
 
     def test_specific_publisher_included(self):
-        """test_specific_publisher_included.
-
-        Manages test specific publisher included operations and coordinates related state changes for the component.
-        """
+        """Verify specific publisher included via build_tokens."""
         tokens = build_tokens("SomeApp", "Sublime HQ Pty Ltd")
         assert "sublimehqptyltd" in tokens
 
     def test_short_tokens_dropped(self):
-        """test_short_tokens_dropped.
-
-        Manages test short tokens dropped operations and coordinates related state changes for the component.
-        """
+        """Verify short tokens dropped via build_tokens."""
         tokens = build_tokens("My App Tool")
         assert "my" not in tokens and "app" not in tokens
         # 'tool' is a stopword (generic); the joined name still matches.
@@ -178,15 +128,9 @@ class TestBuildTokens:
 
 
 class TestConfidenceLevels:
-    """Testconfidencelevels.
-
-    Manages TestConfidenceLevels operations and coordinates related state changes for the component.
-    """
+    """Group testconfidencelevels tests covering mapping."""
     def test_mapping(self):
-        """test_mapping.
-
-        Manages test mapping operations and coordinates related state changes for the component.
-        """
+        """Verify mapping via confidence_level."""
         assert confidence_level(-1) == BAD
         assert confidence_level(0) == QUESTIONABLE
         assert confidence_level(1) == QUESTIONABLE
@@ -197,10 +141,7 @@ class TestConfidenceLevels:
 
 
 def test_detect_installer_type():
-    """test_detect_installer_type.
-
-    Manages test detect installer type operations and coordinates related state changes for the component.
-    """
+    """Verify detect installer type via detect_installer_type."""
     guid = "{9A25302D-30CA-406E-8F5C-4A0B0B6A2F3A}"
     assert detect_installer_type(guid, 'MsiExec.exe /I{...}') == "msi"
     assert detect_installer_type("MyApp_is1", '"C:\\x\\unins000.exe"') == "inno"
@@ -213,15 +154,10 @@ def test_detect_installer_type():
 # =====================================================================
 
 class TestSafetyPolicy:
-    """Testsafetypolicy.
-
-    Manages TestSafetyPolicy operations and coordinates related state changes for the component.
-    """
+    """Group testsafetypolicy tests covering known folder roots are prohibited but children allowed; own paths protected."""
     def test_known_folder_roots_are_prohibited_but_children_allowed(
             self, monkeypatch, tmp_path):
-        """test_known_folder_roots_are_prohibited_but_children_allowed.
-
-        Manages test known folder roots are prohibited but children allowed operations and coordinates related state changes for the component.
+        """Verify known folder roots are prohibited but children allowed via SafetyPolicy.build, monkeypatch.setenv, policy.is_prohibited.
 
         Args:
             monkeypatch: The monkeypatch parameter.
@@ -235,9 +171,7 @@ class TestSafetyPolicy:
         assert not policy.is_prohibited(child)
 
     def test_own_paths_protected(self, tmp_path):
-        """test_own_paths_protected.
-
-        Manages test own paths protected operations and coordinates related state changes for the component.
+        """Verify own paths protected via SafetyPolicy, policy.is_prohibited, frozenset.
 
         Args:
             tmp_path: Filesystem path to the target file or directory.
@@ -255,8 +189,6 @@ class TestSafetyPolicy:
 @pytest.fixture
 def fake_env(monkeypatch, tmp_path):
     """Redirect every sweep root into a throwaway directory tree.
-
-    Manages fake env operations and coordinates related state changes for the component.
 
     Args:
         monkeypatch: The monkeypatch parameter.
@@ -291,14 +223,9 @@ def _scanner(apps=()):
 
 
 class TestFilesystemSweep:
-    """Testfilesystemsweep.
-
-    Manages TestFilesystemSweep operations and coordinates related state changes for the component.
-    """
+    """Group testfilesystemsweep tests covering empty leftover folder scores very good; blacklisted directory never flagged; executables present penalized; product still installed penalized; live sibling app claiming name penalized."""
     def test_empty_leftover_folder_scores_very_good(self, fake_env):
-        """test_empty_leftover_folder_scores_very_good.
-
-        Manages test empty leftover folder scores very good operations and coordinates related state changes for the component.
+        """Verify empty leftover folder scores very good via scanner.scan_app, InstalledApp, p.lower.
 
         Args:
             fake_env: The fake env parameter.
@@ -317,9 +244,7 @@ class TestFilesystemSweep:
         assert any("empty" in r for r in best.reasons)
 
     def test_blacklisted_directory_never_flagged(self, fake_env):
-        """test_blacklisted_directory_never_flagged.
-
-        Manages test blacklisted directory never flagged operations and coordinates related state changes for the component.
+        """Verify blacklisted directory never flagged via InstalledApp, name.lower, Path.
 
         Args:
             fake_env: The fake env parameter.
@@ -332,9 +257,7 @@ class TestFilesystemSweep:
                    for f in findings if f.kind == "folder")
 
     def test_executables_present_penalized(self, fake_env):
-        """test_executables_present_penalized.
-
-        Manages test executables present penalized operations and coordinates related state changes for the component.
+        """Verify executables present penalized via InstalledApp, f.path.lower, scan_app.
 
         Args:
             fake_env: The fake env parameter.
@@ -352,9 +275,7 @@ class TestFilesystemSweep:
         assert best.score <= 0
 
     def test_product_still_installed_penalized(self, fake_env):
-        """test_product_still_installed_penalized.
-
-        Manages test product still installed penalized operations and coordinates related state changes for the component.
+        """Verify product still installed penalized via InstalledApp, f.path.lower, scan_app.
 
         Args:
             fake_env: The fake env parameter.
@@ -373,9 +294,7 @@ class TestFilesystemSweep:
         assert best.level != VERY_GOOD
 
     def test_live_sibling_app_claiming_name_penalized(self, fake_env):
-        """test_live_sibling_app_claiming_name_penalized.
-
-        Manages test live sibling app claiming name penalized operations and coordinates related state changes for the component.
+        """Verify live sibling app claiming name penalized via InstalledApp, f.path.lower, scan_app.
 
         Args:
             fake_env: The fake env parameter.
@@ -392,9 +311,7 @@ class TestFilesystemSweep:
         assert any("installed app" in r for r in best.reasons)
 
     def test_nested_cache_inside_matched_vendor_found(self, fake_env):
-        """test_nested_cache_inside_matched_vendor_found.
-
-        Manages test nested cache inside matched vendor found operations and coordinates related state changes for the component.
+        """Verify nested cache inside matched vendor found via InstalledApp, name.lower, Path.
 
         Args:
             fake_env: The fake env parameter.
@@ -408,9 +325,7 @@ class TestFilesystemSweep:
         assert "cache" in paths or "zetaeditor" in paths
 
     def test_reparse_point_not_descended(self, fake_env):
-        """test_reparse_point_not_descended.
-
-        Manages test reparse point not descended operations and coordinates related state changes for the component.
+        """Verify reparse point not descended via InstalledApp, sp.run, pytest.skip.
 
         Args:
             fake_env: The fake env parameter.
@@ -438,9 +353,7 @@ class TestFilesystemSweep:
         assert isinstance(findings, list)
 
     def test_orphan_scan_reports_empty_unclaimed_folder(self, fake_env):
-        """test_orphan_scan_reports_empty_unclaimed_folder.
-
-        Manages test orphan scan reports empty unclaimed folder operations and coordinates related state changes for the component.
+        """Verify orphan scan reports empty unclaimed folder via InstalledApp, name.lower, Path.
 
         Args:
             fake_env: The fake env parameter.
@@ -461,10 +374,7 @@ class TestFilesystemSweep:
 # =====================================================================
 
 class FakeRegKey:
-    """Fakeregkey.
-
-    Manages FakeRegKey operations and coordinates related state changes for the component.
-    """
+    """Helper fakeregkey."""
 
     def __init__(self, subkeys=None, values=None):
         """__init__.
@@ -479,10 +389,7 @@ class FakeRegKey:
         self._values = values or {}
 
     def children(self):
-        """Children.
-
-        Manages children operations and coordinates related state changes for the component.
-        """
+        """Children."""
         return self._subkeys
 
 
@@ -506,10 +413,7 @@ def fake_registry(monkeypatch):
              r"SOFTWARE\Wow6432Node": FakeRegKey(subkeys={"ZetaSoft": zetasoft})}
 
     class FakeWinreg:
-        """Fakewinreg.
-
-        Manages FakeWinreg operations and coordinates related state changes for the component.
-        """
+        """Helper fakewinreg using roots.get, OSError, key.children."""
         HKEY_LOCAL_MACHINE = "hklm"
         HKEY_CURRENT_USER = "hkcu"
         KEY_READ = 0x20019
@@ -517,9 +421,7 @@ def fake_registry(monkeypatch):
 
         @staticmethod
         def OpenKey(key, path, reserved=0, access=0):
-            """Openkey.
-
-            Manages OpenKey operations and coordinates related state changes for the component.
+            """OpenKey using roots.get, OSError, key.children.
 
             Args:
                 key: The key parameter.
@@ -539,9 +441,7 @@ def fake_registry(monkeypatch):
 
         @staticmethod
         def QueryInfoKey(key):
-            """Queryinfokey.
-
-            Manages QueryInfoKey operations and coordinates related state changes for the component.
+            """QueryInfoKey using key.children.
 
             Args:
                 key: The key parameter.
@@ -550,9 +450,7 @@ def fake_registry(monkeypatch):
 
         @staticmethod
         def EnumKey(key, index):
-            """Enumkey.
-
-            Manages EnumKey operations and coordinates related state changes for the component.
+            """EnumKey using key.children, OSError.
 
             Args:
                 key: The key parameter.
@@ -565,9 +463,7 @@ def fake_registry(monkeypatch):
 
         @staticmethod
         def CloseKey(key):
-            """Closekey.
-
-            Manages CloseKey operations and coordinates related state changes for the component.
+            """CloseKey.
 
             Args:
                 key: The key parameter.
@@ -576,9 +472,7 @@ def fake_registry(monkeypatch):
 
         @staticmethod
         def EnumValue(key, index):
-            """Enumvalue.
-
-            Manages EnumValue operations and coordinates related state changes for the component.
+            """EnumValue using key._values.items, OSError.
 
             Args:
                 key: The key parameter.
@@ -597,15 +491,10 @@ def fake_registry(monkeypatch):
 
 
 class TestRegistrySweep:
-    """Testregistrysweep.
-
-    Manages TestRegistrySweep operations and coordinates related state changes for the component.
-    """
+    """Group testregistrysweep tests covering matching software key found with explicit pointer; walk skips blacklisted branches."""
     def test_matching_software_key_found_with_explicit_pointer(
             self, fake_env, fake_registry):
-        """test_matching_software_key_found_with_explicit_pointer.
-
-        Manages test matching software key found with explicit pointer operations and coordinates related state changes for the component.
+        """Verify matching software key found with explicit pointer via InstalledApp, f.path.endswith, scan_app.
 
         Args:
             fake_env: The fake env parameter.
@@ -621,9 +510,7 @@ class TestRegistrySweep:
         assert hit.level in (GOOD, VERY_GOOD)
 
     def test_walk_skips_blacklisted_branches(self, fake_env, fake_registry):
-        """test_walk_skips_blacklisted_branches.
-
-        Manages test walk skips blacklisted branches operations and coordinates related state changes for the component.
+        """Verify walk skips blacklisted branches via InstalledApp, f.path.endswith, scan_app.
 
         Args:
             fake_env: The fake env parameter.
@@ -640,15 +527,10 @@ class TestRegistrySweep:
 # =====================================================================
 
 class TestCleaner:
-    """Testcleaner.
-
-    Manages TestCleaner operations and coordinates related state changes for the component.
-    """
+    """Group testcleaner tests covering recycle via send2trash and journal; recycle failure surfaced not hidden; registry clean exports backup then deletes; protected paths are skipped; empty clean writes no journal."""
     def test_recycle_via_send2trash_and_journal(self, fake_env, tmp_path,
                                                 monkeypatch):
-        """test_recycle_via_send2trash_and_journal.
-
-        Manages test recycle via send2trash and journal operations and coordinates related state changes for the component.
+        """Verify recycle via send2trash and journal via monkeypatch.setattr, LeftoverCleaner, cleaner.clean.
 
         Args:
             fake_env: The fake env parameter.
@@ -660,9 +542,7 @@ class TestCleaner:
         calls = []
 
         def fake_send2trash(path):
-            """fake_send2trash.
-
-            Manages fake send2trash operations and coordinates related state changes for the component.
+            """Fake send2trash using calls.append.
 
             Args:
                 path: Filesystem path to the target file or directory.
@@ -684,9 +564,7 @@ class TestCleaner:
 
     def test_recycle_failure_surfaced_not_hidden(self, fake_env, tmp_path,
                                                  monkeypatch):
-        """test_recycle_failure_surfaced_not_hidden.
-
-        Manages test recycle failure surfaced not hidden operations and coordinates related state changes for the component.
+        """Verify recycle failure surfaced not hidden via monkeypatch.setattr, LeftoverCleaner, cleaner.clean.
 
         Args:
             fake_env: The fake env parameter.
@@ -697,9 +575,7 @@ class TestCleaner:
         target.mkdir()
 
         def boom(_path):
-            """Boom.
-
-            Manages boom operations and coordinates related state changes for the component.
+            """Boom using PermissionError.
 
             Args:
                 _path: Filesystem path to the target file or directory.
@@ -715,9 +591,7 @@ class TestCleaner:
 
     def test_registry_clean_exports_backup_then_deletes(self, tmp_path,
                                                         monkeypatch):
-        """test_registry_clean_exports_backup_then_deletes.
-
-        Manages test registry clean exports backup then deletes operations and coordinates related state changes for the component.
+        """Verify registry clean exports backup then deletes via monkeypatch.setattr, LeftoverCleaner, LeftoverFinding.
 
         Args:
             tmp_path: Filesystem path to the target file or directory.
@@ -726,9 +600,7 @@ class TestCleaner:
         ran = []
 
         def fake_run(cmd, **_kwargs):
-            """fake_run.
-
-            Manages fake run operations and coordinates related state changes for the component.
+            """Fake run using ran.append, R, Path.
 
             Args:
                 cmd: The cmd parameter.
@@ -738,10 +610,7 @@ class TestCleaner:
                 # reg export <key> <file> /y  -> backup file is cmd[3]
                 Path(cmd[3]).write_text("Windows Registry Editor Version 5.00")
             class R:
-                """R.
-
-                Manages R operations and coordinates related state changes for the component.
-                """
+                """Helper r."""
                 returncode = 0
                 stderr = ""
             return R()
@@ -759,9 +628,7 @@ class TestCleaner:
         assert len(backups) == 1
 
     def test_protected_paths_are_skipped(self, tmp_path):
-        """test_protected_paths_are_skipped.
-
-        Manages test protected paths are skipped operations and coordinates related state changes for the component.
+        """Verify protected paths are skipped via SafetyPolicy.build, LeftoverCleaner, cleaner.clean.
 
         Args:
             tmp_path: Filesystem path to the target file or directory.
@@ -773,9 +640,7 @@ class TestCleaner:
         assert outcome[0].disposition == "skipped"
 
     def test_empty_clean_writes_no_journal(self, tmp_path):
-        """test_empty_clean_writes_no_journal.
-
-        Manages test empty clean writes no journal operations and coordinates related state changes for the component.
+        """Verify empty clean writes no journal via LeftoverCleaner, cleaner.clean, exists.
 
         Args:
             tmp_path: Filesystem path to the target file or directory.
@@ -790,10 +655,7 @@ class TestCleaner:
 # =====================================================================
 
 class TestComSweep:
-    """Testcomsweep.
-
-    Manages TestComSweep operations and coordinates related state changes for the component.
-    """
+    """Group testcomsweep tests covering clsid pointing into dead install is flagged."""
     def test_clsid_pointing_into_dead_install_is_flagged(
             self, fake_env, monkeypatch):
         """A CLSID whose InprocServer32 lives in the dead install location
@@ -806,9 +668,7 @@ class TestComSweep:
         dll.write_bytes(b"MZ")
 
         def clsid_key(server_path):
-            """clsid_key.
-
-            Manages clsid key operations and coordinates related state changes for the component.
+            """Clsid key using FakeRegKey.
 
             Args:
                 server_path: Filesystem path to the target file or directory.
@@ -831,10 +691,7 @@ class TestComSweep:
         })
 
         class ComWinreg:
-            """Comwinreg.
-
-            Manages ComWinreg operations and coordinates related state changes for the component.
-            """
+            """Helper comwinreg using OSError, key.children, get."""
             HKEY_LOCAL_MACHINE = "hklm"
             HKEY_CURRENT_USER = "hkcu"
             KEY_READ = 0x20019
@@ -842,9 +699,7 @@ class TestComSweep:
 
             @staticmethod
             def OpenKey(key, path, reserved=0, access=0):
-                """Openkey.
-
-                Manages OpenKey operations and coordinates related state changes for the component.
+                """OpenKey using OSError, key.children, get.
 
                 Args:
                     key: The key parameter.
@@ -867,9 +722,7 @@ class TestComSweep:
 
             @staticmethod
             def QueryInfoKey(key):
-                """Queryinfokey.
-
-                Manages QueryInfoKey operations and coordinates related state changes for the component.
+                """QueryInfoKey using key.children.
 
                 Args:
                     key: The key parameter.
@@ -878,9 +731,7 @@ class TestComSweep:
 
             @staticmethod
             def EnumKey(key, index):
-                """Enumkey.
-
-                Manages EnumKey operations and coordinates related state changes for the component.
+                """EnumKey using key.children, OSError.
 
                 Args:
                     key: The key parameter.
@@ -893,9 +744,7 @@ class TestComSweep:
 
             @staticmethod
             def CloseKey(key):
-                """Closekey.
-
-                Manages CloseKey operations and coordinates related state changes for the component.
+                """CloseKey.
 
                 Args:
                     key: The key parameter.
@@ -904,9 +753,7 @@ class TestComSweep:
 
             @staticmethod
             def QueryValueEx(key, name):
-                """Queryvalueex.
-
-                Manages QueryValueEx operations and coordinates related state changes for the component.
+                """QueryValueEx using OSError.
 
                 Args:
                     key: The key parameter.
@@ -935,15 +782,10 @@ class TestComSweep:
 
 
 class TestInnoLog:
-    """Testinnolog.
-
-    Manages TestInnoLog operations and coordinates related state changes for the component.
-    """
+    """Group testinnolog tests covering paths from unins000 dat that still exist are flagged."""
     def test_paths_from_unins000_dat_that_still_exist_are_flagged(
             self, fake_env):
-        """test_paths_from_unins000_dat_that_still_exist_are_flagged.
-
-        Manages test paths from unins000 dat that still exist are flagged operations and coordinates related state changes for the component.
+        """Verify paths from unins000 dat that still exist are flagged via InstalledApp, LeftoverScanner, scan_app.
 
         Args:
             fake_env: The fake env parameter.
@@ -975,15 +817,10 @@ class TestInnoLog:
 
 
 class TestServiceAndTaskClean:
-    """Testserviceandtaskclean.
-
-    Manages TestServiceAndTaskClean operations and coordinates related state changes for the component.
-    """
+    """Group testserviceandtaskclean tests covering service clean backs up then sc deletes; task clean backs up xml then schtasks deletes; task sweep finds command in dead install."""
     def test_service_clean_backs_up_then_sc_deletes(self, tmp_path,
                                                     monkeypatch):
-        """test_service_clean_backs_up_then_sc_deletes.
-
-        Manages test service clean backs up then sc deletes operations and coordinates related state changes for the component.
+        """Verify service clean backs up then sc deletes via monkeypatch.setattr, LeftoverCleaner, LeftoverFinding.
 
         Args:
             tmp_path: Filesystem path to the target file or directory.
@@ -992,9 +829,7 @@ class TestServiceAndTaskClean:
         ran = []
 
         def fake_run(cmd, **_kw):
-            """fake_run.
-
-            Manages fake run operations and coordinates related state changes for the component.
+            """Fake run using ran.append, R, Path.
 
             Args:
                 cmd: The cmd parameter.
@@ -1003,10 +838,7 @@ class TestServiceAndTaskClean:
             if cmd[0] == "reg":
                 Path(cmd[3]).write_text("bak")   # reg export <key> <file> /y
             class R:
-                """R.
-
-                Manages R operations and coordinates related state changes for the component.
-                """
+                """Helper r."""
                 returncode = 0
                 stderr = ""
                 stdout = ""
@@ -1027,9 +859,7 @@ class TestServiceAndTaskClean:
 
     def test_task_clean_backs_up_xml_then_schtasks_deletes(
             self, fake_env, tmp_path, monkeypatch):
-        """test_task_clean_backs_up_xml_then_schtasks_deletes.
-
-        Manages test task clean backs up xml then schtasks deletes operations and coordinates related state changes for the component.
+        """Verify task clean backs up xml then schtasks deletes via monkeypatch.setenv, monkeypatch.setattr, LeftoverCleaner.
 
         Args:
             fake_env: The fake env parameter.
@@ -1047,19 +877,14 @@ class TestServiceAndTaskClean:
         ran = []
 
         def fake_run(cmd, **_kw):
-            """fake_run.
-
-            Manages fake run operations and coordinates related state changes for the component.
+            """Fake run using ran.append, R.
 
             Args:
                 cmd: The cmd parameter.
             """
             ran.append(list(cmd))
             class R:
-                """R.
-
-                Manages R operations and coordinates related state changes for the component.
-                """
+                """Helper r."""
                 returncode = 0
                 stderr = ""
                 stdout = ""
@@ -1078,9 +903,7 @@ class TestServiceAndTaskClean:
 
     def test_task_sweep_finds_command_in_dead_install(self, fake_env,
                                                       monkeypatch):
-        """test_task_sweep_finds_command_in_dead_install.
-
-        Manages test task sweep finds command in dead install operations and coordinates related state changes for the component.
+        """Verify task sweep finds command in dead install via monkeypatch.setenv, InstalledApp, LeftoverScanner.
 
         Args:
             fake_env: The fake env parameter.
@@ -1103,24 +926,15 @@ class TestServiceAndTaskClean:
 
 
 class TestTokenStopwords:
-    """Testtokenstopwords.
-
-    Manages TestTokenStopwords operations and coordinates related state changes for the component.
-    """
+    """Group testtokenstopwords tests covering generic words never become tokens; product identity survives."""
     def test_generic_words_never_become_tokens(self):
-        """test_generic_words_never_become_tokens.
-
-        Manages test generic words never become tokens operations and coordinates related state changes for the component.
-        """
+        """Verify generic words never become tokens via build_tokens."""
         tokens = build_tokens("Definitely Not Installed XYZ Setup")
         assert "installed" not in tokens
         assert "setup" not in tokens
 
     def test_product_identity_survives(self):
-        """test_product_identity_survives.
-
-        Manages test product identity survives operations and coordinates related state changes for the component.
-        """
+        """Verify product identity survives via build_tokens."""
         tokens = build_tokens("ZetaEditor Update")
         assert "zetaeditor" in tokens or "zetaeditorupdate" in tokens
 
@@ -1129,16 +943,10 @@ class TestTokenStopwords:
 # =====================================================================
 
 class TestInventory:
-    """Testinventory.
-
-    Manages TestInventory operations and coordinates related state changes for the component.
-    """
+    """Group testinventory tests covering read installed apps runs without error; find residual keys api exists."""
     def test_read_installed_apps_runs_without_error(self):
         # Read-only enumeration of the real machine; must never raise.
-        """test_read_installed_apps_runs_without_error.
-
-        Manages test read installed apps runs without error operations and coordinates related state changes for the component.
-        """
+        """Verify read installed apps runs without error via read_installed_apps."""
         from cortex_unified.system_tools.leftover_cleaner import (
             read_installed_apps,
         )
@@ -1149,10 +957,7 @@ class TestInventory:
             assert app.installer_type in ("msi", "inno", "nsis", "unknown")
 
     def test_find_residual_keys_api_exists(self):
-        """test_find_residual_keys_api_exists.
-
-        Manages test find residual keys api exists operations and coordinates related state changes for the component.
-        """
+        """Verify find residual keys api exists via scanner.find_residual_uninstall_keys, InstalledApp, _scanner."""
         scanner = _scanner()
         app = InstalledApp(name="Definitely Not Installed XYZ")
         assert scanner.find_residual_uninstall_keys(app) == [] or True

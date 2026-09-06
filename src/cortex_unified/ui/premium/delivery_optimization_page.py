@@ -28,10 +28,7 @@ IS_WINDOWS = sys.platform == "win32"
 
 
 class _DeliveryScanWorker(QObject):
-    """Deliveryscanworker.
-
-    Manages DeliveryScanWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker (_DeliveryScanWorker) performing DeliveryScanWorker. Signals finished, failed report status. Its run() step calls DeliveryOptimizationCleaner.get_status, emit, str."""
     finished = Signal(object)  # DeliveryOptimizationStatus
     failed = Signal(str)
 
@@ -51,10 +48,7 @@ class _DeliveryScanWorker(QObject):
 
 
 class _DeliveryCleanWorker(QObject):
-    """Deliverycleanworker.
-
-    Manages DeliveryCleanWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker (_DeliveryCleanWorker) performing DeliveryCleanWorker. Signals finished, failed report status. Its run() step calls DeliveryOptimizationCleaner.clean_cache, emit, str."""
     finished = Signal(object)  # DeliveryOptimizationCleanReport
     failed = Signal(str)
 
@@ -74,10 +68,7 @@ class _DeliveryCleanWorker(QObject):
 
 
 class DeliveryOptimizationPage(_Page):
-    """Deliveryoptimizationpage.
-
-    Manages DeliveryOptimizationPage operations and coordinates related state changes for the component.
-    """
+    """Delivery Optimization (WUDO) Cache page: Scans and purges the Windows Delivery Optimization peer cache."""
 
     def __init__(self, win):
         """Init.
@@ -206,10 +197,7 @@ class DeliveryOptimizationPage(_Page):
             self.win.statusBar().showMessage("Delivery Optimization cache is empty", 5000)
 
     def _confirm_clean(self):
-        """Confirm clean.
-
-        Manages confirm clean operations and coordinates related state changes for the component.
-        """
+        """Validate the current selection and ask the user to confirm via a message box showing 'Purge Delivery Optimization Cache'."""
         if not self._status or self._status.size_bytes == 0:
             return
         ans = QMessageBox.question(

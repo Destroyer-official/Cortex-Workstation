@@ -111,13 +111,14 @@ def _SecondaryButton(text: str, parent=None) -> QPushButton:
 def _run_task(win, work_fn, done_fn, err_fn=None):
     """Run work_fn on the window's worker runtime, or inline as a fallback, dispatching to done_fn / err_fn.
 
-    Manages run task operations and coordinates related state changes for the component.
+        Operates on this page widgets as implemented in the method body below.
 
-    Args:
-        win: Parent window or shell controller instance.
-        work_fn: The work fn parameter.
-        done_fn: The done fn parameter.
-        err_fn: Error message string or exception instance.
+            Args:
+                win: Parent window or shell controller instance.
+                work_fn: The work fn parameter.
+                done_fn: The done fn parameter.
+                err_fn: Error message string or exception instance.
+
     """
     if hasattr(win, "worker_runtime") and getattr(win, "worker_runtime", None) is not None:
         win.worker_runtime.run(work_fn, on_result=done_fn, on_error=err_fn)
@@ -135,9 +136,9 @@ def _run_task(win, work_fn, done_fn, err_fn=None):
 # ===========================================================================
 
 class EnvVariableManagerPage(_Page):
-    """Envvariablemanagerpage.
+    """PATH Optimizer page with analyze/clean/export buttons and an entries table.
 
-    Manages EnvVariableManagerPage operations and coordinates related state changes for the component.
+        Backed by EnvironmentVariableManager, QMessageBox, QFileDialog; builds tables, buttons, and dialogs for the actions below.
     """
     def __init__(self, win: PremiumMainWindow):
         """Build the PATH Optimizer page with analyze/clean/export buttons and an entries table.
@@ -191,7 +192,7 @@ class EnvVariableManagerPage(_Page):
     def _on_analyze(self):
         """Analyze PATH and list entries with dead-link and duplicate flags.
 
-        Manages on analyze operations and coordinates related state changes for the component.
+            Uses EnvironmentVariableManager; updates self.summary_label, self.table.
         """
         rep = EnvironmentVariableManager.analyze_path()
         self.summary_label.setText(
@@ -216,7 +217,7 @@ class EnvVariableManagerPage(_Page):
     def _on_clean(self):
         """Confirm and remove dead/duplicate User PATH entries, then re-analyze.
 
-        Manages on clean operations and coordinates related state changes for the component.
+            Uses EnvironmentVariableManager, QMessageBox; updates self._on_analyze.
         """
         confirm = QMessageBox.question(
             self, "Confirm PATH Cleanup",
@@ -234,7 +235,7 @@ class EnvVariableManagerPage(_Page):
     def _on_export(self):
         """Export environment variables to a .env or .bat file.
 
-        Manages on export operations and coordinates related state changes for the component.
+            Uses EnvironmentVariableManager, QMessageBox.
         """
         f, _ = QFileDialog.getSaveFileName(self, "Export Environment Variables", "environment.env", "Env Files (*.env *.bat)")
         if f:
@@ -249,9 +250,9 @@ class EnvVariableManagerPage(_Page):
 # ===========================================================================
 
 class WindowsServiceManagerPage(_Page):
-    """Windowsservicemanagerpage.
+    """Service Manager page with scan button, profile combo, and services table.
 
-    Manages WindowsServiceManagerPage operations and coordinates related state changes for the component.
+        Backed by WindowsServiceManager, QMessageBox; builds tables, buttons, and dialogs for the actions below.
     """
     def __init__(self, win: PremiumMainWindow):
         """Build the Service Manager page with scan button, profile combo, and services table.
@@ -301,7 +302,7 @@ class WindowsServiceManagerPage(_Page):
     def _on_scan(self):
         """Enumerate Windows services on the worker runtime.
 
-        Manages on scan operations and coordinates related state changes for the component.
+            Uses WindowsServiceManager; updates self.scan_btn, self.table, self.win.
         """
         self.scan_btn.setEnabled(False)
         self.table.setRowCount(0)
@@ -341,7 +342,7 @@ class WindowsServiceManagerPage(_Page):
     def _on_apply_profile(self):
         """Confirm and apply the selected service profile, then rescan.
 
-        Manages on apply profile operations and coordinates related state changes for the component.
+            Uses WindowsServiceManager, QMessageBox; updates self.profile_combo, self._on_scan.
         """
         prof = self.profile_combo.currentText()
         confirm = QMessageBox.question(
@@ -363,9 +364,9 @@ class WindowsServiceManagerPage(_Page):
 # ===========================================================================
 
 class FontCacheManagerPage(_Page):
-    """Fontcachemanagerpage.
+    """Font Cache page with scan/clean buttons and a fonts table.
 
-    Manages FontCacheManagerPage operations and coordinates related state changes for the component.
+        Backed by FontCacheManager, QMessageBox; builds tables, buttons, and dialogs for the actions below.
     """
     def __init__(self, win: PremiumMainWindow):
         """Build the Font Cache page with scan/clean buttons and a fonts table.
@@ -416,7 +417,7 @@ class FontCacheManagerPage(_Page):
     def _on_scan(self):
         """Analyze installed fonts and flag orphans and duplicates.
 
-        Manages on scan operations and coordinates related state changes for the component.
+            Uses FontCacheManager; updates self.summary_label, self.table.
         """
         rep = FontCacheManager.analyze()
         self.summary_label.setText(
@@ -439,7 +440,7 @@ class FontCacheManagerPage(_Page):
     def _on_clean(self):
         """Confirm and remove orphaned font entries, then rescan.
 
-        Manages on clean operations and coordinates related state changes for the component.
+            Uses FontCacheManager, QMessageBox; updates self._on_scan.
         """
         confirm = QMessageBox.question(
             self, "Confirm Orphan Cleanup",
@@ -457,9 +458,9 @@ class FontCacheManagerPage(_Page):
 # ===========================================================================
 
 class TempFolderCleanerPage(_Page):
-    """Tempfoldercleanerpage.
+    """Temp Cleaner page with age spinner, scan/clean buttons, and a locations table.
 
-    Manages TempFolderCleanerPage operations and coordinates related state changes for the component.
+        Backed by TempFolderCleaner, QMessageBox; builds tables, buttons, and dialogs for the actions below.
     """
     def __init__(self, win: PremiumMainWindow):
         """Build the Temp Cleaner page with age spinner, scan/clean buttons, and a locations table.
@@ -516,7 +517,7 @@ class TempFolderCleanerPage(_Page):
     def _on_scan(self):
         """Scan all temp locations and show stale-file totals.
 
-        Manages on scan operations and coordinates related state changes for the component.
+            Uses TempFolderCleaner; updates self.hours_spin, self.summary_label, self.table.
         """
         h = self.hours_spin.value()
         rep = TempFolderCleaner.scan(stale_hours=h)
@@ -538,7 +539,7 @@ class TempFolderCleanerPage(_Page):
     def _on_clean(self):
         """Confirm and delete temp files older than the chosen age, then rescan.
 
-        Manages on clean operations and coordinates related state changes for the component.
+            Uses TempFolderCleaner, QMessageBox; updates self.hours_spin, self._on_scan.
         """
         h = self.hours_spin.value()
         confirm = QMessageBox.question(
@@ -560,9 +561,9 @@ class TempFolderCleanerPage(_Page):
 # ===========================================================================
 
 class ContextMenuManagerPage(_Page):
-    """Contextmenumanagerpage.
+    """Context Menu page with scan button, enable/disable actions, and an entries table.
 
-    Manages ContextMenuManagerPage operations and coordinates related state changes for the component.
+        Backed by ContextMenuManager, QMessageBox; builds tables, buttons, and dialogs for the actions below.
     """
     def __init__(self, win: PremiumMainWindow):
         """Build the Context Menu page with scan button, enable/disable actions, and an entries table.
@@ -619,7 +620,7 @@ class ContextMenuManagerPage(_Page):
     def _on_scan(self):
         """Analyze context-menu entries and flag orphaned handlers.
 
-        Manages on scan operations and coordinates related state changes for the component.
+            Uses ContextMenuManager; updates self._entries, self.summary_label, self.table.
         """
         rep = ContextMenuManager.analyze()
         self._entries = rep.entries
@@ -644,7 +645,7 @@ class ContextMenuManagerPage(_Page):
     def _on_disable_selected(self):
         """Disable the context-menu entry selected in the table.
 
-        Manages on disable selected operations and coordinates related state changes for the component.
+            Uses ContextMenuManager, QMessageBox; updates self.table, self._entries, self._on_scan.
         """
         row = self.table.currentRow()
         if 0 <= row < len(self._entries):
@@ -659,7 +660,7 @@ class ContextMenuManagerPage(_Page):
     def _on_enable_selected(self):
         """Enable the context-menu entry selected in the table.
 
-        Manages on enable selected operations and coordinates related state changes for the component.
+            Uses ContextMenuManager, QMessageBox; updates self.table, self._entries, self._on_scan.
         """
         row = self.table.currentRow()
         if 0 <= row < len(self._entries):
@@ -677,9 +678,9 @@ class ContextMenuManagerPage(_Page):
 # ===========================================================================
 
 class PagefileOptimizerPage(_Page):
-    """Pagefileoptimizerpage.
+    """Pagefile page with status labels, drive/size controls, and apply/reset buttons.
 
-    Manages PagefileOptimizerPage operations and coordinates related state changes for the component.
+        Backed by PagefileOptimizer, QMessageBox; builds tables, buttons, and dialogs for the actions below.
     """
     def __init__(self, win: PremiumMainWindow):
         """Build the Pagefile page with status labels, drive/size controls, and apply/reset buttons.
@@ -756,7 +757,7 @@ class PagefileOptimizerPage(_Page):
     def _on_apply(self):
         """Confirm and set a fixed pagefile on the chosen drive, then refresh.
 
-        Manages on apply operations and coordinates related state changes for the component.
+            Uses PagefileOptimizer, QMessageBox; updates self.drive_combo, self.init_spin, self.max_spin.
         """
         drive = self.drive_combo.currentText()
         init_mb = self.init_spin.value()
@@ -777,7 +778,7 @@ class PagefileOptimizerPage(_Page):
     def _on_reset_auto(self):
         """Reset the pagefile to system-managed, then refresh.
 
-        Manages on reset auto operations and coordinates related state changes for the component.
+            Uses PagefileOptimizer, QMessageBox; updates self._refresh.
         """
         ok, msg = PagefileOptimizer.set_automatic_pagefile()
         if ok:
@@ -792,9 +793,9 @@ class PagefileOptimizerPage(_Page):
 # ===========================================================================
 
 class DiagnosticDataManagerPage(_Page):
-    """Diagnosticdatamanagerpage.
+    """Telemetry page with audit/harden buttons, score label, and settings table.
 
-    Manages DiagnosticDataManagerPage operations and coordinates related state changes for the component.
+        Backed by DiagnosticDataManager, QMessageBox; builds tables, buttons, and dialogs for the actions below.
     """
     def __init__(self, win: PremiumMainWindow):
         """Build the Telemetry page with audit/harden buttons, score label, and settings table.
@@ -843,7 +844,7 @@ class DiagnosticDataManagerPage(_Page):
     def _on_audit(self):
         """Audit telemetry settings and show the privacy hardening score.
 
-        Manages on audit operations and coordinates related state changes for the component.
+            Uses DiagnosticDataManager; updates self.score_label, self.table.
         """
         rep = DiagnosticDataManager.audit_telemetry()
         self.score_label.setText(
@@ -866,7 +867,7 @@ class DiagnosticDataManagerPage(_Page):
     def _on_harden(self):
         """Confirm and apply maximum-privacy telemetry policies, then re-audit.
 
-        Manages on harden operations and coordinates related state changes for the component.
+            Uses DiagnosticDataManager, QMessageBox; updates self._on_audit.
         """
         confirm = QMessageBox.question(
             self, "Confirm Hardening",
@@ -887,9 +888,9 @@ class DiagnosticDataManagerPage(_Page):
 # ===========================================================================
 
 class StartupImpactPage(_Page):
-    """Startupimpactpage.
+    """Startup Impact page with scan/toggle buttons and an items table.
 
-    Manages StartupImpactPage operations and coordinates related state changes for the component.
+        Backed by StartupImpactAnalyzer, QMessageBox; builds tables, buttons, and dialogs for the actions below.
     """
     def __init__(self, win: PremiumMainWindow):
         """Build the Startup Impact page with scan/toggle buttons and an items table.
@@ -942,7 +943,7 @@ class StartupImpactPage(_Page):
     def _on_scan(self):
         """Analyze startup items and show impact levels and boot delay.
 
-        Manages on scan operations and coordinates related state changes for the component.
+            Uses StartupImpactAnalyzer; updates self._items, self.summary_label, self.table.
         """
         rep = StartupImpactAnalyzer.analyze_startup()
         self._items = rep.items
@@ -971,7 +972,7 @@ class StartupImpactPage(_Page):
     def _on_toggle(self):
         """Enable or disable the startup item selected in the table.
 
-        Manages on toggle operations and coordinates related state changes for the component.
+            Uses StartupImpactAnalyzer, QMessageBox; updates self.table, self._items, self._on_scan.
         """
         row = self.table.currentRow()
         if 0 <= row < len(self._items):
@@ -991,9 +992,9 @@ class StartupImpactPage(_Page):
 # ===========================================================================
 
 class SlackSpaceAnalyzerPage(_Page):
-    """Slackspaceanalyzerpage.
+    """Slack Space page with folder picker, analyze button, and offenders table.
 
-    Manages SlackSpaceAnalyzerPage operations and coordinates related state changes for the component.
+        Backed by SlackSpaceAnalyzer, QFileDialog; builds tables, buttons, and dialogs for the actions below.
     """
     def __init__(self, win: PremiumMainWindow):
         """Build the Slack Space page with folder picker, analyze button, and offenders table.
@@ -1044,7 +1045,7 @@ class SlackSpaceAnalyzerPage(_Page):
     def _on_choose(self):
         """Pick a directory and immediately analyze it.
 
-        Manages on choose operations and coordinates related state changes for the component.
+            Uses QFileDialog; updates self._target_path, self._on_scan.
         """
         f = QFileDialog.getExistingDirectory(self, "Select Directory to Analyze")
         if f:
@@ -1054,7 +1055,7 @@ class SlackSpaceAnalyzerPage(_Page):
     def _on_scan(self):
         """Analyze cluster slack waste on the worker runtime.
 
-        Manages on scan operations and coordinates related state changes for the component.
+            Uses SlackSpaceAnalyzer; updates self.scan_btn, self.table, self._target_path.
         """
         self.scan_btn.setEnabled(False)
         self.table.setRowCount(0)
@@ -1101,9 +1102,9 @@ class SlackSpaceAnalyzerPage(_Page):
 # ===========================================================================
 
 class EventLogMonitorPage(_Page):
-    """Eventlogmonitorpage.
+    """Event Monitor page with scan button and an events table.
 
-    Manages EventLogMonitorPage operations and coordinates related state changes for the component.
+        Backed by EventLogMonitor; builds tables, buttons, and dialogs for the actions below.
     """
     def __init__(self, win: PremiumMainWindow):
         """Build the Event Monitor page with scan button and an events table.
@@ -1149,7 +1150,7 @@ class EventLogMonitorPage(_Page):
     def _on_scan(self):
         """Query event-log anomalies on the worker runtime.
 
-        Manages on scan operations and coordinates related state changes for the component.
+            Uses EventLogMonitor; updates self.scan_btn, self.table, self.summary_label.
         """
         self.scan_btn.setEnabled(False)
         self.table.setRowCount(0)

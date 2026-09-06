@@ -13,10 +13,7 @@ from typing import Dict, List
 
 
 class ResidualCleaner:
-    """Residualcleaner.
-
-    Manages ResidualCleaner operations and coordinates related state changes for the component.
-    """
+    """Find leftover application folders after uninstall using token matching."""
 
     # Directories that should NEVER be flagged as residuals
     _SYSTEM_DIRS = frozenset([
@@ -143,9 +140,7 @@ class ResidualCleaner:
 
     @staticmethod
     def _get_size(path: str) -> int:
-        """Total size of a directory tree.
-
-        Manages get size operations and coordinates related state changes for the component.
+        """Compute total byte size of a directory tree, skipping unreadable files.
 
         Args:
             path (str): Filesystem path to the target file or directory.

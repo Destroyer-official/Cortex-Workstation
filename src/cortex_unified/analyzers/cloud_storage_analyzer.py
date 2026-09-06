@@ -66,16 +66,14 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import AsyncGenerator, Callable, Dict, List, Optional, Tuple, Any
 
-
 # ---------------------------------------------------------------------------
 # Data structures
 # ---------------------------------------------------------------------------
 
 @dataclass(slots=True)
 class CloudFileEntry:
-    """Cloudfileentry.
+    """Cloud object enumerated from a provider listing.
 
-    Manages CloudFileEntry operations and coordinates related state changes for the component.
     """
     path: str
     size: int
@@ -93,8 +91,6 @@ class CloudFileEntry:
     def to_dict(self) -> dict:
         """Serialize this entry to a plain dict, with ``mtime`` as ISO-8601.
 
-        Manages to dict operations and coordinates related state changes for the component.
-
         Returns:
             dict: Dictionary mapping identifiers to status or values.
         """
@@ -103,12 +99,10 @@ class CloudFileEntry:
         d["mtime"] = self.mtime.isoformat()
         return d
 
-
 @dataclass
 class CloudScanStats:
-    """Cloudscanstats.
+    """Aggregate counts, byte totals, live cost estimate, and errors for one cloud scan.
 
-    Manages CloudScanStats operations and coordinates related state changes for the component.
     """
     total_objects: int = 0
     total_size_bytes: int = 0
@@ -120,12 +114,10 @@ class CloudScanStats:
     scan_duration_seconds: float = 0.0
     errors: List[str] = field(default_factory=list)
 
-
 @dataclass
 class DuplicateGroup:
-    """Duplicategroup.
+    """Cloud (and optional local) objects sharing one content hash.
 
-    Manages DuplicateGroup operations and coordinates related state changes for the component.
     """
     hash: str
     size: int
@@ -136,13 +128,10 @@ class DuplicateGroup:
     def wasted_bytes(self) -> int:
         """Bytes reclaimable if all but one copy of this group were removed.
 
-        Manages wasted bytes operations and coordinates related state changes for the component.
-
         Returns:
             int: Result of the operation.
         """
         return self.size * (len(self.entries) + len(self.local_paths) - 1)
-
 
 # ---------------------------------------------------------------------------
 # Dynamic pricing — live provider APIs with on-disk cache, no hardcoded rates
@@ -150,8 +139,6 @@ class DuplicateGroup:
 
 def _pricing_cache_dir() -> Path:
     """Return (creating if needed) the on-disk pricing cache directory.
-
-    Manages pricing cache dir operations and coordinates related state changes for the component.
 
     Returns:
         Path: Result of the operation.
@@ -161,7 +148,6 @@ def _pricing_cache_dir() -> Path:
     d = root / "Cortex" / "pricing"
     d.mkdir(parents=True, exist_ok=True)
     return d
-
 
 class PricingCatalog:
     """Storage pricing resolved at runtime from the provider's public API.
@@ -176,8 +162,6 @@ class PricingCatalog:
     def __init__(self, ttl_hours: int = 168, timeout: int = 20):
         """Set the cache TTL in hours and the network timeout in seconds.
 
-        Initializes the instance and configures internal state.
-
         Args:
             ttl_hours (int): The ttl hours parameter.
             timeout (int): The timeout parameter.
@@ -189,8 +173,6 @@ class PricingCatalog:
 
     def _cache_file(self, provider: str, region: str) -> Path:
         """Filesystem path of the cache file for one provider/region pair.
-
-        Manages cache file operations and coordinates related state changes for the component.
 
         Args:
             provider (str): The provider parameter.
@@ -204,8 +186,6 @@ class PricingCatalog:
 
     def _read_cache(self, provider: str, region: str) -> Optional[Dict[str, float]]:
         """Return cached rates for this pair, or ``None`` when missing, stale, or corrupt.
-
-        Manages read cache operations and coordinates related state changes for the component.
 
         Args:
             provider (str): The provider parameter.
@@ -229,8 +209,6 @@ class PricingCatalog:
     def _write_cache(self, provider: str, region: str, rates: Dict[str, float]) -> None:
         """Persist rates with a fetch timestamp, silently ignoring filesystem errors.
 
-        Manages write cache operations and coordinates related state changes for the component.
-
         Args:
             provider (str): The provider parameter.
             region (str): The region parameter.
@@ -246,8 +224,6 @@ class PricingCatalog:
 
     def _http_json(self, url: str) -> Optional[Any]:
         """GET a URL and parse the JSON response; return ``None`` on any failure.
-
-        Manages http json operations and coordinates related state changes for the component.
 
         Args:
             url (str): The url parameter.
@@ -268,8 +244,6 @@ class PricingCatalog:
     def _fetch_aws(self, region: str) -> Dict[str, float]:
         # Region index published by AWS for the AmazonS3 offer.
         """Fetch S3 per-GB-month storage rates from AWS's public Price List Query API.
-
-        Manages fetch aws operations and coordinates related state changes for the component.
 
         Args:
             region (str): The region parameter.
@@ -319,8 +293,6 @@ class PricingCatalog:
     def _fetch_azure(self, region: str) -> Dict[str, float]:
         """Fetch per-GB-month blob rates from Azure's unauthenticated Retail Prices API.
 
-        Manages fetch azure operations and coordinates related state changes for the component.
-
         Args:
             region (str): The region parameter.
 
@@ -354,9 +326,7 @@ class PricingCatalog:
     # -- public
 
     def rates(self, provider: str, region: str) -> Dict[str, float]:
-        """Rates.
-
-        Manages rates operations and coordinates related state changes for the component.
+        """Return cached live rates when fresh, else fetch from the vendor API and cache them.
 
         Args:
             provider (str): The provider parameter.
@@ -379,9 +349,7 @@ class PricingCatalog:
         return rates
 
     def rate(self, provider: str, region: str, storage_class: str) -> Optional[float]:
-        """Rate.
-
-        Manages rate operations and coordinates related state changes for the component.
+        """Return the per-GB-month live rate for one storage class, with substring fallback.
 
         Args:
             provider (str): The provider parameter.
@@ -405,11 +373,8 @@ class PricingCatalog:
                 best, best_len = v, len(k)
         return best
 
-
 def _normalise_class(name: str) -> str:
     """Fold vendor storage-class / meter names into a comparable key.
-
-    Manages normalise class operations and coordinates related state changes for the component.
 
     Args:
         name (str): The name parameter.
@@ -423,18 +388,15 @@ def _normalise_class(name: str) -> str:
         s = s.replace(token, " ")
     return " ".join(s.split()) or (name or "").strip().lower()
 
-
 _PRICING = PricingCatalog()
-
 
 # ---------------------------------------------------------------------------
 # Provider abstraction
 # ---------------------------------------------------------------------------
 
 class CloudProvider(ABC):
-    """Cloudprovider.
+    """Base interface for cloud providers: streaming list_objects plus live cost estimate.
 
-    Manages CloudProvider operations and coordinates related state changes for the component.
     """
 
     #: Key used to look up live pricing (``""`` = provider has no storage rate).
@@ -442,8 +404,6 @@ class CloudProvider(ABC):
 
     def __init__(self, config: Dict[str, Any]):
         """Store config and derive the lowercase provider name from the class name.
-
-        Initializes the instance and configures internal state.
 
         Args:
             config (Dict[str, Any]): The config parameter.
@@ -460,8 +420,6 @@ class CloudProvider(ABC):
     ) -> AsyncGenerator[CloudFileEntry, None]:
         """Stream every object under a bucket/prefix as :class:`CloudFileEntry` items.
 
-        Manages list objects operations and coordinates related state changes for the component.
-
         Args:
             bucket (str): The bucket parameter.
             prefix (str): The prefix parameter.
@@ -474,9 +432,7 @@ class CloudProvider(ABC):
 
     @property
     def region(self) -> str:
-        """Region.
-
-        Manages region operations and coordinates related state changes for the component.
+        """Region name used for live pricing lookups.
 
         Returns:
             str: Formatted string or path.
@@ -510,29 +466,23 @@ class CloudProvider(ABC):
     def validate_config(self) -> Tuple[bool, str]:
         """Hook for providers to reject bad config; base accepts everything.
 
-        Manages validate config operations and coordinates related state changes for the component.
-
         Returns:
             Tuple[bool, str]: True if the operation succeeded, False otherwise.
         """
         return True, ""
-
 
 # ---------------------------------------------------------------------------
 # S3 Provider
 # ---------------------------------------------------------------------------
 
 class S3Provider(CloudProvider):
-    """S3provider.
+    """S3 backend using boto3, preferring versioned listing to expose billable old versions.
 
-    Manages S3Provider operations and coordinates related state changes for the component.
     """
     pricing_key = "s3"
 
     def __init__(self, config: Dict[str, Any]):
         """Initialize and create the boto3 S3 client from config/environment.
-
-        Initializes the instance and configures internal state.
 
         Args:
             config (Dict[str, Any]): The config parameter.
@@ -545,7 +495,6 @@ class S3Provider(CloudProvider):
     def _init_client(self):
         """Build the boto3 client, letting boto3 fall back to env/IAM/SSO credentials.
 
-        Manages init client operations and coordinates related state changes for the component.
         """
         try:
             import boto3
@@ -574,9 +523,7 @@ class S3Provider(CloudProvider):
     @property
     def region(self) -> str:
         # Prefer the bucket's own region so pricing matches where data lives.
-        """Region.
-
-        Manages region operations and coordinates related state changes for the component.
+        """Region name used for live pricing lookups.
 
         Returns:
             str: Formatted string or path.
@@ -585,8 +532,6 @@ class S3Provider(CloudProvider):
 
     def _bucket_region(self, bucket: str) -> Optional[str]:
         """Query GetBucketLocation for the bucket's region; ``None`` on failure.
-
-        Manages bucket region operations and coordinates related state changes for the component.
 
         Args:
             bucket (str): The bucket parameter.
@@ -615,8 +560,6 @@ class S3Provider(CloudProvider):
         max_keys: Optional[int] = None,
     ) -> AsyncGenerator[CloudFileEntry, None]:
         """Stream S3 objects, preferring versioned listing to surface billable old versions.
-
-        Manages list objects operations and coordinates related state changes for the component.
 
         Args:
             bucket (str): The bucket parameter.
@@ -673,8 +616,6 @@ class S3Provider(CloudProvider):
     def estimate_cost(self, stats: CloudScanStats) -> float:
         """Estimate monthly USD via base live rates for S3 classes scanned.
 
-        Manages estimate cost operations and coordinates related state changes for the component.
-
         Args:
             stats (CloudScanStats): The stats parameter.
 
@@ -683,22 +624,18 @@ class S3Provider(CloudProvider):
         """
         return super().estimate_cost(stats)
 
-
 # ---------------------------------------------------------------------------
 # Azure Blob Provider
 # ---------------------------------------------------------------------------
 
 class AzureBlobProvider(CloudProvider):
-    """Azureblobprovider.
+    """Azure Blob backend using BlobServiceClient, listing blobs with metadata, tags, and versions.
 
-    Manages AzureBlobProvider operations and coordinates related state changes for the component.
     """
     pricing_key = "azure"
 
     def __init__(self, config: Dict[str, Any]):
         """Initialize and create the BlobServiceClient from config/environment.
-
-        Initializes the instance and configures internal state.
 
         Args:
             config (Dict[str, Any]): The config parameter.
@@ -711,7 +648,6 @@ class AzureBlobProvider(CloudProvider):
     def _init_client(self):
         """Build the BlobServiceClient from a connection string, account URL, or DefaultAzureCredential.
 
-        Manages init client operations and coordinates related state changes for the component.
         """
         try:
             from azure.storage.blob import BlobServiceClient
@@ -736,9 +672,7 @@ class AzureBlobProvider(CloudProvider):
 
     @property
     def region(self) -> str:
-        """Region.
-
-        Manages region operations and coordinates related state changes for the component.
+        """Region name used for live pricing lookups.
 
         Returns:
             str: Formatted string or path.
@@ -767,8 +701,6 @@ class AzureBlobProvider(CloudProvider):
         max_keys: Optional[int] = None,
     ) -> AsyncGenerator[CloudFileEntry, None]:
         """Stream container blobs with metadata, tags, and versions where enabled.
-
-        Manages list objects operations and coordinates related state changes for the component.
 
         Args:
             container (str): The container parameter.
@@ -815,8 +747,6 @@ class AzureBlobProvider(CloudProvider):
     def estimate_cost(self, stats: CloudScanStats) -> float:
         """Delegate to the base class cost estimate using Azure live rates.
 
-        Manages estimate cost operations and coordinates related state changes for the component.
-
         Args:
             stats (CloudScanStats): The stats parameter.
 
@@ -824,7 +754,6 @@ class AzureBlobProvider(CloudProvider):
             float: Result of the operation.
         """
         return super().estimate_cost(stats)
-
 
 # ---------------------------------------------------------------------------
 # Google Drive Provider (Drive v3 REST — OAuth token or rclone-managed token)
@@ -845,8 +774,6 @@ class GoogleDriveProvider(CloudProvider):
     def __init__(self, config: Dict[str, Any]):
         """Store config and resolve the Drive OAuth access token.
 
-        Initializes the instance and configures internal state.
-
         Args:
             config (Dict[str, Any]): The config parameter.
         """
@@ -856,9 +783,7 @@ class GoogleDriveProvider(CloudProvider):
                        or "")
 
     def _get(self, params: Dict[str, str]) -> Optional[Dict[str, Any]]:
-        """Get.
-
-        Manages get operations and coordinates related state changes for the component.
+        """GET one JSON API page with the bearer token.
 
         Args:
             params (Dict[str, str]): The params parameter.
@@ -886,8 +811,6 @@ class GoogleDriveProvider(CloudProvider):
         max_keys: Optional[int] = None,
     ) -> AsyncGenerator[CloudFileEntry, None]:
         """Stream non-trashed Drive files in a folder, skipping size-less native docs.
-
-        Manages list objects operations and coordinates related state changes for the component.
 
         Args:
             bucket (str): The bucket parameter.
@@ -945,7 +868,6 @@ class GoogleDriveProvider(CloudProvider):
                 return
             params["pageToken"] = token
 
-
 # ---------------------------------------------------------------------------
 # OneDrive / SharePoint Provider (Microsoft Graph)
 # ---------------------------------------------------------------------------
@@ -964,8 +886,6 @@ class OneDriveProvider(CloudProvider):
     def __init__(self, config: Dict[str, Any]):
         """Store config and resolve the Microsoft Graph access token.
 
-        Initializes the instance and configures internal state.
-
         Args:
             config (Dict[str, Any]): The config parameter.
         """
@@ -975,9 +895,7 @@ class OneDriveProvider(CloudProvider):
                        or "")
 
     def _get(self, url: str) -> Optional[Dict[str, Any]]:
-        """Get.
-
-        Manages get operations and coordinates related state changes for the component.
+        """GET one JSON API page with the bearer token.
 
         Args:
             url (str): The url parameter.
@@ -1004,8 +922,6 @@ class OneDriveProvider(CloudProvider):
         max_keys: Optional[int] = None,
     ) -> AsyncGenerator[CloudFileEntry, None]:
         """Stream non-folder drive items via Graph ``/children`` pages.
-
-        Manages list objects operations and coordinates related state changes for the component.
 
         Args:
             bucket (str): The bucket parameter.
@@ -1053,7 +969,6 @@ class OneDriveProvider(CloudProvider):
                 count += 1
             url = doc.get("@odata.nextLink")
 
-
 # ---------------------------------------------------------------------------
 # Rclone Provider (covers 40+ providers)
 # ---------------------------------------------------------------------------
@@ -1071,8 +986,6 @@ class RcloneProvider(CloudProvider):
     def __init__(self, config: Dict[str, Any]):
         """Store config, remote name, and locate the rclone binary.
 
-        Initializes the instance and configures internal state.
-
         Args:
             config (Dict[str, Any]): The config parameter.
         """
@@ -1083,8 +996,6 @@ class RcloneProvider(CloudProvider):
     @staticmethod
     def _locate_binary(explicit: Optional[str]) -> Optional[str]:
         """Find rclone via explicit hint, ``RCLONE_BINARY``, or ``PATH``.
-
-        Manages locate binary operations and coordinates related state changes for the component.
 
         Args:
             explicit (Optional[str]): The explicit parameter.
@@ -1103,9 +1014,7 @@ class RcloneProvider(CloudProvider):
 
     @property
     def available(self) -> bool:
-        """Available.
-
-        Manages available operations and coordinates related state changes for the component.
+        """True when an rclone binary was located and remote calls are possible.
 
         Returns:
             bool: True if the operation succeeded, False otherwise.
@@ -1114,8 +1023,6 @@ class RcloneProvider(CloudProvider):
 
     def list_remotes(self) -> List[str]:
         """Configured rclone remotes, so callers never guess a remote name.
-
-        Manages list remotes operations and coordinates related state changes for the component.
 
         Returns:
             List[str]: List of processed items or identifiers.
@@ -1138,8 +1045,6 @@ class RcloneProvider(CloudProvider):
         max_keys: Optional[int] = None,
     ) -> AsyncGenerator[CloudFileEntry, None]:
         """Run ``rclone lsjson`` recursively and stream each file as an entry.
-
-        Manages list objects operations and coordinates related state changes for the component.
 
         Args:
             bucket (str): The bucket parameter.
@@ -1196,8 +1101,6 @@ class RcloneProvider(CloudProvider):
         # Backends vary; the native provider classes own pricing.
         """Return 0.0: pricing belongs to the backend's native provider class.
 
-        Manages estimate cost operations and coordinates related state changes for the component.
-
         Args:
             stats (CloudScanStats): The stats parameter.
 
@@ -1206,15 +1109,13 @@ class RcloneProvider(CloudProvider):
         """
         return 0.0
 
-
 # ---------------------------------------------------------------------------
 # Cloud Storage Analyzer
 # ---------------------------------------------------------------------------
 
 class CloudStorageAnalyzer:
-    """Cloudstorageanalyzer.
+    """Orchestrates provider instantiation, target scanning, duplicate grouping, and HTML reporting.
 
-    Manages CloudStorageAnalyzer operations and coordinates related state changes for the component.
     """
 
     PROVIDERS = {
@@ -1234,8 +1135,6 @@ class CloudStorageAnalyzer:
     ):
         """Set up cancellation, progress callbacks, and instantiate all providers.
 
-        Initializes the instance and configures internal state.
-
         Args:
             default_provider (str): The default provider parameter.
             provider_configs (Optional[Dict[str, Dict]]): The provider configs parameter.
@@ -1251,8 +1150,6 @@ class CloudStorageAnalyzer:
     def _init_providers(self, default: str):
         """Instantiate every provider (skipping ones that fail) and pick the default.
 
-        Manages init providers operations and coordinates related state changes for the component.
-
         Args:
             default (str): The default parameter.
         """
@@ -1267,8 +1164,6 @@ class CloudStorageAnalyzer:
 
     def get_provider(self, name: str) -> Optional[CloudProvider]:
         """Return the instantiated provider by name, or ``None``.
-
-        Manages get provider operations and coordinates related state changes for the component.
 
         Args:
             name (str): The name parameter.
@@ -1320,8 +1215,6 @@ class CloudStorageAnalyzer:
     ) -> AsyncGenerator[CloudFileEntry, None]:
         """Scan cloud target. target format: 's3://bucket/prefix' or 'rclone://remote/path'.
 
-        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
-
         Args:
             target (str): The target parameter.
             max_objects (Optional[int]): The max objects parameter.
@@ -1368,8 +1261,6 @@ class CloudStorageAnalyzer:
         cancel_event: Optional[threading.Event] = None,
     ) -> Tuple[List[CloudFileEntry], CloudScanStats]:
         """Synchronous scan returning all entries and stats.
-
-        Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
 
         Args:
             target (str): The target parameter.
@@ -1551,7 +1442,6 @@ class CloudStorageAnalyzer:
 
         html.append("</body></html>")
         return "\n".join(html)
-
 
 __all__ = [
     "CloudStorageAnalyzer",

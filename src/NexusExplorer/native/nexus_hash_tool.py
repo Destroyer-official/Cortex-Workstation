@@ -18,9 +18,9 @@ from typing import Callable, Dict, List, Optional, Tuple
 
 
 class HashAlgorithm(Enum):
-    """Hashalgorithm.
+    """Supported checksum algorithms.
 
-    Manages HashAlgorithm operations and coordinates related state changes for the component.
+    Covers MD5/SHA1/SHA256/SHA512 via hashlib plus BLAKE3/CRC32/XXHASH64 with optional-dependency fallbacks.
     """
     MD5 = "MD5"
     SHA1 = "SHA-1"
@@ -33,9 +33,9 @@ class HashAlgorithm(Enum):
 
 @dataclass
 class HashResult:
-    """Hashresult.
+    """Checksum result for one file.
 
-    Manages HashResult operations and coordinates related state changes for the component.
+    Stores path, filename, size, algorithm, uppercase digest, elapsed seconds, and error.
     """
     path: str
     filename: str
@@ -48,9 +48,9 @@ class HashResult:
 
 @dataclass
 class VerifyItem:
-    """Verifyitem.
+    """Manifest verification verdict for one file.
 
-    Manages VerifyItem operations and coordinates related state changes for the component.
+    Holds path, expected/actual hashes, algorithm, MATCH/MISMATCH/MISSING/ERROR status, and message.
     """
     path: str
     expected_hash: str
@@ -61,9 +61,9 @@ class VerifyItem:
 
 
 class HashTool:
-    """Hashtool.
+    """Streaming checksum engine with 64KB blocks.
 
-    Manages HashTool operations and coordinates related state changes for the component.
+    Reads files in CHUNK_SIZE slices for single, multi-algorithm, manifest, and verification flows with progress/cancel hooks.
     """
 
     CHUNK_SIZE = 64 * 1024  # 64 KB streaming buffer
@@ -78,7 +78,7 @@ class HashTool:
     ) -> HashResult:
         """Compute the cryptographic or CRC32 hash for a single file.
 
-        Manages compute hash operations and coordinates related state changes for the component.
+        Streams the file through zlib CRC32, blake3/xxhash when installed, or hashlib, returning uppercase digest or SHA-256 fallback for XXHASH64.
 
         Args:
             file_path (str | Path): Filesystem path to the target file or directory.
@@ -197,7 +197,7 @@ class HashTool:
     ) -> Dict[HashAlgorithm, HashResult]:
         """Compute MD5, SHA1, SHA256, SHA512, and CRC32 in a single stream pass.
 
-        Manages compute all hashes operations and coordinates related state changes for the component.
+        Single-pass MD5+SHA1+SHA256+SHA512+zlib-CRC32 over one 64KB stream, sharing elapsed time across five HashResults.
 
         Args:
             file_path (str | Path): Filesystem path to the target file or directory.
@@ -265,7 +265,7 @@ class HashTool:
     ) -> bool:
         """Create a checksum manifest file (.sfv, .md5, .sha256, etc.).
 
-        Manages create manifest operations and coordinates related state changes for the component.
+        Hashes each file, formats CRC32 as SFV lines and others as '<hex> *<relpath>', and writes the manifest UTF-8.
 
         Args:
             files (List[str | Path]): The files parameter.
@@ -324,7 +324,7 @@ class HashTool:
     ) -> List[VerifyItem]:
         """Verify files against a checksum manifest (.sfv, .md5, .sha256, .sha512).
 
-        Manages verify manifest operations and coordinates related state changes for the component.
+        Infers algorithm from manifest suffix, parses SFV/coreutils lines skipping comments, rehashes targets, and emits MATCH/MISMATCH/MISSING/ERROR items.
 
         Args:
             manifest_file (str | Path): The manifest file parameter.

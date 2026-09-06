@@ -38,8 +38,6 @@ _DRIVE_SKIP_PREFIXES = {".", "$"}
 def _fixed_drive_roots() -> List[Path]:
     r"""Return fixed-drive mount points (C:\, D:\ ...) on Windows, or [home] elsewhere.
 
-    Manages fixed drive roots operations and coordinates related state changes for the component.
-
     Returns:
         List[Path]: List of processed items or identifiers.
     """
@@ -232,9 +230,7 @@ class ProjectCacheScanner:
         cutoff_date = _dt.now() - timedelta(days=keep_recent_days) if keep_recent_days > 0 else None
 
         def _match_dir(d_name: str):
-            """_match_dir.
-
-            Manages match dir operations and coordinates related state changes for the component.
+            """Match a directory name against the active cache pattern map.
 
             Args:
                 d_name (str): The d name parameter.
@@ -256,9 +252,7 @@ class ProjectCacheScanner:
 
         # We use os.scandir for speed, with explicit skip logic
         def _should_skip_dir(name: str) -> bool:
-            """_should_skip_dir.
-
-            Manages should skip dir operations and coordinates related state changes for the component.
+            """Return True when a directory should be pruned from the walk.
 
             Args:
                 name (str): The name parameter.

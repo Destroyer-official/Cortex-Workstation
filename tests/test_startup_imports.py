@@ -177,3 +177,15 @@ def test_legacy_cli_unknown_attribute_raises_attribute_error():
         "    print('AttributeError')\n"
     )
     assert out == "AttributeError"
+
+
+def test_ui_launcher_and_module_entrypoints():
+    """UI launcher and package entry points must be cleanly importable and callable."""
+    out = _run(
+        "from cortex_unified.ui import launcher\n"
+        "import cortex_unified.debug.runner as dbg\n"
+        "import cortex_unified.ui.premium.app as app\n"
+        "print(callable(launcher.main), callable(dbg.main), callable(app.main))"
+    )
+    assert out == "True True True"
+

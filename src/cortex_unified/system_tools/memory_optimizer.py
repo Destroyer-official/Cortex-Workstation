@@ -20,10 +20,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 @dataclass
 class SystemRamMetrics:
-    """Systemrammetrics.
-
-    Manages SystemRamMetrics operations and coordinates related state changes for the component.
-    """
+    """Physical RAM snapshot: total/available/used, percent, cache and commit figures."""
     total_bytes: int
     available_bytes: int
     used_bytes: int
@@ -35,10 +32,7 @@ class SystemRamMetrics:
 
 @dataclass
 class ProcessMemoryItem:
-    """Processmemoryitem.
-
-    Manages ProcessMemoryItem operations and coordinates related state changes for the component.
-    """
+    """One process with working-set/private bytes and whether it is safe to trim."""
     pid: int
     name: str
     working_set_bytes: int
@@ -48,28 +42,20 @@ class ProcessMemoryItem:
 
 @dataclass
 class MemoryOptimizeResult:
-    """Memoryoptimizeresult.
-
-    Manages MemoryOptimizeResult operations and coordinates related state changes for the component.
-    """
+    """Count of trimmed processes plus freed-bytes estimate; errors make ok False."""
     processes_trimmed: int
     bytes_freed_estimate: int
     errors: List[str] = None
     dry_run: bool = False
 
     def __post_init__(self):
-        """__post_init__.
-
-        Manages post init operations and coordinates related state changes for the component.
-        """
+        """Ensure errors defaults to an empty list."""
         if self.errors is None:
             self.errors = []
 
     @property
     def ok(self) -> bool:
-        """Ok.
-
-        Manages ok operations and coordinates related state changes for the component.
+        """True when no trim errors were recorded.
 
         Returns:
             bool: True if the operation succeeded, False otherwise.
@@ -78,9 +64,7 @@ class MemoryOptimizeResult:
 
     @property
     def message(self) -> str:
-        """Message.
-
-        Manages message operations and coordinates related state changes for the component.
+        """Human summary like 'Trimmed working sets of N processes, freeing ~X MB.'.
 
         Returns:
             str: Formatted string or path.

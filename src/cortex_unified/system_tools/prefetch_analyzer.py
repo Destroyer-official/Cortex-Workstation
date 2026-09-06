@@ -22,10 +22,7 @@ from typing import Dict, List, Optional, Tuple
 
 @dataclass
 class PrefetchEntry:
-    """Prefetchentry.
-
-    Manages PrefetchEntry operations and coordinates related state changes for the component.
-    """
+    """Record holding path, filename, executable_name, hash_code, size_bytes, modified_time, is_stale."""
     path: str
     filename: str
     executable_name: str
@@ -37,10 +34,7 @@ class PrefetchEntry:
 
 @dataclass
 class PrefetchStatus:
-    """Prefetchstatus.
-
-    Manages PrefetchStatus operations and coordinates related state changes for the component.
-    """
+    """Record holding prefetch_dir, total_files, total_size_bytes, sysmain_status, is_admin. Requires elevation for protected targets."""
     prefetch_dir: str
     total_files: int
     total_size_bytes: int
@@ -50,37 +44,26 @@ class PrefetchStatus:
 
 @dataclass
 class PrefetchCleanResult:
-    """Prefetchcleanresult.
-
-    Manages PrefetchCleanResult operations and coordinates related state changes for the component.
-    """
+    """Record holding files_deleted, bytes_freed, errors."""
     files_deleted: int = 0
     bytes_freed: int = 0
     errors: List[str] = None
 
     def __post_init__(self):
-        """__post_init__.
-
-        Manages post init operations and coordinates related state changes for the component.
-        """
+        """Validate and normalize fields after init; initializes empty collections."""
         if self.errors is None:
             self.errors = []
 
 
 class PrefetchAnalyzer:
-    """Prefetchanalyzer.
-
-    Manages PrefetchAnalyzer operations and coordinates related state changes for the component.
-    """
+    """Groups related helpers: get status, scan prefetch files, clean prefetch. Requires elevation for protected targets."""
 
     @classmethod
     def get_status(cls) -> PrefetchStatus:
         """Query Prefetch directory metrics and SysMain service status.
 
-        Manages get status operations and coordinates related state changes for the component.
-
         Returns:
-            PrefetchStatus: Result of the operation.
+        PrefetchStatus: Result of the operation.
         """
         if platform.system() != "Windows":
             return PrefetchStatus("", 0, 0, "Non-Windows", False)

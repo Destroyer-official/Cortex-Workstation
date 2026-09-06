@@ -38,9 +38,9 @@ _L2 = 1e-4                  # tiny L2 regularization to keep weights bounded
 
 
 def _sigmoid(z: float) -> float:
-    """Sigmoid.
+    """Sigmoid helper.
 
-    Manages sigmoid operations and coordinates related state changes for the component.
+    Scores sigmoid(w.x) over a handful of category/extension/size/age/location features with a bounded weight table.
 
     Args:
         z (float): The z parameter.
@@ -56,16 +56,16 @@ def _sigmoid(z: float) -> float:
 
 
 def _size_bucket(size_bytes: int) -> str:
-    """_size_bucket.
+    """Size bucket.
 
-    Manages size bucket operations and coordinates related state changes for the component.
+ Maps byte counts to sz:0, <1mb, 1-10mb, 10-100mb, 100mb-1gb, >1gb features.
 
-    Args:
-        size_bytes (int): The size bytes parameter.
+ Args:
+ size_bytes (int): The size bytes parameter.
 
-    Returns:
-        str: Formatted string or path.
-    """
+ Returns:
+ str: Formatted string or path.
+ """
     if size_bytes <= 0:
         return "sz:0"
     mb = size_bytes / (1024 * 1024)
@@ -81,16 +81,16 @@ def _size_bucket(size_bytes: int) -> str:
 
 
 def _age_bucket(age_days: float) -> str:
-    """_age_bucket.
+    """Age bucket.
 
-    Manages age bucket operations and coordinates related state changes for the component.
+ Maps age days to <1d, 1-7d, 7-30d, 30-180d, >180d features.
 
-    Args:
-        age_days (float): The age days parameter.
+ Args:
+ age_days (float): The age days parameter.
 
-    Returns:
-        str: Formatted string or path.
-    """
+ Returns:
+ str: Formatted string or path.
+ """
     if age_days < 1:
         return "age:<1d"
     if age_days < 7:
@@ -129,13 +129,13 @@ def featurize(context: dict[str, Any]) -> list[str]:
 
 
 class SmartSuggester:
-    """Smartsuggester.
+    """Smart Suggester.
 
-    Manages SmartSuggester operations and coordinates related state changes for the component.
+    Scores sigmoid(w.x) over a handful of category/extension/size/age/location features with a bounded weight table; keeps the model tiny by dropping smallest-magnitude weights past the cap.
     """
 
     def __init__(self, model_path: Path | None = None, learning_rate: float = _DEFAULT_LR):
-        """__init__.
+        """Initialize the instance.
 
         Initializes the instance and configures internal state.
 
@@ -153,9 +153,9 @@ class SmartSuggester:
     # -- inference ----------------------------------------------------------
 
     def score(self, context: dict[str, Any]) -> float:
-        """Score.
+        """Score helper.
 
-        Manages score operations and coordinates related state changes for the component.
+        Scores sigmoid(w.x) over a handful of category/extension/size/age/location features with a bounded weight table.
 
         Args:
             context (dict[str, Any]): The context parameter.
@@ -169,32 +169,32 @@ class SmartSuggester:
         return _sigmoid(z)
 
     def recommend(self, context: dict[str, Any], threshold: float = 0.5) -> bool:
-        """Recommend.
+        """Recommend helper.
 
-        Manages recommend operations and coordinates related state changes for the component.
+ Returns True until 10 feedback updates exist, then thresholds the score.
 
-        Args:
-            context (dict[str, Any]): The context parameter.
-            threshold (float): The threshold parameter.
+ Args:
+ context (dict[str, Any]): The context parameter.
+ threshold (float): The threshold parameter.
 
-        Returns:
-            bool: True if the operation succeeded, False otherwise.
-        """
+ Returns:
+ bool: True if the operation succeeded, False otherwise.
+ """
         if self._updates < 10:      # not enough signal yet -> don't second-guess
             return True
         return self.score(context) >= threshold
 
     def rank(self, items: list[dict[str, Any]]) -> list[tuple[dict[str, Any], float]]:
-        """Rank.
+        """Rank helper.
 
-        Manages rank operations and coordinates related state changes for the component.
+ Scores every item and sorts descending by probability.
 
-        Args:
-            items (list[dict[str, Any]]): Collection of items or entries to process.
+ Args:
+ items (list[dict[str, Any]]): Collection of items or entries to process.
 
-        Returns:
-            list[tuple[dict[str, Any], float]]: List of processed items or identifiers.
-        """
+ Returns:
+ list[tuple[dict[str, Any], float]]: List of processed items or identifiers.
+ """
         scored = [(it, self.score(it)) for it in items]
         scored.sort(key=lambda t: t[1], reverse=True)
         return scored
@@ -202,9 +202,9 @@ class SmartSuggester:
     # -- learning -----------------------------------------------------------
 
     def observe(self, context: dict[str, Any], cleaned: bool) -> None:
-        """Observe.
+        """Observe helper.
 
-        Manages observe operations and coordinates related state changes for the component.
+        Scores sigmoid(w.x) over a handful of category/extension/size/age/location features with a bounded weight table; keeps the model tiny by dropping smallest-magnitude weights past the cap.
 
         Args:
             context (dict[str, Any]): The context parameter.
@@ -224,21 +224,21 @@ class SmartSuggester:
             self._enforce_cap_locked()
 
     def observe_batch(self, items: list[dict[str, Any]], cleaned: bool) -> None:
-        """observe_batch.
+        """Observe batch.
 
-        Manages observe batch operations and coordinates related state changes for the component.
+ Applies observe() to each item with the same cleaned label.
 
-        Args:
-            items (list[dict[str, Any]]): Collection of items or entries to process.
-            cleaned (bool): The cleaned parameter.
-        """
+ Args:
+ items (list[dict[str, Any]]): Collection of items or entries to process.
+ cleaned (bool): The cleaned parameter.
+ """
         for it in items:
             self.observe(it, cleaned)
 
     def _enforce_cap_locked(self) -> None:
         """Keep the model tiny: if over cap, drop the smallest-magnitude weights.
 
-        Manages enforce cap locked operations and coordinates related state changes for the component.
+        Keeps the model tiny by dropping smallest-magnitude weights past the cap.
         """
         if len(self._weights) <= _MAX_FEATURES:
             return
@@ -288,13 +288,13 @@ class SmartSuggester:
             return False
 
     def stats(self) -> dict[str, Any]:
-        """Stats.
+        """Stats helper.
 
-        Manages stats operations and coordinates related state changes for the component.
+ Reports update count, feature count, trained flag, and model path.
 
-        Returns:
-            dict[str, Any]: Dictionary mapping identifiers to status or values.
-        """
+ Returns:
+ dict[str, Any]: Dictionary mapping identifiers to status or values.
+ """
         with self._lock:
             return {
                 "updates": self._updates,
@@ -304,10 +304,10 @@ class SmartSuggester:
             }
 
     def reset(self) -> None:
-        """Reset.
+        """Clear weights and update counter.
 
-        Manages reset operations and coordinates related state changes for the component.
-        """
+ Handles reset for.
+ """
         with self._lock:
             self._weights.clear()
             self._updates = 0

@@ -30,9 +30,10 @@ _NO_WINDOW = 0x08000000 if _IS_WINDOWS else 0
 
 @dataclass(slots=True)
 class UpgradableApp:
-    """Upgradableapp.
+    """One winget-upgradable package row.
 
-    Manages UpgradableApp operations and coordinates related state changes for the component.
+    Holds display name, exact package id, installed/available versions, and
+    source feed for a single upgrade candidate.
     """
     name: str
     package_id: str
@@ -41,9 +42,7 @@ class UpgradableApp:
     source: str = "winget"
 
     def to_dict(self) -> dict[str, Any]:
-        """To dict.
-
-        Manages to dict operations and coordinates related state changes for the component.
+        """Serialize this upgradable app to a plain dict.
 
         Returns:
             dict[str, Any]: Dictionary mapping identifiers to status or values.
@@ -58,9 +57,10 @@ class UpgradableApp:
 
 
 class AppUpdater:
-    """Appupdater.
+    """GUI-friendly wrapper over winget for listing and applying app updates.
 
-    Manages AppUpdater operations and coordinates related state changes for the component.
+    All winget calls are time-boxed and non-interactive; installs may still
+    trigger UAC or require reboot depending on the package.
     """
 
     def __init__(self) -> None:
@@ -74,7 +74,7 @@ class AppUpdater:
     def is_available() -> bool:
         """True if winget is installed and usable.
 
-        Manages is available operations and coordinates related state changes for the component.
+        Checks Windows platform plus winget on PATH; no side effects.
 
         Returns:
             bool: True if the operation succeeded, False otherwise.
@@ -84,7 +84,7 @@ class AppUpdater:
     def list_upgradable(self) -> list[UpgradableApp]:
         """Return apps with available updates. Empty list if winget is absent.
 
-        Manages list upgradable operations and coordinates related state changes for the component.
+        Runs `winget upgrade --include-unknown` read-only and parses the table.
 
         Returns:
             list[UpgradableApp]: List of processed items or identifiers.
@@ -97,9 +97,10 @@ class AppUpdater:
         return self.parse_upgrade_output(out or "")
 
     def upgrade(self, package_id: str) -> tuple[bool, str]:
-        """Upgrade.
+        """Upgrade one package by exact winget id, silently.
 
-        Manages upgrade operations and coordinates related state changes for the component.
+        Runs `winget upgrade --id <id> --exact --silent` with agreements
+        accepted; may elevate or reboot depending on installer.
 
         Args:
             package_id (str): The package id parameter.
@@ -127,7 +128,7 @@ class AppUpdater:
     def upgrade_all(self) -> tuple[bool, str]:
         """Upgrade every upgradable package (caller must confirm first).
 
-        Manages upgrade all operations and coordinates related state changes for the component.
+        Runs `winget upgrade --all --silent`; long-running and may elevate.
 
         Returns:
             tuple[bool, str]: True if the operation succeeded, False otherwise.
@@ -147,7 +148,7 @@ class AppUpdater:
     def parse_upgrade_output(text: str) -> list[UpgradableApp]:
         """Parse winget's fixed-width upgrade table into structured rows.
 
-        Manages parse upgrade output operations and coordinates related state changes for the component.
+        Locates column offsets from the header row; pure parsing, no I/O.
 
         Args:
             text (str): Display text string.
@@ -202,9 +203,9 @@ class AppUpdater:
     # -- helper -------------------------------------------------------------
 
     def _run(self, cmd: list[str], timeout: int) -> str | None:
-        """Run.
+        """Run a winget command with timeout and return decoded stdout.
 
-        Manages run operations and coordinates related state changes for the component.
+        Returns None on timeout/process failure; never raises to caller.
 
         Args:
             cmd (list[str]): The cmd parameter.

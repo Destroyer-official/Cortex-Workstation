@@ -65,7 +65,7 @@ from cortex_unified.core.config import DEFAULT_CONFIG as _DEFAULTS
 def _read_yaml_file(path: Path) -> dict:
     """Load a YAML config file into a dict, warning (not raising) on failure.
 
-    Manages read yaml file operations and coordinates related state changes for the component.
+    Parses YAML as UTF-8 and falls back to defaults with a warning on missing or invalid files.
 
     Args:
         path (Path): Filesystem path to the target file or directory.
@@ -92,7 +92,7 @@ class _YamlConfigSource(PydanticBaseSettingsSource):
     """
 
     def __init__(self, settings_cls, config_file):
-        """__init__.
+        """Initialize the instance.
 
         Initializes the instance and configures internal state.
 
@@ -104,9 +104,9 @@ class _YamlConfigSource(PydanticBaseSettingsSource):
         self._data = _read_yaml_file(Path(config_file)) if config_file else {}
 
     def get_field_value(self, field, field_name):  # pragma: no cover - trivial
-        """get_field_value.
+        """Get field value.
 
-        Manages get field value operations and coordinates related state changes for the component.
+        Returns the YAML value for one settings field as a (value, key, found) triple.
 
         Args:
             field: The field parameter.
@@ -115,9 +115,9 @@ class _YamlConfigSource(PydanticBaseSettingsSource):
         return self._data.get(field_name), field_name, False
 
     def __call__(self) -> dict:
-        """Call.
+        """Return the stored mapping.
 
-        Manages call operations and coordinates related state changes for the component.
+        Handles call for config_v2.py. config_v2.py.
 
         Returns:
             dict: Dictionary mapping identifiers to status or values.
@@ -173,9 +173,9 @@ class ScanConfig(BaseModel):
 
 
 class PerformanceConfig(BaseModel):
-    """Performanceconfig.
+    """Performance Config.
 
-    Manages PerformanceConfig operations and coordinates related state changes for the component.
+    Resolves 0 (auto) to the CPU count clamped to 64.
     """
 
     # Needed so the `clamp_threads` validator actually runs for the *default*
@@ -212,7 +212,7 @@ class PerformanceConfig(BaseModel):
     def clamp_threads(cls, v: int) -> int:
         """Clamp thread count to reasonable limits.
 
-        Manages clamp threads operations and coordinates related state changes for the component.
+        Resolves 0 (auto) to the CPU count clamped to 64.
 
         Args:
             v (int): The v parameter.
@@ -226,9 +226,9 @@ class PerformanceConfig(BaseModel):
 
 
 class SecurityConfig(BaseModel):
-    """Securityconfig.
+    """Security Config.
 
-    Manages SecurityConfig operations and coordinates related state changes for the component.
+    Overwrites file contents for the configured passes before unlinking.
     """
     
     default_action: Literal["dry_run", "trash", "delete", "shred"] = Field(
@@ -267,9 +267,9 @@ class SecurityConfig(BaseModel):
 
 
 class LoggingConfig(BaseModel):
-    """Loggingconfig.
+    """Logging Config.
 
-    Manages LoggingConfig operations and coordinates related state changes for the component.
+    Handles logging config for config_v2.py. config_v2.py.
     """
     
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = Field(
@@ -294,9 +294,9 @@ class LoggingConfig(BaseModel):
 
 
 class DatabaseConfig(BaseModel):
-    """Databaseconfig.
+    """Database Config.
 
-    Manages DatabaseConfig operations and coordinates related state changes for the component.
+    Handles database config for config_v2.py. config_v2.py.
     """
     
     db_path: Path = Field(
@@ -323,9 +323,9 @@ class DatabaseConfig(BaseModel):
 
 
 class UIConfig(BaseModel):
-    """Uiconfig.
+    """UIConfig state.
 
-    Manages UIConfig operations and coordinates related state changes for the component.
+    Handles uiconfig for config_v2.py. config_v2.py.
     """
     
     theme: Literal["auto", "light", "dark"] = Field(
@@ -443,7 +443,7 @@ class Config(BaseSettings):
     def save_to_yaml(self, path: Optional[Path] = None) -> None:
         """Save current configuration to YAML file.
 
-        Manages save to yaml operations and coordinates related state changes for the component.
+        Parses YAML as UTF-8 and falls back to defaults with a warning on missing or invalid files.
 
         Args:
             path (Optional[Path]): Filesystem path to the target file or directory.
@@ -500,7 +500,7 @@ class Config(BaseSettings):
     def exclude_patterns(self) -> List[str]:
         """Backward compatibility: get exclude patterns.
 
-        Manages exclude patterns operations and coordinates related state changes for the component.
+        Backward-compatible accessor delegating to the typed scan section.
 
         Returns:
             List[str]: List of processed items or identifiers.
@@ -511,7 +511,7 @@ class Config(BaseSettings):
     def exclude_dirs(self) -> List[str]:
         """Backward compatibility: get exclude directories.
 
-        Manages exclude dirs operations and coordinates related state changes for the component.
+        Backward-compatible accessor delegating to the typed scan section.
 
         Returns:
             List[str]: List of processed items or identifiers.
@@ -522,7 +522,7 @@ class Config(BaseSettings):
     def exclude_regex_patterns(self) -> List[str]:
         """Backward compatibility: get exclude regex patterns.
 
-        Manages exclude regex patterns operations and coordinates related state changes for the component.
+        Backward-compatible accessor delegating to the typed scan section.
 
         Returns:
             List[str]: List of processed items or identifiers.
@@ -533,7 +533,7 @@ class Config(BaseSettings):
     def min_age_days(self) -> int:
         """Backward compatibility: get minimum age in days.
 
-        Manages min age days operations and coordinates related state changes for the component.
+        Backward-compatible accessor delegating to the typed scan section.
 
         Returns:
             int: Result of the operation.
@@ -544,7 +544,7 @@ class Config(BaseSettings):
     def default_action(self) -> str:
         """Backward compatibility: get default action.
 
-        Manages default action operations and coordinates related state changes for the component.
+        Backward-compatible accessor delegating to the typed security section.
 
         Returns:
             str: Formatted string or path.
@@ -555,7 +555,7 @@ class Config(BaseSettings):
     def log_file(self) -> Optional[str]:
         """Backward compatibility: get log file path.
 
-        Manages log file operations and coordinates related state changes for the component.
+        Handles log file for config_v2.py. config_v2.py.
 
         Returns:
             Optional[str]: Formatted string or path.
@@ -566,7 +566,7 @@ class Config(BaseSettings):
     def json_logging(self) -> bool:
         """Backward compatibility: get JSON logging flag.
 
-        Manages json logging operations and coordinates related state changes for the component.
+        Backward-compatible accessor delegating to the typed logging section.
 
         Returns:
             bool: True if the operation succeeded, False otherwise.
@@ -575,9 +575,9 @@ class Config(BaseSettings):
     
     @property
     def threads(self) -> int:
-        """Threads.
+        """Threads helper.
 
-        Manages threads operations and coordinates related state changes for the component.
+        Backward-compatible accessor delegating to the typed performance section.
 
         Returns:
             int: Result of the operation.
@@ -588,7 +588,7 @@ class Config(BaseSettings):
     def follow_symlinks(self) -> bool:
         """Backward compatibility: get follow symlinks flag.
 
-        Manages follow symlinks operations and coordinates related state changes for the component.
+        Backward-compatible accessor delegating to the typed scan section.
 
         Returns:
             bool: True if the operation succeeded, False otherwise.
@@ -666,7 +666,7 @@ ui:
 def create_default_config(path: Optional[Path] = None) -> Config:
     """Create and save a default configuration file.
 
-    Manages create default config operations and coordinates related state changes for the component.
+    Handles create default config for config_v2.py. config_v2.py.
 
     Args:
         path (Optional[Path]): Filesystem path to the target file or directory.

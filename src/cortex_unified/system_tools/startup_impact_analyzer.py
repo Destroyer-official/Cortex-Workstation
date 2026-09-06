@@ -25,10 +25,7 @@ else:
 
 @dataclass
 class StartupAppItem:
-    """Startupappitem.
-
-    Manages StartupAppItem operations and coordinates related state changes for the component.
-    """
+    """Record holding name, command, executable_path, scope, registry_key, is_enabled, impact_level, file_size_bytes."""
     name: str
     command: str
     executable_path: str
@@ -42,10 +39,7 @@ class StartupAppItem:
 
 @dataclass
 class StartupImpactReport:
-    """Startupimpactreport.
-
-    Manages StartupImpactReport operations and coordinates related state changes for the component.
-    """
+    """Record holding total_startup_items, enabled_count, disabled_count, high_impact_count, estimated_boot_delay_seconds, items."""
     total_startup_items: int
     enabled_count: int
     disabled_count: int
@@ -55,10 +49,7 @@ class StartupImpactReport:
 
 
 class StartupImpactAnalyzer:
-    """Startupimpactanalyzer.
-
-    Manages StartupImpactAnalyzer operations and coordinates related state changes for the component.
-    """
+    """Groups related helpers: extract exe path, read startup approved state, calculate impact, analyze startup, toggle item state."""
 
     STARTUP_APPROVED_USER = r"Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run"
     STARTUP_APPROVED_SYSTEM = r"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run"
@@ -70,15 +61,13 @@ class StartupImpactAnalyzer:
 
     @classmethod
     def _extract_exe_path(cls, command: str) -> str:
-        """_extract_exe_path.
-
-        Manages extract exe path operations and coordinates related state changes for the component.
+        """Extract exe path helper. Returns "".
 
         Args:
-            command (str): The command parameter.
+        command (str): The command parameter.
 
         Returns:
-            str: Formatted string or path.
+        str: Formatted string or path.
         """
         cmd = command.strip()
         if not cmd:
@@ -94,15 +83,13 @@ class StartupImpactAnalyzer:
     def _read_startup_approved_state(cls, hive, approved_key: str, item_name: str) -> bool:
         """Decode Windows StartupApproved 12-byte binary blob. Byte 0: 0x02=Enabled, 0x03=Disabled.
 
-        Manages read startup approved state operations and coordinates related state changes for the component.
-
         Args:
-            hive: The hive parameter.
-            approved_key (str): The approved key parameter.
-            item_name (str): The item name parameter.
+        hive: The hive parameter.
+        approved_key (str): The approved key parameter.
+        item_name (str): The item name parameter.
 
         Returns:
-            bool: True if the operation succeeded, False otherwise.
+        bool: True if the operation succeeded, False otherwise.
         """
         if winreg is None or hive is None:
             return True
@@ -120,14 +107,12 @@ class StartupImpactAnalyzer:
     def _calculate_impact(cls, file_size: int, exe_name: str) -> str:
         """Calculate startup impact based on binary size and application profile.
 
-        Manages calculate impact operations and coordinates related state changes for the component.
-
         Args:
-            file_size (int): The file size parameter.
-            exe_name (str): The exe name parameter.
+        file_size (int): The file size parameter.
+        exe_name (str): The exe name parameter.
 
         Returns:
-            str: Formatted string or path.
+        str: Formatted string or path.
         """
         lower = exe_name.lower()
         # Known heavy apps (Electron, cloud clients, heavy gaming launchers)
@@ -149,10 +134,8 @@ class StartupImpactAnalyzer:
     def analyze_startup(cls) -> StartupImpactReport:
         """Enumerate and assess startup impact of all registered startup items.
 
-        Manages analyze startup operations and coordinates related state changes for the component.
-
         Returns:
-            StartupImpactReport: Result of the operation.
+        StartupImpactReport: Result of the operation.
         """
         items: List[StartupAppItem] = []
 

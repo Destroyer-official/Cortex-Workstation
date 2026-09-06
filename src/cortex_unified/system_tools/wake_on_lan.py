@@ -22,43 +22,29 @@ _MAC_PATTERN = re.compile(
 
 
 class WakeOnLanError(RuntimeError):
-    """Wakeonlanerror.
-
-    Manages WakeOnLanError operations and coordinates related state changes for the component.
-    """
+    """Base error for Wake-on-LAN validation and send failures."""
 
 
 class InvalidMacAddress(ValueError, WakeOnLanError):
-    """Invalidmacaddress.
-
-    Manages InvalidMacAddress operations and coordinates related state changes for the component.
-    """
+    """Raised when a MAC is not a six-byte unicast address."""
 
 
 class InvalidBroadcastAddress(ValueError, WakeOnLanError):
-    """Invalidbroadcastaddress.
-
-    Manages InvalidBroadcastAddress operations and coordinates related state changes for the component.
-    """
+    """Raised when the broadcast address is not a valid IPv4 address."""
 
 
 class WakeOnLanSendError(WakeOnLanError):
-    """Wakeonlansenderror.
-
-    Manages WakeOnLanSendError operations and coordinates related state changes for the component.
-    """
+    """Raised when the magic-packet socket send fails."""
 
 
 def validate_mac(mac: str | bytes) -> bytes:
     """Return a strict six-byte globally administered unicast MAC.
 
-    Manages validate mac operations and coordinates related state changes for the component.
-
     Args:
-        mac (str | bytes): The mac parameter.
+    mac (str | bytes): The mac parameter.
 
     Returns:
-        bytes: Result of the operation.
+    bytes: Result of the operation.
     """
     if isinstance(mac, bytes):
         raw = mac
@@ -88,15 +74,13 @@ def _active_private_networks(
         str | ipaddress.IPv4Network | ipaddress.IPv4Interface
     ],
 ) -> tuple[ipaddress.IPv4Network, ...]:
-    """_active_private_networks.
-
-    Manages active private networks operations and coordinates related state changes for the component.
+    """Active private networks helper. Returns unique.
 
     Args:
-        active_networks (Iterable[str | ipaddress.IPv4Network | ipaddress.IPv4Interface]): The active networks parameter.
+    active_networks (Iterable[str | ipaddress.IPv4Network | ipaddress.IPv4Interface]): The active networks parameter.
 
     Returns:
-        tuple[ipaddress.IPv4Network, ...]: Result of the operation.
+    tuple[ipaddress.IPv4Network, ...]: Result of the operation.
     """
     networks: list[ipaddress.IPv4Network] = []
     for value in active_networks:
@@ -143,14 +127,12 @@ def validate_broadcast(
 ) -> str:
     """Return a subnet-directed broadcast in a supplied active private LAN.
 
-    Manages validate broadcast operations and coordinates related state changes for the component.
-
     Args:
-        broadcast (str): The broadcast parameter.
-        active_networks (Iterable[str | ipaddress.IPv4Network | ipaddress.IPv4Interface]): The active networks parameter.
+    broadcast (str): The broadcast parameter.
+    active_networks (Iterable[str | ipaddress.IPv4Network | ipaddress.IPv4Interface]): The active networks parameter.
 
     Returns:
-        str: Formatted string or path.
+    str: Formatted string or path.
     """
     try:
         address = ipaddress.ip_address(str(broadcast))
@@ -178,13 +160,11 @@ def validate_broadcast(
 def build_magic_packet(mac: str | bytes) -> bytes:
     """Build the standard 102-byte Wake-on-LAN magic packet.
 
-    Manages build magic packet operations and coordinates related state changes for the component.
-
     Args:
-        mac (str | bytes): The mac parameter.
+    mac (str | bytes): The mac parameter.
 
     Returns:
-        bytes: Result of the operation.
+    bytes: Result of the operation.
     """
     hardware_address = validate_mac(mac)
     packet = b"\xff" * 6 + hardware_address * _MAGIC_REPEAT
@@ -205,15 +185,13 @@ def send_magic_packet(
 ) -> int:
     """Send one bounded UDP broadcast and return the transmitted byte count.
 
-    Manages send magic packet operations and coordinates related state changes for the component.
-
     Args:
-        mac (str | bytes): The mac parameter.
-        broadcast (str): The broadcast parameter.
-        active_networks (Iterable[str | ipaddress.IPv4Network | ipaddress.IPv4Interface]): The active networks parameter.
+    mac (str | bytes): The mac parameter.
+    broadcast (str): The broadcast parameter.
+    active_networks (Iterable[str | ipaddress.IPv4Network | ipaddress.IPv4Interface]): The active networks parameter.
 
     Returns:
-        int: Result of the operation.
+    int: Result of the operation.
     """
     valid_port = (
         isinstance(port, int)

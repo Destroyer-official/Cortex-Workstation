@@ -118,10 +118,7 @@ FP_DB_FILENAME    = ".sentinel-fp.json"
 
 @dataclass
 class DetectionPattern:
-    """Detectionpattern.
-
-    Manages DetectionPattern operations and coordinates related state changes for the component.
-    """
+    """Compiled regex rule pairing a pattern with severity, category, and remediation."""
     name: str
     regex: re.Pattern
     severity: str
@@ -133,10 +130,7 @@ class DetectionPattern:
 
 @dataclass
 class Finding:
-    """Finding.
-
-    Manages Finding operations and coordinates related state changes for the component.
-    """
+    """One matched secret with redacted preview, location, entropy, and verification state."""
     file_path: str
     line_number: int
     line_preview: str
@@ -154,45 +148,33 @@ class Finding:
     blast_radius: Optional[str] = None
 
     def to_dict(self) -> Dict[str, Any]:
-        """To dict.
-
-        Manages to dict operations and coordinates related state changes for the component.
-
+        """Serialize this finding to a plain dict.
+        
         Returns:
-            Dict[str, Any]: Dictionary mapping identifiers to status or values.
-        """
+                    Dict[str, Any]: Dictionary mapping identifiers to status or values."""
         return asdict(self)
 
     @property
     def severity_rank(self) -> int:
-        """Severity rank.
-
-        Manages severity rank operations and coordinates related state changes for the component.
-
+        """Numeric severity rank used to sort findings.
+        
         Returns:
-            int: Result of the operation.
-        """
+                    int: Result of the operation."""
         return SEVERITY_ORDER.get(self.severity, 0)
 
     @property
     def fingerprint(self) -> str:
-        """Fingerprint.
-
-        Manages fingerprint operations and coordinates related state changes for the component.
-
+        """Stable 16-char SHA-256 ID for baseline and suppression matching.
+        
         Returns:
-            str: Formatted string or path.
-        """
+                    str: Formatted string or path."""
         return hashlib.sha256(
             f"{self.file_path}|{self.pattern_name}|{self.match_preview}".encode()
         ).hexdigest()[:16]
 
 @dataclass
 class ScanStats:
-    """Scan Stats data container.
-
-    Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
-    """
+    """Aggregate result for one directory scan with findings, counts, and timing."""
     directory: str
     scan_time: str
     duration_seconds: float
@@ -210,73 +192,52 @@ class ScanStats:
 
     @property
     def critical(self)     -> List[Finding]:
-        """Critical.
-
-        Manages critical operations and coordinates related state changes for the component.
-
+        """Findings filtered to CRITICAL severity.
+        
         Returns:
-            List[Finding]: List of processed items or identifiers.
-        """
+                    List[Finding]: List of processed items or identifiers."""
         return [f for f in self.findings if f.severity == "CRITICAL"]
     @property
     def high(self)         -> List[Finding]:
-        """High.
-
-        Manages high operations and coordinates related state changes for the component.
-
+        """Findings filtered to HIGH severity.
+        
         Returns:
-            List[Finding]: List of processed items or identifiers.
-        """
+                    List[Finding]: List of processed items or identifiers."""
         return [f for f in self.findings if f.severity == "HIGH"]
     @property
     def medium(self)       -> List[Finding]:
-        """Medium.
-
-        Manages medium operations and coordinates related state changes for the component.
-
+        """Findings filtered to MEDIUM severity.
+        
         Returns:
-            List[Finding]: List of processed items or identifiers.
-        """
+                    List[Finding]: List of processed items or identifiers."""
         return [f for f in self.findings if f.severity == "MEDIUM"]
     @property
     def low(self)          -> List[Finding]:
-        """Low.
-
-        Manages low operations and coordinates related state changes for the component.
-
+        """Findings filtered to LOW severity.
+        
         Returns:
-            List[Finding]: List of processed items or identifiers.
-        """
+                    List[Finding]: List of processed items or identifiers."""
         return [f for f in self.findings if f.severity == "LOW"]
     @property
     def unique_files(self) -> int:
-        """Unique files.
-
-        Manages unique files operations and coordinates related state changes for the component.
-
+        """Count of distinct file paths containing findings.
+        
         Returns:
-            int: Result of the operation.
-        """
+                    int: Result of the operation."""
         return len({f.file_path for f in self.findings})
     @property
     def live_credentials(self) -> List[Finding]:
-        """Live credentials.
-
-        Manages live credentials operations and coordinates related state changes for the component.
-
+        """Findings confirmed live by verification (verified is True).
+        
         Returns:
-            List[Finding]: List of processed items or identifiers.
-        """
+                    List[Finding]: List of processed items or identifiers."""
         return [f for f in self.findings if f.verified is True]
 
     def to_dict(self) -> Dict[str, Any]:
-        """To dict.
-
-        Manages to dict operations and coordinates related state changes for the component.
-
+        """Serialize stats plus summary counts to a plain dict.
+        
         Returns:
-            Dict[str, Any]: Dictionary mapping identifiers to status or values.
-        """
+                    Dict[str, Any]: Dictionary mapping identifiers to status or values."""
         d = asdict(self)
         d["summary"] = {
             "critical": len(self.critical), "high": len(self.high),
@@ -288,10 +249,7 @@ class ScanStats:
 
 @dataclass
 class VerificationResult:
-    """Verificationresult.
-
-    Manages VerificationResult operations and coordinates related state changes for the component.
-    """
+    """Outcome of one live credential check with identity and blast radius."""
     finding_id: str
     pattern_name: str
     is_live: Optional[bool]
@@ -302,13 +260,10 @@ class VerificationResult:
 
     @property
     def status_emoji(self) -> str:
-        """Status emoji.
-
-        Manages status emoji operations and coordinates related state changes for the component.
-
+        """Human-readable verification status (LIVE, REVOKED, or UNVERIFIED).
+        
         Returns:
-            str: Formatted string or path.
-        """
+                    str: Formatted string or path."""
         if self.is_live is True:  return "🔴 LIVE"
         if self.is_live is False: return "✅ REVOKED"
         return "❓ UNVERIFIED"
@@ -316,17 +271,14 @@ class VerificationResult:
 # ─── Pattern Compiler ────────────────────────────────────────────────────────
 
 def _p(pattern: str, flags: int = 0) -> re.Pattern:
-    """P.
-
-    Manages p operations and coordinates related state changes for the component.
-
+    """Compile a case-insensitive regex for secret-pattern matching.
+    
     Args:
-        pattern (str): The pattern parameter.
-        flags (int): The flags parameter.
-
-    Returns:
-        re.Pattern: Result of the operation.
-    """
+            pattern (str): The pattern parameter.
+            flags (int): The flags parameter.
+    
+        Returns:
+            re.Pattern: Result of the operation."""
     return re.compile(pattern.encode(), flags | re.IGNORECASE)
 
 # ─── Detection Patterns — 90+ Precision Patterns ─────────────────────────────
@@ -976,16 +928,15 @@ PATTERNS: List[DetectionPattern] = [
 # High-entropy secret detection (Shannon entropy) ═══════════════════════════
 
 def _shannon_entropy(data: bytes) -> float:
-    """_shannon_entropy.
-
-    Manages shannon entropy operations and coordinates related state changes for the component.
-
+    """Shannon entropy of bytes to flag random-looking tokens.
+    
+    Pure computation; no I/O.
+    
     Args:
-        data (bytes): The data parameter.
-
-    Returns:
-        float: Result of the operation.
-    """
+            data (bytes): The data parameter.
+    
+        Returns:
+            float: Result of the operation."""
     if not data:
         return 0.0
     freq = {}
@@ -998,17 +949,14 @@ HIGH_ENTROPY_THRESHOLD = 4.5
 HIGH_ENTROPY_MIN_LEN   = 20
 
 def _check_high_entropy(line: bytes, file_path: str) -> Optional[Finding]:
-    """Detect high-entropy strings that look like secrets but don't match known patterns.
-
-    Manages check high entropy operations and coordinates related state changes for the component.
-
+    """Flag unpatterned high-entropy tokens as possible secrets.
+    
     Args:
-        line (bytes): The line parameter.
-        file_path (str): Filesystem path to the target file or directory.
-
-    Returns:
-        Optional[Finding]: Result of the operation.
-    """
+            line (bytes): The line parameter.
+            file_path (str): Filesystem path to the target file or directory.
+    
+        Returns:
+            Optional[Finding]: Result of the operation."""
     for token in re.findall(rb'[A-Za-z0-9+/=_\-]{%d,}' % HIGH_ENTROPY_MIN_LEN, line):
         entropy = _shannon_entropy(token)
         if entropy >= HIGH_ENTROPY_THRESHOLD and len(token) >= HIGH_ENTROPY_MIN_LEN:
@@ -1030,20 +978,19 @@ PLACEHOLDER_RE = re.compile(r'^(?:your[_\-]?(?:api[_\-]?key|secret|token|passwor
 COMMENT_LINE_RE = re.compile(r'^\s*(?:#|//|/\*|\*|--|;|rem\s)', re.IGNORECASE)
 
 def compute_confidence(file_path: str, match_preview: str, entropy: float, category: str, line_raw: str = "") -> float:
-    """Compute confidence.
-
-    Manages compute confidence operations and coordinates related state changes for the component.
-
+    """Score 0-1 likelihood using path, placeholder, comment, and entropy heuristics.
+    
+    Pure computation; no I/O.
+    
     Args:
-        file_path (str): Filesystem path to the target file or directory.
-        match_preview (str): The match preview parameter.
-        entropy (float): The entropy parameter.
-        category (str): The category parameter.
-        line_raw (str): The line raw parameter.
-
-    Returns:
-        float: Result of the operation.
-    """
+            file_path (str): Filesystem path to the target file or directory.
+            match_preview (str): The match preview parameter.
+            entropy (float): The entropy parameter.
+            category (str): The category parameter.
+            line_raw (str): The line raw parameter.
+    
+        Returns:
+            float: Result of the operation."""
     confidence = 1.0
     if TEST_PATH_RE.search(file_path):
         confidence *= 0.15
@@ -1065,16 +1012,15 @@ def compute_confidence(file_path: str, match_preview: str, entropy: float, categ
 # ─── Core Scanner ─────────────────────────────────────────────────────────────
 
 def _luhn_valid(s: str) -> bool:
-    """_luhn_valid.
-
-    Manages luhn valid operations and coordinates related state changes for the component.
-
+    """Luhn checksum for credit-card candidates to cut false positives.
+    
+    Pure computation; no I/O.
+    
     Args:
-        s (str): The s parameter.
-
-    Returns:
-        bool: True if the operation succeeded, False otherwise.
-    """
+            s (str): The s parameter.
+    
+        Returns:
+            bool: True if the operation succeeded, False otherwise."""
     digits = [int(c) for c in s if c.isdigit()]
     if len(digits) < 13:
         return False
@@ -1084,34 +1030,32 @@ def _luhn_valid(s: str) -> bool:
     return total % 10 == 0
 
 def _redact(match: bytes) -> str:
-    """Redact.
-
-    Manages redact operations and coordinates related state changes for the component.
-
+    """Redact a match to first4***last4 (or *** when short).
+    
+    Pure computation; no I/O.
+    
     Args:
-        match (bytes): The match parameter.
-
-    Returns:
-        str: Formatted string or path.
-    """
+            match (bytes): The match parameter.
+    
+        Returns:
+            str: Formatted string or path."""
     s = match.decode("utf-8", errors="replace")
     if len(s) <= 8:
         return "***"
     return s[:4] + "***" + s[-4:]
 
 def scan_file_bytes(data: bytes, file_path: str, patterns: List[DetectionPattern]) -> List[Finding]:
-    """Scan file bytes.
-
-    Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
-
+    """Scan in-memory file bytes line by line against all patterns; pure, no I/O.
+    
+    No file or network I/O; caller supplies bytes.
+    
     Args:
-        data (bytes): The data parameter.
-        file_path (str): Filesystem path to the target file or directory.
-        patterns (List[DetectionPattern]): The patterns parameter.
-
-    Returns:
-        List[Finding]: List of processed items or identifiers.
-    """
+            data (bytes): The data parameter.
+            file_path (str): Filesystem path to the target file or directory.
+            patterns (List[DetectionPattern]): The patterns parameter.
+    
+        Returns:
+            List[Finding]: List of processed items or identifiers."""
     findings = []
     lines = data.split(b"\n")
     for line_no, line in enumerate(lines, 1):
@@ -1144,17 +1088,16 @@ def scan_file_bytes(data: bytes, file_path: str, patterns: List[DetectionPattern
     return findings
 
 def scan_single_file(file_path: str, patterns: List[DetectionPattern]) -> Tuple[List[Finding], int]:
-    """Scan single file.
-
-    Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
-
+    """Read one file via mmap with size and binary guards; returns findings and size.
+    
+    No network I/O; unreadable files return ([], 0).
+    
     Args:
-        file_path (str): Filesystem path to the target file or directory.
-        patterns (List[DetectionPattern]): The patterns parameter.
-
-    Returns:
-        Tuple[List[Finding], int]: List of processed items or identifiers.
-    """
+            file_path (str): Filesystem path to the target file or directory.
+            patterns (List[DetectionPattern]): The patterns parameter.
+    
+        Returns:
+            Tuple[List[Finding], int]: List of processed items or identifiers."""
     try:
         stat = os.stat(file_path)
         size = stat.st_size
@@ -1183,17 +1126,14 @@ def scan_single_file(file_path: str, patterns: List[DetectionPattern]) -> Tuple[
         return [], 0
 
 def walk_files(directory: str, ignores: List[str]) -> Tuple[List[str], int]:
-    """Walk directory, returning (file_paths, skipped_count).
-
-    Manages walk files operations and coordinates related state changes for the component.
-
+    """Walk a directory honoring .sentinelignore, skip dirs, and binary extensions.
+    
     Args:
-        directory (str): The directory parameter.
-        ignores (List[str]): The ignores parameter.
-
-    Returns:
-        Tuple[List[str], int]: List of processed items or identifiers.
-    """
+            directory (str): The directory parameter.
+            ignores (List[str]): The ignores parameter.
+    
+        Returns:
+            Tuple[List[str], int]: List of processed items or identifiers."""
     ignore_patterns = list(ignores)
     ignore_file = os.path.join(directory, ".sentinelignore")
     if os.path.exists(ignore_file):
@@ -1222,16 +1162,15 @@ def walk_files(directory: str, ignores: List[str]) -> Tuple[List[str], int]:
     return files, skipped
 
 def compute_risk_score(findings: List[Finding]) -> int:
-    """Compute risk score.
-
-    Manages compute risk score operations and coordinates related state changes for the component.
-
+    """Score 0-100 from severity weights plus a live-credential bonus.
+    
+    Pure computation; no I/O.
+    
     Args:
-        findings (List[Finding]): The findings parameter.
-
-    Returns:
-        int: Result of the operation.
-    """
+            findings (List[Finding]): The findings parameter.
+    
+        Returns:
+            int: Result of the operation."""
     if not findings:
         return 0
     weights = {"CRITICAL": 30, "HIGH": 15, "MEDIUM": 5, "LOW": 1}
@@ -1241,20 +1180,19 @@ def compute_risk_score(findings: List[Finding]) -> int:
 
 def run_scan(directory: str, ignores: List[str] = None, max_workers: int = 8,
              severity_filter: List[str] = None, quiet: bool = False) -> ScanStats:
-    """Run scan.
-
-    Manages run scan operations and coordinates related state changes for the component.
-
+    """Thread-pool scan of walked files, sorted and optionally severity-filtered.
+    
+    Threaded file reads only; no network unless combined with verify flags in cmd_scan.
+    
     Args:
-        directory (str): The directory parameter.
-        ignores (List[str]): The ignores parameter.
-        max_workers (int): The max workers parameter.
-        severity_filter (List[str]): The severity filter parameter.
-        quiet (bool): The quiet parameter.
-
-    Returns:
-        ScanStats: Result of the operation.
-    """
+            directory (str): The directory parameter.
+            ignores (List[str]): The ignores parameter.
+            max_workers (int): The max workers parameter.
+            severity_filter (List[str]): The severity filter parameter.
+            quiet (bool): The quiet parameter.
+    
+        Returns:
+            ScanStats: Result of the operation."""
     ignores = ignores or []
     t0 = time.time()
     files, skipped = walk_files(directory, ignores)
@@ -1304,32 +1242,28 @@ def run_scan(directory: str, ignores: List[str] = None, max_workers: int = 8,
 # ─── Archive Scanner ──────────────────────────────────────────────────────────
 
 def _scan_archive_member(data: bytes, virtual_path: str) -> List[Finding]:
-    """_scan_archive_member.
-
-    Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
-
+    """Scan one decompressed archive member already in memory.
+    
     Args:
-        data (bytes): The data parameter.
-        virtual_path (str): Filesystem path to the target file or directory.
-
-    Returns:
-        List[Finding]: List of processed items or identifiers.
-    """
+            data (bytes): The data parameter.
+            virtual_path (str): Filesystem path to the target file or directory.
+    
+        Returns:
+            List[Finding]: List of processed items or identifiers."""
     if b"\x00" in data[:512]:
         return []
     return scan_file_bytes(data, virtual_path, PATTERNS)
 
 def scan_zip(archive_path: str) -> List[Finding]:
-    """Scan zip.
-
-    Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
-
+    """Scan zip members within per-file and total byte caps; read-only.
+    
+    No network I/O; skips unreadable members.
+    
     Args:
-        archive_path (str): Filesystem path to the target file or directory.
-
-    Returns:
-        List[Finding]: List of processed items or identifiers.
-    """
+            archive_path (str): Filesystem path to the target file or directory.
+    
+        Returns:
+            List[Finding]: List of processed items or identifiers."""
     findings = []
     try:
         with zipfile.ZipFile(archive_path, 'r') as zf:
@@ -1352,16 +1286,15 @@ def scan_zip(archive_path: str) -> List[Finding]:
     return findings
 
 def scan_tar(archive_path: str) -> List[Finding]:
-    """Scan tar.
-
-    Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
-
+    """Scan tar members with path-traversal guard and byte caps; read-only.
+    
+    No network I/O; skips absolute and .. members.
+    
     Args:
-        archive_path (str): Filesystem path to the target file or directory.
-
-    Returns:
-        List[Finding]: List of processed items or identifiers.
-    """
+            archive_path (str): Filesystem path to the target file or directory.
+    
+        Returns:
+            List[Finding]: List of processed items or identifiers."""
     findings = []
     try:
         with tarfile.open(archive_path, 'r:*') as tf:
@@ -1391,17 +1324,16 @@ def scan_tar(archive_path: str) -> List[Finding]:
     return findings
 
 def scan_archives(directory: str, quiet: bool = False) -> Tuple[List[Finding], int]:
-    """Scan archives.
-
-    Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
-
+    """Walk a directory and scan embedded zip/tar archives; read-only.
+    
+    No network I/O.
+    
     Args:
-        directory (str): The directory parameter.
-        quiet (bool): The quiet parameter.
-
-    Returns:
-        Tuple[List[Finding], int]: List of processed items or identifiers.
-    """
+            directory (str): The directory parameter.
+            quiet (bool): The quiet parameter.
+    
+        Returns:
+            Tuple[List[Finding], int]: List of processed items or identifiers."""
     findings, count = [], 0
     for root, dirs, files in os.walk(directory):
         dirs[:] = [d for d in dirs if d not in {'.git','node_modules','__pycache__'}]
@@ -1420,17 +1352,16 @@ def scan_archives(directory: str, quiet: bool = False) -> Tuple[List[Finding], i
 
 def scan_git_history(directory: str, max_commits: int = 500, quiet: bool = False) -> Tuple[List[Finding], int]:
     """Walk git commit history and scan each diff for secrets.
-
-    Launches an asynchronous scan across the target subsystem, showing a loading indicator and disabling triggering controls.
-
+    
+    Runs git log/show subprocesses; read-only, no writes, no admin needed.
+    
     Args:
-        directory (str): The directory parameter.
-        max_commits (int): The max commits parameter.
-        quiet (bool): The quiet parameter.
-
-    Returns:
-        Tuple[List[Finding], int]: List of processed items or identifiers.
-    """
+            directory (str): The directory parameter.
+            max_commits (int): The max commits parameter.
+            quiet (bool): The quiet parameter.
+    
+        Returns:
+            Tuple[List[Finding], int]: List of processed items or identifiers."""
     findings = []
     commits_scanned = 0
     try:
@@ -1478,20 +1409,17 @@ def scan_git_history(directory: str, max_commits: int = 500, quiet: bool = False
 # ─── Live Credential Verification ────────────────────────────────────────────
 
 def _http(url: str, headers: dict, data: bytes = None, method: str = "GET", timeout: int = 8) -> Tuple[int, Any]:
-    """Http.
-
-    Manages http operations and coordinates related state changes for the component.
-
+    """Minimal urllib JSON GET/POST helper returning status and decoded body.
+    
     Args:
-        url (str): The url parameter.
-        headers (dict): The headers parameter.
-        data (bytes): The data parameter.
-        method (str): The method parameter.
-        timeout (int): The timeout parameter.
-
-    Returns:
-        Tuple[int, Any]: Result of the operation.
-    """
+            url (str): The url parameter.
+            headers (dict): The headers parameter.
+            data (bytes): The data parameter.
+            method (str): The method parameter.
+            timeout (int): The timeout parameter.
+    
+        Returns:
+            Tuple[int, Any]: Result of the operation."""
     req = urllib.request.Request(url, data=data, headers=headers, method=method)
     try:
         with urllib.request.urlopen(req, timeout=timeout) as r:
@@ -1506,35 +1434,31 @@ def _http(url: str, headers: dict, data: bytes = None, method: str = "GET", time
         return 0, {"error": str(e)}
 
 def _vr(finding_id: str, name: str, live: Optional[bool], identity: Optional[str], blast: str, err: Optional[str] = None) -> VerificationResult:
-    """Vr.
-
-    Manages vr operations and coordinates related state changes for the component.
-
+    """Build a timestamped VerificationResult for one finding.
+    
     Args:
-        finding_id (str): The finding id parameter.
-        name (str): The name parameter.
-        live (Optional[bool]): The live parameter.
-        identity (Optional[str]): The identity parameter.
-        blast (str): The blast parameter.
-        err (Optional[str]): Error message string or exception instance.
-
-    Returns:
-        VerificationResult: Result of the operation.
-    """
+            finding_id (str): The finding id parameter.
+            name (str): The name parameter.
+            live (Optional[bool]): The live parameter.
+            identity (Optional[str]): The identity parameter.
+            blast (str): The blast parameter.
+            err (Optional[str]): Error message string or exception instance.
+    
+        Returns:
+            VerificationResult: Result of the operation."""
     return VerificationResult(finding_id=finding_id, pattern_name=name, is_live=live, identity=identity, blast_radius=blast, error=err)
 
 def verify_aws(key_id: str, secret: str) -> VerificationResult:
-    """Verify aws.
-
-    Manages verify aws operations and coordinates related state changes for the component.
-
+    """Verify an AWS key via signed STS GetCallerIdentity; performs network I/O.
+    
+    Network I/O to STS; no filesystem writes; no admin needed.
+    
     Args:
-        key_id (str): The key id parameter.
-        secret (str): The secret parameter.
-
-    Returns:
-        VerificationResult: Result of the operation.
-    """
+            key_id (str): The key id parameter.
+            secret (str): The secret parameter.
+    
+        Returns:
+            VerificationResult: Result of the operation."""
     fid = hashlib.md5(f"AWS:{key_id}".encode()).hexdigest()[:8]
     try:
         now = datetime.now(timezone.utc)
@@ -1550,9 +1474,7 @@ def verify_aws(key_id: str, secret: str) -> VerificationResult:
         scope = f"{date_stamp}/{region}/{service}/aws4_request"
         sts = (f"AWS4-HMAC-SHA256\n{amz_date}\n{scope}\n" + hashlib.sha256(canonical.encode()).hexdigest())
         def sign(key, msg):
-            """Sign.
-
-            Manages sign operations and coordinates related state changes for the component.
+            """One HMAC-SHA256 step of the AWS SigV4 signing chain.
 
             Args:
                 key: The key parameter.
@@ -1581,16 +1503,15 @@ def verify_aws(key_id: str, secret: str) -> VerificationResult:
         return _vr(fid, "AWS Key", None, None, "Verification attempted but failed.", str(e))
 
 def verify_github(token: str) -> VerificationResult:
-    """Verify github.
-
-    Manages verify github operations and coordinates related state changes for the component.
-
+    """Verify a GitHub token against the /user API; performs network I/O.
+    
+    Network I/O to api.github.com; read-only check.
+    
     Args:
-        token (str): The token parameter.
-
-    Returns:
-        VerificationResult: Result of the operation.
-    """
+            token (str): The token parameter.
+    
+        Returns:
+            VerificationResult: Result of the operation."""
     fid = hashlib.md5(f"GH:{token[:10]}".encode()).hexdigest()[:8]
     status, data = _http("https://api.github.com/user", {"Authorization": f"token {token}", "User-Agent": "Sentinel/2.0"})
     if status == 200:
@@ -1602,16 +1523,15 @@ def verify_github(token: str) -> VerificationResult:
     return _vr(fid, "GitHub Token", None, None, "Could not verify.", f"HTTP {status}")
 
 def verify_stripe(key: str) -> VerificationResult:
-    """Verify stripe.
-
-    Manages verify stripe operations and coordinates related state changes for the component.
-
+    """Verify a Stripe key against the balance API; performs network I/O.
+    
+    Network I/O to api.stripe.com; read-only check.
+    
     Args:
-        key (str): The key parameter.
-
-    Returns:
-        VerificationResult: Result of the operation.
-    """
+            key (str): The key parameter.
+    
+        Returns:
+            VerificationResult: Result of the operation."""
     fid = hashlib.md5(f"STRIPE:{key[:10]}".encode()).hexdigest()[:8]
     auth = base64.b64encode(f"{key}:".encode()).decode()
     status, data = _http("https://api.stripe.com/v1/balance", {"Authorization": f"Basic {auth}", "User-Agent": "Sentinel/2.0"})
@@ -1626,16 +1546,15 @@ def verify_stripe(key: str) -> VerificationResult:
     return _vr(fid, "Stripe Key", None, None, "Could not verify.", f"HTTP {status}")
 
 def verify_slack(token: str) -> VerificationResult:
-    """Verify slack.
-
-    Manages verify slack operations and coordinates related state changes for the component.
-
+    """Verify a Slack token against auth.test; performs network I/O.
+    
+    Network I/O to slack.com; read-only check.
+    
     Args:
-        token (str): The token parameter.
-
-    Returns:
-        VerificationResult: Result of the operation.
-    """
+            token (str): The token parameter.
+    
+        Returns:
+            VerificationResult: Result of the operation."""
     fid = hashlib.md5(f"SLACK:{token[:10]}".encode()).hexdigest()[:8]
     status, data = _http("https://slack.com/api/auth.test", {"Authorization": f"Bearer {token}", "User-Agent": "Sentinel/2.0"})
     if status == 200 and data.get("ok"):
@@ -1646,16 +1565,15 @@ def verify_slack(token: str) -> VerificationResult:
     return _vr(fid, "Slack Token", None, None, "Could not verify.", f"HTTP {status}")
 
 def verify_npm(token: str) -> VerificationResult:
-    """Verify npm.
-
-    Manages verify npm operations and coordinates related state changes for the component.
-
+    """Verify an npm token against the whoami endpoint; performs network I/O.
+    
+    Network I/O to registry.npmjs.org; read-only check.
+    
     Args:
-        token (str): The token parameter.
-
-    Returns:
-        VerificationResult: Result of the operation.
-    """
+            token (str): The token parameter.
+    
+        Returns:
+            VerificationResult: Result of the operation."""
     fid = hashlib.md5(f"NPM:{token[:10]}".encode()).hexdigest()[:8]
     status, data = _http("https://registry.npmjs.org/-/whoami", {"Authorization": f"Bearer {token}", "User-Agent": "Sentinel/2.0"})
     if status == 200:
@@ -1667,16 +1585,15 @@ def verify_npm(token: str) -> VerificationResult:
     return _vr(fid, "npm Token", None, None, "Could not verify.", f"HTTP {status}")
 
 def verify_openai(key: str) -> VerificationResult:
-    """Verify openai.
-
-    Manages verify openai operations and coordinates related state changes for the component.
-
+    """Verify an OpenAI key against the models endpoint; performs network I/O.
+    
+    Network I/O to api.openai.com; read-only check.
+    
     Args:
-        key (str): The key parameter.
-
-    Returns:
-        VerificationResult: Result of the operation.
-    """
+            key (str): The key parameter.
+    
+        Returns:
+            VerificationResult: Result of the operation."""
     fid = hashlib.md5(f"OPENAI:{key[:10]}".encode()).hexdigest()[:8]
     status, data = _http("https://api.openai.com/v1/models", {"Authorization": f"Bearer {key}", "User-Agent": "Sentinel/2.0"})
     if status == 200:
@@ -1699,17 +1616,16 @@ VERIFIER_DISPATCH = {
 }
 
 def verify_all_findings(findings: List[Finding], quiet: bool = False) -> Dict[str, VerificationResult]:
-    """Verify all findings.
-
-    Manages verify all findings operations and coordinates related state changes for the component.
-
+    """Verify all verifiable findings via dispatch; never raises on per-item errors.
+    
+    Network I/O only for verifiable patterns; off by default unless --verify is passed.
+    
     Args:
-        findings (List[Finding]): The findings parameter.
-        quiet (bool): The quiet parameter.
-
-    Returns:
-        Dict[str, VerificationResult]: Dictionary mapping identifiers to status or values.
-    """
+            findings (List[Finding]): The findings parameter.
+            quiet (bool): The quiet parameter.
+    
+        Returns:
+            Dict[str, VerificationResult]: Dictionary mapping identifiers to status or values."""
     verifiable = [f for f in findings if f.pattern_name in VERIFIER_DISPATCH]
     results = {}
     if not verifiable:
@@ -1735,16 +1651,15 @@ def verify_all_findings(findings: List[Finding], quiet: bool = False) -> Dict[st
     return results
 
 def _truncate_secret(value: str) -> str:
-    """_truncate_secret.
-
-    Manages truncate secret operations and coordinates related state changes for the component.
-
+    """Truncate a secret to first4***last4 for safe display.
+    
+    Pure computation; no I/O.
+    
     Args:
-        value (str): The value parameter.
-
-    Returns:
-        str: Formatted string or path.
-    """
+            value (str): The value parameter.
+    
+        Returns:
+            str: Formatted string or path."""
     if len(value) <= 8:
         return value
     return value[:4] + '***' + value[-4:]
@@ -1752,17 +1667,16 @@ def _truncate_secret(value: str) -> str:
 # ─── Baseline / Delta Mode ────────────────────────────────────────────────────
 
 def save_baseline(findings: List[Finding], directory: str) -> str:
-    """Save baseline.
-
-    Manages save baseline operations and coordinates related state changes for the component.
-
+    """Write finding fingerprints and metadata to .sentinel-baseline.json; creates/overwrites file.
+    
+    Side effect: writes baseline file in the target directory.
+    
     Args:
-        findings (List[Finding]): The findings parameter.
-        directory (str): The directory parameter.
-
-    Returns:
-        str: Formatted string or path.
-    """
+            findings (List[Finding]): The findings parameter.
+            directory (str): The directory parameter.
+    
+        Returns:
+            str: Formatted string or path."""
     path = os.path.join(directory, BASELINE_FILENAME)
     with open(path, 'w') as f:
         json.dump({
@@ -1774,16 +1688,13 @@ def save_baseline(findings: List[Finding], directory: str) -> str:
     return path
 
 def load_baseline(directory: str) -> Optional[Dict]:
-    """Load baseline.
-
-    Manages load baseline operations and coordinates related state changes for the component.
-
+    """Load saved baseline JSON, or None when absent.
+    
     Args:
-        directory (str): The directory parameter.
-
-    Returns:
-        Optional[Dict]: Dictionary mapping identifiers to status or values.
-    """
+            directory (str): The directory parameter.
+    
+        Returns:
+            Optional[Dict]: Dictionary mapping identifiers to status or values."""
     path = os.path.join(directory, BASELINE_FILENAME)
     if not os.path.exists(path):
         return None
@@ -1791,17 +1702,16 @@ def load_baseline(directory: str) -> Optional[Dict]:
         return json.load(f)
 
 def compute_delta(findings: List[Finding], baseline: Dict) -> Tuple[List[Finding], int]:
-    """Compute delta.
-
-    Manages compute delta operations and coordinates related state changes for the component.
-
+    """Split current findings into new vs baseline and count resolved.
+    
+    Pure computation; no I/O.
+    
     Args:
-        findings (List[Finding]): The findings parameter.
-        baseline (Dict): The baseline parameter.
-
-    Returns:
-        Tuple[List[Finding], int]: List of processed items or identifiers.
-    """
+            findings (List[Finding]): The findings parameter.
+            baseline (Dict): The baseline parameter.
+    
+        Returns:
+            Tuple[List[Finding], int]: List of processed items or identifiers."""
     known = set(baseline.get("fingerprints", {}).keys())
     new = [f for f in findings if f.fingerprint not in known]
     resolved = len(known - {f.fingerprint for f in findings})
@@ -1810,29 +1720,23 @@ def compute_delta(findings: List[Finding], baseline: Dict) -> Tuple[List[Finding
 # ─── False Positive Management ────────────────────────────────────────────────
 
 def _fp_path(directory: str) -> str:
-    """_fp_path.
-
-    Manages fp path operations and coordinates related state changes for the component.
-
+    """Path to the .sentinel-fp.json suppression DB in the target directory.
+    
     Args:
-        directory (str): The directory parameter.
-
-    Returns:
-        str: Formatted string or path.
-    """
+            directory (str): The directory parameter.
+    
+        Returns:
+            str: Formatted string or path."""
     return os.path.join(directory, FP_DB_FILENAME)
 
 def load_fp_db(directory: str) -> Dict:
-    """Load fp db.
-
-    Manages load fp db operations and coordinates related state changes for the component.
-
+    """Load the suppression DB, or an empty default when absent.
+    
     Args:
-        directory (str): The directory parameter.
-
-    Returns:
-        Dict: Dictionary mapping identifiers to status or values.
-    """
+            directory (str): The directory parameter.
+    
+        Returns:
+            Dict: Dictionary mapping identifiers to status or values."""
     p = _fp_path(directory)
     if os.path.exists(p):
         with open(p) as f:
@@ -1840,44 +1744,39 @@ def load_fp_db(directory: str) -> Dict:
     return {"suppressions": {}}
 
 def save_fp_db(db: Dict, directory: str):
-    """Save fp db.
-
-    Manages save fp db operations and coordinates related state changes for the component.
-
+    """Write the suppression DB JSON to the target directory.
+    
+    Side effect: writes suppression DB file.
+    
     Args:
-        db (Dict): The db parameter.
-        directory (str): The directory parameter.
-    """
+            db (Dict): The db parameter.
+            directory (str): The directory parameter."""
     with open(_fp_path(directory), 'w') as f:
         json.dump(db, f, indent=2)
 
 def add_fp(fingerprint: str, directory: str, reason: str = ""):
-    """Add fp.
-
-    Manages add fp operations and coordinates related state changes for the component.
-
+    """Suppress a fingerprint with a reason; writes the DB and prints confirmation.
+    
+    Side effect: writes suppression DB.
+    
     Args:
-        fingerprint (str): The fingerprint parameter.
-        directory (str): The directory parameter.
-        reason (str): The reason parameter.
-    """
+            fingerprint (str): The fingerprint parameter.
+            directory (str): The directory parameter.
+            reason (str): The reason parameter."""
     db = load_fp_db(directory)
     db["suppressions"][fingerprint] = {"suppressed_at": datetime.now(timezone.utc).isoformat(), "reason": reason}
     save_fp_db(db, directory)
     print(f"✅ Fingerprint {fingerprint} suppressed in {_fp_path(directory)}")
 
 def apply_fp_filter(findings: List[Finding], directory: str) -> Tuple[List[Finding], int]:
-    """Apply fp filter.
-
-    Manages apply fp filter operations and coordinates related state changes for the component.
-
+    """Split findings into kept vs suppressed by fingerprint.
+    
     Args:
-        findings (List[Finding]): The findings parameter.
-        directory (str): The directory parameter.
-
-    Returns:
-        Tuple[List[Finding], int]: List of processed items or identifiers.
-    """
+            findings (List[Finding]): The findings parameter.
+            directory (str): The directory parameter.
+    
+        Returns:
+            Tuple[List[Finding], int]: List of processed items or identifiers."""
     db = load_fp_db(directory)
     sups = db.get("suppressions", {})
     kept, suppressed = [], 0
@@ -1891,14 +1790,13 @@ def apply_fp_filter(findings: List[Finding], directory: str) -> Tuple[List[Findi
 # ─── Scan History ─────────────────────────────────────────────────────────────
 
 def save_to_history(stats: ScanStats, live_count: int = 0):
-    """Save to history.
-
-    Manages save to history operations and coordinates related state changes for the component.
-
+    """Append a scan summary record under ~/.sentinel/history; creates dirs as needed.
+    
+    Side effect: writes a record file under the user home.
+    
     Args:
-        stats (ScanStats): The stats parameter.
-        live_count (int): The live count parameter.
-    """
+            stats (ScanStats): The stats parameter.
+            live_count (int): The live count parameter."""
     os.makedirs(HISTORY_DIR, exist_ok=True)
     scan_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     record = {
@@ -1913,16 +1811,13 @@ def save_to_history(stats: ScanStats, live_count: int = 0):
         json.dump(record, f)
 
 def load_history(limit: int = 20) -> List[Dict]:
-    """Load history.
-
-    Manages load history operations and coordinates related state changes for the component.
-
+    """Load recent history records newest-first; empty when none exist.
+    
     Args:
-        limit (int): The limit parameter.
-
-    Returns:
-        List[Dict]: List of processed items or identifiers.
-    """
+            limit (int): The limit parameter.
+    
+        Returns:
+            List[Dict]: List of processed items or identifiers."""
     if not os.path.exists(HISTORY_DIR):
         return []
     records = []
@@ -1938,20 +1833,19 @@ def load_history(limit: int = 20) -> List[Dict]:
 # ─── Jira / GitHub Issues Integration ────────────────────────────────────────
 
 def create_jira_ticket(finding: Finding, jira_url: str, jira_user: str, jira_token: str, project_key: str) -> Optional[str]:
-    """Create a Jira issue from a finding. Returns issue key or None.
-
-    Manages create jira ticket operations and coordinates related state changes for the component.
-
+    """Create a Jira Bug issue from a finding; performs network I/O.
+    
+    Side effect: creates a remote Jira issue; needs JIRA_USER and JIRA_TOKEN.
+    
     Args:
-        finding (Finding): The finding parameter.
-        jira_url (str): The jira url parameter.
-        jira_user (str): The jira user parameter.
-        jira_token (str): The jira token parameter.
-        project_key (str): The project key parameter.
-
-    Returns:
-        Optional[str]: Formatted string or path.
-    """
+            finding (Finding): The finding parameter.
+            jira_url (str): The jira url parameter.
+            jira_user (str): The jira user parameter.
+            jira_token (str): The jira token parameter.
+            project_key (str): The project key parameter.
+    
+        Returns:
+            Optional[str]: Formatted string or path."""
     payload = json.dumps({
         "fields": {
             "project": {"key": project_key},
@@ -1987,18 +1881,17 @@ def create_jira_ticket(finding: Finding, jira_url: str, jira_user: str, jira_tok
         return None
 
 def create_github_issue(finding: Finding, github_token: str, repo: str) -> Optional[str]:
-    """Create a GitHub issue from a finding. Returns issue URL or None.
-
-    Manages create github issue operations and coordinates related state changes for the component.
-
+    """Create a GitHub issue from a finding; performs network I/O.
+    
+    Side effect: creates a remote GitHub issue; needs GITHUB_TOKEN.
+    
     Args:
-        finding (Finding): The finding parameter.
-        github_token (str): The github token parameter.
-        repo (str): The repo parameter.
-
-    Returns:
-        Optional[str]: Formatted string or path.
-    """
+            finding (Finding): The finding parameter.
+            github_token (str): The github token parameter.
+            repo (str): The repo parameter.
+    
+        Returns:
+            Optional[str]: Formatted string or path."""
     payload = json.dumps({
         "title": f"[SENTINEL] {finding.severity} — {finding.pattern_name} in {Path(finding.file_path).name}",
         "body": (
@@ -2031,26 +1924,24 @@ def create_github_issue(finding: Finding, github_token: str, repo: str) -> Optio
 # ─── Export Formats ───────────────────────────────────────────────────────────
 
 def export_json(stats: ScanStats, path: str):
-    """Export json.
-
-    Manages export json operations and coordinates related state changes for the component.
-
+    """Write scan stats to a JSON file; overwrites the destination.
+    
+    Side effect: writes the destination file.
+    
     Args:
-        stats (ScanStats): The stats parameter.
-        path (str): Filesystem path to the target file or directory.
-    """
+            stats (ScanStats): The stats parameter.
+            path (str): Filesystem path to the target file or directory."""
     with open(path, 'w') as f:
         json.dump(stats.to_dict(), f, indent=2, default=str)
 
 def export_csv(stats: ScanStats, path: str):
-    """Export csv.
-
-    Manages export csv operations and coordinates related state changes for the component.
-
+    """Write findings to a CSV file with fixed columns; overwrites the destination.
+    
+    Side effect: writes the destination file.
+    
     Args:
-        stats (ScanStats): The stats parameter.
-        path (str): Filesystem path to the target file or directory.
-    """
+            stats (ScanStats): The stats parameter.
+            path (str): Filesystem path to the target file or directory."""
     fields = ["severity","category","pattern_name","file_path","line_number",
               "match_preview","compliance","remediation","confidence","entropy",
               "verified","identity","blast_radius"]
@@ -2063,14 +1954,13 @@ def export_csv(stats: ScanStats, path: str):
             w.writerow({k: row.get(k, '') for k in fields})
 
 def export_sarif(stats: ScanStats, path: str):
-    """Export sarif.
-
-    Manages export sarif operations and coordinates related state changes for the component.
-
+    """Write findings in SARIF 2.1.0 for GitHub/GitLab ingestion; overwrites the destination.
+    
+    Side effect: writes the destination file.
+    
     Args:
-        stats (ScanStats): The stats parameter.
-        path (str): Filesystem path to the target file or directory.
-    """
+            stats (ScanStats): The stats parameter.
+            path (str): Filesystem path to the target file or directory."""
     rules = {}
     for p in PATTERNS:
         if p.name not in rules:
@@ -2100,17 +1990,16 @@ def export_sarif(stats: ScanStats, path: str):
         json.dump(sarif, f, indent=2)
 
 def send_slack(stats: ScanStats, webhook_url: str) -> bool:
-    """Send slack.
-
-    Manages send slack operations and coordinates related state changes for the component.
-
+    """Post a risk-summary attachment to a Slack webhook; performs network I/O.
+    
+    Side effect: POSTs to the webhook URL.
+    
     Args:
-        stats (ScanStats): The stats parameter.
-        webhook_url (str): The webhook url parameter.
-
-    Returns:
-        bool: True if the operation succeeded, False otherwise.
-    """
+            stats (ScanStats): The stats parameter.
+            webhook_url (str): The webhook url parameter.
+    
+        Returns:
+            bool: True if the operation succeeded, False otherwise."""
     risk_color = "#ef4444" if stats.risk_score >= 70 else "#f97316" if stats.risk_score >= 40 else "#22c55e"
     live = len(stats.live_credentials)
     payload = json.dumps({
@@ -2140,14 +2029,13 @@ def send_slack(stats: ScanStats, webhook_url: str) -> bool:
 # ─── HTML Report Generator ────────────────────────────────────────────────────
 
 def generate_html_report(stats: ScanStats, output_path: str):
-    """Generate html report.
-
-    Manages generate html report operations and coordinates related state changes for the component.
-
+    """Write a self-contained HTML audit report; overwrites the destination.
+    
+    Side effect: writes the destination HTML file; reads history for the dashboard section.
+    
     Args:
-        stats (ScanStats): The stats parameter.
-        output_path (str): Filesystem path to the target file or directory.
-    """
+            stats (ScanStats): The stats parameter.
+            output_path (str): Filesystem path to the target file or directory."""
     _e = html_mod.escape
     findings_js = json.dumps([f.to_dict() for f in stats.findings], indent=2, default=str)
     history_js = json.dumps(load_history(), indent=2)
@@ -2455,13 +2343,10 @@ function downloadCSV() {{
 # ─── Terminal Report ──────────────────────────────────────────────────────────
 
 def print_terminal_report(stats: ScanStats):
-    """Print terminal report.
-
-    Manages print terminal report operations and coordinates related state changes for the component.
-
+    """Print a rich (or plain fallback) terminal summary; no files written.
+    
     Args:
-        stats (ScanStats): The stats parameter.
-    """
+            stats (ScanStats): The stats parameter."""
     if RICH_AVAILABLE:
         console = Console()
         console.print()
@@ -2629,24 +2514,15 @@ function triggerScan() {
 </html>"""
 
 class DashboardHandler(http.server.BaseHTTPRequestHandler):
-    """Dashboardhandler.
-
-    Manages DashboardHandler operations and coordinates related state changes for the component.
-    """
+    """HTTP handler serving dashboard HTML and /api/history JSON."""
     def log_message(self, format, *args):
-        """Log message.
-
-        Manages log message operations and coordinates related state changes for the component.
-
+        """Suppress default HTTP server request logging.
+        
         Args:
-            format: The format parameter.
-        """
+                    format: The format parameter."""
         pass  # suppress logs
     def do_GET(self):
-        """Do GET.
-
-        Manages do GET operations and coordinates related state changes for the component.
-        """
+        """Serve dashboard HTML or history JSON for GET requests."""
         if self.path == '/api/history':
             data = json.dumps(load_history()).encode()
             self.send_response(200)
@@ -2662,13 +2538,12 @@ class DashboardHandler(http.server.BaseHTTPRequestHandler):
             self.wfile.write(html)
 
 def serve_dashboard(port: int = 8080):
-    """Serve dashboard.
-
-    Manages serve dashboard operations and coordinates related state changes for the component.
-
+    """Serve the dashboard on 127.0.0.1; blocks until interrupted.
+    
+    Side effect: binds a local port and serves until interrupted.
+    
     Args:
-        port (int): The port parameter.
-    """
+            port (int): The port parameter."""
     print(f"\n🌐 Sentinel Dashboard running at http://localhost:{port}")
     print(f"   Press Ctrl+C to stop.\n")
     server = http.server.HTTPServer(('127.0.0.1', port), DashboardHandler)
@@ -2680,13 +2555,12 @@ def serve_dashboard(port: int = 8080):
 # ─── CLI ─────────────────────────────────────────────────────────────────────
 
 def cmd_scan(args):
-    """Cmd scan.
-
-    Manages cmd scan operations and coordinates related state changes for the component.
-
+    """CLI scan: core scan plus archives, git history, delta, verify, export, and ticketing side effects.
+    
+    Side effects: writes history and any requested report/export files; optionally creates remote tickets.
+    
     Args:
-        args: The args parameter.
-    """
+            args: The args parameter."""
     directory = os.path.abspath(args.directory)
     if not os.path.isdir(directory):
         print(f"Error: '{directory}' is not a directory.", file=sys.stderr)
@@ -2821,13 +2695,10 @@ def cmd_scan(args):
 
 
 def cmd_baseline(args):
-    """Cmd baseline.
-
-    Manages cmd baseline operations and coordinates related state changes for the component.
-
+    """CLI baseline save/diff/clear for delta-mode workflows.
+    
     Args:
-        args: The args parameter.
-    """
+            args: The args parameter."""
     directory = os.path.abspath(args.directory)
     if args.baseline_action == "save":
         stats = run_scan(directory=directory, quiet=True)
@@ -2855,13 +2726,10 @@ def cmd_baseline(args):
 
 
 def cmd_fp(args):
-    """Cmd fp.
-
-    Manages cmd fp operations and coordinates related state changes for the component.
-
+    """CLI add/list/remove false-positive suppressions in the working directory.
+    
     Args:
-        args: The args parameter.
-    """
+            args: The args parameter."""
     if args.fp_action == "add":
         add_fp(args.fingerprint, os.getcwd(), getattr(args,"reason",""))
     elif args.fp_action == "list":
@@ -2883,13 +2751,10 @@ def cmd_fp(args):
 
 
 def cmd_verify(args):
-    """Cmd verify.
-
-    Manages cmd verify operations and coordinates related state changes for the component.
-
+    """CLI verify: load a findings JSON file and live-check credentials.
+    
     Args:
-        args: The args parameter.
-    """
+            args: The args parameter."""
     with open(args.file) as f:
         data = json.load(f)
     findings_raw = data.get("findings", data) if isinstance(data, dict) else data
@@ -2909,25 +2774,19 @@ def cmd_verify(args):
 
 
 def cmd_serve(args):
-    """Cmd serve.
-
-    Manages cmd serve operations and coordinates related state changes for the component.
-
+    """CLI serve: start the dashboard on the given port.
+    
     Args:
-        args: The args parameter.
-    """
+            args: The args parameter."""
     serve_dashboard(getattr(args,"port",8080))
     return 0
 
 
 def cmd_patterns(args):
-    """Cmd patterns.
-
-    Manages cmd patterns operations and coordinates related state changes for the component.
-
+    """CLI patterns: list detection patterns sorted by severity.
+    
     Args:
-        args: The args parameter.
-    """
+            args: The args parameter."""
     if RICH_AVAILABLE:
         console = Console()
         table = Table(title=f"Sentinel Pro — {len(PATTERNS)} Detection Patterns", box=box.SIMPLE)
@@ -2946,10 +2805,7 @@ def cmd_patterns(args):
 
 
 def build_parser():
-    """Build parser.
-
-    Manages build parser operations and coordinates related state changes for the component.
-    """
+    """Build the argparse parser for scan, baseline, fp, verify, serve, and patterns."""
     parser = argparse.ArgumentParser(
         prog="sentinel_pro",
         description=f"Sentinel Pro v{VERSION} — Enterprise Data Security Scanner",
@@ -3011,13 +2867,10 @@ def build_parser():
 
 
 def main() -> int:
-    """Main.
-
-    Manages main operations and coordinates related state changes for the component.
-
+    """Dispatch the CLI subcommand; bare directory arg falls back to scan.
+    
     Returns:
-        int: Result of the operation.
-    """
+            int: Result of the operation."""
     parser = build_parser()
     args = parser.parse_args()
 

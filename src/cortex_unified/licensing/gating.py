@@ -38,14 +38,13 @@ T = TypeVar("T")
 
 
 class EntitlementError(PermissionError):
-    """Entitlementerror.
+    """Raised when a feature requires a higher tier.
 
-    Manages EntitlementError operations and coordinates related state changes for the component.
     """
 
     def __init__(self, feature: Feature, required: Tier, current: Tier,
                  message: str | None = None):
-        """__init__.
+        """Initialize the entitlement error with feature and tier context.
 
         Initializes the instance and configures internal state.
 
@@ -68,7 +67,6 @@ class EntitlementError(PermissionError):
 def current_tier() -> Tier:
     """The effective tier of this machine right now.
 
-    Manages current tier operations and coordinates related state changes for the component.
 
     Returns:
         Tier: Result of the operation.
@@ -79,7 +77,6 @@ def current_tier() -> Tier:
 def effective_features() -> set[Feature]:
     """Every feature unlocked on this machine right now.
 
-    Manages effective features operations and coordinates related state changes for the component.
 
     Returns:
         set[Feature]: Result of the operation.
@@ -88,9 +85,8 @@ def effective_features() -> set[Feature]:
 
 
 def allowed(feature: Feature) -> bool:
-    """Allowed.
+    """Whether a feature is currently permitted, never raising.
 
-    Manages allowed operations and coordinates related state changes for the component.
 
     Args:
         feature (Feature): The feature parameter.
@@ -110,9 +106,8 @@ def allowed(feature: Feature) -> bool:
 
 
 def require(feature: Feature) -> None:
-    """Require.
+    """Raise EntitlementError unless the feature is permitted.
 
-    Manages require operations and coordinates related state changes for the component.
 
     Args:
         feature (Feature): The feature parameter.
@@ -126,9 +121,8 @@ def require(feature: Feature) -> None:
 
 
 def gate(feature: Feature) -> Callable[[Callable[..., T]], Callable[..., T]]:
-    """Gate.
+    """Decorate a callable to require a feature before execution.
 
-    Manages gate operations and coordinates related state changes for the component.
 
     Args:
         feature (Feature): The feature parameter.
@@ -138,9 +132,8 @@ def gate(feature: Feature) -> Callable[[Callable[..., T]], Callable[..., T]]:
     """
 
     def decorator(func: Callable[..., T]) -> Callable[..., T]:
-        """Decorator.
+        """Wrap a function with an entitlement check preserving metadata.
 
-        Manages decorator operations and coordinates related state changes for the component.
 
         Args:
             func (Callable[..., T]): The func parameter.
@@ -149,9 +142,8 @@ def gate(feature: Feature) -> Callable[[Callable[..., T]], Callable[..., T]]:
             Callable[..., T]: Result of the operation.
         """
         def wrapper(*args: object, **kwargs: object) -> T:
-            """Wrapper.
+            """Enforce the required feature then call the wrapped function.
 
-            Manages wrapper operations and coordinates related state changes for the component.
 
             Returns:
                 T: Result of the operation.
@@ -175,7 +167,6 @@ _RESET_LOCK = threading.Lock()
 def reset_cache() -> None:
     """Drop memoised validation state (tests only).
 
-    Manages reset cache operations and coordinates related state changes for the component.
     """
     with _RESET_LOCK:
         get_license_manager().invalidate()

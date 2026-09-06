@@ -24,10 +24,7 @@ from cortex_unified.analyzers.audio_duplicate_finder import AudioDuplicateFinder
 
 
 class _AudioWorker(QObject):
-    """Audioworker.
-
-    Manages AudioWorker operations and coordinates related state changes for the component.
-    """
+    """Background worker (_AudioWorker) performing AudioWorker. Signals finished, progress, failed report status. Configured with root, threshold. Its run() step calls AudioDuplicateFinder, finder.find_audio_duplicates, emit, str."""
     finished = Signal(dict)
     progress = Signal(str)
     failed = Signal(str)
@@ -74,10 +71,7 @@ class _AudioWorker(QObject):
 
 
 class AudioDuplicatesPage(_Page):
-    """Audioduplicatespage.
-
-    Manages AudioDuplicatesPage operations and coordinates related state changes for the component.
-    """
+    """Audio Duplicates (Acoustic) page: Chromaprint-inspired spectral fingerprinting (Ke CVPR 2005) –."""
 
     def __init__(self, win):
         """__init__.
@@ -155,10 +149,7 @@ class AudioDuplicatesPage(_Page):
             self.path_label.setText(folder)
 
     def _run(self):
-        """Run.
-
-        Manages run operations and coordinates related state changes for the component.
-        """
+        """Disable action buttons, show progress/status, and launch the background worker (setEnabled, setVisible, show_loading)."""
         self.run_btn.setEnabled(False)
         self.progress.setVisible(True)
         self.state.show_loading("Fingerprinting audio (spectral)…")

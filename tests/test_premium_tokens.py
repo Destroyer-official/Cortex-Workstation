@@ -27,19 +27,13 @@ THEME_PALETTES = [MIDNIGHT, DAYLIGHT]
 
 
 def test_elevation_has_four_ordered_levels():
-    """Req 12.1: at least four ordered elevation levels, lowest -> highest.
-
-    Manages test elevation has four ordered levels operations and coordinates related state changes for the component.
-    """
+    """Req 12.1: at least four ordered elevation levels, lowest -> highest."""
     assert [lv.value for lv in ALL_LEVELS] == [0, 1, 2, 3]
     assert Elevation.BACKGROUND < Elevation.SURFACE < Elevation.RAISED < Elevation.OVERLAY
 
 
 def test_elevation_named_levels_present():
-    """test_elevation_named_levels_present.
-
-    Manages test elevation named levels present operations and coordinates related state changes for the component.
-    """
+    """Verify elevation named levels present via hasattr."""
     for name in ("BACKGROUND", "SURFACE", "RAISED", "OVERLAY"):
         assert hasattr(Elevation, name)
 
@@ -52,9 +46,7 @@ def test_elevation_named_levels_present():
 @pytest.mark.parametrize("palette", THEME_PALETTES, ids=lambda p: p.name)
 @pytest.mark.parametrize("level", ALL_LEVELS, ids=lambda lv: lv.name)
 def test_elevation_style_returns_valid_style(palette, level):
-    """test_elevation_style_returns_valid_style.
-
-    Manages test elevation style returns valid style operations and coordinates related state changes for the component.
+    """Verify elevation style returns valid style via pytest.mark.parametrize, elevation_style.
 
     Args:
         palette: The palette parameter.
@@ -73,8 +65,6 @@ def test_elevation_style_returns_valid_style(palette, level):
 def test_elevation_style_accepts_int_level(palette):
     """Callers may pass a raw int; it resolves to the matching level.
 
-    Manages test elevation style accepts int level operations and coordinates related state changes for the component.
-
     Args:
         palette: The palette parameter.
     """
@@ -84,8 +74,6 @@ def test_elevation_style_accepts_int_level(palette):
 @pytest.mark.parametrize("palette", THEME_PALETTES, ids=lambda p: p.name)
 def test_glass_translucency_only_at_higher_levels(palette):
     """Base levels stay opaque; raised/overlay use a translucent glass fill.
-
-    Manages test glass translucency only at higher levels operations and coordinates related state changes for the component.
 
     Args:
         palette: The palette parameter.
@@ -102,9 +90,7 @@ def test_glass_translucency_only_at_higher_levels(palette):
 
 
 def _assert_monotonic_depth(palette) -> None:
-    """_assert_monotonic_depth.
-
-    Manages assert monotonic depth operations and coordinates related state changes for the component.
+    """Assert monotonic depth using tokens._rel_luminance, zip, elevation_style.
 
     Args:
         palette: The palette parameter.
@@ -122,8 +108,6 @@ def _assert_monotonic_depth(palette) -> None:
 @pytest.mark.parametrize("palette", THEME_PALETTES, ids=lambda p: p.name)
 def test_depth_monotonic_for_builtin_themes(palette):
     """Req 12.2: higher levels are a visibly stronger depth cue.
-
-    Manages test depth monotonic for builtin themes operations and coordinates related state changes for the component.
 
     Args:
         palette: The palette parameter.
@@ -165,16 +149,10 @@ def test_depth_monotonic_for_arbitrary_palettes(bg, surface, surface_alt, border
 
 
 def test_elevation_style_tolerates_minimal_palette():
-    """Missing optional fields (surface_raised/overlay/glass_*) fall back safely.
-
-    Manages test elevation style tolerates minimal palette operations and coordinates related state changes for the component.
-    """
+    """Missing optional fields (surface_raised/overlay/glass_*) fall back safely."""
 
     class Bare:
-        """Bare.
-
-        Manages Bare operations and coordinates related state changes for the component.
-        """
+        """Helper bare."""
         bg = "#101010"
         surface = "#202020"
         surface_alt = "#303030"
@@ -194,44 +172,29 @@ from cortex_unified.ui.premium.tokens import contrast_ratio
 
 
 def test_contrast_ratio_black_on_white_is_maximum():
-    """Pure black vs pure white is the WCAG maximum of 21:1.
-
-    Manages test contrast ratio black on white is maximum operations and coordinates related state changes for the component.
-    """
+    """Pure black vs pure white is the WCAG maximum of 21:1."""
     assert contrast_ratio("#000000", "#FFFFFF") == pytest.approx(21.0, abs=0.01)
 
 
 def test_contrast_ratio_identical_colors_is_minimum():
-    """A color against itself has no contrast: the 1:1 floor.
-
-    Manages test contrast ratio identical colors is minimum operations and coordinates related state changes for the component.
-    """
+    """A color against itself has no contrast: the 1:1 floor."""
     assert contrast_ratio("#6E8BFF", "#6E8BFF") == pytest.approx(1.0, abs=1e-9)
 
 
 def test_contrast_ratio_is_symmetric():
-    """Swapping foreground/background does not change the ratio.
-
-    Manages test contrast ratio is symmetric operations and coordinates related state changes for the component.
-    """
+    """Swapping foreground/background does not change the ratio."""
     assert contrast_ratio("#123456", "#abcdef") == pytest.approx(
         contrast_ratio("#abcdef", "#123456")
     )
 
 
 def test_contrast_ratio_handles_shorthand_hex():
-    """#RGB shorthand expands to #RRGGBB (so #FFF == #FFFFFF).
-
-    Manages test contrast ratio handles shorthand hex operations and coordinates related state changes for the component.
-    """
+    """#RGB shorthand expands to #RRGGBB (so #FFF == #FFFFFF)."""
     assert contrast_ratio("#000", "#FFF") == pytest.approx(21.0, abs=0.01)
 
 
 def test_contrast_ratio_unparseable_treated_as_darkest():
-    """Bad input degrades to luminance 0.0 rather than raising.
-
-    Manages test contrast ratio unparseable treated as darkest operations and coordinates related state changes for the component.
-    """
+    """Bad input degrades to luminance 0.0 rather than raising."""
     assert contrast_ratio("not-a-color", "#FFFFFF") == pytest.approx(21.0, abs=0.01)
 
 

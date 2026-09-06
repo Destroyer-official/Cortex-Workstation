@@ -87,9 +87,10 @@ class PrivacyLevel(str, enum.Enum):
 
 @dataclass(slots=True)
 class SanitizeResult:
-    """Sanitizeresult.
+    """Outcome of one graduated sanitization attempt.
 
-    Manages SanitizeResult operations and coordinates related state changes for the component.
+    Carries the chosen privacy level, detected storage kind, success and
+    verification flags, plus human-readable wear/latency costs.
     """
 
     path: Path
@@ -104,9 +105,7 @@ class SanitizeResult:
     latency_cost: str = ""
 
     def to_dict(self) -> dict:
-        """To dict.
-
-        Manages to dict operations and coordinates related state changes for the component.
+        """Serialize this result to a JSON-friendly dict.
 
         Returns:
             dict: Dictionary mapping identifiers to status or values.
@@ -281,9 +280,11 @@ class AdaptiveSanitizer:
 
     # PL0 – full block erase / 3-pass overwrite (HDD) or Secure Erase (SSD)
     def _pl0(self, p: Path, kind: StorageKind, verify: bool, force: bool, timeout: int) -> SanitizeResult:
-        """Pl0.
+        """Execute PL0 full block erase.
 
-        Manages pl0 operations and coordinates related state changes for the component.
+        HDDs get an honest 3-pass overwrite via SecureDeleter; SSDs/flash
+        refuse per-file erase (device-level NVMe Format / ATA Secure Erase
+        required) to avoid program-disturb. Deletes the target on success.
 
         Args:
             p (Path): The p parameter.
@@ -329,9 +330,11 @@ class AdaptiveSanitizer:
         # PULSE strategy: sub-block aware, hotness separated, limited overwrite
         # pulses to keep RBER <0.57% FG (paper Table 2). On non-elevated or non-SSD
         # we fall back to 1-pass best-effort overwrite.
-        """Pl1.
+        """Execute PL1 PULSE-style page scrubbing.
 
-        Manages pl1 operations and coordinates related state changes for the component.
+        Applies up to two low-disturbance overwrite pulses then unlinks the
+        file and issues a best-effort TRIM hint. Recurses depth-first for
+        directories. No admin required; degrades gracefully off-Windows.
 
         Args:
             p (Path): The p parameter.
@@ -420,9 +423,11 @@ class AdaptiveSanitizer:
         # Approximation without TPM: overwrite first 4 KiB with random (destroys
         # header / sack), then rename to random, TRIM. Verifiability via read of
         # corrupted header.
-        """Pl2.
+        """Execute PL2 ECC/parity crypto-disruption.
 
-        Manages pl2 operations and coordinates related state changes for the component.
+        Destroys the first 4 KiB header, renames to a random name to break
+        links, then unlinks and TRIMs. Directories are handled recursively.
+        Low wear; no admin required.
 
         Args:
             p (Path): The p parameter.
@@ -481,9 +486,10 @@ class AdaptiveSanitizer:
 
     # PL3 – controller lockout / TRIM range (logical unmap)
     def _pl3(self, p: Path, kind: StorageKind, verify: bool, timeout: int) -> SanitizeResult:
-        """Pl3.
+        """Execute PL3 logical unmap / TRIM lockout.
 
-        Manages pl3 operations and coordinates related state changes for the component.
+        Simply unlinks the file (or rmtree for directories) and issues a
+        best-effort TRIM hint. Lightest wear; verification is existence check.
 
         Args:
             p (Path): The p parameter.

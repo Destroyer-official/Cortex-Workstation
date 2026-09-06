@@ -34,53 +34,41 @@ _HISTORY_RESULT = {1: "In progress", 2: "Succeeded", 3: "Succeeded with errors",
 
 @dataclass(slots=True)
 class PendingUpdate:
-    """Pendingupdate.
-
-    Manages PendingUpdate operations and coordinates related state changes for the component.
-    """
+    """Record holding title, kb, severity, size_bytes."""
     title: str
     kb: str = ""
     severity: str = ""
     size_bytes: int = 0
 
     def to_dict(self) -> dict[str, Any]:
-        """To dict.
-
-        Manages to dict operations and coordinates related state changes for the component.
+        """Serialize to a plain dict with keys title, kb, severity, size_bytes.
 
         Returns:
-            dict[str, Any]: Dictionary mapping identifiers to status or values.
+        dict[str, Any]: Dictionary mapping identifiers to status or values.
         """
         return {"title": self.title, "kb": self.kb, "severity": self.severity,
                 "size_bytes": self.size_bytes}
 
 
 class WindowsUpdate:
-    """Windowsupdate.
-
-    Manages WindowsUpdate operations and coordinates related state changes for the component.
-    """
+    """Groups related helpers: is supported, last activity, read result time, check pending, parse pending, recent history, parse history, run. Windows-only; returns a safe default elsewhere."""
 
     @staticmethod
     def is_supported() -> bool:
-        """Is supported.
-
-        Manages is supported operations and coordinates related state changes for the component.
+        """Return True on Windows where the feature exists; False elsewhere. Windows-only; returns a safe default elsewhere.
 
         Returns:
-            bool: True if the operation succeeded, False otherwise.
+        bool: True if the operation succeeded, False otherwise.
         """
         return _IS_WINDOWS
 
     # -- offline: last activity from registry -------------------------------
 
     def last_activity(self) -> dict[str, str]:
-        """Last activity.
-
-        Manages last activity operations and coordinates related state changes for the component.
+        """Last activity helper. Windows-only; returns a safe default elsewhere.
 
         Returns:
-            dict[str, str]: Dictionary mapping identifiers to status or values.
+        dict[str, str]: Dictionary mapping identifiers to status or values.
         """
         if not _IS_WINDOWS:
             return {"last_check": "", "last_install": ""}
@@ -91,15 +79,13 @@ class WindowsUpdate:
 
     @staticmethod
     def _read_result_time(sub: str) -> str:
-        """_read_result_time.
-
-        Manages read result time operations and coordinates related state changes for the component.
+        """Read result time helper (reads Windows registry). Returns str(val).
 
         Args:
-            sub (str): The sub parameter.
+        sub (str): The sub parameter.
 
         Returns:
-            str: Formatted string or path.
+        str: Formatted string or path.
         """
         try:
             import winreg
@@ -115,12 +101,10 @@ class WindowsUpdate:
     # -- online: pending updates via COM ------------------------------------
 
     def check_pending(self) -> list[PendingUpdate]:
-        """Check pending.
-
-        Manages check pending operations and coordinates related state changes for the component.
+        """Check pending helper. Windows-only; returns a safe default elsewhere.
 
         Returns:
-            list[PendingUpdate]: List of processed items or identifiers.
+        list[PendingUpdate]: List of processed items or identifiers.
         """
         if not _IS_WINDOWS:
             return []
@@ -135,15 +119,13 @@ class WindowsUpdate:
 
     @staticmethod
     def _parse_pending(out: str | None) -> list[PendingUpdate]:
-        """_parse_pending.
-
-        Manages parse pending operations and coordinates related state changes for the component.
+        """Parse pending helper.
 
         Args:
-            out (str | None): The out parameter.
+        out (str | None): The out parameter.
 
         Returns:
-            list[PendingUpdate]: List of processed items or identifiers.
+        list[PendingUpdate]: List of processed items or identifiers.
         """
         if not out:
             return []
@@ -155,12 +137,10 @@ class WindowsUpdate:
             data = [data]
 
         def _int(v):
-            """Int.
-
-            Manages int operations and coordinates related state changes for the component.
+            """Int helper. Returns int(...).
 
             Args:
-                v: The v parameter.
+            v: The v parameter.
             """
             try:
                 return int(v) if v is not None else 0
@@ -185,15 +165,13 @@ class WindowsUpdate:
     # -- history via COM ----------------------------------------------------
 
     def recent_history(self, limit: int = 15) -> list[dict[str, Any]]:
-        """Recent history.
-
-        Manages recent history operations and coordinates related state changes for the component.
+        """Recent history helper. Windows-only; returns a safe default elsewhere.
 
         Args:
-            limit (int): The limit parameter.
+        limit (int): The limit parameter.
 
         Returns:
-            list[dict[str, Any]]: List of processed items or identifiers.
+        list[dict[str, Any]]: List of processed items or identifiers.
         """
         if not _IS_WINDOWS:
             return []
@@ -209,15 +187,13 @@ class WindowsUpdate:
 
     @staticmethod
     def _parse_history(out: str | None) -> list[dict[str, Any]]:
-        """_parse_history.
-
-        Manages parse history operations and coordinates related state changes for the component.
+        """Parse history helper (mutates filesystem state).
 
         Args:
-            out (str | None): The out parameter.
+        out (str | None): The out parameter.
 
         Returns:
-            list[dict[str, Any]]: List of processed items or identifiers.
+        list[dict[str, Any]]: List of processed items or identifiers.
         """
         if not out:
             return []
@@ -247,16 +223,14 @@ class WindowsUpdate:
         return rows
 
     def _run(self, script: str, timeout: int) -> str | None:
-        """Run.
-
-        Manages run operations and coordinates related state changes for the component.
+        """Run helper (runs `["powershell", "-NoProfile", "-NonInteractive", "-Command", script]`). Returns proc.stdout if proc.returncode == 0 else None.
 
         Args:
-            script (str): The script parameter.
-            timeout (int): The timeout parameter.
+        script (str): The script parameter.
+        timeout (int): The timeout parameter.
 
         Returns:
-            str | None: Formatted string or path.
+        str | None: Formatted string or path.
         """
         try:
             proc = _proc.run(

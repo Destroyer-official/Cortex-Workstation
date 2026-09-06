@@ -20,8 +20,6 @@ import pytest
 def fake_env(monkeypatch, tmp_path):
     """Redirect every sweep root into a throwaway directory tree.
 
-    Manages fake env operations and coordinates related state changes for the component.
-
     Args:
         monkeypatch: The monkeypatch parameter.
         tmp_path: Filesystem path to the target file or directory.
@@ -48,14 +46,9 @@ def fake_env(monkeypatch, tmp_path):
 # =====================================================================
 
 class TestExclusionsStore:
-    """Testexclusionsstore.
-
-    Manages TestExclusionsStore operations and coordinates related state changes for the component.
-    """
+    """Group testexclusionsstore tests covering add is persisted and prefix matched; discard removes and persists; corrupt file degrades to empty."""
     def test_add_is_persisted_and_prefix_matched(self, tmp_path):
-        """test_add_is_persisted_and_prefix_matched.
-
-        Manages test add is persisted and prefix matched operations and coordinates related state changes for the component.
+        """Verify add is persisted and prefix matched via ExclusionsStore, reloaded.is_excluded, store.add.
 
         Args:
             tmp_path: Filesystem path to the target file or directory.
@@ -73,9 +66,7 @@ class TestExclusionsStore:
         assert not reloaded.is_excluded(tmp_path / "other")
 
     def test_discard_removes_and_persists(self, tmp_path):
-        """test_discard_removes_and_persists.
-
-        Manages test discard removes and persists operations and coordinates related state changes for the component.
+        """Verify discard removes and persists via ExclusionsStore, store.add, store.discard.
 
         Args:
             tmp_path: Filesystem path to the target file or directory.
@@ -88,9 +79,7 @@ class TestExclusionsStore:
         assert len(ExclusionsStore(p)) == 0
 
     def test_corrupt_file_degrades_to_empty(self, tmp_path):
-        """test_corrupt_file_degrades_to_empty.
-
-        Manages test corrupt file degrades to empty operations and coordinates related state changes for the component.
+        """Verify corrupt file degrades to empty via ExclusionsStore, store.add.
 
         Args:
             tmp_path: Filesystem path to the target file or directory.
@@ -104,14 +93,9 @@ class TestExclusionsStore:
 
 
 class TestScannerExclusions:
-    """Testscannerexclusions.
-
-    Manages TestScannerExclusions operations and coordinates related state changes for the component.
-    """
+    """Group testscannerexclusions tests covering scan app skips excluded folders; clean refuses excluded paths even when asked."""
     def test_scan_app_skips_excluded_folders(self, fake_env):
-        """test_scan_app_skips_excluded_folders.
-
-        Manages test scan app skips excluded folders operations and coordinates related state changes for the component.
+        """Verify scan app skips excluded folders via ExclusionsStore, store.add, InstalledApp.
 
         Args:
             fake_env: The fake env parameter.
@@ -135,8 +119,6 @@ class TestScannerExclusions:
                                                           monkeypatch):
         """Defense in depth: a stale caller cannot delete an excluded path.
 
-        Manages test clean refuses excluded paths even when asked operations and coordinates related state changes for the component.
-
         Args:
             tmp_path: Filesystem path to the target file or directory.
             monkeypatch: The monkeypatch parameter.
@@ -150,9 +132,7 @@ class TestScannerExclusions:
         calls = []
 
         def fake_send2trash(path):  # must never be reached
-            """fake_send2trash.
-
-            Manages fake send2trash operations and coordinates related state changes for the component.
+            """Fake send2trash using calls.append.
 
             Args:
                 path: Filesystem path to the target file or directory.
@@ -176,14 +156,9 @@ class TestScannerExclusions:
 
 
 class TestCleanCancel:
-    """Testcleancancel.
-
-    Manages TestCleanCancel operations and coordinates related state changes for the component.
-    """
+    """Group testcleancancel tests covering cancel event stops between items."""
     def test_cancel_event_stops_between_items(self, tmp_path, monkeypatch):
-        """test_cancel_event_stops_between_items.
-
-        Manages test cancel event stops between items operations and coordinates related state changes for the component.
+        """Verify cancel event stops between items via monkeypatch.setattr, Event, LeftoverCleaner.
 
         Args:
             tmp_path: Filesystem path to the target file or directory.
@@ -198,9 +173,7 @@ class TestCleanCancel:
         processed = []
 
         def fake_send2trash(path):
-            """fake_send2trash.
-
-            Manages fake send2trash operations and coordinates related state changes for the component.
+            """Fake send2trash using processed.append, ev.set.
 
             Args:
                 path: Filesystem path to the target file or directory.
@@ -232,10 +205,7 @@ class TestCleanCancel:
 # =====================================================================
 
 class TestDisambiguation:
-    """Testdisambiguation.
-
-    Manages TestDisambiguation operations and coordinates related state changes for the component.
-    """
+    """Group testdisambiguation tests covering weaker name match penalised."""
     def test_weaker_name_match_penalised(self, fake_env):
         """For app 'ZetaEditor', folder 'ZetaEditor' outranks 'ZetaEditorSuite'
         - the suite folder likely belongs to a different product."""
@@ -269,14 +239,9 @@ class TestDisambiguation:
 # =====================================================================
 
 class TestSettingsConsent:
-    """Testsettingsconsent.
-
-    Manages TestSettingsConsent operations and coordinates related state changes for the component.
-    """
+    """Group testsettingsconsent tests covering update check defaults off; leftover restore point defaults on; fields roundtrip; corrupt file uses safe defaults."""
     def test_update_check_defaults_off(self, tmp_path):
-        """test_update_check_defaults_off.
-
-        Manages test update check defaults off operations and coordinates related state changes for the component.
+        """Verify update check defaults off via SettingsStore.
 
         Args:
             tmp_path: Filesystem path to the target file or directory.
@@ -286,9 +251,7 @@ class TestSettingsConsent:
         assert s.update_check is False          # opt-in ONLY
 
     def test_leftover_restore_point_defaults_on(self, tmp_path):
-        """test_leftover_restore_point_defaults_on.
-
-        Manages test leftover restore point defaults on operations and coordinates related state changes for the component.
+        """Verify leftover restore point defaults on via SettingsStore.
 
         Args:
             tmp_path: Filesystem path to the target file or directory.
@@ -298,9 +261,7 @@ class TestSettingsConsent:
         assert s.leftover_restore_point is True  # safe default
 
     def test_fields_roundtrip(self, tmp_path):
-        """test_fields_roundtrip.
-
-        Manages test fields roundtrip operations and coordinates related state changes for the component.
+        """Verify fields roundtrip via SettingsStore.
 
         Args:
             tmp_path: Filesystem path to the target file or directory.
@@ -314,9 +275,7 @@ class TestSettingsConsent:
         assert reloaded.leftover_restore_point is False
 
     def test_corrupt_file_uses_safe_defaults(self, tmp_path):
-        """test_corrupt_file_uses_safe_defaults.
-
-        Manages test corrupt file uses safe defaults operations and coordinates related state changes for the component.
+        """Verify corrupt file uses safe defaults via SettingsStore.
 
         Args:
             tmp_path: Filesystem path to the target file or directory.
@@ -330,14 +289,9 @@ class TestSettingsConsent:
 
 
 class TestUpdateCheckGate:
-    """Testupdatecheckgate.
-
-    Manages TestUpdateCheckGate operations and coordinates related state changes for the component.
-    """
+    """Group testupdatecheckgate tests covering scheduler noops without consent."""
     def test_scheduler_noops_without_consent(self, monkeypatch):
         """No network call may happen unless the user opted in.
-
-        Manages test scheduler noops without consent operations and coordinates related state changes for the component.
 
         Args:
             monkeypatch: The monkeypatch parameter.
@@ -350,25 +304,13 @@ class TestUpdateCheckGate:
                             lambda *a, **k: called.append(1))
 
         class FakeWin:
-            """Fakewin.
-
-            Manages FakeWin operations and coordinates related state changes for the component.
-            """
+            """Helper fakewin using SB."""
             def statusBar(self):
-                """Statusbar.
-
-                Manages statusBar operations and coordinates related state changes for the component.
-                """
+                """StatusBar using SB."""
                 class SB:
-                    """Sb.
-
-                    Manages SB operations and coordinates related state changes for the component.
-                    """
+                    """Helper sb."""
                     def showMessage(self, *a, **k):
-                        """Showmessage.
-
-                        Manages showMessage operations and coordinates related state changes for the component.
-                        """
+                        """ShowMessage."""
                         pass
                 return SB()
 
@@ -382,14 +324,9 @@ class TestUpdateCheckGate:
 # =====================================================================
 
 class TestBackupsLeftoverJournals:
-    """Testbackupsleftoverjournals.
-
-    Manages TestBackupsLeftoverJournals operations and coordinates related state changes for the component.
-    """
+    """Group testbackupsleftoverjournals tests covering worker lists journal sessions."""
     def test_worker_lists_journal_sessions(self, tmp_path, monkeypatch):
-        """test_worker_lists_journal_sessions.
-
-        Manages test worker lists journal sessions operations and coordinates related state changes for the component.
+        """Verify worker lists journal sessions via rp.ManifestListWorker._leftover_sessions.__func__, rp.ManifestListWorker._leftover_sessions, monkeypatch.setattr.
 
         Args:
             tmp_path: Filesystem path to the target file or directory.
@@ -406,15 +343,9 @@ class TestBackupsLeftoverJournals:
         }), encoding="utf-8")
 
         class FakeRestoreManager:
-            """Fakerestoremanager.
-
-            Manages FakeRestoreManager operations and coordinates related state changes for the component.
-            """
+            """Helper fakerestoremanager."""
             def list_manifests(self):
-                """list_manifests.
-
-                Manages list manifests operations and coordinates related state changes for the component.
-                """
+                """List manifests."""
                 return [{"backup_name": "op-manifest", "_kind": "manifest"}]
 
         from cortex_unified.reports import restore_manager as rm_mod

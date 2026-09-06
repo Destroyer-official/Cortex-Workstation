@@ -17,9 +17,7 @@ from cortex_unified.analyzers.audio_duplicate_finder import (
 
 
 def _make_wav(path: Path, freq: float = 440.0, duration: float = 1.0, sr: int = 11025):
-    """_make_wav.
-
-    Manages make wav operations and coordinates related state changes for the component.
+    """Make wav using wave.open, wf.setnchannels, wf.setsampwidth.
 
     Args:
         path (Path): Filesystem path to the target file or directory.
@@ -40,9 +38,7 @@ def _make_wav(path: Path, freq: float = 440.0, duration: float = 1.0, sr: int = 
 
 
 def _make_noise_wav(path: Path, duration: float = 1.0, sr: int = 11025):
-    """_make_noise_wav.
-
-    Manages make noise wav operations and coordinates related state changes for the component.
+    """Make noise wav using random.Random, wave.open, wf.setnchannels.
 
     Args:
         path (Path): Filesystem path to the target file or directory.
@@ -63,9 +59,7 @@ def _make_noise_wav(path: Path, duration: float = 1.0, sr: int = 11025):
 # --- fingerprint primitives ---
 
 def test_fingerprint_is_list_of_ints(tmp_path: Path):
-    """test_fingerprint_is_list_of_ints.
-
-    Manages test fingerprint is list of ints operations and coordinates related state changes for the component.
+    """Verify fingerprint is list of ints via _make_wav, compute_audio_fingerprint.
 
     Args:
         tmp_path (Path): Filesystem path to the target file or directory.
@@ -79,9 +73,7 @@ def test_fingerprint_is_list_of_ints(tmp_path: Path):
 
 
 def test_identical_wavs_compare_high(tmp_path: Path):
-    """test_identical_wavs_compare_high.
-
-    Manages test identical wavs compare high operations and coordinates related state changes for the component.
+    """Verify identical wavs compare high via _make_wav, compute_audio_fingerprint, audio_compare.
 
     Args:
         tmp_path (Path): Filesystem path to the target file or directory.
@@ -96,9 +88,7 @@ def test_identical_wavs_compare_high(tmp_path: Path):
 
 
 def test_different_tones_compare_low(tmp_path: Path):
-    """test_different_tones_compare_low.
-
-    Manages test different tones compare low operations and coordinates related state changes for the component.
+    """Verify different tones compare low via _make_wav, compute_audio_fingerprint, audio_compare.
 
     Args:
         tmp_path (Path): Filesystem path to the target file or directory.
@@ -118,10 +108,7 @@ def test_different_tones_compare_low(tmp_path: Path):
 
 
 def test_audio_compare_empty():
-    """test_audio_compare_empty.
-
-    Manages test audio compare empty operations and coordinates related state changes for the component.
-    """
+    """Verify audio compare empty via audio_compare."""
     assert audio_compare([], []) == 0.0
     assert audio_compare([1], []) == 0.0
 
@@ -129,9 +116,7 @@ def test_audio_compare_empty():
 # --- finder ---
 
 def test_finder_groups_identical_audio(tmp_path: Path):
-    """test_finder_groups_identical_audio.
-
-    Manages test finder groups identical audio operations and coordinates related state changes for the component.
+    """Verify finder groups identical audio via AudioDuplicateFinder, finder.find_audio_duplicates, groups.items.
 
     Args:
         tmp_path (Path): Filesystem path to the target file or directory.
@@ -153,9 +138,7 @@ def test_finder_groups_identical_audio(tmp_path: Path):
 
 
 def test_finder_excludes_non_audio(tmp_path: Path):
-    """test_finder_excludes_non_audio.
-
-    Manages test finder excludes non audio operations and coordinates related state changes for the component.
+    """Verify finder excludes non audio via AudioDuplicateFinder, finder.find_audio_duplicates, _make_wav.
 
     Args:
         tmp_path (Path): Filesystem path to the target file or directory.
@@ -168,9 +151,7 @@ def test_finder_excludes_non_audio(tmp_path: Path):
 
 
 def test_finder_respects_exclude_dirs(tmp_path: Path):
-    """test_finder_respects_exclude_dirs.
-
-    Manages test finder respects exclude dirs operations and coordinates related state changes for the component.
+    """Verify finder respects exclude dirs via AudioDuplicateFinder, finder.find_audio_duplicates, Config.
 
     Args:
         tmp_path (Path): Filesystem path to the target file or directory.
@@ -192,9 +173,7 @@ def test_finder_respects_exclude_dirs(tmp_path: Path):
 
 
 def test_finder_stats(tmp_path: Path):
-    """test_finder_stats.
-
-    Manages test finder stats operations and coordinates related state changes for the component.
+    """Verify finder stats via AudioDuplicateFinder, finder.find_audio_duplicates, finder.get_stats.
 
     Args:
         tmp_path (Path): Filesystem path to the target file or directory.
@@ -210,9 +189,7 @@ def test_finder_stats(tmp_path: Path):
 
 def test_fallback_raw_fingerprint_for_mp3(tmp_path: Path):
     # Without decoders, MP3 fallback should still produce a fingerprint
-    """test_fallback_raw_fingerprint_for_mp3.
-
-    Manages test fallback raw fingerprint for mp3 operations and coordinates related state changes for the component.
+    """Verify fallback raw fingerprint for mp3 via compute_audio_fingerprint.
 
     Args:
         tmp_path (Path): Filesystem path to the target file or directory.

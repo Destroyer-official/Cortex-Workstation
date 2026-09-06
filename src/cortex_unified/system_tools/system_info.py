@@ -42,18 +42,13 @@ def _fmt_bytes(n: int | float | None) -> str:
 
 
 class SystemInfo:
-    """Systeminfo.
-
-    Manages SystemInfo operations and coordinates related state changes for the component.
-    """
+    """Groups related helpers: platform info, cpu info, memory info, disk info, battery info, boot time, snapshot."""
 
     def platform_info(self) -> dict[str, Any]:
-        """Platform info.
-
-        Manages platform info operations and coordinates related state changes for the component.
+        """Platform info helper.
 
         Returns:
-            dict[str, Any]: Dictionary mapping identifiers to status or values.
+        dict[str, Any]: Dictionary mapping identifiers to status or values.
         """
         uname = platform.uname()
         return {
@@ -67,12 +62,10 @@ class SystemInfo:
         }
 
     def cpu_info(self) -> dict[str, Any]:
-        """Cpu info.
-
-        Manages cpu info operations and coordinates related state changes for the component.
+        """Cpu info helper.
 
         Returns:
-            dict[str, Any]: Dictionary mapping identifiers to status or values.
+        dict[str, Any]: Dictionary mapping identifiers to status or values.
         """
         if not _HAS_PSUTIL:
             return {}
@@ -89,12 +82,10 @@ class SystemInfo:
         }
 
     def memory_info(self) -> dict[str, Any]:
-        """Memory info.
-
-        Manages memory info operations and coordinates related state changes for the component.
+        """Memory info helper.
 
         Returns:
-            dict[str, Any]: Dictionary mapping identifiers to status or values.
+        dict[str, Any]: Dictionary mapping identifiers to status or values.
         """
         if not _HAS_PSUTIL:
             return {}
@@ -111,12 +102,10 @@ class SystemInfo:
         }
 
     def disk_info(self) -> list[dict[str, Any]]:
-        """Disk info.
-
-        Manages disk info operations and coordinates related state changes for the component.
+        """Disk info helper.
 
         Returns:
-            list[dict[str, Any]]: List of processed items or identifiers.
+        list[dict[str, Any]]: List of processed items or identifiers.
         """
         if not _HAS_PSUTIL:
             return []
@@ -139,12 +128,10 @@ class SystemInfo:
         return out
 
     def battery_info(self) -> dict[str, Any] | None:
-        """Battery info.
-
-        Manages battery info operations and coordinates related state changes for the component.
+        """Battery info helper.
 
         Returns:
-            dict[str, Any] | None: Dictionary mapping identifiers to status or values.
+        dict[str, Any] | None: Dictionary mapping identifiers to status or values.
         """
         if not _HAS_PSUTIL or not hasattr(psutil, "sensors_battery"):
             return None
@@ -161,12 +148,10 @@ class SystemInfo:
         }
 
     def boot_time(self) -> float | None:
-        """Boot time.
-
-        Manages boot time operations and coordinates related state changes for the component.
+        """Boot time helper.
 
         Returns:
-            float | None: Result of the operation.
+        float | None: Result of the operation.
         """
         if not _HAS_PSUTIL:
             return None
@@ -176,12 +161,10 @@ class SystemInfo:
             return None
 
     def snapshot(self) -> dict[str, Any]:
-        """Snapshot.
-
-        Manages snapshot operations and coordinates related state changes for the component.
+        """Snapshot helper.
 
         Returns:
-            dict[str, Any]: Dictionary mapping identifiers to status or values.
+        dict[str, Any]: Dictionary mapping identifiers to status or values.
         """
         return {
             "platform": self.platform_info(),

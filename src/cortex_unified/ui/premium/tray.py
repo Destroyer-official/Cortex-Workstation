@@ -158,9 +158,7 @@ class PremiumTray(QObject):
 
     @staticmethod
     def _tray_supported() -> bool:
-        """_tray_supported.
-
-        Manages tray supported operations and coordinates related state changes for the component.
+        """Report whether the system tray is available on this platform.
 
         Returns:
             bool: True if the operation succeeded, False otherwise.
@@ -172,9 +170,7 @@ class PremiumTray(QObject):
 
     @property
     def available(self) -> bool:
-        """Available.
-
-        Manages available operations and coordinates related state changes for the component.
+        """Report whether the system tray is available on this platform.
 
         Returns:
             bool: True if the operation succeeded, False otherwise.
@@ -184,9 +180,7 @@ class PremiumTray(QObject):
     # -- menu / activation --------------------------------------------------
 
     def _build_menu(self) -> QMenu:
-        """_build_menu.
-
-        Manages build menu operations and coordinates related state changes for the component.
+        """Build the tray context menu with restore, health-check, and quit actions.
 
         Returns:
             QMenu: Result of the operation.
@@ -207,9 +201,7 @@ class PremiumTray(QObject):
         return menu
 
     def _on_activated(self, reason) -> None:
-        """_on_activated.
-
-        Manages on activated operations and coordinates related state changes for the component.
+        """Restore the main window when the tray icon is activated.
 
         Args:
             reason: The reason parameter.
@@ -226,10 +218,7 @@ class PremiumTray(QObject):
             self._restore_window()
 
     def _restore_window(self) -> None:
-        """_restore_window.
-
-        Manages restore window operations and coordinates related state changes for the component.
-        """
+        """Restore, show, and raise the main window."""
         w = self._window
         try:
             if w.isMinimized():
@@ -242,10 +231,7 @@ class PremiumTray(QObject):
             _LOG.debug("could not restore window from tray", exc_info=True)
 
     def _run_health_check(self) -> None:
-        """_run_health_check.
-
-        Manages run health check operations and coordinates related state changes for the component.
-        """
+        """Restore the window and navigate to the health-check view."""
         self._restore_window()
         try:
             self._window._select("health")
@@ -259,10 +245,7 @@ class PremiumTray(QObject):
             _LOG.debug("could not start health check from tray", exc_info=True)
 
     def _quit_app(self) -> None:
-        """_quit_app.
-
-        Manages quit app operations and coordinates related state changes for the component.
-        """
+        """Close windows and quit the QApplication event loop."""
         # Mark a real quit so the window's close-to-tray guard steps aside, then
         # close normally (runs the staged worker shutdown).
         try:
@@ -277,10 +260,7 @@ class PremiumTray(QObject):
     # -- resource monitor (GUI-thread QTimer) -------------------------------
 
     def _start_monitor(self) -> None:
-        """_start_monitor.
-
-        Manages start monitor operations and coordinates related state changes for the component.
-        """
+        """Start the periodic resource monitor timer for tray tooltips."""
         try:
             import psutil
             self._psutil = psutil
@@ -299,10 +279,7 @@ class PremiumTray(QObject):
         self._timer.start()
 
     def _sample(self) -> None:
-        """Sample.
-
-        Manages sample operations and coordinates related state changes for the component.
-        """
+        """Sample memory, CPU, disk, and OS facts for the tray tooltip."""
         ps = self._psutil
         if ps is None or self._tray is None:
             return
@@ -332,20 +309,14 @@ class PremiumTray(QObject):
             self._last_disk_alert = now
 
     def _start_network_alert_monitor(self) -> None:
-        """Poll only the bounded outcome written by the fixed scheduled CLI.
-
-        Manages start network alert monitor operations and coordinates related state changes for the component.
-        """
+        """Implement start network alert monitor via QTimer, setInterval, connect."""
         self._network_timer = QTimer(self)
         self._network_timer.setInterval(_SAMPLE_INTERVAL_MS)
         self._network_timer.timeout.connect(self._poll_network_outcome)
         self._network_timer.start()
 
     def _poll_network_outcome(self) -> None:
-        """_poll_network_outcome.
-
-        Manages poll network outcome operations and coordinates related state changes for the component.
-        """
+        """Read the pending network-audit outcome file and surface it as a notification."""
         path = (
             Path.home() / ".cortex_cleaner" / "netdata" /
             "last-scheduled-network-scan.json")
@@ -368,9 +339,7 @@ class PremiumTray(QObject):
     # -- notifications ------------------------------------------------------
 
     def _alert(self, title: str, message: str) -> None:
-        """Alert.
-
-        Manages alert operations and coordinates related state changes for the component.
+        """Show a tray notification message.
 
         Args:
             title (str): Display text string.
@@ -380,8 +349,6 @@ class PremiumTray(QObject):
 
     def show_message(self, title: str, message: str, msecs: int = 6000) -> None:
         """Show a tray balloon notification (best-effort, never raises).
-
-        Manages show message operations and coordinates related state changes for the component.
 
         Args:
             title (str): Display text string.
@@ -399,8 +366,6 @@ class PremiumTray(QObject):
 
     def notify_network_changes(self, changes) -> None:
         """Show cooled-down local alerts for evidence-backed scan changes.
-
-        Manages notify network changes operations and coordinates related state changes for the component.
 
         Args:
             changes: The changes parameter.
@@ -453,8 +418,6 @@ class PremiumTray(QObject):
 
     def refresh_theme(self, palette: Palette) -> None:
         """Re-render the tray glyph so it matches a newly-applied theme.
-
-        Manages refresh theme operations and coordinates related state changes for the component.
 
         Args:
             palette (Palette): The palette parameter.

@@ -28,41 +28,26 @@ from cortex_unified.system_tools.load_tester import (
 # ---------------------------------------------------------------------------
 
 class TestAuthorization:
-    """Testauthorization.
-
-    Manages TestAuthorization operations and coordinates related state changes for the component.
-    """
+    """Group testauthorization tests covering loopback authorized; localhost authorized; private lan authorized; public denied without token; public denied with unverifiable token; unresolvable denied."""
     def test_loopback_authorized(self):
-        """test_loopback_authorized.
-
-        Manages test loopback authorized operations and coordinates related state changes for the component.
-        """
+        """Verify loopback authorized via TargetAuthorizer, authorize."""
         a = TargetAuthorizer().authorize("127.0.0.1")
         assert a.authorized is True
         assert a.category == "loopback"
 
     def test_localhost_authorized(self):
-        """test_localhost_authorized.
-
-        Manages test localhost authorized operations and coordinates related state changes for the component.
-        """
+        """Verify localhost authorized via TargetAuthorizer, authorize."""
         a = TargetAuthorizer().authorize("localhost")
         assert a.authorized is True
 
     def test_private_lan_authorized(self):
         # 10.x / 192.168.x resolve to themselves (they're already IPs).
-        """test_private_lan_authorized.
-
-        Manages test private lan authorized operations and coordinates related state changes for the component.
-        """
+        """Verify private lan authorized via TargetAuthorizer, authorize."""
         assert TargetAuthorizer().authorize("192.168.1.50").authorized is True
         assert TargetAuthorizer().authorize("10.0.0.5").authorized is True
 
     def test_public_denied_without_token(self):
-        """test_public_denied_without_token.
-
-        Manages test public denied without token operations and coordinates related state changes for the component.
-        """
+        """Verify public denied without token via a.reason.lower, TargetAuthorizer, authorize."""
         a = TargetAuthorizer().authorize("8.8.8.8")
         assert a.authorized is False
         assert a.category == "denied"
@@ -70,59 +55,38 @@ class TestAuthorization:
 
     def test_public_denied_with_unverifiable_token(self):
         # verify_public defaults on; a random token won't be hosted on 8.8.8.8.
-        """test_public_denied_with_unverifiable_token.
-
-        Manages test public denied with unverifiable token operations and coordinates related state changes for the component.
-        """
+        """Verify public denied with unverifiable token via TargetAuthorizer, authorize."""
         a = TargetAuthorizer().authorize("8.8.8.8", ownership_token="cortex-xyz",
                                         verify_public=False)
         # With verify_public=False we still must NOT auto-authorize a public host.
         assert a.authorized is False
 
     def test_unresolvable_denied(self):
-        """test_unresolvable_denied.
-
-        Manages test unresolvable denied operations and coordinates related state changes for the component.
-        """
+        """Verify unresolvable denied via TargetAuthorizer, authorize."""
         a = TargetAuthorizer().authorize("no.such.host.invalid.zzz")
         assert a.authorized is False
 
     def test_classify_loopback(self):
-        """test_classify_loopback.
-
-        Manages test classify loopback operations and coordinates related state changes for the component.
-        """
+        """Verify classify loopback via TargetAuthorizer.classify."""
         cat, ip = TargetAuthorizer.classify("127.0.0.1")
         assert cat == "loopback"
 
     def test_token_generation_unique(self):
-        """test_token_generation_unique.
-
-        Manages test token generation unique operations and coordinates related state changes for the component.
-        """
+        """Verify token generation unique via TargetAuthorizer.new_token, t1.startswith."""
         t1, t2 = TargetAuthorizer.new_token(), TargetAuthorizer.new_token()
         assert t1 != t2 and t1.startswith("cortex-")
 
 
 class TestRefusesUnauthorized:
-    """Testrefusesunauthorized.
-
-    Manages TestRefusesUnauthorized operations and coordinates related state changes for the component.
-    """
+    """Group testrefusesunauthorized tests covering run http refuses unauthorized; run tcp refuses unauthorized."""
     def test_run_http_refuses_unauthorized(self):
-        """test_run_http_refuses_unauthorized.
-
-        Manages test run http refuses unauthorized operations and coordinates related state changes for the component.
-        """
+        """Verify run http refuses unauthorized via Authorization, pytest.raises, HttpLoadConfig."""
         auth = Authorization(False, "denied", "8.8.8.8", "8.8.8.8", "nope")
         with pytest.raises(PermissionError):
             LoadTester().run_http(HttpLoadConfig(url="http://8.8.8.8/"), auth)
 
     def test_run_tcp_refuses_unauthorized(self):
-        """test_run_tcp_refuses_unauthorized.
-
-        Manages test run tcp refuses unauthorized operations and coordinates related state changes for the component.
-        """
+        """Verify run tcp refuses unauthorized via Authorization, pytest.raises, TcpLoadConfig."""
         auth = Authorization(False, "denied", "example.com", "93.184.216.34", "nope")
         with pytest.raises(PermissionError):
             LoadTester().run_tcp(TcpLoadConfig(host="example.com", port=80), auth)
@@ -133,15 +97,9 @@ class TestRefusesUnauthorized:
 # ---------------------------------------------------------------------------
 
 class TestMetrics:
-    """Testmetrics.
-
-    Manages TestMetrics operations and coordinates related state changes for the component.
-    """
+    """Group testmetrics tests covering percentiles; rps and error rate; empty latencies safe; summary keys."""
     def test_percentiles(self):
-        """test_percentiles.
-
-        Manages test percentiles operations and coordinates related state changes for the component.
-        """
+        """Verify percentiles via LoadResult, r.percentile, float."""
         r = LoadResult(kind="http", target="x")
         r.latencies_ms = [float(i) for i in range(1, 101)]  # 1..100
         assert r.percentile(50) == 50.0 or r.percentile(50) == 51.0
@@ -149,30 +107,21 @@ class TestMetrics:
         assert r.percentile(0) == 1.0
 
     def test_rps_and_error_rate(self):
-        """test_rps_and_error_rate.
-
-        Manages test rps and error rate operations and coordinates related state changes for the component.
-        """
+        """Verify rps and error rate via LoadResult."""
         r = LoadResult(kind="http", target="x")
         r.total, r.succeeded, r.failed, r.duration_s = 100, 90, 10, 10.0
         assert r.rps == 10.0
         assert r.error_rate == 10.0
 
     def test_empty_latencies_safe(self):
-        """test_empty_latencies_safe.
-
-        Manages test empty latencies safe operations and coordinates related state changes for the component.
-        """
+        """Verify empty latencies safe via LoadResult, r.percentile."""
         r = LoadResult(kind="http", target="x")
         assert r.percentile(95) == 0.0
         assert r.rps == 0.0
         assert r.error_rate == 0.0
 
     def test_summary_keys(self):
-        """test_summary_keys.
-
-        Manages test summary keys operations and coordinates related state changes for the component.
-        """
+        """Verify summary keys via LoadResult, r.summary."""
         r = LoadResult(kind="http", target="x")
         r.latencies_ms = [10.0, 20.0, 30.0]
         r.total, r.succeeded = 3, 3
@@ -186,35 +135,20 @@ class TestMetrics:
 # ---------------------------------------------------------------------------
 
 class TestLocalRun:
-    """Testlocalrun.
-
-    Manages TestLocalRun operations and coordinates related state changes for the component.
-    """
+    """Group testlocalrun tests covering http against local server; cancel stops run."""
     def test_http_against_local_server(self):
-        """test_http_against_local_server.
-
-        Manages test http against local server operations and coordinates related state changes for the component.
-        """
+        """Verify http against local server via socketserver.TCPServer, threading.Thread, t.start."""
         import http.server
         import socketserver
 
         class Quiet(http.server.SimpleHTTPRequestHandler):
-            """Quiet.
-
-            Manages Quiet operations and coordinates related state changes for the component.
-            """
+            """Helper quiet using self.send_response, self.send_header, self.end_headers."""
             def log_message(self, *a):  # silence
-                """log_message.
-
-                Manages log message operations and coordinates related state changes for the component.
-                """
+                """Log message."""
                 pass
 
             def do_GET(self):  # noqa: N802
-                """do_GET.
-
-                Manages do GET operations and coordinates related state changes for the component.
-                """
+                """Do GET using self.send_response, self.send_header, self.end_headers."""
                 self.send_response(200)
                 self.send_header("Content-Length", "2")
                 self.end_headers()
@@ -240,10 +174,7 @@ class TestLocalRun:
                 srv.shutdown()
 
     def test_cancel_stops_run(self):
-        """test_cancel_stops_run.
-
-        Manages test cancel stops run operations and coordinates related state changes for the component.
-        """
+        """Verify cancel stops run via threading.Event, cancel.set, HttpLoadConfig."""
         auth = TargetAuthorizer().authorize("127.0.0.1")
         cancel = threading.Event()
         cancel.set()  # already cancelled -> should return almost immediately

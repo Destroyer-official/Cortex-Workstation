@@ -13,9 +13,9 @@ from typing import Dict, List, Optional, Tuple
 
 @dataclass
 class UsnJournalStatus:
-    """Usnjournalstatus.
+    """USN journal state for one volume.
 
-    Manages UsnJournalStatus operations and coordinates related state changes for the component.
+    Records drive, supported/active flags, journal/first/next/lowest/max USNs, size deltas, estimated records, and error.
     """
     drive_letter: str
     is_supported: bool
@@ -32,9 +32,9 @@ class UsnJournalStatus:
 
 
 class USN_JOURNAL_DATA_V0(ctypes.Structure):
-    """USN_JOURNAL_DATA_V0.
+    """ctypes mirror of USN_JOURNAL_DATA_V0.
 
-    Manages USN JOURNAL DATA V0 operations and coordinates related state changes for the component.
+    Maps UsnJournalID/First/Next/LowestValid/Max plus MaximumSize/AllocationDelta for FSCTL_QUERY_USN_JOURNAL DeviceIoControl.
     """
     _fields_ = [
         ("UsnJournalID", ctypes.c_uint64),
@@ -48,9 +48,9 @@ class USN_JOURNAL_DATA_V0(ctypes.Structure):
 
 
 class UsnJournalScanner:
-    """Usnjournalscanner.
+    """NTFS USN journal status querier via DeviceIoControl.
 
-    Manages UsnJournalScanner operations and coordinates related state changes for the component.
+    Opens volume with CreateFileW, issues FSCTL 0x900F4, and estimates records as (Next-First)//128; Windows-only.
     """
 
     FSCTL_QUERY_USN_JOURNAL = 0x000900f4
@@ -65,7 +65,7 @@ class UsnJournalScanner:
     def query_volume_journal(cls, drive_letter: str = "C:") -> UsnJournalStatus:
         """Query NTFS USN Journal status on the specified drive.
 
-        Manages query volume journal operations and coordinates related state changes for the component.
+        Normalizes 'C:' drive form, retries volume open read-write then read-only, queries journal, and maps Win32 access/inactive errors to status.
 
         Args:
             drive_letter (str): The drive letter parameter.

@@ -19,10 +19,7 @@ from ..core.config import Config
 
 
 class RegistryCleaner:
-    """Registrycleaner.
-
-    Manages RegistryCleaner operations and coordinates related state changes for the component.
-    """
+    """Groups related helpers: init, scan, scan orphaned entries, scan uninstall entries, check uninstall entry, scan startup entries, scan file associations, scan shared dlls."""
 
     def __init__(self, config: Config = None):
         """Initialize Registry Cleaner.
@@ -122,15 +119,13 @@ class RegistryCleaner:
                 self.error_count += 1
 
     def _check_uninstall_entry(self, hive, hive_name, full_path, subkey_name):
-        """_check_uninstall_entry.
-
-        Manages check uninstall entry operations and coordinates related state changes for the component.
+        """Check uninstall entry helper (reads Windows registry).
 
         Args:
-            hive: The hive parameter.
-            hive_name: The hive name parameter.
-            full_path: Filesystem path to the target file or directory.
-            subkey_name: The subkey name parameter.
+        hive: The hive parameter.
+        hive_name: The hive name parameter.
+        full_path: Filesystem path to the target file or directory.
+        subkey_name: The subkey name parameter.
         """
         import winreg
         try:
@@ -417,12 +412,10 @@ class RegistryCleaner:
     # ──────────────────────────────────────────────────────────────────
 
     def get_stats(self) -> dict:
-        """Get stats.
-
-        Manages get stats operations and coordinates related state changes for the component.
+        """Get stats helper.
 
         Returns:
-            dict: Dictionary mapping identifiers to status or values.
+        dict: Dictionary mapping identifiers to status or values.
         """
         return {
             "orphaned_entries_found": len(self.orphaned_entries),
@@ -431,15 +424,13 @@ class RegistryCleaner:
         }
 
     def filter_by_type(self, entry_type: str) -> List[Dict]:
-        """Filter by type.
-
-        Manages filter by type operations and coordinates related state changes for the component.
+        """Filter by type helper.
 
         Args:
-            entry_type (str): The entry type parameter.
+        entry_type (str): The entry type parameter.
 
         Returns:
-            List[Dict]: List of processed items or identifiers.
+        List[Dict]: List of processed items or identifiers.
         """
         return [e for e in self.orphaned_entries if e.get("type") == entry_type]
 
@@ -449,15 +440,13 @@ class RegistryCleaner:
 
     @staticmethod
     def _reg_val(winreg, key, name, default=""):
-        """_reg_val.
-
-        Manages reg val operations and coordinates related state changes for the component.
+        """Reg val helper (reads Windows registry). Returns winreg.QueryValueEx(...).
 
         Args:
-            winreg: The winreg parameter.
-            key: The key parameter.
-            name: The name parameter.
-            default: The default parameter.
+        winreg: The winreg parameter.
+        key: The key parameter.
+        name: The name parameter.
+        default: The default parameter.
         """
         try:
             return winreg.QueryValueEx(key, name)[0]

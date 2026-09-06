@@ -20,9 +20,7 @@ IS_WIN = sys.platform == "win32"
 
 
 def _write_text(folder: Path, name: str, size_kb: int = 64):
-    """_write_text.
-
-    Manages write text operations and coordinates related state changes for the component.
+    """Write text using encode, max.
 
     Args:
         folder (Path): Filesystem path to the target file or directory.
@@ -36,9 +34,7 @@ def _write_text(folder: Path, name: str, size_kb: int = 64):
 
 def _write_fill(folder: Path, name: str, size_kb: int = 64):
     # random-looking bytes => low compression (a stand-in for media)
-    """_write_fill.
-
-    Manages write fill operations and coordinates related state changes for the component.
+    """Write fill using random.seed, random.getrandbits, bytes.
 
     Args:
         folder (Path): Filesystem path to the target file or directory.
@@ -52,19 +48,13 @@ def _write_fill(folder: Path, name: str, size_kb: int = 64):
 
 
 def test_is_supported_reflects_platform():
-    """test_is_supported_reflects_platform.
-
-    Manages test is supported reflects platform operations and coordinates related state changes for the component.
-    """
+    """Verify is supported reflects platform via CompactOSManager, m.is_supported."""
     m = CompactOSManager()
     assert m.is_supported() is IS_WIN
 
 
 def test_system_folder_names_are_blocked():
-    """test_system_folder_names_are_blocked.
-
-    Manages test system folder names are blocked operations and coordinates related state changes for the component.
-    """
+    """Verify system folder names are blocked via name.lower."""
     from cortex_unified.system_tools import compact_os
     for name in ("Windows", "Program Files", "$Recycle.Bin",
                  "System Volume Information", "node_modules", ".git"):
@@ -75,9 +65,7 @@ def test_system_folder_names_are_blocked():
 
 
 def test_estimate_text_heavy_folder(tmp_path):
-    """test_estimate_text_heavy_folder.
-
-    Manages test estimate text heavy folder operations and coordinates related state changes for the component.
+    """Verify estimate text heavy folder via CompactOSManager, _estimate_folder.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.
@@ -93,9 +81,7 @@ def test_estimate_text_heavy_folder(tmp_path):
 
 
 def test_estimate_incompressible_folder(tmp_path):
-    """test_estimate_incompressible_folder.
-
-    Manages test estimate incompressible folder operations and coordinates related state changes for the component.
+    """Verify estimate incompressible folder via CompactOSManager, _write_fill, _estimate_folder.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.
@@ -109,9 +95,7 @@ def test_estimate_incompressible_folder(tmp_path):
 
 
 def test_find_compressible_folders_respects_min_size(tmp_path):
-    """test_find_compressible_folders_respects_min_size.
-
-    Manages test find compressible folders respects min size operations and coordinates related state changes for the component.
+    """Verify find compressible folders respects min size via CompactOSManager, m.find_compressible_folders, Path.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.
@@ -132,9 +116,7 @@ def test_find_compressible_folders_respects_min_size(tmp_path):
 
 
 def test_find_skips_blocked_and_system_subfolders(tmp_path):
-    """test_find_skips_blocked_and_system_subfolders.
-
-    Manages test find skips blocked and system subfolders operations and coordinates related state changes for the component.
+    """Verify find skips blocked and system subfolders via CompactOSManager, m.find_compressible_folders, Path.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.
@@ -151,9 +133,7 @@ def test_find_skips_blocked_and_system_subfolders(tmp_path):
 
 def test_compact_folder_refuses_system_tree(tmp_path):
     # Even without admin, we must refuse a protected tree *before* shelling out.
-    """test_compact_folder_refuses_system_tree.
-
-    Manages test compact folder refuses system tree operations and coordinates related state changes for the component.
+    """Verify compact folder refuses system tree via CompactOSManager, m.compact_folder.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.
@@ -165,9 +145,7 @@ def test_compact_folder_refuses_system_tree(tmp_path):
 
 
 def test_compact_folder_refuses_drive_root(tmp_path):
-    """test_compact_folder_refuses_drive_root.
-
-    Manages test compact folder refuses drive root operations and coordinates related state changes for the component.
+    """Verify compact folder refuses drive root via Path.cwd, CompactOSManager, m.compact_folder.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.

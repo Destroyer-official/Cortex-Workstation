@@ -20,46 +20,29 @@ from cortex_unified.engine.service import CategoryScan
 
 
 class TestCategories:
-    """Testcategories.
-
-    Manages TestCategories operations and coordinates related state changes for the component.
-    """
+    """Group testcategories tests covering default registry nonempty and typed; ids unique; risk ranking."""
     def test_default_registry_nonempty_and_typed(self):
-        """test_default_registry_nonempty_and_typed.
-
-        Manages test default registry nonempty and typed operations and coordinates related state changes for the component.
-        """
+        """Verify default registry nonempty and typed via default_categories."""
         cats = default_categories()
         assert len(cats) >= 1
         assert all(isinstance(c, CleanupCategory) for c in cats)
         assert all(isinstance(c.risk, RiskLevel) for c in cats)
 
     def test_ids_unique(self):
-        """test_ids_unique.
-
-        Manages test ids unique operations and coordinates related state changes for the component.
-        """
+        """Verify ids unique via default_categories."""
         ids = [c.id for c in default_categories()]
         assert len(ids) == len(set(ids))
 
     def test_risk_ranking(self):
-        """test_risk_ranking.
-
-        Manages test risk ranking operations and coordinates related state changes for the component.
-        """
+        """Verify risk ranking."""
         assert RiskLevel.LOW.rank < RiskLevel.MEDIUM.rank < RiskLevel.HIGH.rank
 
 
 class TestDeepDiscovery:
-    """Testdeepdiscovery.
-
-    Manages TestDeepDiscovery operations and coordinates related state changes for the component.
-    """
+    """Group testdeepdiscovery tests covering discovers nested cache dirs; does not recurse into matched cache; discovery is cached."""
     def test_discovers_nested_cache_dirs(self, tmp_path, monkeypatch):
         # Build a deep app-data-like tree with caches at varying depths.
-        """test_discovers_nested_cache_dirs.
-
-        Manages test discovers nested cache dirs operations and coordinates related state changes for the component.
+        """Verify discovers nested cache dirs via cat_mod._APP_CACHE_CACHE.clear, cat_mod._discover_app_caches, p.endswith.
 
         Args:
             tmp_path: Filesystem path to the target file or directory.
@@ -78,9 +61,7 @@ class TestDeepDiscovery:
         assert not any("node_modules" in p for p in names)           # skipped huge dir
 
     def test_does_not_recurse_into_matched_cache(self, tmp_path):
-        """test_does_not_recurse_into_matched_cache.
-
-        Manages test does not recurse into matched cache operations and coordinates related state changes for the component.
+        """Verify does not recurse into matched cache via cat_mod._APP_CACHE_CACHE.clear, cat_mod._discover_app_caches, sum.
 
         Args:
             tmp_path: Filesystem path to the target file or directory.
@@ -93,9 +74,7 @@ class TestDeepDiscovery:
         assert sum(1 for p in found if "App" in str(p)) == 1
 
     def test_discovery_is_cached(self, tmp_path):
-        """test_discovery_is_cached.
-
-        Manages test discovery is cached operations and coordinates related state changes for the component.
+        """Verify discovery is cached via cat_mod._APP_CACHE_CACHE.clear, cat_mod._discover_app_caches.
 
         Args:
             tmp_path: Filesystem path to the target file or directory.
@@ -109,14 +88,9 @@ class TestDeepDiscovery:
 
 
 class TestBreakdown:
-    """Testbreakdown.
-
-    Manages TestBreakdown operations and coordinates related state changes for the component.
-    """
+    """Group testbreakdown tests covering groups files into top folders; limit respected; empty."""
     def test_groups_files_into_top_folders(self, tmp_path):
-        """test_groups_files_into_top_folders.
-
-        Manages test groups files into top folders operations and coordinates related state changes for the component.
+        """Verify groups files into top folders via scan.breakdown, CleanupCategory, CategoryScan.
 
         Args:
             tmp_path: Filesystem path to the target file or directory.
@@ -141,9 +115,7 @@ class TestBreakdown:
         assert bd[1]["name"] == "small"
 
     def test_limit_respected(self, tmp_path):
-        """test_limit_respected.
-
-        Manages test limit respected operations and coordinates related state changes for the component.
+        """Verify limit respected via scan.breakdown, CleanupCategory, CategoryScan.
 
         Args:
             tmp_path: Filesystem path to the target file or directory.
@@ -157,24 +129,16 @@ class TestBreakdown:
         assert len(scan.breakdown(limit=10)) == 10
 
     def test_empty(self):
-        """test_empty.
-
-        Manages test empty operations and coordinates related state changes for the component.
-        """
+        """Verify empty via CleanupCategory, Path, CategoryScan."""
         cat = CleanupCategory(id="c", label="C", description="", risk=RiskLevel.LOW,
                               paths=(Path("x"),))
         assert CategoryScan(category=cat).breakdown() == []
 
 
 class TestCleanerServiceCategories:
-    """Testcleanerservicecategories.
-
-    Manages TestCleanerServiceCategories operations and coordinates related state changes for the component.
-    """
+    """Group testcleanerservicecategories tests covering scan and clean dry run then real; scan categories respects max risk; report to dict."""
     def _make_category(self, tmp_path: Path) -> CleanupCategory:
-        """_make_category.
-
-        Manages make category operations and coordinates related state changes for the component.
+        """Make category using CleanupCategory.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -196,9 +160,7 @@ class TestCleanerServiceCategories:
         )
 
     def test_scan_and_clean_dry_run_then_real(self, tmp_path: Path, monkeypatch):
-        """test_scan_and_clean_dry_run_then_real.
-
-        Manages test scan and clean dry run then real operations and coordinates related state changes for the component.
+        """Verify scan and clean dry run then real via service._scan_category, self._make_category, CleanerService.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -228,10 +190,7 @@ class TestCleanerServiceCategories:
         assert not (tmp_path / "cache" / "a.tmp").exists()
 
     def test_scan_categories_respects_max_risk(self):
-        """test_scan_categories_respects_max_risk.
-
-        Manages test scan categories respects max risk operations and coordinates related state changes for the component.
-        """
+        """Verify scan categories respects max risk via service.scan_categories, CleanerService."""
         service = CleanerService()
         # Should not raise, and must never include HIGH-risk categories by default.
         report = service.scan_categories(max_risk=RiskLevel.LOW)
@@ -239,9 +198,7 @@ class TestCleanerServiceCategories:
         assert report.total_reclaimable_bytes >= 0
 
     def test_report_to_dict(self, tmp_path: Path):
-        """test_report_to_dict.
-
-        Manages test report to dict operations and coordinates related state changes for the component.
+        """Verify report to dict via service._scan_category, self._make_category, CleanerService.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -286,10 +243,7 @@ class TestScanProgressAndCancel:
         assert isinstance(msgs, list)
 
     def test_cancel_event_stops_scan(self):
-        """test_cancel_event_stops_scan.
-
-        Manages test cancel event stops scan operations and coordinates related state changes for the component.
-        """
+        """Verify cancel event stops scan via threading.Event, ev.set, CleanerService."""
         import threading
         ev = threading.Event()
         ev.set()
@@ -312,15 +266,10 @@ class TestScanProgressAndCancel:
 
 
 class TestCleanerServiceAnalysis:
-    """Testcleanerserviceanalysis.
-
-    Manages TestCleanerServiceAnalysis operations and coordinates related state changes for the component.
-    """
+    """Group testcleanerserviceanalysis tests covering find duplicates; find large files; find empty."""
     @pytest.fixture
     def tree(self, tmp_path: Path) -> Path:
-        """Tree.
-
-        Manages tree operations and coordinates related state changes for the component.
+        """Provide tree fixture that creates an isolated directory.
 
         Args:
             tmp_path (Path): Filesystem path to the target file or directory.
@@ -336,9 +285,7 @@ class TestCleanerServiceAnalysis:
         return tmp_path
 
     def test_find_duplicates(self, tree: Path):
-        """test_find_duplicates.
-
-        Manages test find duplicates operations and coordinates related state changes for the component.
+        """Verify find duplicates via CleanerService, groups.values, find_duplicates.
 
         Args:
             tree (Path): The tree parameter.
@@ -348,9 +295,7 @@ class TestCleanerServiceAnalysis:
         assert {"a.txt", "b.txt"}.issubset(names)
 
     def test_find_large_files(self, tree: Path):
-        """test_find_large_files.
-
-        Manages test find large files operations and coordinates related state changes for the component.
+        """Verify find large files via CleanerService, find_large_files.
 
         Args:
             tree (Path): The tree parameter.
@@ -361,9 +306,7 @@ class TestCleanerServiceAnalysis:
         assert all(e.size >= 1024 * 1024 for e in large)
 
     def test_find_empty(self, tree: Path):
-        """test_find_empty.
-
-        Manages test find empty operations and coordinates related state changes for the component.
+        """Verify find empty via CleanerService, find_empty.
 
         Args:
             tree (Path): The tree parameter.

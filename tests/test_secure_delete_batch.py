@@ -15,9 +15,7 @@ from cortex_unified.engine.secure_delete import SecureDeleter, _HAS_TRASH
 
 
 def _make_files(base, n):
-    """_make_files.
-
-    Manages make files operations and coordinates related state changes for the component.
+    """Make files using files.append.
 
     Args:
         base: The base parameter.
@@ -54,9 +52,7 @@ def test_batch_recycle_removes_all_and_reports_progress(tmp_path):
 
 @pytest.mark.skipif(not _HAS_TRASH, reason="send2trash not installed")
 def test_batch_recycle_cancel_stops_early(tmp_path):
-    """test_batch_recycle_cancel_stops_early.
-
-    Manages test batch recycle cancel stops early operations and coordinates related state changes for the component.
+    """Verify batch recycle cancel stops early via threading.Event, pytest.mark.skipif, cancel.set.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.
@@ -73,9 +69,7 @@ def test_batch_recycle_cancel_stops_early(tmp_path):
 
 @pytest.mark.skipif(not _HAS_TRASH, reason="send2trash not installed")
 def test_batch_recycle_reports_freed_bytes(tmp_path):
-    """test_batch_recycle_reports_freed_bytes.
-
-    Manages test batch recycle reports freed bytes operations and coordinates related state changes for the component.
+    """Verify batch recycle reports freed bytes via pytest.mark.skipif, SecureDeleter, _make_files.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.
@@ -105,9 +99,7 @@ def test_fast_delete_batch_uses_known_sizes_and_removes_files(tmp_path):
 
 
 def test_fast_delete_batch_cancel_stops_early(tmp_path):
-    """test_fast_delete_batch_cancel_stops_early.
-
-    Manages test fast delete batch cancel stops early operations and coordinates related state changes for the component.
+    """Verify fast delete batch cancel stops early via threading.Event, cancel.set, SecureDeleter.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.
@@ -122,9 +114,7 @@ def test_fast_delete_batch_cancel_stops_early(tmp_path):
 
 
 def test_fast_delete_batch_dry_run_deletes_nothing(tmp_path):
-    """test_fast_delete_batch_dry_run_deletes_nothing.
-
-    Manages test fast delete batch dry run deletes nothing operations and coordinates related state changes for the component.
+    """Verify fast delete batch dry run deletes nothing via SecureDeleter, _make_files, delete_many.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.

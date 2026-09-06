@@ -27,12 +27,10 @@ _BACKUP_DIR = Path.home() / ".cortex_cleaner" / "telemetry_backups"
 
 
 def _get_windows_build() -> Optional[int]:
-    """_get_windows_build.
-
-    Manages get windows build operations and coordinates related state changes for the component.
+    """Get windows build helper. Returns int(parts[2]).
 
     Returns:
-        Optional[int]: Result of the operation.
+    Optional[int]: Result of the operation.
     """
     try:
         v = platform.version()
@@ -45,22 +43,17 @@ def _get_windows_build() -> Optional[int]:
 
 
 def _is_win11_24h2_plus() -> bool:
-    """_is_win11_24h2_plus.
-
-    Manages is win11 24h2 plus operations and coordinates related state changes for the component.
+    """Is win11 24h2 plus helper. Returns build is not None and build >= 26100.
 
     Returns:
-        bool: True if the operation succeeded, False otherwise.
+    bool: True if the operation succeeded, False otherwise.
     """
     build = _get_windows_build()
     return build is not None and build >= 26100
 
 
 class TelemetryBlocker:
-    """Telemetryblocker.
-
-    Manages TelemetryBlocker operations and coordinates related state changes for the component.
-    """
+    """Groups related helpers: init, rules, build rules, backup key, save backup, backup telemetry, restore from backup, check status."""
 
     def __init__(self):
         """Initialize Telemetry Blocker.
@@ -72,12 +65,10 @@ class TelemetryBlocker:
 
     @property
     def rules(self) -> List[dict]:
-        """Rules.
-
-        Manages rules operations and coordinates related state changes for the component.
+        """Return the underlying _rules attribute.
 
         Returns:
-            List[dict]: List of processed items or identifiers.
+        List[dict]: List of processed items or identifiers.
         """
         return self._rules
 
@@ -85,10 +76,8 @@ class TelemetryBlocker:
     def _build_rules() -> List[dict]:
         """Define all telemetry registry rules.
 
-        Manages build rules operations and coordinates related state changes for the component.
-
         Returns:
-            List[dict]: List of processed items or identifiers.
+        List[dict]: List of processed items or identifiers.
         """
         try:
             import winreg
@@ -279,15 +268,13 @@ class TelemetryBlocker:
             return None
 
     def _save_backup(self, entries: List[dict]) -> Path:
-        """_save_backup.
-
-        Manages save backup operations and coordinates related state changes for the component.
+        """Save backup helper (mutates filesystem state). Returns path.
 
         Args:
-            entries (List[dict]): Collection of items or entries to process.
+        entries (List[dict]): Collection of items or entries to process.
 
         Returns:
-            Path: Result of the operation.
+        Path: Result of the operation.
         """
         _BACKUP_DIR.mkdir(parents=True, exist_ok=True)
         ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
@@ -328,15 +315,13 @@ class TelemetryBlocker:
         return path
 
     def restore_from_backup(self, backup_path: Optional[Path] = None) -> bool:
-        """Restore from backup.
-
-        Manages restore from backup operations and coordinates related state changes for the component.
+        """Restore from backup helper (reads Windows registry). Returns False.
 
         Args:
-            backup_path (Optional[Path]): Filesystem path to the target file or directory.
+        backup_path (Optional[Path]): Filesystem path to the target file or directory.
 
         Returns:
-            bool: True if the operation succeeded, False otherwise.
+        bool: True if the operation succeeded, False otherwise.
         """
         try:
             import winreg
@@ -391,10 +376,8 @@ class TelemetryBlocker:
     def check_status(self) -> Dict[str, bool]:
         """Return {label: is_blocked} for every rule.
 
-        Manages check status operations and coordinates related state changes for the component.
-
         Returns:
-            Dict[str, bool]: Dictionary mapping identifiers to status or values.
+        Dict[str, bool]: Dictionary mapping identifiers to status or values.
         """
         try:
             import winreg
@@ -421,10 +404,8 @@ class TelemetryBlocker:
     def block_telemetry(self) -> bool:
         """Apply all rules. Returns True if ALL succeeded.
 
-        Manages block telemetry operations and coordinates related state changes for the component.
-
         Returns:
-            bool: True if the operation succeeded, False otherwise.
+        bool: True if the operation succeeded, False otherwise.
         """
         try:
             import winreg
@@ -467,10 +448,8 @@ class TelemetryBlocker:
     def restore_defaults(self) -> bool:
         """Remove all custom telemetry registry values (restore OS defaults).
 
-        Manages restore defaults operations and coordinates related state changes for the component.
-
         Returns:
-            bool: True if the operation succeeded, False otherwise.
+        bool: True if the operation succeeded, False otherwise.
         """
         try:
             import winreg

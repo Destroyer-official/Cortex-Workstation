@@ -15,9 +15,7 @@ from cortex_unified.analyzers.fuzzy_finder import (
 
 
 def _text(n=4000):
-    """Text.
-
-    Manages text operations and coordinates related state changes for the component.
+    """Text using encode.
 
     Args:
         n: The n parameter.
@@ -27,9 +25,7 @@ def _text(n=4000):
 
 
 def _noise(n=4000, seed=7):
-    """Noise.
-
-    Manages noise operations and coordinates related state changes for the component.
+    """Noise using random.Random, rng.getrandbits, bytes.
 
     Args:
         n: The n parameter.
@@ -44,28 +40,19 @@ def _noise(n=4000, seed=7):
 # --- primitives -------------------------------------------------------------
 
 def test_fuzzy_hash_is_deterministic():
-    """test_fuzzy_hash_is_deterministic.
-
-    Manages test fuzzy hash is deterministic operations and coordinates related state changes for the component.
-    """
+    """Verify fuzzy hash is deterministic via _text, fuzzy_hash_bytes."""
     data = _text()
     assert fuzzy_hash_bytes(data) == fuzzy_hash_bytes(data)
 
 
 def test_identical_content_matches_at_100():
-    """test_identical_content_matches_at_100.
-
-    Manages test identical content matches at 100 operations and coordinates related state changes for the component.
-    """
+    """Verify identical content matches at 100 via _text, fuzzy_compare, fuzzy_hash_bytes."""
     data = _text()
     assert fuzzy_compare(fuzzy_hash_bytes(data), fuzzy_hash_bytes(data)) >= 90
 
 
 def test_similar_content_scores_high_pairs():
-    """test_similar_content_scores_high_pairs.
-
-    Manages test similar content scores high pairs operations and coordinates related state changes for the component.
-    """
+    """Verify similar content scores high pairs via _text, fuzzy_compare, fuzzy_hash_bytes."""
     a = _text(4000)
     b = a[:2000] + a[2000:-100] + a[-100:] + b" trailing append text " * 5
     score = fuzzy_compare(fuzzy_hash_bytes(a), fuzzy_hash_bytes(b))
@@ -76,10 +63,7 @@ def test_similar_content_scores_high_pairs():
 
 
 def test_unrelated_content_scores_low():
-    """test_unrelated_content_scores_low.
-
-    Manages test unrelated content scores low operations and coordinates related state changes for the component.
-    """
+    """Verify unrelated content scores low via _text, _noise, fuzzy_compare."""
     a = _text(4000)
     b = _noise(4000)
     score = fuzzy_compare(fuzzy_hash_bytes(a), fuzzy_hash_bytes(b))
@@ -87,19 +71,14 @@ def test_unrelated_content_scores_low():
 
 
 def test_empty_signature():
-    """test_empty_signature.
-
-    Manages test empty signature operations and coordinates related state changes for the component.
-    """
+    """Verify empty signature via fuzzy_compare."""
     assert fuzzy_compare("3::", "3::") >= 0
 
 
 # --- finder -----------------------------------------------------------------
 
 def test_finder_groups_near_identical_binaries(tmp_path):
-    """test_finder_groups_near_identical_binaries.
-
-    Manages test finder groups near identical binaries operations and coordinates related state changes for the component.
+    """Verify finder groups near identical binaries via FuzzyDuplicateFinder, finder.find_fuzzy_duplicates, groups.values.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.
@@ -119,9 +98,7 @@ def test_finder_groups_near_identical_binaries(tmp_path):
 
 
 def test_finder_skips_incompressible_and_small(tmp_path):
-    """test_finder_skips_incompressible_and_small.
-
-    Manages test finder skips incompressible and small operations and coordinates related state changes for the component.
+    """Verify finder skips incompressible and small via FuzzyDuplicateFinder, finder.find_fuzzy_duplicates, _noise.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.
@@ -133,9 +110,7 @@ def test_finder_skips_incompressible_and_small(tmp_path):
 
 
 def test_finder_stats(tmp_path):
-    """test_finder_stats.
-
-    Manages test finder stats operations and coordinates related state changes for the component.
+    """Verify finder stats via FuzzyDuplicateFinder, finder.find_fuzzy_duplicates, finder.get_stats.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.
@@ -151,9 +126,7 @@ def test_finder_stats(tmp_path):
 
 
 def test_fuzzy_hash_file_reads(tmp_path):
-    """test_fuzzy_hash_file_reads.
-
-    Manages test fuzzy hash file reads operations and coordinates related state changes for the component.
+    """Verify fuzzy hash file reads via fuzzy_hash_file, _text.
 
     Args:
         tmp_path: Filesystem path to the target file or directory.

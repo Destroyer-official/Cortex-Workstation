@@ -68,21 +68,22 @@ _DASH = "\u2014"
 def _severity_badge_kind(severity: str) -> str:
     """Map a finding severity string to its badge kind.
 
-    Manages severity badge kind operations and coordinates related state changes for the component.
+        Operates on this page widgets as implemented in the method body below.
 
-    Args:
-        severity (str): The severity parameter.
+            Args:
+                severity (str): The severity parameter.
 
-    Returns:
-        str: Formatted string or path.
+            Returns:
+                str: Formatted string or path.
+
     """
     return _BADGE_KIND.get(str(severity).lower(), "info")
 
 
 class DeviceDeepScanWorker(QObject):
-    """Devicedeepscanworker.
+    """Background worker that deep-scans one device for services, fingerprint, and findings.
 
-    Manages DeviceDeepScanWorker operations and coordinates related state changes for the component.
+        Runs NetworkServiceScanner, NmapAdapter, NetworkTools, NetworkInventory off the main thread and reports via finished/progress/failed signals.
     """
 
     finished = Signal(object)
@@ -135,12 +136,13 @@ class DeviceDeepScanWorker(QObject):
         self._cancel.set()
 
     def _say(self, message: str) -> None:
-        """Say.
+        """Emit a progress message through the progress signal.
 
-        Manages say operations and coordinates related state changes for the component.
+            Updates self.progress; emits progress signals.
 
-        Args:
-            message (str): Informational or progress status message.
+                    Args:
+                        message (str): Informational or progress status message.
+
         """
         self.progress.emit(message)
 
@@ -254,14 +256,15 @@ class DeviceDeepScanWorker(QObject):
     def _run_nmap(self, observations, notes) -> dict:
         """Optionally verify observed TCP ports with local Nmap; merge new observations.
 
-        Manages run nmap operations and coordinates related state changes for the component.
+            Uses NmapAdapter; updates self._custom_ports, self._say, self._ip.
 
-        Args:
-            observations: The observations parameter.
-            notes: The notes parameter.
+                    Args:
+                        observations: The observations parameter.
+                        notes: The notes parameter.
 
-        Returns:
-            dict: Dictionary mapping identifiers to status or values.
+                    Returns:
+                        dict: Dictionary mapping identifiers to status or values.
+
         """
         from cortex_unified.core import proc
         from cortex_unified.system_tools.nmap_adapter import (
@@ -316,12 +319,13 @@ class DeviceDeepScanWorker(QObject):
         }
 
     def _ping(self) -> dict:
-        """Ping.
+        """Ping the device via NetworkTools and return the reachability dict.
 
-        Manages ping operations and coordinates related state changes for the component.
+            Uses NetworkTools; updates self._cancel, self._say, self._ip.
 
-        Returns:
-            dict: Dictionary mapping identifiers to status or values.
+                    Returns:
+                        dict: Dictionary mapping identifiers to status or values.
+
         """
         if self._cancel.is_set():
             return {"reachable": False, "error": "cancelled"}
@@ -338,10 +342,11 @@ class DeviceDeepScanWorker(QObject):
     def _reverse_dns(self) -> str:
         """Resolve the device IP to a hostname.
 
-        Manages reverse dns operations and coordinates related state changes for the component.
+            Uses NetworkTools; updates self._cancel, self._ip.
 
-        Returns:
-            str: Formatted string or path.
+                    Returns:
+                        str: Formatted string or path.
+
         """
         if self._cancel.is_set():
             return ""
@@ -350,15 +355,16 @@ class DeviceDeepScanWorker(QObject):
         return NetworkTools.reverse_dns(self._ip)
 
     def _history(self, device) -> dict:
-        """History.
+        """Load inventory metadata, lifetimes, and trends for the device.
 
-        Manages history operations and coordinates related state changes for the component.
+            Uses NetworkInventory.
 
-        Args:
-            device: The device parameter.
+                    Args:
+                        device: The device parameter.
 
-        Returns:
-            dict: Dictionary mapping identifiers to status or values.
+                    Returns:
+                        dict: Dictionary mapping identifiers to status or values.
+
         """
         try:
             from cortex_unified.system_tools.network_inventory import (
@@ -391,9 +397,9 @@ class DeviceDeepScanWorker(QObject):
 
 
 class DevicePingWorker(QObject):
-    """Devicepingworker.
+    """Background worker that pings one authorized device for reachability.
 
-    Manages DevicePingWorker operations and coordinates related state changes for the component.
+        Runs NetworkTools, DevicePingWorker off the main thread and reports via finished/progress/failed signals.
     """
 
     finished = Signal(object)
@@ -459,9 +465,9 @@ class DevicePingWorker(QObject):
 
 
 class DeviceDetailWindow(QDialog):
-    """Devicedetailwindow.
+    """Non-modal dialog showing one device services, findings, and evidence tabs.
 
-    Manages DeviceDetailWindow operations and coordinates related state changes for the component.
+        Backed by NetworkInventory, DeviceDeepScanWorker, DevicePingWorker; builds tables, buttons, and dialogs for the actions below.
     """
 
     closed = Signal(object)
@@ -526,10 +532,11 @@ class DeviceDetailWindow(QDialog):
     def _build_header(self) -> QWidget:
         """Create the device header card with name, identity line, and badges.
 
-        Manages build header operations and coordinates related state changes for the component.
+            Updates self._device, self.p, self._header_badges.
 
-        Returns:
-            QWidget: Result of the operation.
+                    Returns:
+                        QWidget: Result of the operation.
+
         """
         device = self._device
         card = Card(self.p)
@@ -559,10 +566,11 @@ class DeviceDetailWindow(QDialog):
     def _header_badges(self) -> list[tuple[str, str]]:
         """Derive header badges for router/self/randomized-MAC/kind flags.
 
-        Manages header badges operations and coordinates related state changes for the component.
+            Updates self._device.
 
-        Returns:
-            list[tuple[str, str]]: List of processed items or identifiers.
+                    Returns:
+                        list[tuple[str, str]]: List of processed items or identifiers.
+
         """
         device = self._device
         badges: list[tuple[str, str]] = []
@@ -580,10 +588,11 @@ class DeviceDetailWindow(QDialog):
     def _build_actions(self) -> QWidget:
         """Create the primary action row and the collapsible More Actions panel.
 
-        Manages build actions operations and coordinates related state changes for the component.
+            Updates self.scan_btn, self.start_scan, self.allports_btn.
 
-        Returns:
-            QWidget: Result of the operation.
+                    Returns:
+                        QWidget: Result of the operation.
+
         """
         holder = QWidget()
         layout = QVBoxLayout(holder)
@@ -690,10 +699,11 @@ class DeviceDetailWindow(QDialog):
     def _build_cards(self) -> QWidget:
         """Create the five stat cards (services, findings, risk, latency, identity).
 
-        Manages build cards operations and coordinates related state changes for the component.
+            Updates self.card_ports, self.p, self.card_findings.
 
-        Returns:
-            QWidget: Result of the operation.
+                    Returns:
+                        QWidget: Result of the operation.
+
         """
         holder = QWidget()
         lay = QHBoxLayout(holder)
@@ -717,10 +727,11 @@ class DeviceDetailWindow(QDialog):
     def _build_tabs(self) -> QWidget:
         """Create the tab widget with overview, services, findings, identity, discovery, history, labels, and raw evidence.
 
-        Manages build tabs operations and coordinates related state changes for the component.
+            Updates self.tabs, self.overview, self.overview_grid.
 
-        Returns:
-            QWidget: Result of the operation.
+                    Returns:
+                        QWidget: Result of the operation.
+
         """
         self.tabs = QTabWidget()
 
@@ -802,16 +813,17 @@ class DeviceDetailWindow(QDialog):
         headers: list[str],
         stretch: tuple[int, ...] = (),
     ) -> QTableWidget:
-        """Table.
+        """Build a read-only results table with the given headers.
 
-        Manages table operations and coordinates related state changes for the component.
+            Operates on this page widgets as implemented in the method body below.
 
-        Args:
-            headers (list[str]): The headers parameter.
-            stretch (tuple[int, ...]): The stretch parameter.
+                    Args:
+                        headers (list[str]): The headers parameter.
+                        stretch (tuple[int, ...]): The stretch parameter.
 
-        Returns:
-            QTableWidget: Result of the operation.
+                    Returns:
+                        QTableWidget: Result of the operation.
+
         """
         table = QTableWidget(0, len(headers))
         table.setHorizontalHeaderLabels(headers)
@@ -832,10 +844,11 @@ class DeviceDetailWindow(QDialog):
     def start_scan(self, profile: str = "advanced") -> None:
         """Launch a DeviceDeepScanWorker with the chosen Nmap mode and profile.
 
-        Manages start scan operations and coordinates related state changes for the component.
+            Uses DeviceDeepScanWorker; updates self._worker, self.nmap_check, self._device.
 
-        Args:
-            profile (str): The profile parameter.
+                    Args:
+                        profile (str): The profile parameter.
+
         """
         if self._worker is not None:
             return
@@ -863,7 +876,7 @@ class DeviceDetailWindow(QDialog):
     def _confirm_all_ports(self) -> None:
         """Confirm a deep 1-65535 TCP scan before starting it.
 
-        Manages confirm all ports operations and coordinates related state changes for the component.
+            Uses QMessageBox; updates self._device, self.start_scan.
         """
         answer = QMessageBox.question(
             self, "Scan all TCP ports on this device?",
@@ -877,9 +890,9 @@ class DeviceDetailWindow(QDialog):
             self.start_scan("deep")
 
     def _cancel(self) -> None:
-        """Cancel.
+        """Request cancellation of the active device worker.
 
-        Manages cancel operations and coordinates related state changes for the component.
+            Updates self._worker, self.status.
         """
         if self._worker is not None:
             self._worker.cancel()
@@ -899,7 +912,7 @@ class DeviceDetailWindow(QDialog):
     def _refresh_action_states(self) -> None:
         """Derive every action from worker, evidence, and device capability.
 
-        Manages refresh action states operations and coordinates related state changes for the component.
+            Updates self._is_busy, self.scan_btn, self.allports_btn.
         """
         busy = self._is_busy
         for button in (
@@ -965,7 +978,7 @@ class DeviceDetailWindow(QDialog):
     def _ping_only(self) -> None:
         """Launch a DevicePingWorker for a quick reachability check.
 
-        Manages ping only operations and coordinates related state changes for the component.
+            Uses DevicePingWorker; updates self._worker, self._device, self._networks.
         """
         if self._worker is not None:
             return
@@ -982,10 +995,11 @@ class DeviceDetailWindow(QDialog):
     def _on_pinged(self, ping: dict) -> None:
         """Fold the ping result into the payload and describe the outcome.
 
-        Manages on pinged operations and coordinates related state changes for the component.
+            Updates self._worker, self._busy, self._close_pending.
 
-        Args:
-            ping (dict): The ping parameter.
+                    Args:
+                        ping (dict): The ping parameter.
+
         """
         self._worker = None
         self._busy(False)
@@ -1011,7 +1025,7 @@ class DeviceDetailWindow(QDialog):
     def _finish_pending_close(self) -> None:
         """Close the window now that the worker has finished.
 
-        Manages finish pending close operations and coordinates related state changes for the component.
+            Updates self._close_pending, self.close.
         """
         self._close_pending = False
         self.close()
@@ -1021,7 +1035,7 @@ class DeviceDetailWindow(QDialog):
     def _render_known(self) -> None:
         """Show what discovery already observed, before any focused scan.
 
-        Manages render known operations and coordinates related state changes for the component.
+            Updates self._device, self._networks, self._payload.
         """
         device = self._device
         fingerprint = getattr(device, "fingerprint", None)
@@ -1057,10 +1071,11 @@ class DeviceDetailWindow(QDialog):
     def _on_scanned(self, payload) -> None:
         """Store the scan payload, render it, and summarize the results.
 
-        Manages on scanned operations and coordinates related state changes for the component.
+            Updates self._worker, self._has_completed_scan, self._busy.
 
-        Args:
-            payload: The payload parameter.
+                    Args:
+                        payload: The payload parameter.
+
         """
         self._worker = None
         self._has_completed_scan = True
@@ -1079,13 +1094,14 @@ class DeviceDetailWindow(QDialog):
         self.status.setText(summary)
 
     def _render(self, payload: dict, scanned: bool) -> None:
-        """Render.
+        """Render cards, overview, tables, and raw JSON from a scan payload.
 
-        Manages render operations and coordinates related state changes for the component.
+            Updates self._render_cards, self._render_overview, self._render_services.
 
-        Args:
-            payload (dict): The payload parameter.
-            scanned (bool): The scanned parameter.
+                    Args:
+                        payload (dict): The payload parameter.
+                        scanned (bool): The scanned parameter.
+
         """
         services = payload.get("services") or []
         findings = payload.get("findings") or []
@@ -1103,13 +1119,14 @@ class DeviceDetailWindow(QDialog):
     def _render_cards(self, payload, services, findings, scanned) -> None:
         """Update the stat cards for services, findings, severity, latency, and identity.
 
-        Manages render cards operations and coordinates related state changes for the component.
+            Updates self.card_ports, self.card_findings, self.card_risk.
 
-        Args:
-            payload: The payload parameter.
-            services: The services parameter.
-            findings: The findings parameter.
-            scanned: The scanned parameter.
+                    Args:
+                        payload: The payload parameter.
+                        services: The services parameter.
+                        findings: The findings parameter.
+                        scanned: The scanned parameter.
+
         """
         open_services = [
             item for item in services if item.get("state", "open") == "open"]
@@ -1135,13 +1152,14 @@ class DeviceDetailWindow(QDialog):
     def _render_overview(self, payload, services, findings, scanned) -> None:
         """Rebuild the overview grid rows and the evidence caveat.
 
-        Manages render overview operations and coordinates related state changes for the component.
+            Updates self.overview_grid.
 
-        Args:
-            payload: The payload parameter.
-            services: The services parameter.
-            findings: The findings parameter.
-            scanned: The scanned parameter.
+                    Args:
+                        payload: The payload parameter.
+                        services: The services parameter.
+                        findings: The findings parameter.
+                        scanned: The scanned parameter.
+
         """
         while self.overview_grid.count():
             item = self.overview_grid.takeAt(0)
@@ -1215,10 +1233,11 @@ class DeviceDetailWindow(QDialog):
     def _render_services(self, services) -> None:
         """Fill the ports/services table sorted by port and transport.
 
-        Manages render services operations and coordinates related state changes for the component.
+            Updates self.services_tbl.
 
-        Args:
-            services: The services parameter.
+                    Args:
+                        services: The services parameter.
+
         """
         self.services_tbl.setRowCount(len(services))
         for row, item in enumerate(sorted(
@@ -1256,11 +1275,12 @@ class DeviceDetailWindow(QDialog):
     def _render_findings(self, findings, scanned) -> None:
         """Fill the security findings table with severity badges and remediation.
 
-        Manages render findings operations and coordinates related state changes for the component.
+            Updates self.findings_tbl, self.p.
 
-        Args:
-            findings: The findings parameter.
-            scanned: The scanned parameter.
+                    Args:
+                        findings: The findings parameter.
+                        scanned: The scanned parameter.
+
         """
         self.findings_tbl.setRowCount(len(findings))
         for row, item in enumerate(findings):
@@ -1295,10 +1315,11 @@ class DeviceDetailWindow(QDialog):
     def _render_identity(self, fingerprint) -> None:
         """Fill the identity evidence table from the fingerprint.
 
-        Manages render identity operations and coordinates related state changes for the component.
+            Updates self.identity_tbl.
 
-        Args:
-            fingerprint: The fingerprint parameter.
+                    Args:
+                        fingerprint: The fingerprint parameter.
+
         """
         evidence = (fingerprint or {}).get("evidence", [])
         self.identity_tbl.setRowCount(len(evidence))
@@ -1318,10 +1339,11 @@ class DeviceDetailWindow(QDialog):
     def _render_discovery(self, payload) -> None:
         """Write discovery methods and self-advertised services to the Discovery tab.
 
-        Manages render discovery operations and coordinates related state changes for the component.
+            Updates self.discovery_view.
 
-        Args:
-            payload: The payload parameter.
+                    Args:
+                        payload: The payload parameter.
+
         """
         lines = [
             "HOW THIS DEVICE WAS FOUND",
@@ -1354,10 +1376,11 @@ class DeviceDetailWindow(QDialog):
     def _render_history(self, payload) -> None:
         """Write lifetime, history, and exposure-trend lines to the History tab.
 
-        Manages render history operations and coordinates related state changes for the component.
+            Updates self.history_view.
 
-        Args:
-            payload: The payload parameter.
+                    Args:
+                        payload: The payload parameter.
+
         """
         lifetime = payload.get("lifetime") or {}
         lines = ["LOCAL HISTORY FOR THIS DEVICE"]
@@ -1402,7 +1425,7 @@ class DeviceDetailWindow(QDialog):
     def _load_metadata(self) -> None:
         """Load saved labels and notes for the device into the form and overview.
 
-        Manages load metadata operations and coordinates related state changes for the component.
+            Uses NetworkInventory; updates self._device, self.name_input, self.trust_combo.
         """
         try:
             from cortex_unified.system_tools.network_inventory import (
@@ -1427,7 +1450,7 @@ class DeviceDetailWindow(QDialog):
     def _save_metadata(self) -> None:
         """Save the edited name, trust, tags, and notes to the inventory.
 
-        Manages save metadata operations and coordinates related state changes for the component.
+            Uses NetworkInventory, QMessageBox; updates self._device, self.name_input, self.trust_combo.
         """
         try:
             from cortex_unified.system_tools.network_inventory import (
@@ -1452,9 +1475,9 @@ class DeviceDetailWindow(QDialog):
                 self._payload.get("findings") or [], False)
 
     def _wake(self) -> None:
-        """Wake.
+        """Send a Wake-on-LAN magic packet to the device broadcast address.
 
-        Manages wake operations and coordinates related state changes for the component.
+            Uses QMessageBox; updates self._device, self._networks, self.status.
         """
         import ipaddress
 
@@ -1483,7 +1506,7 @@ class DeviceDetailWindow(QDialog):
     def _open_service(self) -> None:
         """Open the best http/https/ssh/rdp service in the system handler.
 
-        Manages open service operations and coordinates related state changes for the component.
+            Updates self._payload, self._device, self.status.
         """
         services = (self._payload or {}).get("services") or []
         priority = {"https": 0, "http": 1, "ssh": 2, "rdp": 3}
@@ -1508,7 +1531,7 @@ class DeviceDetailWindow(QDialog):
     def _copy_identity(self) -> None:
         """Copy the device IP and MAC to the clipboard.
 
-        Manages copy identity operations and coordinates related state changes for the component.
+            Updates self._device, self.status.
         """
         clipboard = QGuiApplication.clipboard()
         if clipboard is None:
@@ -1518,9 +1541,9 @@ class DeviceDetailWindow(QDialog):
         self.status.setText("Copied the IP and MAC address to the clipboard.")
 
     def _export(self) -> None:
-        """Export.
+        """Export the current payload to JSON, HTML, or PDF via a save dialog.
 
-        Manages export operations and coordinates related state changes for the component.
+            Uses QMessageBox, QFileDialog; updates self._payload, self._device, self._html_report.
         """
         payload = self._payload
         if payload is None:
@@ -1564,13 +1587,14 @@ class DeviceDetailWindow(QDialog):
     def _html_report(self, payload: dict) -> str:
         """Build the printable HTML report for the payload.
 
-        Manages html report operations and coordinates related state changes for the component.
+            Operates on this page widgets as implemented in the method body below.
 
-        Args:
-            payload (dict): The payload parameter.
+                    Args:
+                        payload (dict): The payload parameter.
 
-        Returns:
-            str: Formatted string or path.
+                    Returns:
+                        str: Formatted string or path.
+
         """
         device = payload.get("device") or {}
         rows = "".join(

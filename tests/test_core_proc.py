@@ -23,10 +23,7 @@ IS_WINDOWS = platform.system() == "Windows"
 
 
 def test_normal_completion_returns_output():
-    """test_normal_completion_returns_output.
-
-    Manages test normal completion returns output operations and coordinates related state changes for the component.
-    """
+    """Verify normal completion returns output via proc.run."""
     result = proc.run(["cmd", "/c", "echo hello"] if IS_WINDOWS else ["echo", "hello"],
                       timeout=10)
     assert result.returncode == 0
@@ -34,20 +31,14 @@ def test_normal_completion_returns_output():
 
 
 def test_nonzero_exit_is_reported_not_raised():
-    """test_nonzero_exit_is_reported_not_raised.
-
-    Manages test nonzero exit is reported not raised operations and coordinates related state changes for the component.
-    """
+    """Verify nonzero exit is reported not raised via proc.run."""
     result = proc.run(["cmd", "/c", "exit 3"] if IS_WINDOWS else ["sh", "-c", "exit 3"],
                       timeout=10)
     assert result.returncode == 3
 
 
 def test_real_timeout_raises_and_is_prompt():
-    """test_real_timeout_raises_and_is_prompt.
-
-    Manages test real timeout raises and is prompt operations and coordinates related state changes for the component.
-    """
+    """Verify real timeout raises and is prompt via time.perf_counter, pytest.raises, proc.run."""
     cmd = (["ping", "-n", "10", "127.0.0.1"] if IS_WINDOWS
            else ["sleep", "10"])
     t0 = time.perf_counter()
@@ -60,19 +51,13 @@ def test_real_timeout_raises_and_is_prompt():
 
 
 def test_cancel_event_raises_and_is_prompt():
-    """test_cancel_event_raises_and_is_prompt.
-
-    Manages test cancel event raises and is prompt operations and coordinates related state changes for the component.
-    """
+    """Verify cancel event raises and is prompt via threading.Event, threading.Thread, time.perf_counter."""
     cmd = (["ping", "-n", "10", "127.0.0.1"] if IS_WINDOWS
            else ["sleep", "10"])
     event = threading.Event()
 
     def _cancel_soon():
-        """_cancel_soon.
-
-        Manages cancel soon operations and coordinates related state changes for the component.
-        """
+        """Cancel soon using time.sleep, event.set."""
         time.sleep(0.5)
         event.set()
 
@@ -85,10 +70,7 @@ def test_cancel_event_raises_and_is_prompt():
 
 
 def test_cancel_takes_priority_even_with_a_long_timeout():
-    """A cancel_event must not wait for a generous timeout to take effect.
-
-    Manages test cancel takes priority even with a long timeout operations and coordinates related state changes for the component.
-    """
+    """A cancel_event must not wait for a generous timeout to take effect."""
     cmd = (["ping", "-n", "30", "127.0.0.1"] if IS_WINDOWS else ["sleep", "30"])
     event = threading.Event()
     event.set()  # already cancelled before the process even starts polling
@@ -134,10 +116,7 @@ def test_process_cancelled_is_a_subprocess_error():
 
 
 def test_run_never_leaves_output_unread_on_success():
-    """A normal fast command must not be affected by the polling loop at all.
-
-    Manages test run never leaves output unread on success operations and coordinates related state changes for the component.
-    """
+    """A normal fast command must not be affected by the polling loop at all."""
     result = proc.run(["cmd", "/c", "echo ok"] if IS_WINDOWS else ["echo", "ok"],
                       timeout=5)
     assert b"ok" in result.stdout
@@ -145,10 +124,7 @@ def test_run_never_leaves_output_unread_on_success():
 
 
 def test_text_mode_decodes_output():
-    """test_text_mode_decodes_output.
-
-    Manages test text mode decodes output operations and coordinates related state changes for the component.
-    """
+    """Verify text mode decodes output via proc.run."""
     result = proc.run(["cmd", "/c", "echo hi"] if IS_WINDOWS else ["echo", "hi"],
                       timeout=5, text=True)
     assert isinstance(result.stdout, str)
@@ -156,9 +132,6 @@ def test_text_mode_decodes_output():
 
 
 def test_missing_executable_raises_oserror():
-    """test_missing_executable_raises_oserror.
-
-    Manages test missing executable raises oserror operations and coordinates related state changes for the component.
-    """
+    """Verify missing executable raises oserror via pytest.raises, proc.run."""
     with pytest.raises(OSError):
         proc.run(["this-binary-does-not-exist-cortex-test"], timeout=5)

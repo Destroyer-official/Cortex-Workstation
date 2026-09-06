@@ -20,65 +20,39 @@ IS_WINDOWS = platform.system() == "Windows"
 
 
 class TestRecommendation:
-    """Testrecommendation.
-
-    Manages TestRecommendation operations and coordinates related state changes for the component.
-    """
+    """Group testrecommendation tests covering hdd recommends defrag; ssd recommends trim; nvme recommends trim; unknown recommends none."""
     def test_hdd_recommends_defrag(self):
-        """test_hdd_recommends_defrag.
-
-        Manages test hdd recommends defrag operations and coordinates related state changes for the component.
-        """
+        """Verify hdd recommends defrag via DriveOptimizer._recommend."""
         op, note = DriveOptimizer._recommend(StorageKind.HDD)
         assert op is OptimizeOp.DEFRAG
 
     def test_ssd_recommends_trim(self):
-        """test_ssd_recommends_trim.
-
-        Manages test ssd recommends trim operations and coordinates related state changes for the component.
-        """
+        """Verify ssd recommends trim via DriveOptimizer._recommend, note.lower."""
         op, note = DriveOptimizer._recommend(StorageKind.SSD)
         assert op is OptimizeOp.TRIM
         assert "never defragment" in note.lower()
 
     def test_nvme_recommends_trim(self):
-        """test_nvme_recommends_trim.
-
-        Manages test nvme recommends trim operations and coordinates related state changes for the component.
-        """
+        """Verify nvme recommends trim via DriveOptimizer._recommend."""
         assert DriveOptimizer._recommend(StorageKind.NVME)[0] is OptimizeOp.TRIM
 
     def test_unknown_recommends_none(self):
-        """test_unknown_recommends_none.
-
-        Manages test unknown recommends none operations and coordinates related state changes for the component.
-        """
+        """Verify unknown recommends none via DriveOptimizer._recommend."""
         assert DriveOptimizer._recommend(StorageKind.UNKNOWN)[0] is OptimizeOp.NONE
 
 
 class TestSafety:
-    """Testsafety.
-
-    Manages TestSafety operations and coordinates related state changes for the component.
-    """
+    """Group testsafety tests covering is supported matches platform; list drives returns list; refuses defrag on ssd; non windows returns unsupported."""
     def test_is_supported_matches_platform(self):
-        """test_is_supported_matches_platform.
-
-        Manages test is supported matches platform operations and coordinates related state changes for the component.
-        """
+        """Verify is supported matches platform via DriveOptimizer.is_supported."""
         assert DriveOptimizer.is_supported() == IS_WINDOWS
 
     def test_list_drives_returns_list(self):
-        """test_list_drives_returns_list.
-
-        Manages test list drives returns list operations and coordinates related state changes for the component.
-        """
+        """Verify list drives returns list via DriveOptimizer, list_drives."""
         assert isinstance(DriveOptimizer().list_drives(), list)
 
     def test_refuses_defrag_on_ssd(self, monkeypatch):
         """Even if the caller explicitly asks to DEFRAG an SSD, it must refuse.
-
-        Manages test refuses defrag on ssd operations and coordinates related state changes for the component.
 
         Args:
             monkeypatch: The monkeypatch parameter.
@@ -100,10 +74,7 @@ class TestSafety:
         assert "harmful" in result.message.lower() or "refused" in result.message.lower()
 
     def test_non_windows_returns_unsupported(self):
-        """test_non_windows_returns_unsupported.
-
-        Manages test non windows returns unsupported operations and coordinates related state changes for the component.
-        """
+        """Verify non windows returns unsupported via pytest.skip, DriveOptimizer, optimize."""
         if IS_WINDOWS:
             import pytest
             pytest.skip("covered elsewhere on Windows")

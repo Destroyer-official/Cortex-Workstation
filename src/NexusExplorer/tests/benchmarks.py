@@ -19,8 +19,6 @@ import pytest
 def _create_test_tree(root: Path, depth: int = 3, files_per_dir: int = 50, file_size: int = 1024):
     """Create a test directory tree for benchmarking.
 
-    Manages create test tree operations and coordinates related state changes for the component.
-
     Args:
         root (Path): Filesystem path to the target file or directory.
         depth (int): The depth parameter.
@@ -49,10 +47,7 @@ def _cleanup_tree(root: Path):
 
 
 class BenchmarkTimer:
-    """Benchmarktimer.
-
-    Manages BenchmarkTimer operations and coordinates related state changes for the component.
-    """
+    """Time benchmark sections and report elapsed milliseconds."""
 
     def __init__(self, name: str):
         """__init__.
@@ -94,16 +89,11 @@ class BenchmarkTimer:
 # ---------------------------------------------------------------------------
 
 class TestDirectoryListing:
-    """Testdirectorylisting.
-
-    Manages TestDirectoryListing operations and coordinates related state changes for the component.
-    """
+    """Group testdirectorylisting tests covering list small dir; list medium dir; scandir small."""
 
     @pytest.fixture(autouse=True)
     def setup(self, tmp_path):
-        """Setup.
-
-        Manages setup operations and coordinates related state changes for the component.
+        """Provide setup fixture that creates an isolated directory.
 
         Args:
             tmp_path: Filesystem path to the target file or directory.
@@ -115,10 +105,7 @@ class TestDirectoryListing:
         _cleanup_tree(self.root)
 
     def test_list_small_dir(self):
-        """Benchmark listing a directory with ~100 files.
-
-        Manages test list small dir operations and coordinates related state changes for the component.
-        """
+        """Benchmark listing a directory with ~100 files."""
         target = self.root / "dir_0"
         with BenchmarkTimer("list_100_files") as t:
             entries = list(target.iterdir())
@@ -126,10 +113,7 @@ class TestDirectoryListing:
         print(f"\n  {t}")
 
     def test_list_medium_dir(self):
-        """Benchmark listing a directory with ~500 files.
-
-        Manages test list medium dir operations and coordinates related state changes for the component.
-        """
+        """Benchmark listing a directory with ~500 files."""
         # Create a dir with more files
         big_dir = self.root / "big_dir"
         big_dir.mkdir(exist_ok=True)
@@ -141,10 +125,7 @@ class TestDirectoryListing:
         print(f"\n  {t}")
 
     def test_scandir_small(self):
-        """Benchmark os.scandir on a small directory.
-
-        Manages test scandir small operations and coordinates related state changes for the component.
-        """
+        """Benchmark os.scandir on a small directory."""
         target = self.root / "dir_0"
         with BenchmarkTimer("scandir_100_files") as t:
             with os.scandir(target) as it:
@@ -158,16 +139,11 @@ class TestDirectoryListing:
 # ---------------------------------------------------------------------------
 
 class TestFileOperations:
-    """Testfileoperations.
-
-    Manages TestFileOperations operations and coordinates related state changes for the component.
-    """
+    """Group testfileoperations tests covering copy files; move files; delete files."""
 
     @pytest.fixture(autouse=True)
     def setup(self, tmp_path):
-        """Setup.
-
-        Manages setup operations and coordinates related state changes for the component.
+        """Provide setup fixture that creates an isolated directory.
 
         Args:
             tmp_path: Filesystem path to the target file or directory.
@@ -183,10 +159,7 @@ class TestFileOperations:
         _cleanup_tree(self.root)
 
     def test_copy_files(self):
-        """Benchmark copying 50 small files.
-
-        Manages test copy files operations and coordinates related state changes for the component.
-        """
+        """Benchmark copying 50 small files."""
         dst_dir = self.root / "dst_copy"
         dst_dir.mkdir(exist_ok=True)
         with BenchmarkTimer("copy_50_files") as t:
@@ -196,10 +169,7 @@ class TestFileOperations:
         print(f"\n  {t}")
 
     def test_move_files(self):
-        """Benchmark moving 50 small files.
-
-        Manages test move files operations and coordinates related state changes for the component.
-        """
+        """Benchmark moving 50 small files."""
         dst_dir = self.root / "dst_move"
         dst_dir.mkdir(exist_ok=True)
         # Copy first, then move
@@ -214,10 +184,7 @@ class TestFileOperations:
         print(f"\n  {t}")
 
     def test_delete_files(self):
-        """Benchmark deleting 50 small files.
-
-        Manages test delete files operations and coordinates related state changes for the component.
-        """
+        """Benchmark deleting 50 small files."""
         del_dir = self.root / "to_delete"
         del_dir.mkdir(exist_ok=True)
         for i in range(50):
@@ -233,16 +200,11 @@ class TestFileOperations:
 # ---------------------------------------------------------------------------
 
 class TestSearch:
-    """Testsearch.
-
-    Manages TestSearch operations and coordinates related state changes for the component.
-    """
+    """Group testsearch tests covering glob search; name contains search."""
 
     @pytest.fixture(autouse=True)
     def setup(self, tmp_path):
-        """Setup.
-
-        Manages setup operations and coordinates related state changes for the component.
+        """Provide setup fixture that creates an isolated directory.
 
         Args:
             tmp_path: Filesystem path to the target file or directory.
@@ -254,20 +216,14 @@ class TestSearch:
         _cleanup_tree(self.root)
 
     def test_glob_search(self):
-        """Benchmark glob pattern matching across tree.
-
-        Manages test glob search operations and coordinates related state changes for the component.
-        """
+        """Benchmark glob pattern matching across tree."""
         with BenchmarkTimer("glob_*.txt") as t:
             results = list(self.root.rglob("*.txt"))
         assert len(results) > 0
         print(f"\n  {t} ({len(results)} results)")
 
     def test_name_contains_search(self):
-        """Benchmark substring search across tree.
-
-        Manages test name contains search operations and coordinates related state changes for the component.
-        """
+        """Benchmark substring search across tree."""
         with BenchmarkTimer("name_contains_file_") as t:
             results = [p for p in self.root.rglob("*") if "file_" in p.name.lower()]
         assert len(results) > 0
@@ -279,16 +235,11 @@ class TestSearch:
 # ---------------------------------------------------------------------------
 
 class TestHashing:
-    """Testhashing.
-
-    Manages TestHashing operations and coordinates related state changes for the component.
-    """
+    """Group testhashing tests covering xxh3 hash; sha256 hash."""
 
     @pytest.fixture(autouse=True)
     def setup(self, tmp_path):
-        """Setup.
-
-        Manages setup operations and coordinates related state changes for the component.
+        """Provide setup fixture via pytest.fixture, os.urandom, _cleanup_tree.
 
         Args:
             tmp_path: Filesystem path to the target file or directory.
@@ -299,10 +250,7 @@ class TestHashing:
         _cleanup_tree(tmp_path)
 
     def test_xxh3_hash(self):
-        """Benchmark xxh3 hashing of 1MB file.
-
-        Manages test xxh3 hash operations and coordinates related state changes for the component.
-        """
+        """Benchmark xxh3 hashing of 1MB file."""
         try:
             from xxhash import xxh3_64
             with BenchmarkTimer("xxh3_1MB") as t:
@@ -317,10 +265,7 @@ class TestHashing:
             pytest.skip("xxhash not installed")
 
     def test_sha256_hash(self):
-        """Benchmark SHA-256 hashing of 1MB file.
-
-        Manages test sha256 hash operations and coordinates related state changes for the component.
-        """
+        """Benchmark SHA-256 hashing of 1MB file."""
         import hashlib
         with BenchmarkTimer("sha256_1MB") as t:
             h = hashlib.sha256()
