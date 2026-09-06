@@ -1,9 +1,9 @@
 {
-  "total_files": 503,
-  "passed": 503,
+  "total_files": 504,
+  "passed": 504,
   "failed": 0,
   "pass_rate_percent": 100.0,
-  "duration_seconds": 6.54,
+  "duration_seconds": 7.75,
   "python_runtime": "3.14.7",
   "files": [
     {
@@ -10841,6 +10841,22 @@
         "test_title_bar_controls_have_icons_and_accessible_names",
         "test_no_symbol_glyphs_remain_in_the_premium_ui",
         "test_status_note_pairs_an_icon_with_accessible_text"
+      ]
+    },
+    {
+      "path": "tests/test_installer_end_to_end.py",
+      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_installer_end_to_end.py",
+      "loc": 95,
+      "syntax_ok": true,
+      "compile_ok": true,
+      "import_ok": true,
+      "error": null,
+      "classes": [],
+      "functions": [
+        "app",
+        "test_bundle_zip_exists_and_valid",
+        "test_install_worker_full_lifecycle",
+        "test_installer_gui_signals_and_html"
       ]
     },
     {
