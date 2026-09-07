@@ -22,6 +22,22 @@
 
 Combining the **Cortex Unified Optimization Engine** with the high-performance **Nexus Explorer VFS Subsystem**, Cortex Workstation delivers a responsive, non-destructive, and high-assurance forensic toolkit that eliminates system rot, reclaims gigabytes of locked storage, and protects data integrity.
 
+### 🎯 Find Tools by User Need
+
+| What You Need | Integrated Cortex Tool / Engine |
+| :--- | :--- |
+| **PC & Junk Cleaning** | `Cleanup Hub`, `WinApp2 Deep Cleaner` (500+ apps), `Shader Cache Purger`, `Temp Cleaner` |
+| **Disk Space & Analysis** | `Disk Space Analyzer`, `Largest Files Visualizer`, `Nexus Flat Branch View` |
+| **Duplicate Files** | `Perceptual Image Finder`, `Video Duplicate Finder`, `Audio Finder`, `Czkawka Near-Dedup` |
+| **Software Management** | `Advanced Uninstaller`, `App Leftover Cleaner`, `Portable App Manager`, `Winget Updater` |
+| **Security & File Shredding** | `DoD 5220.22-M File Shredder`, `Free Space Wiper`, `MFT Slack Scrubber`, `BitRot Baseline` |
+| **Windows Debloating** | `Windows 11 Debloater`, `Telemetry Blocker`, `Recall & Copilot AI Sanitizer` |
+| **Registry Maintenance** | `Registry AI Cleaner` with automated rollback backups & protected root guards |
+| **System & Component Repair**| `Windows Update Repair` (DISM/SFC), `WinSxS Component Store`, `VSS Shadow Copy Health` |
+| **Speed & Boot Optimization**| `Startup Delayer / Manager`, `RAM Standby List Purger`, `DirectStorage BypassIO`, `SSD TRIM` |
+| **Fast File Management** | `Nexus Explorer` dual-pane VFS, `USN Journal Scanner`, `Restart Manager File Unlocker` |
+| **Hardware & Forensics** | `S.M.A.R.T. Drive Health`, `Process Token Auditor`, `BAM / SRUM Forensics`, `SMB Share Audit` |
+
 ---
 
 ## 📑 Table of Contents
