@@ -52,6 +52,7 @@ from __future__ import annotations
 import enum
 import json
 import os
+import sys
 import subprocess
 import threading
 import time

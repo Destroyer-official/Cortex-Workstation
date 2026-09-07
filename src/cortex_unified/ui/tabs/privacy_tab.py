@@ -11,7 +11,7 @@ from pathlib import Path
 from PySide6.QtWidgets import (
     QVBoxLayout, QHBoxLayout, QPushButton, QLabel,
     QGroupBox, QMessageBox, QTreeWidget, QTreeWidgetItem,
-    QProgressBar, QLineEdit, QFileDialog,
+    QProgressBar, QLineEdit, QFileDialog, QCheckBox,
 )
 from PySide6.QtCore import Qt, QThread, Signal, QObject
 from PySide6.QtGui import QFont
