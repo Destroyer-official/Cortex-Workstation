@@ -9,6 +9,7 @@ exclude_docs: "audit/*"
 
 theme:
   name: material
+  custom_dir: overrides
   language: en
   logo: assets/icons/cortex.png
   favicon: assets/icons/cortex.ico
