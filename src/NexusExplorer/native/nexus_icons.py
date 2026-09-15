@@ -11,6 +11,8 @@ __all__ = [
 ]
 
 from pathlib import Path
+import os
+import sys
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import (
@@ -544,13 +546,35 @@ _EXT_MAP: dict[str, str] = {
 
 # ── rendering engine ────────────────────────────────────────────────────
 
-_CANDIDATE_ICON_DIRS = (
-    Path(__file__).resolve().parents[2] / "cortex_unified" / "resources" / "icons",
-    Path(__file__).resolve().parents[3] / "src" / "cortex_unified" / "resources" / "icons",
-    Path(__file__).resolve().parents[1] / "resources" / "icons",
-    Path(__file__).resolve().parents[2] / "resources" / "icons",
-)
+def _get_icon_candidates() -> tuple[Path, ...]:
+    candidates: list[Path] = []
+    if getattr(sys, "frozen", False):
+        meipass = getattr(sys, "_MEIPASS", None)
+        if meipass:
+            candidates.append(Path(meipass) / "src" / "cortex_unified" / "resources" / "icons")
+            candidates.append(Path(meipass) / "assets" / "icons")
+            candidates.append(Path(meipass) / "resources" / "icons")
+        exe_dir = Path(sys.executable).resolve().parent
+        candidates.extend([
+            exe_dir / "_internal" / "src" / "cortex_unified" / "resources" / "icons",
+            exe_dir / "_internal" / "assets" / "icons",
+            exe_dir / "_internal" / "resources" / "icons",
+            exe_dir / "assets" / "icons",
+            exe_dir / "resources" / "icons",
+        ])
+    here = Path(__file__).resolve()
+    for parent in here.parents:
+        candidates.extend([
+            parent / "cortex_unified" / "resources" / "icons",
+            parent / "src" / "cortex_unified" / "resources" / "icons",
+            parent / "resources" / "icons",
+            parent / "assets" / "icons",
+        ])
+    return tuple(candidates)
+
+_CANDIDATE_ICON_DIRS = _get_icon_candidates()
 _MATERIAL_DIR = next((p for p in _CANDIDATE_ICON_DIRS if p.is_dir()), _CANDIDATE_ICON_DIRS[0])
+
 
 
 class _LRUCache:

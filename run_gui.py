@@ -22,6 +22,12 @@ _SRC = os.path.join(os.path.dirname(os.path.abspath(__file__)), "src")
 if os.path.isdir(_SRC) and _SRC not in sys.path:
     sys.path.insert(0, _SRC)
 
+try:
+    from cortex_unified.core.utils import ensure_nexus_in_sys_path
+    ensure_nexus_in_sys_path()
+except Exception:
+    pass
+
 
 class _SafeStream:
     """Safe stream fallback for Windows GUI executables where stdout/stderr are None."""
@@ -51,13 +57,32 @@ def _show_crash_dialog(title: str, message: str) -> None:
 
 
 def main() -> int:
-    """Entry point: run the premium GUI."""
+    """Entry point: run the premium GUI or CLI if invoked with command-line flags."""
+    # Handle CLI dispatch when invoked with commands (e.g. from Task Scheduler in frozen app)
+    if len(sys.argv) > 1 and (
+        sys.argv[1] == "--cli" or
+        sys.argv[1] in ("clean", "scan", "clean-temp", "clean-shaders", "trim-ssd", "generate-report")
+    ):
+        cli_args = [a for a in sys.argv[1:] if a != "--cli"]
+        try:
+            from cortex_unified.engine.cli import main as engine_cli_main
+            return engine_cli_main(args=cli_args) or 0
+        except Exception:
+            try:
+                from cortex_unified.cli.cli import main as workstation_cli_main
+                return workstation_cli_main(args=cli_args) or 0
+            except Exception as cli_exc:
+                if sys.stderr is not None:
+                    sys.stderr.write(f"CLI invocation error: {cli_exc}\n")
+                return 1
+
     try:
         from cortex_unified.ui.premium.app import main as gui_main
     except ImportError as exc:
         msg = (
             f"Could not load the Cortex Workstation GUI: {exc}\n\n"
             "Please ensure all required dependencies are installed.\n"
+
             "If using source code: pip install -r requirements.txt\n"
         )
         if sys.stderr is not None:

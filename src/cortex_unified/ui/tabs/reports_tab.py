@@ -499,10 +499,17 @@ class ReportsTab(BaseTab):
             return
 
         frequency = frequency_combo.currentText().lower()
-        command = (
-            f'"{sys.executable}" -m cortex_unified.cli.cli '
-            'generate-report --type html --name "Scheduled Report"'
-        )
+        if getattr(sys, "frozen", False):
+            command = (
+                f'"{sys.executable}" --cli '
+                'generate-report --type html --name "Scheduled Report"'
+            )
+        else:
+            command = (
+                f'"{sys.executable}" -m cortex_unified.cli.cli '
+                'generate-report --type html --name "Scheduled Report"'
+            )
+
         scheduler = TaskScheduler(self.config)
         ok = scheduler.create_scheduled_task(
             'CortexCleaner ScheduledReport', command, frequency)

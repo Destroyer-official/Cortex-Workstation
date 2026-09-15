@@ -23,20 +23,20 @@ from PySide6.QtWidgets import QLabel, QVBoxLayout, QWidget
 
 from .window import _Page
 
+from cortex_unified.core.utils import ensure_nexus_in_sys_path, get_nexus_native_dir
+
 log = logging.getLogger("cortex.ui.nexus")
 
-_NEXUS_SEARCH_PATHS = [
-    Path(__file__).resolve().parents[3] / "NexusExplorer" / "native",  # src/NexusExplorer/native
-    Path(__file__).resolve().parents[4] / "src" / "NexusExplorer" / "native",
-    Path(__file__).resolve().parents[4] / "NexusExplorer" / "native",
-    Path(os.environ.get("CORTEX_NEXUS_DIR", "")) if os.environ.get("CORTEX_NEXUS_DIR") else None,
-    Path.home() / "NexusExplorer" / "native",
-]
-NATIVE_DIR = next((p for p in _NEXUS_SEARCH_PATHS if p and p.is_dir()), _NEXUS_SEARCH_PATHS[0])
+# Dynamically locate native directory across dev, frozen, and custom install paths
+NATIVE_DIR = get_nexus_native_dir() or (Path(__file__).resolve().parents[3] / "NexusExplorer" / "native")
+ensure_nexus_in_sys_path()
 
 
 def _load_nexus_module():
-    """Implement load nexus module via log.debug, insert, type."""
+    """Dynamically load the Nexus ExplorerWidget module regardless of install location."""
+    ensure_nexus_in_sys_path()
+
+    # 1. Try unified explorer wrapper
     try:
         from cortex_unified.explorer.widget import DARK_QSS, ExplorerWidget
         if ExplorerWidget is not None:
@@ -44,15 +44,26 @@ def _load_nexus_module():
     except Exception as _exc:
         log.debug("cortex_unified.explorer import fallback: %s", _exc)
 
-    if str(NATIVE_DIR) not in sys.path:
-        sys.path.insert(0, str(NATIVE_DIR))
+    # 2. Try direct import from sys.path (ensured via ensure_nexus_in_sys_path)
     try:
         from nexus_explorer import DARK_QSS, ExplorerWidget  # type: ignore
-        return ExplorerWidget, DARK_QSS, None
-    except Exception as _exc:  # pragma: no cover - surfaced in-page
+        if ExplorerWidget is not None:
+            return ExplorerWidget, DARK_QSS, None
+    except Exception as _exc:
+        log.debug("nexus_explorer direct import fallback: %s", _exc)
+
+    # 3. Try package-qualified import
+    try:
+        from NexusExplorer.native.nexus_explorer import DARK_QSS, ExplorerWidget  # type: ignore
+        if ExplorerWidget is not None:
+            return ExplorerWidget, DARK_QSS, None
+    except Exception as _exc:
         err = f"{type(_exc).__name__}: {_exc}"
         log.warning("Nexus explorer import failed: %s", err)
         return None, "", err
+
+    return None, "", "ExplorerWidget could not be resolved from any candidate source"
+
 
 
 class _ErrorCard(QWidget):

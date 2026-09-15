@@ -168,7 +168,10 @@ class SchedulerTab(BaseTab):
             freq = dialog.freq_combo.currentText()
             t = dialog.time_input.time()
             
-            cmd = f'"{sys.executable}" "{Path(__file__).parent.parent.parent.parent}/run_cli.py" --temp --cache --auto-approve'
+            if getattr(sys, "frozen", False):
+                cmd = f'"{sys.executable}" clean --auto-approve'
+            else:
+                cmd = f'"{sys.executable}" -m cortex_unified.engine clean --auto-approve'
             
             # Pack OS params
             params = {

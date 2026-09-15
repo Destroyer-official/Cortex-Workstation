@@ -6311,8 +6311,13 @@ class ExplorerWidget(QWidget):
         self.model.set_tags_manager(self._color_tags)
 
         # Transfer queue for serialized operations (FFI-first, CLI fallback)
-        from nexus_transfer_monitor import TransferMonitorDialog
-        from nexus_transfer_queue import TransferQueue
+        try:
+            from nexus_transfer_monitor import TransferMonitorDialog
+            from nexus_transfer_queue import TransferQueue
+        except ImportError:
+            from .nexus_transfer_monitor import TransferMonitorDialog
+            from .nexus_transfer_queue import TransferQueue
+
         self._transfer_queue = TransferQueue(self.engine, self)
         self._transfer_queue.job_started.connect(self._on_transfer_started)
         self._transfer_queue.job_progress.connect(self._on_transfer_progress)
@@ -6655,8 +6660,12 @@ class ExplorerWidget(QWidget):
 
         # Replace flat drive list with folder tree
         try:
-            from nexus_folder_tree import FolderTreeWidget
+            try:
+                from nexus_folder_tree import FolderTreeWidget
+            except ImportError:
+                from .nexus_folder_tree import FolderTreeWidget
             self.folder_tree = FolderTreeWidget()
+
             self.folder_tree.navigate_to.connect(self.navigate)
             sv.addWidget(self.folder_tree, 5)
         except ImportError:

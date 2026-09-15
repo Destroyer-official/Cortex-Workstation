@@ -11,7 +11,9 @@ import os
 import sys
 import zipfile
 import subprocess
+import shutil
 from pathlib import Path
+
 
 try:
     import winreg
@@ -179,20 +181,52 @@ class InstallWorker(QThread):
             with zipfile.ZipFile(zip_path, "r") as zf:
                 members = zf.infolist()
                 total = len(members)
-                # Reserve 5% to 85% for extraction
+
+                # Check if all zip entries share a common top-level prefix (e.g., 'CortexCleaner/')
+                top_dirs = {m.filename.split("/")[0] for m in members if "/" in m.filename}
+                has_single_root = len(top_dirs) == 1 and all(
+                    m.filename.startswith(f"{list(top_dirs)[0]}/") or m.filename == list(top_dirs)[0]
+                    for m in members
+                )
+                prefix_to_strip = f"{list(top_dirs)[0]}/" if has_single_root else ""
+
+                # Reserve 5% to 85% for extraction directly into target_dir
                 for idx, member in enumerate(members, 1):
-                    zf.extract(member, self.target_dir)
+                    target_rel_path = member.filename
+                    if prefix_to_strip and target_rel_path.startswith(prefix_to_strip):
+                        target_rel_path = target_rel_path[len(prefix_to_strip):]
+                    if not target_rel_path:
+                        continue
+
+                    dest_path = os.path.join(self.target_dir, target_rel_path)
+                    if member.is_dir():
+                        os.makedirs(dest_path, exist_ok=True)
+                    else:
+                        os.makedirs(os.path.dirname(dest_path), exist_ok=True)
+                        with zf.open(member) as source, open(dest_path, "wb") as target:
+                            shutil.copyfileobj(source, target)
+
                     if idx % 15 == 0 or idx == total:
                         pct = 5.0 + (idx / total) * 80.0
                         name = os.path.basename(member.filename) or member.filename
                         self.progress_updated.emit(pct, f"Extracting ({idx}/{total}): {name}")
 
-            # Locate executable
+            # Locate executable dynamically: prioritize target_dir, subdirectories, or any .exe
             exe_path = os.path.join(self.target_dir, "CortexCleaner.exe")
             if not os.path.exists(exe_path):
-                sub_exe = os.path.join(self.target_dir, "CortexCleaner", "CortexCleaner.exe")
-                if os.path.exists(sub_exe):
-                    exe_path = sub_exe
+                # Search candidate executables in target_dir and subdirectories
+                candidates = []
+                for root_dir, _, files in os.walk(self.target_dir):
+                    for f in files:
+                        if f.lower().endswith(".exe") and "uninstall" not in f.lower() and "unins" not in f.lower():
+                            candidates.append(os.path.join(root_dir, f))
+                cortex_candidates = [c for c in candidates if "cortex" in os.path.basename(c).lower()]
+                if cortex_candidates:
+                    exe_path = cortex_candidates[0]
+                elif candidates:
+                    exe_path = candidates[0]
+
+            actual_install_dir = os.path.dirname(os.path.abspath(exe_path))
 
             self.progress_updated.emit(88.0, "Configuring Windows security & integrations…")
             desktop = os.path.join(os.environ.get("USERPROFILE", ""), "Desktop")
@@ -205,7 +239,8 @@ class InstallWorker(QThread):
                 create_shortcut(exe_path, os.path.join(start_menu, f"{APP_NAME}.lnk"))
 
             self.progress_updated.emit(94.0, "Registering Windows uninstaller…")
-            register_uninstaller(self.target_dir, exe_path)
+            register_uninstaller(actual_install_dir, exe_path)
+
 
             self.progress_updated.emit(100.0, "Operation complete. 100% verified.")
             self.install_finished.emit(exe_path)

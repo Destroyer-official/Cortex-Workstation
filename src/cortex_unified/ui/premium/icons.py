@@ -31,6 +31,7 @@ never prevent a tool from opening.
 from __future__ import annotations
 
 import logging
+import sys
 from functools import lru_cache
 from pathlib import Path
 
@@ -39,14 +40,34 @@ from PySide6.QtGui import QIcon, QPainter, QPixmap
 
 _LOG = logging.getLogger("cortex.ui.icons")
 
+def _get_icon_dirs() -> list[Path]:
+    candidates: list[Path] = []
+    if getattr(sys, "frozen", False):
+        meipass = getattr(sys, "_MEIPASS", None)
+        if meipass:
+            candidates.append(Path(meipass) / "src" / "cortex_unified" / "resources" / "icons")
+            candidates.append(Path(meipass) / "resources" / "icons")
+            candidates.append(Path(meipass) / "assets" / "icons")
+        exe_dir = Path(sys.executable).resolve().parent
+        candidates.extend([
+            exe_dir / "_internal" / "src" / "cortex_unified" / "resources" / "icons",
+            exe_dir / "_internal" / "resources" / "icons",
+            exe_dir / "resources" / "icons",
+            exe_dir / "assets" / "icons",
+        ])
+    candidates.extend([
+        Path(__file__).resolve().parents[2] / "resources" / "icons",  # src/cortex_unified/resources/icons
+        Path(__file__).resolve().parents[3] / "resources" / "icons",  # src/resources/icons or root
+        Path(__file__).parent / "resources" / "icons",
+    ])
+    found = [p for p in candidates if p.is_dir()]
+    return found or [Path(__file__).resolve().parents[2] / "resources" / "icons"]
+
 #: Candidate directories holding the shipped icon set.
-_CANDIDATE_ICON_DIRS = [
-    Path(__file__).resolve().parents[2] / "resources" / "icons",  # src/cortex_unified/resources/icons
-    Path(__file__).resolve().parents[3] / "resources" / "icons",  # src/resources/icons or root
-    Path(__file__).parent / "resources" / "icons",
-]
+_CANDIDATE_ICON_DIRS = _get_icon_dirs()
 #: Canonical directory holding the shipped icon set.
-ICON_DIR = next((p for p in _CANDIDATE_ICON_DIRS if p.is_dir()), _CANDIDATE_ICON_DIRS[0])
+ICON_DIR = _CANDIDATE_ICON_DIRS[0]
+
 
 #: Nominal design size of every icon in the set.
 DESIGN_SIZE = 24

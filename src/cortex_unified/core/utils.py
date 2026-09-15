@@ -700,3 +700,127 @@ def create_error_report(error: Exception, context: dict = None) -> dict:
         })
     
     return report
+
+
+def get_app_root() -> Path:
+    """Dynamically locate the application root across Dev, PyInstaller, and standalone distributions."""
+    if getattr(sys, "frozen", False):
+        meipass = getattr(sys, "_MEIPASS", None)
+        if meipass and Path(meipass).is_dir():
+            return Path(meipass)
+        return Path(sys.executable).resolve().parent
+
+    try:
+        p3 = Path(__file__).resolve().parents[3]
+        if (p3 / "src").is_dir() or (p3 / "pyproject.toml").is_file():
+            return p3
+    except Exception:
+        pass
+    return Path(__file__).resolve().parent
+
+
+def get_nexus_native_dir() -> Path | None:
+    """Dynamically locate the NexusExplorer/native directory in any environment.
+
+    Checks environment overrides, package locations, PyInstaller bundles,
+    and repository source paths regardless of installation directory name.
+    """
+    candidates: list[Path] = []
+
+    # 1. Environment variable override
+    env_dir = os.environ.get("CORTEX_NEXUS_DIR")
+    if env_dir:
+        candidates.append(Path(env_dir))
+
+    # 2. Check if NexusExplorer package is importable
+    try:
+        import NexusExplorer
+        if getattr(NexusExplorer, "__file__", None):
+            candidates.append(Path(NexusExplorer.__file__).resolve().parent / "native")
+    except Exception:
+        pass
+
+    # 3. PyInstaller frozen / bundle paths
+    if getattr(sys, "frozen", False):
+        meipass = getattr(sys, "_MEIPASS", None)
+        if meipass:
+            candidates.append(Path(meipass) / "NexusExplorer" / "native")
+            candidates.append(Path(meipass) / "src" / "NexusExplorer" / "native")
+        exe_dir = Path(sys.executable).resolve().parent
+        candidates.extend([
+            exe_dir / "NexusExplorer" / "native",
+            exe_dir / "_internal" / "NexusExplorer" / "native",
+            exe_dir / "src" / "NexusExplorer" / "native",
+            exe_dir / "_internal" / "src" / "NexusExplorer" / "native",
+        ])
+
+    # 4. Check relative to current file / package structure
+    here = Path(__file__).resolve()
+    for parent in here.parents:
+        candidates.extend([
+            parent / "NexusExplorer" / "native",
+            parent / "src" / "NexusExplorer" / "native",
+        ])
+
+    # 5. User home directory fallback
+    candidates.append(Path.home() / "NexusExplorer" / "native")
+
+    for c in candidates:
+        try:
+            if c and c.is_dir():
+                return c.resolve()
+        except Exception:
+            pass
+
+    return None
+
+
+def ensure_nexus_in_sys_path() -> bool:
+    """Ensure the NexusExplorer/native directory is injected into sys.path.
+
+    Returns:
+        bool: True if a native directory was found and added/confirmed on sys.path.
+    """
+    native_dir = get_nexus_native_dir()
+    if native_dir and native_dir.is_dir():
+        s = str(native_dir)
+        if s not in sys.path:
+            sys.path.insert(0, s)
+        return True
+    return False
+
+
+def get_resource_dir(subpath: str = "") -> Path | None:
+    """Locate an application resource directory dynamically."""
+    candidates: list[Path] = []
+
+    if getattr(sys, "frozen", False):
+        meipass = getattr(sys, "_MEIPASS", None)
+        if meipass:
+            candidates.append(Path(meipass) / subpath)
+            candidates.append(Path(meipass) / "src" / "cortex_unified" / "resources" / subpath)
+            candidates.append(Path(meipass) / "assets" / subpath)
+        exe_dir = Path(sys.executable).resolve().parent
+        candidates.extend([
+            exe_dir / "_internal" / subpath,
+            exe_dir / "_internal" / "src" / "cortex_unified" / "resources" / subpath,
+            exe_dir / "_internal" / "assets" / subpath,
+            exe_dir / "assets" / subpath,
+            exe_dir / "resources" / subpath,
+        ])
+
+    here = Path(__file__).resolve()
+    for parent in here.parents:
+        candidates.extend([
+            parent / "resources" / subpath,
+            parent / "src" / "cortex_unified" / "resources" / subpath,
+            parent / "assets" / subpath,
+        ])
+
+    for c in candidates:
+        try:
+            if c and c.is_dir():
+                return c.resolve()
+        except Exception:
+            pass
+    return None

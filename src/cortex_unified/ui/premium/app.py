@@ -323,6 +323,9 @@ def main() -> int:
     _install_excepthook()
     _install_threading_excepthook()
 
+    from cortex_unified.core.utils import ensure_nexus_in_sys_path
+    ensure_nexus_in_sys_path()
+
     from .settings_store import SettingsStore
     from .theme import apply_theme
     from .window import PremiumMainWindow
@@ -346,7 +349,13 @@ def main() -> int:
 
     # Apply application icon
     from PySide6.QtGui import QIcon
+    exe_dir = Path(sys.executable).resolve().parent
     icon_candidates = [
+        exe_dir / "assets" / "icons" / "cortex.ico",
+        exe_dir / "assets" / "icons" / "cortex.png",
+        exe_dir / "_internal" / "assets" / "icons" / "cortex.ico",
+        exe_dir / "_internal" / "assets" / "icons" / "cortex.png",
+        exe_dir / "_internal" / "src" / "cortex_unified" / "resources" / "icons" / "cortex.ico",
         Path(__file__).resolve().parents[2] / "resources" / "icons" / "cortex.ico",
         Path(__file__).resolve().parents[2] / "resources" / "icons" / "cortex.png",
         Path(__file__).resolve().parents[4] / "assets" / "icons" / "cortex.ico",
@@ -361,6 +370,7 @@ def main() -> int:
             break
     if app_icon and not app_icon.isNull():
         app.setWindowIcon(app_icon)
+
 
     # Restore the user's saved theme (defaults to dark). The store is shared
     # with the window so a theme change made in Settings persists to one file.

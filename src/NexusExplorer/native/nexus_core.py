@@ -277,11 +277,15 @@ class Engine:
         mode = os.environ.get("NEXUS_TRANSPORT", "auto").strip().lower()
         if mode in ("auto", "ffi"):
             try:
-                from nexus_ffi import NexusFfi  # local import: optional dep
+                try:
+                    from nexus_ffi import NexusFfi  # local import: optional dep
+                except ImportError:
+                    from .nexus_ffi import NexusFfi
 
                 self.ffi = NexusFfi()
                 self.transport = "ffi"
                 log.info("engine transport = ffi (%s)", self.ffi.dll_path.name)
+
             except Exception as exc:
                 if mode == "ffi":
                     raise
@@ -938,7 +942,10 @@ class IconThumbs:
         """Return a folder icon: nexus_icons.folder_icon (vector) first, then
         the cached OS shell folder icon via QFileIconProvider."""
         try:
-            from nexus_icons import folder_icon
+            try:
+                from nexus_icons import folder_icon
+            except ImportError:
+                from .nexus_icons import folder_icon
             ico = folder_icon(name, 32)
             if not ico.isNull():
                 return ico
@@ -966,11 +973,15 @@ class IconThumbs:
         ico = self._ext.get(key)
         if ico is None:
             try:
-                from nexus_icons import icon_for_ext
+                try:
+                    from nexus_icons import icon_for_ext
+                except ImportError:
+                    from .nexus_icons import icon_for_ext
                 ico = icon_for_ext(f".{key}" if key else "", 32)
             except Exception as exc:
                 log.debug("icon_for_ext failed for %s: %s", ext, exc)
                 ico = None
+
             if ico is None or ico.isNull():
                 if self._fluent_ext_fn is not None:
                     try:

@@ -25,6 +25,7 @@ from PyInstaller.utils.hooks import collect_submodules, collect_data_files
 cortex_submodules = collect_submodules("cortex_unified")
 cortex_datas = collect_data_files("cortex_unified")
 nexus_submodules = collect_submodules("NexusExplorer")
+nexus_datas = collect_data_files("NexusExplorer")
 
 a = Analysis(
     ["run_gui.py"],
@@ -33,7 +34,10 @@ a = Analysis(
     datas=[
         ("assets/icons", "assets/icons"),
         ("src/cortex_unified/resources", "src/cortex_unified/resources"),
-    ] + cortex_datas,
+        ("src/NexusExplorer/native", "NexusExplorer/native"),
+        ("src/NexusExplorer", "NexusExplorer"),
+    ] + cortex_datas + nexus_datas,
+
     hiddenimports=[
         "logging.handlers",
         "sqlite3",

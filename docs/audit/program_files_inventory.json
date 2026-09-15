@@ -1,15 +1,1379 @@
 {
-  "total_files": 504,
-  "passed": 504,
+  "total_files": 547,
+  "passed": 547,
   "failed": 0,
   "pass_rate_percent": 100.0,
-  "duration_seconds": 8.45,
+  "duration_seconds": 12.06,
   "python_runtime": "3.14.7",
   "files": [
     {
+      "path": "dist/CortexCleaner/_internal/NexusExplorer/__init__.py",
+      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/__init__.py",
+      "loc": 2,
+      "syntax_ok": true,
+      "compile_ok": true,
+      "import_ok": true,
+      "error": null,
+      "classes": [],
+      "functions": []
+    },
+    {
+      "path": "dist/CortexCleaner/_internal/NexusExplorer/native/__init__.py",
+      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/native/__init__.py",
+      "loc": 1,
+      "syntax_ok": true,
+      "compile_ok": true,
+      "import_ok": true,
+      "error": null,
+      "classes": [],
+      "functions": []
+    },
+    {
+      "path": "dist/CortexCleaner/_internal/NexusExplorer/native/binary_differ.py",
+      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/native/binary_differ.py",
+      "loc": 187,
+      "syntax_ok": true,
+      "compile_ok": true,
+      "import_ok": true,
+      "error": null,
+      "classes": [
+        [
+          "HexDiffChunk",
+          0
+        ],
+        [
+          "BinaryDiffReport",
+          0
+        ],
+        [
+          "BinaryDiffer",
+          2
+        ]
+      ],
+      "functions": []
+    },
+    {
+      "path": "dist/CortexCleaner/_internal/NexusExplorer/native/file_signature_sniffer.py",
+      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/native/file_signature_sniffer.py",
+      "loc": 224,
+      "syntax_ok": true,
+      "compile_ok": true,
+      "import_ok": true,
+      "error": null,
+      "classes": [
+        [
+          "FileSignature",
+          0
+        ],
+        [
+          "SniffResult",
+          0
+        ],
+        [
+          "FileSignatureSniffer",
+          2
+        ]
+      ],
+      "functions": []
+    },
+    {
+      "path": "dist/CortexCleaner/_internal/NexusExplorer/native/image_optimizer.py",
+      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/native/image_optimizer.py",
+      "loc": 193,
+      "syntax_ok": true,
+      "compile_ok": true,
+      "import_ok": true,
+      "error": null,
+      "classes": [
+        [
+          "ImageOptimizeResult",
+          0
+        ],
+        [
+          "BatchOptimizeSummary",
+          0
+        ],
+        [
+          "ImageOptimizer",
+          2
+        ]
+      ],
+      "functions": []
+    },
+    {
+      "path": "dist/CortexCleaner/_internal/NexusExplorer/native/nexus_ads_manager.py",
+      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/native/nexus_ads_manager.py",
+      "loc": 220,
+      "syntax_ok": true,
+      "compile_ok": true,
+      "import_ok": true,
+      "error": null,
+      "classes": [
+        [
+          "AlternateDataStream",
+          0
+        ],
+        [
+          "AlternateDataStreamsManager",
+          5
+        ]
+      ],
+      "functions": []
+    },
+    {
+      "path": "dist/CortexCleaner/_internal/NexusExplorer/native/nexus_archive.py",
+      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/native/nexus_archive.py",
+      "loc": 856,
+      "syntax_ok": true,
+      "compile_ok": true,
+      "import_ok": true,
+      "error": null,
+      "classes": [
+        [
+          "ArchiveSecurityError",
+          0
+        ],
+        [
+          "ArchiveType",
+          0
+        ],
+        [
+          "ArchiveEntry",
+          0
+        ],
+        [
+          "ArchiveInfo",
+          0
+        ],
+        [
+          "SevenZipCLIReader",
+          7
+        ],
+        [
+          "_ExtractWorker",
+          3
+        ],
+        [
+          "ArchiveManager",
+          10
+        ]
+      ],
+      "functions": [
+        "is_7z_available",
+        "validate_extract_path",
+        "detect_archive_type",
+        "is_archive",
+        "open_archive"
+      ]
+    },
+    {
+      "path": "dist/CortexCleaner/_internal/NexusExplorer/native/nexus_archive_manager.py",
+      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/native/nexus_archive_manager.py",
+      "loc": 322,
+      "syntax_ok": true,
+      "compile_ok": true,
+      "import_ok": true,
+      "error": null,
+      "classes": [
+        [
+          "ArchiveFormat",
+          0
+        ],
+        [
+          "CompressionLevel",
+          0
+        ],
+        [
+          "ArchiveEntryInfo",
+          0
+        ],
+        [
+          "ArchiveOperationResult",
+          0
+        ],
+        [
+          "ArchiveManager",
+          5
+        ]
+      ],
+      "functions": []
+    },
+    {
+      "path": "dist/CortexCleaner/_internal/NexusExplorer/native/nexus_batch_renamer.py",
+      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/native/nexus_batch_renamer.py",
+      "loc": 430,
+      "syntax_ok": true,
+      "compile_ok": true,
+      "import_ok": true,
+      "error": null,
+      "classes": [
+        [
+          "CaseTransformation",
+          0
+        ],
+        [
+          "RenamePlanItem",
+          0
+        ],
+        [
+          "RenameTransaction",
+          0
+        ],
+        [
+          "BatchRenamer",
+          7
+        ]
+      ],
+      "functions": []
+    },
+    {
+      "path": "dist/CortexCleaner/_internal/NexusExplorer/native/nexus_cloud.py",
+      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/native/nexus_cloud.py",
+      "loc": 1332,
+      "syntax_ok": true,
+      "compile_ok": true,
+      "import_ok": true,
+      "error": null,
+      "classes": [
+        [
+          "CloudProviderType",
+          0
+        ],
+        [
+          "SyncStatus",
+          0
+        ],
+        [
+          "CloudFile",
+          0
+        ],
+        [
+          "CloudAccount",
+          0
+        ],
+        [
+          "CloudProvider",
+          11
+        ],
+        [
+          "OneDriveProvider",
+          15
+        ],
+        [
+          "GoogleDriveProvider",
+          13
+        ],
+        [
+          "DropboxProvider",
+          13
+        ],
+        [
+          "S3Provider",
+          12
+        ],
+        [
+          "CloudManager",
+          7
+        ]
+      ],
+      "functions": [
+        "retry_on_rate_limit"
+      ]
+    },
+    {
+      "path": "dist/CortexCleaner/_internal/NexusExplorer/native/nexus_content_search.py",
+      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/native/nexus_content_search.py",
+      "loc": 414,
+      "syntax_ok": true,
+      "compile_ok": true,
+      "import_ok": true,
+      "error": null,
+      "classes": [
+        [
+          "ContentMatch",
+          0
+        ],
+        [
+          "ContentSearchResult",
+          0
+        ],
+        [
+          "_ContentSearchWorker",
+          3
+        ],
+        [
+          "ContentSearchEngine",
+          4
+        ]
+      ],
+      "functions": [
+        "is_searchable",
+        "search_file_content"
+      ]
+    },
+    {
+      "path": "dist/CortexCleaner/_internal/NexusExplorer/native/nexus_core.py",
+      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/native/nexus_core.py",
+      "loc": 1597,
+      "syntax_ok": true,
+      "compile_ok": true,
+      "import_ok": true,
+      "error": null,
+      "classes": [
+        [
+          "_CallMarshal",
+          0
+        ],
+        [
+          "_FfiJob",
+          2
+        ],
+        [
+          "Engine",
+          19
+        ],
+        [
+          "_SHFILEINFO",
+          0
+        ],
+        [
+          "_ICONINFO",
+          0
+        ],
+        [
+          "_BMIH",
+          0
+        ],
+        [
+          "IconThumbs",
+          7
+        ],
+        [
+          "FileTableModel",
+          16
+        ],
+        [
+          "SortProxy",
+          4
+        ]
+      ],
+      "functions": [
+        "find_cli",
+        "human",
+        "fmt_ms",
+        "marshal_call",
+        "create_nested_folder",
+        "create_nested_file",
+        "scaffold_hierarchy"
+      ]
+    },
+    {
+      "path": "dist/CortexCleaner/_internal/NexusExplorer/native/nexus_dir_diff.py",
+      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/native/nexus_dir_diff.py",
+      "loc": 365,
+      "syntax_ok": true,
+      "compile_ok": true,
+      "import_ok": true,
+      "error": null,
+      "classes": [
+        [
+          "DiffStatus",
+          0
+        ],
+        [
+          "SyncMode",
+          0
+        ],
+        [
+          "DiffEntry",
+          0
+        ],
+        [
+          "SyncStats",
+          1
+        ],
+        [
+          "DirectoryDiffEngine",
+          3
+        ]
+      ],
+      "functions": []
+    },
+    {
+      "path": "dist/CortexCleaner/_internal/NexusExplorer/native/nexus_explorer.py",
+      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/native/nexus_explorer.py",
+      "loc": 9522,
+      "syntax_ok": true,
+      "compile_ok": true,
+      "import_ok": true,
+      "error": null,
+      "classes": [
+        [
+          "DebugOverlay",
+          4
+        ],
+        [
+          "CrumbBar",
+          8
+        ],
+        [
+          "QuickLookPopup",
+          3
+        ],
+        [
+          "BulkRenameDialog",
+          5
+        ],
+        [
+          "SearchDialog",
+          6
+        ],
+        [
+          "GoToPathDialog",
+          4
+        ],
+        [
+          "_RenamePreviewModel",
+          6
+        ],
+        [
+          "_FolderSizeWorker",
+          2
+        ],
+        [
+          "_TextPreviewReader",
+          2
+        ],
+        [
+          "_ExtractArchiveWorker",
+          2
+        ],
+        [
+          "_ExtractEntryWorker",
+          2
+        ],
+        [
+          "_CompressWorker",
+          2
+        ],
+        [
+          "FolderSizeCalculator",
+          8
+        ],
+        [
+          "ColorTagManager",
+          5
+        ],
+        [
+          "SmartFolderManager",
+          5
+        ],
+        [
+          "_DupScanWorker",
+          4
+        ],
+        [
+          "_DuplicateModel",
+          11
+        ],
+        [
+          "DuplicateFinderDialog",
+          11
+        ],
+        [
+          "NexusClipboard",
+          10
+        ],
+        [
+          "StagedItemRow",
+          3
+        ],
+        [
+          "StagingListWidget",
+          3
+        ],
+        [
+          "StagingShelfWidget",
+          16
+        ],
+        [
+          "TransferStatusDock",
+          10
+        ],
+        [
+          "PreviewPane",
+          12
+        ],
+        [
+          "CommandPalette",
+          8
+        ],
+        [
+          "JobQueueWidget",
+          7
+        ],
+        [
+          "TerminalWidget",
+          13
+        ],
+        [
+          "PropertiesDialog",
+          1
+        ],
+        [
+          "_ChecksumWorkerThread",
+          2
+        ],
+        [
+          "FileChecksumDialog",
+          4
+        ],
+        [
+          "ExtractionProgressWidget",
+          4
+        ],
+        [
+          "_ZipEntry",
+          1
+        ],
+        [
+          "ArchiveBrowser",
+          5
+        ],
+        [
+          "UndoManager",
+          19
+        ],
+        [
+          "ShortcutsDialog",
+          1
+        ],
+        [
+          "NestedFolderDialog",
+          3
+        ],
+        [
+          "NestedFileDialog",
+          5
+        ],
+        [
+          "BatchScaffoldDialog",
+          3
+        ],
+        [
+          "ExplorerWidget",
+          131
+        ]
+      ],
+      "functions": []
+    },
+    {
+      "path": "dist/CortexCleaner/_internal/NexusExplorer/native/nexus_fast_copier.py",
+      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/native/nexus_fast_copier.py",
+      "loc": 295,
+      "syntax_ok": true,
+      "compile_ok": true,
+      "import_ok": true,
+      "error": null,
+      "classes": [
+        [
+          "CopyMode",
+          0
+        ],
+        [
+          "CopyItemProgress",
+          0
+        ],
+        [
+          "CopySummary",
+          1
+        ],
+        [
+          "FastCopier",
+          2
+        ]
+      ],
+      "functions": []
+    },
+    {
+      "path": "dist/CortexCleaner/_internal/NexusExplorer/native/nexus_ffi.py",
+      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/native/nexus_ffi.py",
+      "loc": 641,
+      "syntax_ok": true,
+      "compile_ok": true,
+      "import_ok": true,
+      "error": null,
+      "classes": [
+        [
+          "_FileEntry",
+          0
+        ],
+        [
+          "_DriveInfo",
+          0
+        ],
+        [
+          "_SearchOptions",
+          0
+        ],
+        [
+          "NexusFfi",
+          24
+        ]
+      ],
+      "functions": [
+        "find_dll"
+      ]
+    },
+    {
+      "path": "dist/CortexCleaner/_internal/NexusExplorer/native/nexus_file_splitter.py",
+      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/native/nexus_file_splitter.py",
+      "loc": 298,
+      "syntax_ok": true,
+      "compile_ok": true,
+      "import_ok": true,
+      "error": null,
+      "classes": [
+        [
+          "SplitPreset",
+          0
+        ],
+        [
+          "SplitManifest",
+          0
+        ],
+        [
+          "SplitResult",
+          0
+        ],
+        [
+          "JoinResult",
+          0
+        ],
+        [
+          "FileSplitterJoiner",
+          2
+        ]
+      ],
+      "functions": []
+    },
+    {
+      "path": "dist/CortexCleaner/_internal/NexusExplorer/native/nexus_folder_tree.py",
+      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/native/nexus_folder_tree.py",
+      "loc": 343,
+      "syntax_ok": true,
+      "compile_ok": true,
+      "import_ok": true,
+      "error": null,
+      "classes": [
+        [
+          "FolderTreeModel",
+          7
+        ],
+        [
+          "FolderTreeWidget",
+          5
+        ]
+      ],
+      "functions": []
+    },
+    {
+      "path": "dist/CortexCleaner/_internal/NexusExplorer/native/nexus_hash_tool.py",
+      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/native/nexus_hash_tool.py",
+      "loc": 430,
+      "syntax_ok": true,
+      "compile_ok": true,
+      "import_ok": true,
+      "error": null,
+      "classes": [
+        [
+          "HashAlgorithm",
+          0
+        ],
+        [
+          "HashResult",
+          0
+        ],
+        [
+          "VerifyItem",
+          0
+        ],
+        [
+          "HashTool",
+          4
+        ]
+      ],
+      "functions": []
+    },
+    {
+      "path": "dist/CortexCleaner/_internal/NexusExplorer/native/nexus_icons.py",
+      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/native/nexus_icons.py",
+      "loc": 1413,
+      "syntax_ok": true,
+      "compile_ok": true,
+      "import_ok": true,
+      "error": null,
+      "classes": [
+        [
+          "_LRUCache",
+          3
+        ]
+      ],
+      "functions": [
+        "icon",
+        "icon_for_ext",
+        "action_icon",
+        "folder_icon",
+        "sidebar_icon"
+      ]
+    },
+    {
+      "path": "dist/CortexCleaner/_internal/NexusExplorer/native/nexus_indexer.py",
+      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/native/nexus_indexer.py",
+      "loc": 825,
+      "syntax_ok": true,
+      "compile_ok": true,
+      "import_ok": true,
+      "error": null,
+      "classes": [
+        [
+          "IndexedEntry",
+          0
+        ],
+        [
+          "IndexStats",
+          0
+        ],
+        [
+          "_PrefixIndex",
+          7
+        ],
+        [
+          "FileIndex",
+          12
+        ],
+        [
+          "_IndexWorker",
+          4
+        ],
+        [
+          "_IncrementalWorker",
+          2
+        ],
+        [
+          "FileIndexer",
+          18
+        ]
+      ],
+      "functions": []
+    },
+    {
+      "path": "dist/CortexCleaner/_internal/NexusExplorer/native/nexus_links_manager.py",
+      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/native/nexus_links_manager.py",
+      "loc": 360,
+      "syntax_ok": true,
+      "compile_ok": true,
+      "import_ok": true,
+      "error": null,
+      "classes": [
+        [
+          "LinkType",
+          0
+        ],
+        [
+          "LinkItem",
+          0
+        ],
+        [
+          "LinkOperationResult",
+          0
+        ],
+        [
+          "LinksManager",
+          7
+        ]
+      ],
+      "functions": []
+    },
+    {
+      "path": "dist/CortexCleaner/_internal/NexusExplorer/native/nexus_native_app.py",
+      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/native/nexus_native_app.py",
+      "loc": 75,
+      "syntax_ok": true,
+      "compile_ok": true,
+      "import_ok": true,
+      "error": null,
+      "classes": [],
+      "functions": [
+        "main"
+      ]
+    },
+    {
+      "path": "dist/CortexCleaner/_internal/NexusExplorer/native/nexus_network.py",
+      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/native/nexus_network.py",
+      "loc": 999,
+      "syntax_ok": true,
+      "compile_ok": true,
+      "import_ok": true,
+      "error": null,
+      "classes": [
+        [
+          "NetworkProtocol",
+          0
+        ],
+        [
+          "NetworkFile",
+          0
+        ],
+        [
+          "NetworkConnection",
+          0
+        ],
+        [
+          "NetworkFS",
+          10
+        ],
+        [
+          "SMBProvider",
+          11
+        ],
+        [
+          "FTPProvider",
+          14
+        ],
+        [
+          "SFTPProvider",
+          14
+        ],
+        [
+          "WebDAVProvider",
+          11
+        ],
+        [
+          "ConnectionPool",
+          7
+        ],
+        [
+          "NetworkManager",
+          9
+        ]
+      ],
+      "functions": [
+        "store_credential",
+        "get_credential"
+      ]
+    },
+    {
+      "path": "dist/CortexCleaner/_internal/NexusExplorer/native/nexus_plugins.py",
+      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/native/nexus_plugins.py",
+      "loc": 988,
+      "syntax_ok": true,
+      "compile_ok": true,
+      "import_ok": true,
+      "error": null,
+      "classes": [
+        [
+          "PluginManifest",
+          1
+        ],
+        [
+          "PluginState",
+          0
+        ],
+        [
+          "PluginLifecycle",
+          4
+        ],
+        [
+          "ScopedConfig",
+          4
+        ],
+        [
+          "EventBridge",
+          4
+        ],
+        [
+          "EventBus",
+          4
+        ],
+        [
+          "PluginContext",
+          10
+        ],
+        [
+          "NexusPlugin",
+          8
+        ],
+        [
+          "APIAdapter",
+          3
+        ],
+        [
+          "HotReloadWatcher",
+          4
+        ],
+        [
+          "_SafeLoader",
+          3
+        ],
+        [
+          "PluginHost",
+          32
+        ]
+      ],
+      "functions": []
+    },
+    {
+      "path": "dist/CortexCleaner/_internal/NexusExplorer/native/nexus_timestamp_touch.py",
+      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/native/nexus_timestamp_touch.py",
+      "loc": 320,
+      "syntax_ok": true,
+      "compile_ok": true,
+      "import_ok": true,
+      "error": null,
+      "classes": [
+        [
+          "FileAttributeFlags",
+          0
+        ],
+        [
+          "TimestampInfo",
+          0
+        ],
+        [
+          "TimestampUpdateResult",
+          0
+        ],
+        [
+          "TimestampTouchEngine",
+          5
+        ]
+      ],
+      "functions": []
+    },
+    {
+      "path": "dist/CortexCleaner/_internal/NexusExplorer/native/nexus_transfer_monitor.py",
+      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/native/nexus_transfer_monitor.py",
+      "loc": 374,
+      "syntax_ok": true,
+      "compile_ok": true,
+      "import_ok": true,
+      "error": null,
+      "classes": [
+        [
+          "_JobRow",
+          5
+        ],
+        [
+          "TransferMonitorDialog",
+          9
+        ]
+      ],
+      "functions": []
+    },
+    {
+      "path": "dist/CortexCleaner/_internal/NexusExplorer/native/nexus_transfer_queue.py",
+      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/native/nexus_transfer_queue.py",
+      "loc": 791,
+      "syntax_ok": true,
+      "compile_ok": true,
+      "import_ok": true,
+      "error": null,
+      "classes": [
+        [
+          "JobState",
+          0
+        ],
+        [
+          "TransferJob",
+          0
+        ],
+        [
+          "TransferQueue",
+          21
+        ]
+      ],
+      "functions": [
+        "human_bytes",
+        "fmt_eta"
+      ]
+    },
+    {
+      "path": "dist/CortexCleaner/_internal/NexusExplorer/native/nexus_undo.py",
+      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/native/nexus_undo.py",
+      "loc": 440,
+      "syntax_ok": true,
+      "compile_ok": true,
+      "import_ok": true,
+      "error": null,
+      "classes": [
+        [
+          "OpKind",
+          0
+        ],
+        [
+          "UndoEntry",
+          4
+        ],
+        [
+          "RenameEntry",
+          3
+        ],
+        [
+          "MoveEntry",
+          3
+        ],
+        [
+          "CopyEntry",
+          3
+        ],
+        [
+          "DeleteEntry",
+          3
+        ],
+        [
+          "MkdirEntry",
+          3
+        ],
+        [
+          "CreateFileEntry",
+          3
+        ],
+        [
+          "BatchCreateEntry",
+          3
+        ],
+        [
+          "UndoStack",
+          19
+        ]
+      ],
+      "functions": []
+    },
+    {
+      "path": "dist/CortexCleaner/_internal/NexusExplorer/native/nexus_unlocker.py",
+      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/native/nexus_unlocker.py",
+      "loc": 289,
+      "syntax_ok": true,
+      "compile_ok": true,
+      "import_ok": true,
+      "error": null,
+      "classes": [
+        [
+          "LockingProcessInfo",
+          0
+        ],
+        [
+          "FileUnlocker",
+          4
+        ]
+      ],
+      "functions": []
+    },
+    {
+      "path": "dist/CortexCleaner/_internal/NexusExplorer/native/par2_recovery.py",
+      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/native/par2_recovery.py",
+      "loc": 173,
+      "syntax_ok": true,
+      "compile_ok": true,
+      "import_ok": true,
+      "error": null,
+      "classes": [
+        [
+          "Par2FileInfo",
+          0
+        ],
+        [
+          "Par2PacketInfo",
+          0
+        ],
+        [
+          "Par2ValidationReport",
+          0
+        ],
+        [
+          "Par2RecoveryEngine",
+          1
+        ]
+      ],
+      "functions": []
+    },
+    {
+      "path": "dist/CortexCleaner/_internal/NexusExplorer/native/usn_journal_scanner.py",
+      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/native/usn_journal_scanner.py",
+      "loc": 146,
+      "syntax_ok": true,
+      "compile_ok": true,
+      "import_ok": true,
+      "error": null,
+      "classes": [
+        [
+          "UsnJournalStatus",
+          0
+        ],
+        [
+          "USN_JOURNAL_DATA_V0",
+          0
+        ],
+        [
+          "UsnJournalScanner",
+          1
+        ]
+      ],
+      "functions": []
+    },
+    {
+      "path": "dist/CortexCleaner/_internal/NexusExplorer/test_explorer.py",
+      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/test_explorer.py",
+      "loc": 263,
+      "syntax_ok": true,
+      "compile_ok": true,
+      "import_ok": true,
+      "error": null,
+      "classes": [],
+      "functions": [
+        "run_smoke_test"
+      ]
+    },
+    {
+      "path": "dist/CortexCleaner/_internal/NexusExplorer/tests/benchmarks.py",
+      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/tests/benchmarks.py",
+      "loc": 364,
+      "syntax_ok": true,
+      "compile_ok": true,
+      "import_ok": true,
+      "error": null,
+      "classes": [
+        [
+          "BenchmarkTimer",
+          4
+        ],
+        [
+          "TestDirectoryListing",
+          4
+        ],
+        [
+          "TestFileOperations",
+          4
+        ],
+        [
+          "TestSearch",
+          3
+        ],
+        [
+          "TestHashing",
+          3
+        ]
+      ],
+      "functions": []
+    },
+    {
+      "path": "dist/CortexCleaner/_internal/NexusExplorer/tests/native/test_ffi_bridge.py",
+      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/tests/native/test_ffi_bridge.py",
+      "loc": 192,
+      "syntax_ok": true,
+      "compile_ok": true,
+      "import_ok": true,
+      "error": null,
+      "classes": [],
+      "functions": [
+        "ffi",
+        "tree",
+        "test_dll_discovery_paths",
+        "test_version_nonempty",
+        "test_read_dir_sync_rows",
+        "test_read_dir_sync_missing_dir_raises",
+        "test_get_drives",
+        "test_home_dir",
+        "test_search_finds_seeded",
+        "test_cancel_search_after_completion_is_safe",
+        "test_rename_roundtrip",
+        "test_create_folder",
+        "test_read_text_file_content_and_truncation",
+        "test_close_idempotent"
+      ]
+    },
+    {
+      "path": "dist/CortexCleaner/_internal/NexusExplorer/tests/native/test_journal.py",
+      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/tests/native/test_journal.py",
+      "loc": 138,
+      "syntax_ok": true,
+      "compile_ok": true,
+      "import_ok": true,
+      "error": null,
+      "classes": [],
+      "functions": [
+        "data_dir",
+        "ffi",
+        "test_journal_records_lifecycle",
+        "test_orphans_detects_interrupted_and_ignores_completed",
+        "test_orphan_scan_tolerates_missing_journal"
+      ]
+    },
+    {
+      "path": "dist/CortexCleaner/_internal/NexusExplorer/tests/native/test_mouse_interactions.py",
+      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/tests/native/test_mouse_interactions.py",
+      "loc": 218,
+      "syntax_ok": true,
+      "compile_ok": true,
+      "import_ok": true,
+      "error": null,
+      "classes": [
+        [
+          "_FakeMenu",
+          6
+        ],
+        [
+          "_FakeMousePress",
+          3
+        ]
+      ],
+      "functions": [
+        "qapp",
+        "widget",
+        "test_selected_paths_are_strings",
+        "test_context_menu_handles_dict_selection",
+        "test_context_menu_empty_selection",
+        "test_mouse_side_buttons_route_history",
+        "test_show_properties_accepts_dict_and_str"
+      ]
+    },
+    {
+      "path": "dist/CortexCleaner/_internal/NexusExplorer/tests/native/test_nested_creation.py",
+      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/tests/native/test_nested_creation.py",
+      "loc": 173,
+      "syntax_ok": true,
+      "compile_ok": true,
+      "import_ok": true,
+      "error": null,
+      "classes": [],
+      "functions": [
+        "test_create_nested_folder",
+        "test_create_nested_file",
+        "test_scaffold_hierarchy_indented",
+        "test_scaffold_hierarchy_path_list",
+        "test_scaffold_presets",
+        "test_undo_redo_create_file",
+        "test_undo_redo_batch_create",
+        "test_dialogs_construction"
+      ]
+    },
+    {
+      "path": "dist/CortexCleaner/_internal/NexusExplorer/tests/native/test_stage0.py",
+      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/tests/native/test_stage0.py",
+      "loc": 147,
+      "syntax_ok": true,
+      "compile_ok": true,
+      "import_ok": true,
+      "error": null,
+      "classes": [
+        [
+          "TestFormatters",
+          2
+        ],
+        [
+          "TestOpenWithQuotingRegression",
+          1
+        ],
+        [
+          "TestCliJsonContract",
+          3
+        ]
+      ],
+      "functions": [
+        "test_find_cli_locates_built_binary"
+      ]
+    },
+    {
+      "path": "dist/CortexCleaner/_internal/NexusExplorer/tests/native/test_transfer_monitor.py",
+      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/tests/native/test_transfer_monitor.py",
+      "loc": 205,
+      "syntax_ok": true,
+      "compile_ok": true,
+      "import_ok": true,
+      "error": null,
+      "classes": [],
+      "functions": [
+        "qapp",
+        "env",
+        "test_monitor_opens_and_completes_copy",
+        "test_pause_resume_cancel_through_monitor",
+        "test_cancel_mid_copy"
+      ]
+    },
+    {
+      "path": "dist/CortexCleaner/_internal/NexusExplorer/tests/native/test_transfers_ffi.py",
+      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/tests/native/test_transfers_ffi.py",
+      "loc": 240,
+      "syntax_ok": true,
+      "compile_ok": true,
+      "import_ok": true,
+      "error": null,
+      "classes": [
+        [
+          "TestBasicTransfers",
+          4
+        ],
+        [
+          "TestConflictPolicies",
+          3
+        ],
+        [
+          "TestPauseResumeCancel",
+          4
+        ]
+      ],
+      "functions": [
+        "ffi",
+        "dirs"
+      ]
+    },
+    {
+      "path": "dist/CortexCleaner/_internal/NexusExplorer/tests/native/test_transport_parity.py",
+      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/tests/native/test_transport_parity.py",
+      "loc": 282,
+      "syntax_ok": true,
+      "compile_ok": true,
+      "import_ok": true,
+      "error": null,
+      "classes": [
+        [
+          "TestTransportParity",
+          3
+        ]
+      ],
+      "functions": [
+        "ffi",
+        "parity_tree",
+        "cli"
+      ]
+    },
+    {
+      "path": "dist/CortexCleaner/_internal/NexusExplorer/tests/native/test_ui_state.py",
+      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/tests/native/test_ui_state.py",
+      "loc": 145,
+      "syntax_ok": true,
+      "compile_ok": true,
+      "import_ok": true,
+      "error": null,
+      "classes": [
+        [
+          "TestUpdateRowsIncremental",
+          2
+        ],
+        [
+          "TestSessionRoundTrip",
+          1
+        ]
+      ],
+      "functions": [
+        "qapp"
+      ]
+    },
+    {
       "path": "run_gui.py",
       "abs_path": "D:/code/Main_projects/Cortex_Cleaner/run_gui.py",
-      "loc": 94,
+      "loc": 119,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -241,7 +1605,7 @@
     {
       "path": "scripts/installer.py",
       "abs_path": "D:/code/Main_projects/Cortex_Cleaner/scripts/installer.py",
-      "loc": 619,
+      "loc": 654,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -1556,7 +2920,7 @@
     {
       "path": "src/cortex_unified/core/utils.py",
       "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/core/utils.py",
-      "loc": 702,
+      "loc": 826,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -1613,7 +2977,11 @@
         "validate_path",
         "ensure_directory",
         "get_system_info",
-        "create_error_report"
+        "create_error_report",
+        "get_app_root",
+        "get_nexus_native_dir",
+        "ensure_nexus_in_sys_path",
+        "get_resource_dir"
       ]
     },
     {
@@ -1917,7 +3285,7 @@
     {
       "path": "src/cortex_unified/explorer/__init__.py",
       "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/explorer/__init__.py",
-      "loc": 73,
+      "loc": 75,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -1928,7 +3296,7 @@
     {
       "path": "src/cortex_unified/explorer/archive.py",
       "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/explorer/archive.py",
-      "loc": 16,
+      "loc": 18,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -1939,7 +3307,7 @@
     {
       "path": "src/cortex_unified/explorer/cloud.py",
       "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/explorer/cloud.py",
-      "loc": 53,
+      "loc": 55,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -1950,7 +3318,7 @@
     {
       "path": "src/cortex_unified/explorer/content_search.py",
       "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/explorer/content_search.py",
-      "loc": 18,
+      "loc": 20,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -1961,7 +3329,7 @@
     {
       "path": "src/cortex_unified/explorer/core.py",
       "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/explorer/core.py",
-      "loc": 44,
+      "loc": 46,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -1972,7 +3340,7 @@
     {
       "path": "src/cortex_unified/explorer/ffi.py",
       "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/explorer/ffi.py",
-      "loc": 18,
+      "loc": 20,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -1983,7 +3351,7 @@
     {
       "path": "src/cortex_unified/explorer/folder_tree.py",
       "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/explorer/folder_tree.py",
-      "loc": 18,
+      "loc": 20,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -1994,7 +3362,7 @@
     {
       "path": "src/cortex_unified/explorer/icons.py",
       "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/explorer/icons.py",
-      "loc": 37,
+      "loc": 39,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -2005,7 +3373,7 @@
     {
       "path": "src/cortex_unified/explorer/indexer.py",
       "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/explorer/indexer.py",
-      "loc": 18,
+      "loc": 20,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -2016,7 +3384,7 @@
     {
       "path": "src/cortex_unified/explorer/network.py",
       "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/explorer/network.py",
-      "loc": 45,
+      "loc": 47,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -2027,7 +3395,7 @@
     {
       "path": "src/cortex_unified/explorer/plugins.py",
       "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/explorer/plugins.py",
-      "loc": 18,
+      "loc": 20,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -2038,7 +3406,7 @@
     {
       "path": "src/cortex_unified/explorer/transfers.py",
       "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/explorer/transfers.py",
-      "loc": 29,
+      "loc": 31,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -2049,7 +3417,7 @@
     {
       "path": "src/cortex_unified/explorer/undo.py",
       "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/explorer/undo.py",
-      "loc": 31,
+      "loc": 33,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -2060,7 +3428,7 @@
     {
       "path": "src/cortex_unified/explorer/widget.py",
       "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/explorer/widget.py",
-      "loc": 53,
+      "loc": 55,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -5594,7 +6962,7 @@
     {
       "path": "src/cortex_unified/ui/premium/app.py",
       "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/app.py",
-      "loc": 410,
+      "loc": 420,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -6047,7 +7415,7 @@
     {
       "path": "src/cortex_unified/ui/premium/icons.py",
       "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/icons.py",
-      "loc": 208,
+      "loc": 229,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -6425,7 +7793,7 @@
     {
       "path": "src/cortex_unified/ui/premium/nexus_page.py",
       "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/nexus_page.py",
-      "loc": 146,
+      "loc": 157,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -8005,7 +9373,7 @@
     {
       "path": "src/cortex_unified/ui/tabs/reports_tab.py",
       "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/tabs/reports_tab.py",
-      "loc": 615,
+      "loc": 622,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -8057,7 +9425,7 @@
     {
       "path": "src/cortex_unified/ui/tabs/scheduler_tab.py",
       "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/tabs/scheduler_tab.py",
-      "loc": 516,
+      "loc": 519,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -8609,7 +9977,7 @@
     {
       "path": "src/NexusExplorer/native/nexus_core.py",
       "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/NexusExplorer/native/nexus_core.py",
-      "loc": 1586,
+      "loc": 1597,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -8697,7 +10065,7 @@
     {
       "path": "src/NexusExplorer/native/nexus_explorer.py",
       "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/NexusExplorer/native/nexus_explorer.py",
-      "loc": 9513,
+      "loc": 9522,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -9003,7 +10371,7 @@
     {
       "path": "src/NexusExplorer/native/nexus_icons.py",
       "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/NexusExplorer/native/nexus_icons.py",
-      "loc": 1389,
+      "loc": 1413,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
