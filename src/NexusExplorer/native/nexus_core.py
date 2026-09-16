@@ -848,8 +848,6 @@ class Engine:
                 dp = f"{letter}:\\"
                 if os.path.exists(dp):
                     try:
-                        import shutil
-
                         usage = shutil.disk_usage(dp)
                         drives.append(
                             {

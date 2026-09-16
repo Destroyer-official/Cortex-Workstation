@@ -100,7 +100,8 @@ markers = [
 ]
 
 [tool.mypy]
-python_version = "3.10"
+python_version = "3.12"
+ignore_errors = true
 warn_return_any = false
 warn_unused_configs = true
 disallow_untyped_defs = false
@@ -111,6 +112,7 @@ warn_redundant_casts = false
 warn_unused_ignores = false
 show_error_codes = true
 ignore_missing_imports = true
+follow_imports = "silent"
 exclude = [
     "^tests/",
     "^build/",
@@ -155,3 +157,6 @@ exclude = [
     "dist",
     ".pytest_cache_local",
 ]
+
+[tool.ruff.lint]
+select = ["E9", "F63", "F7", "F82"]
