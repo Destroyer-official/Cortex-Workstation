@@ -930,7 +930,7 @@ class ProjectCacheCleanWorker(QObject):
 
 
 class AutoProjectCacheWorker(QObject):
-    """Walks all fixed drives (or known D:\\code) for PROJECT_CACHE_CATEGORIES."""
+    """Walks all fixed drives and detected project directories for PROJECT_CACHE_CATEGORIES."""
 
     finished = Signal(list)  # resources
     progress = Signal(str, int, object)
@@ -971,7 +971,7 @@ class AutoProjectCacheWorker(QObject):
 
 
 class CacheLogSweepWorker(QObject):
-    """Finds large logs (*.log/*.txt) across user-selected roots (D:\\code)."""
+    """Finds large logs (*.log/*.txt) across user-selected or detected roots."""
 
     finished = Signal(list)  # [(Path, size), ...]
     progress = Signal(str)

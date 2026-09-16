@@ -1,6 +1,6 @@
 # Function inventory — scripts / tests / run_gui / NexusExplorer test
 
-_Base: D:/code/Main_projects/Cortex_Cleaner · files: 124 · generated from AST + body reads_
+_Base: Repository Root (portable) · files: 124 · generated from AST + body reads_
 
 ## scripts/audit_all_page_functions.py — Deep Functional & UI Inspection across all 59 Pages.
 - audit_all_pages() (L28): Audit all pages: build PremiumMainWindow, via findChildren; loop over enumerate(PAGES, 1)

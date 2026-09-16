@@ -1,10 +1,6 @@
-"""Auto-discovery of project cache folders across fixed drives.
+"""Auto-discovery of project cache folders across fixed drives and user directories.
 
-Without this, ``PackageManagerCleaner.scan_caches`` only finds project caches
-when the caller already knows the parent folder (``target_folders``). Manual
-cleaning hit 21.9GB in ``NexusExplorer/{target,src-tauri/target,...}`` and
-~3GB in ``AEGIS/*/target`` that the UI never surfaced because D:\\code was
-never scanned. This module walks all fixed drives (psutil.disk_partitions)
+Walks all fixed drives (psutil.disk_partitions) and common user development directories
 shallowly for PROJECT_CACHE_CATEGORIES patterns without requiring the user to
 pick the exact folder, while pruning .git / node_modules already in the skip
 set.
@@ -89,7 +85,7 @@ def _known_code_roots() -> List[Path]:
     """High-hit-rate code parents to prefer over whole-drive walks.
 
     Dynamically probes all detected fixed drives and user home directories
-    for standard development roots (code, Projects, Main_projects, Repos, workspace, etc.).
+    for standard development roots (code, Projects, Repos, workspace, etc.).
     """
     candidates: List[Path] = []
 
@@ -98,7 +94,6 @@ def _known_code_roots() -> List[Path]:
     user_dev_subdirs = [
         "code",
         "Projects",
-        "Main_projects",
         "Development",
         "Repos",
         "workspace",
@@ -107,7 +102,6 @@ def _known_code_roots() -> List[Path]:
         "dev",
         "Documents/code",
         "Documents/Projects",
-        "Documents/Main_projects",
         "Documents/Development",
         "source/repos",
         "IdeaProjects",
@@ -128,7 +122,7 @@ def _known_code_roots() -> List[Path]:
 
     # 3. All detected fixed drives (C:, D:, E:, etc.)
     fixed_drives = _fixed_drive_roots()
-    drive_dev_names = ["code", "Projects", "Main_projects", "Development", "Repos", "workspace", "src", "git", "dev"]
+    drive_dev_names = ["code", "Projects", "Development", "Repos", "workspace", "src", "git", "dev"]
     for drive in fixed_drives:
         for name in drive_dev_names:
             candidates.append(drive / name)

@@ -1,6 +1,6 @@
 # Rust Public API Audit — NexusExplorer (`src-tauri`) + `nexus_engine_ffi` + C Header
 
-Base: `D:\code\Main_projects\Cortex_Cleaner`
+Base: `Repository Root (portable)`
 Scope: `src/NexusExplorer/src-tauri/src/**` (lib.rs, bin/nexus-cli.rs, engine/, commands/, models/) + `src/NexusExplorer/nexus_engine_ffi/src/**` (*.rs) + `nexus_engine_ffi/include/nexus_engine.h`
 Method: read source; one line purpose per item. `L<n>` = definition line in that file.
 

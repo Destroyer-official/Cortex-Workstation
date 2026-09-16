@@ -83,18 +83,32 @@ def _normalize(path: os.PathLike[str] | str) -> str:
 def _is_junction(entry: os.DirEntry) -> bool:
     """True for Windows junctions/mount points (:mod:`os` reparse points).
 
-    ``os.DirEntry.is_junction`` only exists on Windows (Python >= 3.12); on
-    other platforms this is always False. An entry whose metadata cannot be
-    probed is assumed to be a junction -- failing closed keeps links
-    untraversed even when the OS refuses to describe them.
+    Works across all Python versions (3.10, 3.11, 3.12, 3.13, 3.14).
+    Uses ``os.DirEntry.is_junction`` when available (Python >= 3.12),
+    and falls back to checking ``st_file_attributes & 0x400`` (FILE_ATTRIBUTE_REPARSE_POINT)
+    or ``os.path.islink`` on Windows.
     """
     probe = getattr(entry, "is_junction", None)
-    if not callable(probe):
-        return False
-    try:
-        return bool(probe())
-    except OSError:
-        return True
+    if callable(probe):
+        try:
+            return bool(probe())
+        except OSError:
+            return True
+
+    if sys.platform == "win32":
+        try:
+            st = entry.stat(follow_symlinks=False)
+            if hasattr(st, "st_file_attributes") and (st.st_file_attributes & 0x400):
+                return True
+        except OSError:
+            return True
+        try:
+            if os.path.islink(entry.path):
+                return True
+        except OSError:
+            return True
+
+    return False
 
 
 class TempCleaner:

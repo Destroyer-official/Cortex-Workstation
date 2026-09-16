@@ -1262,7 +1262,7 @@ class PackageCachePage(_Page):
 
         self.pm_path_input = QLineEdit()
         self.pm_path_input.setPlaceholderText(
-            "Select or enter package cache directory / file location (e.g. D:\\pip_cache, D:\\npm_cache, D:\\conda)..."
+            "Select or enter package cache directory / file location (e.g. custom cache or build output folder)..."
         )
         loc_input_row.addWidget(self.pm_path_input, stretch=1)
 
@@ -1951,7 +1951,7 @@ class ProjectCachesPage(_Page):
         self.proj_autoscan_button = QPushButton("Scan Fixed Drives (auto)")
         self.proj_autoscan_button.setObjectName("Ghost")
         self.proj_autoscan_button.setToolTip(
-            "Walk all fixed drives (D:\\, C:\\code) for PROJECT_CACHE_CATEGORIES without picking folders — finds 21.9GB targets missed before."
+            "Automatically walk all fixed drives and project directories for PROJECT_CACHE_CATEGORIES without picking folders."
         )
         self.proj_autoscan_button.setCursor(Qt.CursorShape.PointingHandCursor)
         self.proj_autoscan_button.clicked.connect(self.start_auto_scan)

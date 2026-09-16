@@ -1,10 +1,8 @@
-"""Log Sweeper: find huge *.log/*.txt across user-selected roots (D:\\code).
+"""Log Sweeper: find large *.log/*.txt files across user-selected and detected roots.
 
-The manual hit was 7.6GB of bot_debug*.log / full_bot_log.txt under
-D:\\code\\Main_projects\\polybot. Those live outside the default
-home/LOCALAPPDATA scope so the generic cache cleaner never saw them.
-This page lets users point the sweep at D:\\code (or any folder) and
-reports only logs >100MB, skipping .zip/.tar.gz backups.
+Searches for oversized *.log / *.txt files (>100MB) across project directories,
+development trees, and custom scan roots. Excludes archives (.zip/.tar.gz) by
+default so backups remain untouched while stale diagnostic logs are identified.
 """
 
 from __future__ import annotations
@@ -197,33 +195,43 @@ class LogSweeperPage(_Page):
             self.roots_list.addItem(folder)
 
     def _discover_code_roots(self) -> list[Path]:
-        """Discover common code root directories across all fixed drives.
+        """Discover common code and project root directories dynamically across all drives and user profiles.
 
         Returns:
-            list[Path]: List of processed items or identifiers.
+            list[Path]: List of valid project and code root directory paths.
         """
+        try:
+            from cortex_unified.analyzers.project_cache_scanner import _known_code_roots
+
+            known = _known_code_roots()
+            if known:
+                return known
+        except Exception:
+            pass
+
         import string
 
         roots: list[Path] = []
+        home = Path.home()
+        for sub in ("code", "Projects", "source/repos", "workspace", "Documents/Projects", "dev", "src"):
+            p = home / sub
+            try:
+                if p.is_dir() and p not in roots:
+                    roots.append(p)
+            except OSError:
+                continue
+
         for letter in string.ascii_uppercase:
             drive = Path(f"{letter}:/")
             try:
                 if drive.exists() and drive.is_dir():
-                    for name in ("code", "projects"):
+                    for name in ("code", "Projects", "workspace", "src", "dev"):
                         candidate = drive / name
                         try:
                             if candidate.is_dir() and candidate not in roots:
                                 roots.append(candidate)
                         except OSError:
                             continue
-            except OSError:
-                continue
-        home = Path.home()
-        for name in ("code", "Projects"):
-            candidate = home / name
-            try:
-                if candidate.is_dir() and candidate not in roots:
-                    roots.append(candidate)
             except OSError:
                 continue
         return roots

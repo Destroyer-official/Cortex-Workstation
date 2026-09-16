@@ -66,13 +66,14 @@ def clean_qapp_event_filters():
 
 
 def pytest_terminal_summary(terminalreporter, exitstatus, config):
-    """Cleanly exit without letting PySide6 C++ destructors crash on Windows Python 3.14."""
-    if sys.platform == "win32" and "PySide6" in sys.modules:
+    """Ensure all Qt windows and pending events are flushed before session exit."""
+    if "PySide6" in sys.modules:
         try:
             from PySide6.QtWidgets import QApplication
 
             app = QApplication.instance()
             if app is not None:
-                app.quit()
+                app.closeAllWindows()
+                app.processEvents()
         except Exception:
             pass

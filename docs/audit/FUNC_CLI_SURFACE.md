@@ -1,6 +1,6 @@
 # CLI Surface Audit — Cortex_Cleaner
 
-> Base: `D:\code\Main_projects\Cortex_Cleaner`. READ-ONLY audit (no code changed).
+> Base: `Repository Root (portable)`. READ-ONLY audit (no code changed).
 > Sources read: `src/cortex_unified/cli/cli.py` (2076 lines), `src/cortex_unified/engine/cli.py` (537 lines),
 > `run_gui.py`, `src/cortex_unified/__main__.py`, `src/cortex_unified/system_tools/network_scan_cli.py`,
 > `src/cortex_unified/system_tools/secrets_scanner.py` (head + tail), `src/cortex_unified/debug/runner.py` (tail),

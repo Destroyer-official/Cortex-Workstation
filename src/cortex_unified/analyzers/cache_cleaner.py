@@ -144,9 +144,7 @@ class CacheCleaner:
                 paths.append(normalize_path(os.environ["APPDATA"]))
             if "PROGRAMDATA" in os.environ:
                 paths.append(normalize_path(os.environ["PROGRAMDATA"]))
-            # Secondary drive code roots - not included by default in auto-scan
-            # but kept as known candidates for the UI's "Select D:\\code" shortcut.
-            # The sweeper can be pointed at them via custom_paths.
+            # Additional development roots can be pointed to via custom scan paths.
         elif system == "darwin":
             paths.append(normalize_path("~/Library"))
             paths.append(normalize_path("~/Library/Caches"))
@@ -271,11 +269,11 @@ class CacheCleaner:
         progress_callback=None,
         cancel_event=None,
     ) -> List[tuple[Path, int]]:
-        """Find large log/text files across user-selected roots (D:\\code sweeper).
+        """Find large log/text files across user-selected or detected roots.
 
         Args:
-            roots: Directories to walk (e.g. ["D:\\code"]).
-            min_size_mb: Minimum size to report (manual hits were 7.6GB of >100MB logs).
+            roots: Directories to walk.
+            min_size_mb: Minimum size in megabytes to report.
             exclude_archives: When True, skip .zip/.tar.gz (they are backups, not logs).
             progress_callback: Optional fn(msg, count, bytes).
             cancel_event: Optional threading.Event to abort early.

@@ -1343,11 +1343,10 @@ class PackageManagerCleaner:
         cancel_event: Optional[object] = None,
         max_depth: int = 4,
     ) -> List[Dict]:
-        """Walk all fixed drives for PROJECT_CACHE_CATEGORIES without manual folder.
+        """Walk all fixed drives for PROJECT_CACHE_CATEGORIES without requiring manual folder selection.
 
-        Scans common code roots (D:\\code, C:\\Users\\...\\code, ...) plus the
-        root of each fixed drive shallowly (max_depth) to catch the 21.9GB
-        NexusExplorer/target etc. cases where the user never picked a folder.
+        Scans common code roots across user profiles and fixed storage drives shallowly (max_depth)
+        to discover project build and package caches automatically.
 
         Returns:
             Same resource dicts as scan_caches(target_folders=...).
@@ -1385,9 +1384,9 @@ class PackageManagerCleaner:
             for cand in [
                 Path.home() / "code",
                 Path.home() / "Projects",
-                Path.home() / "Main_projects",
                 Path.home() / "Documents" / "code",
                 Path.home() / "source" / "repos",
+                Path.home() / "workspace",
             ]:
                 try:
                     if cand.is_dir():

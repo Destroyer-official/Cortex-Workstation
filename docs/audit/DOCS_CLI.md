@@ -1,6 +1,6 @@
 # Purpose documentation — CLI + selected system_tools
 
-Base: `D:\code\Main_projects\Cortex_Cleaner`. Read-only audit; no code changed.
+Base: `Repository Root (portable)`. Read-only audit; no code changed.
 Each entry: name, signature, file:line, WHAT it does + inputs/outputs, side effects.
 
 ---

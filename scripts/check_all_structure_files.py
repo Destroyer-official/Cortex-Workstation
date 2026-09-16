@@ -36,7 +36,6 @@ def verify_file(p: Path):
     rel_path = p.relative_to(REPO_ROOT).as_posix()
     result = {
         "path": rel_path,
-        "abs_path": p.resolve().as_posix(),
         "loc": 0,
         "syntax_ok": False,
         "compile_ok": False,

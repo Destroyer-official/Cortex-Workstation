@@ -1,10 +1,9 @@
 """Cleanup Hub: unified Storage Sense-style view of all cleanup categories.
 
 Groups every engine/categories.py CleanupCategory as a card with
-RiskLevel + Reversible badges (reuse CleanupCategory.risk/reversible:30),
-a live reclaimed estimate (via _get_dir_size / CleanerService scan), and a
-"Select D:\\code" shortcut that points the log/project-cache sweeps at the
-secondary drive where manual hits (21.9GB target, 7.6GB logs) hid.
+RiskLevel + Reversible badges (reusing CleanupCategory metadata),
+a live reclaimed space estimate (via CleanerService scan), and quick
+actions to trigger targeted cleaning across system partitions and project roots.
 
 Cards are grouped like Windows Storage Sense so users recognize the layout,
 and each card links directly to its underlying cleaner (temp, browser, AI

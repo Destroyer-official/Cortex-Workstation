@@ -1,7 +1,7 @@
 # Deep One-By-One Program File Verification Report
 
 > **Audited Files**: 578 | **Passed**: 578 | **Failed**: 0 | **Pass Rate**: 100.0%
-> **Verification Duration**: 8.75 seconds | **Python Runtime**: 3.14.7
+> **Verification Duration**: 9.40 seconds | **Python Runtime**: 3.14.7
 
 ## File-By-File Verification Results
 
@@ -342,7 +342,7 @@
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Functions (2)**: `calculate_sha256`, `build_app`
 
-- [ ] **081. [`scripts/check_all_structure_files.py`](scripts/check_all_structure_files.py)** — **✓ PASS** (187 LOC)
+- [ ] **081. [`scripts/check_all_structure_files.py`](scripts/check_all_structure_files.py)** — **✓ PASS** (186 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Functions (3)**: `find_all_python_files`, `verify_file`, `main`
 
@@ -466,7 +466,7 @@
   - **Classes (7)**: `BrokenLink` (0 methods), `BrokenSymlink` (1 methods), `BrokenShortcut` (1 methods), `BrokenRegistryRef` (1 methods)
   - **Functions (1)**: `repair`
 
-- [ ] **113. [`src/cortex_unified/analyzers/cache_cleaner.py`](src/cortex_unified/analyzers/cache_cleaner.py)** — **✓ PASS** (458 LOC)
+- [ ] **113. [`src/cortex_unified/analyzers/cache_cleaner.py`](src/cortex_unified/analyzers/cache_cleaner.py)** — **✓ PASS** (456 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (1)**: `CacheCleaner` (12 methods)
 
@@ -531,7 +531,7 @@
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (1)**: `OldFileCleaner` (7 methods)
 
-- [ ] **128. [`src/cortex_unified/analyzers/package_manager_cleaner.py`](src/cortex_unified/analyzers/package_manager_cleaner.py)** — **✓ PASS** (1612 LOC)
+- [ ] **128. [`src/cortex_unified/analyzers/package_manager_cleaner.py`](src/cortex_unified/analyzers/package_manager_cleaner.py)** — **✓ PASS** (1611 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (5)**: `Package` (1 methods), `PackageManager` (0 methods), `CleanupResult` (1 methods), `HealthStatus` (1 methods)
 
@@ -548,11 +548,11 @@
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (1)**: `PrivacyCleaner` (14 methods)
 
-- [ ] **132. [`src/cortex_unified/analyzers/project_cache_scanner.py`](src/cortex_unified/analyzers/project_cache_scanner.py)** — **✓ PASS** (508 LOC)
+- [ ] **132. [`src/cortex_unified/analyzers/project_cache_scanner.py`](src/cortex_unified/analyzers/project_cache_scanner.py)** — **✓ PASS** (502 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (1)**: `ProjectCacheScanner` (5 methods)
 
-- [ ] **133. [`src/cortex_unified/analyzers/registry_cleaner_ai.py`](src/cortex_unified/analyzers/registry_cleaner_ai.py)** — **✓ PASS** (1503 LOC)
+- [ ] **133. [`src/cortex_unified/analyzers/registry_cleaner_ai.py`](src/cortex_unified/analyzers/registry_cleaner_ai.py)** — **✓ PASS** (1506 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (5)**: `RegistryIssue` (1 methods), `ScanResult` (1 methods), `CleanResult` (0 methods), `_MLModel` (3 methods)
 
@@ -1354,7 +1354,7 @@
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (2)**: `_CdcWorker` (3 methods), `CdcPage` (6 methods)
 
-- [ ] **334. [`src/cortex_unified/ui/premium/cleanup_hub_page.py`](src/cortex_unified/ui/premium/cleanup_hub_page.py)** — **✓ PASS** (726 LOC)
+- [ ] **334. [`src/cortex_unified/ui/premium/cleanup_hub_page.py`](src/cortex_unified/ui/premium/cleanup_hub_page.py)** — **✓ PASS** (725 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (3)**: `HubScanWorker` (3 methods), `TempScanWorker` (3 methods), `CleanupHubPage` (18 methods)
 
@@ -1416,7 +1416,7 @@
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (1)**: `LicensePage` (6 methods)
 
-- [ ] **349. [`src/cortex_unified/ui/premium/log_sweeper_page.py`](src/cortex_unified/ui/premium/log_sweeper_page.py)** — **✓ PASS** (354 LOC)
+- [ ] **349. [`src/cortex_unified/ui/premium/log_sweeper_page.py`](src/cortex_unified/ui/premium/log_sweeper_page.py)** — **✓ PASS** (362 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Classes (2)**: `_LogWorker` (3 methods), `LogSweeperPage` (11 methods)
 
@@ -2108,7 +2108,7 @@
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Functions (16)**: `app`, `test_every_page_has_its_own_icon_asset`, `test_no_two_pages_share_an_icon`, `test_registry_icons_are_asset_names_not_glyphs`, `test_window_chrome_and_status_icons_are_shipped`, `test_every_shipped_icon_renders`
 
-- [ ] **516. [`tests/test_installer_end_to_end.py`](tests/test_installer_end_to_end.py)** — **✓ PASS** (96 LOC)
+- [ ] **516. [`tests/test_installer_end_to_end.py`](tests/test_installer_end_to_end.py)** — **✓ PASS** (103 LOC)
   - **Syntax Check**: OK | **Compilation**: OK | **Import**: OK
   - **Functions (4)**: `app`, `test_bundle_zip_exists_and_valid`, `test_install_worker_full_lifecycle`, `test_installer_gui_signals_and_html`
 

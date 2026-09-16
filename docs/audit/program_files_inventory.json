@@ -3,12 +3,11 @@
   "passed": 578,
   "failed": 0,
   "pass_rate_percent": 100.0,
-  "duration_seconds": 8.75,
+  "duration_seconds": 9.4,
   "python_runtime": "3.14.7",
   "files": [
     {
       "path": "dist/CortexCleaner/_internal/native/__init__.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/native/__init__.py",
       "loc": 12,
       "syntax_ok": true,
       "compile_ok": true,
@@ -19,7 +18,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/native/binary_differ.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/native/binary_differ.py",
       "loc": 191,
       "syntax_ok": true,
       "compile_ok": true,
@@ -43,7 +41,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/native/file_signature_sniffer.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/native/file_signature_sniffer.py",
       "loc": 222,
       "syntax_ok": true,
       "compile_ok": true,
@@ -67,7 +64,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/native/image_optimizer.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/native/image_optimizer.py",
       "loc": 199,
       "syntax_ok": true,
       "compile_ok": true,
@@ -91,7 +87,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/native/nexus_ads_manager.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/native/nexus_ads_manager.py",
       "loc": 224,
       "syntax_ok": true,
       "compile_ok": true,
@@ -111,7 +106,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/native/nexus_archive.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/native/nexus_archive.py",
       "loc": 875,
       "syntax_ok": true,
       "compile_ok": true,
@@ -157,7 +151,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/native/nexus_archive_manager.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/native/nexus_archive_manager.py",
       "loc": 354,
       "syntax_ok": true,
       "compile_ok": true,
@@ -189,7 +182,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/native/nexus_batch_renamer.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/native/nexus_batch_renamer.py",
       "loc": 441,
       "syntax_ok": true,
       "compile_ok": true,
@@ -217,7 +209,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/native/nexus_cloud.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/native/nexus_cloud.py",
       "loc": 1382,
       "syntax_ok": true,
       "compile_ok": true,
@@ -271,7 +262,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/native/nexus_content_search.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/native/nexus_content_search.py",
       "loc": 495,
       "syntax_ok": true,
       "compile_ok": true,
@@ -302,7 +292,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/native/nexus_core.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/native/nexus_core.py",
       "loc": 1642,
       "syntax_ok": true,
       "compile_ok": true,
@@ -358,7 +347,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/native/nexus_dir_diff.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/native/nexus_dir_diff.py",
       "loc": 377,
       "syntax_ok": true,
       "compile_ok": true,
@@ -390,7 +378,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/native/nexus_explorer.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/native/nexus_explorer.py",
       "loc": 9513,
       "syntax_ok": true,
       "compile_ok": true,
@@ -558,7 +545,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/native/nexus_fast_copier.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/native/nexus_fast_copier.py",
       "loc": 305,
       "syntax_ok": true,
       "compile_ok": true,
@@ -586,7 +572,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/native/nexus_ffi.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/native/nexus_ffi.py",
       "loc": 686,
       "syntax_ok": true,
       "compile_ok": true,
@@ -616,7 +601,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/native/nexus_file_splitter.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/native/nexus_file_splitter.py",
       "loc": 302,
       "syntax_ok": true,
       "compile_ok": true,
@@ -648,7 +632,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/native/nexus_folder_tree.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/native/nexus_folder_tree.py",
       "loc": 342,
       "syntax_ok": true,
       "compile_ok": true,
@@ -668,7 +651,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/native/nexus_hash_tool.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/native/nexus_hash_tool.py",
       "loc": 483,
       "syntax_ok": true,
       "compile_ok": true,
@@ -696,7 +678,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/native/nexus_icons.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/native/nexus_icons.py",
       "loc": 1742,
       "syntax_ok": true,
       "compile_ok": true,
@@ -718,7 +699,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/native/nexus_indexer.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/native/nexus_indexer.py",
       "loc": 853,
       "syntax_ok": true,
       "compile_ok": true,
@@ -758,7 +738,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/native/nexus_links_manager.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/native/nexus_links_manager.py",
       "loc": 372,
       "syntax_ok": true,
       "compile_ok": true,
@@ -786,7 +765,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/native/nexus_native_app.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/native/nexus_native_app.py",
       "loc": 75,
       "syntax_ok": true,
       "compile_ok": true,
@@ -799,7 +777,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/native/nexus_network.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/native/nexus_network.py",
       "loc": 1027,
       "syntax_ok": true,
       "compile_ok": true,
@@ -854,7 +831,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/native/nexus_plugins.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/native/nexus_plugins.py",
       "loc": 978,
       "syntax_ok": true,
       "compile_ok": true,
@@ -914,7 +890,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/native/nexus_timestamp_touch.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/native/nexus_timestamp_touch.py",
       "loc": 324,
       "syntax_ok": true,
       "compile_ok": true,
@@ -942,7 +917,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/native/nexus_transfer_monitor.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/native/nexus_transfer_monitor.py",
       "loc": 372,
       "syntax_ok": true,
       "compile_ok": true,
@@ -962,7 +936,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/native/nexus_transfer_queue.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/native/nexus_transfer_queue.py",
       "loc": 806,
       "syntax_ok": true,
       "compile_ok": true,
@@ -989,7 +962,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/native/nexus_undo.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/native/nexus_undo.py",
       "loc": 450,
       "syntax_ok": true,
       "compile_ok": true,
@@ -1041,7 +1013,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/native/nexus_unlocker.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/native/nexus_unlocker.py",
       "loc": 303,
       "syntax_ok": true,
       "compile_ok": true,
@@ -1061,7 +1032,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/native/par2_recovery.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/native/par2_recovery.py",
       "loc": 180,
       "syntax_ok": true,
       "compile_ok": true,
@@ -1089,7 +1059,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/native/usn_journal_scanner.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/native/usn_journal_scanner.py",
       "loc": 155,
       "syntax_ok": true,
       "compile_ok": true,
@@ -1113,7 +1082,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/NexusExplorer/__init__.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/__init__.py",
       "loc": 3,
       "syntax_ok": true,
       "compile_ok": true,
@@ -1124,7 +1092,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/NexusExplorer/native/__init__.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/native/__init__.py",
       "loc": 12,
       "syntax_ok": true,
       "compile_ok": true,
@@ -1135,7 +1102,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/NexusExplorer/native/binary_differ.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/native/binary_differ.py",
       "loc": 191,
       "syntax_ok": true,
       "compile_ok": true,
@@ -1159,7 +1125,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/NexusExplorer/native/file_signature_sniffer.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/native/file_signature_sniffer.py",
       "loc": 222,
       "syntax_ok": true,
       "compile_ok": true,
@@ -1183,7 +1148,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/NexusExplorer/native/image_optimizer.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/native/image_optimizer.py",
       "loc": 199,
       "syntax_ok": true,
       "compile_ok": true,
@@ -1207,7 +1171,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/NexusExplorer/native/nexus_ads_manager.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/native/nexus_ads_manager.py",
       "loc": 224,
       "syntax_ok": true,
       "compile_ok": true,
@@ -1227,7 +1190,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/NexusExplorer/native/nexus_archive.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/native/nexus_archive.py",
       "loc": 875,
       "syntax_ok": true,
       "compile_ok": true,
@@ -1273,7 +1235,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/NexusExplorer/native/nexus_archive_manager.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/native/nexus_archive_manager.py",
       "loc": 354,
       "syntax_ok": true,
       "compile_ok": true,
@@ -1305,7 +1266,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/NexusExplorer/native/nexus_batch_renamer.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/native/nexus_batch_renamer.py",
       "loc": 441,
       "syntax_ok": true,
       "compile_ok": true,
@@ -1333,7 +1293,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/NexusExplorer/native/nexus_cloud.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/native/nexus_cloud.py",
       "loc": 1382,
       "syntax_ok": true,
       "compile_ok": true,
@@ -1387,7 +1346,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/NexusExplorer/native/nexus_content_search.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/native/nexus_content_search.py",
       "loc": 495,
       "syntax_ok": true,
       "compile_ok": true,
@@ -1418,7 +1376,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/NexusExplorer/native/nexus_core.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/native/nexus_core.py",
       "loc": 1642,
       "syntax_ok": true,
       "compile_ok": true,
@@ -1474,7 +1431,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/NexusExplorer/native/nexus_dir_diff.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/native/nexus_dir_diff.py",
       "loc": 377,
       "syntax_ok": true,
       "compile_ok": true,
@@ -1506,7 +1462,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/NexusExplorer/native/nexus_explorer.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/native/nexus_explorer.py",
       "loc": 9513,
       "syntax_ok": true,
       "compile_ok": true,
@@ -1674,7 +1629,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/NexusExplorer/native/nexus_fast_copier.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/native/nexus_fast_copier.py",
       "loc": 305,
       "syntax_ok": true,
       "compile_ok": true,
@@ -1702,7 +1656,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/NexusExplorer/native/nexus_ffi.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/native/nexus_ffi.py",
       "loc": 686,
       "syntax_ok": true,
       "compile_ok": true,
@@ -1732,7 +1685,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/NexusExplorer/native/nexus_file_splitter.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/native/nexus_file_splitter.py",
       "loc": 302,
       "syntax_ok": true,
       "compile_ok": true,
@@ -1764,7 +1716,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/NexusExplorer/native/nexus_folder_tree.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/native/nexus_folder_tree.py",
       "loc": 342,
       "syntax_ok": true,
       "compile_ok": true,
@@ -1784,7 +1735,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/NexusExplorer/native/nexus_hash_tool.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/native/nexus_hash_tool.py",
       "loc": 483,
       "syntax_ok": true,
       "compile_ok": true,
@@ -1812,7 +1762,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/NexusExplorer/native/nexus_icons.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/native/nexus_icons.py",
       "loc": 1742,
       "syntax_ok": true,
       "compile_ok": true,
@@ -1834,7 +1783,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/NexusExplorer/native/nexus_indexer.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/native/nexus_indexer.py",
       "loc": 853,
       "syntax_ok": true,
       "compile_ok": true,
@@ -1874,7 +1822,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/NexusExplorer/native/nexus_links_manager.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/native/nexus_links_manager.py",
       "loc": 372,
       "syntax_ok": true,
       "compile_ok": true,
@@ -1902,7 +1849,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/NexusExplorer/native/nexus_native_app.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/native/nexus_native_app.py",
       "loc": 75,
       "syntax_ok": true,
       "compile_ok": true,
@@ -1915,7 +1861,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/NexusExplorer/native/nexus_network.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/native/nexus_network.py",
       "loc": 1027,
       "syntax_ok": true,
       "compile_ok": true,
@@ -1970,7 +1915,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/NexusExplorer/native/nexus_plugins.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/native/nexus_plugins.py",
       "loc": 978,
       "syntax_ok": true,
       "compile_ok": true,
@@ -2030,7 +1974,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/NexusExplorer/native/nexus_timestamp_touch.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/native/nexus_timestamp_touch.py",
       "loc": 324,
       "syntax_ok": true,
       "compile_ok": true,
@@ -2058,7 +2001,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/NexusExplorer/native/nexus_transfer_monitor.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/native/nexus_transfer_monitor.py",
       "loc": 372,
       "syntax_ok": true,
       "compile_ok": true,
@@ -2078,7 +2020,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/NexusExplorer/native/nexus_transfer_queue.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/native/nexus_transfer_queue.py",
       "loc": 806,
       "syntax_ok": true,
       "compile_ok": true,
@@ -2105,7 +2046,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/NexusExplorer/native/nexus_undo.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/native/nexus_undo.py",
       "loc": 450,
       "syntax_ok": true,
       "compile_ok": true,
@@ -2157,7 +2097,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/NexusExplorer/native/nexus_unlocker.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/native/nexus_unlocker.py",
       "loc": 303,
       "syntax_ok": true,
       "compile_ok": true,
@@ -2177,7 +2116,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/NexusExplorer/native/par2_recovery.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/native/par2_recovery.py",
       "loc": 180,
       "syntax_ok": true,
       "compile_ok": true,
@@ -2205,7 +2143,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/NexusExplorer/native/usn_journal_scanner.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/native/usn_journal_scanner.py",
       "loc": 155,
       "syntax_ok": true,
       "compile_ok": true,
@@ -2229,7 +2166,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/NexusExplorer/test_explorer.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/test_explorer.py",
       "loc": 381,
       "syntax_ok": true,
       "compile_ok": true,
@@ -2242,7 +2178,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/NexusExplorer/tests/benchmarks.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/tests/benchmarks.py",
       "loc": 372,
       "syntax_ok": true,
       "compile_ok": true,
@@ -2274,7 +2209,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/NexusExplorer/tests/native/test_ffi_bridge.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/tests/native/test_ffi_bridge.py",
       "loc": 193,
       "syntax_ok": true,
       "compile_ok": true,
@@ -2300,7 +2234,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/NexusExplorer/tests/native/test_journal.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/tests/native/test_journal.py",
       "loc": 139,
       "syntax_ok": true,
       "compile_ok": true,
@@ -2317,7 +2250,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/NexusExplorer/tests/native/test_mouse_interactions.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/tests/native/test_mouse_interactions.py",
       "loc": 217,
       "syntax_ok": true,
       "compile_ok": true,
@@ -2345,7 +2277,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/NexusExplorer/tests/native/test_nested_creation.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/tests/native/test_nested_creation.py",
       "loc": 176,
       "syntax_ok": true,
       "compile_ok": true,
@@ -2365,7 +2296,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/NexusExplorer/tests/native/test_stage0.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/tests/native/test_stage0.py",
       "loc": 147,
       "syntax_ok": true,
       "compile_ok": true,
@@ -2391,7 +2321,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/NexusExplorer/tests/native/test_transfer_monitor.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/tests/native/test_transfer_monitor.py",
       "loc": 201,
       "syntax_ok": true,
       "compile_ok": true,
@@ -2408,7 +2337,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/NexusExplorer/tests/native/test_transfers_ffi.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/tests/native/test_transfers_ffi.py",
       "loc": 243,
       "syntax_ok": true,
       "compile_ok": true,
@@ -2435,7 +2363,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/NexusExplorer/tests/native/test_transport_parity.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/tests/native/test_transport_parity.py",
       "loc": 271,
       "syntax_ok": true,
       "compile_ok": true,
@@ -2455,7 +2382,6 @@
     },
     {
       "path": "dist/CortexCleaner/_internal/NexusExplorer/tests/native/test_ui_state.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/dist/CortexCleaner/_internal/NexusExplorer/tests/native/test_ui_state.py",
       "loc": 146,
       "syntax_ok": true,
       "compile_ok": true,
@@ -2477,7 +2403,6 @@
     },
     {
       "path": "run_gui.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/run_gui.py",
       "loc": 119,
       "syntax_ok": true,
       "compile_ok": true,
@@ -2495,7 +2420,6 @@
     },
     {
       "path": "scripts/audit_all_page_functions.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/scripts/audit_all_page_functions.py",
       "loc": 91,
       "syntax_ok": true,
       "compile_ok": true,
@@ -2508,7 +2432,6 @@
     },
     {
       "path": "scripts/audit_imports.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/scripts/audit_imports.py",
       "loc": 144,
       "syntax_ok": true,
       "compile_ok": true,
@@ -2522,7 +2445,6 @@
     },
     {
       "path": "scripts/audit_pages.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/scripts/audit_pages.py",
       "loc": 27,
       "syntax_ok": true,
       "compile_ok": true,
@@ -2533,7 +2455,6 @@
     },
     {
       "path": "scripts/audit_system_tools.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/scripts/audit_system_tools.py",
       "loc": 23,
       "syntax_ok": true,
       "compile_ok": true,
@@ -2544,7 +2465,6 @@
     },
     {
       "path": "scripts/build_exe.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/scripts/build_exe.py",
       "loc": 96,
       "syntax_ok": true,
       "compile_ok": true,
@@ -2558,8 +2478,7 @@
     },
     {
       "path": "scripts/check_all_structure_files.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/scripts/check_all_structure_files.py",
-      "loc": 187,
+      "loc": 186,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -2573,7 +2492,6 @@
     },
     {
       "path": "scripts/check_hardcoded_paths.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/scripts/check_hardcoded_paths.py",
       "loc": 29,
       "syntax_ok": true,
       "compile_ok": true,
@@ -2586,7 +2504,6 @@
     },
     {
       "path": "scripts/check_lint_issues.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/scripts/check_lint_issues.py",
       "loc": 88,
       "syntax_ok": true,
       "compile_ok": true,
@@ -2599,7 +2516,6 @@
     },
     {
       "path": "scripts/deep_codebase_inspection.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/scripts/deep_codebase_inspection.py",
       "loc": 174,
       "syntax_ok": true,
       "compile_ok": true,
@@ -2613,7 +2529,6 @@
     },
     {
       "path": "scripts/deep_inspect_placeholders.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/scripts/deep_inspect_placeholders.py",
       "loc": 56,
       "syntax_ok": true,
       "compile_ok": true,
@@ -2624,7 +2539,6 @@
     },
     {
       "path": "scripts/generate_app_icon.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/scripts/generate_app_icon.py",
       "loc": 114,
       "syntax_ok": true,
       "compile_ok": true,
@@ -2638,7 +2552,6 @@
     },
     {
       "path": "scripts/generate_complete_features.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/scripts/generate_complete_features.py",
       "loc": 218,
       "syntax_ok": true,
       "compile_ok": true,
@@ -2651,7 +2564,6 @@
     },
     {
       "path": "scripts/generate_feature_directory.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/scripts/generate_feature_directory.py",
       "loc": 55,
       "syntax_ok": true,
       "compile_ok": true,
@@ -2662,7 +2574,6 @@
     },
     {
       "path": "scripts/generate_master_inventory_and_docs.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/scripts/generate_master_inventory_and_docs.py",
       "loc": 443,
       "syntax_ok": true,
       "compile_ok": true,
@@ -2681,7 +2592,6 @@
     },
     {
       "path": "scripts/generate_program_checklist.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/scripts/generate_program_checklist.py",
       "loc": 130,
       "syntax_ok": true,
       "compile_ok": true,
@@ -2694,7 +2604,6 @@
     },
     {
       "path": "scripts/generate_sbom.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/scripts/generate_sbom.py",
       "loc": 121,
       "syntax_ok": true,
       "compile_ok": true,
@@ -2709,7 +2618,6 @@
     },
     {
       "path": "scripts/installer.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/scripts/installer.py",
       "loc": 654,
       "syntax_ok": true,
       "compile_ok": true,
@@ -2734,7 +2642,6 @@
     },
     {
       "path": "scripts/run_all_tests.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/scripts/run_all_tests.py",
       "loc": 48,
       "syntax_ok": true,
       "compile_ok": true,
@@ -2750,7 +2657,6 @@
     },
     {
       "path": "scripts/scan_codebase.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/scripts/scan_codebase.py",
       "loc": 40,
       "syntax_ok": true,
       "compile_ok": true,
@@ -2761,7 +2667,6 @@
     },
     {
       "path": "scripts/stress_test_gui_all_actions.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/scripts/stress_test_gui_all_actions.py",
       "loc": 215,
       "syntax_ok": true,
       "compile_ok": true,
@@ -2775,7 +2680,6 @@
     },
     {
       "path": "scripts/test_all_pages.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/scripts/test_all_pages.py",
       "loc": 40,
       "syntax_ok": true,
       "compile_ok": true,
@@ -2786,7 +2690,6 @@
     },
     {
       "path": "scripts/test_navigation.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/scripts/test_navigation.py",
       "loc": 32,
       "syntax_ok": true,
       "compile_ok": true,
@@ -2797,7 +2700,6 @@
     },
     {
       "path": "scripts/update_structure_txt.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/scripts/update_structure_txt.py",
       "loc": 84,
       "syntax_ok": true,
       "compile_ok": true,
@@ -2811,7 +2713,6 @@
     },
     {
       "path": "scripts/verify_modules.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/scripts/verify_modules.py",
       "loc": 96,
       "syntax_ok": true,
       "compile_ok": true,
@@ -2822,7 +2723,6 @@
     },
     {
       "path": "scripts/verify_production_readiness.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/scripts/verify_production_readiness.py",
       "loc": 29,
       "syntax_ok": true,
       "compile_ok": true,
@@ -2833,7 +2733,6 @@
     },
     {
       "path": "src/cortex_unified/__init__.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/__init__.py",
       "loc": 89,
       "syntax_ok": true,
       "compile_ok": true,
@@ -2844,7 +2743,6 @@
     },
     {
       "path": "src/cortex_unified/__main__.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/__main__.py",
       "loc": 49,
       "syntax_ok": true,
       "compile_ok": true,
@@ -2857,7 +2755,6 @@
     },
     {
       "path": "src/cortex_unified/accessibility/__init__.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/accessibility/__init__.py",
       "loc": 53,
       "syntax_ok": true,
       "compile_ok": true,
@@ -2871,7 +2768,6 @@
     },
     {
       "path": "src/cortex_unified/accessibility/keyboard_handler.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/accessibility/keyboard_handler.py",
       "loc": 375,
       "syntax_ok": true,
       "compile_ok": true,
@@ -2887,7 +2783,6 @@
     },
     {
       "path": "src/cortex_unified/accessibility/screen_reader.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/accessibility/screen_reader.py",
       "loc": 436,
       "syntax_ok": true,
       "compile_ok": true,
@@ -2903,7 +2798,6 @@
     },
     {
       "path": "src/cortex_unified/accessibility/themes.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/accessibility/themes.py",
       "loc": 236,
       "syntax_ok": true,
       "compile_ok": true,
@@ -2922,7 +2816,6 @@
     },
     {
       "path": "src/cortex_unified/analyzers/__init__.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/analyzers/__init__.py",
       "loc": 110,
       "syntax_ok": true,
       "compile_ok": true,
@@ -2933,7 +2826,6 @@
     },
     {
       "path": "src/cortex_unified/analyzers/advanced_disk_analyzer.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/analyzers/advanced_disk_analyzer.py",
       "loc": 803,
       "syntax_ok": true,
       "compile_ok": true,
@@ -2975,7 +2867,6 @@
     },
     {
       "path": "src/cortex_unified/analyzers/advanced_shredder.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/analyzers/advanced_shredder.py",
       "loc": 266,
       "syntax_ok": true,
       "compile_ok": true,
@@ -2995,7 +2886,6 @@
     },
     {
       "path": "src/cortex_unified/analyzers/advanced_uninstaller.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/analyzers/advanced_uninstaller.py",
       "loc": 1229,
       "syntax_ok": true,
       "compile_ok": true,
@@ -3023,7 +2913,6 @@
     },
     {
       "path": "src/cortex_unified/analyzers/audio_duplicate_finder.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/analyzers/audio_duplicate_finder.py",
       "loc": 869,
       "syntax_ok": true,
       "compile_ok": true,
@@ -3042,7 +2931,6 @@
     },
     {
       "path": "src/cortex_unified/analyzers/broken_link_detector.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/analyzers/broken_link_detector.py",
       "loc": 1184,
       "syntax_ok": true,
       "compile_ok": true,
@@ -3084,8 +2972,7 @@
     },
     {
       "path": "src/cortex_unified/analyzers/cache_cleaner.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/analyzers/cache_cleaner.py",
-      "loc": 458,
+      "loc": 456,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -3100,7 +2987,6 @@
     },
     {
       "path": "src/cortex_unified/analyzers/cloud_storage_analyzer.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/analyzers/cloud_storage_analyzer.py",
       "loc": 1484,
       "syntax_ok": true,
       "compile_ok": true,
@@ -3156,7 +3042,6 @@
     },
     {
       "path": "src/cortex_unified/analyzers/content_defined_chunker.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/analyzers/content_defined_chunker.py",
       "loc": 712,
       "syntax_ok": true,
       "compile_ok": true,
@@ -3190,7 +3075,6 @@
     },
     {
       "path": "src/cortex_unified/analyzers/czkawka_tools.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/analyzers/czkawka_tools.py",
       "loc": 878,
       "syntax_ok": true,
       "compile_ok": true,
@@ -3250,7 +3134,6 @@
     },
     {
       "path": "src/cortex_unified/analyzers/deep_cleaner.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/analyzers/deep_cleaner.py",
       "loc": 496,
       "syntax_ok": true,
       "compile_ok": true,
@@ -3268,7 +3151,6 @@
     },
     {
       "path": "src/cortex_unified/analyzers/disk_analyzer.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/analyzers/disk_analyzer.py",
       "loc": 282,
       "syntax_ok": true,
       "compile_ok": true,
@@ -3284,7 +3166,6 @@
     },
     {
       "path": "src/cortex_unified/analyzers/docker_cleaner.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/analyzers/docker_cleaner.py",
       "loc": 667,
       "syntax_ok": true,
       "compile_ok": true,
@@ -3320,7 +3201,6 @@
     },
     {
       "path": "src/cortex_unified/analyzers/duplicate_finder.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/analyzers/duplicate_finder.py",
       "loc": 598,
       "syntax_ok": true,
       "compile_ok": true,
@@ -3338,7 +3218,6 @@
     },
     {
       "path": "src/cortex_unified/analyzers/duplicate_folder_finder.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/analyzers/duplicate_folder_finder.py",
       "loc": 248,
       "syntax_ok": true,
       "compile_ok": true,
@@ -3354,7 +3233,6 @@
     },
     {
       "path": "src/cortex_unified/analyzers/file_shredder.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/analyzers/file_shredder.py",
       "loc": 170,
       "syntax_ok": true,
       "compile_ok": true,
@@ -3370,7 +3248,6 @@
     },
     {
       "path": "src/cortex_unified/analyzers/fuzzy_finder.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/analyzers/fuzzy_finder.py",
       "loc": 600,
       "syntax_ok": true,
       "compile_ok": true,
@@ -3390,7 +3267,6 @@
     },
     {
       "path": "src/cortex_unified/analyzers/large_file_finder.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/analyzers/large_file_finder.py",
       "loc": 223,
       "syntax_ok": true,
       "compile_ok": true,
@@ -3408,7 +3284,6 @@
     },
     {
       "path": "src/cortex_unified/analyzers/leftover_detector.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/analyzers/leftover_detector.py",
       "loc": 1069,
       "syntax_ok": true,
       "compile_ok": true,
@@ -3444,7 +3319,6 @@
     },
     {
       "path": "src/cortex_unified/analyzers/near_duplicate_finder.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/analyzers/near_duplicate_finder.py",
       "loc": 627,
       "syntax_ok": true,
       "compile_ok": true,
@@ -3464,7 +3338,6 @@
     },
     {
       "path": "src/cortex_unified/analyzers/old_file_cleaner.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/analyzers/old_file_cleaner.py",
       "loc": 167,
       "syntax_ok": true,
       "compile_ok": true,
@@ -3480,8 +3353,7 @@
     },
     {
       "path": "src/cortex_unified/analyzers/package_manager_cleaner.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/analyzers/package_manager_cleaner.py",
-      "loc": 1612,
+      "loc": 1611,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -3512,7 +3384,6 @@
     },
     {
       "path": "src/cortex_unified/analyzers/perceptual_duplicate_finder.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/analyzers/perceptual_duplicate_finder.py",
       "loc": 677,
       "syntax_ok": true,
       "compile_ok": true,
@@ -3535,7 +3406,6 @@
     },
     {
       "path": "src/cortex_unified/analyzers/portable_manager.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/analyzers/portable_manager.py",
       "loc": 472,
       "syntax_ok": true,
       "compile_ok": true,
@@ -3555,7 +3425,6 @@
     },
     {
       "path": "src/cortex_unified/analyzers/privacy_cleaner.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/analyzers/privacy_cleaner.py",
       "loc": 372,
       "syntax_ok": true,
       "compile_ok": true,
@@ -3571,8 +3440,7 @@
     },
     {
       "path": "src/cortex_unified/analyzers/project_cache_scanner.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/analyzers/project_cache_scanner.py",
-      "loc": 508,
+      "loc": 502,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -3587,8 +3455,7 @@
     },
     {
       "path": "src/cortex_unified/analyzers/registry_cleaner_ai.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/analyzers/registry_cleaner_ai.py",
-      "loc": 1503,
+      "loc": 1506,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -3619,7 +3486,6 @@
     },
     {
       "path": "src/cortex_unified/analyzers/residual_cleaner.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/analyzers/residual_cleaner.py",
       "loc": 183,
       "syntax_ok": true,
       "compile_ok": true,
@@ -3635,7 +3501,6 @@
     },
     {
       "path": "src/cortex_unified/analyzers/residual_hunter.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/analyzers/residual_hunter.py",
       "loc": 5,
       "syntax_ok": true,
       "compile_ok": true,
@@ -3646,7 +3511,6 @@
     },
     {
       "path": "src/cortex_unified/analyzers/video_duplicate_finder.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/analyzers/video_duplicate_finder.py",
       "loc": 763,
       "syntax_ok": true,
       "compile_ok": true,
@@ -3665,7 +3529,6 @@
     },
     {
       "path": "src/cortex_unified/cli/__init__.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/cli/__init__.py",
       "loc": 3,
       "syntax_ok": true,
       "compile_ok": true,
@@ -3676,7 +3539,6 @@
     },
     {
       "path": "src/cortex_unified/cli/__main__.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/cli/__main__.py",
       "loc": 8,
       "syntax_ok": true,
       "compile_ok": true,
@@ -3687,7 +3549,6 @@
     },
     {
       "path": "src/cortex_unified/cli/cli.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/cli/cli.py",
       "loc": 2185,
       "syntax_ok": true,
       "compile_ok": true,
@@ -3724,7 +3585,6 @@
     },
     {
       "path": "src/cortex_unified/compat_winreg.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/compat_winreg.py",
       "loc": 70,
       "syntax_ok": true,
       "compile_ok": true,
@@ -3735,7 +3595,6 @@
     },
     {
       "path": "src/cortex_unified/core/__init__.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/core/__init__.py",
       "loc": 1,
       "syntax_ok": true,
       "compile_ok": true,
@@ -3746,7 +3605,6 @@
     },
     {
       "path": "src/cortex_unified/core/background_agent.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/core/background_agent.py",
       "loc": 112,
       "syntax_ok": true,
       "compile_ok": true,
@@ -3762,7 +3620,6 @@
     },
     {
       "path": "src/cortex_unified/core/config.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/core/config.py",
       "loc": 276,
       "syntax_ok": true,
       "compile_ok": true,
@@ -3778,7 +3635,6 @@
     },
     {
       "path": "src/cortex_unified/core/config_v2.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/core/config_v2.py",
       "loc": 634,
       "syntax_ok": true,
       "compile_ok": true,
@@ -3824,7 +3680,6 @@
     },
     {
       "path": "src/cortex_unified/core/database.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/core/database.py",
       "loc": 809,
       "syntax_ok": true,
       "compile_ok": true,
@@ -3867,7 +3722,6 @@
     },
     {
       "path": "src/cortex_unified/core/deleter.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/core/deleter.py",
       "loc": 220,
       "syntax_ok": true,
       "compile_ok": true,
@@ -3883,7 +3737,6 @@
     },
     {
       "path": "src/cortex_unified/core/logging_setup.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/core/logging_setup.py",
       "loc": 440,
       "syntax_ok": true,
       "compile_ok": true,
@@ -3912,7 +3765,6 @@
     },
     {
       "path": "src/cortex_unified/core/proc.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/core/proc.py",
       "loc": 310,
       "syntax_ok": true,
       "compile_ok": true,
@@ -3932,7 +3784,6 @@
     },
     {
       "path": "src/cortex_unified/core/scanner.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/core/scanner.py",
       "loc": 483,
       "syntax_ok": true,
       "compile_ok": true,
@@ -3948,7 +3799,6 @@
     },
     {
       "path": "src/cortex_unified/core/security.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/core/security.py",
       "loc": 345,
       "syntax_ok": true,
       "compile_ok": true,
@@ -3966,7 +3816,6 @@
     },
     {
       "path": "src/cortex_unified/core/smart_scanner.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/core/smart_scanner.py",
       "loc": 315,
       "syntax_ok": true,
       "compile_ok": true,
@@ -3986,7 +3835,6 @@
     },
     {
       "path": "src/cortex_unified/core/smart_suggest.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/core/smart_suggest.py",
       "loc": 313,
       "syntax_ok": true,
       "compile_ok": true,
@@ -4004,7 +3852,6 @@
     },
     {
       "path": "src/cortex_unified/core/temp_cleaner.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/core/temp_cleaner.py",
       "loc": 427,
       "syntax_ok": true,
       "compile_ok": true,
@@ -4024,7 +3871,6 @@
     },
     {
       "path": "src/cortex_unified/core/utils.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/core/utils.py",
       "loc": 860,
       "syntax_ok": true,
       "compile_ok": true,
@@ -4091,7 +3937,6 @@
     },
     {
       "path": "src/cortex_unified/debug/__init__.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/debug/__init__.py",
       "loc": 15,
       "syntax_ok": true,
       "compile_ok": true,
@@ -4102,7 +3947,6 @@
     },
     {
       "path": "src/cortex_unified/debug/__main__.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/debug/__main__.py",
       "loc": 14,
       "syntax_ok": true,
       "compile_ok": true,
@@ -4113,7 +3957,6 @@
     },
     {
       "path": "src/cortex_unified/debug/runner.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/debug/runner.py",
       "loc": 918,
       "syntax_ok": true,
       "compile_ok": true,
@@ -4149,7 +3992,6 @@
     },
     {
       "path": "src/cortex_unified/engine/__init__.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/engine/__init__.py",
       "loc": 74,
       "syntax_ok": true,
       "compile_ok": true,
@@ -4160,7 +4002,6 @@
     },
     {
       "path": "src/cortex_unified/engine/__main__.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/engine/__main__.py",
       "loc": 8,
       "syntax_ok": true,
       "compile_ok": true,
@@ -4171,7 +4012,6 @@
     },
     {
       "path": "src/cortex_unified/engine/categories.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/engine/categories.py",
       "loc": 980,
       "syntax_ok": true,
       "compile_ok": true,
@@ -4194,7 +4034,6 @@
     },
     {
       "path": "src/cortex_unified/engine/cli.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/engine/cli.py",
       "loc": 721,
       "syntax_ok": true,
       "compile_ok": true,
@@ -4205,7 +4044,6 @@
     },
     {
       "path": "src/cortex_unified/engine/fastwalk.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/engine/fastwalk.py",
       "loc": 402,
       "syntax_ok": true,
       "compile_ok": true,
@@ -4225,7 +4063,6 @@
     },
     {
       "path": "src/cortex_unified/engine/guard.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/engine/guard.py",
       "loc": 204,
       "syntax_ok": true,
       "compile_ok": true,
@@ -4245,7 +4082,6 @@
     },
     {
       "path": "src/cortex_unified/engine/hashing.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/engine/hashing.py",
       "loc": 194,
       "syntax_ok": true,
       "compile_ok": true,
@@ -4263,7 +4099,6 @@
     },
     {
       "path": "src/cortex_unified/engine/models.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/engine/models.py",
       "loc": 274,
       "syntax_ok": true,
       "compile_ok": true,
@@ -4299,7 +4134,6 @@
     },
     {
       "path": "src/cortex_unified/engine/secure_delete.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/engine/secure_delete.py",
       "loc": 706,
       "syntax_ok": true,
       "compile_ok": true,
@@ -4321,7 +4155,6 @@
     },
     {
       "path": "src/cortex_unified/engine/service.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/engine/service.py",
       "loc": 807,
       "syntax_ok": true,
       "compile_ok": true,
@@ -4345,7 +4178,6 @@
     },
     {
       "path": "src/cortex_unified/engine/storage.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/engine/storage.py",
       "loc": 296,
       "syntax_ok": true,
       "compile_ok": true,
@@ -4367,7 +4199,6 @@
     },
     {
       "path": "src/cortex_unified/engine/winattrs.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/engine/winattrs.py",
       "loc": 195,
       "syntax_ok": true,
       "compile_ok": true,
@@ -4389,7 +4220,6 @@
     },
     {
       "path": "src/cortex_unified/explorer/__init__.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/explorer/__init__.py",
       "loc": 75,
       "syntax_ok": true,
       "compile_ok": true,
@@ -4400,7 +4230,6 @@
     },
     {
       "path": "src/cortex_unified/explorer/archive.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/explorer/archive.py",
       "loc": 19,
       "syntax_ok": true,
       "compile_ok": true,
@@ -4411,7 +4240,6 @@
     },
     {
       "path": "src/cortex_unified/explorer/cloud.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/explorer/cloud.py",
       "loc": 56,
       "syntax_ok": true,
       "compile_ok": true,
@@ -4422,7 +4250,6 @@
     },
     {
       "path": "src/cortex_unified/explorer/content_search.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/explorer/content_search.py",
       "loc": 21,
       "syntax_ok": true,
       "compile_ok": true,
@@ -4433,7 +4260,6 @@
     },
     {
       "path": "src/cortex_unified/explorer/core.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/explorer/core.py",
       "loc": 47,
       "syntax_ok": true,
       "compile_ok": true,
@@ -4444,7 +4270,6 @@
     },
     {
       "path": "src/cortex_unified/explorer/ffi.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/explorer/ffi.py",
       "loc": 21,
       "syntax_ok": true,
       "compile_ok": true,
@@ -4455,7 +4280,6 @@
     },
     {
       "path": "src/cortex_unified/explorer/folder_tree.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/explorer/folder_tree.py",
       "loc": 21,
       "syntax_ok": true,
       "compile_ok": true,
@@ -4466,7 +4290,6 @@
     },
     {
       "path": "src/cortex_unified/explorer/icons.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/explorer/icons.py",
       "loc": 40,
       "syntax_ok": true,
       "compile_ok": true,
@@ -4477,7 +4300,6 @@
     },
     {
       "path": "src/cortex_unified/explorer/indexer.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/explorer/indexer.py",
       "loc": 21,
       "syntax_ok": true,
       "compile_ok": true,
@@ -4488,7 +4310,6 @@
     },
     {
       "path": "src/cortex_unified/explorer/network.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/explorer/network.py",
       "loc": 47,
       "syntax_ok": true,
       "compile_ok": true,
@@ -4499,7 +4320,6 @@
     },
     {
       "path": "src/cortex_unified/explorer/plugins.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/explorer/plugins.py",
       "loc": 21,
       "syntax_ok": true,
       "compile_ok": true,
@@ -4510,7 +4330,6 @@
     },
     {
       "path": "src/cortex_unified/explorer/transfers.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/explorer/transfers.py",
       "loc": 32,
       "syntax_ok": true,
       "compile_ok": true,
@@ -4521,7 +4340,6 @@
     },
     {
       "path": "src/cortex_unified/explorer/undo.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/explorer/undo.py",
       "loc": 34,
       "syntax_ok": true,
       "compile_ok": true,
@@ -4532,7 +4350,6 @@
     },
     {
       "path": "src/cortex_unified/explorer/widget.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/explorer/widget.py",
       "loc": 56,
       "syntax_ok": true,
       "compile_ok": true,
@@ -4543,7 +4360,6 @@
     },
     {
       "path": "src/cortex_unified/i18n/__init__.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/i18n/__init__.py",
       "loc": 17,
       "syntax_ok": true,
       "compile_ok": true,
@@ -4554,7 +4370,6 @@
     },
     {
       "path": "src/cortex_unified/licensing/__init__.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/licensing/__init__.py",
       "loc": 42,
       "syntax_ok": true,
       "compile_ok": true,
@@ -4565,7 +4380,6 @@
     },
     {
       "path": "src/cortex_unified/licensing/fingerprint.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/licensing/fingerprint.py",
       "loc": 163,
       "syntax_ok": true,
       "compile_ok": true,
@@ -4581,7 +4395,6 @@
     },
     {
       "path": "src/cortex_unified/licensing/gating.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/licensing/gating.py",
       "loc": 167,
       "syntax_ok": true,
       "compile_ok": true,
@@ -4604,7 +4417,6 @@
     },
     {
       "path": "src/cortex_unified/licensing/license_manager.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/licensing/license_manager.py",
       "loc": 492,
       "syntax_ok": true,
       "compile_ok": true,
@@ -4632,7 +4444,6 @@
     },
     {
       "path": "src/cortex_unified/licensing/tiers.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/licensing/tiers.py",
       "loc": 132,
       "syntax_ok": true,
       "compile_ok": true,
@@ -4654,7 +4465,6 @@
     },
     {
       "path": "src/cortex_unified/performance/__init__.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/performance/__init__.py",
       "loc": 18,
       "syntax_ok": true,
       "compile_ok": true,
@@ -4665,7 +4475,6 @@
     },
     {
       "path": "src/cortex_unified/performance/multi_drive_scanner.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/performance/multi_drive_scanner.py",
       "loc": 1599,
       "syntax_ok": true,
       "compile_ok": true,
@@ -4709,7 +4518,6 @@
     },
     {
       "path": "src/cortex_unified/performance/optimization.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/performance/optimization.py",
       "loc": 453,
       "syntax_ok": true,
       "compile_ok": true,
@@ -4729,7 +4537,6 @@
     },
     {
       "path": "src/cortex_unified/performance/profiler.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/performance/profiler.py",
       "loc": 168,
       "syntax_ok": true,
       "compile_ok": true,
@@ -4749,7 +4556,6 @@
     },
     {
       "path": "src/cortex_unified/performance/resource_monitor.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/performance/resource_monitor.py",
       "loc": 377,
       "syntax_ok": true,
       "compile_ok": true,
@@ -4769,7 +4575,6 @@
     },
     {
       "path": "src/cortex_unified/performance/resource_throttler.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/performance/resource_throttler.py",
       "loc": 353,
       "syntax_ok": true,
       "compile_ok": true,
@@ -4789,7 +4594,6 @@
     },
     {
       "path": "src/cortex_unified/performance/scan_manager.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/performance/scan_manager.py",
       "loc": 376,
       "syntax_ok": true,
       "compile_ok": true,
@@ -4813,7 +4617,6 @@
     },
     {
       "path": "src/cortex_unified/performance/settings_integration.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/performance/settings_integration.py",
       "loc": 246,
       "syntax_ok": true,
       "compile_ok": true,
@@ -4835,7 +4638,6 @@
     },
     {
       "path": "src/cortex_unified/reports/__init__.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/reports/__init__.py",
       "loc": 15,
       "syntax_ok": true,
       "compile_ok": true,
@@ -4846,7 +4648,6 @@
     },
     {
       "path": "src/cortex_unified/reports/reports.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/reports/reports.py",
       "loc": 307,
       "syntax_ok": true,
       "compile_ok": true,
@@ -4862,7 +4663,6 @@
     },
     {
       "path": "src/cortex_unified/reports/restore_manager.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/reports/restore_manager.py",
       "loc": 311,
       "syntax_ok": true,
       "compile_ok": true,
@@ -4878,7 +4678,6 @@
     },
     {
       "path": "src/cortex_unified/scheduler/__init__.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/scheduler/__init__.py",
       "loc": 15,
       "syntax_ok": true,
       "compile_ok": true,
@@ -4889,7 +4688,6 @@
     },
     {
       "path": "src/cortex_unified/scheduler/auto_clean_rules.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/scheduler/auto_clean_rules.py",
       "loc": 387,
       "syntax_ok": true,
       "compile_ok": true,
@@ -4905,7 +4703,6 @@
     },
     {
       "path": "src/cortex_unified/scheduler/scheduler.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/scheduler/scheduler.py",
       "loc": 433,
       "syntax_ok": true,
       "compile_ok": true,
@@ -4921,7 +4718,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/__init__.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/__init__.py",
       "loc": 74,
       "syntax_ok": true,
       "compile_ok": true,
@@ -4932,7 +4728,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/adaptive_sanitizer.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/adaptive_sanitizer.py",
       "loc": 598,
       "syntax_ok": true,
       "compile_ok": true,
@@ -4956,7 +4751,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/ai_telemetry_cleaner.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/ai_telemetry_cleaner.py",
       "loc": 376,
       "syntax_ok": true,
       "compile_ok": true,
@@ -4984,7 +4778,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/app_uninstaller.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/app_uninstaller.py",
       "loc": 214,
       "syntax_ok": true,
       "compile_ok": true,
@@ -5000,7 +4793,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/app_updater.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/app_updater.py",
       "loc": 249,
       "syntax_ok": true,
       "compile_ok": true,
@@ -5020,7 +4812,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/bitlocker_auditor.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/bitlocker_auditor.py",
       "loc": 230,
       "syntax_ok": true,
       "compile_ok": true,
@@ -5044,7 +4835,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/bitrot_scrubber.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/bitrot_scrubber.py",
       "loc": 197,
       "syntax_ok": true,
       "compile_ok": true,
@@ -5072,7 +4862,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/boot_performance.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/boot_performance.py",
       "loc": 273,
       "syntax_ok": true,
       "compile_ok": true,
@@ -5096,7 +4885,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/browser_cleaner.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/browser_cleaner.py",
       "loc": 420,
       "syntax_ok": true,
       "compile_ok": true,
@@ -5116,7 +4904,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/browser_deep_cleaner.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/browser_deep_cleaner.py",
       "loc": 211,
       "syntax_ok": true,
       "compile_ok": true,
@@ -5140,7 +4927,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/browser_extensions.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/browser_extensions.py",
       "loc": 302,
       "syntax_ok": true,
       "compile_ok": true,
@@ -5160,7 +4946,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/checksum_matrix.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/checksum_matrix.py",
       "loc": 310,
       "syntax_ok": true,
       "compile_ok": true,
@@ -5188,7 +4973,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/compact_os.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/compact_os.py",
       "loc": 541,
       "syntax_ok": true,
       "compile_ok": true,
@@ -5212,7 +4996,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/component_store.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/component_store.py",
       "loc": 818,
       "syntax_ok": true,
       "compile_ok": true,
@@ -5244,7 +5027,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/component_store_cleaner.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/component_store_cleaner.py",
       "loc": 420,
       "syntax_ok": true,
       "compile_ok": true,
@@ -5272,7 +5054,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/context_menu_manager.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/context_menu_manager.py",
       "loc": 198,
       "syntax_ok": true,
       "compile_ok": true,
@@ -5296,7 +5077,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/crash_dump_cleaner.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/crash_dump_cleaner.py",
       "loc": 168,
       "syntax_ok": true,
       "compile_ok": true,
@@ -5320,7 +5100,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/defender.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/defender.py",
       "loc": 283,
       "syntax_ok": true,
       "compile_ok": true,
@@ -5340,7 +5119,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/delivery_optimization_cleaner.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/delivery_optimization_cleaner.py",
       "loc": 134,
       "syntax_ok": true,
       "compile_ok": true,
@@ -5364,7 +5142,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/dev_cleaner.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/dev_cleaner.py",
       "loc": 245,
       "syntax_ok": true,
       "compile_ok": true,
@@ -5388,7 +5165,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/dev_drive_optimizer.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/dev_drive_optimizer.py",
       "loc": 206,
       "syntax_ok": true,
       "compile_ok": true,
@@ -5412,7 +5188,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/dev_package_cache_cleaner.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/dev_package_cache_cleaner.py",
       "loc": 264,
       "syntax_ok": true,
       "compile_ok": true,
@@ -5440,7 +5215,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/device_fingerprint.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/device_fingerprint.py",
       "loc": 326,
       "syntax_ok": true,
       "compile_ok": true,
@@ -5462,7 +5236,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/diagnostic_data_manager.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/diagnostic_data_manager.py",
       "loc": 263,
       "syntax_ok": true,
       "compile_ok": true,
@@ -5486,7 +5259,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/directstorage_optimizer.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/directstorage_optimizer.py",
       "loc": 185,
       "syntax_ok": true,
       "compile_ok": true,
@@ -5510,7 +5282,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/disk_benchmark.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/disk_benchmark.py",
       "loc": 198,
       "syntax_ok": true,
       "compile_ok": true,
@@ -5534,7 +5305,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/disk_health.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/disk_health.py",
       "loc": 194,
       "syntax_ok": true,
       "compile_ok": true,
@@ -5554,7 +5324,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/dns_benchmark.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/dns_benchmark.py",
       "loc": 264,
       "syntax_ok": true,
       "compile_ok": true,
@@ -5578,7 +5347,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/drive_optimizer.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/drive_optimizer.py",
       "loc": 234,
       "syntax_ok": true,
       "compile_ok": true,
@@ -5606,7 +5374,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/driver_inventory.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/driver_inventory.py",
       "loc": 187,
       "syntax_ok": true,
       "compile_ok": true,
@@ -5626,7 +5393,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/driver_manager.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/driver_manager.py",
       "loc": 822,
       "syntax_ok": true,
       "compile_ok": true,
@@ -5654,7 +5420,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/driver_store_cleaner.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/driver_store_cleaner.py",
       "loc": 194,
       "syntax_ok": true,
       "compile_ok": true,
@@ -5678,7 +5443,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/env_variable_manager.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/env_variable_manager.py",
       "loc": 276,
       "syntax_ok": true,
       "compile_ok": true,
@@ -5710,7 +5474,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/event_log_cleaner.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/event_log_cleaner.py",
       "loc": 175,
       "syntax_ok": true,
       "compile_ok": true,
@@ -5734,7 +5497,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/event_log_monitor.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/event_log_monitor.py",
       "loc": 154,
       "syntax_ok": true,
       "compile_ok": true,
@@ -5758,7 +5520,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/external_exposure.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/external_exposure.py",
       "loc": 320,
       "syntax_ok": true,
       "compile_ok": true,
@@ -5786,7 +5547,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/firewall_manager.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/firewall_manager.py",
       "loc": 356,
       "syntax_ok": true,
       "compile_ok": true,
@@ -5806,7 +5566,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/font_cache_manager.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/font_cache_manager.py",
       "loc": 190,
       "syntax_ok": true,
       "compile_ok": true,
@@ -5834,7 +5593,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/free_space_wipe.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/free_space_wipe.py",
       "loc": 91,
       "syntax_ok": true,
       "compile_ok": true,
@@ -5854,7 +5612,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/game_mode.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/game_mode.py",
       "loc": 354,
       "syntax_ok": true,
       "compile_ok": true,
@@ -5876,7 +5633,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/health_check.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/health_check.py",
       "loc": 304,
       "syntax_ok": true,
       "compile_ok": true,
@@ -5900,7 +5656,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/hosts_file_manager.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/hosts_file_manager.py",
       "loc": 185,
       "syntax_ok": true,
       "compile_ok": true,
@@ -5924,7 +5679,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/junction_auditor.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/junction_auditor.py",
       "loc": 205,
       "syntax_ok": true,
       "compile_ok": true,
@@ -5948,7 +5702,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/lan_scanner.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/lan_scanner.py",
       "loc": 132,
       "syntax_ok": true,
       "compile_ok": true,
@@ -5968,7 +5721,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/leftover_cleaner.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/leftover_cleaner.py",
       "loc": 1771,
       "syntax_ok": true,
       "compile_ok": true,
@@ -6016,7 +5768,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/load_tester.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/load_tester.py",
       "loc": 543,
       "syntax_ok": true,
       "compile_ok": true,
@@ -6052,7 +5803,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/memory_compression_tuner.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/memory_compression_tuner.py",
       "loc": 179,
       "syntax_ok": true,
       "compile_ok": true,
@@ -6076,7 +5826,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/memory_optimizer.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/memory_optimizer.py",
       "loc": 320,
       "syntax_ok": true,
       "compile_ok": true,
@@ -6107,7 +5856,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/memory_standby_purger.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/memory_standby_purger.py",
       "loc": 234,
       "syntax_ok": true,
       "compile_ok": true,
@@ -6147,7 +5895,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/mft_slack_scrubber.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/mft_slack_scrubber.py",
       "loc": 242,
       "syntax_ok": true,
       "compile_ok": true,
@@ -6171,7 +5918,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/model_cache_manager.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/model_cache_manager.py",
       "loc": 588,
       "syntax_ok": true,
       "compile_ok": true,
@@ -6191,7 +5937,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/network_automation.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/network_automation.py",
       "loc": 225,
       "syntax_ok": true,
       "compile_ok": true,
@@ -6218,7 +5963,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/network_discovery.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/network_discovery.py",
       "loc": 1692,
       "syntax_ok": true,
       "compile_ok": true,
@@ -6246,7 +5990,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/network_inventory.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/network_inventory.py",
       "loc": 1199,
       "syntax_ok": true,
       "compile_ok": true,
@@ -6293,7 +6036,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/network_monitor.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/network_monitor.py",
       "loc": 268,
       "syntax_ok": true,
       "compile_ok": true,
@@ -6313,7 +6055,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/network_scan_cli.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/network_scan_cli.py",
       "loc": 82,
       "syntax_ok": true,
       "compile_ok": true,
@@ -6326,7 +6067,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/network_security_audit.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/network_security_audit.py",
       "loc": 557,
       "syntax_ok": true,
       "compile_ok": true,
@@ -6346,7 +6086,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/network_service_scanner.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/network_service_scanner.py",
       "loc": 925,
       "syntax_ok": true,
       "compile_ok": true,
@@ -6383,7 +6122,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/network_stack_optimizer.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/network_stack_optimizer.py",
       "loc": 234,
       "syntax_ok": true,
       "compile_ok": true,
@@ -6407,7 +6145,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/network_tools.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/network_tools.py",
       "loc": 412,
       "syntax_ok": true,
       "compile_ok": true,
@@ -6431,7 +6168,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/network_traffic.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/network_traffic.py",
       "loc": 169,
       "syntax_ok": true,
       "compile_ok": true,
@@ -6455,7 +6191,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/nmap_adapter.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/nmap_adapter.py",
       "loc": 545,
       "syntax_ok": true,
       "compile_ok": true,
@@ -6504,7 +6239,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/notification_cleaner.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/notification_cleaner.py",
       "loc": 126,
       "syntax_ok": true,
       "compile_ok": true,
@@ -6528,7 +6262,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/oui.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/oui.py",
       "loc": 432,
       "syntax_ok": true,
       "compile_ok": true,
@@ -6556,7 +6289,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/pagefile_optimizer.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/pagefile_optimizer.py",
       "loc": 230,
       "syntax_ok": true,
       "compile_ok": true,
@@ -6584,7 +6316,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/performance_tuner.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/performance_tuner.py",
       "loc": 132,
       "syntax_ok": true,
       "compile_ok": true,
@@ -6604,7 +6335,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/power_plan_optimizer.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/power_plan_optimizer.py",
       "loc": 163,
       "syntax_ok": true,
       "compile_ok": true,
@@ -6628,7 +6358,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/prefetch_analyzer.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/prefetch_analyzer.py",
       "loc": 201,
       "syntax_ok": true,
       "compile_ok": true,
@@ -6656,7 +6385,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/privacy_blocker.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/privacy_blocker.py",
       "loc": 989,
       "syntax_ok": true,
       "compile_ok": true,
@@ -6676,7 +6404,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/process_analyzer.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/process_analyzer.py",
       "loc": 340,
       "syntax_ok": true,
       "compile_ok": true,
@@ -6692,7 +6419,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/process_meta.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/process_meta.py",
       "loc": 127,
       "syntax_ok": true,
       "compile_ok": true,
@@ -6707,7 +6433,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/process_token_auditor.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/process_token_auditor.py",
       "loc": 264,
       "syntax_ok": true,
       "compile_ok": true,
@@ -6731,7 +6456,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/registry_cleaner.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/registry_cleaner.py",
       "loc": 571,
       "syntax_ok": true,
       "compile_ok": true,
@@ -6747,7 +6471,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/restart_manager_unlocker.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/restart_manager_unlocker.py",
       "loc": 311,
       "syntax_ok": true,
       "compile_ok": true,
@@ -6783,7 +6506,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/restore_point.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/restore_point.py",
       "loc": 303,
       "syntax_ok": true,
       "compile_ok": true,
@@ -6807,7 +6529,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/s3_fifo.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/s3_fifo.py",
       "loc": 389,
       "syntax_ok": true,
       "compile_ok": true,
@@ -6831,7 +6552,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/sandbox_cleaner.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/sandbox_cleaner.py",
       "loc": 166,
       "syntax_ok": true,
       "compile_ok": true,
@@ -6855,7 +6575,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/search_index_optimizer.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/search_index_optimizer.py",
       "loc": 197,
       "syntax_ok": true,
       "compile_ok": true,
@@ -6879,7 +6598,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/secrets_scanner.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/secrets_scanner.py",
       "loc": 3378,
       "syntax_ok": true,
       "compile_ok": true,
@@ -6955,7 +6673,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/secure_shredder.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/secure_shredder.py",
       "loc": 739,
       "syntax_ok": true,
       "compile_ok": true,
@@ -6985,7 +6702,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/service_manager.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/service_manager.py",
       "loc": 277,
       "syntax_ok": true,
       "compile_ok": true,
@@ -7009,7 +6725,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/shader_cache_cleaner.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/shader_cache_cleaner.py",
       "loc": 218,
       "syntax_ok": true,
       "compile_ok": true,
@@ -7037,7 +6752,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/shellbags_privacy_cleaner.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/shellbags_privacy_cleaner.py",
       "loc": 215,
       "syntax_ok": true,
       "compile_ok": true,
@@ -7061,7 +6775,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/sieve_cache.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/sieve_cache.py",
       "loc": 255,
       "syntax_ok": true,
       "compile_ok": true,
@@ -7081,7 +6794,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/slack_space_analyzer.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/slack_space_analyzer.py",
       "loc": 159,
       "syntax_ok": true,
       "compile_ok": true,
@@ -7105,7 +6817,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/smb_share_auditor.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/smb_share_auditor.py",
       "loc": 190,
       "syntax_ok": true,
       "compile_ok": true,
@@ -7129,7 +6840,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/srum_bam_cleaner.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/srum_bam_cleaner.py",
       "loc": 237,
       "syntax_ok": true,
       "compile_ok": true,
@@ -7157,7 +6867,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/ssd_trim_optimizer.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/ssd_trim_optimizer.py",
       "loc": 276,
       "syntax_ok": true,
       "compile_ok": true,
@@ -7185,7 +6894,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/startup_impact_analyzer.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/startup_impact_analyzer.py",
       "loc": 250,
       "syntax_ok": true,
       "compile_ok": true,
@@ -7209,7 +6917,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/startup_manager.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/startup_manager.py",
       "loc": 534,
       "syntax_ok": true,
       "compile_ok": true,
@@ -7225,7 +6932,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/startup_optimizer.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/startup_optimizer.py",
       "loc": 496,
       "syntax_ok": true,
       "compile_ok": true,
@@ -7249,7 +6955,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/storage_growth_tracker.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/storage_growth_tracker.py",
       "loc": 273,
       "syntax_ok": true,
       "compile_ok": true,
@@ -7277,7 +6982,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/storage_sense.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/storage_sense.py",
       "loc": 177,
       "syntax_ok": true,
       "compile_ok": true,
@@ -7293,7 +6997,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/system_cache_rebuilder.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/system_cache_rebuilder.py",
       "loc": 249,
       "syntax_ok": true,
       "compile_ok": true,
@@ -7313,7 +7016,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/system_info.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/system_info.py",
       "loc": 180,
       "syntax_ok": true,
       "compile_ok": true,
@@ -7329,7 +7031,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/system_repair.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/system_repair.py",
       "loc": 331,
       "syntax_ok": true,
       "compile_ok": true,
@@ -7349,7 +7050,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/task_manager.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/task_manager.py",
       "loc": 299,
       "syntax_ok": true,
       "compile_ok": true,
@@ -7365,7 +7065,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/telemetry_blocker.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/telemetry_blocker.py",
       "loc": 470,
       "syntax_ok": true,
       "compile_ok": true,
@@ -7381,7 +7080,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/temp_folder_cleaner.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/temp_folder_cleaner.py",
       "loc": 194,
       "syntax_ok": true,
       "compile_ok": true,
@@ -7409,7 +7107,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/update_checker.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/update_checker.py",
       "loc": 78,
       "syntax_ok": true,
       "compile_ok": true,
@@ -7425,7 +7122,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/vhdx_manager.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/vhdx_manager.py",
       "loc": 680,
       "syntax_ok": true,
       "compile_ok": true,
@@ -7453,7 +7149,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/vss_health_analyzer.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/vss_health_analyzer.py",
       "loc": 360,
       "syntax_ok": true,
       "compile_ok": true,
@@ -7485,7 +7180,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/vss_manager.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/vss_manager.py",
       "loc": 340,
       "syntax_ok": true,
       "compile_ok": true,
@@ -7513,7 +7207,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/vulnerability_catalog.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/vulnerability_catalog.py",
       "loc": 344,
       "syntax_ok": true,
       "compile_ok": true,
@@ -7543,7 +7236,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/wake_on_lan.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/wake_on_lan.py",
       "loc": 201,
       "syntax_ok": true,
       "compile_ok": true,
@@ -7576,7 +7268,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/wan_audit.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/wan_audit.py",
       "loc": 871,
       "syntax_ok": true,
       "compile_ok": true,
@@ -7612,7 +7303,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/winapp2_cleaner.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/winapp2_cleaner.py",
       "loc": 465,
       "syntax_ok": true,
       "compile_ok": true,
@@ -7640,7 +7330,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/windows_update.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/windows_update.py",
       "loc": 249,
       "syntax_ok": true,
       "compile_ok": true,
@@ -7660,7 +7349,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/windows_update_repair.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/windows_update_repair.py",
       "loc": 827,
       "syntax_ok": true,
       "compile_ok": true,
@@ -7688,7 +7376,6 @@
     },
     {
       "path": "src/cortex_unified/system_tools/wsl_cleaner.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/system_tools/wsl_cleaner.py",
       "loc": 345,
       "syntax_ok": true,
       "compile_ok": true,
@@ -7708,7 +7395,6 @@
     },
     {
       "path": "src/cortex_unified/translations/__init__.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/translations/__init__.py",
       "loc": 37,
       "syntax_ok": true,
       "compile_ok": true,
@@ -7722,7 +7408,6 @@
     },
     {
       "path": "src/cortex_unified/translations/settings_integration.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/translations/settings_integration.py",
       "loc": 257,
       "syntax_ok": true,
       "compile_ok": true,
@@ -7744,7 +7429,6 @@
     },
     {
       "path": "src/cortex_unified/translations/translator.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/translations/translator.py",
       "loc": 202,
       "syntax_ok": true,
       "compile_ok": true,
@@ -7764,7 +7448,6 @@
     },
     {
       "path": "src/cortex_unified/ui/__init__.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/__init__.py",
       "loc": 1,
       "syntax_ok": true,
       "compile_ok": true,
@@ -7775,7 +7458,6 @@
     },
     {
       "path": "src/cortex_unified/ui/__main__.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/__main__.py",
       "loc": 10,
       "syntax_ok": true,
       "compile_ok": true,
@@ -7786,7 +7468,6 @@
     },
     {
       "path": "src/cortex_unified/ui/launcher.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/launcher.py",
       "loc": 26,
       "syntax_ok": true,
       "compile_ok": true,
@@ -7799,7 +7480,6 @@
     },
     {
       "path": "src/cortex_unified/ui/main_window.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/main_window.py",
       "loc": 3241,
       "syntax_ok": true,
       "compile_ok": true,
@@ -7829,7 +7509,6 @@
     },
     {
       "path": "src/cortex_unified/ui/navigation/__init__.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/navigation/__init__.py",
       "loc": 6,
       "syntax_ok": true,
       "compile_ok": true,
@@ -7840,7 +7519,6 @@
     },
     {
       "path": "src/cortex_unified/ui/navigation/icon_helper.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/navigation/icon_helper.py",
       "loc": 127,
       "syntax_ok": true,
       "compile_ok": true,
@@ -7856,7 +7534,6 @@
     },
     {
       "path": "src/cortex_unified/ui/navigation/navigation_controller.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/navigation/navigation_controller.py",
       "loc": 390,
       "syntax_ok": true,
       "compile_ok": true,
@@ -7872,7 +7549,6 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/__init__.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/__init__.py",
       "loc": 13,
       "syntax_ok": true,
       "compile_ok": true,
@@ -7883,7 +7559,6 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/__main__.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/__main__.py",
       "loc": 10,
       "syntax_ok": true,
       "compile_ok": true,
@@ -7894,7 +7569,6 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/advanced_uninstaller_page.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/advanced_uninstaller_page.py",
       "loc": 514,
       "syntax_ok": true,
       "compile_ok": true,
@@ -7914,7 +7588,6 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/analysis_pages.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/analysis_pages.py",
       "loc": 2329,
       "syntax_ok": true,
       "compile_ok": true,
@@ -8014,7 +7687,6 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/apex_tools_pages.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/apex_tools_pages.py",
       "loc": 1212,
       "syntax_ok": true,
       "compile_ok": true,
@@ -8066,7 +7738,6 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/app.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/app.py",
       "loc": 422,
       "syntax_ok": true,
       "compile_ok": true,
@@ -8081,7 +7752,6 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/audio_duplicates_page.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/audio_duplicates_page.py",
       "loc": 226,
       "syntax_ok": true,
       "compile_ok": true,
@@ -8101,7 +7771,6 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/backdrop.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/backdrop.py",
       "loc": 118,
       "syntax_ok": true,
       "compile_ok": true,
@@ -8114,7 +7783,6 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/bad_files_studio_page.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/bad_files_studio_page.py",
       "loc": 300,
       "syntax_ok": true,
       "compile_ok": true,
@@ -8134,7 +7802,6 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/cdc_page.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/cdc_page.py",
       "loc": 223,
       "syntax_ok": true,
       "compile_ok": true,
@@ -8154,8 +7821,7 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/cleanup_hub_page.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/cleanup_hub_page.py",
-      "loc": 726,
+      "loc": 725,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -8178,7 +7844,6 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/cloud_storage_page.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/cloud_storage_page.py",
       "loc": 768,
       "syntax_ok": true,
       "compile_ok": true,
@@ -8202,7 +7867,6 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/compact_os_page.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/compact_os_page.py",
       "loc": 365,
       "syntax_ok": true,
       "compile_ok": true,
@@ -8230,7 +7894,6 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/delivery_optimization_page.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/delivery_optimization_page.py",
       "loc": 257,
       "syntax_ok": true,
       "compile_ok": true,
@@ -8254,7 +7917,6 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/device_window.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/device_window.py",
       "loc": 1695,
       "syntax_ok": true,
       "compile_ok": true,
@@ -8278,7 +7940,6 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/directstorage_page.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/directstorage_page.py",
       "loc": 177,
       "syntax_ok": true,
       "compile_ok": true,
@@ -8298,7 +7959,6 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/disk_analyzer_page.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/disk_analyzer_page.py",
       "loc": 502,
       "syntax_ok": true,
       "compile_ok": true,
@@ -8318,7 +7978,6 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/driver_manager_page.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/driver_manager_page.py",
       "loc": 545,
       "syntax_ok": true,
       "compile_ok": true,
@@ -8346,7 +8005,6 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/enterprise_suite_pages.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/enterprise_suite_pages.py",
       "loc": 1329,
       "syntax_ok": true,
       "compile_ok": true,
@@ -8398,7 +8056,6 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/expanded_tools_pages.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/expanded_tools_pages.py",
       "loc": 1622,
       "syntax_ok": true,
       "compile_ok": true,
@@ -8457,7 +8114,6 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/focus.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/focus.py",
       "loc": 127,
       "syntax_ok": true,
       "compile_ok": true,
@@ -8475,7 +8131,6 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/fuzzy_hash_page.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/fuzzy_hash_page.py",
       "loc": 222,
       "syntax_ok": true,
       "compile_ok": true,
@@ -8495,7 +8150,6 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/game_mode_page.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/game_mode_page.py",
       "loc": 286,
       "syntax_ok": true,
       "compile_ok": true,
@@ -8519,7 +8173,6 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/icons.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/icons.py",
       "loc": 238,
       "syntax_ok": true,
       "compile_ok": true,
@@ -8538,7 +8191,6 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/license_page.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/license_page.py",
       "loc": 250,
       "syntax_ok": true,
       "compile_ok": true,
@@ -8554,8 +8206,7 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/log_sweeper_page.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/log_sweeper_page.py",
-      "loc": 354,
+      "loc": 362,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -8574,7 +8225,6 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/memory_standby_page.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/memory_standby_page.py",
       "loc": 173,
       "syntax_ok": true,
       "compile_ok": true,
@@ -8590,7 +8240,6 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/mft_slack_page.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/mft_slack_page.py",
       "loc": 260,
       "syntax_ok": true,
       "compile_ok": true,
@@ -8610,7 +8259,6 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/model_cache_page.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/model_cache_page.py",
       "loc": 303,
       "syntax_ok": true,
       "compile_ok": true,
@@ -8634,7 +8282,6 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/more_pages.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/more_pages.py",
       "loc": 3412,
       "syntax_ok": true,
       "compile_ok": true,
@@ -8730,7 +8377,6 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/motion.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/motion.py",
       "loc": 256,
       "syntax_ok": true,
       "compile_ok": true,
@@ -8753,7 +8399,6 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/near_duplicates_page.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/near_duplicates_page.py",
       "loc": 226,
       "syntax_ok": true,
       "compile_ok": true,
@@ -8773,7 +8418,6 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/network_pages.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/network_pages.py",
       "loc": 3635,
       "syntax_ok": true,
       "compile_ok": true,
@@ -8857,7 +8501,6 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/nextgen_suite_pages.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/nextgen_suite_pages.py",
       "loc": 1115,
       "syntax_ok": true,
       "compile_ok": true,
@@ -8897,7 +8540,6 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/nexus_page.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/nexus_page.py",
       "loc": 163,
       "syntax_ok": true,
       "compile_ok": true,
@@ -8917,7 +8559,6 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/old_files_page.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/old_files_page.py",
       "loc": 267,
       "syntax_ok": true,
       "compile_ok": true,
@@ -8937,7 +8578,6 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/perceptual_duplicates_page.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/perceptual_duplicates_page.py",
       "loc": 228,
       "syntax_ok": true,
       "compile_ok": true,
@@ -8957,7 +8597,6 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/portable_manager_page.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/portable_manager_page.py",
       "loc": 397,
       "syntax_ok": true,
       "compile_ok": true,
@@ -8981,7 +8620,6 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/power_suite_pages.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/power_suite_pages.py",
       "loc": 1287,
       "syntax_ok": true,
       "compile_ok": true,
@@ -9033,7 +8671,6 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/power_tools_pages.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/power_tools_pages.py",
       "loc": 1464,
       "syntax_ok": true,
       "compile_ok": true,
@@ -9085,7 +8722,6 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/privacy_blocker_page.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/privacy_blocker_page.py",
       "loc": 346,
       "syntax_ok": true,
       "compile_ok": true,
@@ -9105,7 +8741,6 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/process_studio_page.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/process_studio_page.py",
       "loc": 250,
       "syntax_ok": true,
       "compile_ok": true,
@@ -9125,7 +8760,6 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/registry.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/registry.py",
       "loc": 977,
       "syntax_ok": true,
       "compile_ok": true,
@@ -9150,7 +8784,6 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/registry_ai_page.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/registry_ai_page.py",
       "loc": 307,
       "syntax_ok": true,
       "compile_ok": true,
@@ -9170,7 +8803,6 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/report_pages.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/report_pages.py",
       "loc": 558,
       "syntax_ok": true,
       "compile_ok": true,
@@ -9202,7 +8834,6 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/residual_cleaner_page.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/residual_cleaner_page.py",
       "loc": 276,
       "syntax_ok": true,
       "compile_ok": true,
@@ -9222,7 +8853,6 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/s3_fifo_page.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/s3_fifo_page.py",
       "loc": 201,
       "syntax_ok": true,
       "compile_ok": true,
@@ -9242,7 +8872,6 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/search_optimizer_page.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/search_optimizer_page.py",
       "loc": 249,
       "syntax_ok": true,
       "compile_ok": true,
@@ -9262,7 +8891,6 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/secure_shredder_page.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/secure_shredder_page.py",
       "loc": 448,
       "syntax_ok": true,
       "compile_ok": true,
@@ -9282,7 +8910,6 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/settings_store.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/settings_store.py",
       "loc": 244,
       "syntax_ok": true,
       "compile_ok": true,
@@ -9300,7 +8927,6 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/skeleton.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/skeleton.py",
       "loc": 151,
       "syntax_ok": true,
       "compile_ok": true,
@@ -9316,7 +8942,6 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/smoothscroll.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/smoothscroll.py",
       "loc": 157,
       "syntax_ok": true,
       "compile_ok": true,
@@ -9334,7 +8959,6 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/srum_bam_page.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/srum_bam_page.py",
       "loc": 224,
       "syntax_ok": true,
       "compile_ok": true,
@@ -9354,7 +8978,6 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/startup_optimizer_page.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/startup_optimizer_page.py",
       "loc": 711,
       "syntax_ok": true,
       "compile_ok": true,
@@ -9382,7 +9005,6 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/states.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/states.py",
       "loc": 518,
       "syntax_ok": true,
       "compile_ok": true,
@@ -9409,7 +9031,6 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/system_pages.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/system_pages.py",
       "loc": 2358,
       "syntax_ok": true,
       "compile_ok": true,
@@ -9509,7 +9130,6 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/tablemodel.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/tablemodel.py",
       "loc": 403,
       "syntax_ok": true,
       "compile_ok": true,
@@ -9539,7 +9159,6 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/theme.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/theme.py",
       "loc": 880,
       "syntax_ok": true,
       "compile_ok": true,
@@ -9559,7 +9178,6 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/tokens.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/tokens.py",
       "loc": 247,
       "syntax_ok": true,
       "compile_ok": true,
@@ -9590,7 +9208,6 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/tools_pages.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/tools_pages.py",
       "loc": 606,
       "syntax_ok": true,
       "compile_ok": true,
@@ -9630,7 +9247,6 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/tray.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/tray.py",
       "loc": 445,
       "syntax_ok": true,
       "compile_ok": true,
@@ -9646,7 +9262,6 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/video_duplicates_page.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/video_duplicates_page.py",
       "loc": 314,
       "syntax_ok": true,
       "compile_ok": true,
@@ -9666,7 +9281,6 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/wan_audit_page.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/wan_audit_page.py",
       "loc": 259,
       "syntax_ok": true,
       "compile_ok": true,
@@ -9686,7 +9300,6 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/widgets.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/widgets.py",
       "loc": 776,
       "syntax_ok": true,
       "compile_ok": true,
@@ -9730,7 +9343,6 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/win_update_repair_page.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/win_update_repair_page.py",
       "loc": 429,
       "syntax_ok": true,
       "compile_ok": true,
@@ -9754,7 +9366,6 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/winapp2_page.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/winapp2_page.py",
       "loc": 241,
       "syntax_ok": true,
       "compile_ok": true,
@@ -9774,7 +9385,6 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/window.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/window.py",
       "loc": 3277,
       "syntax_ok": true,
       "compile_ok": true,
@@ -9855,7 +9465,6 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/workers.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/workers.py",
       "loc": 1070,
       "syntax_ok": true,
       "compile_ok": true,
@@ -9987,7 +9596,6 @@
     },
     {
       "path": "src/cortex_unified/ui/premium/wsl_page.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/premium/wsl_page.py",
       "loc": 334,
       "syntax_ok": true,
       "compile_ok": true,
@@ -10011,7 +9619,6 @@
     },
     {
       "path": "src/cortex_unified/ui/safety/__init__.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/safety/__init__.py",
       "loc": 23,
       "syntax_ok": true,
       "compile_ok": true,
@@ -10022,7 +9629,6 @@
     },
     {
       "path": "src/cortex_unified/ui/safety/manifest_system.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/safety/manifest_system.py",
       "loc": 446,
       "syntax_ok": true,
       "compile_ok": true,
@@ -10042,7 +9648,6 @@
     },
     {
       "path": "src/cortex_unified/ui/safety/path_validator.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/safety/path_validator.py",
       "loc": 392,
       "syntax_ok": true,
       "compile_ok": true,
@@ -10062,7 +9667,6 @@
     },
     {
       "path": "src/cortex_unified/ui/safety/process_manager.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/safety/process_manager.py",
       "loc": 458,
       "syntax_ok": true,
       "compile_ok": true,
@@ -10094,7 +9698,6 @@
     },
     {
       "path": "src/cortex_unified/ui/safety/safety_manager.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/safety/safety_manager.py",
       "loc": 1400,
       "syntax_ok": true,
       "compile_ok": true,
@@ -10130,7 +9733,6 @@
     },
     {
       "path": "src/cortex_unified/ui/tabs/__init__.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/tabs/__init__.py",
       "loc": 5,
       "syntax_ok": true,
       "compile_ok": true,
@@ -10141,7 +9743,6 @@
     },
     {
       "path": "src/cortex_unified/ui/tabs/base_tab.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/tabs/base_tab.py",
       "loc": 415,
       "syntax_ok": true,
       "compile_ok": true,
@@ -10157,7 +9758,6 @@
     },
     {
       "path": "src/cortex_unified/ui/tabs/broken_links_tab.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/tabs/broken_links_tab.py",
       "loc": 649,
       "syntax_ok": true,
       "compile_ok": true,
@@ -10185,7 +9785,6 @@
     },
     {
       "path": "src/cortex_unified/ui/tabs/dashboard_tab.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/tabs/dashboard_tab.py",
       "loc": 431,
       "syntax_ok": true,
       "compile_ok": true,
@@ -10205,7 +9804,6 @@
     },
     {
       "path": "src/cortex_unified/ui/tabs/deep_cleaner_tab.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/tabs/deep_cleaner_tab.py",
       "loc": 553,
       "syntax_ok": true,
       "compile_ok": true,
@@ -10229,7 +9827,6 @@
     },
     {
       "path": "src/cortex_unified/ui/tabs/disk_analyzer_tab.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/tabs/disk_analyzer_tab.py",
       "loc": 383,
       "syntax_ok": true,
       "compile_ok": true,
@@ -10249,7 +9846,6 @@
     },
     {
       "path": "src/cortex_unified/ui/tabs/docker_tab.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/tabs/docker_tab.py",
       "loc": 430,
       "syntax_ok": true,
       "compile_ok": true,
@@ -10273,7 +9869,6 @@
     },
     {
       "path": "src/cortex_unified/ui/tabs/duplicates_tab.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/tabs/duplicates_tab.py",
       "loc": 407,
       "syntax_ok": true,
       "compile_ok": true,
@@ -10293,7 +9888,6 @@
     },
     {
       "path": "src/cortex_unified/ui/tabs/empty_files_tab.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/tabs/empty_files_tab.py",
       "loc": 520,
       "syntax_ok": true,
       "compile_ok": true,
@@ -10317,7 +9911,6 @@
     },
     {
       "path": "src/cortex_unified/ui/tabs/file_shredder_tab.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/tabs/file_shredder_tab.py",
       "loc": 421,
       "syntax_ok": true,
       "compile_ok": true,
@@ -10337,7 +9930,6 @@
     },
     {
       "path": "src/cortex_unified/ui/tabs/heuristics_tab.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/tabs/heuristics_tab.py",
       "loc": 382,
       "syntax_ok": true,
       "compile_ok": true,
@@ -10361,7 +9953,6 @@
     },
     {
       "path": "src/cortex_unified/ui/tabs/large_files_tab.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/tabs/large_files_tab.py",
       "loc": 329,
       "syntax_ok": true,
       "compile_ok": true,
@@ -10381,7 +9972,6 @@
     },
     {
       "path": "src/cortex_unified/ui/tabs/package_manager_tab.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/tabs/package_manager_tab.py",
       "loc": 684,
       "syntax_ok": true,
       "compile_ok": true,
@@ -10409,7 +9999,6 @@
     },
     {
       "path": "src/cortex_unified/ui/tabs/privacy_tab.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/tabs/privacy_tab.py",
       "loc": 615,
       "syntax_ok": true,
       "compile_ok": true,
@@ -10433,7 +10022,6 @@
     },
     {
       "path": "src/cortex_unified/ui/tabs/process_analyzer_tab.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/tabs/process_analyzer_tab.py",
       "loc": 159,
       "syntax_ok": true,
       "compile_ok": true,
@@ -10453,7 +10041,6 @@
     },
     {
       "path": "src/cortex_unified/ui/tabs/registry_cleaner_tab.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/tabs/registry_cleaner_tab.py",
       "loc": 236,
       "syntax_ok": true,
       "compile_ok": true,
@@ -10477,7 +10064,6 @@
     },
     {
       "path": "src/cortex_unified/ui/tabs/reports_tab.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/tabs/reports_tab.py",
       "loc": 640,
       "syntax_ok": true,
       "compile_ok": true,
@@ -10493,7 +10079,6 @@
     },
     {
       "path": "src/cortex_unified/ui/tabs/resource_monitor_tab.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/tabs/resource_monitor_tab.py",
       "loc": 339,
       "syntax_ok": true,
       "compile_ok": true,
@@ -10509,7 +10094,6 @@
     },
     {
       "path": "src/cortex_unified/ui/tabs/restore_tab.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/tabs/restore_tab.py",
       "loc": 535,
       "syntax_ok": true,
       "compile_ok": true,
@@ -10529,7 +10113,6 @@
     },
     {
       "path": "src/cortex_unified/ui/tabs/scheduler_tab.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/tabs/scheduler_tab.py",
       "loc": 562,
       "syntax_ok": true,
       "compile_ok": true,
@@ -10549,7 +10132,6 @@
     },
     {
       "path": "src/cortex_unified/ui/tabs/security_scanner_tab.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/tabs/security_scanner_tab.py",
       "loc": 875,
       "syntax_ok": true,
       "compile_ok": true,
@@ -10585,7 +10167,6 @@
     },
     {
       "path": "src/cortex_unified/ui/tabs/settings_tab.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/tabs/settings_tab.py",
       "loc": 137,
       "syntax_ok": true,
       "compile_ok": true,
@@ -10601,7 +10182,6 @@
     },
     {
       "path": "src/cortex_unified/ui/tabs/startup_manager_tab.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/tabs/startup_manager_tab.py",
       "loc": 163,
       "syntax_ok": true,
       "compile_ok": true,
@@ -10621,7 +10201,6 @@
     },
     {
       "path": "src/cortex_unified/ui/tabs/system_tools_tab.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/tabs/system_tools_tab.py",
       "loc": 315,
       "syntax_ok": true,
       "compile_ok": true,
@@ -10645,7 +10224,6 @@
     },
     {
       "path": "src/cortex_unified/ui/tabs/uninstaller_tab.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/tabs/uninstaller_tab.py",
       "loc": 568,
       "syntax_ok": true,
       "compile_ok": true,
@@ -10673,7 +10251,6 @@
     },
     {
       "path": "src/cortex_unified/ui/tooltips.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/tooltips.py",
       "loc": 530,
       "syntax_ok": true,
       "compile_ok": true,
@@ -10693,7 +10270,6 @@
     },
     {
       "path": "src/cortex_unified/ui/tray_icon.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/ui/tray_icon.py",
       "loc": 152,
       "syntax_ok": true,
       "compile_ok": true,
@@ -10709,7 +10285,6 @@
     },
     {
       "path": "src/cortex_unified/visualization/__init__.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/visualization/__init__.py",
       "loc": 15,
       "syntax_ok": true,
       "compile_ok": true,
@@ -10720,7 +10295,6 @@
     },
     {
       "path": "src/cortex_unified/visualization/interactive_dashboard.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/visualization/interactive_dashboard.py",
       "loc": 485,
       "syntax_ok": true,
       "compile_ok": true,
@@ -10736,7 +10310,6 @@
     },
     {
       "path": "src/cortex_unified/visualization/sunburst_generator.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/visualization/sunburst_generator.py",
       "loc": 380,
       "syntax_ok": true,
       "compile_ok": true,
@@ -10756,7 +10329,6 @@
     },
     {
       "path": "src/cortex_unified/visualization/treemap_generator.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/cortex_unified/visualization/treemap_generator.py",
       "loc": 377,
       "syntax_ok": true,
       "compile_ok": true,
@@ -10776,7 +10348,6 @@
     },
     {
       "path": "src/NexusExplorer/__init__.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/NexusExplorer/__init__.py",
       "loc": 3,
       "syntax_ok": true,
       "compile_ok": true,
@@ -10787,7 +10358,6 @@
     },
     {
       "path": "src/NexusExplorer/native/__init__.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/NexusExplorer/native/__init__.py",
       "loc": 12,
       "syntax_ok": true,
       "compile_ok": true,
@@ -10798,7 +10368,6 @@
     },
     {
       "path": "src/NexusExplorer/native/binary_differ.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/NexusExplorer/native/binary_differ.py",
       "loc": 191,
       "syntax_ok": true,
       "compile_ok": true,
@@ -10822,7 +10391,6 @@
     },
     {
       "path": "src/NexusExplorer/native/file_signature_sniffer.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/NexusExplorer/native/file_signature_sniffer.py",
       "loc": 222,
       "syntax_ok": true,
       "compile_ok": true,
@@ -10846,7 +10414,6 @@
     },
     {
       "path": "src/NexusExplorer/native/image_optimizer.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/NexusExplorer/native/image_optimizer.py",
       "loc": 199,
       "syntax_ok": true,
       "compile_ok": true,
@@ -10870,7 +10437,6 @@
     },
     {
       "path": "src/NexusExplorer/native/nexus_ads_manager.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/NexusExplorer/native/nexus_ads_manager.py",
       "loc": 224,
       "syntax_ok": true,
       "compile_ok": true,
@@ -10890,7 +10456,6 @@
     },
     {
       "path": "src/NexusExplorer/native/nexus_archive.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/NexusExplorer/native/nexus_archive.py",
       "loc": 875,
       "syntax_ok": true,
       "compile_ok": true,
@@ -10936,7 +10501,6 @@
     },
     {
       "path": "src/NexusExplorer/native/nexus_archive_manager.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/NexusExplorer/native/nexus_archive_manager.py",
       "loc": 354,
       "syntax_ok": true,
       "compile_ok": true,
@@ -10968,7 +10532,6 @@
     },
     {
       "path": "src/NexusExplorer/native/nexus_batch_renamer.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/NexusExplorer/native/nexus_batch_renamer.py",
       "loc": 441,
       "syntax_ok": true,
       "compile_ok": true,
@@ -10996,7 +10559,6 @@
     },
     {
       "path": "src/NexusExplorer/native/nexus_cloud.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/NexusExplorer/native/nexus_cloud.py",
       "loc": 1382,
       "syntax_ok": true,
       "compile_ok": true,
@@ -11050,7 +10612,6 @@
     },
     {
       "path": "src/NexusExplorer/native/nexus_content_search.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/NexusExplorer/native/nexus_content_search.py",
       "loc": 495,
       "syntax_ok": true,
       "compile_ok": true,
@@ -11081,7 +10642,6 @@
     },
     {
       "path": "src/NexusExplorer/native/nexus_core.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/NexusExplorer/native/nexus_core.py",
       "loc": 1640,
       "syntax_ok": true,
       "compile_ok": true,
@@ -11137,7 +10697,6 @@
     },
     {
       "path": "src/NexusExplorer/native/nexus_dir_diff.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/NexusExplorer/native/nexus_dir_diff.py",
       "loc": 377,
       "syntax_ok": true,
       "compile_ok": true,
@@ -11169,7 +10728,6 @@
     },
     {
       "path": "src/NexusExplorer/native/nexus_explorer.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/NexusExplorer/native/nexus_explorer.py",
       "loc": 9513,
       "syntax_ok": true,
       "compile_ok": true,
@@ -11337,7 +10895,6 @@
     },
     {
       "path": "src/NexusExplorer/native/nexus_fast_copier.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/NexusExplorer/native/nexus_fast_copier.py",
       "loc": 305,
       "syntax_ok": true,
       "compile_ok": true,
@@ -11365,7 +10922,6 @@
     },
     {
       "path": "src/NexusExplorer/native/nexus_ffi.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/NexusExplorer/native/nexus_ffi.py",
       "loc": 686,
       "syntax_ok": true,
       "compile_ok": true,
@@ -11395,7 +10951,6 @@
     },
     {
       "path": "src/NexusExplorer/native/nexus_file_splitter.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/NexusExplorer/native/nexus_file_splitter.py",
       "loc": 302,
       "syntax_ok": true,
       "compile_ok": true,
@@ -11427,7 +10982,6 @@
     },
     {
       "path": "src/NexusExplorer/native/nexus_folder_tree.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/NexusExplorer/native/nexus_folder_tree.py",
       "loc": 342,
       "syntax_ok": true,
       "compile_ok": true,
@@ -11447,7 +11001,6 @@
     },
     {
       "path": "src/NexusExplorer/native/nexus_hash_tool.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/NexusExplorer/native/nexus_hash_tool.py",
       "loc": 483,
       "syntax_ok": true,
       "compile_ok": true,
@@ -11475,7 +11028,6 @@
     },
     {
       "path": "src/NexusExplorer/native/nexus_icons.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/NexusExplorer/native/nexus_icons.py",
       "loc": 1747,
       "syntax_ok": true,
       "compile_ok": true,
@@ -11497,7 +11049,6 @@
     },
     {
       "path": "src/NexusExplorer/native/nexus_indexer.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/NexusExplorer/native/nexus_indexer.py",
       "loc": 853,
       "syntax_ok": true,
       "compile_ok": true,
@@ -11537,7 +11088,6 @@
     },
     {
       "path": "src/NexusExplorer/native/nexus_links_manager.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/NexusExplorer/native/nexus_links_manager.py",
       "loc": 372,
       "syntax_ok": true,
       "compile_ok": true,
@@ -11565,7 +11115,6 @@
     },
     {
       "path": "src/NexusExplorer/native/nexus_native_app.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/NexusExplorer/native/nexus_native_app.py",
       "loc": 75,
       "syntax_ok": true,
       "compile_ok": true,
@@ -11578,7 +11127,6 @@
     },
     {
       "path": "src/NexusExplorer/native/nexus_network.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/NexusExplorer/native/nexus_network.py",
       "loc": 1027,
       "syntax_ok": true,
       "compile_ok": true,
@@ -11633,7 +11181,6 @@
     },
     {
       "path": "src/NexusExplorer/native/nexus_plugins.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/NexusExplorer/native/nexus_plugins.py",
       "loc": 978,
       "syntax_ok": true,
       "compile_ok": true,
@@ -11693,7 +11240,6 @@
     },
     {
       "path": "src/NexusExplorer/native/nexus_timestamp_touch.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/NexusExplorer/native/nexus_timestamp_touch.py",
       "loc": 324,
       "syntax_ok": true,
       "compile_ok": true,
@@ -11721,7 +11267,6 @@
     },
     {
       "path": "src/NexusExplorer/native/nexus_transfer_monitor.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/NexusExplorer/native/nexus_transfer_monitor.py",
       "loc": 372,
       "syntax_ok": true,
       "compile_ok": true,
@@ -11741,7 +11286,6 @@
     },
     {
       "path": "src/NexusExplorer/native/nexus_transfer_queue.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/NexusExplorer/native/nexus_transfer_queue.py",
       "loc": 806,
       "syntax_ok": true,
       "compile_ok": true,
@@ -11768,7 +11312,6 @@
     },
     {
       "path": "src/NexusExplorer/native/nexus_undo.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/NexusExplorer/native/nexus_undo.py",
       "loc": 450,
       "syntax_ok": true,
       "compile_ok": true,
@@ -11820,7 +11363,6 @@
     },
     {
       "path": "src/NexusExplorer/native/nexus_unlocker.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/NexusExplorer/native/nexus_unlocker.py",
       "loc": 303,
       "syntax_ok": true,
       "compile_ok": true,
@@ -11840,7 +11382,6 @@
     },
     {
       "path": "src/NexusExplorer/native/par2_recovery.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/NexusExplorer/native/par2_recovery.py",
       "loc": 180,
       "syntax_ok": true,
       "compile_ok": true,
@@ -11868,7 +11409,6 @@
     },
     {
       "path": "src/NexusExplorer/native/usn_journal_scanner.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/NexusExplorer/native/usn_journal_scanner.py",
       "loc": 155,
       "syntax_ok": true,
       "compile_ok": true,
@@ -11892,7 +11432,6 @@
     },
     {
       "path": "src/NexusExplorer/test_explorer.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/NexusExplorer/test_explorer.py",
       "loc": 381,
       "syntax_ok": true,
       "compile_ok": true,
@@ -11905,7 +11444,6 @@
     },
     {
       "path": "src/NexusExplorer/tests/benchmarks.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/NexusExplorer/tests/benchmarks.py",
       "loc": 372,
       "syntax_ok": true,
       "compile_ok": true,
@@ -11937,7 +11475,6 @@
     },
     {
       "path": "src/NexusExplorer/tests/native/test_ffi_bridge.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/NexusExplorer/tests/native/test_ffi_bridge.py",
       "loc": 193,
       "syntax_ok": true,
       "compile_ok": true,
@@ -11963,7 +11500,6 @@
     },
     {
       "path": "src/NexusExplorer/tests/native/test_journal.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/NexusExplorer/tests/native/test_journal.py",
       "loc": 139,
       "syntax_ok": true,
       "compile_ok": true,
@@ -11980,7 +11516,6 @@
     },
     {
       "path": "src/NexusExplorer/tests/native/test_mouse_interactions.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/NexusExplorer/tests/native/test_mouse_interactions.py",
       "loc": 217,
       "syntax_ok": true,
       "compile_ok": true,
@@ -12008,7 +11543,6 @@
     },
     {
       "path": "src/NexusExplorer/tests/native/test_nested_creation.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/NexusExplorer/tests/native/test_nested_creation.py",
       "loc": 176,
       "syntax_ok": true,
       "compile_ok": true,
@@ -12028,7 +11562,6 @@
     },
     {
       "path": "src/NexusExplorer/tests/native/test_stage0.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/NexusExplorer/tests/native/test_stage0.py",
       "loc": 147,
       "syntax_ok": true,
       "compile_ok": true,
@@ -12054,7 +11587,6 @@
     },
     {
       "path": "src/NexusExplorer/tests/native/test_transfer_monitor.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/NexusExplorer/tests/native/test_transfer_monitor.py",
       "loc": 201,
       "syntax_ok": true,
       "compile_ok": true,
@@ -12071,7 +11603,6 @@
     },
     {
       "path": "src/NexusExplorer/tests/native/test_transfers_ffi.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/NexusExplorer/tests/native/test_transfers_ffi.py",
       "loc": 243,
       "syntax_ok": true,
       "compile_ok": true,
@@ -12098,7 +11629,6 @@
     },
     {
       "path": "src/NexusExplorer/tests/native/test_transport_parity.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/NexusExplorer/tests/native/test_transport_parity.py",
       "loc": 271,
       "syntax_ok": true,
       "compile_ok": true,
@@ -12118,7 +11648,6 @@
     },
     {
       "path": "src/NexusExplorer/tests/native/test_ui_state.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/src/NexusExplorer/tests/native/test_ui_state.py",
       "loc": 146,
       "syntax_ok": true,
       "compile_ok": true,
@@ -12140,7 +11669,6 @@
     },
     {
       "path": "tests/__init__.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/__init__.py",
       "loc": 1,
       "syntax_ok": true,
       "compile_ok": true,
@@ -12151,7 +11679,6 @@
     },
     {
       "path": "tests/conftest.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/conftest.py",
       "loc": 78,
       "syntax_ok": true,
       "compile_ok": true,
@@ -12168,7 +11695,6 @@
     },
     {
       "path": "tests/test_advanced_disk_analyzer.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_advanced_disk_analyzer.py",
       "loc": 793,
       "syntax_ok": true,
       "compile_ok": true,
@@ -12232,7 +11758,6 @@
     },
     {
       "path": "tests/test_apex_power_tools.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_apex_power_tools.py",
       "loc": 169,
       "syntax_ok": true,
       "compile_ok": true,
@@ -12254,7 +11779,6 @@
     },
     {
       "path": "tests/test_app_updater.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_app_updater.py",
       "loc": 82,
       "syntax_ok": true,
       "compile_ok": true,
@@ -12274,7 +11798,6 @@
     },
     {
       "path": "tests/test_audio_duplicate_finder.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_audio_duplicate_finder.py",
       "loc": 210,
       "syntax_ok": true,
       "compile_ok": true,
@@ -12295,7 +11818,6 @@
     },
     {
       "path": "tests/test_audit_safety_hardening.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_audit_safety_hardening.py",
       "loc": 250,
       "syntax_ok": true,
       "compile_ok": true,
@@ -12321,7 +11843,6 @@
     },
     {
       "path": "tests/test_boot_performance.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_boot_performance.py",
       "loc": 96,
       "syntax_ok": true,
       "compile_ok": true,
@@ -12345,7 +11866,6 @@
     },
     {
       "path": "tests/test_browser_cleaner.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_browser_cleaner.py",
       "loc": 1021,
       "syntax_ok": true,
       "compile_ok": true,
@@ -12405,7 +11925,6 @@
     },
     {
       "path": "tests/test_browser_extensions.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_browser_extensions.py",
       "loc": 150,
       "syntax_ok": true,
       "compile_ok": true,
@@ -12431,7 +11950,6 @@
     },
     {
       "path": "tests/test_cli.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_cli.py",
       "loc": 28,
       "syntax_ok": true,
       "compile_ok": true,
@@ -12446,7 +11964,6 @@
     },
     {
       "path": "tests/test_cli_leftovers.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_cli_leftovers.py",
       "loc": 241,
       "syntax_ok": true,
       "compile_ok": true,
@@ -12472,7 +11989,6 @@
     },
     {
       "path": "tests/test_cloud_aware_scan.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_cloud_aware_scan.py",
       "loc": 248,
       "syntax_ok": true,
       "compile_ok": true,
@@ -12500,7 +12016,6 @@
     },
     {
       "path": "tests/test_compact_os.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_compact_os.py",
       "loc": 155,
       "syntax_ok": true,
       "compile_ok": true,
@@ -12520,7 +12035,6 @@
     },
     {
       "path": "tests/test_component_store.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_component_store.py",
       "loc": 435,
       "syntax_ok": true,
       "compile_ok": true,
@@ -12554,7 +12068,6 @@
     },
     {
       "path": "tests/test_config.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_config.py",
       "loc": 28,
       "syntax_ok": true,
       "compile_ok": true,
@@ -12568,7 +12081,6 @@
     },
     {
       "path": "tests/test_config_defaults_unified.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_config_defaults_unified.py",
       "loc": 73,
       "syntax_ok": true,
       "compile_ok": true,
@@ -12585,7 +12097,6 @@
     },
     {
       "path": "tests/test_config_legacy_loading.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_config_legacy_loading.py",
       "loc": 202,
       "syntax_ok": true,
       "compile_ok": true,
@@ -12609,7 +12120,6 @@
     },
     {
       "path": "tests/test_config_v2.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_config_v2.py",
       "loc": 377,
       "syntax_ok": true,
       "compile_ok": true,
@@ -12653,7 +12163,6 @@
     },
     {
       "path": "tests/test_content_defined_chunker.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_content_defined_chunker.py",
       "loc": 217,
       "syntax_ok": true,
       "compile_ok": true,
@@ -12680,7 +12189,6 @@
     },
     {
       "path": "tests/test_core_proc.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_core_proc.py",
       "loc": 130,
       "syntax_ok": true,
       "compile_ok": true,
@@ -12702,7 +12210,6 @@
     },
     {
       "path": "tests/test_custom_roots_scan.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_custom_roots_scan.py",
       "loc": 211,
       "syntax_ok": true,
       "compile_ok": true,
@@ -12729,7 +12236,6 @@
     },
     {
       "path": "tests/test_czkawka_tools.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_czkawka_tools.py",
       "loc": 1238,
       "syntax_ok": true,
       "compile_ok": true,
@@ -12781,7 +12287,6 @@
     },
     {
       "path": "tests/test_defender.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_defender.py",
       "loc": 94,
       "syntax_ok": true,
       "compile_ok": true,
@@ -12805,7 +12310,6 @@
     },
     {
       "path": "tests/test_deleter.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_deleter.py",
       "loc": 53,
       "syntax_ok": true,
       "compile_ok": true,
@@ -12820,7 +12324,6 @@
     },
     {
       "path": "tests/test_directstorage_optimizer.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_directstorage_optimizer.py",
       "loc": 50,
       "syntax_ok": true,
       "compile_ok": true,
@@ -12835,7 +12338,6 @@
     },
     {
       "path": "tests/test_disk_health.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_disk_health.py",
       "loc": 137,
       "syntax_ok": true,
       "compile_ok": true,
@@ -12859,7 +12361,6 @@
     },
     {
       "path": "tests/test_drive_optimizer.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_drive_optimizer.py",
       "loc": 85,
       "syntax_ok": true,
       "compile_ok": true,
@@ -12879,7 +12380,6 @@
     },
     {
       "path": "tests/test_driver_inventory.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_driver_inventory.py",
       "loc": 79,
       "syntax_ok": true,
       "compile_ok": true,
@@ -12899,7 +12399,6 @@
     },
     {
       "path": "tests/test_engine.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_engine.py",
       "loc": 426,
       "syntax_ok": true,
       "compile_ok": true,
@@ -12937,7 +12436,6 @@
     },
     {
       "path": "tests/test_engine_cloud_safety.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_engine_cloud_safety.py",
       "loc": 250,
       "syntax_ok": true,
       "compile_ok": true,
@@ -12963,7 +12461,6 @@
     },
     {
       "path": "tests/test_engine_service.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_engine_service.py",
       "loc": 330,
       "syntax_ok": true,
       "compile_ok": true,
@@ -12999,7 +12496,6 @@
     },
     {
       "path": "tests/test_enterprise_suite_tools.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_enterprise_suite_tools.py",
       "loc": 186,
       "syntax_ok": true,
       "compile_ok": true,
@@ -13021,7 +12517,6 @@
     },
     {
       "path": "tests/test_expanded_power_tools.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_expanded_power_tools.py",
       "loc": 251,
       "syntax_ok": true,
       "compile_ok": true,
@@ -13044,7 +12539,6 @@
     },
     {
       "path": "tests/test_external_exposure.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_external_exposure.py",
       "loc": 81,
       "syntax_ok": true,
       "compile_ok": true,
@@ -13059,7 +12553,6 @@
     },
     {
       "path": "tests/test_feature_matrix_audit.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_feature_matrix_audit.py",
       "loc": 432,
       "syntax_ok": true,
       "compile_ok": true,
@@ -13082,7 +12575,6 @@
     },
     {
       "path": "tests/test_firewall_manager.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_firewall_manager.py",
       "loc": 126,
       "syntax_ok": true,
       "compile_ok": true,
@@ -13114,7 +12606,6 @@
     },
     {
       "path": "tests/test_free_space_wipe.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_free_space_wipe.py",
       "loc": 73,
       "syntax_ok": true,
       "compile_ok": true,
@@ -13138,7 +12629,6 @@
     },
     {
       "path": "tests/test_fuzzy_finder.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_fuzzy_finder.py",
       "loc": 139,
       "syntax_ok": true,
       "compile_ok": true,
@@ -13159,7 +12649,6 @@
     },
     {
       "path": "tests/test_game_mode_memory.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_game_mode_memory.py",
       "loc": 141,
       "syntax_ok": true,
       "compile_ok": true,
@@ -13183,7 +12672,6 @@
     },
     {
       "path": "tests/test_gui_device_window.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_gui_device_window.py",
       "loc": 497,
       "syntax_ok": true,
       "compile_ok": true,
@@ -13206,7 +12694,6 @@
     },
     {
       "path": "tests/test_gui_pages_e2e.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_gui_pages_e2e.py",
       "loc": 1087,
       "syntax_ok": true,
       "compile_ok": true,
@@ -13267,7 +12754,6 @@
     },
     {
       "path": "tests/test_health_check.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_health_check.py",
       "loc": 107,
       "syntax_ok": true,
       "compile_ok": true,
@@ -13291,7 +12777,6 @@
     },
     {
       "path": "tests/test_icons.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_icons.py",
       "loc": 282,
       "syntax_ok": true,
       "compile_ok": true,
@@ -13319,8 +12804,7 @@
     },
     {
       "path": "tests/test_installer_end_to_end.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_installer_end_to_end.py",
-      "loc": 96,
+      "loc": 103,
       "syntax_ok": true,
       "compile_ok": true,
       "import_ok": true,
@@ -13335,7 +12819,6 @@
     },
     {
       "path": "tests/test_installer_ui.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_installer_ui.py",
       "loc": 69,
       "syntax_ok": true,
       "compile_ok": true,
@@ -13357,7 +12840,6 @@
     },
     {
       "path": "tests/test_lan_scanner.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_lan_scanner.py",
       "loc": 117,
       "syntax_ok": true,
       "compile_ok": true,
@@ -13381,7 +12863,6 @@
     },
     {
       "path": "tests/test_lazy_pages.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_lazy_pages.py",
       "loc": 155,
       "syntax_ok": true,
       "compile_ok": true,
@@ -13404,7 +12885,6 @@
     },
     {
       "path": "tests/test_leftover_cleaner.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_leftover_cleaner.py",
       "loc": 969,
       "syntax_ok": true,
       "compile_ok": true,
@@ -13476,7 +12956,6 @@
     },
     {
       "path": "tests/test_license_gui.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_license_gui.py",
       "loc": 230,
       "syntax_ok": true,
       "compile_ok": true,
@@ -13499,7 +12978,6 @@
     },
     {
       "path": "tests/test_licensing.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_licensing.py",
       "loc": 389,
       "syntax_ok": true,
       "compile_ok": true,
@@ -13529,7 +13007,6 @@
     },
     {
       "path": "tests/test_load_tester.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_load_tester.py",
       "loc": 189,
       "syntax_ok": true,
       "compile_ok": true,
@@ -13557,7 +13034,6 @@
     },
     {
       "path": "tests/test_memory_standby_purger.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_memory_standby_purger.py",
       "loc": 46,
       "syntax_ok": true,
       "compile_ok": true,
@@ -13572,7 +13048,6 @@
     },
     {
       "path": "tests/test_mft_slack_scrubber.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_mft_slack_scrubber.py",
       "loc": 50,
       "syntax_ok": true,
       "compile_ok": true,
@@ -13587,7 +13062,6 @@
     },
     {
       "path": "tests/test_network_audit.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_network_audit.py",
       "loc": 311,
       "syntax_ok": true,
       "compile_ok": true,
@@ -13616,7 +13090,6 @@
     },
     {
       "path": "tests/test_network_automation.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_network_automation.py",
       "loc": 68,
       "syntax_ok": true,
       "compile_ok": true,
@@ -13631,7 +13104,6 @@
     },
     {
       "path": "tests/test_network_discovery.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_network_discovery.py",
       "loc": 632,
       "syntax_ok": true,
       "compile_ok": true,
@@ -13693,7 +13165,6 @@
     },
     {
       "path": "tests/test_network_expert_tools.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_network_expert_tools.py",
       "loc": 378,
       "syntax_ok": true,
       "compile_ok": true,
@@ -13726,7 +13197,6 @@
     },
     {
       "path": "tests/test_network_inventory.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_network_inventory.py",
       "loc": 341,
       "syntax_ok": true,
       "compile_ok": true,
@@ -13754,7 +13224,6 @@
     },
     {
       "path": "tests/test_network_monitor.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_network_monitor.py",
       "loc": 107,
       "syntax_ok": true,
       "compile_ok": true,
@@ -13778,7 +13247,6 @@
     },
     {
       "path": "tests/test_network_security_audit.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_network_security_audit.py",
       "loc": 105,
       "syntax_ok": true,
       "compile_ok": true,
@@ -13795,7 +13263,6 @@
     },
     {
       "path": "tests/test_network_tools.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_network_tools.py",
       "loc": 165,
       "syntax_ok": true,
       "compile_ok": true,
@@ -13827,7 +13294,6 @@
     },
     {
       "path": "tests/test_network_traffic.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_network_traffic.py",
       "loc": 73,
       "syntax_ok": true,
       "compile_ok": true,
@@ -13845,7 +13311,6 @@
     },
     {
       "path": "tests/test_nextgen_tools.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_nextgen_tools.py",
       "loc": 216,
       "syntax_ok": true,
       "compile_ok": true,
@@ -13864,7 +13329,6 @@
     },
     {
       "path": "tests/test_nexus_exhaustive_audit.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_nexus_exhaustive_audit.py",
       "loc": 270,
       "syntax_ok": true,
       "compile_ok": true,
@@ -13883,7 +13347,6 @@
     },
     {
       "path": "tests/test_page_registry.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_page_registry.py",
       "loc": 127,
       "syntax_ok": true,
       "compile_ok": true,
@@ -13904,7 +13367,6 @@
     },
     {
       "path": "tests/test_perceptual_duplicate_finder.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_perceptual_duplicate_finder.py",
       "loc": 211,
       "syntax_ok": true,
       "compile_ok": true,
@@ -13927,7 +13389,6 @@
     },
     {
       "path": "tests/test_performance_tuner.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_performance_tuner.py",
       "loc": 64,
       "syntax_ok": true,
       "compile_ok": true,
@@ -13947,7 +13408,6 @@
     },
     {
       "path": "tests/test_portable_manager.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_portable_manager.py",
       "loc": 1020,
       "syntax_ok": true,
       "compile_ok": true,
@@ -14007,7 +13467,6 @@
     },
     {
       "path": "tests/test_power_suite_tools.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_power_suite_tools.py",
       "loc": 108,
       "syntax_ok": true,
       "compile_ok": true,
@@ -14029,7 +13488,6 @@
     },
     {
       "path": "tests/test_power_tools_production.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_power_tools_production.py",
       "loc": 385,
       "syntax_ok": true,
       "compile_ok": true,
@@ -14053,7 +13511,6 @@
     },
     {
       "path": "tests/test_premium_gui.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_premium_gui.py",
       "loc": 1624,
       "syntax_ok": true,
       "compile_ok": true,
@@ -14135,7 +13592,6 @@
     },
     {
       "path": "tests/test_premium_hidpi.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_premium_hidpi.py",
       "loc": 155,
       "syntax_ok": true,
       "compile_ok": true,
@@ -14155,7 +13611,6 @@
     },
     {
       "path": "tests/test_premium_tokens.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_premium_tokens.py",
       "loc": 222,
       "syntax_ok": true,
       "compile_ok": true,
@@ -14181,7 +13636,6 @@
     },
     {
       "path": "tests/test_process_meta.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_process_meta.py",
       "loc": 80,
       "syntax_ok": true,
       "compile_ok": true,
@@ -14209,7 +13663,6 @@
     },
     {
       "path": "tests/test_production_hardening.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_production_hardening.py",
       "loc": 402,
       "syntax_ok": true,
       "compile_ok": true,
@@ -14251,7 +13704,6 @@
     },
     {
       "path": "tests/test_registry_cleaner_ai.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_registry_cleaner_ai.py",
       "loc": 527,
       "syntax_ok": true,
       "compile_ok": true,
@@ -14296,7 +13748,6 @@
     },
     {
       "path": "tests/test_release_infra.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_release_infra.py",
       "loc": 132,
       "syntax_ok": true,
       "compile_ok": true,
@@ -14320,7 +13771,6 @@
     },
     {
       "path": "tests/test_restore_point.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_restore_point.py",
       "loc": 141,
       "syntax_ok": true,
       "compile_ok": true,
@@ -14348,7 +13798,6 @@
     },
     {
       "path": "tests/test_s3_fifo.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_s3_fifo.py",
       "loc": 137,
       "syntax_ok": true,
       "compile_ok": true,
@@ -14370,7 +13819,6 @@
     },
     {
       "path": "tests/test_scanner.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_scanner.py",
       "loc": 52,
       "syntax_ok": true,
       "compile_ok": true,
@@ -14386,7 +13834,6 @@
     },
     {
       "path": "tests/test_search_index_optimizer.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_search_index_optimizer.py",
       "loc": 29,
       "syntax_ok": true,
       "compile_ok": true,
@@ -14400,7 +13847,6 @@
     },
     {
       "path": "tests/test_secrets_page.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_secrets_page.py",
       "loc": 70,
       "syntax_ok": true,
       "compile_ok": true,
@@ -14415,7 +13861,6 @@
     },
     {
       "path": "tests/test_secure_delete_batch.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_secure_delete_batch.py",
       "loc": 126,
       "syntax_ok": true,
       "compile_ok": true,
@@ -14433,7 +13878,6 @@
     },
     {
       "path": "tests/test_secure_shredder.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_secure_shredder.py",
       "loc": 985,
       "syntax_ok": true,
       "compile_ok": true,
@@ -14517,7 +13961,6 @@
     },
     {
       "path": "tests/test_security_fixes.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_security_fixes.py",
       "loc": 68,
       "syntax_ok": true,
       "compile_ok": true,
@@ -14537,7 +13980,6 @@
     },
     {
       "path": "tests/test_shutdown_safety.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_shutdown_safety.py",
       "loc": 250,
       "syntax_ok": true,
       "compile_ok": true,
@@ -14564,7 +14006,6 @@
     },
     {
       "path": "tests/test_sidebar_chevrons_and_icons.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_sidebar_chevrons_and_icons.py",
       "loc": 106,
       "syntax_ok": true,
       "compile_ok": true,
@@ -14580,7 +14021,6 @@
     },
     {
       "path": "tests/test_sieve_cache.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_sieve_cache.py",
       "loc": 101,
       "syntax_ok": true,
       "compile_ok": true,
@@ -14597,7 +14037,6 @@
     },
     {
       "path": "tests/test_smart_suggest.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_smart_suggest.py",
       "loc": 168,
       "syntax_ok": true,
       "compile_ok": true,
@@ -14621,7 +14060,6 @@
     },
     {
       "path": "tests/test_srum_bam_cleaner.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_srum_bam_cleaner.py",
       "loc": 57,
       "syntax_ok": true,
       "compile_ok": true,
@@ -14637,7 +14075,6 @@
     },
     {
       "path": "tests/test_staging_shelf.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_staging_shelf.py",
       "loc": 511,
       "syntax_ok": true,
       "compile_ok": true,
@@ -14664,7 +14101,6 @@
     },
     {
       "path": "tests/test_startup_imports.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_startup_imports.py",
       "loc": 178,
       "syntax_ok": true,
       "compile_ok": true,
@@ -14688,7 +14124,6 @@
     },
     {
       "path": "tests/test_startup_optimizer.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_startup_optimizer.py",
       "loc": 879,
       "syntax_ok": true,
       "compile_ok": true,
@@ -14760,7 +14195,6 @@
     },
     {
       "path": "tests/test_storage_sense.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_storage_sense.py",
       "loc": 78,
       "syntax_ok": true,
       "compile_ok": true,
@@ -14784,7 +14218,6 @@
     },
     {
       "path": "tests/test_system_info.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_system_info.py",
       "loc": 46,
       "syntax_ok": true,
       "compile_ok": true,
@@ -14801,7 +14234,6 @@
     },
     {
       "path": "tests/test_system_repair.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_system_repair.py",
       "loc": 128,
       "syntax_ok": true,
       "compile_ok": true,
@@ -14833,7 +14265,6 @@
     },
     {
       "path": "tests/test_tablemodel.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_tablemodel.py",
       "loc": 341,
       "syntax_ok": true,
       "compile_ok": true,
@@ -14866,7 +14297,6 @@
     },
     {
       "path": "tests/test_tabs_gating.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_tabs_gating.py",
       "loc": 523,
       "syntax_ok": true,
       "compile_ok": true,
@@ -14894,7 +14324,6 @@
     },
     {
       "path": "tests/test_task_manager.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_task_manager.py",
       "loc": 173,
       "syntax_ok": true,
       "compile_ok": true,
@@ -14921,7 +14350,6 @@
     },
     {
       "path": "tests/test_temp_cleaner.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_temp_cleaner.py",
       "loc": 432,
       "syntax_ok": true,
       "compile_ok": true,
@@ -14951,7 +14379,6 @@
     },
     {
       "path": "tests/test_utils.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_utils.py",
       "loc": 17,
       "syntax_ok": true,
       "compile_ok": true,
@@ -14964,7 +14391,6 @@
     },
     {
       "path": "tests/test_vhdx_manager.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_vhdx_manager.py",
       "loc": 340,
       "syntax_ok": true,
       "compile_ok": true,
@@ -14995,7 +14421,6 @@
     },
     {
       "path": "tests/test_video_duplicate_finder.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_video_duplicate_finder.py",
       "loc": 161,
       "syntax_ok": true,
       "compile_ok": true,
@@ -15016,7 +14441,6 @@
     },
     {
       "path": "tests/test_wan_audit.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_wan_audit.py",
       "loc": 234,
       "syntax_ok": true,
       "compile_ok": true,
@@ -15041,7 +14465,6 @@
     },
     {
       "path": "tests/test_winapp2_cleaner.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_winapp2_cleaner.py",
       "loc": 97,
       "syntax_ok": true,
       "compile_ok": true,
@@ -15057,7 +14480,6 @@
     },
     {
       "path": "tests/test_windows_update.py",
-      "abs_path": "D:/code/Main_projects/Cortex_Cleaner/tests/test_windows_update.py",
       "loc": 98,
       "syntax_ok": true,
       "compile_ok": true,

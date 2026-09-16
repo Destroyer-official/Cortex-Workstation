@@ -1,6 +1,6 @@
 # GUI Features Audit — Premium Pages, Tabs, Main Window, Safety, Tray
 
-Base: `D:\code\Main_projects\Cortex_Cleaner` — read-only audit, no code changes.
+Base: `Repository Root (portable)` — read-only audit, no code changes.
 Scope: `src/cortex_unified/ui/premium/*_pages.py` + `*_page.py`, `src/cortex_unified/ui/tabs/*.py`, `src/cortex_unified/ui/main_window.py`, `src/cortex_unified/ui/safety/`, `src/cortex_unified/ui/tray_icon.py`.
 Method: code-read. Buttons/tables/combos/dialogs below are literal widget strings and handlers from source (`_PrimaryButton`/`_SecondaryButton`/`QPushButton`, `setHorizontalHeaderLabels`, `QFileDialog`/`QMessageBox`, `_on_*` slots). Backend = direct `from cortex_unified...` / `NexusExplorer...` imports in each file.
 Date (UTC): 2026-09-04.

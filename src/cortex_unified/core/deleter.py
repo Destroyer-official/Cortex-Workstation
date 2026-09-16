@@ -102,7 +102,21 @@ class Deleter:
                 # 1. Refuse directory junctions and symlinks to prevent traversal attacks
                 import os
 
-                if os.path.islink(str(dirpath)) or getattr(dirpath, "is_junction", lambda: False)():
+                is_link_or_junc = False
+                try:
+                    p = Path(dirpath)
+                    if os.path.islink(str(p)):
+                        is_link_or_junc = True
+                    elif getattr(p, "is_junction", lambda: False)():
+                        is_link_or_junc = True
+                    else:
+                        st = p.lstat()
+                        if hasattr(st, "st_file_attributes") and (st.st_file_attributes & 0x400):
+                            is_link_or_junc = True
+                except Exception:
+                    is_link_or_junc = False
+
+                if is_link_or_junc:
                     self.errors.append(
                         {
                             "type": "directory",
