@@ -667,6 +667,11 @@ _EXT_MAP: dict[str, str] = {
 
 
 def _get_icon_candidates() -> tuple[Path, ...]:
+    """Resolve candidate filesystem directories containing icon assets.
+
+    Returns:
+        tuple[Path, ...]: Candidate directory paths ordered by lookup priority.
+    """
     candidates: list[Path] = []
     if getattr(sys, "frozen", False):
         meipass = getattr(sys, "_MEIPASS", None)

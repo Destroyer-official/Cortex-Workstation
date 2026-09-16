@@ -42,6 +42,11 @@ _LOG = logging.getLogger("cortex.ui.icons")
 
 
 def _get_icon_dirs() -> list[Path]:
+    """Resolve candidate filesystem directories containing icon assets.
+
+    Returns:
+        list[Path]: Candidate directory paths ordered by lookup priority.
+    """
     candidates: list[Path] = []
     if getattr(sys, "frozen", False):
         meipass = getattr(sys, "_MEIPASS", None)

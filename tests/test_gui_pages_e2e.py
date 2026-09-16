@@ -49,6 +49,8 @@ def window(app):
     win.show()
     yield win
     win.close()
+    win.deleteLater()
+    app.processEvents()
 
 
 @pytest.fixture
