@@ -390,8 +390,11 @@ def _target_exists_any(candidates: List[str]) -> bool:
         bool: True if the operation succeeded, False otherwise.
     """
     for candidate in candidates:
-        if Path(candidate).exists():
-            return True
+        try:
+            if Path(candidate).exists():
+                return True
+        except (PermissionError, OSError):
+            return True  # cannot prove missing -> assume present
         if not _verifiable(candidate):
             return True  # cannot prove missing -> assume present
     return False
